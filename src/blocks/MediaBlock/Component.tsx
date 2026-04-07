@@ -1,10 +1,8 @@
 import type { StaticImageData } from 'next/image'
-
-import { cn } from '@/utilities/ui'
-import React from 'react'
+import type React from 'react'
 import RichText from '@/components/RichText'
-
-import type { MediaBlock as MediaBlockProps } from '@/payload-types'
+import type { MediaBlock as MediaBlockProps, Media as MediaDoc } from '@/payload-types'
+import { cn } from '@/utilities/ui'
 
 import { Media } from '../../components/Media'
 
@@ -29,7 +27,7 @@ export const MediaBlock: React.FC<Props> = (props) => {
     disableInnerContainer,
   } = props
 
-  let caption
+  let caption: MediaDoc['caption'] | undefined
   if (media && typeof media === 'object') caption = media.caption
 
   return (

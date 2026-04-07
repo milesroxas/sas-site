@@ -1,11 +1,9 @@
-import type { CollectionSlug, PayloadRequest } from 'payload'
-import { getPayload } from 'payload'
-
+import configPromise from '@payload-config'
 import { draftMode } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { NextRequest } from 'next/server'
-
-import configPromise from '@payload-config'
+import type { NextRequest } from 'next/server'
+import type { CollectionSlug, PayloadRequest } from 'payload'
+import { getPayload } from 'payload'
 
 export async function GET(req: NextRequest): Promise<Response> {
   const payload = await getPayload({ config: configPromise })
@@ -29,13 +27,14 @@ export async function GET(req: NextRequest): Promise<Response> {
     return new Response('This endpoint can only be used for relative previews', { status: 500 })
   }
 
-  let user
+  let user: Awaited<ReturnType<typeof payload.auth>>['user'] = null
 
   try {
-    user = await payload.auth({
+    const result = await payload.auth({
       req: req as unknown as PayloadRequest,
       headers: req.headers,
     })
+    user = result.user
   } catch (error) {
     payload.logger.error({ err: error }, 'Error verifying token for live preview')
     return new Response('You are not allowed to preview this page', { status: 403 })

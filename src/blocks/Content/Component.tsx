@@ -1,8 +1,7 @@
-import { cn } from '@/utilities/ui'
-import React from 'react'
+import type React from 'react'
 import RichText from '@/components/RichText'
-
 import type { ContentBlock as ContentBlockProps } from '@/payload-types'
+import { cn } from '@/utilities/ui'
 
 import { CMSLink } from '../../components/Link'
 
@@ -23,11 +22,13 @@ export const ContentBlock: React.FC<ContentBlockProps> = (props) => {
           columns.length > 0 &&
           columns.map((col, index) => {
             const { enableLink, link, richText, size } = col
+            const layoutSize =
+              size && size in colsSpanClasses ? size : ('full' as keyof typeof colsSpanClasses)
 
             return (
               <div
-                className={cn(`col-span-4 lg:col-span-${colsSpanClasses[size!]}`, {
-                  'md:col-span-2': size !== 'full',
+                className={cn(`col-span-4 lg:col-span-${colsSpanClasses[layoutSize]}`, {
+                  'md:col-span-2': layoutSize !== 'full',
                 })}
                 key={index}
               >

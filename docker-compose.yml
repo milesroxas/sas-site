@@ -1,13 +1,23 @@
-version: '3'
+# Local Postgres for development. App runs on the host: pnpm dev
+# Connection: postgresql://postgres@127.0.0.1:54320/payload (see .env.example)
 
 services:
   postgres:
-    image: postgres
+    image: postgres:16-alpine
+    restart: unless-stopped
     ports:
       - '54320:5432'
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_DB: your-database-name # THIS MUST MATCH YOUR DB NAME IN .env
+      POSTGRES_DB: payload
       POSTGRES_HOST_AUTH_METHOD: trust
-    env_file:
-      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

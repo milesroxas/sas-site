@@ -1,15 +1,12 @@
 'use client'
 
 import type { StaticImageData } from 'next/image'
-
-import { cn } from '@/utilities/ui'
 import NextImage from 'next/image'
-import React from 'react'
-
-import type { Props as MediaProps } from '../types'
-
+import type React from 'react'
 import { cssVariables } from '@/cssVariables'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
+import { cn } from '@/utilities/ui'
+import type { Props as MediaProps } from '../types'
 
 const { breakpoints } = cssVariables
 
@@ -66,8 +63,10 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
   if (!src && resource && typeof resource === 'object') {
     const { alt: altFromResource, height: fullHeight, url, width: fullWidth } = resource
 
-    width = fullWidth!
-    height = fullHeight!
+    if (fullWidth != null && fullHeight != null) {
+      width = fullWidth
+      height = fullHeight
+    }
     alt = altFromResource || ''
 
     const cacheTag = resource.updatedAt

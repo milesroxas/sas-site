@@ -1,9 +1,8 @@
 'use client'
 
-import * as React from 'react'
 import { useFormContext } from 'react-hook-form'
 
-export const Error = ({ name }: { name: string }) => {
+export const FieldError = ({ name }: { name: string }) => {
   const {
     formState: { errors },
   } = useFormContext()

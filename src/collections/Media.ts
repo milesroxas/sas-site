@@ -1,12 +1,11 @@
-import type { CollectionConfig } from 'payload'
-
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
   FixedToolbarFeature,
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import type { CollectionConfig } from 'payload'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'

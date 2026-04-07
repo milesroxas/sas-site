@@ -1,15 +1,15 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
-import path from 'path'
-import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
-import { redirects } from './redirects'
 
-const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : process.env.__NEXT_PRIVATE_ORIGIN || 'http://localhost:3000'
+import { redirects } from './redirects'
+import { getServerSideURL } from './src/utilities/getURL'
+
+const deployUrl = getServerSideURL()
 
 const nextConfig: NextConfig = {
   images: {
@@ -20,7 +20,11 @@ const nextConfig: NextConfig = {
     ],
     qualities: [100],
     remotePatterns: [
-      ...[NEXT_PUBLIC_SERVER_URL /* 'https://example.com' */].map((item) => {
+      {
+        hostname: 'raw.githubusercontent.com',
+        protocol: 'https',
+      },
+      ...[deployUrl].map((item) => {
         const url = new URL(item)
 
         return {

@@ -1,12 +1,11 @@
 'use client'
-import { useHeaderTheme } from '@/providers/HeaderTheme'
-import React, { useEffect } from 'react'
-
-import type { Page } from '@/payload-types'
-
+import type React from 'react'
+import { useEffect } from 'react'
 import { CMSLink } from '@/components/Link'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
+import type { Page } from '@/payload-types'
+import { useHeaderTheme } from '@/providers/HeaderTheme'
 
 export const HighImpactHero: React.FC<Page['hero']> = ({ links, media, richText }) => {
   const { setHeaderTheme } = useHeaderTheme()

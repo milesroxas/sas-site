@@ -1,11 +1,9 @@
+import configPromise from '@payload-config'
 import type { Metadata } from 'next/types'
-
+import { getPayload } from 'payload'
 import { CollectionArchive } from '@/components/CollectionArchive'
 import { PageRange } from '@/components/PageRange'
 import { Pagination } from '@/components/Pagination'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
-import React from 'react'
 import PageClient from './page.client'
 
 export const dynamic = 'force-static'
