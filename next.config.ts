@@ -12,6 +12,9 @@ import { getServerSideURL } from './src/utilities/getURL'
 const deployUrl = getServerSideURL()
 
 const nextConfig: NextConfig = {
+  experimental: {
+    viewTransition: true,
+  },
   images: {
     localPatterns: [
       {

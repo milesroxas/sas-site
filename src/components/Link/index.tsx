@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type React from 'react'
 import { Button, type ButtonProps } from '@/components/ui/button'
 import type { Page, Post } from '@/payload-types'
+import { linkNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 
 type CMSLinkType = {
@@ -43,11 +44,17 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
 
   const size = appearance === 'link' ? 'clear' : sizeFromProps
   const newTabProps = newTab ? { rel: 'noopener noreferrer', target: '_blank' } : {}
+  const transitionProps = !newTab ? { transitionTypes: [...linkNavTransitionTypes] } : {}
 
   /* Ensure we don't break any styles set by richText */
   if (appearance === 'inline') {
     return (
-      <Link className={cn(className)} href={href || url || ''} {...newTabProps}>
+      <Link
+        className={cn(className)}
+        href={href || url || ''}
+        {...newTabProps}
+        {...transitionProps}
+      >
         {label && label}
         {children && children}
       </Link>
@@ -56,7 +63,12 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
 
   return (
     <Button asChild className={className} size={size} variant={appearance}>
-      <Link className={cn(className)} href={href || url || ''} {...newTabProps}>
+      <Link
+        className={cn(className)}
+        href={href || url || ''}
+        {...newTabProps}
+        {...transitionProps}
+      >
         {label && label}
         {children && children}
       </Link>

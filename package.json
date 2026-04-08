@@ -7,7 +7,8 @@
   "scripts": {
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
-    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --no-server-fast-refresh",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --no-server-fast-refresh -p 3001",
+    "dev:tui": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/dev-tui/index.tsx",
     "dev:prod": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && pnpm build && pnpm start",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
@@ -72,6 +73,9 @@
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "4.5.2",
     "autoprefixer": "^10.4.27",
+    "execa": "^9.6.1",
+    "ink": "^6.8.0",
+    "ink-spinner": "^5.0.0",
     "jsdom": "28.0.0",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
@@ -85,8 +89,15 @@
     "node": "^18.20.2 || >=20.9.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["sharp", "esbuild", "unrs-resolver"],
-    "ignoredBuiltDependencies": ["bufferutil", "utf-8-validate"]
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild",
+      "unrs-resolver"
+    ],
+    "ignoredBuiltDependencies": [
+      "bufferutil",
+      "utf-8-validate"
+    ]
   },
   "packageManager": "pnpm@10.32.1"
 }

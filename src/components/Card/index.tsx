@@ -4,6 +4,7 @@ import type React from 'react'
 import { Fragment } from 'react'
 import { Media } from '@/components/Media'
 import type { Post } from '@/payload-types'
+import { linkNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import useClickableCard from '@/utilities/useClickableCard'
 
@@ -70,7 +71,12 @@ export const Card: React.FC<{
         {titleToUse && (
           <div className="prose">
             <h3>
-              <Link className="not-prose" href={href} ref={link.ref}>
+              <Link
+                className="not-prose"
+                href={href}
+                ref={link.ref}
+                transitionTypes={[...linkNavTransitionTypes]}
+              >
                 {titleToUse}
               </Link>
             </h3>

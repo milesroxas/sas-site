@@ -10,7 +10,7 @@ export const getServerSideURL = () => {
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   }
-  return process.env.__NEXT_PRIVATE_ORIGIN || 'http://localhost:3000'
+  return process.env.__NEXT_PRIVATE_ORIGIN || 'http://localhost:3001'
 }
 
 export const getClientSideURL = () => {

@@ -1,9 +1,11 @@
 # Local Postgres for development. App runs on the host: pnpm dev
 # Connection: postgresql://postgres@127.0.0.1:54320/payload (see .env.example)
+# Bump POSTGRES_DOCKER_IMAGE in scripts/dev-tui/constants.ts together with `image:` below.
+# Major/minor jumps usually need a fresh volume: docker compose down -v && pnpm db:up
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18.3-alpine
     restart: unless-stopped
     ports:
       - '54320:5432'

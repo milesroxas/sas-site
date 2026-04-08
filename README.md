@@ -55,35 +55,120 @@ PAYLOAD_SECRET - used by Payload to sign secrets like JWT tokens
 
 PREVIEW_SECRET - used by Payload for secured live previews of your content
 
-## Quick Start - local setup
+## Local development
 
-To spin up this template locally, follow these steps:
+### Prerequisites
 
-### Clone
+- **Node.js** `^18.20.2` or `>=20.9.0` (see `package.json` → `engines`)
+- **[pnpm](https://pnpm.io)** — the repo pins a version via `packageManager`; use Corepack (`corepack enable`) if you need that exact version
+- **Docker** (optional but recommended) — for the bundled Postgres service used by the default `POSTGRES_URL` in `.env.example`
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+### 1. Clone and install
 
-### Development
+```bash
+git clone <your-fork-or-repo-url>
+cd <project-directory>
+pnpm install
+```
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `POSTGRES_URL` and `BLOB_READ_WRITE_TOKEN` from your Vercel project to your `.env` if you want to use Vercel Blob and the Neon database that was created for you.
+### 2. Environment variables
 
-   > _NOTE: If the connection string value includes `localhost` or `127.0.0.1`, the code will automatically use a normal postgres adapter instead of Vercel._. You can override this functionality by setting `forceUseVercelPostgres: true` if desired.
+```bash
+cp .env.example .env
+```
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+Edit `.env` and set at least:
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+| Variable | Purpose |
+|----------|---------|
+| `PAYLOAD_SECRET` | Required. Long random string for JWT signing. |
+| `POSTGRES_URL` | Database connection string. The default in `.env.example` matches local Docker (`pnpm db:up`, port 54320, database `payload`). |
+| `NEXT_PUBLIC_SERVER_URL` | Public site URL, e.g. `http://localhost:3001` (no trailing slash). |
+| `CRON_SECRET` | Used for scheduled jobs / cron auth; set any strong value locally. |
+| `PREVIEW_SECRET` | Used for draft/live preview URLs. |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob — needed for **Media** uploads when using cloud storage. Pull from your Vercel project when testing uploads; can be empty for other local work. |
 
-#### Docker (Optional)
+You can add overrides in **`.env.local`** (gitignored) instead of committing secrets.
 
-If you prefer to use Docker for local development instead of a local Postgres instance, the provided docker-compose.yml file can be used.
+**Env files the app loads (Next.js):** values in `.env.local` override `.env`. The dev TUI can also write **`.env.production.local`** when you pull from Vercel (see [Dev TUI](#dev-tui)).
 
-To do so, follow these steps:
+> **Note:** If `POSTGRES_URL` points at `localhost` or `127.0.0.1`, the app uses a standard Postgres driver path instead of Vercel’s pooled config.
 
-- Modify the `POSTGRES_URL` in your `.env` file to `postgres://postgres@localhost:54320/<dbname>`
-- Modify the `docker-compose.yml` file's `POSTGRES_DB` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+### 3. Database (Postgres)
+
+**Recommended (Docker):** from the project root:
+
+```bash
+pnpm db:up
+```
+
+This runs `docker compose up postgres -d` using `docker-compose.yml`: Postgres **18** on host port **54320**, database name **`payload`**, trust auth for local dev. Wait until the container is healthy, then start the app.
+
+Stop the database:
+
+```bash
+pnpm db:down
+```
+
+**Alternative:** point `POSTGRES_URL` at any Postgres you control (e.g. Neon, a local install). Match the URL format to your provider.
+
+### 4. Run the app
+
+```bash
+pnpm dev
+```
+
+Open [http://localhost:3001](http://localhost:3001). Visit `/admin` and create your first user when prompted. Changes under `./src` hot-reload in dev.
+
+### Dev TUI
+
+Run **`pnpm dev:tui`** for an interactive menu (requires **Node 20+** and a real TTY). It does **not** run `vercel env pull` on startup (that needs the CLI, network, and often a logged-in session); choose **Database → Pull Vercel production env** when you want a fresh download.
+
+| File | Role |
+|------|------|
+| `.env` | Committed template copy; your local values (often gitignored in forks—keep secrets out of git). |
+| `.env.local` | Optional overrides; **highest priority** for local dev among “normal” env files. The TUI may set `POSTGRES_URL` here when you switch “point app at local vs remote”. |
+| `.env.production.local` | Written by **Pull Vercel production env**; holds production `POSTGRES_URL` and other Vercel secrets. Gitignored. Used as the **source** for DB import and for “point app at remote DB”. |
+
+**Recommended order (avoid missing-env issues):**
+
+1. **Install and env:** `pnpm install`, copy `.env.example` → `.env`, fill `PAYLOAD_SECRET`, `POSTGRES_URL` (local Docker URL from `.env.example` is fine), `NEXT_PUBLIC_SERVER_URL`, etc.
+2. **Start Postgres:** `pnpm db:up` (or **Database → Docker: start Postgres** in the TUI) and wait until the container is healthy.
+3. **Optional — copy production env for sync/remote workflows:** Install the [Vercel CLI](https://vercel.com/docs/cli), run `vercel link` in the repo if needed, then in the TUI choose **Database → Pull Vercel production env**. That creates `.env.production.local` without overwriting `.env` / `.env.local`.
+4. **Default:** keep **`POSTGRES_URL` in `.env` or `.env.local` pointing at local Docker** (`postgresql://postgres@127.0.0.1:54320/payload`). The TUI footer shows whether the app is using local or remote DB.
+5. **Import production data into local Docker:** **Database → Import production data → local Docker**. For the “where to read production `POSTGRES_URL`” prompt, pressing Enter walks **`.env.production.local` → `.env.local` → `.env`** until it finds `POSTGRES_URL`. You can also paste the URL. This **only** runs `pg_dump` / restore into your local DB; it does not switch the app to production unless you separately use **Point app at remote DB**.
+6. **Restart** `pnpm dev` after changing `POSTGRES_URL` on disk (Next loads env at startup).
+
+**If something fails:**
+
+| Symptom | What to check |
+|---------|----------------|
+| “No POSTGRES_URL” / import can’t find a file | Ensure at least one of `.env`, `.env.local`, or `.env.production.local` exists and contains `POSTGRES_URL`, or run **Pull Vercel production env** first. |
+| “Vercel CLI not found” | Install globally: `npm i -g vercel` (or use your preferred install method). |
+| Import fails on Docker | `pnpm db:up`, Docker running, port **54320** free. |
+| App still uses wrong DB after TUI | Restart the dev server; confirm `.env.local` vs `.env` (`.env.local` wins). |
+
+### Scripts
+
+| Script | What it does |
+|--------|----------------|
+| `pnpm dev` | Next.js dev server (`next dev`). |
+| `pnpm dev:tui` | Interactive dev menu (DB, Vercel env pull, Payload, tests). See [Dev TUI](#dev-tui). |
+| `pnpm build` | Production build; `postbuild` runs `next-sitemap`. |
+| `pnpm start` | Serve the production build. |
+| `pnpm dev:prod` | Remove `.next`, build, then `start` (prod-style smoke test). |
+| `pnpm db:up` | Start Docker Postgres (`docker compose up postgres -d`). |
+| `pnpm db:down` | Stop compose stack. |
+| `pnpm generate:types` | Regenerate Payload TypeScript types after schema changes. |
+| `pnpm generate:importmap` | Regenerate `importMap.js` after changing admin components paths. |
+| `pnpm payload` | Payload CLI passthrough (e.g. `pnpm payload migrate`). |
+| `pnpm lint` / `pnpm lint:fix` | Biome check / fix. |
+| `pnpm test:int` | Vitest integration tests. |
+| `pnpm test:e2e` | Playwright E2E tests. |
+| `pnpm test` | Runs `test:int` then `test:e2e`. |
+| `pnpm ci` | `payload migrate` then `pnpm build` (typical deploy pipeline step). |
+
+After schema or component-path changes, run `generate:types` and/or `generate:importmap` as needed (see [AGENTS.md](./AGENTS.md) in this repo).
 
 ## How it works
 
@@ -211,63 +296,47 @@ Core features:
 - Redirects
 - Live preview
 
-## Development
+## Postgres, migrations, and seed
 
-To spin up this example locally, follow the [Quick Start](#quick-start). Then [Seed](#seed) the database with a few pages, posts, and projects.
+After you complete [Local development](#local-development), use the following for schema strategy and demo content. Postgres is configured via `POSTGRES_URL`; local Docker is started with `pnpm db:up` (see above).
 
 ### Working with Postgres
 
-Postgres and other SQL-based databases follow a strict schema for managing your data. In comparison to our MongoDB adapter, this means that there's a few extra steps to working with Postgres.
+Postgres enforces a strict schema. Compared to MongoDB, there are a few extra steps when evolving the schema.
 
-Note that often times when making big schema changes you can run the risk of losing data if you're not manually migrating it.
+When making large schema changes you can risk losing data if you are not migrating carefully.
 
-#### Local development
+**Local / dev:** Prefer a dedicated local or staging database. In development, the Postgres adapter typically uses `push: true`, so you can add, change, or remove fields and collections without hand-written SQL for quick iteration.
 
-Ideally we recommend running a local copy of your database so that schema updates are as fast as possible. By default the Postgres adapter has `push: true` for development environments. This will let you add, modify and remove fields and collections without needing to run any data migrations.
+**Production:** Pointing `POSTGRES_URL` at production with `push: true` is dangerous—use migrations and set `push: false` for production-style databases so the schema stays controlled.
 
-If your database is pointed to production you will want to set `push: false` otherwise you will risk losing data or having your migrations out of sync.
+### Migrations
 
-#### Migrations
+[Migrations](https://payloadcms.com/docs/database/migrations) version your schema as SQL. For deployed Postgres you create migrations locally and run them on the server before `pnpm start`.
 
-[Migrations](https://payloadcms.com/docs/database/migrations) are essentially SQL code versions that keeps track of your schema. When deploy with Postgres you will need to make sure you create and then run your migrations.
-
-Locally create a migration
+Create a migration after config changes:
 
 ```bash
 pnpm payload migrate:create
 ```
 
-This creates the migration files you will need to push alongside with your new configuration.
-
-On the server after building and before running `pnpm start` you will want to run your migrations
+Commit the generated files. On the host (or in CI), after build and before serving:
 
 ```bash
 pnpm payload migrate
 ```
 
-This command will check for any migrations that have not yet been run and try to run them and it will keep a record of migrations that have been run in the database.
-
-### Docker
-
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
-
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
-
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
+This applies pending migrations and records them in the database. The `pnpm ci` script runs `payload migrate` before `pnpm build` for deploy-style builds.
 
 ### Seed
 
-To seed the database with a few pages, posts, and projects you can click the 'seed database' link from the admin panel.
+From the admin dashboard, use **Seed the database** to load sample pages, posts, and related content.
 
-The seed script will also create a demo user for demonstration purposes only:
+The seed also creates a demo user (for demos only):
 
-- Demo Author
-  - Email: `demo-author@payloadcms.com`
-  - Password: `password`
+- Demo Author — `demo-author@payloadcms.com` / `password`
 
-> NOTICE: seeding the database is destructive because it drops your current database to populate a fresh one from the seed template. Only run this command if you are starting a new project or can afford to lose your current data.
+> **Warning:** Seeding is destructive: it replaces the current database with the seed template. Only use it on a fresh project or when you can afford to lose existing data.
 
 ## Questions
 

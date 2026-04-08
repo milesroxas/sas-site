@@ -1,22 +1,37 @@
-build
-dist / media
-node_modules
-.DS_Store
-.env
-.next
+# Dependencies
+node_modules/
+
+# Build / generated
+build/
+dist/
+.next/
 next-env.d.ts
-.vercel
+
+# Environment — secrets stay local; commit only templates
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# OS
+.DS_Store
+
+# Vercel
+.vercel/
+
+# Local tooling
+.dev-tui/
 
 # Payload default media upload directory
 public/media/
 
+# Generated public assets
 public/robots.txt
 public/sitemap*.xml
 
-
 # Playwright
-node_modules/
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+.env*.local

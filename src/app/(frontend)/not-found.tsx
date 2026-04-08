@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
+import { linkNavTransitionTypes } from '@/shared/lib/view-transition'
 
 export default function NotFound() {
   return (
@@ -10,7 +11,9 @@ export default function NotFound() {
         <p className="mb-4">This page could not be found.</p>
       </div>
       <Button asChild variant="default">
-        <Link href="/">Go home</Link>
+        <Link href="/" transitionTypes={[...linkNavTransitionTypes]}>
+          Go home
+        </Link>
       </Button>
     </div>
   )
