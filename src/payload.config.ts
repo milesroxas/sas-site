@@ -58,7 +58,7 @@ export default buildConfig({
   },
   email: resendAdapter({
     defaultFromAddress: process.env.RESEND_FROM_ADDRESS || 'noreply@example.com',
-    defaultFromName: process.env.RESEND_FROM_NAME || 'SAS',
+    defaultFromName: process.env.RESEND_FROM_NAME || 'Suits & Sandals',
     apiKey: process.env.RESEND_API_KEY || '',
   }),
   // This config helps us configure global or default features that the other editors can inherit
