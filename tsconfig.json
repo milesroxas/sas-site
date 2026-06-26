@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
     "strict": true,
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
     "esModuleInterop": true,
     "target": "ES2022",
     "lib": [
@@ -33,6 +31,9 @@
         "./node_modules/@types/react"
       ],
       "@/*": [
+        "./src/*"
+      ],
+      "src/*": [
         "./src/*"
       ]
     }

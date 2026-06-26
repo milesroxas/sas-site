@@ -66,12 +66,27 @@ export const PostHero: React.FC<{
           typeof heroImage !== 'string' &&
           (slug ? (
             // Shared element: receives the morph from the clicked post card's image
-            // (matching `name` in `Card`).
+            // (matching `name` in `Card`). The wrapper is a full-bleed positioned box
+            // so the view-transition snapshot has real geometry — naming the default
+            // wrapper (which collapses around the absolute `fill` image) would morph to
+            // a zero-size rect and fling the image to the corner.
             <ViewTransition name={postImageVtName(slug)} share="morph">
-              <Media fill priority imgClassName="-z-10 object-cover" resource={heroImage} />
+              <Media
+                className="absolute inset-0 -z-10"
+                fill
+                imgClassName="object-cover"
+                priority
+                resource={heroImage}
+              />
             </ViewTransition>
           ) : (
-            <Media fill priority imgClassName="-z-10 object-cover" resource={heroImage} />
+            <Media
+              className="absolute inset-0 -z-10"
+              fill
+              imgClassName="object-cover"
+              priority
+              resource={heroImage}
+            />
           ))}
         <div className="absolute pointer-events-none left-0 bottom-0 w-full h-1/2 bg-linear-to-t from-black to-transparent" />
       </div>
