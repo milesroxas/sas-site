@@ -5,7 +5,7 @@ import Link from 'next/link'
 import type React from 'react'
 import { CMSLink } from '@/components/Link'
 import type { Header as HeaderType } from '@/payload-types'
-import { linkNavTransitionTypes } from '@/shared/lib/view-transition'
+import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 
 export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const navItems = data?.navItems || []
@@ -15,7 +15,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       {navItems.map(({ link }, i) => {
         return <CMSLink key={i} {...link} appearance="link" />
       })}
-      <Link href="/search" transitionTypes={[...linkNavTransitionTypes]}>
+      <Link href="/search" transitionTypes={[...lateralNavTransitionTypes]}>
         <span className="sr-only">Search</span>
         <SearchIcon className="w-5 text-primary" />
       </Link>

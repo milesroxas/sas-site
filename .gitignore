@@ -35,3 +35,4 @@ public/sitemap*.xml
 /blob-report/
 /playwright/.cache/
 .env*.local
+.vercel

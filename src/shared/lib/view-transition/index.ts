@@ -1,6 +1,10 @@
-export { ViewTransitionBoundary } from '@/shared/ui/view-transition/ViewTransitionBoundary'
+export { DirectionalTransition } from '@/shared/ui/view-transition/DirectionalTransition'
 export {
-  linkNavTransitionTypes,
-  NAV_TRANSITION_TYPE,
-  PAGE_VIEW_TRANSITION_CLASS,
+  backNavTransitionTypes,
+  forwardNavTransitionTypes,
+  lateralNavTransitionTypes,
+  NAV_BACK,
+  NAV_FORWARD,
+  NAV_LATERAL,
+  postImageVtName,
 } from './constants'

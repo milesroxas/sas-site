@@ -1,10 +1,10 @@
 'use client'
 import Link from 'next/link'
 import type React from 'react'
-import { Fragment } from 'react'
+import { Fragment, ViewTransition } from 'react'
 import { Media } from '@/components/Media'
 import type { Post } from '@/payload-types'
-import { linkNavTransitionTypes } from '@/shared/lib/view-transition'
+import { forwardNavTransitionTypes, postImageVtName } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import useClickableCard from '@/utilities/useClickableCard'
 
@@ -39,7 +39,18 @@ export const Card: React.FC<{
     >
       <div className="relative w-full ">
         {!metaImage && <div className="">No image</div>}
-        {metaImage && typeof metaImage !== 'string' && <Media resource={metaImage} size="33vw" />}
+        {metaImage &&
+          typeof metaImage !== 'string' &&
+          (slug ? (
+            // Shared element: morphs into the post hero image on navigation. The
+            // matching `name` lives in `PostHero`. `default: 'none'` keeps the other
+            // (non-clicked) cards from cross-fading on list updates.
+            <ViewTransition default="none" name={postImageVtName(slug)} share="morph">
+              <Media resource={metaImage} size="33vw" />
+            </ViewTransition>
+          ) : (
+            <Media resource={metaImage} size="33vw" />
+          ))}
       </div>
       <div className="p-4">
         {showCategories && hasCategories && (
@@ -75,7 +86,7 @@ export const Card: React.FC<{
                 className="not-prose"
                 href={href}
                 ref={link.ref}
-                transitionTypes={[...linkNavTransitionTypes]}
+                transitionTypes={[...forwardNavTransitionTypes]}
               >
                 {titleToUse}
               </Link>

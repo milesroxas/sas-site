@@ -3,7 +3,7 @@ import { CMSLink } from '@/components/Link'
 import { Logo } from '@/components/Logo/Logo'
 import type { Footer as FooterData } from '@/payload-types'
 import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
-import { linkNavTransitionTypes } from '@/shared/lib/view-transition'
+import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 
 export async function Footer() {
@@ -12,9 +12,17 @@ export async function Footer() {
   const navItems = footerData?.navItems || []
 
   return (
-    <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
+    <footer
+      className="mt-auto border-t border-border bg-black dark:bg-card text-white"
+      // Keep the footer static during page transitions.
+      style={{ viewTransitionName: 'site-footer' }}
+    >
       <div className="container py-8 gap-8 flex flex-col md:flex-row md:justify-between">
-        <Link className="flex items-center" href="/" transitionTypes={[...linkNavTransitionTypes]}>
+        <Link
+          className="flex items-center"
+          href="/"
+          transitionTypes={[...lateralNavTransitionTypes]}
+        >
           <Logo />
         </Link>
 
@@ -23,7 +31,7 @@ export async function Footer() {
           <Link
             className="text-white/70 text-sm underline-offset-4 hover:underline"
             href="/demo/immersive"
-            transitionTypes={[...linkNavTransitionTypes]}
+            transitionTypes={[...lateralNavTransitionTypes]}
           >
             Immersive lab
           </Link>

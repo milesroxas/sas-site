@@ -2,8 +2,18 @@ import Link from 'next/link'
 import type React from 'react'
 import { Button, type ButtonProps } from '@/components/ui/button'
 import type { Page, Post } from '@/payload-types'
-import { linkNavTransitionTypes } from '@/shared/lib/view-transition'
+import {
+  backNavTransitionTypes,
+  forwardNavTransitionTypes,
+  lateralNavTransitionTypes,
+} from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
+
+const navTransitionTypesByDirection = {
+  forward: forwardNavTransitionTypes,
+  back: backNavTransitionTypes,
+  lateral: lateralNavTransitionTypes,
+} as const
 
 type CMSLinkType = {
   appearance?: 'inline' | ButtonProps['variant']
@@ -16,6 +26,8 @@ type CMSLinkType = {
     value: Page | Post | string | number
   } | null
   size?: ButtonProps['size'] | null
+  /** Spatial relationship of the destination. CMS links default to a lateral fade. */
+  transitionDirection?: 'forward' | 'back' | 'lateral'
   type?: 'custom' | 'reference' | null
   url?: string | null
 }
@@ -30,6 +42,7 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     newTab,
     reference,
     size: sizeFromProps,
+    transitionDirection = 'lateral',
     url,
   } = props
 
@@ -44,7 +57,9 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
 
   const size = appearance === 'link' ? 'clear' : sizeFromProps
   const newTabProps = newTab ? { rel: 'noopener noreferrer', target: '_blank' } : {}
-  const transitionProps = !newTab ? { transitionTypes: [...linkNavTransitionTypes] } : {}
+  const transitionProps = !newTab
+    ? { transitionTypes: [...navTransitionTypesByDirection[transitionDirection]] }
+    : {}
 
   /* Ensure we don't break any styles set by richText */
   if (appearance === 'inline') {

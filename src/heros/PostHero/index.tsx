@@ -1,13 +1,14 @@
-import React from 'react'
+import React, { ViewTransition } from 'react'
 import { formatDateTime } from 'src/utilities/formatDateTime'
 import { Media } from '@/components/Media'
 import type { Post } from '@/payload-types'
+import { postImageVtName } from '@/shared/lib/view-transition'
 import { formatAuthors } from '@/utilities/formatAuthors'
 
 export const PostHero: React.FC<{
   post: Post
 }> = ({ post }) => {
-  const { categories, heroImage, populatedAuthors, publishedAt, title } = post
+  const { categories, heroImage, populatedAuthors, publishedAt, slug, title } = post
 
   const hasAuthors =
     populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''
@@ -61,9 +62,17 @@ export const PostHero: React.FC<{
         </div>
       </div>
       <div className="min-h-[80vh] select-none">
-        {heroImage && typeof heroImage !== 'string' && (
-          <Media fill priority imgClassName="-z-10 object-cover" resource={heroImage} />
-        )}
+        {heroImage &&
+          typeof heroImage !== 'string' &&
+          (slug ? (
+            // Shared element: receives the morph from the clicked post card's image
+            // (matching `name` in `Card`).
+            <ViewTransition name={postImageVtName(slug)} share="morph">
+              <Media fill priority imgClassName="-z-10 object-cover" resource={heroImage} />
+            </ViewTransition>
+          ) : (
+            <Media fill priority imgClassName="-z-10 object-cover" resource={heroImage} />
+          ))}
         <div className="absolute pointer-events-none left-0 bottom-0 w-full h-1/2 bg-linear-to-t from-black to-transparent" />
       </div>
     </div>

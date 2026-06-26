@@ -10,7 +10,6 @@ import { Footer } from '@/Footer/Component'
 import { Header } from '@/Header/Component'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
-import { ViewTransitionBoundary } from '@/shared/lib/view-transition'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { cn } from '@/utilities/ui'
 
@@ -37,7 +36,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
 
           <Header />
-          <ViewTransitionBoundary>{children}</ViewTransitionBoundary>
+          {/* Page transitions live in (frontend)/template.tsx, which re-mounts per navigation. */}
+          {children}
           <Footer />
           <GlobalCanvasRoot />
         </Providers>
