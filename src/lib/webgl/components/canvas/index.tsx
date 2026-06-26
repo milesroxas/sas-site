@@ -25,7 +25,12 @@ export function Canvas({ children, root = false, force = false }: CanvasProps) {
   const { hasGPU } = useDeviceDetection()
   const shouldRender = root && (hasGPU || force)
 
-  const { activate, setActive, getWebGLTunnel, getDOMTunnel } = useWebGLStore()
+  // Atomic selectors: a bare useWebGLStore() subscribes this provider to the whole
+  // store, re-rendering the wrapped subtree on every active toggle (perf-zustand-selectors).
+  const activate = useWebGLStore((s) => s.activate)
+  const setActive = useWebGLStore((s) => s.setActive)
+  const getWebGLTunnel = useWebGLStore((s) => s.getWebGLTunnel)
+  const getDOMTunnel = useWebGLStore((s) => s.getDOMTunnel)
 
   const globalWebGLTunnel = shouldRender ? getWebGLTunnel() : null
   const globalDOMTunnel = shouldRender ? getDOMTunnel() : null
