@@ -90,12 +90,8 @@ export async function localDropAndCreatePayloadDb(): Promise<void> {
  * Stripping it is safe here (dump uses 0 = no timeout; omitting matches default restore behavior).
  */
 function sanitizePgDumpPlainSqlForLocalRestore(sql: string): string {
-  const dropLine = (line: string) =>
-    /^\s*SET\s+transaction_timeout\s*=/i.test(line) ? '' : line
-  return sql
-    .split('\n')
-    .map(dropLine)
-    .join('\n')
+  const dropLine = (line: string) => (/^\s*SET\s+transaction_timeout\s*=/i.test(line) ? '' : line)
+  return sql.split('\n').map(dropLine).join('\n')
 }
 
 export async function localRestorePayloadFromSqlFile(sqlPath: string): Promise<void> {

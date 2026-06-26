@@ -9,6 +9,7 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import RichText from '@/components/RichText'
 
 import { PostHero } from '@/heros/PostHero'
+import { RevealSection } from '@/shared/ui/reveal-section'
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 
@@ -60,15 +61,17 @@ export default async function Post({ params: paramsPromise }: Args) {
       <PostHero post={post} />
 
       <div className="flex flex-col items-center gap-4 pt-8">
-        <div className="container">
+        <RevealSection className="container w-full" delayMs={80}>
           <RichText className="max-w-[48rem] mx-auto" data={post.content} enableGutter={false} />
-          {post.relatedPosts && post.relatedPosts.length > 0 && (
+        </RevealSection>
+        {post.relatedPosts && post.relatedPosts.length > 0 && (
+          <RevealSection className="container w-full mt-12" delayMs={160}>
             <RelatedPosts
-              className="mt-12 max-w-[52rem] lg:grid lg:grid-cols-subgrid col-start-1 col-span-3 grid-rows-[2fr]"
+              className="max-w-[52rem] lg:grid lg:grid-cols-subgrid col-start-1 col-span-3 grid-rows-[2fr]"
               docs={post.relatedPosts.filter((post) => typeof post === 'object')}
             />
-          )}
-        </div>
+          </RevealSection>
+        )}
       </div>
     </article>
   )

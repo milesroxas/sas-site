@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -10,8 +10,11 @@
     "includes": [
       "**",
       "!**/.next",
+      "!**/.claude",
+      "!**/public",
       "!**/payload-types.ts",
       "!**/payload-generated-schema.ts",
+      "!**/importMap.js",
       "!**/.tmp",
       "!**/.git",
       "!**/.hg",
@@ -45,7 +48,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "suspicious": {
         "noArrayIndexKey": "off"
       }
@@ -54,6 +57,16 @@
   "overrides": [
     {
       "includes": ["**/globals.css"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnknownFunction": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.scss"],
       "linter": {
         "rules": {
           "correctness": {

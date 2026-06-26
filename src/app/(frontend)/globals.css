@@ -213,6 +213,56 @@
   }
 }
 
+/* Scroll-reveal sections (see shared/ui/reveal-section/RevealSection.tsx) */
+.reveal-section {
+  opacity: 0;
+  transform: translate3d(0, 1.75rem, 0);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-section[data-visible="true"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-section {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Staggered children inside a revealed section (e.g. archive grid) */
+.reveal-stagger-item {
+  opacity: 0;
+  transform: translate3d(0, 1rem, 0);
+}
+
+.reveal-section[data-visible="true"] .reveal-stagger-item {
+  animation: reveal-stagger-fade 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--stagger, 0) * 55ms);
+}
+
+@keyframes reveal-stagger-fade {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-stagger-item {
+    opacity: 1;
+    transform: none;
+    animation-name: none;
+    animation-duration: 0s;
+  }
+}
+
 html {
   opacity: 0;
 }

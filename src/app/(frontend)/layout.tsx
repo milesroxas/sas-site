@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
 import type React from 'react'
 import { AdminBar } from '@/components/AdminBar'
+import { GlobalCanvasRoot } from '@/components/GlobalCanvasRoot'
 import { Footer } from '@/Footer/Component'
 import { Header } from '@/Header/Component'
 import { Providers } from '@/providers'
@@ -38,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Header />
           <ViewTransitionBoundary>{children}</ViewTransitionBoundary>
           <Footer />
+          <GlobalCanvasRoot />
         </Providers>
       </body>
     </html>

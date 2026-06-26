@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import type { CardPostData } from '@/components/Card'
 import { CollectionArchive } from '@/components/CollectionArchive'
 import { Search } from '@/search/Component'
+import { RevealSection } from '@/shared/ui/reveal-section'
 import PageClient from './page.client'
 
 type Args = {
@@ -60,7 +61,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   return (
     <div className="pt-24 pb-24">
       <PageClient />
-      <div className="container mb-16">
+      <RevealSection className="container mb-16" delayMs={0}>
         <div className="prose dark:prose-invert max-w-none text-center">
           <h1 className="mb-8 lg:mb-16">Search</h1>
 
@@ -68,12 +69,14 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
             <Search />
           </div>
         </div>
-      </div>
+      </RevealSection>
 
       {posts.totalDocs > 0 ? (
         <CollectionArchive posts={posts.docs as CardPostData[]} />
       ) : (
-        <div className="container">No results found.</div>
+        <RevealSection className="container">
+          <p>No results found.</p>
+        </RevealSection>
       )}
     </div>
   )

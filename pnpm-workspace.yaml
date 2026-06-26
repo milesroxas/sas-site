@@ -1,0 +1,11 @@
+minimumReleaseAge: 0
+
+legacyPeerDeps: true
+enablePrePostScripts: true
+
+allowBuilds:
+  sharp: true
+  esbuild: true
+  unrs-resolver: true
+  bufferutil: false
+  utf-8-validate: false
