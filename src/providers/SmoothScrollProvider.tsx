@@ -1,7 +1,10 @@
 'use client'
 
 import type { LenisOptions } from 'lenis'
+import { useLenis } from 'lenis/react'
+import { usePathname } from 'next/navigation'
 import type React from 'react'
+import { useEffect, useRef } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { SmoothScroll } from '@/lib/interactions/smooth-scroll'
 
@@ -26,6 +29,43 @@ export const rootLenisOptions: LenisOptions = {
   prevent: (node) => shouldPreventLenisSmooth(node),
 }
 
+/**
+ * Lenis runs in `root` mode and lives in this persistent provider, so it survives
+ * navigations and keeps its previous `targetScroll`. After a push navigation Next
+ * scrolls the document to the top, but Lenis would snap the page back to the old
+ * position — leaving the new page scrolled (e.g. landing at the bottom and breaking
+ * shared-element morphs whose target is now off-screen). Reset Lenis to the top on
+ * push navigations; defer to the browser on back/forward so scroll restoration works.
+ */
+const LenisRouteReset: React.FC = () => {
+  const pathname = usePathname()
+  const lenis = useLenis()
+  const isPopNavigation = useRef(false)
+  const lastPathname = useRef(pathname)
+
+  useEffect(() => {
+    const onPopState = () => {
+      isPopNavigation.current = true
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  useEffect(() => {
+    // Only act on an actual route change (not initial mount or lenis hydration).
+    if (pathname === lastPathname.current) return
+    lastPathname.current = pathname
+
+    if (isPopNavigation.current) {
+      isPopNavigation.current = false
+      return
+    }
+    lenis?.scrollTo(0, { immediate: true, force: true })
+  }, [pathname, lenis])
+
+  return null
+}
+
 export const SmoothScrollProvider: React.FC<{
   children: React.ReactNode
 }> = ({ children }) => {
@@ -37,6 +77,7 @@ export const SmoothScrollProvider: React.FC<{
 
   return (
     <SmoothScroll root options={rootLenisOptions}>
+      <LenisRouteReset />
       {children}
     </SmoothScroll>
   )
