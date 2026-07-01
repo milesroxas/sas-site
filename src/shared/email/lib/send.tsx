@@ -3,6 +3,7 @@ import type { ReactElement } from 'react'
 import { getServerSideURL } from '@/utilities/getURL'
 import { EMAIL_BRAND } from '../config/brand'
 import { ActivationEmail } from '../templates/activation-email'
+import { InviteEmail } from '../templates/invite-email'
 import { PasswordResetEmail } from '../templates/password-reset-email'
 import { SubscriptionConfirmationEmail } from '../templates/subscription-confirmation-email'
 import { WelcomeEmail } from '../templates/welcome-email'
@@ -36,11 +37,14 @@ function brandDefaults<T extends BrandOverrides>({
   logoDarkUrl,
   ...rest
 }: T) {
-  const baseUrl = getServerSideURL()
+  // Email clients fetch images from the recipient's machine, so logo URLs must be publicly
+  // reachable — never localhost. EMAIL_ASSET_BASE_URL points at always-public hosting (Vercel
+  // Blob) so emails render correctly from any environment, including local dev.
+  const assetBaseUrl = process.env.EMAIL_ASSET_BASE_URL ?? getServerSideURL()
   return {
     companyName: companyName ?? process.env.RESEND_FROM_NAME ?? EMAIL_BRAND.companyName,
-    logoUrl: logoUrl ?? `${baseUrl}/email/logo.png`,
-    logoDarkUrl: logoDarkUrl ?? `${baseUrl}/email/logo-dark.png`,
+    logoUrl: logoUrl ?? `${assetBaseUrl}/email/logo.png`,
+    logoDarkUrl: logoDarkUrl ?? `${assetBaseUrl}/email/logo-dark.png`,
     ...rest,
   }
 }
@@ -64,6 +68,39 @@ export function sendActivationEmail({
     to,
     subject,
     email: <ActivationEmail confirmUrl={confirmUrl} {...brandDefaults(brand)} />,
+  })
+}
+
+export interface SendInviteEmailArgs extends BrandOverrides {
+  payload: Payload
+  to: string
+  inviteUrl: string
+  inviterName?: string
+  expiresIn?: string
+  subject?: string
+}
+
+export function sendInviteEmail({
+  payload,
+  to,
+  inviteUrl,
+  inviterName,
+  expiresIn,
+  subject = "You're invited to join the team",
+  ...brand
+}: SendInviteEmailArgs) {
+  return sendEmail({
+    payload,
+    to,
+    subject,
+    email: (
+      <InviteEmail
+        inviteUrl={inviteUrl}
+        inviterName={inviterName}
+        expiresIn={expiresIn}
+        {...brandDefaults(brand)}
+      />
+    ),
   })
 }
 

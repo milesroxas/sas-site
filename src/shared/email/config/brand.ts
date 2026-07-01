@@ -6,7 +6,8 @@
  */
 export const EMAIL_BRAND = {
   companyName: 'Suits & Sandals',
-  tagline: 'A boutique digital agency — the polish of a suit, the ease of sandals.',
+  tagline:
+    'We help complex organizations make sense to the people who matter. Bringing clarity, trust, and momentum to nuanced ideas.',
 } as const
 
 /**
@@ -22,6 +23,6 @@ export const EMAIL_PREVIEW = {
     { label: 'LinkedIn', href: 'https://example.com/' },
     { label: 'Dribbble', href: 'https://example.com/' },
   ],
-  addressLines: ['Suits & Sandals', '123 Studio Lane, Los Angeles, CA 90012'],
+  addressLines: ['Suits & Sandals', '240 Kent Ave, Brooklyn, NY 11249'],
   unsubscribeUrl: 'https://example.com/unsubscribe',
 }

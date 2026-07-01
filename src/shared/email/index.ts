@@ -11,16 +11,19 @@ export { emailColors, emailTailwindConfig } from './config/theme'
 export { renderEmail } from './lib/render'
 export {
   type SendActivationEmailArgs,
+  type SendInviteEmailArgs,
   type SendPasswordResetEmailArgs,
   type SendSubscriptionConfirmationEmailArgs,
   type SendWelcomeEmailArgs,
   sendActivationEmail,
   sendEmail,
+  sendInviteEmail,
   sendPasswordResetEmail,
   sendSubscriptionConfirmationEmail,
   sendWelcomeEmail,
 } from './lib/send'
 export { ActivationEmail, type ActivationEmailProps } from './templates/activation-email'
+export { InviteEmail, type InviteEmailProps } from './templates/invite-email'
 export {
   PasswordResetEmail,
   type PasswordResetEmailProps,

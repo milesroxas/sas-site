@@ -1,5 +1,5 @@
-import clsx from 'clsx'
 import Image from 'next/image'
+import { cn } from '@/utilities/ui'
 
 interface Props {
   className?: string
@@ -7,8 +7,7 @@ interface Props {
   priority?: 'auto' | 'high' | 'low'
 }
 
-const LOGO_SRC =
-  'https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-logo-light.svg'
+const LOGO_SRC = '/logo-type.svg'
 
 export const Logo = (props: Props) => {
   const { loading: loadingFromProps, priority: priorityFromProps, className } = props
@@ -18,14 +17,14 @@ export const Logo = (props: Props) => {
 
   return (
     <Image
-      alt="Payload Logo"
-      className={clsx('max-w-[9.375rem] w-full h-[34px]', className)}
+      alt="Logo"
+      className={cn('max-w-88 w-full h-auto', className)}
       decoding="async"
-      height={34}
+      height={28}
       loading={loading}
       priority={priority === 'high'}
       src={LOGO_SRC}
-      width={193}
+      width={352}
     />
   )
 }

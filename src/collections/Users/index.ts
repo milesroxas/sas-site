@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '../../access/authenticated'
+import { inviteEndpoint } from './endpoints/invite'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -12,10 +13,14 @@ export const Users: CollectionConfig = {
     update: authenticated,
   },
   admin: {
+    components: {
+      beforeListTable: ['@/collections/Users/components/InviteUserButton#InviteUserButton'],
+    },
     defaultColumns: ['name', 'email'],
     useAsTitle: 'name',
   },
   auth: true,
+  endpoints: [inviteEndpoint],
   fields: [
     {
       name: 'name',

@@ -23,7 +23,7 @@ export async function Footer() {
           href="/"
           transitionTypes={[...lateralNavTransitionTypes]}
         >
-          <Logo />
+          <Logo className="invert" />
         </Link>
 
         <div className="flex flex-col-reverse items-start md:flex-row gap-4 md:items-center">
