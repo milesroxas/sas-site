@@ -29,6 +29,10 @@ public/media/
 public/robots.txt
 public/sitemap*.xml
 
+# Storybook
+storybook-static/
+*storybook.log
+
 # Playwright
 /test-results/
 /playwright-report/
