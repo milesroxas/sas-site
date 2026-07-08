@@ -23,9 +23,11 @@ import { emailTailwindConfig } from '../config/theme'
 export interface EmailBrandProps {
   /** Brand / product name shown in the header and footer. */
   companyName: string
-  /** Absolute URL of a PNG logo for light surfaces. Falls back to a text wordmark (email clients don't render SVG/WEBP). */
+  /** Absolute URL of the square PNG logomark shown on the header's left. Its baked-in navy tile works on light and dark surfaces, so no dark variant exists. */
+  logomarkUrl?: string
+  /** Absolute URL of a PNG wordmark for light surfaces, shown on the header's right. Falls back to a text wordmark (email clients don't render SVG/WEBP). */
   logoUrl?: string
-  /** Absolute URL of a PNG logo for dark mode (white wordmark). Shown via `prefers-color-scheme: dark`. */
+  /** Absolute URL of a PNG wordmark for dark mode (white wordmark). Shown via `prefers-color-scheme: dark`. */
   logoDarkUrl?: string
   /** Short brand tagline shown in the footer. */
   tagline?: string
@@ -52,8 +54,11 @@ export interface TransactionalEmailProps extends EmailBrandProps {
   children: ReactNode
 }
 
-/** Logo display size — wordmark source is 352×28. */
+/** Wordmark display size — source is 352×28. */
 const LOGO = { width: 140, height: 11 } as const
+
+/** Logomark display size — source is a 128×128 render of the square tile. */
+const LOGOMARK = { width: 32, height: 32 } as const
 
 /**
  * Shared transactional email shell (FSD: **shared/ui**), ported from React Email's `01-Barebone`.
@@ -64,6 +69,7 @@ const LOGO = { width: 140, height: 11 } as const
  */
 export const TransactionalEmail = ({
   companyName,
+  logomarkUrl,
   logoUrl,
   logoDarkUrl,
   tagline,
@@ -90,17 +96,34 @@ export const TransactionalEmail = ({
           <Section className="email-panel bg-bg px-6 py-4">
             <Section className="mb-3 px-6">
               <Row>
-                <Column className="py-[7px] align-middle">
+                {logomarkUrl ? (
+                  // Square tile with its own background; decorative (the wordmark carries the name).
+                  <Column className="py-[7px] align-middle">
+                    <Img
+                      src={logomarkUrl}
+                      alt=""
+                      width={LOGOMARK.width}
+                      height={LOGOMARK.height}
+                      className="block"
+                    />
+                  </Column>
+                ) : null}
+                <Column
+                  align={logomarkUrl ? 'right' : undefined}
+                  className={`py-[7px] align-middle ${logomarkUrl ? 'text-right' : 'text-left'}`}
+                >
                   {logoUrl ? (
-                    // Wordmark (source 352×28); a duplicate company-name label is omitted. The dark
-                    // variant is hidden by default and revealed by the dark-mode media query.
+                    // Wordmark (source 352×28); a duplicate company-name label is omitted. Both
+                    // variants render inline-block so the cell's right-alignment applies; the dark
+                    // one is hidden by default and revealed by the dark-mode media query.
                     <>
                       <Img
                         src={logoUrl}
                         alt={companyName}
                         width={LOGO.width}
                         height={LOGO.height}
-                        className="email-logo-light block"
+                        className="email-logo-light"
+                        style={{ display: 'inline-block' }}
                       />
                       {logoDarkUrl ? (
                         <Img
@@ -114,7 +137,7 @@ export const TransactionalEmail = ({
                       ) : null}
                     </>
                   ) : (
-                    <Text className="email-fg text-16 text-fg m-0 text-left font-sans font-semibold">
+                    <Text className="email-fg text-16 text-fg m-0 font-sans font-semibold">
                       {companyName}
                     </Text>
                   )}

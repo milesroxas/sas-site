@@ -18,7 +18,7 @@ const DARK_MODE_CSS = `
   .email-fg-3 { color: #8C8F95 !important; }
   .email-btn { background-color: #F4F5F7 !important; color: #14171E !important; }
   .email-logo-light { display: none !important; }
-  .email-logo-dark { display: block !important; }
+  .email-logo-dark { display: inline-block !important; }
 }
 `
 

@@ -33,6 +33,7 @@ type BrandOverrides = Partial<EmailBrandProps>
 /** Fill brand chrome with Suits & Sandals defaults: env from-name and the hosted logo PNGs. */
 function brandDefaults<T extends BrandOverrides>({
   companyName,
+  logomarkUrl,
   logoUrl,
   logoDarkUrl,
   ...rest
@@ -43,6 +44,7 @@ function brandDefaults<T extends BrandOverrides>({
   const assetBaseUrl = process.env.EMAIL_ASSET_BASE_URL ?? getServerSideURL()
   return {
     companyName: companyName ?? process.env.RESEND_FROM_NAME ?? EMAIL_BRAND.companyName,
+    logomarkUrl: logomarkUrl ?? `${assetBaseUrl}/email/logomark.png`,
     logoUrl: logoUrl ?? `${assetBaseUrl}/email/logo.png`,
     logoDarkUrl: logoDarkUrl ?? `${assetBaseUrl}/email/logo-dark.png`,
     ...rest,

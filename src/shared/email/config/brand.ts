@@ -12,10 +12,11 @@ export const EMAIL_BRAND = {
 
 /**
  * Sample chrome used only by template `PreviewProps`. At send time the caller supplies real values
- * — `logoUrl` defaults to the hosted `/email/logo.png`, and the footer hides any field omitted.
- * The preview `logoUrl` points at the copy served by the `email dev` server from `static/`.
+ * — logo URLs default to the hosted `/email/*.png`, and the footer hides any field omitted.
+ * The preview URLs point at the copies served by the `email dev` server from `static/`.
  */
 export const EMAIL_PREVIEW = {
+  logomarkUrl: '/static/logomark.png',
   logoUrl: '/static/logo.png',
   logoDarkUrl: '/static/logo-dark.png',
   socialLinks: [
