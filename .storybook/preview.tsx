@@ -20,6 +20,9 @@ const preview: Preview = {
     }),
   ],
   parameters: {
+    // The app uses the App Router; components calling next/navigation hooks
+    // (e.g. useRouter in Card, FormBlock) need the app-router mock.
+    nextjs: { appDirectory: true },
     // Backgrounds are owned by the theme switcher + `bg-background` on <body>.
     backgrounds: { disable: true },
     controls: {
