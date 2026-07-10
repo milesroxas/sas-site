@@ -1,6 +1,6 @@
 'use client'
 
-import { SearchIcon } from 'lucide-react'
+import { IconSearch } from '@tabler/icons-react'
 import Link from 'next/link'
 import type React from 'react'
 import { CMSLink } from '@/components/Link'
@@ -17,7 +17,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       })}
       <Link href="/search" transitionTypes={[...lateralNavTransitionTypes]}>
         <span className="sr-only">Search</span>
-        <SearchIcon className="w-5 text-primary" />
+        <IconSearch className="size-5 text-primary" />
       </Link>
     </nav>
   )

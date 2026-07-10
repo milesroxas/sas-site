@@ -3,7 +3,7 @@ import type React from 'react'
 import type { FieldErrorsImpl, FieldValues, UseFormRegister } from 'react-hook-form'
 import { useFormContext } from 'react-hook-form'
 import { Checkbox as CheckboxUi } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
+import { Field, FieldLabel } from '@/components/ui/field'
 
 import { FieldError } from '../Error'
 import { Width } from '../Width'
@@ -16,11 +16,13 @@ export const Checkbox: React.FC<
 > = ({ name, defaultValue, errors, label, register, required, width }) => {
   const props = register(name, { required: required })
   const { setValue } = useFormContext()
+  const hasError = Boolean(errors[name])
 
   return (
     <Width width={width}>
-      <div className="flex items-center gap-2">
+      <Field data-invalid={hasError ? true : undefined} orientation="horizontal">
         <CheckboxUi
+          aria-invalid={hasError || undefined}
           defaultChecked={defaultValue}
           id={name}
           {...props}
@@ -28,16 +30,16 @@ export const Checkbox: React.FC<
             setValue(props.name, checked)
           }}
         />
-        <Label htmlFor={name}>
+        <FieldLabel htmlFor={name}>
           {required && (
-            <span className="required">
+            <span className="text-destructive">
               * <span className="sr-only">(required)</span>
             </span>
           )}
           {label}
-        </Label>
-      </div>
-      {errors[name] && <FieldError name={name} />}
+        </FieldLabel>
+      </Field>
+      {hasError && <FieldError name={name} />}
     </Width>
   )
 }

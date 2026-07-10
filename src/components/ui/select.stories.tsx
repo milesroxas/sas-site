@@ -41,9 +41,11 @@ export const Default: Story = {
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="apple">Apple</SelectItem>
-        <SelectItem value="banana">Banana</SelectItem>
-        <SelectItem value="cherry">Cherry</SelectItem>
+        <SelectGroup>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+          <SelectItem value="cherry">Cherry</SelectItem>
+        </SelectGroup>
       </SelectContent>
     </Select>
   ),
@@ -80,7 +82,9 @@ export const Disabled: Story = {
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="apple">Apple</SelectItem>
+        <SelectGroup>
+          <SelectItem value="apple">Apple</SelectItem>
+        </SelectGroup>
       </SelectContent>
     </Select>
   ),

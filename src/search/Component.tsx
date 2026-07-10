@@ -2,8 +2,8 @@
 import { useRouter } from 'next/navigation'
 import type React from 'react'
 import { useEffect, useState } from 'react'
+import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useDebounce } from '@/utilities/useDebounce'
 
 export const Search: React.FC = () => {
@@ -23,16 +23,18 @@ export const Search: React.FC = () => {
           e.preventDefault()
         }}
       >
-        <Label htmlFor="search" className="sr-only">
-          Search
-        </Label>
-        <Input
-          id="search"
-          onChange={(event) => {
-            setValue(event.target.value)
-          }}
-          placeholder="Search"
-        />
+        <Field>
+          <FieldLabel className="sr-only" htmlFor="search">
+            Search
+          </FieldLabel>
+          <Input
+            id="search"
+            onChange={(event) => {
+              setValue(event.target.value)
+            }}
+            placeholder="Search"
+          />
+        </Field>
         <button type="submit" className="sr-only">
           submit
         </button>

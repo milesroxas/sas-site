@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { Mail } from 'lucide-react'
+import { IconMail } from '@tabler/icons-react'
 import { Button } from './button'
+import { Spinner } from './spinner'
 
 const meta = {
   title: 'UI/Button',
@@ -14,11 +15,11 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
+      options: ['default', 'outline', 'secondary', 'ghost', 'destructive', 'link'],
     },
     size: {
       control: 'select',
-      options: ['clear', 'default', 'sm', 'lg', 'icon'],
+      options: ['default', 'xs', 'sm', 'lg', 'icon', 'icon-xs', 'icon-sm', 'icon-lg', 'clear'],
     },
     asChild: {
       table: { disable: true },
@@ -52,6 +53,10 @@ export const Link: Story = {
   args: { variant: 'link' },
 }
 
+export const ExtraSmall: Story = {
+  args: { size: 'xs' },
+}
+
 export const Small: Story = {
   args: { size: 'sm' },
 }
@@ -63,7 +68,7 @@ export const Large: Story = {
 export const Icon: Story = {
   args: {
     'aria-label': 'Send email',
-    children: <Mail />,
+    children: <IconMail />,
     size: 'icon',
   },
 }
@@ -72,11 +77,27 @@ export const WithIcon: Story = {
   args: {
     children: (
       <>
-        <Mail />
+        <IconMail data-icon="inline-start" />
         Send email
       </>
     ),
   },
+}
+
+export const Loading: Story = {
+  args: {
+    disabled: true,
+    children: (
+      <>
+        <Spinner data-icon="inline-start" />
+        Sending…
+      </>
+    ),
+  },
+}
+
+export const Clear: Story = {
+  args: { size: 'clear', variant: 'link' },
 }
 
 export const Disabled: Story = {

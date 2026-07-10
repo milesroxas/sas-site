@@ -3,6 +3,13 @@ import Link from 'next/link'
 import type React from 'react'
 import { Fragment, ViewTransition } from 'react'
 import { Media } from '@/components/Media'
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Card as CardUi,
+} from '@/components/ui/card'
 import type { Post } from '@/payload-types'
 import { forwardNavTransitionTypes, postImageVtName } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
@@ -18,7 +25,7 @@ export const Card: React.FC<{
   showCategories?: boolean
   title?: string
 }> = (props) => {
-  const { card, link } = useClickableCard({})
+  const { card, link } = useClickableCard<HTMLDivElement>({})
   const { className, doc, relationTo, showCategories, title: titleFromProps } = props
 
   const { slug, categories, meta, title } = doc || {}
@@ -30,15 +37,9 @@ export const Card: React.FC<{
   const href = `/${relationTo}/${slug}`
 
   return (
-    <article
-      className={cn(
-        'border border-border rounded-lg overflow-hidden bg-card hover:cursor-pointer',
-        className,
-      )}
-      ref={card.ref}
-    >
-      <div className="relative w-full ">
-        {!metaImage && <div className="">No image</div>}
+    <CardUi className={cn('cursor-pointer pt-0', className)} ref={card.ref}>
+      <div className="relative w-full">
+        {!metaImage && <div>No image</div>}
         {metaImage &&
           typeof metaImage !== 'string' &&
           (slug ? (
@@ -52,49 +53,47 @@ export const Card: React.FC<{
             <Media resource={metaImage} size="33vw" />
           ))}
       </div>
-      <div className="p-4">
+      <CardHeader>
         {showCategories && hasCategories && (
-          <div className="uppercase text-sm mb-4">
-            {showCategories && hasCategories && (
-              <div>
-                {categories?.map((category, index) => {
-                  if (typeof category === 'object') {
-                    const { title: titleFromCategory } = category
+          <CardDescription className="uppercase">
+            {categories?.map((category, index) => {
+              if (typeof category === 'object') {
+                const { title: titleFromCategory } = category
 
-                    const categoryTitle = titleFromCategory || 'Untitled category'
+                const categoryTitle = titleFromCategory || 'Untitled category'
 
-                    const isLast = index === categories.length - 1
+                const isLast = index === categories.length - 1
 
-                    return (
-                      <Fragment key={index}>
-                        {categoryTitle}
-                        {!isLast && <Fragment>, &nbsp;</Fragment>}
-                      </Fragment>
-                    )
-                  }
+                return (
+                  <Fragment key={index}>
+                    {categoryTitle}
+                    {!isLast && <Fragment>, &nbsp;</Fragment>}
+                  </Fragment>
+                )
+              }
 
-                  return null
-                })}
-              </div>
-            )}
-          </div>
+              return null
+            })}
+          </CardDescription>
         )}
         {titleToUse && (
-          <div className="prose">
-            <h3>
-              <Link
-                className="not-prose"
-                href={href}
-                ref={link.ref}
-                transitionTypes={[...forwardNavTransitionTypes]}
-              >
-                {titleToUse}
-              </Link>
-            </h3>
-          </div>
+          <CardTitle>
+            <Link
+              className="hover:underline"
+              href={href}
+              ref={link.ref}
+              transitionTypes={[...forwardNavTransitionTypes]}
+            >
+              {titleToUse}
+            </Link>
+          </CardTitle>
         )}
-        {description && <div className="mt-2">{description && <p>{sanitizedDescription}</p>}</div>}
-      </div>
-    </article>
+      </CardHeader>
+      {description && (
+        <CardContent>
+          <p>{sanitizedDescription}</p>
+        </CardContent>
+      )}
+    </CardUi>
   )
 }

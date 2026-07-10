@@ -83,8 +83,11 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         .map(([, value]) => `(max-width: ${value}px) ${value * 2}w`)
         .join(', ')
 
+  // `fill` images position against their direct parent (next/image requires it be
+  // positioned). The <picture> must therefore be the containing block, spanning the
+  // caller's positioned wrapper.
   return (
-    <picture className={cn(pictureClassName)}>
+    <picture className={cn(fill && 'absolute inset-0', pictureClassName)}>
       <NextImage
         alt={alt || ''}
         className={cn(imgClassName)}

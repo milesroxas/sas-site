@@ -1,32 +1,27 @@
 'use client'
-import { CopyIcon } from '@payloadcms/ui/icons/Copy'
+import { IconCheck, IconCopy } from '@tabler/icons-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 
 export function CopyButton({ code }: { code: string }) {
-  const [text, setText] = useState('Copy')
-
-  function updateCopyStatus() {
-    if (text === 'Copy') {
-      setText(() => 'Copied!')
-      setTimeout(() => {
-        setText(() => 'Copy')
-      }, 1000)
-    }
-  }
+  const [copied, setCopied] = useState(false)
 
   return (
-    <div className="flex justify-end align-middle">
+    <div className="flex justify-end">
       <Button
-        className="flex gap-1"
-        variant={'secondary'}
+        variant="secondary"
         onClick={async () => {
           await navigator.clipboard.writeText(code)
-          updateCopyStatus()
+          if (!copied) {
+            setCopied(true)
+            setTimeout(() => {
+              setCopied(false)
+            }, 1000)
+          }
         }}
       >
-        <p>{text}</p>
-        <CopyIcon />
+        {copied ? 'Copied!' : 'Copy'}
+        {copied ? <IconCheck data-icon="inline-end" /> : <IconCopy data-icon="inline-end" />}
       </Button>
     </div>
   )

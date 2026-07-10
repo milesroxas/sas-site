@@ -1,6 +1,7 @@
+import type { VariantProps } from 'class-variance-authority'
 import Link from 'next/link'
 import type React from 'react'
-import { Button, type ButtonProps } from '@/components/ui/button'
+import { Button, type buttonVariants } from '@/components/ui/button'
 import type { Page, Post } from '@/payload-types'
 import {
   backNavTransitionTypes,
@@ -15,8 +16,10 @@ const navTransitionTypesByDirection = {
   lateral: lateralNavTransitionTypes,
 } as const
 
+type ButtonVariants = VariantProps<typeof buttonVariants>
+
 type CMSLinkType = {
-  appearance?: 'inline' | ButtonProps['variant']
+  appearance?: 'inline' | ButtonVariants['variant']
   children?: React.ReactNode
   className?: string
   label?: string | null
@@ -25,7 +28,7 @@ type CMSLinkType = {
     relationTo: 'pages' | 'posts'
     value: Page | Post | string | number
   } | null
-  size?: ButtonProps['size'] | null
+  size?: ButtonVariants['size'] | null
   /** Spatial relationship of the destination. CMS links default to a lateral fade. */
   transitionDirection?: 'forward' | 'back' | 'lateral'
   type?: 'custom' | 'reference' | null

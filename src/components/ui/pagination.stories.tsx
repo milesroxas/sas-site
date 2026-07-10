@@ -57,3 +57,26 @@ export const Default: Story = {
     </Pagination>
   ),
 }
+
+export const FirstPage: Story = {
+  render: (args) => (
+    <Pagination {...args}>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious disabled type="button" />
+        </PaginationItem>
+        <PaginationItem>
+          <PaginationLink isActive type="button">
+            1
+          </PaginationLink>
+        </PaginationItem>
+        <PaginationItem>
+          <PaginationLink type="button">2</PaginationLink>
+        </PaginationItem>
+        <PaginationItem>
+          <PaginationNext type="button" />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  ),
+}

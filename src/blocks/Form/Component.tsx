@@ -1,13 +1,18 @@
 'use client'
 import type { FormFieldBlock, Form as FormType } from '@payloadcms/plugin-form-builder/types'
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
+import { IconExclamationCircle } from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 import type React from 'react'
 import type { ComponentType } from 'react'
 import { useCallback, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import RichText from '@/components/RichText'
+import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { FieldGroup } from '@/components/ui/field'
+import { Spinner } from '@/components/ui/spinner'
 import { getClientSideURL } from '@/utilities/getURL'
 import { fields } from './fields'
 
@@ -117,28 +122,39 @@ export const FormBlock: React.FC<
   )
 
   return (
-    <div className="container lg:max-w-[48rem]">
+    <div className="container lg:max-w-3xl">
       {enableIntro && introContent && !hasSubmitted && (
         <RichText className="mb-8 lg:mb-12" data={introContent} enableGutter={false} />
       )}
-      <div className="p-4 lg:p-6 border border-border rounded-[0.8rem]">
-        <FormProvider {...formMethods}>
-          {!isLoading && hasSubmitted && confirmationType === 'message' && (
-            <RichText data={confirmationMessage} />
-          )}
-          {isLoading && !hasSubmitted && <p>Loading, please wait...</p>}
-          {error && <div>{`${error.status || '500'}: ${error.message || ''}`}</div>}
-          {!hasSubmitted && (
-            <form id={formID} onSubmit={handleSubmit(onSubmit)}>
-              <div className="mb-4 last:mb-0">
-                {formFromProps?.fields?.map((field, index) => {
-                  const Field = fields?.[field.blockType as keyof typeof fields] as
-                    | ComponentType<FormFieldRendererProps>
-                    | undefined
-                  if (Field) {
-                    return (
-                      <div className="mb-6 last:mb-0" key={index}>
+      <Card>
+        <CardContent className="flex flex-col gap-6">
+          <FormProvider {...formMethods}>
+            {!isLoading && hasSubmitted && confirmationType === 'message' && (
+              <RichText data={confirmationMessage} />
+            )}
+            {isLoading && !hasSubmitted && (
+              <div className="flex items-center gap-2">
+                <Spinner />
+                <p>Loading, please wait...</p>
+              </div>
+            )}
+            {error && (
+              <Alert variant="destructive">
+                <IconExclamationCircle />
+                <AlertTitle>{`${error.status || '500'}: ${error.message || ''}`}</AlertTitle>
+              </Alert>
+            )}
+            {!hasSubmitted && (
+              <form className="flex flex-col gap-6" id={formID} onSubmit={handleSubmit(onSubmit)}>
+                <FieldGroup>
+                  {formFromProps?.fields?.map((field, index) => {
+                    const Field = fields?.[field.blockType as keyof typeof fields] as
+                      | ComponentType<FormFieldRendererProps>
+                      | undefined
+                    if (Field) {
+                      return (
                         <Field
+                          key={index}
                           form={formFromProps}
                           {...field}
                           {...formMethods}
@@ -146,20 +162,20 @@ export const FormBlock: React.FC<
                           errors={errors}
                           register={register}
                         />
-                      </div>
-                    )
-                  }
-                  return null
-                })}
-              </div>
+                      )
+                    }
+                    return null
+                  })}
+                </FieldGroup>
 
-              <Button form={formID} type="submit" variant="default">
-                {submitButtonLabel}
-              </Button>
-            </form>
-          )}
-        </FormProvider>
-      </div>
+                <Button className="self-start" form={formID} type="submit">
+                  {submitButtonLabel}
+                </Button>
+              </form>
+            )}
+          </FormProvider>
+        </CardContent>
+      </Card>
     </div>
   )
 }

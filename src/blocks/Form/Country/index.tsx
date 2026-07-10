@@ -2,10 +2,11 @@ import type { CountryField } from '@payloadcms/plugin-form-builder/types'
 import type React from 'react'
 import type { Control, FieldErrorsImpl } from 'react-hook-form'
 import { Controller } from 'react-hook-form'
-import { Label } from '@/components/ui/label'
+import { Field, FieldLabel } from '@/components/ui/field'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -21,44 +22,49 @@ export const Country: React.FC<
     errors: Partial<FieldErrorsImpl>
   }
 > = ({ name, control, errors, label, required, width }) => {
+  const hasError = Boolean(errors[name])
+
   return (
     <Width width={width}>
-      <Label className="" htmlFor={name}>
-        {label}
+      <Field data-invalid={hasError ? true : undefined}>
+        <FieldLabel htmlFor={name}>
+          {label}
+          {required && (
+            <span className="text-destructive">
+              * <span className="sr-only">(required)</span>
+            </span>
+          )}
+        </FieldLabel>
+        <Controller
+          control={control}
+          defaultValue=""
+          name={name}
+          render={({ field: { onChange, value } }) => {
+            const controlledValue = countryOptions.find((t) => t.value === value)
 
-        {required && (
-          <span className="required">
-            * <span className="sr-only">(required)</span>
-          </span>
-        )}
-      </Label>
-      <Controller
-        control={control}
-        defaultValue=""
-        name={name}
-        render={({ field: { onChange, value } }) => {
-          const controlledValue = countryOptions.find((t) => t.value === value)
-
-          return (
-            <Select onValueChange={(val) => onChange(val)} value={controlledValue?.value}>
-              <SelectTrigger className="w-full" id={name}>
-                <SelectValue placeholder={label} />
-              </SelectTrigger>
-              <SelectContent>
-                {countryOptions.map(({ label, value }) => {
-                  return (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  )
-                })}
-              </SelectContent>
-            </Select>
-          )
-        }}
-        rules={{ required }}
-      />
-      {errors[name] && <FieldError name={name} />}
+            return (
+              <Select onValueChange={(val) => onChange(val)} value={controlledValue?.value}>
+                <SelectTrigger aria-invalid={hasError || undefined} className="w-full" id={name}>
+                  <SelectValue placeholder={label} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {countryOptions.map(({ label, value }) => {
+                      return (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            )
+          }}
+          rules={{ required }}
+        />
+        {hasError && <FieldError name={name} />}
+      </Field>
     </Width>
   )
 }

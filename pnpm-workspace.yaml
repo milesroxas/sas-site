@@ -1,7 +1,5 @@
-minimumReleaseAge: 0
-
-legacyPeerDeps: true
-enablePrePostScripts: true
+# pnpm project settings (https://pnpm.io/settings). Everything else is
+# pnpm 11 defaults, including the 24h minimumReleaseAge cooldown.
 
 allowBuilds:
   sharp: true
