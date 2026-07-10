@@ -2,6 +2,7 @@
 
 import { ImmersiveShell, WebGLTunnel, WebGlBackdropScene } from '@/features/immersive'
 import { DemoSection } from './demo-section'
+import { FloatingCardsPlayground } from './floating-cards-playground'
 import { RefractionPlayground } from './refraction-playground'
 import { ScramblePlayground } from './scramble-playground'
 
@@ -56,6 +57,13 @@ export function ImmersiveDemoPage() {
           description="Cursor-driven lens shader over an image: refraction, chromatic dispersion, noise distortion, and velocity smear. Upload your own image via the GUI."
         >
           <RefractionPlayground />
+        </DemoSection>
+
+        <DemoSection
+          title="Floating cards"
+          description="R3F screenshot cards tilted on Y, drifting in a slow loop. Hover a featured-work item to stagger them in from a blank scene; leave to animate them back out."
+        >
+          <FloatingCardsPlayground />
         </DemoSection>
 
         <div className="h-24" />
