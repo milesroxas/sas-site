@@ -21,6 +21,7 @@ next-env.d.ts
 
 # Local tooling
 .dev-tui/
+.claude/worktrees/
 
 # Payload default media upload directory
 public/media/
