@@ -2,6 +2,7 @@
 
 import { ImmersiveShell, WebGLTunnel, WebGlBackdropScene } from '@/features/immersive'
 import { DemoSection } from './demo-section'
+import { RefractionPlayground } from './refraction-playground'
 import { ScramblePlayground } from './scramble-playground'
 
 /**
@@ -48,6 +49,13 @@ export function ImmersiveDemoPage() {
           description="GSAP-driven scramble between two sentences, with a chroma-split shader panel mirroring the text during transitions."
         >
           <ScramblePlayground />
+        </DemoSection>
+
+        <DemoSection
+          title="Refraction hover"
+          description="Cursor-driven lens shader over an image: refraction, chromatic dispersion, noise distortion, and velocity smear. Upload your own image via the GUI."
+        >
+          <RefractionPlayground />
         </DemoSection>
 
         <div className="h-24" />
