@@ -652,6 +652,12 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind v4 preflight sets buttons to cursor: default; restore pointer
+     for enabled interactive elements (v3 behavior). */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 @plugin "@tailwindcss/typography";
