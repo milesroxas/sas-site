@@ -1,6 +1,8 @@
 'use client'
 
 import { ImmersiveShell, WebGLTunnel, WebGlBackdropScene } from '@/features/immersive'
+import { DemoSection } from './demo-section'
+import { ScramblePlayground } from './scramble-playground'
 
 /**
  * Full-page demo: GlobalCanvas + tunnels. Lenis runs site-wide via SmoothScrollProvider.
@@ -12,7 +14,7 @@ export function ImmersiveDemoPage() {
         <WebGlBackdropScene />
       </WebGLTunnel>
 
-      <div className="container max-w-2xl py-24 space-y-8 relative z-10">
+      <div className="container max-w-4xl py-24 space-y-8 relative z-10">
         <header className="space-y-3">
           <p className="text-sm font-medium text-muted-foreground">FSD · widgets/immersive-demo</p>
           <h1 className="text-4xl font-semibold tracking-tight">Immersive stack</h1>
@@ -40,6 +42,13 @@ export function ImmersiveDemoPage() {
             </li>
           </ul>
         </section>
+
+        <DemoSection
+          title="Text scramble"
+          description="GSAP-driven scramble between two sentences, with a chroma-split shader panel mirroring the text during transitions."
+        >
+          <ScramblePlayground />
+        </DemoSection>
 
         <div className="h-24" />
 
