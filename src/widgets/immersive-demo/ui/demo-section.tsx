@@ -13,6 +13,23 @@ export type DemoSectionProps = {
 }
 
 /**
+ * leva ships fixed px radii (xs 2 / sm 3 / lg 10) and a heavy root shadow;
+ * remap them to the site's radius tokens so the GUI reads as part of the
+ * design system — panel corners match sibling inner surfaces (rounded-md),
+ * controls match the smallest site radius.
+ */
+const levaTheme = {
+  radii: {
+    xs: 'var(--radius-sm)',
+    sm: 'var(--radius-sm)',
+    lg: 'var(--radius-md)',
+  },
+  shadows: {
+    level1: 'none',
+  },
+}
+
+/**
  * Shell for one demo on the immersive route: header with a GUI toggle button,
  * an isolated leva store, and an inline panel that reveals on demand. Demo
  * content declares its controls with `useDemoControls`, which binds to this
@@ -46,7 +63,7 @@ export function DemoSection({ title, description, children }: DemoSectionProps) 
         </div>
         {guiOpen && (
           <aside aria-label={`${title} controls`}>
-            <LevaPanel store={store} fill flat titleBar={false} hideCopyButton />
+            <LevaPanel store={store} theme={levaTheme} fill titleBar={false} hideCopyButton />
           </aside>
         )}
       </div>
