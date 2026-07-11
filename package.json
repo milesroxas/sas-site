@@ -19,7 +19,7 @@
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm install",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
-    "chromatic": "cross-env NODE_OPTIONS=--no-deprecation chromatic",
+    "chromatic": "cross-env NODE_OPTIONS=--no-deprecation chromatic --build-script-name=storybook:build",
     "storybook": "cross-env NODE_OPTIONS=--no-deprecation storybook dev -p 6006",
     "storybook:build": "cross-env NODE_OPTIONS=--no-deprecation storybook build",
     "test": "pnpm run test:int && pnpm run test:e2e",
