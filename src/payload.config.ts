@@ -6,11 +6,19 @@ import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { buildConfig, type PayloadRequest } from 'payload'
 import sharp from 'sharp'
 import { defaultLexical } from '@/fields/defaultLexical'
+import { AssetLibraries } from './collections/AssetLibraries'
+import { Capabilities } from './collections/Capabilities'
+import { CaseStudies } from './collections/CaseStudies'
 import { Categories } from './collections/Categories'
+import { Industries } from './collections/Industries'
 import { Media } from './collections/Media'
+import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
+import { Projects } from './collections/Projects'
+import { Testimonials } from './collections/Testimonials'
 import { Users } from './collections/Users'
+import { WorkPages } from './collections/WorkPages'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
@@ -76,7 +84,21 @@ export default buildConfig({
       connectionString: process.env.POSTGRES_URL || '',
     },
   }),
-  collections: [Pages, Posts, Media, Categories, Users],
+  collections: [
+    Pages,
+    Posts,
+    Organizations,
+    Projects,
+    CaseStudies,
+    WorkPages,
+    Testimonials,
+    AssetLibraries,
+    Capabilities,
+    Industries,
+    Media,
+    Categories,
+    Users,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   plugins: [
     ...plugins,

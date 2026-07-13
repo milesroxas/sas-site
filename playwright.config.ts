@@ -6,6 +6,8 @@ import { defineConfig, devices } from '@playwright/test'
  */
 import 'dotenv/config'
 
+const postgresURL = process.env.POSTGRES_URL || 'postgresql://postgres@127.0.0.1:54320/payload'
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -35,6 +37,9 @@ export default defineConfig({
   ],
   webServer: {
     command: 'pnpm dev',
+    env: {
+      POSTGRES_URL: postgresURL,
+    },
     reuseExistingServer: true,
     url: 'http://localhost:3001',
   },

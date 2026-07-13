@@ -23,7 +23,7 @@
     "storybook": "cross-env NODE_OPTIONS=--no-deprecation storybook dev -p 6006",
     "storybook:build": "cross-env NODE_OPTIONS=--no-deprecation storybook build",
     "test": "pnpm run test:int && pnpm run test:e2e",
-    "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
+    "test:e2e": "cross-env NODE_OPTIONS=--no-deprecation playwright test --config=playwright.config.ts",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "ci": "payload migrate && pnpm build",
     "db:up": "docker compose up postgres -d",

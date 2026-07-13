@@ -1,5 +1,5 @@
 import configPromise from '@payload-config'
-import { unstable_cache } from 'next/cache'
+import { unstable_cache } from 'next/cache.js'
 import { getPayload } from 'payload'
 
 export async function getRedirects(depth = 1) {

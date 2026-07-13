@@ -1,6 +1,7 @@
 import type { Media } from '@/payload-types'
 
 export const image3: Omit<Media, 'createdAt' | 'id' | 'updatedAt'> = {
+  usageStatus: 'public-approved',
   alt: 'Straight metallic shapes with an orange and blue gradient',
   caption: {
     root: {

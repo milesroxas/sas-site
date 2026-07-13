@@ -1,4 +1,4 @@
-import { revalidateTag } from 'next/cache'
+import { revalidateTag } from 'next/cache.js'
 import type { GlobalAfterChangeHook } from 'payload'
 
 export const revalidateFooter: GlobalAfterChangeHook = ({ doc, req: { payload, context } }) => {

@@ -69,6 +69,14 @@ export interface Config {
   collections: {
     pages: Page;
     posts: Post;
+    organizations: Organization;
+    projects: Project;
+    'case-studies': CaseStudy;
+    'work-pages': WorkPage;
+    testimonials: Testimonial;
+    'asset-libraries': AssetLibrary;
+    capabilities: Capability;
+    industries: Industry;
     media: Media;
     categories: Category;
     users: User;
@@ -84,6 +92,13 @@ export interface Config {
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
+    'case-studies': {
+      presentations: 'work-pages';
+    };
+    'asset-libraries': {
+      assets: 'media';
+      caseStudies: 'case-studies';
+    };
     'payload-folders': {
       documentsAndFolders: 'payload-folders' | 'media';
     };
@@ -91,6 +106,14 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
+    'work-pages': WorkPagesSelect<false> | WorkPagesSelect<true>;
+    testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
+    'asset-libraries': AssetLibrariesSelect<false> | AssetLibrariesSelect<true>;
+    capabilities: CapabilitiesSelect<false> | CapabilitiesSelect<true>;
+    industries: IndustriesSelect<false> | IndustriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -276,6 +299,7 @@ export interface Post {
  */
 export interface Media {
   id: number;
+  title?: string | null;
   alt?: string | null;
   caption?: {
     root: {
@@ -292,6 +316,39 @@ export interface Media {
     };
     [k: string]: unknown;
   } | null;
+  description?: string | null;
+  /**
+   * Case-study assets belong to a durable Asset Library; folders organize the files within that library.
+   */
+  assetLibrary?: (number | null) | AssetLibrary;
+  organization?: (number | null) | Organization;
+  project?: (number | null) | Project;
+  purpose?:
+    | (
+        | 'overview'
+        | 'research'
+        | 'process'
+        | 'strategy'
+        | 'wireframe'
+        | 'design-system'
+        | 'interface'
+        | 'environment'
+        | 'team'
+        | 'result'
+        | 'before'
+        | 'after'
+        | 'motion'
+        | 'other'
+      )
+    | null;
+  /**
+   * Controls CMS API visibility. Blob URLs themselves remain public.
+   */
+  usageStatus: 'internal' | 'client-review' | 'public-approved';
+  credit?: string | null;
+  sourceUrl?: string | null;
+  approvedChannels?: ('website' | 'pitch-deck' | 'proposal' | 'email' | 'social')[] | null;
+  assetDate?: string | null;
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -364,6 +421,202 @@ export interface Media {
   };
 }
 /**
+ * Durable project-level asset ownership. Payload folders provide the browsing hierarchy inside each library.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "asset-libraries".
+ */
+export interface AssetLibrary {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  organization: number | Organization;
+  project: number | Project;
+  /**
+   * The root Media folder used to browse this library. Subfolders can organize research, process, results, exports, and other sets.
+   */
+  rootFolder?: (number | null) | FolderInterface;
+  description?: string | null;
+  libraryStatus: 'active' | 'archived';
+  usageNotes?: string | null;
+  assets?: {
+    docs?: (number | Media)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  caseStudies?: {
+    docs?: (number | CaseStudy)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  name: string;
+  shortName?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  website?: string | null;
+  logo?: (number | null) | Media;
+  industries?: (number | Industry)[] | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Internal only. Never exposed to anonymous API consumers.
+   */
+  internalNotes?: string | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "industries".
+ */
+export interface Industry {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  description?: string | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  internalTitle: string;
+  publicTitle?: string | null;
+  organization: number | Organization;
+  status: 'planned' | 'active' | 'completed' | 'archived';
+  engagementType?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  capabilities?: (number | Capability)[] | null;
+  industries?: (number | Industry)[] | null;
+  platforms?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  publicSummary?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  scope?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  deliverables?:
+    | {
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  constraints?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  projectLinks?:
+    | {
+        label: string;
+        url: string;
+        visibility?: ('public' | 'internal') | null;
+        id?: string | null;
+      }[]
+    | null;
+  internalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "capabilities".
+ */
+export interface Capability {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  description?: string | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-folders".
  */
@@ -388,6 +641,484 @@ export interface FolderInterface {
   folderType?: 'media'[] | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Canonical, reusable engagement content. Website presentation is authored under Website → Work Pages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-studies".
+ */
+export interface CaseStudy {
+  id: number;
+  title: string;
+  project: number | Project;
+  thesis?: string | null;
+  summaries?: {
+    oneLine?: string | null;
+    short?: string | null;
+    medium?: string | null;
+  };
+  primaryAudience?:
+    | ('prospective-client' | 'existing-client' | 'design-community' | 'development-community' | 'general')
+    | null;
+  featuredCapabilities?: (number | Capability)[] | null;
+  context?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  challenge?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  objectives?:
+    | {
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  strategy?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  approach?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  keyDecisions?:
+    | {
+        key: string;
+        title: string;
+        problem?: string | null;
+        decision?: string | null;
+        rationale?: string | null;
+        impact?: string | null;
+        featured?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  learnings?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  outcomeSummary?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  qualitativeOutcomes?:
+    | {
+        title: string;
+        description?: string | null;
+        featured?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  metrics?:
+    | {
+        key: string;
+        label?: string | null;
+        value?: string | null;
+        unit?: string | null;
+        direction?: ('increase' | 'decrease' | 'neutral' | 'not-applicable') | null;
+        qualifier?: string | null;
+        comparisonBaseline?: string | null;
+        timeframe?: string | null;
+        source?: string | null;
+        approvedForPublic?: boolean | null;
+        featured?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  testimonials?: (number | Testimonial)[] | null;
+  approvedClaims?:
+    | {
+        claim: string;
+        source?: string | null;
+        approved?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  reviewDate?: string | null;
+  /**
+   * Reusable project libraries containing the approved source assets for every presentation surface.
+   */
+  assetLibraries?: (number | AssetLibrary)[] | null;
+  presentations?: {
+    docs?: (number | WorkPage)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateKey?: boolean | null;
+  key: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials".
+ */
+export interface Testimonial {
+  id: number;
+  internalTitle: string;
+  organization: number | Organization;
+  project?: (number | null) | Project;
+  speakerName: string;
+  speakerRole?: string | null;
+  speakerOrganization?: string | null;
+  quote: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  portrait?: (number | null) | Media;
+  approvalStatus: 'unverified' | 'client-review' | 'approved-public' | 'internal-only';
+  source?: string | null;
+  approvedAt?: string | null;
+  internalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Website-specific case-study presentation, composition, SEO, preview, and publishing.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "work-pages".
+ */
+export interface WorkPage {
+  id: number;
+  /**
+   * Editorial label for this website entry; canonical case-study title remains in Content Hub.
+   */
+  title: string;
+  /**
+   * The canonical Case Study Content record rendered by this page.
+   */
+  caseStudy: number | CaseStudy;
+  hero?: {
+    eyebrow?: string | null;
+    /**
+     * Website-only. Leave empty to use the canonical title.
+     */
+    titleOverride?: string | null;
+    /**
+     * Website-only. Leave empty to use the canonical summary.
+     */
+    summaryOverride?: string | null;
+    media?: (number | null) | Media;
+    layout?: ('editorial-split' | 'centered' | 'immersive' | 'media-led') | null;
+    theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+    mediaTreatment?: ('contained' | 'full-bleed' | 'floating' | 'background') | null;
+  };
+  /**
+   * Website composition only. Canonical narrative remains in the related Case Study Content record.
+   */
+  layout?:
+    | (
+        | CaseStudyStorySectionBlock
+        | CaseStudyMediaShowcaseBlock
+        | CaseStudyKeyDecisionsBlock
+        | CaseStudyMetricsBlock
+        | CaseStudyTestimonialBlock
+        | CaseStudyTransitionBlock
+        | CaseStudyRelatedWorkBlock
+      )[]
+    | null;
+  coverAsset?: (number | null) | Media;
+  downloadableAssets?: (number | Media)[] | null;
+  relatedWorkPages?: (number | WorkPage)[] | null;
+  editorialNotes?: string | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  featured?: boolean | null;
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyStorySectionBlock".
+ */
+export interface CaseStudyStorySectionBlock {
+  /**
+   * Uses canonical story content unless a website override is supplied.
+   */
+  source: 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings' | 'custom';
+  eyebrow?: string | null;
+  headingOverride?: string | null;
+  /**
+   * Website-only override; canonical content is unchanged.
+   */
+  bodyOverride?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  customBody?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media?: (number | null) | Media;
+  layout?: ('text-only' | 'text-left' | 'text-right' | 'centered' | 'sticky-media') | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  width?: ('narrow' | 'standard' | 'wide') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyStorySection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyMediaShowcaseBlock".
+ */
+export interface CaseStudyMediaShowcaseBlock {
+  heading?: string | null;
+  introduction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media: (number | Media)[];
+  layout?: ('single' | 'grid' | 'horizontal' | 'stacked' | 'full-bleed' | 'comparison') | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  showCaptions?: boolean | null;
+  showCredits?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyMediaShowcase';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyKeyDecisionsBlock".
+ */
+export interface CaseStudyKeyDecisionsBlock {
+  heading?: string | null;
+  introduction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  source?: ('featured' | 'all') | null;
+  layout?: ('list' | 'cards' | 'editorial' | 'sticky') | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyKeyDecisions';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyMetricsBlock".
+ */
+export interface CaseStudyMetricsBlock {
+  heading?: string | null;
+  introduction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  source?: ('featured-public' | 'all-public') | null;
+  layout?: ('grid' | 'row' | 'statement' | 'editorial') | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyMetrics';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyTestimonialBlock".
+ */
+export interface CaseStudyTestimonialBlock {
+  testimonial: number | Testimonial;
+  layout?: ('editorial' | 'centered' | 'split' | 'compact') | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  showPortrait?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyTestimonial';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyTransitionBlock".
+ */
+export interface CaseStudyTransitionBlock {
+  eyebrow?: string | null;
+  heading: string;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyTransition';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyRelatedWorkBlock".
+ */
+export interface CaseStudyRelatedWorkBlock {
+  heading?: string | null;
+  selectionMode?: ('document-settings' | 'automatic-capability-match') | null;
+  limit?: number | null;
+  layout?: ('grid' | 'list' | 'feature') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyRelatedWork';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -801,6 +1532,10 @@ export interface Redirect {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'work-pages';
+          value: number | WorkPage;
         } | null);
     url?: string | null;
   };
@@ -978,6 +1713,38 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'organizations';
+        value: number | Organization;
+      } | null)
+    | ({
+        relationTo: 'projects';
+        value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'case-studies';
+        value: number | CaseStudy;
+      } | null)
+    | ({
+        relationTo: 'work-pages';
+        value: number | WorkPage;
+      } | null)
+    | ({
+        relationTo: 'testimonials';
+        value: number | Testimonial;
+      } | null)
+    | ({
+        relationTo: 'asset-libraries';
+        value: number | AssetLibrary;
+      } | null)
+    | ({
+        relationTo: 'capabilities';
+        value: number | Capability;
+      } | null)
+    | ({
+        relationTo: 'industries';
+        value: number | Industry;
       } | null)
     | ({
         relationTo: 'media';
@@ -1221,11 +1988,378 @@ export interface PostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations_select".
+ */
+export interface OrganizationsSelect<T extends boolean = true> {
+  name?: T;
+  shortName?: T;
+  generateSlug?: T;
+  slug?: T;
+  website?: T;
+  logo?: T;
+  industries?: T;
+  description?: T;
+  internalNotes?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  internalTitle?: T;
+  publicTitle?: T;
+  organization?: T;
+  status?: T;
+  engagementType?: T;
+  startDate?: T;
+  endDate?: T;
+  capabilities?: T;
+  industries?: T;
+  platforms?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  publicSummary?: T;
+  scope?: T;
+  deliverables?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  constraints?: T;
+  projectLinks?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        visibility?: T;
+        id?: T;
+      };
+  internalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-studies_select".
+ */
+export interface CaseStudiesSelect<T extends boolean = true> {
+  title?: T;
+  project?: T;
+  thesis?: T;
+  summaries?:
+    | T
+    | {
+        oneLine?: T;
+        short?: T;
+        medium?: T;
+      };
+  primaryAudience?: T;
+  featuredCapabilities?: T;
+  context?: T;
+  challenge?: T;
+  objectives?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  strategy?: T;
+  approach?: T;
+  keyDecisions?:
+    | T
+    | {
+        key?: T;
+        title?: T;
+        problem?: T;
+        decision?: T;
+        rationale?: T;
+        impact?: T;
+        featured?: T;
+        id?: T;
+      };
+  learnings?: T;
+  outcomeSummary?: T;
+  qualitativeOutcomes?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        featured?: T;
+        id?: T;
+      };
+  metrics?:
+    | T
+    | {
+        key?: T;
+        label?: T;
+        value?: T;
+        unit?: T;
+        direction?: T;
+        qualifier?: T;
+        comparisonBaseline?: T;
+        timeframe?: T;
+        source?: T;
+        approvedForPublic?: T;
+        featured?: T;
+        id?: T;
+      };
+  testimonials?: T;
+  approvedClaims?:
+    | T
+    | {
+        claim?: T;
+        source?: T;
+        approved?: T;
+        id?: T;
+      };
+  reviewDate?: T;
+  assetLibraries?: T;
+  presentations?: T;
+  publishedAt?: T;
+  generateKey?: T;
+  key?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "work-pages_select".
+ */
+export interface WorkPagesSelect<T extends boolean = true> {
+  title?: T;
+  caseStudy?: T;
+  hero?:
+    | T
+    | {
+        eyebrow?: T;
+        titleOverride?: T;
+        summaryOverride?: T;
+        media?: T;
+        layout?: T;
+        theme?: T;
+        mediaTreatment?: T;
+      };
+  layout?:
+    | T
+    | {
+        caseStudyStorySection?: T | CaseStudyStorySectionBlockSelect<T>;
+        caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
+        caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
+        caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
+        caseStudyTestimonial?: T | CaseStudyTestimonialBlockSelect<T>;
+        caseStudyTransition?: T | CaseStudyTransitionBlockSelect<T>;
+        caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
+      };
+  coverAsset?: T;
+  downloadableAssets?: T;
+  relatedWorkPages?: T;
+  editorialNotes?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  featured?: T;
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyStorySectionBlock_select".
+ */
+export interface CaseStudyStorySectionBlockSelect<T extends boolean = true> {
+  source?: T;
+  eyebrow?: T;
+  headingOverride?: T;
+  bodyOverride?: T;
+  customBody?: T;
+  media?: T;
+  layout?: T;
+  theme?: T;
+  width?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyMediaShowcaseBlock_select".
+ */
+export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
+  heading?: T;
+  introduction?: T;
+  media?: T;
+  layout?: T;
+  theme?: T;
+  showCaptions?: T;
+  showCredits?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyKeyDecisionsBlock_select".
+ */
+export interface CaseStudyKeyDecisionsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  introduction?: T;
+  source?: T;
+  layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyMetricsBlock_select".
+ */
+export interface CaseStudyMetricsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  introduction?: T;
+  source?: T;
+  layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyTestimonialBlock_select".
+ */
+export interface CaseStudyTestimonialBlockSelect<T extends boolean = true> {
+  testimonial?: T;
+  layout?: T;
+  theme?: T;
+  showPortrait?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyTransitionBlock_select".
+ */
+export interface CaseStudyTransitionBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyRelatedWorkBlock_select".
+ */
+export interface CaseStudyRelatedWorkBlockSelect<T extends boolean = true> {
+  heading?: T;
+  selectionMode?: T;
+  limit?: T;
+  layout?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "testimonials_select".
+ */
+export interface TestimonialsSelect<T extends boolean = true> {
+  internalTitle?: T;
+  organization?: T;
+  project?: T;
+  speakerName?: T;
+  speakerRole?: T;
+  speakerOrganization?: T;
+  quote?: T;
+  portrait?: T;
+  approvalStatus?: T;
+  source?: T;
+  approvedAt?: T;
+  internalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "asset-libraries_select".
+ */
+export interface AssetLibrariesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  organization?: T;
+  project?: T;
+  rootFolder?: T;
+  description?: T;
+  libraryStatus?: T;
+  usageNotes?: T;
+  assets?: T;
+  caseStudies?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "capabilities_select".
+ */
+export interface CapabilitiesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "industries_select".
+ */
+export interface IndustriesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  title?: T;
   alt?: T;
   caption?: T;
+  description?: T;
+  assetLibrary?: T;
+  organization?: T;
+  project?: T;
+  purpose?: T;
+  usageStatus?: T;
+  credit?: T;
+  sourceUrl?: T;
+  approvedChannels?: T;
+  assetDate?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1761,6 +2895,26 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'organizations';
+          value: number | Organization;
+        } | null)
+      | ({
+          relationTo: 'projects';
+          value: number | Project;
+        } | null)
+      | ({
+          relationTo: 'case-studies';
+          value: number | CaseStudy;
+        } | null)
+      | ({
+          relationTo: 'work-pages';
+          value: number | WorkPage;
+        } | null)
+      | ({
+          relationTo: 'testimonials';
+          value: number | Testimonial;
         } | null);
     global?: string | null;
     user?: (number | null) | User;

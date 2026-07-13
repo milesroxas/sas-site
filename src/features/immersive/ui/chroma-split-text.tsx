@@ -94,6 +94,7 @@ function ChromaScene({
 
   const fitKey = fitTexts?.join('|') ?? ''
   useEffect(() => {
+    void fitKey
     dirtyRef.current = true
   }, [fitKey])
 

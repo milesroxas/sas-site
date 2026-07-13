@@ -59,6 +59,7 @@ export const richText = (...children: SerializedNode[]): DefaultTypedEditorState
 /** Points at a real file in /public so next/image renders it via staticDirs. */
 export const mediaFixture: Media = {
   id: 1,
+  usageStatus: 'public-approved',
   alt: 'Website template open-graph artwork',
   url: '/website-template-OG.webp',
   filename: 'website-template-OG.webp',
