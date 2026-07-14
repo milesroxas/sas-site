@@ -7,9 +7,11 @@ import { buildConfig, type PayloadRequest } from 'payload'
 import sharp from 'sharp'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { AssetLibraries } from './collections/AssetLibraries'
+import { AudiencePages } from './collections/AudiencePages'
 import { Capabilities } from './collections/Capabilities'
 import { CaseStudies } from './collections/CaseStudies'
 import { Categories } from './collections/Categories'
+import { ExpertisePages } from './collections/ExpertisePages'
 import { Industries } from './collections/Industries'
 import { Media } from './collections/Media'
 import { Organizations } from './collections/Organizations'
@@ -89,6 +91,8 @@ export default buildConfig({
     Pages,
     Posts,
     WorkPages,
+    ExpertisePages,
+    AudiencePages,
     // Content Hub — canonical, channel-agnostic source material
     Organizations,
     Projects,

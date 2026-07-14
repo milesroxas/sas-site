@@ -7,30 +7,34 @@ import type { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import type { Plugin } from 'payload'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
-import type { Page, Post, WorkPage } from '@/payload-types'
+import type { AudiencePage, ExpertisePage, Page, Post, WorkPage } from '@/payload-types'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { searchFields } from '@/search/fieldOverrides'
 import { getServerSideURL } from '@/utilities/getURL'
 
-const generateTitle: GenerateTitle<Post | Page | WorkPage> = ({ doc }) => {
+type SeoDoc = Post | Page | WorkPage | ExpertisePage | AudiencePage
+
+const urlPrefixByCollection: Record<string, string> = {
+  'work-pages': '/works',
+  'expertise-pages': '/expertise',
+  'audience-pages': '/who-we-help',
+  posts: '/posts',
+}
+
+const generateTitle: GenerateTitle<SeoDoc> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Suits & Sandals` : 'Suits & Sandals'
 }
 
-const generateURL: GenerateURL<Post | Page | WorkPage> = ({ collectionConfig, doc }) => {
+const generateURL: GenerateURL<SeoDoc> = ({ collectionConfig, doc }) => {
   const url = getServerSideURL()
-  const prefix =
-    collectionConfig?.slug === 'work-pages'
-      ? '/works'
-      : collectionConfig?.slug === 'posts'
-        ? '/posts'
-        : ''
+  const prefix = urlPrefixByCollection[collectionConfig?.slug ?? ''] ?? ''
 
   return doc?.slug ? `${url}${prefix}/${doc.slug}` : url
 }
 
 export const plugins: Plugin[] = [
   redirectsPlugin({
-    collections: ['pages', 'posts', 'work-pages'],
+    collections: ['pages', 'posts', 'work-pages', 'expertise-pages', 'audience-pages'],
     overrides: {
       admin: { group: 'System' },
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type

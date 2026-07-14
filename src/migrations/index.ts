@@ -2,6 +2,7 @@ import * as migration_20260322_233115_initial from './20260322_233115_initial'
 import * as migration_20260713_200739_content_hub from './20260713_200739_content_hub'
 import * as migration_20260713_201056_project_status_enum from './20260713_201056_project_status_enum'
 import * as migration_20260713_212452_separate_work_pages_asset_libraries from './20260713_212452_separate_work_pages_asset_libraries'
+import * as migration_20260714_022009_website_ia_expansion from './20260714_022009_website_ia_expansion'
 
 export const migrations = [
   {
@@ -23,5 +24,10 @@ export const migrations = [
     up: migration_20260713_212452_separate_work_pages_asset_libraries.up,
     down: migration_20260713_212452_separate_work_pages_asset_libraries.down,
     name: '20260713_212452_separate_work_pages_asset_libraries',
+  },
+  {
+    up: migration_20260714_022009_website_ia_expansion.up,
+    down: migration_20260714_022009_website_ia_expansion.down,
+    name: '20260714_022009_website_ia_expansion',
   },
 ]

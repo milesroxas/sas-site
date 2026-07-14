@@ -70,6 +70,8 @@ export interface Config {
     pages: Page;
     posts: Post;
     'work-pages': WorkPage;
+    'expertise-pages': ExpertisePage;
+    'audience-pages': AudiencePage;
     organizations: Organization;
     projects: Project;
     'case-studies': CaseStudy;
@@ -107,6 +109,8 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     'work-pages': WorkPagesSelect<false> | WorkPagesSelect<true>;
+    'expertise-pages': ExpertisePagesSelect<false> | ExpertisePagesSelect<true>;
+    'audience-pages': AudiencePagesSelect<false> | AudiencePagesSelect<true>;
     organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
@@ -1128,6 +1132,10 @@ export interface Category {
   id: number;
   title: string;
   /**
+   * Intro copy for this topic hub at /insights/[slug].
+   */
+  description?: string | null;
+  /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
@@ -1513,6 +1521,166 @@ export interface Form {
   createdAt: string;
 }
 /**
+ * Service offering pages published at /expertise/[slug]. Composition and SEO only; canonical service facts live in Capabilities.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expertise-pages".
+ */
+export interface ExpertisePage {
+  id: number;
+  title: string;
+  hero: {
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null);
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+  };
+  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  /**
+   * Canonical capabilities this offering bundles. Drives automatic related-work matching.
+   */
+  capabilities: (number | Capability)[];
+  /**
+   * Manual selection. Leave empty to match published work automatically by capability.
+   */
+  relatedWorkPages?: (number | WorkPage)[] | null;
+  editorialNotes?: string | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Who We Help segment pages published at /who-we-help/[slug]. The page defines the audience segment; industries drive automatic related-work matching.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audience-pages".
+ */
+export interface AudiencePage {
+  id: number;
+  title: string;
+  hero: {
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null);
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+  };
+  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  /**
+   * Industries this segment spans. Drives automatic related-work matching.
+   */
+  industries: (number | Industry)[];
+  /**
+   * Manual selection. Leave empty to match published work automatically by industry.
+   */
+  relatedWorkPages?: (number | WorkPage)[] | null;
+  editorialNotes?: string | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1536,6 +1704,14 @@ export interface Redirect {
       | ({
           relationTo: 'work-pages';
           value: number | WorkPage;
+        } | null)
+      | ({
+          relationTo: 'expertise-pages';
+          value: number | ExpertisePage;
+        } | null)
+      | ({
+          relationTo: 'audience-pages';
+          value: number | AudiencePage;
         } | null);
     url?: string | null;
   };
@@ -1717,6 +1893,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'work-pages';
         value: number | WorkPage;
+      } | null)
+    | ({
+        relationTo: 'expertise-pages';
+        value: number | ExpertisePage;
+      } | null)
+    | ({
+        relationTo: 'audience-pages';
+        value: number | AudiencePage;
       } | null)
     | ({
         relationTo: 'organizations';
@@ -2131,6 +2315,114 @@ export interface CaseStudyRelatedWorkBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expertise-pages_select".
+ */
+export interface ExpertisePagesSelect<T extends boolean = true> {
+  title?: T;
+  hero?:
+    | T
+    | {
+        type?: T;
+        richText?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                    appearance?: T;
+                  };
+              id?: T;
+            };
+        media?: T;
+      };
+  layout?:
+    | T
+    | {
+        cta?: T | CallToActionBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
+        mediaBlock?: T | MediaBlockSelect<T>;
+        archive?: T | ArchiveBlockSelect<T>;
+        formBlock?: T | FormBlockSelect<T>;
+      };
+  capabilities?: T;
+  relatedWorkPages?: T;
+  editorialNotes?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audience-pages_select".
+ */
+export interface AudiencePagesSelect<T extends boolean = true> {
+  title?: T;
+  hero?:
+    | T
+    | {
+        type?: T;
+        richText?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                    appearance?: T;
+                  };
+              id?: T;
+            };
+        media?: T;
+      };
+  layout?:
+    | T
+    | {
+        cta?: T | CallToActionBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
+        mediaBlock?: T | MediaBlockSelect<T>;
+        archive?: T | ArchiveBlockSelect<T>;
+        formBlock?: T | FormBlockSelect<T>;
+      };
+  industries?: T;
+  relatedWorkPages?: T;
+  editorialNotes?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "organizations_select".
  */
 export interface OrganizationsSelect<T extends boolean = true> {
@@ -2453,6 +2745,7 @@ export interface IndustriesSelect<T extends boolean = true> {
  */
 export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
+  description?: T;
   generateSlug?: T;
   slug?: T;
   parent?: T;
@@ -2899,6 +3192,14 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'work-pages';
           value: number | WorkPage;
+        } | null)
+      | ({
+          relationTo: 'expertise-pages';
+          value: number | ExpertisePage;
+        } | null)
+      | ({
+          relationTo: 'audience-pages';
+          value: number | AudiencePage;
         } | null)
       | ({
           relationTo: 'organizations';

@@ -22,6 +22,13 @@ export const Categories: CollectionConfig = {
       type: 'text',
       required: true,
     },
+    {
+      name: 'description',
+      type: 'textarea',
+      admin: {
+        description: 'Intro copy for this topic hub at /insights/[slug].',
+      },
+    },
     slugField({
       position: undefined,
     }),
