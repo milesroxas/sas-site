@@ -5,6 +5,7 @@ import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
+import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import type { Page } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
 
@@ -14,6 +15,7 @@ const blockComponents = {
   cta: CallToActionBlock,
   formBlock: FormBlock,
   mediaBlock: MediaBlock,
+  newsletterSignup: NewsletterSignupBlock,
 }
 
 export const RenderBlocks: React.FC<{

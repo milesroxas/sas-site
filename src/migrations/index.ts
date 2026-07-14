@@ -3,6 +3,7 @@ import * as migration_20260713_200739_content_hub from './20260713_200739_conten
 import * as migration_20260713_201056_project_status_enum from './20260713_201056_project_status_enum'
 import * as migration_20260713_212452_separate_work_pages_asset_libraries from './20260713_212452_separate_work_pages_asset_libraries'
 import * as migration_20260714_022009_website_ia_expansion from './20260714_022009_website_ia_expansion'
+import * as migration_20260714_032150_newsletter from './20260714_032150_newsletter'
 
 export const migrations = [
   {
@@ -29,5 +30,10 @@ export const migrations = [
     up: migration_20260714_022009_website_ia_expansion.up,
     down: migration_20260714_022009_website_ia_expansion.down,
     name: '20260714_022009_website_ia_expansion',
+  },
+  {
+    up: migration_20260714_032150_newsletter.up,
+    down: migration_20260714_032150_newsletter.down,
+    name: '20260714_032150_newsletter',
   },
 ]

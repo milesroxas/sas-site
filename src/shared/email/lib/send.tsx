@@ -1,13 +1,12 @@
 import type { Payload } from 'payload'
 import type { ReactElement } from 'react'
-import { getServerSideURL } from '@/utilities/getURL'
-import { EMAIL_BRAND } from '../config/brand'
 import { ActivationEmail } from '../templates/activation-email'
 import { InviteEmail } from '../templates/invite-email'
+import { NewsletterConfirmEmail } from '../templates/newsletter-confirm-email'
 import { PasswordResetEmail } from '../templates/password-reset-email'
 import { SubscriptionConfirmationEmail } from '../templates/subscription-confirmation-email'
 import { WelcomeEmail } from '../templates/welcome-email'
-import type { EmailBrandProps } from '../ui/transactional-email'
+import { type BrandOverrides, brandDefaults } from './brand-defaults'
 import { renderEmail } from './render'
 
 interface SendEmailArgs {
@@ -26,29 +25,6 @@ interface SendEmailArgs {
 export async function sendEmail({ payload, to, subject, email }: SendEmailArgs) {
   const { html, text } = await renderEmail(email)
   return payload.sendEmail({ to, subject, html, text })
-}
-
-type BrandOverrides = Partial<EmailBrandProps>
-
-/** Fill brand chrome with Suits & Sandals defaults: env from-name and the hosted logo PNGs. */
-function brandDefaults<T extends BrandOverrides>({
-  companyName,
-  logomarkUrl,
-  logoUrl,
-  logoDarkUrl,
-  ...rest
-}: T) {
-  // Email clients fetch images from the recipient's machine, so logo URLs must be publicly
-  // reachable — never localhost. EMAIL_ASSET_BASE_URL points at always-public hosting (Vercel
-  // Blob) so emails render correctly from any environment, including local dev.
-  const assetBaseUrl = process.env.EMAIL_ASSET_BASE_URL ?? getServerSideURL()
-  return {
-    companyName: companyName ?? process.env.RESEND_FROM_NAME ?? EMAIL_BRAND.companyName,
-    logomarkUrl: logomarkUrl ?? `${assetBaseUrl}/email/logomark.png`,
-    logoUrl: logoUrl ?? `${assetBaseUrl}/email/logo.png`,
-    logoDarkUrl: logoDarkUrl ?? `${assetBaseUrl}/email/logo-dark.png`,
-    ...rest,
-  }
 }
 
 export interface SendActivationEmailArgs extends BrandOverrides {
@@ -147,6 +123,29 @@ export function sendWelcomeEmail({
     to,
     subject,
     email: <WelcomeEmail workspaceUrl={workspaceUrl} {...brandDefaults(brand)} />,
+  })
+}
+
+export interface SendNewsletterConfirmEmailArgs extends BrandOverrides {
+  payload: Payload
+  to: string
+  confirmUrl: string
+  subject?: string
+}
+
+/** Double-opt-in confirmation for newsletter signups. */
+export function sendNewsletterConfirmEmail({
+  payload,
+  to,
+  confirmUrl,
+  subject = 'Confirm your subscription',
+  ...brand
+}: SendNewsletterConfirmEmailArgs) {
+  return sendEmail({
+    payload,
+    to,
+    subject,
+    email: <NewsletterConfirmEmail confirmUrl={confirmUrl} {...brandDefaults(brand)} />,
   })
 }
 

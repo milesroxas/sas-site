@@ -11,6 +11,10 @@ import {
   REST_PUT,
 } from '@payloadcms/next/routes'
 
+// Newsletter sends run through this route (custom endpoint `after()` hook and the
+// /api/payload-jobs/run cron backstop) and can take minutes for large audiences.
+export const maxDuration = 300
+
 export const GET = REST_GET(config)
 export const POST = REST_POST(config)
 export const DELETE = REST_DELETE(config)

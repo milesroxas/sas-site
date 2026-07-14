@@ -12,18 +12,36 @@ export { renderEmail } from './lib/render'
 export {
   type SendActivationEmailArgs,
   type SendInviteEmailArgs,
+  type SendNewsletterConfirmEmailArgs,
   type SendPasswordResetEmailArgs,
   type SendSubscriptionConfirmationEmailArgs,
   type SendWelcomeEmailArgs,
   sendActivationEmail,
   sendEmail,
   sendInviteEmail,
+  sendNewsletterConfirmEmail,
   sendPasswordResetEmail,
   sendSubscriptionConfirmationEmail,
   sendWelcomeEmail,
 } from './lib/send'
+export {
+  buildNewsletterEmail,
+  newsletterOneClickUnsubscribeUrl,
+  newsletterUnsubscribePageUrl,
+  UNSUBSCRIBE_TOKEN_PLACEHOLDER,
+} from './newsletter/build'
+export {
+  DEFAULT_NEWSLETTER_TEMPLATE,
+  NEWSLETTER_TEMPLATES,
+  type NewsletterTemplateKey,
+  newsletterTemplateOptions,
+} from './newsletter/registry'
 export { ActivationEmail, type ActivationEmailProps } from './templates/activation-email'
 export { InviteEmail, type InviteEmailProps } from './templates/invite-email'
+export {
+  NewsletterConfirmEmail,
+  type NewsletterConfirmEmailProps,
+} from './templates/newsletter-confirm-email'
 export {
   PasswordResetEmail,
   type PasswordResetEmailProps,

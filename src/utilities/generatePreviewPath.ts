@@ -1,6 +1,6 @@
 import type { CollectionSlug, PayloadRequest } from 'payload'
 
-const collectionPrefixMap: Partial<Record<CollectionSlug, string>> = {
+export const collectionPrefixMap: Partial<Record<CollectionSlug, string>> = {
   'work-pages': '/works',
   'expertise-pages': '/expertise',
   'audience-pages': '/who-we-help',

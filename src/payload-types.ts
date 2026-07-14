@@ -81,6 +81,9 @@ export interface Config {
     capabilities: Capability;
     industries: Industry;
     categories: Category;
+    newsletters: Newsletter;
+    audiences: Audience;
+    subscribers: Subscriber;
     users: User;
     redirects: Redirect;
     forms: Form;
@@ -120,6 +123,9 @@ export interface Config {
     capabilities: CapabilitiesSelect<false> | CapabilitiesSelect<true>;
     industries: IndustriesSelect<false> | IndustriesSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
+    audiences: AudiencesSelect<false> | AudiencesSelect<true>;
+    subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -151,6 +157,7 @@ export interface Config {
   user: User;
   jobs: {
     tasks: {
+      newsletterSend: TaskNewsletterSend;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -228,7 +235,7 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | NewsletterSignupBlock)[];
   meta?: {
     title?: string | null;
     /**
@@ -1521,6 +1528,46 @@ export interface Form {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterSignupBlock".
+ */
+export interface NewsletterSignupBlock {
+  eyebrow?: string | null;
+  heading: string;
+  body?: string | null;
+  buttonLabel: string;
+  /**
+   * Signups join this audience (after confirming their email). Only audiences with "Allow public signup" enabled appear here.
+   */
+  audience: number | Audience;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'newsletterSignup';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audiences".
+ */
+export interface Audience {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Who belongs in this audience and how they got here.
+   */
+  description?: string | null;
+  /**
+   * Allow the public signup form to add subscribers to this audience. Leave off for curated lists like clients or leads.
+   */
+  allowPublicSignup?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Service offering pages published at /expertise/[slug]. Composition and SEO only; canonical service facts live in Capabilities.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1682,6 +1729,163 @@ export interface AudiencePage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletters".
+ */
+export interface Newsletter {
+  id: number;
+  /**
+   * Internal name — recipients never see this.
+   */
+  title: string;
+  /**
+   * The email subject line.
+   */
+  subject: string;
+  /**
+   * Inbox preview line shown after the subject. Falls back to the subject.
+   */
+  previewText?: string | null;
+  /**
+   * Optional headline at the top of the email body.
+   */
+  heading?: string | null;
+  /**
+   * Layout for the email. Check both in the live preview.
+   */
+  template: 'letter' | 'announcement';
+  content: (
+    | NewsletterTextBlock
+    | NewsletterImageBlock
+    | NewsletterButtonBlock
+    | NewsletterPostsBlock
+    | NewsletterDividerBlock
+  )[];
+  /**
+   * Who receives this. Subscribers in several selected audiences get exactly one copy. Locked after the first send attempt.
+   */
+  audiences: (number | Audience)[];
+  deliveryStatus: 'unsent' | 'sending' | 'sent' | 'failed';
+  sentAt?: string | null;
+  recipientCount?: number | null;
+  sendError?: string | null;
+  sendProgress?: number | null;
+  sendCursor?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterTextBlock".
+ */
+export interface NewsletterTextBlock {
+  body: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'nlText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterImageBlock".
+ */
+export interface NewsletterImageBlock {
+  media: number | Media;
+  /**
+   * Optional. Where the image links to.
+   */
+  link?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'nlImage';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterButtonBlock".
+ */
+export interface NewsletterButtonBlock {
+  label: string;
+  url: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'nlButton';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterPostsBlock".
+ */
+export interface NewsletterPostsBlock {
+  /**
+   * Optional section heading.
+   */
+  heading?: string | null;
+  /**
+   * Rendered with each post’s SEO image and description.
+   */
+  posts: (number | Post)[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'nlPosts';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterDividerBlock".
+ */
+export interface NewsletterDividerBlock {
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'nlDivider';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers".
+ */
+export interface Subscriber {
+  id: number;
+  email: string;
+  name?: string | null;
+  /**
+   * Which segments this subscriber belongs to.
+   */
+  audiences?: (number | Audience)[] | null;
+  /**
+   * Optional link to a client organization from the Content Hub.
+   */
+  organization?: (number | null) | Organization;
+  /**
+   * Only "Subscribed" receives newsletters. Bounced and complained are suppressed automatically by the Resend webhook — do not flip them back without a good reason.
+   */
+  status: 'pending' | 'subscribed' | 'unsubscribed' | 'bounced' | 'complained';
+  /**
+   * Where this subscriber came from (consent trail).
+   */
+  source: 'site' | 'import' | 'manual';
+  token?: string | null;
+  confirmSentAt?: string | null;
+  subscribedAt?: string | null;
+  /**
+   * When double opt-in was completed. Empty for manually added subscribers.
+   */
+  confirmedAt?: string | null;
+  unsubscribedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1835,7 +2039,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug: 'inline' | 'newsletterSend' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1868,7 +2072,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'newsletterSend' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1937,6 +2141,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'newsletters';
+        value: number | Newsletter;
+      } | null)
+    | ({
+        relationTo: 'audiences';
+        value: number | Audience;
+      } | null)
+    | ({
+        relationTo: 'subscribers';
+        value: number | Subscriber;
       } | null)
     | ({
         relationTo: 'users';
@@ -2040,6 +2256,7 @@ export interface PagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
   meta?:
     | T
@@ -2136,6 +2353,19 @@ export interface FormBlockSelect<T extends boolean = true> {
   form?: T;
   enableIntro?: T;
   introContent?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterSignupBlock_select".
+ */
+export interface NewsletterSignupBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  buttonLabel?: T;
+  audience?: T;
   id?: T;
   blockName?: T;
 }
@@ -2762,6 +2992,115 @@ export interface CategoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletters_select".
+ */
+export interface NewslettersSelect<T extends boolean = true> {
+  title?: T;
+  subject?: T;
+  previewText?: T;
+  heading?: T;
+  template?: T;
+  content?:
+    | T
+    | {
+        nlText?: T | NewsletterTextBlockSelect<T>;
+        nlImage?: T | NewsletterImageBlockSelect<T>;
+        nlButton?: T | NewsletterButtonBlockSelect<T>;
+        nlPosts?: T | NewsletterPostsBlockSelect<T>;
+        nlDivider?: T | NewsletterDividerBlockSelect<T>;
+      };
+  audiences?: T;
+  deliveryStatus?: T;
+  sentAt?: T;
+  recipientCount?: T;
+  sendError?: T;
+  sendProgress?: T;
+  sendCursor?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterTextBlock_select".
+ */
+export interface NewsletterTextBlockSelect<T extends boolean = true> {
+  body?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterImageBlock_select".
+ */
+export interface NewsletterImageBlockSelect<T extends boolean = true> {
+  media?: T;
+  link?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterButtonBlock_select".
+ */
+export interface NewsletterButtonBlockSelect<T extends boolean = true> {
+  label?: T;
+  url?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterPostsBlock_select".
+ */
+export interface NewsletterPostsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  posts?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterDividerBlock_select".
+ */
+export interface NewsletterDividerBlockSelect<T extends boolean = true> {
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audiences_select".
+ */
+export interface AudiencesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  allowPublicSignup?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers_select".
+ */
+export interface SubscribersSelect<T extends boolean = true> {
+  email?: T;
+  name?: T;
+  audiences?: T;
+  organization?: T;
+  status?: T;
+  source?: T;
+  token?: T;
+  confirmSentAt?: T;
+  subscribedAt?: T;
+  confirmedAt?: T;
+  unsubscribedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
@@ -3171,6 +3510,18 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskNewsletterSend".
+ */
+export interface TaskNewsletterSend {
+  input: {
+    newsletterId: string;
+  };
+  output: {
+    sent?: number | null;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

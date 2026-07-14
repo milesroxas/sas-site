@@ -8,6 +8,8 @@ export const EMAIL_BRAND = {
   companyName: 'Suits & Sandals',
   tagline:
     'We help complex organizations make sense to the people who matter. Bringing clarity, trust, and momentum to nuanced ideas.',
+  /** Postal address shown in marketing email footers (CAN-SPAM requirement). */
+  addressLines: ['Suits & Sandals', '240 Kent Ave, Brooklyn, NY 11249'],
 } as const
 
 /**

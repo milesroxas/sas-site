@@ -1,13 +1,12 @@
 import crypto from 'node:crypto'
 import { APIError, addDataAndFileToRequest, type Endpoint } from 'payload'
 import { sendInviteEmail } from '@/shared/email'
+import { isValidEmailAddress, normalizeEmailAddress } from '@/utilities/emailAddress'
 import { getServerSideURL } from '@/utilities/getURL'
 
 /** Invite links stay valid for 72 hours. */
 const INVITE_EXPIRATION_MS = 72 * 60 * 60 * 1000
 const INVITE_EXPIRES_IN_LABEL = '72 hours'
-
-const EMAIL_PATTERN = /^\S+@\S+\.\S+$/
 
 /**
  * `POST /api/users/invite` — invite a teammate by email.
@@ -29,14 +28,14 @@ export const inviteEndpoint: Endpoint = {
     await addDataAndFileToRequest(req)
     const { email, name } = (req.data ?? {}) as { email?: unknown; name?: unknown }
 
-    if (typeof email !== 'string' || !EMAIL_PATTERN.test(email.trim())) {
+    if (typeof email !== 'string' || !isValidEmailAddress(normalizeEmailAddress(email))) {
       throw new APIError('A valid email address is required.', 400)
     }
     if (name !== undefined && typeof name !== 'string') {
       throw new APIError('Name must be a string.', 400)
     }
 
-    const normalizedEmail = email.trim().toLowerCase()
+    const normalizedEmail = normalizeEmailAddress(email)
     const { payload } = req
 
     const existing = await payload.find({

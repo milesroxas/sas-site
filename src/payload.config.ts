@@ -8,21 +8,26 @@ import sharp from 'sharp'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { AssetLibraries } from './collections/AssetLibraries'
 import { AudiencePages } from './collections/AudiencePages'
+import { Audiences } from './collections/Audiences'
 import { Capabilities } from './collections/Capabilities'
 import { CaseStudies } from './collections/CaseStudies'
 import { Categories } from './collections/Categories'
 import { ExpertisePages } from './collections/ExpertisePages'
 import { Industries } from './collections/Industries'
 import { Media } from './collections/Media'
+import { Newsletters } from './collections/Newsletters'
 import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Projects } from './collections/Projects'
+import { Subscribers } from './collections/Subscribers'
 import { Testimonials } from './collections/Testimonials'
 import { Users } from './collections/Users'
 import { WorkPages } from './collections/WorkPages'
+import { newsletterPublicEndpoints } from './endpoints/newsletter'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { newsletterSendTask } from './jobs/newsletterSend'
 import { plugins } from './plugins'
 import { getServerSideURL } from './utilities/getURL'
 
@@ -105,10 +110,15 @@ export default buildConfig({
     Capabilities,
     Industries,
     Categories,
+    // Newsletter
+    Newsletters,
+    Audiences,
+    Subscribers,
     // System
     Users,
   ],
   cors: [getServerSideURL()].filter(Boolean),
+  endpoints: [...newsletterPublicEndpoints],
   plugins: [
     ...plugins,
     vercelBlobStorage({
@@ -140,6 +150,6 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
-    tasks: [],
+    tasks: [newsletterSendTask],
   },
 })
