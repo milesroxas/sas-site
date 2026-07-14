@@ -7,7 +7,7 @@ import type {
   WebSite,
   WithContext,
 } from 'schema-dts'
-import type { ExpertisePage, Media, Post, SiteInfo, WorkPage } from '@/payload-types'
+import type { ExpertisePage, LabPage, Media, Post, SiteInfo, WorkPage } from '@/payload-types'
 import { getServerSideURL } from './getURL'
 
 const ORG_ID = '#organization'
@@ -124,7 +124,10 @@ export const serviceSchema = (page: ExpertisePage): WithContext<Service> => {
   }
 }
 
-export const caseStudySchema = (page: WorkPage): WithContext<CreativeWork> => {
+export const creativeWorkSchema = (
+  page: WorkPage | LabPage,
+  basePath: '/works' | '/lab',
+): WithContext<CreativeWork> => {
   const siteUrl = getServerSideURL()
 
   return {
@@ -132,7 +135,7 @@ export const caseStudySchema = (page: WorkPage): WithContext<CreativeWork> => {
     '@type': 'CreativeWork',
     name: page.title,
     ...(page.meta?.description ? { description: page.meta.description } : {}),
-    url: `${siteUrl}/works/${page.slug}`,
+    url: `${siteUrl}${basePath}/${page.slug}`,
     creator: { '@id': `${siteUrl}/${ORG_ID}` },
     ...(page.publishedAt ? { datePublished: page.publishedAt } : {}),
     dateModified: page.updatedAt,

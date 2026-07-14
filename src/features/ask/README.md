@@ -5,15 +5,15 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 ## How a request flows
 
 ```
-/ask page (AskWidget)
-  └─ POST /api/ask { question }
+/ask page (AskWidget, useChat)
+  └─ POST /api/ask { messages } (AI SDK UI-message protocol)
        ├─ config check      → 503 if OPENAI_API_KEY unset
        ├─ rate limit        → 429 (10 req/min per IP, per warm instance)
-       ├─ validation        → 400 (question must be 3–500 chars)
+       ├─ validation        → 400 (last message must be a user question, 3–500 chars)
        ├─ retrieveSources() → keyword match over the `search` collection,
        │                      top 4 docs hydrated to plaintext from Posts
-       ├─ no sources?       → canned "couldn't find anything" answer, no model call
-       └─ generateText()    → grounded answer + cited sources
+       ├─ no sources?       → canned "couldn't find anything" answer streamed, no model call
+       └─ streamText()      → source-url parts first, then the grounded answer streamed
 ```
 
 ## Files
@@ -22,7 +22,8 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 | --- | --- |
 | [`retrieve.ts`](./retrieve.ts) | Retrieval: tokenize question → query search index → score → hydrate top posts to plaintext. **This is the seam the RAG grows through** — swapping keyword matching for embeddings later touches only this module. |
 | [`model.ts`](./model.ts) | Provider seam. One line picks the model (`openai('gpt-5-mini')` via the Vercel AI SDK). Swap vendors here; nothing else knows which provider is underneath. |
-| [`AskWidget.tsx`](./AskWidget.tsx) | Client component: question form, loading state, answer card, source links. |
+| [`AskWidget.tsx`](./AskWidget.tsx) | Client component: `useChat` chat transcript (message-scroller + bubbles), shimmer loading state, streamed answers with source links. Accepts a `transport` prop so Storybook/tests inject scripted conversations. |
+| [`AskWidget.stories.tsx`](./AskWidget.stories.tsx) | Storybook coverage: streaming, answered, no-sources, thinking, and error states — driven by a scripted transport (vendored `@shadcn/helpers` ai-sdk), no network or API key. |
 | [`../../endpoints/ask.ts`](../../endpoints/ask.ts) | The `POST /api/ask` Payload endpoint — validation, rate limiting, prompt assembly, error mapping. Registered in `payload.config.ts` alongside the newsletter endpoints. |
 | [`../../app/(frontend)/ask/page.tsx`](../../app/(frontend)/ask/page.tsx) | The `/ask` page. |
 
@@ -39,23 +40,26 @@ Because retrieval reads the search plugin's index, **adding a collection to the 
 
 ## Generation
 
-The endpoint calls `generateText` (Vercel AI SDK) with:
+The endpoint calls `streamText` (Vercel AI SDK) with:
 
-- a system prompt that forbids outside knowledge, requires a refusal when sources don't cover the question, caps length, and asks for source titles in the answer;
-- a single user message containing the sources as tagged blocks plus the question.
+- a system prompt that forbids outside knowledge, requires a refusal when sources don't cover the question, caps length, asks for source titles in the answer — plus the sources as tagged blocks;
+- the full conversation history (`convertToModelMessages`), so follow-up questions keep context. Retrieval runs on the latest question only.
 
-When retrieval returns nothing, the model is **not called** — the endpoint returns a canned answer. No tokens are spent inventing responses.
+When retrieval returns nothing, the model is **not called** — the endpoint streams a canned answer through the same protocol. No tokens are spent inventing responses.
 
 ## API contract
 
-`POST /api/ask` with `{ "question": string }`:
+`POST /api/ask` with `{ "messages": UIMessage[] }` (what `useChat` +
+`DefaultChatTransport` sends). Success responses are AI SDK UI-message SSE
+streams: `source-url` parts for the retrieved posts, then streamed `text`
+parts. Model failures surface as an `error` part in the stream (details in
+server logs).
 
 | Status | Body | When |
 | --- | --- | --- |
-| 200 | `{ answer, sources: [{ title, url }] }` | Answered (sources may be empty for the canned no-match answer) |
-| 400 | `{ error }` | Question missing, under 3 or over 500 chars |
+| 200 | UI-message stream (`source-url` parts + `text`) | Answered (no `source-url` parts for the canned no-match answer) |
+| 400 | `{ error }` | No user message last, or question under 3 / over 500 chars, or over 30 messages |
 | 429 | `{ error }` | More than 10 requests/min from one IP |
-| 502 | `{ error }` | Model call failed (details in server logs) |
 | 503 | `{ error }` | `OPENAI_API_KEY` not configured |
 
 ## Configuration

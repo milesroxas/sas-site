@@ -1,4 +1,12 @@
-import { generateText } from 'ai'
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  generateId,
+  streamText,
+  toUIMessageStream,
+  type UIMessage,
+} from 'ai'
 import type { Endpoint } from 'payload'
 import { ASK_MODEL_API_KEY_VAR, askModel } from '@/features/ask/model'
 import { retrieveSources } from '@/features/ask/retrieve'
@@ -6,15 +14,18 @@ import { retrieveSources } from '@/features/ask/retrieve'
 /**
  * Public RAG endpoint (mounted under /api by the Payload root config).
  *
- * MVP flow: keyword retrieval over the search-plugin index → grounded answer
- * from the model with the matched posts as the only allowed context. The model
- * is instructed to refuse when the sources don't cover the question, and we
- * skip the model call entirely when retrieval comes back empty — no tokens
- * spent inventing an answer.
+ * Speaks the AI SDK UI-message-stream protocol so the widget drives it with
+ * `useChat`: keyword retrieval over the search-plugin index → matched posts
+ * streamed back as source-url parts, followed by a grounded answer from the
+ * model with those posts as the only allowed context. The model is instructed
+ * to refuse when the sources don't cover the question, and we skip the model
+ * call entirely when retrieval comes back empty — no tokens spent inventing
+ * an answer.
  */
 
 const MIN_QUESTION_LENGTH = 3
 const MAX_QUESTION_LENGTH = 500
+const MAX_MESSAGES = 30
 
 const NO_SOURCES_ANSWER =
   "I couldn't find anything on this site that answers that. Try the search page, or browse the latest posts."
@@ -48,6 +59,28 @@ function isRateLimited(ip: string): boolean {
   return entry.count > RATE_LIMIT
 }
 
+function messageText(message: UIMessage): string {
+  return message.parts
+    .filter((part): part is Extract<typeof part, { type: 'text' }> => part.type === 'text')
+    .map((part) => part.text)
+    .join('')
+}
+
+/** Streams a fixed answer through the UI-message protocol without a model call. */
+function staticAnswerResponse(text: string): Response {
+  const stream = createUIMessageStream({
+    execute: ({ writer }) => {
+      const id = generateId()
+      writer.write({ type: 'start' })
+      writer.write({ type: 'text-start', id })
+      writer.write({ type: 'text-delta', id, delta: text })
+      writer.write({ type: 'text-end', id })
+      writer.write({ type: 'finish' })
+    },
+  })
+  return createUIMessageStreamResponse({ stream })
+}
+
 const ask: Endpoint = {
   path: '/ask',
   method: 'post',
@@ -62,9 +95,15 @@ const ask: Endpoint = {
       return json({ error: 'Too many questions — try again in a minute.' }, 429)
     }
 
-    const body = (await req.json?.().catch(() => null)) as Record<string, unknown> | null
-    const question = typeof body?.question === 'string' ? body.question.trim() : ''
+    const body = (await req.json?.().catch(() => null)) as { messages?: unknown } | null
+    const messages = Array.isArray(body?.messages) ? (body.messages as UIMessage[]) : []
+    const lastMessage = messages.at(-1)
 
+    if (messages.length > MAX_MESSAGES || lastMessage?.role !== 'user') {
+      return json({ error: 'Send a conversation ending in a user question.' }, 400)
+    }
+
+    const question = messageText(lastMessage).trim()
     if (question.length < MIN_QUESTION_LENGTH || question.length > MAX_QUESTION_LENGTH) {
       return json(
         {
@@ -77,7 +116,7 @@ const ask: Endpoint = {
     const sources = await retrieveSources(req.payload, question)
 
     if (sources.length === 0) {
-      return json({ answer: NO_SOURCES_ANSWER, sources: [] })
+      return staticAnswerResponse(NO_SOURCES_ANSWER)
     }
 
     const sourcesBlock = sources
@@ -87,28 +126,40 @@ const ask: Endpoint = {
       )
       .join('\n\n')
 
-    try {
-      const { text, usage } = await generateText({
-        model: askModel,
-        system: SYSTEM_PROMPT,
-        prompt: `<sources>\n${sourcesBlock}\n</sources>\n\nQuestion: ${question}`,
-      })
+    const result = streamText({
+      model: askModel,
+      system: `${SYSTEM_PROMPT}\n\n<sources>\n${sourcesBlock}\n</sources>`,
+      messages: await convertToModelMessages(messages),
+      onFinish: ({ usage }) => {
+        req.payload.logger.info({
+          msg: 'ask answered',
+          questionLength: question.length,
+          sourceCount: sources.length,
+          usage,
+        })
+      },
+    })
 
-      req.payload.logger.info({
-        msg: 'ask answered',
-        questionLength: question.length,
-        sourceCount: sources.length,
-        usage,
-      })
+    const stream = createUIMessageStream({
+      execute: ({ writer }) => {
+        writer.write({ type: 'start' })
+        for (const source of sources) {
+          writer.write({
+            type: 'source-url',
+            sourceId: source.url,
+            url: source.url,
+            title: source.title,
+          })
+        }
+        writer.merge(toUIMessageStream({ stream: result.fullStream, sendStart: false }))
+      },
+      onError: (err) => {
+        req.payload.logger.error({ msg: 'ask model call failed', err })
+        return 'Something went wrong answering that — try again shortly.'
+      },
+    })
 
-      return json({
-        answer: text,
-        sources: sources.map(({ title, url }) => ({ title, url })),
-      })
-    } catch (err) {
-      req.payload.logger.error({ msg: 'ask model call failed', err })
-      return json({ error: 'Something went wrong answering that — try again shortly.' }, 502)
-    }
+    return createUIMessageStreamResponse({ stream })
   },
 }
 

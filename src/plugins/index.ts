@@ -2,9 +2,11 @@ import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { searchPlugin } from '@payloadcms/plugin-search'
+import { sentryPlugin } from '@payloadcms/plugin-sentry'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import type { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
+import * as Sentry from '@sentry/nextjs'
 import type { Plugin } from 'payload'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import type { AudiencePage, ExpertisePage, LabPage, Page, Post, WorkPage } from '@/payload-types'
@@ -107,4 +109,9 @@ export const plugins: Plugin[] = [
     },
   }),
   aeoPlugin(),
+  // Captures Payload REST/GraphQL/Local API errors (5xx by default) with
+  // user context, and wraps the admin UI in a Sentry error boundary. Must
+  // receive the app's own Sentry module so events reach the SDK instance
+  // initialized in instrumentation.ts.
+  sentryPlugin({ Sentry }),
 ]

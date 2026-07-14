@@ -4,11 +4,13 @@ import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 import { RenderLabBlocks } from '@/blocks/lab/RenderLabBlocks'
+import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { LabHero } from '@/heros/LabHero'
 import type { LabProject } from '@/payload-types'
 import { generateMeta } from '@/utilities/generateMeta'
+import { breadcrumbSchema, creativeWorkSchema } from '@/utilities/schema'
 import PageClient from './page.client'
 
 export async function generateStaticParams() {
@@ -37,6 +39,15 @@ export default async function LabPageRoute({ params }: Args) {
   return (
     <article>
       <PageClient />
+      <JsonLd
+        data={[
+          creativeWorkSchema(page, '/lab'),
+          breadcrumbSchema([
+            { name: 'Lab', path: '/lab' },
+            { name: page.title, path: url },
+          ]),
+        ]}
+      />
       <PayloadRedirects disableNotFound url={url} />
       {draft && <LivePreviewListener />}
       <LabHero page={page} project={project} />
@@ -49,7 +60,11 @@ export default async function LabPageRoute({ params }: Args) {
 
 export async function generateMetadata({ params }: Args): Promise<Metadata> {
   const { slug } = await params
-  return generateMeta({ doc: await queryLabPageBySlug(decodeURIComponent(slug)) })
+  const decodedSlug = decodeURIComponent(slug)
+  return generateMeta({
+    doc: await queryLabPageBySlug(decodedSlug),
+    pathname: `/lab/${decodedSlug}`,
+  })
 }
 
 const queryLabPageBySlug = cache(async (slug: string) => {

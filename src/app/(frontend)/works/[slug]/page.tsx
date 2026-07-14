@@ -10,7 +10,7 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { CaseStudyHero } from '@/heros/CaseStudyHero'
 import type { CaseStudy } from '@/payload-types'
 import { generateMeta } from '@/utilities/generateMeta'
-import { breadcrumbSchema, caseStudySchema } from '@/utilities/schema'
+import { breadcrumbSchema, creativeWorkSchema } from '@/utilities/schema'
 import PageClient from './page.client'
 
 export async function generateStaticParams() {
@@ -41,7 +41,7 @@ export default async function WorkPageRoute({ params }: Args) {
       <PageClient />
       <JsonLd
         data={[
-          caseStudySchema(page),
+          creativeWorkSchema(page, '/works'),
           breadcrumbSchema([
             { name: 'Work', path: '/works' },
             { name: page.title, path: url },

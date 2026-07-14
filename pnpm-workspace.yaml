@@ -7,5 +7,19 @@ allowBuilds:
   unrs-resolver: true
   bufferutil: false
   utf-8-validate: false
-  '@sentry/cli': set this to true or false
-  core-js: set this to true or false
+  # Downloads the sentry-cli binary used for source map upload at build time.
+  '@sentry/cli': true
+  # Postinstall only prints a funding message.
+  core-js: false
+
+# Single source of truth for the Sentry SDK version — referenced from
+# package.json and the override below via the catalog: protocol.
+catalog:
+  '@sentry/nextjs': ^10.65.0
+
+overrides:
+  # @payloadcms/plugin-sentry hard-depends on @sentry/nextjs@^9, which neither
+  # supports Next 16 nor shares the SDK instance our app initializes — its
+  # AdminErrorBoundary would capture into a second, uninitialized SDK. Force it
+  # onto the app's v10 SDK (it only uses ErrorBoundary, which v10 exports).
+  '@payloadcms/plugin-sentry>@sentry/nextjs': 'catalog:'
