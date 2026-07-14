@@ -85,18 +85,23 @@ export default buildConfig({
     },
   }),
   collections: [
+    // Website — publishing surfaces with public URLs
     Pages,
     Posts,
+    WorkPages,
+    // Content Hub — canonical, channel-agnostic source material
     Organizations,
     Projects,
     CaseStudies,
-    WorkPages,
     Testimonials,
+    // Assets
+    Media,
     AssetLibraries,
+    // Taxonomy
     Capabilities,
     Industries,
-    Media,
     Categories,
+    // System
     Users,
   ],
   cors: [getServerSideURL()].filter(Boolean),

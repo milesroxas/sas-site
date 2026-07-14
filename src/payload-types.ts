@@ -69,15 +69,15 @@ export interface Config {
   collections: {
     pages: Page;
     posts: Post;
+    'work-pages': WorkPage;
     organizations: Organization;
     projects: Project;
     'case-studies': CaseStudy;
-    'work-pages': WorkPage;
     testimonials: Testimonial;
+    media: Media;
     'asset-libraries': AssetLibrary;
     capabilities: Capability;
     industries: Industry;
-    media: Media;
     categories: Category;
     users: User;
     redirects: Redirect;
@@ -106,15 +106,15 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    'work-pages': WorkPagesSelect<false> | WorkPagesSelect<true>;
     organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
-    'work-pages': WorkPagesSelect<false> | WorkPagesSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
     'asset-libraries': AssetLibrariesSelect<false> | AssetLibrariesSelect<true>;
     capabilities: CapabilitiesSelect<false> | CapabilitiesSelect<true>;
     industries: IndustriesSelect<false> | IndustriesSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
@@ -1715,6 +1715,10 @@ export interface PayloadLockedDocument {
         value: number | Post;
       } | null)
     | ({
+        relationTo: 'work-pages';
+        value: number | WorkPage;
+      } | null)
+    | ({
         relationTo: 'organizations';
         value: number | Organization;
       } | null)
@@ -1727,12 +1731,12 @@ export interface PayloadLockedDocument {
         value: number | CaseStudy;
       } | null)
     | ({
-        relationTo: 'work-pages';
-        value: number | WorkPage;
-      } | null)
-    | ({
         relationTo: 'testimonials';
         value: number | Testimonial;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'asset-libraries';
@@ -1745,10 +1749,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'industries';
         value: number | Industry;
-      } | null)
-    | ({
-        relationTo: 'media';
-        value: number | Media;
       } | null)
     | ({
         relationTo: 'categories';
@@ -1988,6 +1988,149 @@ export interface PostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "work-pages_select".
+ */
+export interface WorkPagesSelect<T extends boolean = true> {
+  title?: T;
+  caseStudy?: T;
+  hero?:
+    | T
+    | {
+        eyebrow?: T;
+        titleOverride?: T;
+        summaryOverride?: T;
+        media?: T;
+        layout?: T;
+        theme?: T;
+        mediaTreatment?: T;
+      };
+  layout?:
+    | T
+    | {
+        caseStudyStorySection?: T | CaseStudyStorySectionBlockSelect<T>;
+        caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
+        caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
+        caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
+        caseStudyTestimonial?: T | CaseStudyTestimonialBlockSelect<T>;
+        caseStudyTransition?: T | CaseStudyTransitionBlockSelect<T>;
+        caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
+      };
+  coverAsset?: T;
+  downloadableAssets?: T;
+  relatedWorkPages?: T;
+  editorialNotes?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  featured?: T;
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyStorySectionBlock_select".
+ */
+export interface CaseStudyStorySectionBlockSelect<T extends boolean = true> {
+  source?: T;
+  eyebrow?: T;
+  headingOverride?: T;
+  bodyOverride?: T;
+  customBody?: T;
+  media?: T;
+  layout?: T;
+  theme?: T;
+  width?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyMediaShowcaseBlock_select".
+ */
+export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
+  heading?: T;
+  introduction?: T;
+  media?: T;
+  layout?: T;
+  theme?: T;
+  showCaptions?: T;
+  showCredits?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyKeyDecisionsBlock_select".
+ */
+export interface CaseStudyKeyDecisionsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  introduction?: T;
+  source?: T;
+  layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyMetricsBlock_select".
+ */
+export interface CaseStudyMetricsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  introduction?: T;
+  source?: T;
+  layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyTestimonialBlock_select".
+ */
+export interface CaseStudyTestimonialBlockSelect<T extends boolean = true> {
+  testimonial?: T;
+  layout?: T;
+  theme?: T;
+  showPortrait?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyTransitionBlock_select".
+ */
+export interface CaseStudyTransitionBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyRelatedWorkBlock_select".
+ */
+export interface CaseStudyRelatedWorkBlockSelect<T extends boolean = true> {
+  heading?: T;
+  selectionMode?: T;
+  limit?: T;
+  layout?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "organizations_select".
  */
 export interface OrganizationsSelect<T extends boolean = true> {
@@ -2135,149 +2278,6 @@ export interface CaseStudiesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "work-pages_select".
- */
-export interface WorkPagesSelect<T extends boolean = true> {
-  title?: T;
-  caseStudy?: T;
-  hero?:
-    | T
-    | {
-        eyebrow?: T;
-        titleOverride?: T;
-        summaryOverride?: T;
-        media?: T;
-        layout?: T;
-        theme?: T;
-        mediaTreatment?: T;
-      };
-  layout?:
-    | T
-    | {
-        caseStudyStorySection?: T | CaseStudyStorySectionBlockSelect<T>;
-        caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
-        caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
-        caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
-        caseStudyTestimonial?: T | CaseStudyTestimonialBlockSelect<T>;
-        caseStudyTransition?: T | CaseStudyTransitionBlockSelect<T>;
-        caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
-      };
-  coverAsset?: T;
-  downloadableAssets?: T;
-  relatedWorkPages?: T;
-  editorialNotes?: T;
-  meta?:
-    | T
-    | {
-        title?: T;
-        image?: T;
-        description?: T;
-      };
-  featured?: T;
-  publishedAt?: T;
-  generateSlug?: T;
-  slug?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyStorySectionBlock_select".
- */
-export interface CaseStudyStorySectionBlockSelect<T extends boolean = true> {
-  source?: T;
-  eyebrow?: T;
-  headingOverride?: T;
-  bodyOverride?: T;
-  customBody?: T;
-  media?: T;
-  layout?: T;
-  theme?: T;
-  width?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyMediaShowcaseBlock_select".
- */
-export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
-  heading?: T;
-  introduction?: T;
-  media?: T;
-  layout?: T;
-  theme?: T;
-  showCaptions?: T;
-  showCredits?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyKeyDecisionsBlock_select".
- */
-export interface CaseStudyKeyDecisionsBlockSelect<T extends boolean = true> {
-  heading?: T;
-  introduction?: T;
-  source?: T;
-  layout?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyMetricsBlock_select".
- */
-export interface CaseStudyMetricsBlockSelect<T extends boolean = true> {
-  heading?: T;
-  introduction?: T;
-  source?: T;
-  layout?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyTestimonialBlock_select".
- */
-export interface CaseStudyTestimonialBlockSelect<T extends boolean = true> {
-  testimonial?: T;
-  layout?: T;
-  theme?: T;
-  showPortrait?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyTransitionBlock_select".
- */
-export interface CaseStudyTransitionBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  heading?: T;
-  body?: T;
-  layout?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyRelatedWorkBlock_select".
- */
-export interface CaseStudyRelatedWorkBlockSelect<T extends boolean = true> {
-  heading?: T;
-  selectionMode?: T;
-  limit?: T;
-  layout?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "testimonials_select".
  */
 export interface TestimonialsSelect<T extends boolean = true> {
@@ -2296,51 +2296,6 @@ export interface TestimonialsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "asset-libraries_select".
- */
-export interface AssetLibrariesSelect<T extends boolean = true> {
-  name?: T;
-  generateSlug?: T;
-  slug?: T;
-  organization?: T;
-  project?: T;
-  rootFolder?: T;
-  description?: T;
-  libraryStatus?: T;
-  usageNotes?: T;
-  assets?: T;
-  caseStudies?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "capabilities_select".
- */
-export interface CapabilitiesSelect<T extends boolean = true> {
-  name?: T;
-  generateSlug?: T;
-  slug?: T;
-  description?: T;
-  order?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "industries_select".
- */
-export interface IndustriesSelect<T extends boolean = true> {
-  name?: T;
-  generateSlug?: T;
-  slug?: T;
-  description?: T;
-  order?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2446,6 +2401,51 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "asset-libraries_select".
+ */
+export interface AssetLibrariesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  organization?: T;
+  project?: T;
+  rootFolder?: T;
+  description?: T;
+  libraryStatus?: T;
+  usageNotes?: T;
+  assets?: T;
+  caseStudies?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "capabilities_select".
+ */
+export interface CapabilitiesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "industries_select".
+ */
+export interface IndustriesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2897,6 +2897,10 @@ export interface TaskSchedulePublish {
           value: number | Post;
         } | null)
       | ({
+          relationTo: 'work-pages';
+          value: number | WorkPage;
+        } | null)
+      | ({
           relationTo: 'organizations';
           value: number | Organization;
         } | null)
@@ -2907,10 +2911,6 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'case-studies';
           value: number | CaseStudy;
-        } | null)
-      | ({
-          relationTo: 'work-pages';
-          value: number | WorkPage;
         } | null)
       | ({
           relationTo: 'testimonials';

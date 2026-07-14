@@ -13,6 +13,7 @@ export const Users: CollectionConfig = {
     update: authenticated,
   },
   admin: {
+    group: 'System',
     components: {
       beforeListTable: ['@/collections/Users/components/InviteUserButton#InviteUserButton'],
     },

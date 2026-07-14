@@ -5,6 +5,7 @@ import { authenticated } from '../access/authenticated'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
+  labels: { singular: 'Post Category', plural: 'Post Categories' },
   access: {
     create: authenticated,
     delete: authenticated,
@@ -12,6 +13,7 @@ export const Categories: CollectionConfig = {
     update: authenticated,
   },
   admin: {
+    group: 'Taxonomy',
     useAsTitle: 'title',
   },
   fields: [
