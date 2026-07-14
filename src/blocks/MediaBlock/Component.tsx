@@ -16,19 +16,37 @@ type Props = MediaBlockProps & {
   disableInnerContainer?: boolean
 }
 
+const sizeClasses: Record<NonNullable<MediaBlockProps['size']>, string> = {
+  full: '',
+  inset: 'mx-auto max-w-3xl',
+  small: 'mx-auto max-w-md',
+}
+
+const hasRichTextContent = (state: MediaDoc['caption']): boolean =>
+  Boolean(
+    state?.root?.children?.some((node) => {
+      if (node.type !== 'paragraph') return true
+      const children = (node as { children?: unknown[] }).children
+      return Boolean(children?.length)
+    }),
+  )
+
 export const MediaBlock: React.FC<Props> = (props) => {
   const {
     captionClassName,
+    captionOverride,
     className,
     enableGutter = true,
     imgClassName,
     media,
+    size,
     staticImage,
     disableInnerContainer,
   } = props
 
   let caption: MediaDoc['caption'] | undefined
-  if (media && typeof media === 'object') caption = media.caption
+  if (captionOverride && hasRichTextContent(captionOverride)) caption = captionOverride
+  else if (media && typeof media === 'object') caption = media.caption
 
   return (
     <div
@@ -40,26 +58,28 @@ export const MediaBlock: React.FC<Props> = (props) => {
         className,
       )}
     >
-      {(media || staticImage) && (
-        <Media
-          imgClassName={cn('rounded-lg border border-border', imgClassName)}
-          resource={media}
-          src={staticImage}
-        />
-      )}
-      {caption && (
-        <div
-          className={cn(
-            'mt-6',
-            {
-              container: !disableInnerContainer,
-            },
-            captionClassName,
-          )}
-        >
-          <RichText data={caption} enableGutter={false} />
-        </div>
-      )}
+      <div className={sizeClasses[size ?? 'full']}>
+        {(media || staticImage) && (
+          <Media
+            imgClassName={cn('rounded-lg border border-border', imgClassName)}
+            resource={media}
+            src={staticImage}
+          />
+        )}
+        {caption && (
+          <div
+            className={cn(
+              'mt-6',
+              {
+                container: !disableInnerContainer,
+              },
+              captionClassName,
+            )}
+          >
+            <RichText data={caption} enableGutter={false} />
+          </div>
+        )}
+      </div>
     </div>
   )
 }

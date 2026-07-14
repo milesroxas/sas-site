@@ -320,6 +320,9 @@ export interface Post {
 export interface Media {
   id: number;
   title?: string | null;
+  /**
+   * Required before an asset can be public-approved.
+   */
   alt?: string | null;
   caption?: {
     root: {
@@ -1298,6 +1301,28 @@ export interface ContentBlock {
  */
 export interface MediaBlock {
   media: number | Media;
+  /**
+   * Presentation for this placement only; the media document itself stays layout-neutral.
+   */
+  size?: ('full' | 'inset' | 'small') | null;
+  /**
+   * Optional. Replaces the media document's canonical caption for this placement only.
+   */
+  captionOverride?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
@@ -2300,10 +2325,31 @@ export interface Search {
   id: number;
   title?: string | null;
   priority?: number | null;
-  doc: {
-    relationTo: 'posts';
-    value: number | Post;
-  };
+  doc:
+    | {
+        relationTo: 'pages';
+        value: number | Page;
+      }
+    | {
+        relationTo: 'expertise-pages';
+        value: number | ExpertisePage;
+      }
+    | {
+        relationTo: 'audience-pages';
+        value: number | AudiencePage;
+      }
+    | {
+        relationTo: 'work-pages';
+        value: number | WorkPage;
+      }
+    | {
+        relationTo: 'lab-pages';
+        value: number | LabPage;
+      }
+    | {
+        relationTo: 'posts';
+        value: number | Post;
+      };
   slug?: string | null;
   meta?: {
     title?: string | null;
@@ -2687,6 +2733,8 @@ export interface ContentBlockSelect<T extends boolean = true> {
  */
 export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
+  size?: T;
+  captionOverride?: T;
   id?: T;
   blockName?: T;
 }

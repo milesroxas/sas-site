@@ -27,7 +27,14 @@ export const Media: CollectionConfig = {
     {
       name: 'alt',
       type: 'text',
-      //required: true,
+      admin: { description: 'Required before an asset can be public-approved.' },
+      validate: (value: string | null | undefined, { siblingData }: { siblingData: unknown }) => {
+        const status = (siblingData as { usageStatus?: string } | undefined)?.usageStatus
+        if (status === 'public-approved' && !value?.trim()) {
+          return 'Alt text is required for public-approved assets.'
+        }
+        return true
+      },
     },
     {
       name: 'caption',

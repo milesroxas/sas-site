@@ -29,6 +29,7 @@ import { WorkPages } from './collections/WorkPages'
 import { askPublicEndpoints } from './endpoints/ask'
 import { newsletterPublicEndpoints } from './endpoints/newsletter'
 import { Footer } from './Footer/config'
+import { askEmbeddingsTable } from './features/ask/schema'
 import { Header } from './Header/config'
 import { newsletterSendTask } from './jobs/newsletterSend'
 import { plugins } from './plugins'
@@ -93,6 +94,18 @@ export default buildConfig({
     pool: {
       connectionString: process.env.POSTGRES_URL || '',
     },
+    beforeSchemaInit: [
+      // Ask RAG embedding index (src/features/ask/schema.ts) — derived data,
+      // not a Payload collection. Needs the pgvector extension (see the
+      // ask_embeddings migration; local docker image is pgvector/pgvector).
+      ({ schema }) => ({
+        ...schema,
+        tables: {
+          ...schema.tables,
+          ask_embeddings: askEmbeddingsTable,
+        },
+      }),
+    ],
   }),
   collections: [
     // Website — publishing surfaces with public URLs

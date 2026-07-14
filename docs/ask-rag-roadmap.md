@@ -12,47 +12,42 @@ The Ask feature ([feature README](../src/features/ask/README.md)) shipped as the
 
 Keyword retrieval over the `@payloadcms/plugin-search` index (posts only) → top 4 posts hydrated to plaintext → `gpt-5-mini` grounded answer with cited sources. Limits are documented in the feature README: keyword recall, whole-post truncation, per-instance rate limiter, small index.
 
-## Stage 1 — Content coverage
+## Stage 1 — Content coverage ✅ shipped
 
-**Problem:** Ask can only answer from posts; the site's substance lives in case studies, expertise pages, and work pages.
+All six public surfaces are in the corpus, driven by the shared registry in
+`src/shared/content/surfaces.ts` (one line per collection enrolls it in search, AEO, SEO URLs,
+and Ask at once). Layout collections extract through a generic allowlist walker
+(`src/shared/content/extract.ts`); work-pages and lab-pages hydrate their canonical Content Hub
+records. The search plugin indexes all six; the /search page links each result to its own
+collection's URL. Rebuild the search index with the admin Reindex button (Search collection,
+System group).
 
-**Change:**
-1. Add collections to `searchPlugin({ collections: [...] })` in `src/plugins/index.ts`.
-2. Extend `beforeSyncWithSearch` if the new collections need different excerpt fields.
-3. In `retrieve.ts`: add entries to `urlPrefixByCollection` and teach the hydration step each collection's body shape (which richtext/field carries the substance).
+## Stage 2 — Embedding retrieval (pgvector) ✅ shipped
 
-**Effort:** small. **Risk:** low — search page already consumes the same index, so coverage changes are visible in two features at once. Reindex existing docs by re-saving them (the plugin syncs on save).
+`ask_embeddings` (drizzle table registered via `beforeSchemaInit`, HNSW index, 1536-dim
+`text-embedding-3-small`) is the primary retrieval path with a 0.3 cosine-similarity floor;
+the keyword path remains as fallback. Publish/unpublish/delete hooks
+(`src/features/ask/indexSync.ts`, attached by `src/plugins/ask-index.ts`) keep the index in
+step, including canonical-record edits re-embedding dependent pages. Backfill / drift repair:
+`pnpm payload run scripts/backfill-ask-index.ts`. The migration enables the extension; local
+docker runs `pgvector/pgvector:pg18`. Hybrid (vector + keyword fused) scoring remains open —
+adopt if stage-5 evals show keyword-shaped misses.
 
-## Stage 2 — Embedding retrieval (pgvector on Neon)
+## Stage 3 — Chunking ✅ shipped
 
-**Problem:** keyword matching misses questions phrased differently from the content ("how do you help startups look credible?" won't match a post titled "Brand systems for early-stage teams").
+Documents chunk before embedding (`src/features/ask/chunk.ts`): heading-aware (h1–h3 boundaries
+first, then paragraph-boundary splits; tiny sections merged), ~500 tokens per chunk. Retrieval
+returns chunks grouped into ≤4 document sources with their heading trail as `[Heading > Path]`
+prompt context. Heading **deep-links** were dropped: the site's rendered headings carry no
+anchor ids — add ids to the RichText heading converter first if source links should target
+sections.
 
-**Change:**
-1. Enable `pgvector` on the Neon database (`CREATE EXTENSION vector`) via a Payload migration with raw SQL.
-2. Add an `embeddings` table (or Payload collection with a vector column via a custom migration): `{ collection, docId, chunkIndex, text, embedding vector(1536) }`.
-3. Index content on publish with an `afterChange` hook (mirror the search plugin's sync pattern): embed with the AI SDK's `embedMany` + `openai.textEmbedding('text-embedding-3-small')`.
-4. Rewrite `retrieveSources` internals: embed the question, `ORDER BY embedding <=> $1 LIMIT k` (cosine distance). Keep the keyword path as a fallback and consider **hybrid** scoring (vector + keyword) — cheap and measurably better than either alone.
+## Stage 4 — Streaming and conversation ✅ shipped
 
-**Effort:** medium — the first stage that adds infrastructure (one table, one extension, one hook). **Risk:** index drift (docs edited without re-embedding); the hook must also handle deletes and unpublish. Backfill with a one-off `payload run` script.
-
-## Stage 3 — Chunking
-
-**Problem:** whole-document embeddings blur topics together, and whole-post context windows waste tokens or truncate the relevant paragraph.
-
-**Change:** split documents into ~500-token chunks (heading-aware: split on `h2`/`h3` boundaries first, then by size) before embedding in the stage-2 hook. Retrieval returns chunks; the prompt cites the parent document. Store `chunkIndex` + heading path so sources can deep-link (`/posts/slug#heading`).
-
-**Effort:** small once stage 2 exists — it's a change to the indexing hook and hydration, not to schema or endpoint.
-
-## Stage 4 — Streaming and conversation
-
-**Problem:** answers arrive all-at-once (multi-second wait), and each question is independent — no follow-ups.
-
-**Change:**
-1. Swap `generateText` for `streamText` in the endpoint and return `result.toUIMessageStreamResponse()`.
-2. Swap the widget's hand-rolled fetch for the AI SDK's `useChat`, which handles streaming state, message history, and retries.
-3. Send prior turns with each request; retrieval runs on the latest question (or a model-rewritten standalone query once follow-ups like "what about for nonprofits?" start failing retrieval).
-
-**Effort:** medium — this is the first stage that rewrites the endpoint/UI seam rather than `retrieve.ts`. Do it when the answer quality justifies the UX investment, not before.
+The endpoint streams via `streamText` + the UI-message protocol; the widget runs on `useChat`
+with full conversation history sent per request. Retrieval still embeds only the latest
+question — model-rewritten standalone queries remain open for when follow-ups like "what about
+for nonprofits?" start failing retrieval.
 
 ## Stage 5 — Production hardening
 

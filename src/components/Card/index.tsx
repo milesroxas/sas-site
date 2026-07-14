@@ -15,7 +15,10 @@ import { forwardNavTransitionTypes, postImageVtName } from '@/shared/lib/view-tr
 import { cn } from '@/utilities/ui'
 import useClickableCard from '@/utilities/useClickableCard'
 
-export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title'>
+export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title'> & {
+  /** Explicit destination — takes precedence over `/${relationTo}/${slug}`. */
+  url?: string
+}
 
 export const Card: React.FC<{
   alignItems?: 'center'
@@ -34,7 +37,7 @@ export const Card: React.FC<{
   const hasCategories = categories && Array.isArray(categories) && categories.length > 0
   const titleToUse = titleFromProps || title
   const sanitizedDescription = description?.replace(/\s/g, ' ') // replace non-breaking space with white space
-  const href = `/${relationTo}/${slug}`
+  const href = doc?.url ?? `/${relationTo}/${slug}`
 
   return (
     <CardUi className={cn('cursor-pointer pt-0', className)} ref={card.ref}>

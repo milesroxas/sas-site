@@ -1,7 +1,7 @@
 import type { Payload, TypedLocale } from 'payload'
 import type { SiteInfo } from '@/payload-types'
+import { lexicalToMarkdownString } from '@/shared/content/lexicalToMarkdown'
 import { getServerSideURL } from '@/utilities/getURL'
-import { lexicalToMarkdownString } from './lexicalToMarkdown'
 import { AEO_CONTENT_SECTIONS, sectionDocUrl } from './sections'
 import type { AeoContentSection } from './types'
 

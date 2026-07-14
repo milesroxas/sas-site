@@ -10,5 +10,27 @@ export const MediaBlock: Block = {
       relationTo: 'media',
       required: true,
     },
+    {
+      name: 'size',
+      type: 'select',
+      defaultValue: 'full',
+      options: [
+        { label: 'Full width', value: 'full' },
+        { label: 'Inset', value: 'inset' },
+        { label: 'Small', value: 'small' },
+      ],
+      admin: {
+        description:
+          'Presentation for this placement only; the media document itself stays layout-neutral.',
+      },
+    },
+    {
+      name: 'captionOverride',
+      type: 'richText',
+      admin: {
+        description:
+          "Optional. Replaces the media document's canonical caption for this placement only.",
+      },
+    },
   ],
 }

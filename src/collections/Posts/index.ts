@@ -24,6 +24,7 @@ import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { populateAuthors } from './hooks/populateAuthors'
 import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
+import { validatePublicMedia } from './hooks/validatePublicMedia'
 
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
@@ -216,6 +217,7 @@ export const Posts: CollectionConfig<'posts'> = {
     slugField(),
   ],
   hooks: {
+    beforeChange: [validatePublicMedia],
     afterChange: [revalidatePost],
     afterRead: [populateAuthors],
     afterDelete: [revalidateDelete],

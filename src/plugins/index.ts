@@ -11,19 +11,13 @@ import type { Plugin } from 'payload'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import type { AudiencePage, ExpertisePage, LabPage, Page, Post, WorkPage } from '@/payload-types'
 import { aeoPlugin } from '@/plugins/aeo'
+import { askIndexPlugin } from '@/plugins/ask-index'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { searchFields } from '@/search/fieldOverrides'
+import { SEARCH_COLLECTIONS, surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
 import { getServerSideURL } from '@/utilities/getURL'
 
 type SeoDoc = Post | Page | WorkPage | LabPage | ExpertisePage | AudiencePage
-
-const urlPrefixByCollection: Record<string, string> = {
-  'work-pages': '/works',
-  'lab-pages': '/lab',
-  'expertise-pages': '/expertise',
-  'audience-pages': '/who-we-help',
-  posts: '/posts',
-}
 
 const generateTitle: GenerateTitle<SeoDoc> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Suits & Sandals` : 'Suits & Sandals'
@@ -31,9 +25,10 @@ const generateTitle: GenerateTitle<SeoDoc> = ({ doc }) => {
 
 const generateURL: GenerateURL<SeoDoc> = ({ collectionConfig, doc }) => {
   const url = getServerSideURL()
-  const prefix = urlPrefixByCollection[collectionConfig?.slug ?? ''] ?? ''
+  if (!doc?.slug) return url
 
-  return doc?.slug ? `${url}${prefix}/${doc.slug}` : url
+  const surface = surfaceByCollection.get(collectionConfig?.slug ?? '')
+  return surface ? `${url}${surfaceDocPath(surface, doc.slug)}` : `${url}/${doc.slug}`
 }
 
 export const plugins: Plugin[] = [
@@ -99,7 +94,7 @@ export const plugins: Plugin[] = [
     },
   }),
   searchPlugin({
-    collections: ['posts'],
+    collections: SEARCH_COLLECTIONS,
     beforeSync: beforeSyncWithSearch,
     searchOverrides: {
       admin: { group: 'System' },
@@ -109,6 +104,7 @@ export const plugins: Plugin[] = [
     },
   }),
   aeoPlugin(),
+  askIndexPlugin(),
   // Captures Payload REST/GraphQL/Local API errors (5xx by default) with
   // user context, and wraps the admin UI in a Sentry error boundary. Must
   // receive the app's own Sentry module so events reach the SDK instance

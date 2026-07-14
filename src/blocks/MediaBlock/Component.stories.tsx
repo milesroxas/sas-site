@@ -31,3 +31,15 @@ export const WithoutGutter: Story = {
     enableGutter: false,
   },
 }
+
+export const Inset: Story = {
+  args: {
+    size: 'inset',
+  },
+}
+
+export const Small: Story = {
+  args: {
+    size: 'small',
+  },
+}

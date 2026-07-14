@@ -7,11 +7,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export const PROJECT_ROOT = path.resolve(__dirname, '../..')
 
 /**
- * Pinned official Postgres image (server + bundled client tools).
- * Updated to latest stable at pin time — PostgreSQL 18.3 (GA); see postgresql.org/docs/release/.
+ * Pinned Postgres image (server + bundled client tools). The pgvector build of
+ * Postgres 18 — the Ask RAG embeddings need CREATE EXTENSION vector.
  * Bump the tag when you intentionally move to a newer minor/patch; keep in sync with `docker-compose.yml`.
  */
-export const POSTGRES_DOCKER_IMAGE = 'postgres:18.3-alpine'
+export const POSTGRES_DOCKER_IMAGE = 'pgvector/pgvector:pg18'
 
 export const LOCAL_POSTGRES_BASE = 'postgresql://postgres@127.0.0.1:54320/postgres'
 export const LOCAL_POSTGRES_DB = 'postgresql://postgres@127.0.0.1:54320/payload'

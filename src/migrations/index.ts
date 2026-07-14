@@ -6,6 +6,8 @@ import * as migration_20260714_022009_website_ia_expansion from './20260714_0220
 import * as migration_20260714_032150_newsletter from './20260714_032150_newsletter'
 import * as migration_20260714_154453_lab from './20260714_154453_lab'
 import * as migration_20260714_155123_aeo_site_info from './20260714_155123_aeo_site_info'
+import * as migration_20260714_173458_mediablock_presentation from './20260714_173458_mediablock_presentation'
+import * as migration_20260714_173641_ask_embeddings from './20260714_173641_ask_embeddings'
 
 export const migrations = [
   {
@@ -47,5 +49,15 @@ export const migrations = [
     up: migration_20260714_155123_aeo_site_info.up,
     down: migration_20260714_155123_aeo_site_info.down,
     name: '20260714_155123_aeo_site_info',
+  },
+  {
+    up: migration_20260714_173458_mediablock_presentation.up,
+    down: migration_20260714_173458_mediablock_presentation.down,
+    name: '20260714_173458_mediablock_presentation',
+  },
+  {
+    up: migration_20260714_173641_ask_embeddings.up,
+    down: migration_20260714_173641_ask_embeddings.down,
+    name: '20260714_173641_ask_embeddings',
   },
 ]

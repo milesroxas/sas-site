@@ -5,7 +5,8 @@
 
 services:
   postgres:
-    image: postgres:18.3-alpine
+    # pgvector build of Postgres 18 — the Ask RAG embeddings need CREATE EXTENSION vector.
+    image: pgvector/pgvector:pg18
     restart: unless-stopped
     ports:
       - '54320:5432'
@@ -14,7 +15,9 @@ services:
       POSTGRES_DB: payload
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # PG 18 images moved PGDATA under /var/lib/postgresql/18/… — mount the
+      # parent, not the pre-18 /var/lib/postgresql/data, or nothing persists.
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s

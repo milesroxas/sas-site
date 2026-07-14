@@ -52,9 +52,10 @@ aeoPlugin({
 
 ## Adding a new public collection
 
-1. Add a line to `AEO_CONTENT_SECTIONS` (`collection`, section `title`, `urlPrefix`; set
-   `fullContent: { richTextField }` only if the body is a single richText field). This enrolls it
-   in llms.txt, cache revalidation, and IndexNow simultaneously.
+1. Add a line to `CONTENT_SURFACES` in [`src/shared/content/surfaces.ts`](../../shared/content/surfaces.ts)
+   (`collection`, section `title`, `urlPrefix`, and a `body` descriptor). `AEO_CONTENT_SECTIONS`
+   derives from it — as do plugin-seo URLs, the search index, and the Ask RAG corpus — so one
+   line enrolls the collection in llms.txt, revalidation, IndexNow, search, and Ask at once.
 2. Render `<JsonLd>` in its detail route (pick the schema.org type in `schema.ts`) and pass
    `pathname` to `generateMeta` for the canonical URL.
 
@@ -67,7 +68,7 @@ be identity-equal with the field's — and the Next server bundle can carry two 
 `HorizontalRuleServerNode … does not subclass LexicalNode` or silently degrade. It works under
 `payload run` (single module graph), which makes the failure look intermittent.
 
-Use [`lexicalToMarkdownString`](./lexicalToMarkdown.ts) instead: a pure serializer over the
+Use [`lexicalToMarkdownString`](../../shared/content/lexicalToMarkdown.ts) instead: a pure serializer over the
 Lexical JSON tree — no editor instantiation, no module coupling. It covers the node types this
 site's editors enable (headings, lists, quotes, links, horizontal rules, inline formatting, code
 blocks, and blocks carrying a nested richText `content` field). If an editor gains a new node

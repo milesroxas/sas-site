@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import type { CardPostData } from '@/components/Card'
 import { CollectionArchive } from '@/components/CollectionArchive'
 import { Search } from '@/search/Component'
+import { surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import PageClient from './page.client'
 
@@ -16,7 +17,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   const { q: query } = await searchParamsPromise
   const payload = await getPayload({ config: configPromise })
 
-  const posts = await payload.find({
+  const results = await payload.find({
     collection: 'search',
     depth: 1,
     limit: 12,
@@ -25,6 +26,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
       slug: true,
       categories: true,
       meta: true,
+      doc: true,
     },
     // pagination: false reduces overhead if you don't need totalDocs
     pagination: false,
@@ -58,6 +60,14 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
       : {}),
   })
 
+  const cards: CardPostData[] = results.docs.map((result) => {
+    const surface = surfaceByCollection.get(result.doc.relationTo)
+    return {
+      ...(result as unknown as CardPostData),
+      url: surface && result.slug ? surfaceDocPath(surface, result.slug) : undefined,
+    }
+  })
+
   return (
     <div className="pt-24 pb-24">
       <PageClient />
@@ -71,8 +81,8 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
         </div>
       </RevealSection>
 
-      {posts.totalDocs > 0 ? (
-        <CollectionArchive posts={posts.docs as CardPostData[]} />
+      {results.totalDocs > 0 ? (
+        <CollectionArchive posts={cards} />
       ) : (
         <RevealSection className="container">
           <p>No results found.</p>
