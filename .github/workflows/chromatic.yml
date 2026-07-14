@@ -1,0 +1,54 @@
+# Chromatic — publish Storybook and run visual regression tests.
+#
+# Runs on every push so Chromatic's baseline chain stays unbroken (a GitHub
+# `paths:` filter would skip commits and orphan baselines — see
+# https://www.chromatic.com/docs/turbosnap/). Cost control comes from
+# TurboSnap (--only-changed): Chromatic traces the Vite dependency graph and
+# only snapshots stories affected by the commit's diff, so pushes that don't
+# touch story-affecting files complete with zero snapshots.
+#
+# Required repo secret (Settings → Secrets and variables → Actions):
+#   CHROMATIC_PROJECT_TOKEN   from Chromatic → Project → Manage → Configure
+
+name: Chromatic
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: chromatic-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  chromatic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Chromatic requires full git history to find baseline commits.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Uses the lockfile-pinned chromatic CLI (package.json "chromatic" script
+      # supplies --build-script-name=storybook:build).
+      #   --only-changed         TurboSnap: snapshot only stories affected by the diff
+      #   --auto-accept-changes  main is the source of truth; changes merged to main
+      #                          were already reviewed on the feature branch
+      #   --exit-zero-on-changes visual diffs are reviewed in Chromatic, not as CI failures
+      - name: Run Chromatic
+        run: >-
+          pnpm chromatic
+          --only-changed
+          --auto-accept-changes main
+          --exit-zero-on-changes
+        env:
+          CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
