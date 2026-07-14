@@ -1,0 +1,54 @@
+# Payload jobs runner — external scheduler for /api/payload-jobs/run.
+#
+# Why this exists: the Payload jobs queue powers newsletter sends and scheduled
+# publishing (schedulePublish). Immediate newsletter sends self-kick via
+# `after()` in src/collections/Newsletters/endpoints.ts, but future-dated jobs
+# (scheduled publishes) and crashed-send recovery need a periodic runner.
+# Vercel Hobby allows only daily crons, so vercel.json keeps a daily backstop
+# and this workflow provides the every-10-minutes cadence for free.
+# GitHub cron is best-effort — runs can drift by a few minutes, which is fine here.
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   PAYLOAD_JOBS_URL              e.g. https://<production-domain>/api/payload-jobs/run
+#   CRON_SECRET                   must match the CRON_SECRET env var on Vercel
+#                                 (checked by jobs.access.run in payload.config.ts)
+#   VERCEL_AUTOMATION_BYPASS_SECRET
+#                                 required while deployments sit behind Vercel SSO
+#                                 protection (Project → Settings → Deployment Protection
+#                                 → Protection Bypass for Automation). Optional once a
+#                                 public production domain exists.
+
+name: Run Payload jobs
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: payload-jobs
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Hit the jobs endpoint
+        env:
+          PAYLOAD_JOBS_URL: ${{ secrets.PAYLOAD_JOBS_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          if [ -z "$PAYLOAD_JOBS_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "PAYLOAD_JOBS_URL and CRON_SECRET secrets must be set" >&2
+            exit 1
+          fi
+
+          args=(--fail-with-body --silent --show-error --max-time 240
+                -H "Authorization: Bearer $CRON_SECRET")
+          if [ -n "$VERCEL_AUTOMATION_BYPASS_SECRET" ]; then
+            args+=(-H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET")
+          fi
+
+          curl "${args[@]}" "$PAYLOAD_JOBS_URL"
