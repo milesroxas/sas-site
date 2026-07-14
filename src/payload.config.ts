@@ -14,6 +14,8 @@ import { CaseStudies } from './collections/CaseStudies'
 import { Categories } from './collections/Categories'
 import { ExpertisePages } from './collections/ExpertisePages'
 import { Industries } from './collections/Industries'
+import { LabPages } from './collections/LabPages'
+import { LabProjects } from './collections/LabProjects'
 import { Media } from './collections/Media'
 import { Newsletters } from './collections/Newsletters'
 import { Organizations } from './collections/Organizations'
@@ -24,6 +26,7 @@ import { Subscribers } from './collections/Subscribers'
 import { Testimonials } from './collections/Testimonials'
 import { Users } from './collections/Users'
 import { WorkPages } from './collections/WorkPages'
+import { askPublicEndpoints } from './endpoints/ask'
 import { newsletterPublicEndpoints } from './endpoints/newsletter'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
@@ -96,12 +99,14 @@ export default buildConfig({
     Pages,
     Posts,
     WorkPages,
+    LabPages,
     ExpertisePages,
     AudiencePages,
     // Content Hub — canonical, channel-agnostic source material
     Organizations,
     Projects,
     CaseStudies,
+    LabProjects,
     Testimonials,
     // Assets
     Media,
@@ -118,7 +123,7 @@ export default buildConfig({
     Users,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  endpoints: [...newsletterPublicEndpoints],
+  endpoints: [...newsletterPublicEndpoints, ...askPublicEndpoints],
   plugins: [
     ...plugins,
     vercelBlobStorage({

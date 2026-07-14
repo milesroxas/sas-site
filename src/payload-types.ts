@@ -70,11 +70,13 @@ export interface Config {
     pages: Page;
     posts: Post;
     'work-pages': WorkPage;
+    'lab-pages': LabPage;
     'expertise-pages': ExpertisePage;
     'audience-pages': AudiencePage;
     organizations: Organization;
     projects: Project;
     'case-studies': CaseStudy;
+    'lab-projects': LabProject;
     testimonials: Testimonial;
     media: Media;
     'asset-libraries': AssetLibrary;
@@ -100,6 +102,9 @@ export interface Config {
     'case-studies': {
       presentations: 'work-pages';
     };
+    'lab-projects': {
+      presentations: 'lab-pages';
+    };
     'asset-libraries': {
       assets: 'media';
       caseStudies: 'case-studies';
@@ -112,11 +117,13 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     'work-pages': WorkPagesSelect<false> | WorkPagesSelect<true>;
+    'lab-pages': LabPagesSelect<false> | LabPagesSelect<true>;
     'expertise-pages': ExpertisePagesSelect<false> | ExpertisePagesSelect<true>;
     'audience-pages': AudiencePagesSelect<false> | AudiencePagesSelect<true>;
     organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
+    'lab-projects': LabProjectsSelect<false> | LabProjectsSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'asset-libraries': AssetLibrariesSelect<false> | AssetLibrariesSelect<true>;
@@ -145,10 +152,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'site-info': SiteInfo;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'site-info': SiteInfoSelect<false> | SiteInfoSelect<true>;
   };
   locale: null;
   widgets: {
@@ -1568,6 +1577,326 @@ export interface Audience {
   createdAt: string;
 }
 /**
+ * Website-specific lab-project presentation, composition, SEO, preview, and publishing.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lab-pages".
+ */
+export interface LabPage {
+  id: number;
+  /**
+   * Editorial label for this website entry; canonical lab-project title remains in Content Hub.
+   */
+  title: string;
+  /**
+   * The canonical Lab Project record rendered by this page.
+   */
+  labProject: number | LabProject;
+  hero?: {
+    eyebrow?: string | null;
+    /**
+     * Website-only. Leave empty to use the canonical title.
+     */
+    titleOverride?: string | null;
+    /**
+     * Website-only. Leave empty to use the canonical summary.
+     */
+    summaryOverride?: string | null;
+    media?: (number | null) | Media;
+    layout?: ('editorial-split' | 'centered' | 'immersive' | 'media-led') | null;
+    theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+    mediaTreatment?: ('contained' | 'full-bleed' | 'floating' | 'background') | null;
+  };
+  /**
+   * Website composition only. Canonical narrative remains in the related Lab Project record.
+   */
+  layout?:
+    | (LabStorySectionBlock | LabMediaShowcaseBlock | LabFactsBlock | LabTransitionBlock | LabRelatedProjectsBlock)[]
+    | null;
+  /**
+   * Used on cards, indexes, and as the hero fallback.
+   */
+  coverAsset?: (number | null) | Media;
+  relatedLabPages?: (number | LabPage)[] | null;
+  editorialNotes?: string | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  featured?: boolean | null;
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Canonical, reusable records of internal work — experiments, prototypes, and showcase pieces that are not client engagements. Website presentation is authored under Website → Lab Pages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lab-projects".
+ */
+export interface LabProject {
+  id: number;
+  title: string;
+  kind: 'experiment' | 'prototype' | 'showcase' | 'tool' | 'research';
+  status: 'planned' | 'active' | 'completed' | 'archived';
+  startDate?: string | null;
+  endDate?: string | null;
+  thesis?: string | null;
+  /**
+   * Reused everywhere: heroes, cards, newsletters, future channels. Write them to stand alone.
+   */
+  summaries?: {
+    oneLine?: string | null;
+    short?: string | null;
+    medium?: string | null;
+  };
+  capabilities?: (number | Capability)[] | null;
+  technologies?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  context?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  approach?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  outcome?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  learnings?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  internalNotes?: string | null;
+  coverAsset?: (number | null) | Media;
+  /**
+   * Approved source assets for every presentation surface. Internal work attaches media directly rather than through client Asset Libraries.
+   */
+  selectedAssets?: (number | Media)[] | null;
+  projectLinks?:
+    | {
+        label: string;
+        url: string;
+        visibility?: ('public' | 'internal') | null;
+        id?: string | null;
+      }[]
+    | null;
+  presentations?: {
+    docs?: (number | LabPage)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateKey?: boolean | null;
+  key: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabStorySectionBlock".
+ */
+export interface LabStorySectionBlock {
+  /**
+   * Uses canonical story content unless a website override is supplied.
+   */
+  source: 'context' | 'approach' | 'outcome' | 'learnings' | 'custom';
+  eyebrow?: string | null;
+  headingOverride?: string | null;
+  /**
+   * Website-only override; canonical content is unchanged.
+   */
+  bodyOverride?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  customBody?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media?: (number | null) | Media;
+  layout?: ('text-only' | 'text-left' | 'text-right' | 'centered' | 'sticky-media') | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  width?: ('narrow' | 'standard' | 'wide') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'labStorySection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabMediaShowcaseBlock".
+ */
+export interface LabMediaShowcaseBlock {
+  heading?: string | null;
+  introduction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media: (number | Media)[];
+  layout?: ('single' | 'grid' | 'horizontal' | 'stacked' | 'full-bleed' | 'comparison') | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  showCaptions?: boolean | null;
+  showCredits?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'labMediaShowcase';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFactsBlock".
+ */
+export interface LabFactsBlock {
+  heading?: string | null;
+  showStatus?: boolean | null;
+  showTechnologies?: boolean | null;
+  /**
+   * Only links marked public are ever rendered.
+   */
+  showLinks?: boolean | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'labFacts';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabTransitionBlock".
+ */
+export interface LabTransitionBlock {
+  eyebrow?: string | null;
+  heading: string;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'labTransition';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabRelatedProjectsBlock".
+ */
+export interface LabRelatedProjectsBlock {
+  heading?: string | null;
+  selectionMode?: ('document-settings' | 'automatic-capability-match') | null;
+  limit?: number | null;
+  layout?: ('grid' | 'list' | 'feature') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'labRelatedProjects';
+}
+/**
  * Service offering pages published at /expertise/[slug]. Composition and SEO only; canonical service facts live in Capabilities.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1758,6 +2087,7 @@ export interface Newsletter {
     | NewsletterImageBlock
     | NewsletterButtonBlock
     | NewsletterPostsBlock
+    | NewsletterLabPagesBlock
     | NewsletterDividerBlock
   )[];
   /**
@@ -1842,6 +2172,23 @@ export interface NewsletterPostsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterLabPagesBlock".
+ */
+export interface NewsletterLabPagesBlock {
+  /**
+   * Optional section heading.
+   */
+  heading?: string | null;
+  /**
+   * Published Lab Pages, rendered with each page’s SEO image and the canonical summary.
+   */
+  labPages: (number | LabPage)[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'nlLabPages';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "NewsletterDividerBlock".
  */
 export interface NewsletterDividerBlock {
@@ -1908,6 +2255,10 @@ export interface Redirect {
       | ({
           relationTo: 'work-pages';
           value: number | WorkPage;
+        } | null)
+      | ({
+          relationTo: 'lab-pages';
+          value: number | LabPage;
         } | null)
       | ({
           relationTo: 'expertise-pages';
@@ -2099,6 +2450,10 @@ export interface PayloadLockedDocument {
         value: number | WorkPage;
       } | null)
     | ({
+        relationTo: 'lab-pages';
+        value: number | LabPage;
+      } | null)
+    | ({
         relationTo: 'expertise-pages';
         value: number | ExpertisePage;
       } | null)
@@ -2117,6 +2472,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'case-studies';
         value: number | CaseStudy;
+      } | null)
+    | ({
+        relationTo: 'lab-projects';
+        value: number | LabProject;
       } | null)
     | ({
         relationTo: 'testimonials';
@@ -2545,6 +2904,121 @@ export interface CaseStudyRelatedWorkBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lab-pages_select".
+ */
+export interface LabPagesSelect<T extends boolean = true> {
+  title?: T;
+  labProject?: T;
+  hero?:
+    | T
+    | {
+        eyebrow?: T;
+        titleOverride?: T;
+        summaryOverride?: T;
+        media?: T;
+        layout?: T;
+        theme?: T;
+        mediaTreatment?: T;
+      };
+  layout?:
+    | T
+    | {
+        labStorySection?: T | LabStorySectionBlockSelect<T>;
+        labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
+        labFacts?: T | LabFactsBlockSelect<T>;
+        labTransition?: T | LabTransitionBlockSelect<T>;
+        labRelatedProjects?: T | LabRelatedProjectsBlockSelect<T>;
+      };
+  coverAsset?: T;
+  relatedLabPages?: T;
+  editorialNotes?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  featured?: T;
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabStorySectionBlock_select".
+ */
+export interface LabStorySectionBlockSelect<T extends boolean = true> {
+  source?: T;
+  eyebrow?: T;
+  headingOverride?: T;
+  bodyOverride?: T;
+  customBody?: T;
+  media?: T;
+  layout?: T;
+  theme?: T;
+  width?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabMediaShowcaseBlock_select".
+ */
+export interface LabMediaShowcaseBlockSelect<T extends boolean = true> {
+  heading?: T;
+  introduction?: T;
+  media?: T;
+  layout?: T;
+  theme?: T;
+  showCaptions?: T;
+  showCredits?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFactsBlock_select".
+ */
+export interface LabFactsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  showStatus?: T;
+  showTechnologies?: T;
+  showLinks?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabTransitionBlock_select".
+ */
+export interface LabTransitionBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabRelatedProjectsBlock_select".
+ */
+export interface LabRelatedProjectsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  selectionMode?: T;
+  limit?: T;
+  layout?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "expertise-pages_select".
  */
 export interface ExpertisePagesSelect<T extends boolean = true> {
@@ -2800,6 +3274,54 @@ export interface CaseStudiesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lab-projects_select".
+ */
+export interface LabProjectsSelect<T extends boolean = true> {
+  title?: T;
+  kind?: T;
+  status?: T;
+  startDate?: T;
+  endDate?: T;
+  thesis?: T;
+  summaries?:
+    | T
+    | {
+        oneLine?: T;
+        short?: T;
+        medium?: T;
+      };
+  capabilities?: T;
+  technologies?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  context?: T;
+  approach?: T;
+  outcome?: T;
+  learnings?: T;
+  internalNotes?: T;
+  coverAsset?: T;
+  selectedAssets?: T;
+  projectLinks?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        visibility?: T;
+        id?: T;
+      };
+  presentations?: T;
+  publishedAt?: T;
+  generateKey?: T;
+  key?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "testimonials_select".
  */
 export interface TestimonialsSelect<T extends boolean = true> {
@@ -3007,6 +3529,7 @@ export interface NewslettersSelect<T extends boolean = true> {
         nlImage?: T | NewsletterImageBlockSelect<T>;
         nlButton?: T | NewsletterButtonBlockSelect<T>;
         nlPosts?: T | NewsletterPostsBlockSelect<T>;
+        nlLabPages?: T | NewsletterLabPagesBlockSelect<T>;
         nlDivider?: T | NewsletterDividerBlockSelect<T>;
       };
   audiences?: T;
@@ -3056,6 +3579,16 @@ export interface NewsletterButtonBlockSelect<T extends boolean = true> {
 export interface NewsletterPostsBlockSelect<T extends boolean = true> {
   heading?: T;
   posts?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterLabPagesBlock_select".
+ */
+export interface NewsletterLabPagesBlockSelect<T extends boolean = true> {
+  heading?: T;
+  labPages?: T;
   id?: T;
   blockName?: T;
 }
@@ -3456,6 +3989,57 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
+ * Company identity used for structured data (JSON-LD), llms.txt, and default page metadata.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-info".
+ */
+export interface SiteInfo {
+  id: number;
+  name: string;
+  /**
+   * Registered legal name, if different from the brand name.
+   */
+  legalName?: string | null;
+  /**
+   * One-sentence positioning. Used as the llms.txt summary and OG description.
+   */
+  tagline?: string | null;
+  /**
+   * Longer company summary for AI engines and structured data. Two to four sentences.
+   */
+  description?: string | null;
+  foundingYear?: number | null;
+  contactEmail?: string | null;
+  /**
+   * Used as the Organization logo in structured data.
+   */
+  logo?: (number | null) | Media;
+  address?: {
+    streetAddress?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+  };
+  /**
+   * Profile URLs for the sameAs entity anchor: LinkedIn, Instagram, X, Clutch, Crunchbase, GitHub, Google Business Profile. Keep name and description identical across these profiles.
+   */
+  socialProfiles?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional extra paragraph appended to llms.txt (e.g. preferred citation form, what the agency is known for).
+   */
+  llmsNotes?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -3497,6 +4081,39 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-info_select".
+ */
+export interface SiteInfoSelect<T extends boolean = true> {
+  name?: T;
+  legalName?: T;
+  tagline?: T;
+  description?: T;
+  foundingYear?: T;
+  contactEmail?: T;
+  logo?: T;
+  address?:
+    | T
+    | {
+        streetAddress?: T;
+        city?: T;
+        state?: T;
+        postalCode?: T;
+        country?: T;
+      };
+  socialProfiles?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  llmsNotes?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -3545,6 +4162,10 @@ export interface TaskSchedulePublish {
           value: number | WorkPage;
         } | null)
       | ({
+          relationTo: 'lab-pages';
+          value: number | LabPage;
+        } | null)
+      | ({
           relationTo: 'expertise-pages';
           value: number | ExpertisePage;
         } | null)
@@ -3563,6 +4184,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'case-studies';
           value: number | CaseStudy;
+        } | null)
+      | ({
+          relationTo: 'lab-projects';
+          value: number | LabProject;
         } | null)
       | ({
           relationTo: 'testimonials';

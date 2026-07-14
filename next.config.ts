@@ -48,6 +48,20 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: true,
   redirects,
+  // Markdown alternates for agents: /posts/foo.md, and content negotiation
+  // (Accept: text/markdown) on /posts/foo. Both resolve to the markdown route
+  // handler at /md/posts/[slug].
+  rewrites: async () => [
+    {
+      source: '/posts/:slug.md',
+      destination: '/md/posts/:slug',
+    },
+    {
+      source: '/posts/:slug',
+      destination: '/md/posts/:slug',
+      has: [{ type: 'header', key: 'accept', value: '.*text/markdown.*' }],
+    },
+  ],
   turbopack: {
     root: path.resolve(dirname),
   },

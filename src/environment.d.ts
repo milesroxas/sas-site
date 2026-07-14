@@ -20,6 +20,10 @@ declare global {
       EMAIL_ASSET_BASE_URL?: string
       /** Authorizes the Vercel cron that runs queued Payload jobs. */
       CRON_SECRET: string
+      /** Answer model for the /api/ask RAG endpoint (Vercel AI SDK, OpenAI provider). Optional — endpoint returns 503 when unset. */
+      OPENAI_API_KEY?: string
+      /** c15t consent backend URL (https://<instance>.c15t.dev from consent.io). Optional — offline mode (browser-only consent storage) when unset. */
+      NEXT_PUBLIC_C15T_URL?: string
     }
   }
 }

@@ -4,11 +4,13 @@ import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 import { RenderCaseStudyBlocks } from '@/blocks/case-study/RenderCaseStudyBlocks'
+import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { CaseStudyHero } from '@/heros/CaseStudyHero'
 import type { CaseStudy } from '@/payload-types'
 import { generateMeta } from '@/utilities/generateMeta'
+import { breadcrumbSchema, caseStudySchema } from '@/utilities/schema'
 import PageClient from './page.client'
 
 export async function generateStaticParams() {
@@ -37,6 +39,15 @@ export default async function WorkPageRoute({ params }: Args) {
   return (
     <article>
       <PageClient />
+      <JsonLd
+        data={[
+          caseStudySchema(page),
+          breadcrumbSchema([
+            { name: 'Work', path: '/works' },
+            { name: page.title, path: url },
+          ]),
+        ]}
+      />
       <PayloadRedirects disableNotFound url={url} />
       {draft && <LivePreviewListener />}
       <CaseStudyHero page={page} study={study} />
@@ -49,7 +60,11 @@ export default async function WorkPageRoute({ params }: Args) {
 
 export async function generateMetadata({ params }: Args): Promise<Metadata> {
   const { slug } = await params
-  return generateMeta({ doc: await queryWorkPageBySlug(decodeURIComponent(slug)) })
+  const decodedSlug = decodeURIComponent(slug)
+  return generateMeta({
+    doc: await queryWorkPageBySlug(decodedSlug),
+    pathname: `/works/${decodedSlug}`,
+  })
 }
 
 const queryWorkPageBySlug = cache(async (slug: string) => {

@@ -7,15 +7,17 @@ import type { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import type { Plugin } from 'payload'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
-import type { AudiencePage, ExpertisePage, Page, Post, WorkPage } from '@/payload-types'
+import type { AudiencePage, ExpertisePage, LabPage, Page, Post, WorkPage } from '@/payload-types'
+import { aeoPlugin } from '@/plugins/aeo'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { searchFields } from '@/search/fieldOverrides'
 import { getServerSideURL } from '@/utilities/getURL'
 
-type SeoDoc = Post | Page | WorkPage | ExpertisePage | AudiencePage
+type SeoDoc = Post | Page | WorkPage | LabPage | ExpertisePage | AudiencePage
 
 const urlPrefixByCollection: Record<string, string> = {
   'work-pages': '/works',
+  'lab-pages': '/lab',
   'expertise-pages': '/expertise',
   'audience-pages': '/who-we-help',
   posts: '/posts',
@@ -34,7 +36,7 @@ const generateURL: GenerateURL<SeoDoc> = ({ collectionConfig, doc }) => {
 
 export const plugins: Plugin[] = [
   redirectsPlugin({
-    collections: ['pages', 'posts', 'work-pages', 'expertise-pages', 'audience-pages'],
+    collections: ['pages', 'posts', 'work-pages', 'lab-pages', 'expertise-pages', 'audience-pages'],
     overrides: {
       admin: { group: 'System' },
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type
@@ -104,4 +106,5 @@ export const plugins: Plugin[] = [
       },
     },
   }),
+  aeoPlugin(),
 ]

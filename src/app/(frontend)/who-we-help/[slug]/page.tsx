@@ -5,6 +5,7 @@ import { getPayload } from 'payload'
 import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { getWorkPageCardsByIndustries } from '@/collections/WorkPages/queries'
+import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { RelatedWorkSection } from '@/components/RelatedWorkSection'
@@ -12,6 +13,7 @@ import type { WorkPageCardData } from '@/components/WorkPageCard'
 import { RenderHero } from '@/heros/RenderHero'
 import type { AudiencePage, WorkPage } from '@/payload-types'
 import { generateMeta } from '@/utilities/generateMeta'
+import { breadcrumbSchema } from '@/utilities/schema'
 import PageClient from './page.client'
 
 export async function generateStaticParams() {
@@ -40,6 +42,12 @@ export default async function AudiencePageRoute({ params }: Args) {
   return (
     <article className="pt-16 pb-24">
       <PageClient />
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: 'Who We Help', path: '/who-we-help' },
+          { name: page.title, path: url },
+        ])}
+      />
       <PayloadRedirects disableNotFound url={url} />
       {draft && <LivePreviewListener />}
       <RenderHero {...page.hero} />
@@ -51,7 +59,11 @@ export default async function AudiencePageRoute({ params }: Args) {
 
 export async function generateMetadata({ params }: Args): Promise<Metadata> {
   const { slug } = await params
-  return generateMeta({ doc: await queryAudiencePageBySlug(decodeURIComponent(slug)) })
+  const decodedSlug = decodeURIComponent(slug)
+  return generateMeta({
+    doc: await queryAudiencePageBySlug(decodedSlug),
+    pathname: `/who-we-help/${decodedSlug}`,
+  })
 }
 
 const resolveRelatedWork = async (page: AudiencePage): Promise<WorkPageCardData[]> => {

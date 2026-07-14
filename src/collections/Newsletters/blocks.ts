@@ -87,6 +87,27 @@ export const NewsletterPosts: Block = {
   ],
 }
 
+export const NewsletterLabPages: Block = {
+  slug: 'nlLabPages',
+  interfaceName: 'NewsletterLabPagesBlock',
+  labels: { singular: 'Featured lab projects', plural: 'Featured lab projects' },
+  fields: [
+    { name: 'heading', type: 'text', admin: { description: 'Optional section heading.' } },
+    {
+      name: 'labPages',
+      type: 'relationship',
+      relationTo: 'lab-pages',
+      hasMany: true,
+      required: true,
+      maxRows: 4,
+      admin: {
+        description:
+          'Published Lab Pages, rendered with each page’s SEO image and the canonical summary.',
+      },
+    },
+  ],
+}
+
 export const NewsletterDivider: Block = {
   slug: 'nlDivider',
   interfaceName: 'NewsletterDividerBlock',
@@ -99,5 +120,6 @@ export const newsletterBlocks: Block[] = [
   NewsletterImage,
   NewsletterButton,
   NewsletterPosts,
+  NewsletterLabPages,
   NewsletterDivider,
 ]

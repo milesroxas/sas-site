@@ -30,6 +30,8 @@
     "db:down": "docker compose down"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^4.0.11",
+    "@c15t/nextjs": "^2.1.0",
     "@gsap/react": "^2.1.2",
     "@payloadcms/admin-bar": "3.85.1",
     "@payloadcms/db-postgres": "3.85.1",
@@ -53,6 +55,7 @@
     "@react-three/fiber": "^9.6.1",
     "@tabler/icons-react": "^3.44.0",
     "@vercel/speed-insights": "^2.0.0",
+    "ai": "^7.0.22",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cross-env": "^10.1.0",
@@ -103,6 +106,7 @@
     "ink-spinner": "^5.0.0",
     "jsdom": "29.1.1",
     "postcss": "^8.5.15",
+    "schema-dts": "^2.0.0",
     "storybook": "^10.4.6",
     "tailwindcss": "^4.3.1",
     "tsx": "4.22.4",

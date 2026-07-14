@@ -34,8 +34,10 @@ export const generateMeta = async (args: {
     | Partial<ExpertisePage>
     | Partial<AudiencePage>
     | null
+  /** Site-relative path of the page, e.g. '/posts/my-post'. Drives the canonical URL. */
+  pathname?: string
 }): Promise<Metadata> => {
-  const { doc } = args
+  const { doc, pathname } = args
 
   const ogImage = getImageURL(doc?.meta?.image)
 
@@ -43,6 +45,7 @@ export const generateMeta = async (args: {
 
   return {
     description: doc?.meta?.description,
+    ...(pathname ? { alternates: { canonical: pathname } } : {}),
     openGraph: mergeOpenGraph({
       description: doc?.meta?.description || '',
       images: ogImage
@@ -53,7 +56,7 @@ export const generateMeta = async (args: {
           ]
         : undefined,
       title,
-      url: Array.isArray(doc?.slug) ? doc?.slug.join('/') : '/',
+      url: pathname ?? '/',
     }),
     title,
   }

@@ -20,7 +20,9 @@ const collections: CollectionSlug[] = [
   'search',
 ]
 
-const globals: GlobalSlug[] = ['header', 'footer']
+// `satisfies` keeps the literal slugs so `updateGlobal` narrows `data` to the nav globals;
+// a wide `GlobalSlug[]` annotation would reject `navItems` once other globals exist.
+const globals = ['header', 'footer'] satisfies GlobalSlug[]
 
 const categories = ['Technology', 'News', 'Finance', 'Design', 'Software', 'Engineering']
 

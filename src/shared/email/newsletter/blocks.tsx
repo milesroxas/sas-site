@@ -1,5 +1,5 @@
 import { Button, Heading, Hr, Img, Link, Section, Text } from 'react-email'
-import type { Media, Newsletter, Post } from '@/payload-types'
+import type { LabPage, Media, Newsletter, Post } from '@/payload-types'
 import { EmailRichText } from './rich-text'
 import { absoluteUrl } from './url'
 
@@ -24,6 +24,9 @@ const asMedia = (value: number | Media | null | undefined): Media | null =>
   value && typeof value === 'object' ? value : null
 
 const asPost = (value: number | Post): Post | null => (typeof value === 'object' ? value : null)
+
+const asLabPage = (value: number | LabPage): LabPage | null =>
+  typeof value === 'object' ? value : null
 
 /** Pick a reasonably sized rendition for a ~600px column; fall back to the original upload. */
 function mediaSource(media: Media): { url: string; width: number; height: number } | null {
@@ -87,6 +90,38 @@ function FeaturedPost({ post, baseUrl }: { post: Post; baseUrl: string }) {
   )
 }
 
+function FeaturedLabPage({ page, baseUrl }: { page: LabPage; baseUrl: string }) {
+  const url = `${baseUrl}/lab/${page.slug}`
+  const project = typeof page.labProject === 'object' ? page.labProject : null
+  const image = asMedia(page.meta?.image)
+  const description =
+    page.meta?.description || project?.summaries?.oneLine || project?.summaries?.short
+
+  return (
+    <Section className="my-6">
+      {image ? <EmailImage media={image} href={url} baseUrl={baseUrl} /> : null}
+      <Heading
+        as="h3"
+        className="email-fg text-16 text-fg mt-0 mb-2 text-left font-sans font-semibold"
+      >
+        <Link href={url} className="email-fg text-fg no-underline">
+          {project?.title || page.title}
+        </Link>
+      </Heading>
+      {description ? (
+        <Text className="email-fg-2 text-14 text-fg-2 mt-0 mb-2 text-left font-sans">
+          {description}
+        </Text>
+      ) : null}
+      <Text className="m-0 text-left">
+        <Link href={url} className="email-fg text-13 text-fg underline">
+          See the project
+        </Link>
+      </Text>
+    </Section>
+  )
+}
+
 export function NewsletterBlocks({
   blocks,
   baseUrl,
@@ -142,6 +177,27 @@ export function NewsletterBlocks({
                 ) : null}
                 {posts.map((post) => (
                   <FeaturedPost key={post.id} post={post} baseUrl={baseUrl} />
+                ))}
+              </Section>
+            )
+          }
+          case 'nlLabPages': {
+            const labPages = (block.labPages ?? [])
+              .map(asLabPage)
+              .filter((page): page is LabPage => page !== null)
+            if (!labPages.length) return null
+            return (
+              <Section key={index} className="my-2">
+                {block.heading ? (
+                  <Heading
+                    as="h2"
+                    className="email-fg text-24 text-fg mt-8 mb-2 text-left font-sans"
+                  >
+                    {block.heading}
+                  </Heading>
+                ) : null}
+                {labPages.map((page) => (
+                  <FeaturedLabPage key={page.id} page={page} baseUrl={baseUrl} />
                 ))}
               </Section>
             )

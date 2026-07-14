@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@c15t/nextjs/styles.css";
 /* ejected from shadcn@4.13.0 */
 @theme inline {
   @keyframes accordion-down {

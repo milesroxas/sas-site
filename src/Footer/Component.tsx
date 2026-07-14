@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CookiePreferencesLink } from '@/components/CookiePreferencesLink'
 import { CMSLink } from '@/components/Link'
 import { Logo } from '@/components/Logo/Logo'
 import type { Footer as FooterData } from '@/payload-types'
@@ -40,6 +41,7 @@ export async function Footer() {
               return <CMSLink className="text-white" key={i} {...link} />
             })}
           </nav>
+          <CookiePreferencesLink className="text-white/70 text-sm underline-offset-4 hover:underline" />
         </div>
       </div>
     </footer>
