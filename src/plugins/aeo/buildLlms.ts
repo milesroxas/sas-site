@@ -2,7 +2,7 @@ import type { Payload, TypedLocale } from 'payload'
 import type { SiteInfo } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 import { lexicalToMarkdownString } from './lexicalToMarkdown'
-import { AEO_CONTENT_SECTIONS } from './sections'
+import { AEO_CONTENT_SECTIONS, sectionDocUrl } from './sections'
 import type { AeoContentSection } from './types'
 
 type SectionDoc = {
@@ -14,10 +14,7 @@ type SectionDoc = {
   [key: string]: unknown
 }
 
-const docUrl = (section: AeoContentSection, slug: string, siteUrl: string): string =>
-  section.homeSlug && slug === section.homeSlug
-    ? `${siteUrl}/`
-    : `${siteUrl}${section.urlPrefix}/${slug}`
+const docUrl = sectionDocUrl
 
 const querySection = async (payload: Payload, section: AeoContentSection) => {
   const { docs } = await payload.find({
