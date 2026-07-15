@@ -1,6 +1,6 @@
 import { type MigrateDownArgs, type MigrateUpArgs, sql } from '@payloadcms/db-vercel-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db, payload: _payload, req: _req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
    CREATE TYPE "public"."enum_lp_story_source" AS ENUM('context', 'approach', 'outcome', 'learnings', 'custom');
   CREATE TYPE "public"."enum_lp_story_layout" AS ENUM('text-only', 'text-left', 'text-right', 'centered', 'sticky-media');
@@ -541,7 +541,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "payload_locked_documents_rels_lab_projects_id_idx" ON "payload_locked_documents_rels" USING btree ("lab_projects_id");`)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db, payload: _payload, req: _req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    ALTER TABLE "lp_story" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "lp_media" DISABLE ROW LEVEL SECURITY;

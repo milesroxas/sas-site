@@ -12,9 +12,10 @@ The Content Hub is the canonical record of client work. What you write here is t
 | Content Hub → **Projects** | The factual engagement record: what we did, when, scope, deliverables |
 | Content Hub → **Case Study Content** | The reusable narrative and evidence for a project |
 | Content Hub → **Testimonials** | Quotes, each with an approval status |
+| Content Hub → **Lab Projects** | The factual record of internal lab work (presented on the site by Lab Pages) |
 | Assets → **Asset Libraries** | Per-project groupings of approved media |
 | Assets → **Media** | Uploaded files, each with a usage status |
-| Taxonomy → **Capabilities / Industries** | Shared vocabulary used across the whole system |
+| Taxonomy → **Capabilities / Industries / Post Categories** | Shared vocabulary used across the whole system |
 
 ## Workflow: documenting an engagement
 
@@ -26,7 +27,7 @@ Content Hub → Clients. Name, short name, website, logo, industries, and a publ
 
 ### 2. Create the Project
 
-Content Hub → Projects. Link it to the Client. The project is the factual record: status, engagement type, dates, capabilities, scope, deliverables, constraints. It holds no website layout — keep it factual.
+Content Hub → Projects. Link it to the Client. The project is the factual record: status, engagement type, dates, capabilities, scope, deliverables, constraints. It holds no website layout — keep it factual. Projects also have **Internal notes** (never public) and project links, each with its own public/internal visibility.
 
 ### 3. Create an Asset Library and upload media
 
@@ -52,9 +53,9 @@ Content Hub → Testimonials. Link to the Client (and Project where known). Each
 
 Content Hub → Case Study Content. Link it to the Project. Four tabs:
 
-- **Overview** — title, thesis, and three summaries (one-line, short, medium). Summaries are reused everywhere: heroes, cards, search, future channels. Write them to stand alone.
-- **Story** — context, challenge, objectives, strategy, approach, key decisions, learnings. Key decisions each need a stable **key** (e.g. `organize-around-user-intent`); once published, don't rename keys — other systems may reference them.
-- **Evidence** — outcome summary, qualitative outcomes, metrics, testimonials, approved claims. Metrics are structured (label, value, unit, direction, timeframe, source) — never write them as pre-formatted sentences. A metric appears publicly only when **Approved for public** is checked, and publishing requires each approved metric to have a label, value, and a source or qualifier.
+- **Overview** — title, thesis, the Project link, primary audience, featured capabilities, and three summaries (one-line, short, medium). Summaries are reused everywhere: heroes, cards, search, future channels. Write them to stand alone.
+- **Story** — context, challenge, objectives, strategy, approach, key decisions, learnings. Key decisions each need a title and a stable **key** (e.g. `organize-around-user-intent`); once published, don't rename keys — other systems may reference them.
+- **Evidence** — outcome summary, qualitative outcomes, metrics, testimonials, approved claims. Metrics are structured (stable key, label, value, unit, direction, timeframe, qualifier, comparison baseline, source) — never write them as pre-formatted sentences. A metric appears publicly only when **Approved for public** is checked, and publishing requires each approved metric to have a label, value, and a source or qualifier. Duplicate keys (on metrics or key decisions) are rejected on every save.
 - **Asset Libraries** — attach the project's libraries. The website can only use media from these libraries.
 
 ### 6. Publish
@@ -70,12 +71,13 @@ Publishing canonical content does **not** put anything on the website — that h
 | Published clients, projects, case study content | Drafts of anything |
 | Testimonials that are published **and** approved-public | Unverified / internal testimonials |
 | Media marked public-approved | Internal or client-review media records |
+| Active asset libraries | Archived asset libraries |
 | Metrics marked approved-for-public | Unapproved metrics, metric sources |
-| Public descriptions and summaries | Internal notes, usage notes, approved claims |
+| Public descriptions and summaries | Internal notes, usage notes, approved claims, testimonial sources |
 
 ## Rules to remember
 
 - One Work Page per Case Study — the system enforces it.
 - You cannot delete Case Study Content while a Work Page uses it; delete the Work Page first.
-- Autosave runs continuously; version history keeps the last 50 versions; publishing can be scheduled.
+- Autosave runs continuously; version history keeps the last 50 versions; publishing can be scheduled. (Applies to drafted content — media, asset libraries, and taxonomy save immediately with no drafts.)
 - Capabilities and Industries are shared vocabulary — add new terms deliberately, they drive related-work matching and site navigation.

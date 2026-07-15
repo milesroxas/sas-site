@@ -1,6 +1,6 @@
 import { type MigrateDownArgs, type MigrateUpArgs, sql } from '@payloadcms/db-vercel-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db, payload: _payload, req: _req }: MigrateUpArgs): Promise<void> {
   // pgvector ships with Neon and the pgvector/pgvector docker image, but the
   // extension still has to be enabled per-database.
   await db.execute(sql`CREATE EXTENSION IF NOT EXISTS vector;`)
@@ -23,7 +23,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "ask_embeddings_embedding_idx" ON "ask_embeddings" USING hnsw ("embedding" vector_cosine_ops);`)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db, payload: _payload, req: _req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    DROP TABLE "ask_embeddings" CASCADE;`)
 }
