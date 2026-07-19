@@ -40,7 +40,8 @@ const sendTest: Endpoint = {
   path: '/:id/send-test',
   method: 'post',
   handler: async (req) => {
-    if (!req.user) return json({ error: 'Unauthorized' }, 401)
+    // Admin humans only — an MCP API key has no inbox to send the test to.
+    if (req.user?.collection !== 'users') return json({ error: 'Unauthorized' }, 401)
     const id = requireIdParam(req)
     if (!id) return json({ error: 'Missing newsletter id' }, 400)
 
@@ -78,7 +79,8 @@ const send: Endpoint = {
   path: '/:id/send',
   method: 'post',
   handler: async (req) => {
-    if (!req.user) return json({ error: 'Unauthorized' }, 401)
+    // Admin humans only — MCP API keys must not queue sends.
+    if (req.user?.collection !== 'users') return json({ error: 'Unauthorized' }, 401)
     const id = requireIdParam(req)
     if (!id) return json({ error: 'Missing newsletter id' }, 400)
 

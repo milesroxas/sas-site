@@ -8,6 +8,7 @@ import {
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { labBlocks } from '@/blocks/lab/config'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
@@ -151,8 +152,8 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
               name: 'editorialNotes',
               type: 'textarea',
               access: {
-                read: ({ req }) => Boolean(req.user),
-                update: ({ req }) => Boolean(req.user),
+                read: authenticatedField,
+                update: authenticatedField,
               },
             },
           ],

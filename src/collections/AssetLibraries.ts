@@ -1,6 +1,7 @@
 import type { Access, CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { authenticatedField } from '@/access/authenticatedField'
 
 const activeOrAuthenticated: Access = ({ req }) => {
   if (req.user) return true
@@ -10,6 +11,8 @@ const activeOrAuthenticated: Access = ({ req }) => {
 export const AssetLibraries: CollectionConfig<'asset-libraries'> = {
   slug: 'asset-libraries',
   labels: { singular: 'Asset Library', plural: 'Asset Libraries' },
+  orderable: true,
+  defaultSort: '_order',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -50,7 +53,7 @@ export const AssetLibraries: CollectionConfig<'asset-libraries'> = {
     {
       name: 'usageNotes',
       type: 'textarea',
-      access: { read: ({ req }) => Boolean(req.user), update: ({ req }) => Boolean(req.user) },
+      access: { read: authenticatedField, update: authenticatedField },
     },
     {
       name: 'assets',

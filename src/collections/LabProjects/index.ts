@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import {
@@ -12,6 +13,8 @@ import { validateLabProject } from './hooks/validateLabProject'
 export const LabProjects: CollectionConfig<'lab-projects'> = {
   slug: 'lab-projects',
   labels: { singular: 'Lab Project', plural: 'Lab Projects' },
+  orderable: true,
+  defaultSort: '_order',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -98,8 +101,8 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
               name: 'internalNotes',
               type: 'textarea',
               access: {
-                read: ({ req }) => Boolean(req.user),
-                update: ({ req }) => Boolean(req.user),
+                read: authenticatedField,
+                update: authenticatedField,
               },
             },
           ],

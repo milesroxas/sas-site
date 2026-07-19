@@ -14,6 +14,10 @@ import { Archive } from '../../blocks/ArchiveBlock/config'
 import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
 import { FormBlock } from '../../blocks/Form/config'
+import { FeatureHeadingOffset } from '../../blocks/feature/HeadingOffset/config'
+import { FeatureImageCaption } from '../../blocks/feature/ImageCaption/config'
+import { FeatureStatementGrid } from '../../blocks/feature/StatementGrid/config'
+import { FeatureTabs } from '../../blocks/feature/Tabs/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -72,7 +76,18 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock, NewsletterSignup],
+              blocks: [
+                CallToAction,
+                Content,
+                MediaBlock,
+                Archive,
+                FormBlock,
+                NewsletterSignup,
+                FeatureStatementGrid,
+                FeatureHeadingOffset,
+                FeatureTabs,
+                FeatureImageCaption,
+              ],
               required: true,
               admin: {
                 initCollapsed: true,

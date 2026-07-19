@@ -22,12 +22,14 @@ import type { ContentSurface } from './surfaces'
 /** String fields whose values are reader-facing content. Compared lowercase, with a trailing 'override' stripped. */
 const TEXT_KEYS = new Set([
   'answer',
+  'body',
   'caption',
   'claim',
   'decision',
   'description',
   'excerpt',
   'eyebrow',
+  'footnote',
   'heading',
   'impact',
   'intro',
@@ -38,6 +40,7 @@ const TEXT_KEYS = new Set([
   'quote',
   'rationale',
   'short',
+  'statement',
   'subheading',
   'subtitle',
   'summary',

@@ -1,9 +1,12 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 
 export const Projects: CollectionConfig<'projects'> = {
   slug: 'projects',
+  orderable: true,
+  defaultSort: '_order',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -93,8 +96,8 @@ export const Projects: CollectionConfig<'projects'> = {
               name: 'internalNotes',
               type: 'textarea',
               access: {
-                read: ({ req }) => Boolean(req.user),
-                update: ({ req }) => Boolean(req.user),
+                read: authenticatedField,
+                update: authenticatedField,
               },
             },
           ],

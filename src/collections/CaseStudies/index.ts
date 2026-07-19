@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import {
@@ -12,6 +13,8 @@ import { validateCaseStudy } from './hooks/validateCaseStudy'
 export const CaseStudies: CollectionConfig<'case-studies'> = {
   slug: 'case-studies',
   labels: { singular: 'Case Study Content', plural: 'Case Study Content' },
+  orderable: true,
+  defaultSort: '_order',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -131,7 +134,7 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
                 { name: 'qualifier', type: 'text' },
                 { name: 'comparisonBaseline', type: 'text' },
                 { name: 'timeframe', type: 'text' },
-                { name: 'source', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+                { name: 'source', type: 'text', access: { read: authenticatedField } },
                 { name: 'approvedForPublic', type: 'checkbox', defaultValue: false },
                 { name: 'featured', type: 'checkbox' },
               ],
@@ -145,7 +148,7 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
             {
               name: 'approvedClaims',
               type: 'array',
-              access: { read: ({ req }) => Boolean(req.user) },
+              access: { read: authenticatedField },
               fields: [
                 { name: 'claim', type: 'textarea', required: true },
                 { name: 'source', type: 'text' },

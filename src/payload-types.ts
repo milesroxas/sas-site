@@ -64,6 +64,7 @@ export type SupportedTimezones =
 export interface Config {
   auth: {
     users: UserAuthOperations;
+    'payload-mcp-api-keys': PayloadMcpApiKeyAuthOperations;
   };
   blocks: {};
   collections: {
@@ -91,6 +92,7 @@ export interface Config {
     forms: Form;
     'form-submissions': FormSubmission;
     search: Search;
+    'payload-mcp-api-keys': PayloadMcpApiKey;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-folders': FolderInterface;
@@ -138,6 +140,7 @@ export interface Config {
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
+    'payload-mcp-api-keys': PayloadMcpApiKeysSelect<false> | PayloadMcpApiKeysSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
@@ -163,7 +166,7 @@ export interface Config {
   widgets: {
     collections: CollectionsWidget;
   };
-  user: User;
+  user: User | PayloadMcpApiKey;
   jobs: {
     tasks: {
       newsletterSend: TaskNewsletterSend;
@@ -177,6 +180,24 @@ export interface Config {
   };
 }
 export interface UserAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
+}
+export interface PayloadMcpApiKeyAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -244,7 +265,18 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | NewsletterSignupBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | NewsletterSignupBlock
+    | FeatureStatementGridBlock
+    | FeatureHeadingOffsetBlock
+    | FeatureTabsBlock
+    | FeatureImageCaptionBlock
+  )[];
   meta?: {
     title?: string | null;
     /**
@@ -451,6 +483,7 @@ export interface Media {
  */
 export interface AssetLibrary {
   id: number;
+  _order?: string | null;
   name: string;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -485,6 +518,7 @@ export interface AssetLibrary {
  */
 export interface Organization {
   id: number;
+  _order?: string | null;
   name: string;
   shortName?: string | null;
   /**
@@ -525,6 +559,7 @@ export interface Organization {
  */
 export interface Industry {
   id: number;
+  _order?: string | null;
   name: string;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -532,7 +567,6 @@ export interface Industry {
   generateSlug?: boolean | null;
   slug: string;
   description?: string | null;
-  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -542,6 +576,7 @@ export interface Industry {
  */
 export interface Project {
   id: number;
+  _order?: string | null;
   internalTitle: string;
   publicTitle?: string | null;
   organization: number | Organization;
@@ -628,6 +663,7 @@ export interface Project {
  */
 export interface Capability {
   id: number;
+  _order?: string | null;
   name: string;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -635,7 +671,6 @@ export interface Capability {
   generateSlug?: boolean | null;
   slug: string;
   description?: string | null;
-  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -673,6 +708,7 @@ export interface FolderInterface {
  */
 export interface CaseStudy {
   id: number;
+  _order?: string | null;
   title: string;
   project: number | Project;
   thesis?: string | null;
@@ -853,6 +889,7 @@ export interface CaseStudy {
  */
 export interface Testimonial {
   id: number;
+  _order?: string | null;
   internalTitle: string;
   organization: number | Organization;
   project?: (number | null) | Project;
@@ -891,6 +928,7 @@ export interface Testimonial {
  */
 export interface WorkPage {
   id: number;
+  _order?: string | null;
   /**
    * Editorial label for this website entry; canonical case-study title remains in Content Hub.
    */
@@ -1149,6 +1187,7 @@ export interface CaseStudyRelatedWorkBlock {
  */
 export interface Category {
   id: number;
+  _order?: string | null;
   title: string;
   /**
    * Intro copy for this topic hub at /insights/[slug].
@@ -1584,6 +1623,7 @@ export interface NewsletterSignupBlock {
  */
 export interface Audience {
   id: number;
+  _order?: string | null;
   name: string;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -1600,6 +1640,96 @@ export interface Audience {
   allowPublicSignup?: boolean | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureStatementGridBlock".
+ */
+export interface FeatureStatementGridBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * Lead paragraph in the left column — the section's core claim.
+   */
+  statement: string;
+  /**
+   * Short supporting line pinned below the statement.
+   */
+  footnote?: string | null;
+  cards: {
+    media?: (number | null) | Media;
+    title: string;
+    description: string;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureStatementGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureHeadingOffsetBlock".
+ */
+export interface FeatureHeadingOffsetBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * Supporting copy in the offset right column. Blank lines create paragraphs.
+   */
+  body: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureHeadingOffset';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureTabsBlock".
+ */
+export interface FeatureTabsBlock {
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    heading: string;
+    description: string;
+    subheading?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * Short note shown as a card over the media.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureTabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureImageCaptionBlock".
+ */
+export interface FeatureImageCaptionBlock {
+  media: number | Media;
+  /**
+   * Large statement set beneath the image, aligned to the right edge.
+   */
+  caption: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureImageCaption';
 }
 /**
  * Website-specific lab-project presentation, composition, SEO, preview, and publishing.
@@ -1671,6 +1801,7 @@ export interface LabPage {
  */
 export interface LabProject {
   id: number;
+  _order?: string | null;
   title: string;
   kind: 'experiment' | 'prototype' | 'showcase' | 'tool' | 'research';
   status: 'planned' | 'active' | 'completed' | 'archived';
@@ -1973,7 +2104,17 @@ export interface ExpertisePage {
       | null;
     media?: (number | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | FeatureStatementGridBlock
+    | FeatureHeadingOffsetBlock
+    | FeatureTabsBlock
+    | FeatureImageCaptionBlock
+  )[];
   /**
    * Canonical capabilities this offering bundles. Drives automatic related-work matching.
    */
@@ -2053,7 +2194,17 @@ export interface AudiencePage {
       | null;
     media?: (number | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | FeatureStatementGridBlock
+    | FeatureHeadingOffsetBlock
+    | FeatureTabsBlock
+    | FeatureImageCaptionBlock
+  )[];
   /**
    * Industries this segment spans. Drives automatic related-work matching.
    */
@@ -2368,6 +2519,69 @@ export interface Search {
   createdAt: string;
 }
 /**
+ * API keys control which collections, resources, tools, and prompts MCP clients can access
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys".
+ */
+export interface PayloadMcpApiKey {
+  id: number;
+  /**
+   * The user that the API key is associated with.
+   */
+  user: number | User;
+  /**
+   * A useful label for the API key.
+   */
+  label?: string | null;
+  /**
+   * The purpose of the API key.
+   */
+  description?: string | null;
+  pages?: {
+    /**
+     * Allow clients to find pages.
+     */
+    find?: boolean | null;
+  };
+  expertisePages?: {
+    /**
+     * Allow clients to find expertise-pages.
+     */
+    find?: boolean | null;
+  };
+  audiencePages?: {
+    /**
+     * Allow clients to find audience-pages.
+     */
+    find?: boolean | null;
+  };
+  workPages?: {
+    /**
+     * Allow clients to find work-pages.
+     */
+    find?: boolean | null;
+  };
+  labPages?: {
+    /**
+     * Allow clients to find lab-pages.
+     */
+    find?: boolean | null;
+  };
+  posts?: {
+    /**
+     * Allow clients to find posts.
+     */
+    find?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
+  collection: 'payload-mcp-api-keys';
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -2580,14 +2794,23 @@ export interface PayloadLockedDocument {
         value: number | Search;
       } | null)
     | ({
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      } | null)
+    | ({
         relationTo: 'payload-folders';
         value: number | FolderInterface;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -2597,10 +2820,15 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user: {
-    relationTo: 'users';
-    value: number | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: number | User;
+      }
+    | {
+        relationTo: 'payload-mcp-api-keys';
+        value: number | PayloadMcpApiKey;
+      };
   key?: string | null;
   value?:
     | {
@@ -2662,6 +2890,10 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
+        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
+        featureImageCaption?: T | FeatureImageCaptionBlockSelect<T>;
       };
   meta?:
     | T
@@ -2778,6 +3010,72 @@ export interface NewsletterSignupBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureStatementGridBlock_select".
+ */
+export interface FeatureStatementGridBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  statement?: T;
+  footnote?: T;
+  cards?:
+    | T
+    | {
+        media?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureHeadingOffsetBlock_select".
+ */
+export interface FeatureHeadingOffsetBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureTabsBlock_select".
+ */
+export interface FeatureTabsBlockSelect<T extends boolean = true> {
+  tabs?:
+    | T
+    | {
+        title?: T;
+        heading?: T;
+        description?: T;
+        subheading?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        media?: T;
+        caption?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureImageCaptionBlock_select".
+ */
+export interface FeatureImageCaptionBlockSelect<T extends boolean = true> {
+  media?: T;
+  caption?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -2812,6 +3110,7 @@ export interface PostsSelect<T extends boolean = true> {
  * via the `definition` "work-pages_select".
  */
 export interface WorkPagesSelect<T extends boolean = true> {
+  _order?: T;
   title?: T;
   caseStudy?: T;
   hero?:
@@ -3101,6 +3400,10 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
+        featureImageCaption?: T | FeatureImageCaptionBlockSelect<T>;
       };
   capabilities?: T;
   relatedWorkPages?: T;
@@ -3155,6 +3458,10 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
+        featureImageCaption?: T | FeatureImageCaptionBlockSelect<T>;
       };
   industries?: T;
   relatedWorkPages?: T;
@@ -3178,6 +3485,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
  * via the `definition` "organizations_select".
  */
 export interface OrganizationsSelect<T extends boolean = true> {
+  _order?: T;
   name?: T;
   shortName?: T;
   generateSlug?: T;
@@ -3197,6 +3505,7 @@ export interface OrganizationsSelect<T extends boolean = true> {
  * via the `definition` "projects_select".
  */
 export interface ProjectsSelect<T extends boolean = true> {
+  _order?: T;
   internalTitle?: T;
   publicTitle?: T;
   organization?: T;
@@ -3240,6 +3549,7 @@ export interface ProjectsSelect<T extends boolean = true> {
  * via the `definition` "case-studies_select".
  */
 export interface CaseStudiesSelect<T extends boolean = true> {
+  _order?: T;
   title?: T;
   project?: T;
   thesis?: T;
@@ -3325,6 +3635,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
  * via the `definition` "lab-projects_select".
  */
 export interface LabProjectsSelect<T extends boolean = true> {
+  _order?: T;
   title?: T;
   kind?: T;
   status?: T;
@@ -3373,6 +3684,7 @@ export interface LabProjectsSelect<T extends boolean = true> {
  * via the `definition` "testimonials_select".
  */
 export interface TestimonialsSelect<T extends boolean = true> {
+  _order?: T;
   internalTitle?: T;
   organization?: T;
   project?: T;
@@ -3499,6 +3811,7 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "asset-libraries_select".
  */
 export interface AssetLibrariesSelect<T extends boolean = true> {
+  _order?: T;
   name?: T;
   generateSlug?: T;
   slug?: T;
@@ -3518,11 +3831,11 @@ export interface AssetLibrariesSelect<T extends boolean = true> {
  * via the `definition` "capabilities_select".
  */
 export interface CapabilitiesSelect<T extends boolean = true> {
+  _order?: T;
   name?: T;
   generateSlug?: T;
   slug?: T;
   description?: T;
-  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3531,11 +3844,11 @@ export interface CapabilitiesSelect<T extends boolean = true> {
  * via the `definition` "industries_select".
  */
 export interface IndustriesSelect<T extends boolean = true> {
+  _order?: T;
   name?: T;
   generateSlug?: T;
   slug?: T;
   description?: T;
-  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3544,6 +3857,7 @@ export interface IndustriesSelect<T extends boolean = true> {
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
+  _order?: T;
   title?: T;
   description?: T;
   generateSlug?: T;
@@ -3653,6 +3967,7 @@ export interface NewsletterDividerBlockSelect<T extends boolean = true> {
  * via the `definition` "audiences_select".
  */
 export interface AudiencesSelect<T extends boolean = true> {
+  _order?: T;
   name?: T;
   generateSlug?: T;
   slug?: T;
@@ -3894,6 +4209,50 @@ export interface SearchSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-mcp-api-keys_select".
+ */
+export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
+  user?: T;
+  label?: T;
+  description?: T;
+  pages?:
+    | T
+    | {
+        find?: T;
+      };
+  expertisePages?:
+    | T
+    | {
+        find?: T;
+      };
+  audiencePages?:
+    | T
+    | {
+        find?: T;
+      };
+  workPages?:
+    | T
+    | {
+        find?: T;
+      };
+  labPages?:
+    | T
+    | {
+        find?: T;
+      };
+  posts?:
+    | T
+    | {
+        find?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

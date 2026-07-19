@@ -6,6 +6,8 @@ import { authenticated } from '../access/authenticated'
 export const Categories: CollectionConfig = {
   slug: 'categories',
   labels: { singular: 'Post Category', plural: 'Post Categories' },
+  orderable: true,
+  defaultSort: '_order',
   access: {
     create: authenticated,
     delete: authenticated,

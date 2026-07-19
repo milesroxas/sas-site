@@ -9,6 +9,8 @@ import { authenticated } from '../access/authenticated'
  */
 export const Audiences: CollectionConfig<'audiences'> = {
   slug: 'audiences',
+  orderable: true,
+  defaultSort: '_order',
   access: {
     create: authenticated,
     delete: authenticated,

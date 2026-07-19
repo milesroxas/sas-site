@@ -44,12 +44,25 @@ export const AdminBar: React.FC<{
     setShow(Boolean(user?.id))
   }, [])
 
+  // Flag the bar's presence on <html> so globals.css can give the page frame
+  // bottom breathing room without the bar participating in layout.
+  React.useEffect(() => {
+    document.documentElement.toggleAttribute('data-admin-bar', show)
+    return () => {
+      document.documentElement.removeAttribute('data-admin-bar')
+    }
+  }, [show])
+
   return (
     <div
-      className={cn(baseClass, 'py-2 bg-black text-white', {
-        block: show,
-        hidden: !show,
-      })}
+      className={cn(
+        baseClass,
+        'fixed inset-x-0 bottom-0 z-[60] border-t border-white/15 bg-black py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-white',
+        {
+          block: show,
+          hidden: !show,
+        },
+      )}
     >
       <div className="container">
         <PayloadAdminBar

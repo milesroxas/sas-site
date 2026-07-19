@@ -41,9 +41,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
 
           <Header />
-          {/* Page transitions live in (frontend)/template.tsx, which re-mounts per navigation. */}
-          {children}
-          <Footer />
+          {/* data-page-frame: the takeover menu (Header/Menu) scales this wrapper
+              into a docked card, so page + footer must share one element. */}
+          <div
+            data-page-frame
+            className="flex min-h-svh flex-col bg-background pt-(--header-height)"
+          >
+            {/* Page transitions live in (frontend)/template.tsx, which re-mounts per navigation. */}
+            {children}
+            <Footer />
+          </div>
           <GlobalCanvasRoot />
         </Providers>
       </body>

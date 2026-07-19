@@ -1,5 +1,6 @@
 import type { Access, CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { authenticatedField } from '@/access/authenticatedField'
 
 const publicApprovedTestimonial: Access = ({ req }) => {
   if (req.user) return true
@@ -8,6 +9,8 @@ const publicApprovedTestimonial: Access = ({ req }) => {
 
 export const Testimonials: CollectionConfig<'testimonials'> = {
   slug: 'testimonials',
+  orderable: true,
+  defaultSort: '_order',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -42,12 +45,12 @@ export const Testimonials: CollectionConfig<'testimonials'> = {
       defaultValue: 'unverified',
       options: ['unverified', 'client-review', 'approved-public', 'internal-only'],
     },
-    { name: 'source', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+    { name: 'source', type: 'text', access: { read: authenticatedField } },
     { name: 'approvedAt', type: 'date' },
     {
       name: 'internalNotes',
       type: 'textarea',
-      access: { read: ({ req }) => Boolean(req.user), update: ({ req }) => Boolean(req.user) },
+      access: { read: authenticatedField, update: authenticatedField },
     },
   ],
   versions: { drafts: { autosave: { interval: 100 }, schedulePublish: true }, maxPerDoc: 50 },

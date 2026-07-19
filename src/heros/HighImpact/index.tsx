@@ -19,7 +19,7 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ links, media, richText 
     <ImmersiveShell
       webgl
       // vt-home-hero: hero recedes as its own view-transition group (see view-transition.css).
-      className="vt-home-hero relative -mt-[10.4rem] flex items-center justify-center text-white"
+      className="vt-home-hero relative -mt-(--header-height) flex items-center justify-center text-white"
       data-theme="dark"
     >
       <WebGLTunnel>

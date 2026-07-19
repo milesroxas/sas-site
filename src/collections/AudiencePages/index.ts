@@ -8,11 +8,16 @@ import {
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { Archive } from '@/blocks/ArchiveBlock/config'
 import { CallToAction } from '@/blocks/CallToAction/config'
 import { Content } from '@/blocks/Content/config'
 import { FormBlock } from '@/blocks/Form/config'
+import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
+import { FeatureImageCaption } from '@/blocks/feature/ImageCaption/config'
+import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
+import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { hero } from '@/heros/config'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
@@ -57,7 +62,17 @@ export const AudiencePages: CollectionConfig<'audience-pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock],
+              blocks: [
+                CallToAction,
+                Content,
+                MediaBlock,
+                Archive,
+                FormBlock,
+                FeatureStatementGrid,
+                FeatureHeadingOffset,
+                FeatureTabs,
+                FeatureImageCaption,
+              ],
               required: true,
               admin: { initCollapsed: true },
             },
@@ -91,8 +106,8 @@ export const AudiencePages: CollectionConfig<'audience-pages'> = {
               name: 'editorialNotes',
               type: 'textarea',
               access: {
-                read: ({ req }) => Boolean(req.user),
-                update: ({ req }) => Boolean(req.user),
+                read: authenticatedField,
+                update: authenticatedField,
               },
             },
           ],

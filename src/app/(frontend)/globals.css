@@ -726,6 +726,8 @@
 }
 
 :root {
+  /* Fixed site header (Header/Component.client.tsx); page frame + heroes offset by it. */
+  --header-height: 5.6875rem;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -894,6 +896,15 @@
     transform: none;
     animation-name: none;
     animation-duration: 0s;
+  }
+}
+
+/* Admin bar (components/AdminBar) is fixed to the viewport bottom; give the
+   page frame room so footer content can scroll clear of it. The bar hides
+   below Payload's small breakpoint, so scope the padding to match. */
+@media (width >= 48rem) {
+  html[data-admin-bar] [data-page-frame] {
+    padding-bottom: 3.5rem;
   }
 }
 

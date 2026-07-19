@@ -5,13 +5,14 @@ import { authenticated } from '@/access/authenticated'
 
 export const Industries: CollectionConfig<'industries'> = {
   slug: 'industries',
+  orderable: true,
+  defaultSort: '_order',
   access: { create: authenticated, delete: authenticated, read: anyone, update: authenticated },
-  admin: { group: 'Taxonomy', useAsTitle: 'name', defaultColumns: ['name', 'order', 'updatedAt'] },
+  admin: { group: 'Taxonomy', useAsTitle: 'name', defaultColumns: ['name', 'updatedAt'] },
   defaultPopulate: { name: true, slug: true },
   fields: [
     { name: 'name', type: 'text', required: true },
     slugField({ fieldToUse: 'name' }),
     { name: 'description', type: 'textarea' },
-    { name: 'order', type: 'number', defaultValue: 0, index: true },
   ],
 }

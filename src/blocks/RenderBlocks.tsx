@@ -4,6 +4,10 @@ import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
 import { FormBlock } from '@/blocks/Form/Component'
+import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Component'
+import { FeatureImageCaptionBlock } from '@/blocks/feature/ImageCaption/Component'
+import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
+import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import type { Page } from '@/payload-types'
@@ -13,6 +17,10 @@ const blockComponents = {
   archive: ArchiveBlock,
   content: ContentBlock,
   cta: CallToActionBlock,
+  featureHeadingOffset: FeatureHeadingOffsetBlock,
+  featureImageCaption: FeatureImageCaptionBlock,
+  featureStatementGrid: FeatureStatementGridBlock,
+  featureTabs: FeatureTabsBlock,
   formBlock: FormBlock,
   mediaBlock: MediaBlock,
   newsletterSignup: NewsletterSignupBlock,

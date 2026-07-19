@@ -20,8 +20,9 @@ export const inviteEndpoint: Endpoint = {
   path: '/invite',
   method: 'post',
   handler: async (req) => {
-    // Custom endpoints skip auth by default — only logged-in team members may invite.
-    if (!req.user) {
+    // Custom endpoints skip auth by default — only logged-in team members may
+    // invite (not MCP API keys, which also authenticate as req.user).
+    if (req.user?.collection !== 'users') {
       throw new APIError('Unauthorized', 401)
     }
 

@@ -8,6 +8,9 @@ import * as migration_20260714_154453_lab from './20260714_154453_lab'
 import * as migration_20260714_155123_aeo_site_info from './20260714_155123_aeo_site_info'
 import * as migration_20260714_173458_mediablock_presentation from './20260714_173458_mediablock_presentation'
 import * as migration_20260714_173641_ask_embeddings from './20260714_173641_ask_embeddings'
+import * as migration_20260719_140027_feature_statement_grid from './20260719_140027_feature_statement_grid'
+import * as migration_20260719_142151_orderable_collections from './20260719_142151_orderable_collections'
+import * as migration_20260719_142433_drop_legacy_order from './20260719_142433_drop_legacy_order'
 
 export const migrations = [
   {
@@ -59,5 +62,20 @@ export const migrations = [
     up: migration_20260714_173641_ask_embeddings.up,
     down: migration_20260714_173641_ask_embeddings.down,
     name: '20260714_173641_ask_embeddings',
+  },
+  {
+    up: migration_20260719_140027_feature_statement_grid.up,
+    down: migration_20260719_140027_feature_statement_grid.down,
+    name: '20260719_140027_feature_statement_grid',
+  },
+  {
+    up: migration_20260719_142151_orderable_collections.up,
+    down: migration_20260719_142151_orderable_collections.down,
+    name: '20260719_142151_orderable_collections',
+  },
+  {
+    up: migration_20260719_142433_drop_legacy_order.up,
+    down: migration_20260719_142433_drop_legacy_order.down,
+    name: '20260719_142433_drop_legacy_order',
   },
 ]

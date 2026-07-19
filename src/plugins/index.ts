@@ -1,4 +1,5 @@
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
+import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { searchPlugin } from '@payloadcms/plugin-search'
@@ -14,7 +15,12 @@ import { aeoPlugin } from '@/plugins/aeo'
 import { askIndexPlugin } from '@/plugins/ask-index'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { searchFields } from '@/search/fieldOverrides'
-import { SEARCH_COLLECTIONS, surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
+import {
+  CONTENT_SURFACES,
+  SEARCH_COLLECTIONS,
+  surfaceByCollection,
+  surfaceDocPath,
+} from '@/shared/content/surfaces'
 import { getServerSideURL } from '@/utilities/getURL'
 
 type SeoDoc = Post | Page | WorkPage | LabPage | ExpertisePage | AudiencePage
@@ -105,6 +111,25 @@ export const plugins: Plugin[] = [
   }),
   aeoPlugin(),
   askIndexPlugin(),
+  // Exposes public content surfaces to MCP clients (e.g. the OpenAI Responses
+  // API's remote-MCP tool) as read-only resources at /api/mcp. API keys are
+  // created in admin under MCP → API Keys; each key's capabilities can be
+  // narrowed further there.
+  mcpPlugin({
+    collections: Object.fromEntries(
+      CONTENT_SURFACES.map((surface) => [
+        surface.collection,
+        {
+          description: `${surface.title} — public site content published under ${surface.urlPrefix || '/'}`,
+          enabled: { find: true },
+        },
+      ]),
+    ),
+    overrideApiKeyCollection: (collection) => ({
+      ...collection,
+      admin: { ...collection.admin, group: 'System' },
+    }),
+  }),
   // Captures Payload REST/GraphQL/Local API errors (5xx by default) with
   // user context, and wraps the admin UI in a Sentry error boundary. Must
   // receive the app's own Sentry module so events reach the SDK instance

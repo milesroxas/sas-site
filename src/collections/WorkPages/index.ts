@@ -8,6 +8,7 @@ import {
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { caseStudyBlocks } from '@/blocks/case-study/config'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
@@ -18,6 +19,8 @@ import { validateWorkPage } from './hooks/validateWorkPage'
 export const WorkPages: CollectionConfig<'work-pages'> = {
   slug: 'work-pages',
   labels: { singular: 'Work Page', plural: 'Work Pages' },
+  orderable: true,
+  defaultSort: '_order',
   access: {
     create: authenticated,
     delete: authenticated,
@@ -154,8 +157,8 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
               name: 'editorialNotes',
               type: 'textarea',
               access: {
-                read: ({ req }) => Boolean(req.user),
-                update: ({ req }) => Boolean(req.user),
+                read: authenticatedField,
+                update: authenticatedField,
               },
             },
           ],
