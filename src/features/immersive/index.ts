@@ -3,7 +3,7 @@
  * Infrastructure remains under `@/lib/webgl` and `@/lib/interactions`.
  */
 export { ImmersiveShell, type ImmersiveShellProps } from '@/lib/interactions/immersive-shell'
-export { DOMTunnel, WebGLTunnel } from '@/lib/webgl/components/tunnel'
+export { WebGLTunnel } from '@/lib/webgl/components/tunnel'
 export { ChromaSplitText, type ChromaSplitTextProps } from './ui/chroma-split-text'
 export {
   type FloatingCardDef,

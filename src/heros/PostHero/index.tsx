@@ -1,9 +1,9 @@
 import React, { ViewTransition } from 'react'
-import { formatDateTime } from 'src/utilities/formatDateTime'
 import { Media } from '@/components/Media'
 import type { Post } from '@/payload-types'
 import { postImageVtName } from '@/shared/lib/view-transition'
 import { formatAuthors } from '@/utilities/formatAuthors'
+import { formatDateTime } from '@/utilities/formatDateTime'
 
 export const PostHero: React.FC<{
   post: Post

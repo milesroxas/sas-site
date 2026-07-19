@@ -1,5 +1,7 @@
 import type { StaticImageData } from 'next/image'
 import type React from 'react'
+// Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
+// fallow-ignore-next-line circular-dependency
 import RichText from '@/components/RichText'
 import type { MediaBlock as MediaBlockProps, Media as MediaDoc } from '@/payload-types'
 import { cn } from '@/utilities/ui'

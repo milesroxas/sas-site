@@ -13,7 +13,6 @@ export const PROJECT_ROOT = path.resolve(__dirname, '../..')
  */
 export const POSTGRES_DOCKER_IMAGE = 'pgvector/pgvector:pg18'
 
-export const LOCAL_POSTGRES_BASE = 'postgresql://postgres@127.0.0.1:54320/postgres'
 export const LOCAL_POSTGRES_DB = 'postgresql://postgres@127.0.0.1:54320/payload'
 
 /** Env file the sync flow reads by default (must contain POSTGRES_URL). */

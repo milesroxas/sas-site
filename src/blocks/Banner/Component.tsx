@@ -5,9 +5,11 @@ import {
   IconInfoCircle,
 } from '@tabler/icons-react'
 import type React from 'react'
-import type { BannerBlock as BannerBlockProps } from 'src/payload-types'
+// Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
+// fallow-ignore-next-line circular-dependency
 import RichText from '@/components/RichText'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import type { BannerBlock as BannerBlockProps } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 
 type Props = {

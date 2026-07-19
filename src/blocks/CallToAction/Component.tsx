@@ -1,6 +1,8 @@
 import type React from 'react'
 import { CMSLink } from '@/components/Link'
 
+// Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
+// fallow-ignore-next-line circular-dependency
 import RichText from '@/components/RichText'
 import { Card, CardContent } from '@/components/ui/card'
 import type { CallToActionBlock as CTABlockProps } from '@/payload-types'

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  // Standalone operational script, run manually via `tsx` (see src/features/ask/README.md)
+  "entry": ["scripts/backfill-ask-index.ts"],
+  // An export consumed within its own module is not dead API surface
+  "ignoreExportsUsedInFile": true,
+  // Payload-generated artifacts: recreated by `payload generate:types` / `payload migrate:create`
+  // and the Payload scaffold on version bumps. Never hand-edited, never flagged.
+  "ignorePatterns": ["src/payload-types.ts", "src/migrations/**", "src/app/(payload)/**"],
+  // Loaded outside the static import graph:
+  // - admin components referenced by string path in payload.config.ts (resolved via generated importMap)
+  // - react-email templates bundled by the `email dev` preview server (package.json "email" script)
+  "dynamicallyLoaded": [
+    "src/components/BeforeLogin/**",
+    "src/components/AdminIcon/**",
+    "src/shared/email/templates/**",
+    "src/Footer/RowLabel.tsx",
+    "src/Header/RowLabel.tsx",
+    "src/collections/*/components/**"
+  ],
+  "ignoreDependencies": [
+    // Payload-maintained packages; kept in lockstep with the Payload release train, not fallow's call
+    "@payloadcms/db-postgres",
+    "@payloadcms/next",
+    // Build-time CSS pipeline (imported from globals.css / postcss config, correctly devDependencies)
+    "tailwindcss",
+    "@tailwindcss/typography",
+    // dev-tui / local tooling (scripts/dev-tui), correctly devDependencies
+    "dotenv",
+    "execa",
+    "ink",
+    "ink-spinner"
+  ],
+  // Webpack-style tilde import inside Payload admin SCSS, resolved by Payload's bundler
+  "ignoreUnresolvedImports": ["**/~@payloadcms/ui/scss"],
+  "ignoreExports": [
+    // Vendored shadcn primitives (ejected) — keep the full upstream export surface for future diffs
+    { "file": "src/components/ui/**", "exports": ["*"] },
+    // Vendored @shadcn/helpers (not on npm yet) — swap for the package when published
+    { "file": "src/shared/testing/shadcn-helpers/**", "exports": ["*"] },
+    // Shared UI primitives export their Props types as public API
+    { "file": "src/shared/ui/reveal-section/index.ts", "exports": ["RevealSectionProps"] },
+    { "file": "src/shared/ui/scramble-text/index.ts", "exports": ["ScrambleTextProps"] },
+    {
+      "file": "src/features/immersive/index.ts",
+      "exports": [
+        "ImmersiveShellProps",
+        "ChromaSplitTextProps",
+        "FloatingCardDef",
+        "FloatingCardsProps",
+        "RefractionImageProps"
+      ]
+    },
+    // DOM half of the tunnel pair; GlobalCanvas already renders its Out side
+    { "file": "src/lib/webgl/components/tunnel/index.tsx", "exports": ["DOMTunnel"] },
+    // Staged transactional senders, not yet wired to auth flows
+    {
+      "file": "src/shared/email/lib/send.tsx",
+      "exports": [
+        "sendActivationEmail",
+        "sendPasswordResetEmail",
+        "sendSubscriptionConfirmationEmail",
+        "sendWelcomeEmail"
+      ]
+    },
+    // Documented plugin public API (src/plugins/aeo/README.md)
+    { "file": "src/plugins/aeo/index.ts", "exports": ["AeoContentSection"] }
+  ],
+  "rules": {
+    // Same-name exports across shadcn ui/, template components, and Payload types are intentional
+    "duplicate-exports": "off"
+  }
+}

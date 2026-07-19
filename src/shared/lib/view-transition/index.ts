@@ -5,6 +5,5 @@ export {
   lateralNavTransitionTypes,
   NAV_BACK,
   NAV_FORWARD,
-  NAV_LATERAL,
   postImageVtName,
 } from './constants'
