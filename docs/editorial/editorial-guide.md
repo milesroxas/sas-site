@@ -127,7 +127,7 @@ The writing should feel:
 
 The voice should sound like experienced people who understand both the business problem and the creative work.
 
-## Metalab-inspired traits
+## Voice and tone traits
 
 Use the following qualities as a directional reference:
 
