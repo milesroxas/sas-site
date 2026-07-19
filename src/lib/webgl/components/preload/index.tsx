@@ -25,7 +25,12 @@ export function Preload() {
         await compile(scene, camera)
       }
 
-      if ('render' in gl && typeof gl.render === 'function') {
+      // CubeCamera warmup forces texture uploads on WebGL only. On WebGPU,
+      // compileAsync already builds every pipeline, and rendering into a
+      // WebGLCubeRenderTarget has no pipeline there — Dawn rejects each face's
+      // draw with "No pipeline set" on the renderContext command encoder.
+      const isWebGPU = (gl as { isWebGPURenderer?: boolean }).isWebGPURenderer === true
+      if (!isWebGPU && 'render' in gl && typeof gl.render === 'function') {
         const cubeRenderTarget = new WebGLCubeRenderTarget(128)
         const cubeCamera = new CubeCamera(0.01, 100000, cubeRenderTarget)
         cubeCamera.update(gl as THREE.WebGLRenderer, scene as THREE.Scene)
