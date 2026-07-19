@@ -61,7 +61,7 @@ export const MediaBlock: React.FC<Props> = (props) => {
       )}
     >
       <div className={sizeClasses[size ?? 'full']}>
-        {(media || staticImage) && (
+        {(staticImage || (media && typeof media === 'object' && media.url)) && (
           <Media
             imgClassName={cn('rounded-lg border border-border', imgClassName)}
             resource={media}
