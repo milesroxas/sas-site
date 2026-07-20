@@ -727,9 +727,9 @@
 
 :root {
   /* Fixed site header (Header/Component.client.tsx); page frame + heroes offset by it. */
-  --header-height: 5.6875rem;
+  --header-height: 4rem;
   /* Fixed site footer (Footer/Component.tsx); page frame is padded by it. */
-  --footer-height: 5.125rem;
+  --footer-height: 3.5rem;
   /* Fixed admin bar (components/AdminBar); footer + page frame offset by it. */
   --admin-bar-height: 3.5rem;
   --card: oklch(1 0 0);

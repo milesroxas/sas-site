@@ -73,7 +73,10 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
         )}
         // Pull the header out of the page snapshot so it stays static during transitions.
         style={{ viewTransitionName: 'site-header' }}
-        {...(theme && !menuOpen ? { 'data-theme': theme } : {})}
+        // Scoped theme only applies while transparent over hero media — once
+        // scrolled, bg-background/85 must resolve to the site theme, matching
+        // the footer.
+        {...(theme && !menuOpen && !scrolled ? { 'data-theme': theme } : {})}
       >
         {/* Mobile: flex keeps brand/MENU/toggle from colliding — the brand is
             wider than a 1fr column on phone widths. md+: original 3-col grid
