@@ -728,6 +728,10 @@
 :root {
   /* Fixed site header (Header/Component.client.tsx); page frame + heroes offset by it. */
   --header-height: 5.6875rem;
+  /* Fixed site footer (Footer/Component.tsx); page frame is padded by it. */
+  --footer-height: 5.125rem;
+  /* Fixed admin bar (components/AdminBar); footer + page frame offset by it. */
+  --admin-bar-height: 3.5rem;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -899,12 +903,16 @@
   }
 }
 
-/* Admin bar (components/AdminBar) is fixed to the viewport bottom; give the
-   page frame room so footer content can scroll clear of it. The bar hides
-   below Payload's small breakpoint, so scope the padding to match. */
+/* Admin bar (components/AdminBar) is fixed to the viewport bottom; lift the
+   fixed footer above it and give the page frame matching extra room. The bar
+   hides below Payload's small breakpoint, so scope both rules to match. */
 @media (width >= 48rem) {
   html[data-admin-bar] [data-page-frame] {
-    padding-bottom: 3.5rem;
+    padding-bottom: calc(var(--footer-height) + var(--admin-bar-height));
+  }
+
+  html[data-admin-bar] [data-site-footer] {
+    bottom: var(--admin-bar-height);
   }
 }
 

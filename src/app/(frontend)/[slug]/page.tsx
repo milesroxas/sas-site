@@ -9,6 +9,7 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { homeStatic } from '@/endpoints/seed/home-static'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { cn } from '@/utilities/ui'
 import PageClient from './page.client'
 
 export async function generateStaticParams() {
@@ -65,7 +66,10 @@ export default async function Page({ params: paramsPromise }: Args) {
   const { hero, layout } = page
 
   return (
-    <article className="pt-16 pb-24">
+    // The high-impact hero pulls itself under the fixed header
+    // (-mt-(--header-height)), so top padding would leave a bare strip
+    // behind the header; padded starts are for the in-flow hero types.
+    <article className={cn('pb-24', hero?.type !== 'highImpact' && 'pt-16')}>
       <PageClient />
       {/* Allows redirects for valid pages too */}
       <PayloadRedirects disableNotFound url={url} />

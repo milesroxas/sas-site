@@ -1,49 +1,31 @@
-import Link from 'next/link'
-import { CookiePreferencesLink } from '@/components/CookiePreferencesLink'
 import { CMSLink } from '@/components/Link'
-import { Logo } from '@/components/Logo/Logo'
-import type { Footer as FooterData } from '@/payload-types'
-import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
-import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { getCachedGlobal } from '@/utilities/getGlobals'
+import { Clock } from './Clock'
 
 export async function Footer() {
-  const footerData: FooterData = await getCachedGlobal('footer', 1)()
-
-  const navItems = footerData?.navItems || []
+  const footerData = await getCachedGlobal('footer', 1)()
 
   return (
     <footer
-      className="mt-auto border-t border-border bg-black dark:bg-card text-white"
+      data-site-footer
+      // Fixed to the viewport bottom; while the takeover menu is open the
+      // transformed page frame becomes its containing block, so the footer
+      // docks to the bottom of the scaled-down card instead.
+      className="fixed inset-x-0 bottom-0 z-30 grid h-(--footer-height) grid-cols-[1fr_auto_1fr] items-center bg-background px-5 md:px-20"
       // Keep the footer static during page transitions.
       style={{ viewTransitionName: 'site-footer' }}
     >
-      <div className="container py-8 gap-8 flex flex-col md:flex-row md:justify-between">
-        <Link
-          className="flex items-center"
-          href="/"
-          transitionTypes={[...lateralNavTransitionTypes]}
-        >
-          <Logo className="invert" />
-        </Link>
-
-        <div className="flex flex-col-reverse items-start md:flex-row gap-4 md:items-center">
-          <ThemeSelector />
-          <Link
-            className="text-white/70 text-sm underline-offset-4 hover:underline"
-            href="/demo/immersive"
-            transitionTypes={[...lateralNavTransitionTypes]}
-          >
-            Immersive lab
-          </Link>
-          <nav className="flex flex-col md:flex-row gap-4">
-            {navItems.map(({ link }, i) => {
-              return <CMSLink className="text-white" key={i} {...link} />
-            })}
-          </nav>
-          <CookiePreferencesLink className="text-white/70 text-sm underline-offset-4 hover:underline" />
-        </div>
-      </div>
+      <p className="hidden font-mono text-xs uppercase text-foreground md:block">
+        {footerData?.location}
+      </p>
+      <CMSLink
+        {...footerData?.getInTouch}
+        appearance="inline"
+        // Negative margin cancels the trailing letter-space so the label
+        // visually centers on its glyphs.
+        className="col-start-2 mr-[-0.58em] text-sm font-black uppercase tracking-[0.58em] text-foreground transition-colors hover:text-primary"
+      />
+      <Clock className="col-start-3 justify-self-end" />
     </footer>
   )
 }

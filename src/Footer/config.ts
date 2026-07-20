@@ -11,21 +11,24 @@ export const Footer: GlobalConfig = {
   },
   fields: [
     {
-      name: 'navItems',
-      type: 'array',
-      fields: [
-        link({
-          appearances: false,
-        }),
-      ],
-      maxRows: 6,
+      name: 'location',
+      type: 'text',
+      required: true,
+      defaultValue: 'Brooklyn, NY / Philadelphia, PA',
       admin: {
-        initCollapsed: true,
-        components: {
-          RowLabel: '@/Footer/RowLabel#RowLabel',
-        },
+        description: 'Shown on the left side of the site footer, rendered in uppercase.',
       },
     },
+    link({
+      appearances: false,
+      overrides: {
+        name: 'getInTouch',
+        label: 'Get in touch link',
+        admin: {
+          description: 'Centered call-to-action in the site footer.',
+        },
+      },
+    }),
   ],
   hooks: {
     afterChange: [revalidateFooter],

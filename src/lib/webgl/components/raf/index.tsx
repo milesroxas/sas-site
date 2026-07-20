@@ -2,6 +2,7 @@
 
 import { useThree } from '@react-three/fiber'
 import { useTempus } from 'tempus/react'
+import { useWebGLStore } from '@/lib/webgl/store'
 
 type RAFProps = {
   render?: boolean
@@ -16,7 +17,9 @@ export function RAF({ render = true }: RAFProps) {
 
   useTempus(
     ({ time }) => {
-      if (render) {
+      // Transient read: rendering while Preload's compileAsync is in flight
+      // draws pending WebGPU pipelines (Dawn: "No pipeline set").
+      if (render && !useWebGLStore.getState().isCompiling) {
         advance(time / 1000)
       }
     },

@@ -52,7 +52,9 @@ export default async function Post({ params: paramsPromise }: Args) {
   if (!post) return <PayloadRedirects url={url} />
 
   return (
-    <article className="pt-16 pb-16">
+    // PostHero pulls itself under the fixed header (-mt-(--header-height)),
+    // so the article must not add top padding above it.
+    <article className="pb-16">
       <PageClient />
       <JsonLd
         data={[

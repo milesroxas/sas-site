@@ -57,7 +57,9 @@ export const AdminBar: React.FC<{
     <div
       className={cn(
         baseClass,
-        'fixed inset-x-0 bottom-0 z-[60] border-t border-white/15 bg-black py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-white',
+        // Height must stay in lockstep with the footer offset and page-frame
+        // padding in globals.css, so it comes from the shared token.
+        'fixed inset-x-0 bottom-0 z-[60] flex h-(--admin-bar-height) items-center border-t border-white/15 bg-black text-white',
         {
           block: show,
           hidden: !show,
@@ -67,7 +69,7 @@ export const AdminBar: React.FC<{
       <div className="container">
         <PayloadAdminBar
           {...adminBarProps}
-          className="py-2 text-white"
+          className="text-white"
           classNames={{
             controls: 'font-medium text-white',
             logo: 'text-white',

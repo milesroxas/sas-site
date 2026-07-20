@@ -1,4 +1,4 @@
-import type { CollectionSlug, File, GlobalSlug, Payload, PayloadRequest } from 'payload'
+import type { CollectionSlug, File, Payload, PayloadRequest } from 'payload'
 
 import { contactForm as contactFormData } from './contact-form'
 import { contact as contactPageData } from './contact-page'
@@ -19,10 +19,6 @@ const collections: CollectionSlug[] = [
   'form-submissions',
   'search',
 ]
-
-// `satisfies` keeps the literal slugs so `updateGlobal` narrows `data` to the nav globals;
-// a wide `GlobalSlug[]` annotation would reject `navItems` once other globals exist.
-const globals = ['header', 'footer'] satisfies GlobalSlug[]
 
 const categories = ['Technology', 'News', 'Finance', 'Design', 'Software', 'Engineering']
 
@@ -46,20 +42,16 @@ export const seed = async ({
   payload.logger.info(`— Clearing collections and globals...`)
 
   // clear the database
-  await Promise.all(
-    globals.map((global) =>
-      payload.updateGlobal({
-        slug: global,
-        data: {
-          navItems: [],
-        },
-        depth: 0,
-        context: {
-          disableRevalidate: true,
-        },
-      }),
-    ),
-  )
+  await payload.updateGlobal({
+    slug: 'header',
+    data: {
+      navItems: [],
+    },
+    depth: 0,
+    context: {
+      disableRevalidate: true,
+    },
+  })
 
   await Promise.all(
     collections.map((collection) => payload.db.deleteMany({ collection, req, where: {} })),
@@ -247,31 +239,15 @@ export const seed = async ({
     payload.updateGlobal({
       slug: 'footer',
       data: {
-        navItems: [
-          {
-            link: {
-              type: 'custom',
-              label: 'Admin',
-              url: '/admin',
-            },
+        location: 'Brooklyn, NY / Philadelphia, PA',
+        getInTouch: {
+          type: 'reference',
+          label: 'Get in touch',
+          reference: {
+            relationTo: 'pages',
+            value: contactPage.id,
           },
-          {
-            link: {
-              type: 'custom',
-              label: 'Source Code',
-              newTab: true,
-              url: 'https://github.com/payloadcms/payload/tree/main/templates/website',
-            },
-          },
-          {
-            link: {
-              type: 'custom',
-              label: 'Payload',
-              newTab: true,
-              url: 'https://payloadcms.com/',
-            },
-          },
-        ],
+        },
       },
     }),
   ])

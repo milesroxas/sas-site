@@ -45,7 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               into a docked card, so page + footer must share one element. */}
           <div
             data-page-frame
-            className="flex min-h-svh flex-col bg-background pt-(--header-height)"
+            className="flex min-h-svh flex-col bg-background pt-(--header-height) pb-(--footer-height)"
           >
             {/* Page transitions live in (frontend)/template.tsx, which re-mounts per navigation. */}
             {children}

@@ -23,15 +23,24 @@ function getDOMTunnel(): WebGLTunnelInstance {
 type WebGLStore = {
   isActivated: boolean
   isActive: boolean
+  /**
+   * True while Preload's compileAsync is in flight. The frame loop must not
+   * render during this window: WebGPU pipelines created by compileAsync are
+   * pending promises, and drawing an object whose pipeline hasn't resolved
+   * makes Dawn reject the draw with "No pipeline set".
+   */
+  isCompiling: boolean
   getWebGLTunnel: () => WebGLTunnelInstance
   getDOMTunnel: () => WebGLTunnelInstance
   activate: () => void
   setActive: (active: boolean) => void
+  setCompiling: (compiling: boolean) => void
 }
 
 export const useWebGLStore = create<WebGLStore>((set, get) => ({
   isActivated: false,
   isActive: false,
+  isCompiling: false,
 
   getWebGLTunnel,
   getDOMTunnel,
@@ -48,5 +57,9 @@ export const useWebGLStore = create<WebGLStore>((set, get) => ({
 
   setActive: (active: boolean) => {
     set({ isActive: active })
+  },
+
+  setCompiling: (compiling: boolean) => {
+    set({ isCompiling: compiling })
   },
 }))

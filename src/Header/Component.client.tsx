@@ -66,7 +66,9 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
           menuOpen
             ? 'bg-transparent text-secondary-foreground'
             : overHero
-              ? 'bg-transparent text-white'
+              ? // Scoped data-theme="dark" (set below) resolves foreground to its
+                // dark value over hero media, so tokens follow the theme system.
+                'bg-transparent text-foreground'
               : 'bg-background/85 text-foreground backdrop-blur-md',
         )}
         // Pull the header out of the page snapshot so it stays static during transitions.
