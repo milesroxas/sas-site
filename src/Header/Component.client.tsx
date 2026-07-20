@@ -75,11 +75,14 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
         style={{ viewTransitionName: 'site-header' }}
         {...(theme && !menuOpen ? { 'data-theme': theme } : {})}
       >
-        <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center px-6 md:px-20">
+        {/* Mobile: flex keeps brand/MENU/toggle from colliding — the brand is
+            wider than a 1fr column on phone widths. md+: original 3-col grid
+            with a truly centered MENU. */}
+        <div className="flex h-full items-center justify-between gap-3 px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:px-20">
           <Link
             href="/"
             transitionTypes={[...lateralNavTransitionTypes]}
-            className="justify-self-start whitespace-nowrap text-base/[1.625rem] font-medium tracking-[0.19em] md:text-[1.3125rem]"
+            className="justify-self-start whitespace-nowrap text-sm/[1.625rem] font-medium tracking-widest md:text-[1.3125rem] md:tracking-[0.19em]"
           >
             SUITS &amp; SANDALS
           </Link>
@@ -91,7 +94,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
             aria-controls="site-menu"
             onClick={() => setMenuOpen((v) => !v)}
             // -mr compensates the trailing letter-space so the label reads centered.
-            className="-mr-[0.58em] text-sm font-black tracking-[0.58em] transition-opacity hover:opacity-70"
+            className="mr-[-0.58em] text-sm font-black tracking-[0.58em] transition-opacity hover:opacity-70"
           >
             {menuOpen ? 'CLOSE' : 'MENU'}
           </button>
