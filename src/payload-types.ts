@@ -1396,6 +1396,10 @@ export interface ArchiveBlock {
         value: number | Post;
       }[]
     | null;
+  /**
+   * How each post card renders in this archive.
+   */
+  cardVariant?: ('contained' | 'open' | 'overlay') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'archive';
@@ -2981,6 +2985,7 @@ export interface ArchiveBlockSelect<T extends boolean = true> {
   categories?: T;
   limit?: T;
   selectedDocs?: T;
+  cardVariant?: T;
   id?: T;
   blockName?: T;
 }

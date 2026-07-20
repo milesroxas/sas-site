@@ -59,7 +59,7 @@ export const AdminBar: React.FC<{
         baseClass,
         // Height must stay in lockstep with the footer offset and page-frame
         // padding in globals.css, so it comes from the shared token.
-        'fixed inset-x-0 bottom-0 z-[60] flex h-(--admin-bar-height) items-center border-t border-white/15 bg-black text-white',
+        'fixed inset-x-0 bottom-0 z-60 flex h-(--admin-bar-height) items-center border-t border-white/15 bg-black text-white',
         {
           block: show,
           hidden: !show,

@@ -1,15 +1,17 @@
 import type React from 'react'
 import type { CSSProperties } from 'react'
 import { Card, type CardPostData } from '@/components/Card'
+import type { CardVariant } from '@/components/Card/variants'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import { cn } from '@/utilities/ui'
 
 export type Props = {
+  cardVariant?: CardVariant
   posts: CardPostData[]
 }
 
 export const CollectionArchive: React.FC<Props> = (props) => {
-  const { posts } = props
+  const { cardVariant, posts } = props
 
   return (
     <RevealSection className={cn('container')}>
@@ -23,7 +25,13 @@ export const CollectionArchive: React.FC<Props> = (props) => {
                   key={index}
                   style={{ '--stagger': index } as CSSProperties}
                 >
-                  <Card className="h-full" doc={result} relationTo="posts" showCategories />
+                  <Card
+                    className="h-full"
+                    doc={result}
+                    relationTo="posts"
+                    showCategories
+                    variant={cardVariant}
+                  />
                 </div>
               )
             }

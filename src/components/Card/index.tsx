@@ -14,10 +14,17 @@ import type { Post } from '@/payload-types'
 import { forwardNavTransitionTypes, postImageVtName } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import useClickableCard from '@/utilities/useClickableCard'
+import type { CardVariant } from './variants'
 
 export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title'> & {
   /** Explicit destination — takes precedence over `/${relationTo}/${slug}`. */
   url?: string
+}
+
+const variantClassNames: Record<CardVariant, string> = {
+  contained: '',
+  open: 'rounded-none bg-transparent ring-0',
+  overlay: 'relative min-h-80 justify-end bg-muted ring-0 text-white',
 }
 
 export const Card: React.FC<{
@@ -27,9 +34,17 @@ export const Card: React.FC<{
   relationTo?: 'posts'
   showCategories?: boolean
   title?: string
+  variant?: CardVariant
 }> = (props) => {
   const { card, link } = useClickableCard<HTMLDivElement>({})
-  const { className, doc, relationTo, showCategories, title: titleFromProps } = props
+  const {
+    className,
+    doc,
+    relationTo,
+    showCategories,
+    title: titleFromProps,
+    variant = 'contained',
+  } = props
 
   const { slug, categories, meta, title } = doc || {}
   const { description, image: metaImage } = meta || {}
@@ -39,26 +54,46 @@ export const Card: React.FC<{
   const sanitizedDescription = description?.replace(/\s/g, ' ') // replace non-breaking space with white space
   const href = doc?.url ?? `/${relationTo}/${slug}`
 
+  const isOpen = variant === 'open'
+  const isOverlay = variant === 'overlay'
+
+  const media = metaImage && typeof metaImage !== 'string' && (
+    <Media
+      fill={isOverlay}
+      imgClassName={isOverlay ? 'object-cover' : undefined}
+      resource={metaImage}
+      size="33vw"
+    />
+  )
+
   return (
-    <CardUi className={cn('cursor-pointer pt-0', className)} ref={card.ref}>
-      <div className="relative w-full">
-        {!metaImage && <div>No image</div>}
-        {metaImage &&
-          typeof metaImage !== 'string' &&
+    <CardUi
+      className={cn('cursor-pointer pt-0', variantClassNames[variant], className)}
+      ref={card.ref}
+    >
+      <div className={cn('relative w-full', isOverlay && 'absolute inset-0')}>
+        {!metaImage && !isOverlay && <div>No image</div>}
+        {media &&
           (slug ? (
             // Shared element: morphs into the post hero image on navigation. The
             // matching `name` lives in `PostHero`. `default: 'none'` keeps the other
             // (non-clicked) cards from cross-fading on list updates.
             <ViewTransition default="none" name={postImageVtName(slug)} share="morph">
-              <Media resource={metaImage} size="33vw" />
+              {media}
             </ViewTransition>
           ) : (
-            <Media resource={metaImage} size="33vw" />
+            media
           ))}
       </div>
-      <CardHeader>
+      {isOverlay && (
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-b from-transparent to-black/80"
+        />
+      )}
+      <CardHeader className={cn(isOpen && 'px-0', isOverlay && 'relative')}>
         {showCategories && hasCategories && (
-          <CardDescription className="uppercase">
+          <CardDescription className={cn('uppercase', isOverlay && 'text-white/70')}>
             {categories?.map((category, index) => {
               if (typeof category === 'object') {
                 const { title: titleFromCategory } = category
@@ -93,7 +128,7 @@ export const Card: React.FC<{
         )}
       </CardHeader>
       {description && (
-        <CardContent>
+        <CardContent className={cn(isOpen && 'px-0', isOverlay && 'relative text-white/80')}>
           <p>{sanitizedDescription}</p>
         </CardContent>
       )}

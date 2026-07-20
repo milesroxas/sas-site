@@ -5,6 +5,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { Block } from 'payload'
+import { CARD_VARIANT_LABELS, CARD_VARIANTS } from '@/components/Card/variants'
 
 export const Archive: Block = {
   slug: 'archive',
@@ -84,6 +85,19 @@ export const Archive: Block = {
       hasMany: true,
       label: 'Selection',
       relationTo: ['posts'],
+    },
+    {
+      name: 'cardVariant',
+      type: 'select',
+      admin: {
+        description: 'How each post card renders in this archive.',
+      },
+      defaultValue: 'contained',
+      label: 'Card Style',
+      options: CARD_VARIANTS.map((variant) => ({
+        label: CARD_VARIANT_LABELS[variant],
+        value: variant,
+      })),
     },
   ],
   labels: {

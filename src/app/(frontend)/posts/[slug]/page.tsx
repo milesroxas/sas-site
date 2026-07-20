@@ -75,12 +75,12 @@ export default async function Post({ params: paramsPromise }: Args) {
 
       <div className="flex flex-col items-center gap-4 pt-8">
         <RevealSection className="container w-full" delayMs={80}>
-          <RichText className="max-w-[48rem] mx-auto" data={post.content} enableGutter={false} />
+          <RichText className="max-w-3xl mx-auto" data={post.content} enableGutter={false} />
         </RevealSection>
         {post.relatedPosts && post.relatedPosts.length > 0 && (
           <RevealSection className="container w-full mt-12" delayMs={160}>
             <RelatedPosts
-              className="max-w-[52rem] lg:grid lg:grid-cols-subgrid col-start-1 col-span-3 grid-rows-[2fr]"
+              className="max-w-208 lg:grid lg:grid-cols-subgrid col-start-1 col-span-3 grid-rows-[2fr]"
               docs={post.relatedPosts.filter((post) => typeof post === 'object')}
             />
           </RevealSection>

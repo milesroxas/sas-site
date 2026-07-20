@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { CARD_VARIANTS } from '@/components/Card/variants'
 import { heading, paragraph, postFixtures, richText, text } from '../fixtures'
 import { RelatedPosts } from './Component'
 
@@ -7,6 +8,12 @@ const meta = {
   component: RelatedPosts,
   parameters: {
     layout: 'padded',
+  },
+  argTypes: {
+    cardVariant: {
+      control: 'select',
+      options: [...CARD_VARIANTS],
+    },
   },
   args: {
     docs: postFixtures,
@@ -26,5 +33,17 @@ export const Default: Story = {}
 export const WithoutIntro: Story = {
   args: {
     introContent: undefined,
+  },
+}
+
+export const OpenCards: Story = {
+  args: {
+    cardVariant: 'open',
+  },
+}
+
+export const OverlayCards: Story = {
+  args: {
+    cardVariant: 'overlay',
   },
 }
