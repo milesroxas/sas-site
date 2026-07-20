@@ -92,6 +92,9 @@ export default buildConfig({
     pool: {
       connectionString: process.env.POSTGRES_URL || '',
     },
+    // Drizzle dev push is opt-out so the dev TUI can point `next dev` at the
+    // production database without risking schema mutations (prod migrates via CI).
+    push: process.env.PAYLOAD_DB_PUSH !== 'false',
     beforeSchemaInit: [
       // Ask RAG embedding index (src/features/ask/schema.ts) — derived data,
       // not a Payload collection. Needs the pgvector extension (see the

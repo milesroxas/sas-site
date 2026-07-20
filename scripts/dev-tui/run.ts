@@ -21,11 +21,16 @@ export async function runPnpmCapture(
   }
 }
 
-/** Run `pnpm run <script>` with inherited stdio (interactive / long-running). */
-export async function runPnpmScript(script: string): Promise<void> {
+/**
+ * Run `pnpm run <script>` with inherited stdio (interactive / long-running).
+ * `env` overrides win over `.env*` files — Next.js never overwrites variables
+ * that already exist in the process environment.
+ */
+export async function runPnpmScript(script: string, env?: Record<string, string>): Promise<void> {
   await execa('pnpm', ['run', script], {
     cwd: PROJECT_ROOT,
     stdio: 'inherit',
+    env: env ? { ...process.env, ...env } : undefined,
   })
 }
 

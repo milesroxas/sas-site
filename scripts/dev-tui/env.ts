@@ -1,44 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { DEFAULT_SYNC_ENV_FILE, PROJECT_ROOT, VERCEL_PULL_ENV_FILE } from './constants'
-
-/** Order for resolving POSTGRES_URL when importing remote data (Vercel pull first, then local overrides, then `.env`). */
-export const REMOTE_IMPORT_POSTGRES_URL_CHAIN = [
-  VERCEL_PULL_ENV_FILE,
-  DEFAULT_SYNC_ENV_FILE,
-  '.env',
-] as const
-
-/**
- * Walk env files in order: skip missing files; use the first file that contains `POSTGRES_URL`.
- */
-export async function readPostgresUrlFromEnvChain(
-  relativePaths: readonly string[],
-): Promise<{ path: string; url: string } | { error: string }> {
-  const notes: string[] = []
-  for (const rel of relativePaths) {
-    const resolved = path.join(PROJECT_ROOT, rel)
-    try {
-      const text = await fs.readFile(resolved, 'utf8')
-      const url = parseEnvValue(text, 'POSTGRES_URL')
-      if (url?.trim()) {
-        return { path: resolved, url: url.trim() }
-      }
-      notes.push(`${rel}: no POSTGRES_URL`)
-    } catch (e) {
-      const err = e as { code?: string }
-      if (err.code === 'ENOENT') {
-        notes.push(`${rel}: missing`)
-        continue
-      }
-      const msg = e instanceof Error ? e.message : String(e)
-      return { error: `Cannot read file: ${resolved} (${msg})` }
-    }
-  }
-  return {
-    error: `No POSTGRES_URL found. Tried in order: ${relativePaths.join(' → ')}. (${notes.join('; ')})`,
-  }
-}
+import { PROJECT_ROOT, VERCEL_PULL_ENV_FILE } from './constants'
 
 /**
  * Parse a KEY=value line from dotenv-style content (handles optional quotes).
@@ -83,6 +45,36 @@ export async function readPostgresUrlFromFile(
   return { path: resolved, url: url.trim() }
 }
 
+/**
+ * Read the production connection URLs from the Vercel-pulled env file.
+ * `runtimeUrl` is the pooled URL (what production itself uses); `dumpUrl`
+ * prefers the non-pooling URL because PgBouncer breaks pg_dump's session-level
+ * features. `payloadSecret` is production's PAYLOAD_SECRET — encrypted fields
+ * in the production DB only decrypt with the secret that wrote them.
+ */
+export async function readProductionUrls(): Promise<
+  { runtimeUrl: string; dumpUrl: string; payloadSecret?: string } | { error: string }
+> {
+  const resolved = path.join(PROJECT_ROOT, VERCEL_PULL_ENV_FILE)
+  let text: string
+  try {
+    text = await fs.readFile(resolved, 'utf8')
+  } catch {
+    return {
+      error: `${VERCEL_PULL_ENV_FILE} not found. Run “Pull Vercel production env” first (needs the vercel CLI).`,
+    }
+  }
+  const runtimeUrl = parseEnvValue(text, 'POSTGRES_URL')?.trim()
+  if (!runtimeUrl) {
+    return {
+      error: `No POSTGRES_URL in ${VERCEL_PULL_ENV_FILE}. Re-run “Pull Vercel production env”.`,
+    }
+  }
+  const dumpUrl = parseEnvValue(text, 'POSTGRES_URL_NON_POOLING')?.trim() || runtimeUrl
+  const payloadSecret = parseEnvValue(text, 'PAYLOAD_SECRET')?.trim() || undefined
+  return { runtimeUrl, dumpUrl, payloadSecret }
+}
+
 export function assertPostgresUrl(url: string): string | undefined {
   const u = url.trim()
   if (!u.startsWith('postgres')) {
@@ -98,55 +90,9 @@ export function assertPostgresUrl(url: string): string | undefined {
 const NEXT_DEV_POSTGRES_URL_FILES = [
   '.env',
   '.env.development',
-  DEFAULT_SYNC_ENV_FILE,
+  '.env.local',
   '.env.development.local',
 ] as const
-
-/**
- * Update or append POSTGRES_URL in a dotenv file (first `=` separates key from value).
- */
-export async function upsertPostgresUrlInFile(
-  relativeToProjectRoot: string,
-  postgresUrl: string,
-): Promise<{ path: string }> {
-  const absolutePath = path.join(PROJECT_ROOT, relativeToProjectRoot)
-  let text = ''
-  try {
-    text = await fs.readFile(absolutePath, 'utf8')
-  } catch (e) {
-    const err = e as { code?: string }
-    if (err.code !== 'ENOENT') throw e
-  }
-
-  const lines = text.split(/\r?\n/)
-  let found = false
-  const out: string[] = []
-  for (const line of lines) {
-    const trimmed = line.trim()
-    if (!trimmed || trimmed.startsWith('#')) {
-      out.push(line)
-      continue
-    }
-    const eq = line.indexOf('=')
-    if (eq === -1) {
-      out.push(line)
-      continue
-    }
-    const k = line.slice(0, eq).trim()
-    if (k === 'POSTGRES_URL') {
-      out.push(`POSTGRES_URL=${postgresUrl}`)
-      found = true
-    } else {
-      out.push(line)
-    }
-  }
-  if (!found) {
-    if (out.length && out[out.length - 1] !== '') out.push('')
-    out.push(`POSTGRES_URL=${postgresUrl}`)
-  }
-  await fs.writeFile(absolutePath, out.join('\n'), 'utf8')
-  return { path: absolutePath }
-}
 
 /**
  * Resolves `POSTGRES_URL` the same way `next dev` does (last file in the list wins).

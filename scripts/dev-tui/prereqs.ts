@@ -66,6 +66,44 @@ export async function checkComposePostgresUp(): Promise<
   }
 }
 
+/**
+ * Start the compose Postgres if needed and wait until pg_isready succeeds
+ * (fresh containers accept TCP before the server is ready to query).
+ */
+export async function ensureLocalPostgresReady(): Promise<
+  { ok: true } | { ok: false; message: string }
+> {
+  const docker = await checkDockerAvailable()
+  if (!docker.ok) return docker
+
+  const up = await checkComposePostgresUp()
+  if (!up.ok) {
+    const start = await execa('docker', ['compose', 'up', 'postgres', '-d'], {
+      cwd: PROJECT_ROOT,
+      reject: false,
+      timeout: 120_000,
+    })
+    if (start.exitCode !== 0) {
+      return {
+        ok: false,
+        message: `docker compose up postgres failed: ${start.stderr || start.stdout || start.exitCode}`,
+      }
+    }
+  }
+
+  const deadline = Date.now() + 30_000
+  while (Date.now() < deadline) {
+    const r = await execa(
+      'docker',
+      ['compose', 'exec', '-T', 'postgres', 'pg_isready', '-U', 'postgres'],
+      { cwd: PROJECT_ROOT, reject: false, timeout: 10_000 },
+    )
+    if (r.exitCode === 0) return { ok: true }
+    await new Promise((resolve) => setTimeout(resolve, 1_000))
+  }
+  return { ok: false, message: 'Postgres container did not become ready within 30s.' }
+}
+
 export async function checkVercelCli(): Promise<
   { ok: true; path: string } | { ok: false; message: string }
 > {

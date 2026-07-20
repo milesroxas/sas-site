@@ -68,7 +68,7 @@ export async function syncProductionToLocal(productionUrl: string): Promise<Sync
 
   messages.push('Done. Local `payload` database matches the production dump.')
   messages.push(
-    'Import does not change POSTGRES_URL in your env files. If the app still talks to production, a higher-priority file (e.g. `.env.development.local` or `.env.local`) likely overrides — use the TUI “Point app at local Docker” or fix that file.',
+    'Env files are unchanged — use “Dev server — local Docker DB” to run against the imported data.',
   )
   return { ok: true, messages }
 }

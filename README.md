@@ -81,7 +81,7 @@ cp .env.example .env
 | `EMAIL_ASSET_BASE_URL` | Public base URL for images in emails |
 | `CHROMATIC_PROJECT_TOKEN` | Storybook publishing (`pnpm chromatic`) |
 
-Use `.env.local` for overrides (gitignored). `.env.local` wins over `.env`.
+`.env` is the single env file for local dev (gitignored). Avoid `.env.local`: it silently outranks `.env`, and a bare `vercel env pull` writes a full cloud-env dump there — including a `POSTGRES_URL` that hijacks your DB. Pull cloud envs through the dev TUI instead; it writes them to `.env.*.pulled` files that Next.js never auto-loads.
 
 > If `POSTGRES_URL` points at `localhost` or `127.0.0.1`, the app uses a standard Postgres driver path instead of Vercel's pooled config.
 
@@ -111,13 +111,22 @@ pnpm generate:importmap
 
 ## Dev TUI
 
-`pnpm dev:tui` opens an interactive menu (Node 20+, real TTY) for the dev server, database tasks (Docker, pull Vercel production env, import production data), Payload CLI, quality checks, and builds.
+`pnpm dev:tui` opens an interactive menu (Node 20+, real TTY) for the dev server, database tasks, Payload CLI, quality checks, and builds. The top-level entries cover the common database workflows:
+
+- **Dev server — default env**: plain `pnpm dev`; `POSTGRES_URL` resolves from the `.env` chain (the footer shows which file wins).
+- **Dev server — local Docker DB**: forces `POSTGRES_URL` to the compose Postgres for that run only (no env files edited) and starts/waits for the container.
+- **Dev server — production DB**: forces `POSTGRES_URL` (and production's `PAYLOAD_SECRET`, so encrypted fields decrypt) from `.env.production.pulled`, with `PAYLOAD_DB_PUSH=false` so drizzle dev push can never touch the production schema. Writes from the admin panel are still real — read-mostly use.
+- **Pull production content → local Docker DB**: `pg_dump` production (non-pooling URL) and restore into the Docker `payload` database, backing up the local DB first to `.dev-tui/local-backup.sql`.
+
+Run **Database… → Pull Vercel production env** once before the production-DB options (needs the `vercel` CLI).
 
 | File | Role |
 | --- | --- |
-| `.env` | Local defaults from `.env.example` |
-| `.env.local` | Overrides; highest priority for normal local env |
-| `.env.production.local` | Written by **Pull Vercel production env**; source for DB import workflows |
+| `.env` | The local env file: Docker DB default plus secrets (from `.env.example`) |
+| `.env.production.pulled` | Written by **Pull Vercel production env**; read only by the TUI, never auto-loaded by Next.js |
+| `.env.development.pulled` | Optional `vercel env pull` of the development (Neon dev branch) env; reference only |
+
+Deliberately not `.env.production.local` / `.env.local`: Next.js auto-loads those, which would point plain `pnpm dev` or a local `pnpm build` at a cloud database without asking.
 
 ## Project structure
 

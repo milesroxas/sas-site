@@ -2,7 +2,10 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       PAYLOAD_SECRET: string
-      DATABASE_URL: string
+      /** Postgres connection string — local Docker by default, Neon in Vercel envs. */
+      POSTGRES_URL: string
+      /** Vercel Blob token for the media store. */
+      BLOB_READ_WRITE_TOKEN: string
       NEXT_PUBLIC_SERVER_URL: string
       VERCEL_PROJECT_PRODUCTION_URL: string
       VERCEL_URL: string
