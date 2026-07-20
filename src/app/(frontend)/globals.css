@@ -730,6 +730,10 @@
   --header-height: 4rem;
   /* Fixed site footer (Footer/Component.tsx); page frame is padded by it. */
   --footer-height: 3.5rem;
+  /* Rendered heights of the fixed bars. Layout offsets above stay at the full
+     heights so page content never reflows when the bars shrink on scroll. */
+  --header-bar-height: var(--header-height);
+  --footer-bar-height: var(--footer-height);
   /* Fixed admin bar (components/AdminBar); footer + page frame offset by it. */
   --admin-bar-height: 3.5rem;
   --card: oklch(1 0 0);
@@ -767,6 +771,13 @@
   --error: oklch(75% 0.15 25deg);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
+}
+
+/* Header/Component.client.tsx toggles this attribute past a small scroll
+   threshold; both fixed bars shrink so more of the page shows. */
+html[data-scrolled] {
+  --header-bar-height: 3rem;
+  --footer-bar-height: 2.5rem;
 }
 
 /* Dark palette from the shadcn preset (b1ZzraCdE), keyed to the site's

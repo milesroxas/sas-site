@@ -6,7 +6,6 @@ import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 
 import type { Header } from '@/payload-types'
-import { useHeaderTheme } from '@/providers/HeaderTheme'
 import { useTheme } from '@/providers/Theme'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
@@ -17,25 +16,13 @@ interface HeaderClientProps {
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
-  /* Storing the value in a useState to avoid hydration errors */
-  const [theme, setTheme] = useState<string | null>(null)
-  const { headerTheme, setHeaderTheme } = useHeaderTheme()
   const { theme: siteTheme, setTheme: setSiteTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
   /* Theme resolves client-side from the DOM, so gate the toggle icon on mount
      to keep server and hydration renders identical. */
   const [mounted, setMounted] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const pathname = usePathname()
-
-  useEffect(() => {
-    setHeaderTheme(null)
-  }, [setHeaderTheme])
-
-  useEffect(() => {
-    if (headerTheme && headerTheme !== theme) setTheme(headerTheme)
-  }, [headerTheme, theme])
 
   // Close the takeover menu whenever a navigation lands.
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the re-run trigger, not a value the effect reads
@@ -47,36 +34,28 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
     setMounted(true)
   }, [])
 
+  // Past a small scroll threshold both fixed bars shrink (globals.css keys
+  // --header-bar-height/--footer-bar-height off this attribute) so more of
+  // the page shows.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
+    const onScroll = () =>
+      document.documentElement.toggleAttribute('data-scrolled', window.scrollY > 8)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Hero pages set headerTheme="dark" and want a transparent header over
-  // their media until the page scrolls; the open menu overlay always wins.
-  const overHero = theme === 'dark' && !scrolled
-
   return (
     <>
       <header
         className={cn(
-          'fixed inset-x-0 top-0 z-50 h-(--header-height) transition-colors duration-300',
-          menuOpen
-            ? 'bg-transparent text-secondary-foreground'
-            : overHero
-              ? // Scoped data-theme="dark" (set below) resolves foreground to its
-                // dark value over hero media, so tokens follow the theme system.
-                'bg-transparent text-foreground'
-              : 'bg-background/85 text-foreground backdrop-blur-md',
+          'fixed inset-x-0 top-0 z-50 h-(--header-bar-height) transition-[height,background-color,color] duration-300 motion-reduce:transition-none',
+          // Solid like the footer; transparent only under the open takeover
+          // overlay so its secondary surface reads through.
+          menuOpen ? 'bg-transparent text-secondary-foreground' : 'bg-background text-foreground',
         )}
         // Pull the header out of the page snapshot so it stays static during transitions.
         style={{ viewTransitionName: 'site-header' }}
-        // Scoped theme only applies while transparent over hero media — once
-        // scrolled, bg-background/85 must resolve to the site theme, matching
-        // the footer.
-        {...(theme && !menuOpen && !scrolled ? { 'data-theme': theme } : {})}
       >
         {/* Mobile: flex keeps brand/MENU/toggle from colliding — the brand is
             wider than a 1fr column on phone widths. md+: original 3-col grid
@@ -85,7 +64,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
           <Link
             href="/"
             transitionTypes={[...lateralNavTransitionTypes]}
-            className="justify-self-start whitespace-nowrap text-sm/[1.625rem] font-medium tracking-widest md:text-[1.3125rem] md:tracking-[0.19em]"
+            className="justify-self-start whitespace-nowrap text-xs font-medium tracking-widest md:text-base md:tracking-[0.19em]"
           >
             SUITS &amp; SANDALS
           </Link>

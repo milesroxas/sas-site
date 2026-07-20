@@ -223,7 +223,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               <CMSLink
                 {...link}
                 appearance="inline"
-                className="font-heading text-4xl font-medium tracking-tight text-secondary-foreground transition-colors hover:text-primary md:text-5xl"
+                className="font-heading text-3xl font-medium tracking-tight text-secondary-foreground transition-colors hover:text-primary md:text-4xl"
               />
             </li>
           ))}
@@ -234,10 +234,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             <Link
               href="/search"
               transitionTypes={[...lateralNavTransitionTypes]}
-              className="group flex items-center gap-2 font-heading text-4xl font-medium tracking-tight text-secondary-foreground transition-colors hover:text-primary md:text-5xl"
+              className="group flex items-center gap-2 font-heading text-3xl font-medium tracking-tight text-secondary-foreground transition-colors hover:text-primary md:text-4xl"
             >
               Search
-              <IconArrowUpRight className="size-8 opacity-40 transition-opacity group-hover:opacity-100" />
+              <IconArrowUpRight className="size-7 opacity-40 transition-opacity group-hover:opacity-100" />
             </Link>
           </li>
         </ul>
