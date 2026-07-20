@@ -2,6 +2,7 @@ import type { Access, CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
+import { ensureLibraryRootFolder } from '@/hooks/assetLibraryFolders'
 
 const activeOrAuthenticated: Access = ({ req }) => {
   if (req.user) return true
@@ -19,6 +20,7 @@ export const AssetLibraries: CollectionConfig<'asset-libraries'> = {
     read: activeOrAuthenticated,
     update: authenticated,
   },
+  hooks: { beforeChange: [ensureLibraryRootFolder] },
   admin: {
     group: 'Assets',
     useAsTitle: 'name',

@@ -8,6 +8,7 @@ import {
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '../access/authenticated'
+import { populateFolderFromAssetLibrary } from '../hooks/assetLibraryFolders'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -22,6 +23,7 @@ export const Media: CollectionConfig = {
     read: ({ req }) => (req.user ? true : { usageStatus: { equals: 'public-approved' } }),
     update: authenticated,
   },
+  hooks: { beforeChange: [populateFolderFromAssetLibrary] },
   fields: [
     { name: 'title', type: 'text' },
     {
