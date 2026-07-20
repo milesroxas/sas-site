@@ -10,7 +10,8 @@ export function Preload() {
   const gl = useThree((state) => state.gl)
   const camera = useThree((state) => state.camera)
   const scene = useThree((state) => state.scene)
-  const setCompiling = useWebGLStore((state) => state.setCompiling)
+  const beginCompiling = useWebGLStore((state) => state.beginCompiling)
+  const endCompiling = useWebGLStore((state) => state.endCompiling)
 
   useEffect(() => {
     async function load() {
@@ -20,7 +21,9 @@ export function Preload() {
       // Hold the frame loop for the whole window: pipelines created by
       // compileAsync resolve asynchronously, and a concurrent render() draws
       // them while pending — Dawn rejects each draw with "No pipeline set".
-      setCompiling(true)
+      // Ref-counted: StrictMode runs this effect twice, and the second pass
+      // finishes instantly off the pipeline cache while the first is pending.
+      beginCompiling()
       try {
         scene.traverse((object: THREE.Object3D) => {
           if (object.visible === false && !object.userData?.debug) {
@@ -48,12 +51,12 @@ export function Preload() {
         for (const object of invisible) {
           object.visible = false
         }
-        setCompiling(false)
+        endCompiling()
       }
     }
 
     void load()
-  }, [camera, gl, scene, setCompiling])
+  }, [camera, gl, scene, beginCompiling, endCompiling])
 
   return null
 }

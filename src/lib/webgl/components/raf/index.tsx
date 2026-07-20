@@ -17,9 +17,9 @@ export function RAF({ render = true }: RAFProps) {
 
   useTempus(
     ({ time }) => {
-      // Transient read: rendering while Preload's compileAsync is in flight
+      // Transient read: rendering while any Preload compileAsync is in flight
       // draws pending WebGPU pipelines (Dawn: "No pipeline set").
-      if (render && !useWebGLStore.getState().isCompiling) {
+      if (render && useWebGLStore.getState().compilingCount === 0) {
         advance(time / 1000)
       }
     },
