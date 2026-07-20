@@ -14,7 +14,10 @@ export const PostHero: React.FC<{
     populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''
 
   return (
-    <div className="relative -mt-(--header-height) flex items-end">
+    // isolate: the hero image layers at -z-10; without a stacking context here it
+    // falls into the root context and paints beneath the page frame's opaque
+    // bg-background (layout.tsx), disappearing entirely.
+    <div className="relative isolate -mt-(--header-height) flex items-end">
       <div className="container z-10 relative lg:grid lg:grid-cols-[1fr_48rem_1fr] text-white pb-8">
         <div className="col-start-1 col-span-1 md:col-start-2 md:col-span-2">
           <div className="uppercase text-sm mb-6">
