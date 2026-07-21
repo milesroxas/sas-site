@@ -4,7 +4,7 @@ import { Card } from './index'
 import { CARD_VARIANTS } from './variants'
 
 const meta = {
-  title: 'Components/Card',
+  title: 'Components/PostCard',
   component: Card,
   parameters: {
     layout: 'centered',

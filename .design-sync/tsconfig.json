@@ -1,0 +1,132 @@
+{
+  // design-sync build only (cfg.tsconfig). Two jobs:
+  //  1. map next/image to the interop shim (see next-image-shim.ts);
+  //  2. resolve the repo's aliases for the converter's paths plugin.
+  // That plugin returns the first existing candidate and tries the bare path
+  // before /index.*, so a directory import would resolve to the directory
+  // itself and fail. Every alias that names a directory is therefore listed
+  // explicitly, before the `@/*` wildcard, pointing at its index file.
+  // Regenerate by re-running the scan in NOTES.md if new directories appear.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+          "next/image": [
+                "./next-image-shim.ts"
+          ],
+          "@/components/AdminBar": [
+                "../src/components/AdminBar/index.tsx"
+          ],
+          "@/components/Card": [
+                "../src/components/Card/index.tsx"
+          ],
+          "@/components/CollectionArchive": [
+                "../src/components/CollectionArchive/index.tsx"
+          ],
+          "@/components/GlobalCanvasRoot": [
+                "../src/components/GlobalCanvasRoot/index.tsx"
+          ],
+          "@/components/JsonLd": [
+                "../src/components/JsonLd/index.tsx"
+          ],
+          "@/components/LabPageCard": [
+                "../src/components/LabPageCard/index.tsx"
+          ],
+          "@/components/Link": [
+                "../src/components/Link/index.tsx"
+          ],
+          "@/components/LivePreviewListener": [
+                "../src/components/LivePreviewListener/index.tsx"
+          ],
+          "@/components/Media": [
+                "../src/components/Media/index.tsx"
+          ],
+          "@/components/PageRange": [
+                "../src/components/PageRange/index.tsx"
+          ],
+          "@/components/Pagination": [
+                "../src/components/Pagination/index.tsx"
+          ],
+          "@/components/PayloadRedirects": [
+                "../src/components/PayloadRedirects/index.tsx"
+          ],
+          "@/components/RelatedWorkSection": [
+                "../src/components/RelatedWorkSection/index.tsx"
+          ],
+          "@/components/RichText": [
+                "../src/components/RichText/index.tsx"
+          ],
+          "@/components/WorkPageCard": [
+                "../src/components/WorkPageCard/index.tsx"
+          ],
+          "@/endpoints/seed": [
+                "../src/endpoints/seed/index.ts"
+          ],
+          "@/features/immersive": [
+                "../src/features/immersive/index.ts"
+          ],
+          "@/heros/HighImpact": [
+                "../src/heros/HighImpact/index.tsx"
+          ],
+          "@/heros/LowImpact": [
+                "../src/heros/LowImpact/index.tsx"
+          ],
+          "@/heros/MediumImpact": [
+                "../src/heros/MediumImpact/index.tsx"
+          ],
+          "@/heros/PostHero": [
+                "../src/heros/PostHero/index.tsx"
+          ],
+          "@/lib/webgl/components/canvas": [
+                "../src/lib/webgl/components/canvas/index.tsx"
+          ],
+          "@/lib/webgl/components/global-canvas": [
+                "../src/lib/webgl/components/global-canvas/index.tsx"
+          ],
+          "@/lib/webgl/components/tunnel": [
+                "../src/lib/webgl/components/tunnel/index.tsx"
+          ],
+          "@/plugins/aeo": [
+                "../src/plugins/aeo/index.ts"
+          ],
+          "@/providers": [
+                "../src/providers/index.tsx"
+          ],
+          "@/providers/HeaderTheme": [
+                "../src/providers/HeaderTheme/index.tsx"
+          ],
+          "@/providers/Theme": [
+                "../src/providers/Theme/index.tsx"
+          ],
+          "@/providers/Theme/InitTheme": [
+                "../src/providers/Theme/InitTheme/index.tsx"
+          ],
+          "@/shared/email": [
+                "../src/shared/email/index.ts"
+          ],
+          "@/shared/lib/view-transition": [
+                "../src/shared/lib/view-transition/index.ts"
+          ],
+          "@/shared/testing/shadcn-helpers/ai-sdk": [
+                "../src/shared/testing/shadcn-helpers/ai-sdk/index.ts"
+          ],
+          "@/shared/ui/reveal-section": [
+                "../src/shared/ui/reveal-section/index.ts"
+          ],
+          "@/shared/ui/scramble-text": [
+                "../src/shared/ui/scramble-text/index.ts"
+          ],
+          "@/widgets/immersive-demo": [
+                "../src/widgets/immersive-demo/index.ts"
+          ],
+          "@payload-config": [
+                "../src/payload.config.ts"
+          ],
+          "@/*": [
+                "../src/*"
+          ],
+          "src/*": [
+                "../src/*"
+          ]
+    }
+  }
+}

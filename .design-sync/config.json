@@ -1,0 +1,41 @@
+{
+  "projectId": "7a2f1269-e2c4-4265-8d83-f31c7125ed90",
+  "shape": "storybook",
+  "pkg": "with-vercel-website",
+  "globalName": "SuitsSandalsDS",
+  "storybookStatic": ".design-sync/sb-reference",
+  "storybookConfigDir": ".storybook",
+  "entry": ".design-sync/entry.ts",
+  "storyImports": {
+    "shim": [
+      "blocks/Form/Component",
+      "blocks/RelatedPosts/Component"
+    ]
+  },
+  "titleMap": {
+    "Media": "MediaBlock",
+    "Form": "FormBlock",
+    "Code": "CodeBlock",
+    "Content": "ContentBlock",
+    "CallToAction": "CallToActionBlock",
+    "Banner": "BannerBlock",
+    "Tabs": "FeatureTabsBlock",
+    "StatementGrid": "FeatureStatementGridBlock",
+    "ImageStatement": "FeatureImageStatementBlock",
+    "HeadingOffset": "FeatureHeadingOffsetBlock"
+  },
+  "provider": {
+    "component": "PreviewAppRouter"
+  },
+  "tsconfig": ".design-sync/tsconfig.json",
+  "overrides": {
+    "CodeBlock": {
+      "cardMode": "column"
+    }
+  },
+  "cssEntry": ".design-sync/compiled.css",
+  "extraFonts": [
+    ".design-sync/fonts.css"
+  ],
+  "readmeHeader": ".design-sync/conventions.md"
+}

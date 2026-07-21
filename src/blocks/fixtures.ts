@@ -56,12 +56,16 @@ export const richText = (...children: SerializedNode[]): DefaultTypedEditorState
     },
   }) as DefaultTypedEditorState
 
-/** Points at a real file in /public so next/image renders it via staticDirs. */
+/**
+ * Absolute URL to a real file in /public (also served from the preview domain).
+ * Storybook resolves it either way; the design-sync previews render as
+ * standalone pages with no site root, so a root-relative path would 404 there.
+ */
 export const mediaFixture: Media = {
   id: 1,
   usageStatus: 'public-approved',
   alt: 'Website template open-graph artwork',
-  url: '/website-template-OG.webp',
+  url: 'https://preview.suits-sandals.com/website-template-OG.webp',
   filename: 'website-template-OG.webp',
   mimeType: 'image/webp',
   width: 1200,
