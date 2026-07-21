@@ -15,7 +15,7 @@ import { CallToAction } from '@/blocks/CallToAction/config'
 import { Content } from '@/blocks/Content/config'
 import { FormBlock } from '@/blocks/Form/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
-import { FeatureImageCaption } from '@/blocks/feature/ImageCaption/config'
+import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
@@ -71,7 +71,7 @@ export const AudiencePages: CollectionConfig<'audience-pages'> = {
                 FeatureStatementGrid,
                 FeatureHeadingOffset,
                 FeatureTabs,
-                FeatureImageCaption,
+                FeatureImageStatement,
               ],
               required: true,
               admin: { initCollapsed: true },

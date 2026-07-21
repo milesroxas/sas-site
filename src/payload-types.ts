@@ -275,7 +275,7 @@ export interface Page {
     | FeatureStatementGridBlock
     | FeatureHeadingOffsetBlock
     | FeatureTabsBlock
-    | FeatureImageCaptionBlock
+    | FeatureImageStatementBlock
   )[];
   meta?: {
     title?: string | null;
@@ -1739,17 +1739,29 @@ export interface FeatureTabsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureImageCaptionBlock".
+ * via the `definition` "FeatureImageStatementBlock".
  */
-export interface FeatureImageCaptionBlock {
+export interface FeatureImageStatementBlock {
   media: number | Media;
   /**
-   * Large statement set beneath the image, aligned to the right edge.
+   * Large statement set beneath the image.
    */
   caption: string;
+  /**
+   * Which edge the statement aligns to beneath the image.
+   */
+  textPosition?: ('right' | 'left') | null;
+  /**
+   * Small steps the statement down one type size.
+   */
+  textSize?: ('default' | 'small') | null;
+  /**
+   * Contained keeps the image in the site container; full bleeds edge to edge.
+   */
+  imageWidth?: ('contained' | 'full') | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'featureImageCaption';
+  blockType: 'featureImageStatement';
 }
 /**
  * Website-specific lab-project presentation, composition, SEO, preview, and publishing.
@@ -2133,7 +2145,7 @@ export interface ExpertisePage {
     | FeatureStatementGridBlock
     | FeatureHeadingOffsetBlock
     | FeatureTabsBlock
-    | FeatureImageCaptionBlock
+    | FeatureImageStatementBlock
   )[];
   /**
    * Canonical capabilities this offering bundles. Drives automatic related-work matching.
@@ -2223,7 +2235,7 @@ export interface AudiencePage {
     | FeatureStatementGridBlock
     | FeatureHeadingOffsetBlock
     | FeatureTabsBlock
-    | FeatureImageCaptionBlock
+    | FeatureImageStatementBlock
   )[];
   /**
    * Industries this segment spans. Drives automatic related-work matching.
@@ -2913,7 +2925,7 @@ export interface PagesSelect<T extends boolean = true> {
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
-        featureImageCaption?: T | FeatureImageCaptionBlockSelect<T>;
+        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
       };
   meta?:
     | T
@@ -3087,11 +3099,14 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureImageCaptionBlock_select".
+ * via the `definition` "FeatureImageStatementBlock_select".
  */
-export interface FeatureImageCaptionBlockSelect<T extends boolean = true> {
+export interface FeatureImageStatementBlockSelect<T extends boolean = true> {
   media?: T;
   caption?: T;
+  textPosition?: T;
+  textSize?: T;
+  imageWidth?: T;
   id?: T;
   blockName?: T;
 }
@@ -3428,7 +3443,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
-        featureImageCaption?: T | FeatureImageCaptionBlockSelect<T>;
+        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
       };
   capabilities?: T;
   relatedWorkPages?: T;
@@ -3486,7 +3501,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
-        featureImageCaption?: T | FeatureImageCaptionBlockSelect<T>;
+        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
       };
   industries?: T;
   relatedWorkPages?: T;

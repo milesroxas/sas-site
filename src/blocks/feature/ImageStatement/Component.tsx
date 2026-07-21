@@ -1,18 +1,38 @@
 import type React from 'react'
 import { Media } from '@/components/Media'
-import type { FeatureImageCaptionBlock as FeatureImageCaptionBlockProps } from '@/payload-types'
+import type { FeatureImageStatementBlock as FeatureImageStatementBlockProps } from '@/payload-types'
+import { cn } from '@/utilities/ui'
 
-export const FeatureImageCaptionBlock: React.FC<FeatureImageCaptionBlockProps> = ({
+export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProps> = ({
   media,
   caption,
+  textPosition,
+  textSize,
+  imageWidth,
 }) => {
+  const fullBleed = imageWidth === 'full'
   return (
-    <section className="container">
-      <div className="flex flex-col items-end gap-6">
-        <div className="relative aspect-[3/2] w-full bg-muted md:aspect-[21/9]">
-          <Media fill imgClassName="object-cover" resource={media} size="100vw" />
-        </div>
-        <p className="max-w-2xl text-xl/relaxed md:text-3xl/relaxed">{caption}</p>
+    <section className={cn('flex flex-col gap-6', !fullBleed && 'container')}>
+      <div className="relative aspect-3/2 w-full bg-muted md:aspect-21/9">
+        <Media fill imgClassName="object-cover" resource={media} size="100vw" />
+      </div>
+      <div
+        className={cn(
+          'flex',
+          fullBleed && 'container',
+          textPosition === 'left' ? 'justify-start' : 'justify-end',
+        )}
+      >
+        <p
+          className={cn(
+            'max-w-2xl',
+            textSize === 'small'
+              ? 'text-lg/relaxed md:text-2xl/relaxed'
+              : 'text-xl/relaxed md:text-3xl/relaxed',
+          )}
+        >
+          {caption}
+        </p>
       </div>
     </section>
   )
