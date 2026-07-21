@@ -948,6 +948,10 @@ export interface WorkPage {
      */
     summaryOverride?: string | null;
     media?: (number | null) | Media;
+    /**
+     * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+     */
+    browseAllMedia?: boolean | null;
     layout?: ('editorial-split' | 'centered' | 'immersive' | 'media-led') | null;
     theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
     mediaTreatment?: ('contained' | 'full-bleed' | 'floating' | 'background') | null;
@@ -968,6 +972,10 @@ export interface WorkPage {
     | null;
   coverAsset?: (number | null) | Media;
   downloadableAssets?: (number | Media)[] | null;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
   relatedWorkPages?: (number | WorkPage)[] | null;
   editorialNotes?: string | null;
   meta?: {
@@ -1034,6 +1042,10 @@ export interface CaseStudyStorySectionBlock {
     [k: string]: unknown;
   } | null;
   media?: (number | null) | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
   layout?: ('text-only' | 'text-left' | 'text-right' | 'centered' | 'sticky-media') | null;
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   width?: ('narrow' | 'standard' | 'wide') | null;
@@ -1063,6 +1075,10 @@ export interface CaseStudyMediaShowcaseBlock {
     [k: string]: unknown;
   } | null;
   media: (number | Media)[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
   layout?: ('single' | 'grid' | 'horizontal' | 'stacked' | 'full-bleed' | 'comparison') | null;
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   showCaptions?: boolean | null;
@@ -3125,6 +3141,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         titleOverride?: T;
         summaryOverride?: T;
         media?: T;
+        browseAllMedia?: T;
         layout?: T;
         theme?: T;
         mediaTreatment?: T;
@@ -3142,6 +3159,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
       };
   coverAsset?: T;
   downloadableAssets?: T;
+  browseAllMedia?: T;
   relatedWorkPages?: T;
   editorialNotes?: T;
   meta?:
@@ -3170,6 +3188,7 @@ export interface CaseStudyStorySectionBlockSelect<T extends boolean = true> {
   bodyOverride?: T;
   customBody?: T;
   media?: T;
+  browseAllMedia?: T;
   layout?: T;
   theme?: T;
   width?: T;
@@ -3184,6 +3203,7 @@ export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
   heading?: T;
   introduction?: T;
   media?: T;
+  browseAllMedia?: T;
   layout?: T;
   theme?: T;
   showCaptions?: T;

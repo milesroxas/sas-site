@@ -11,6 +11,7 @@ import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { caseStudyBlocks } from '@/blocks/case-study/config'
+import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { revalidateWorkPage, revalidateWorkPageDelete } from './hooks/revalidateWorkPage'
@@ -91,8 +92,9 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
                   name: 'media',
                   type: 'upload',
                   relationTo: 'media',
-                  filterOptions: { usageStatus: { equals: 'public-approved' } },
+                  filterOptions: caseStudyScopedMediaFilter,
                 },
+                browseAllMediaField(),
                 {
                   name: 'layout',
                   type: 'select',
@@ -132,15 +134,16 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
               name: 'coverAsset',
               type: 'upload',
               relationTo: 'media',
-              filterOptions: { usageStatus: { equals: 'public-approved' } },
+              filterOptions: caseStudyScopedMediaFilter,
             },
             {
               name: 'downloadableAssets',
               type: 'relationship',
               relationTo: 'media',
               hasMany: true,
-              filterOptions: { usageStatus: { equals: 'public-approved' } },
+              filterOptions: caseStudyScopedMediaFilter,
             },
+            browseAllMediaField(),
           ],
         },
         {

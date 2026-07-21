@@ -1,4 +1,5 @@
 import type { Block, SelectField } from 'payload'
+import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 
 const themeField = (name = 'theme'): SelectField => ({
   name,
@@ -45,8 +46,9 @@ export const CaseStudyStorySection: Block = {
       name: 'media',
       type: 'upload',
       relationTo: 'media',
-      filterOptions: { usageStatus: { equals: 'public-approved' } },
+      filterOptions: caseStudyScopedMediaFilter,
     },
+    browseAllMediaField(),
     {
       name: 'layout',
       type: 'select',
@@ -77,8 +79,9 @@ export const CaseStudyMediaShowcase: Block = {
       relationTo: 'media',
       hasMany: true,
       required: true,
-      filterOptions: { usageStatus: { equals: 'public-approved' } },
+      filterOptions: caseStudyScopedMediaFilter,
     },
+    browseAllMediaField(),
     {
       name: 'layout',
       type: 'select',
