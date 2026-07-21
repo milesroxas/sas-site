@@ -67,7 +67,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "footer" ADD COLUMN "get_in_touch_type" "enum_footer_get_in_touch_type" DEFAULT 'reference';
   ALTER TABLE "footer" ADD COLUMN "get_in_touch_new_tab" boolean;
   ALTER TABLE "footer" ADD COLUMN "get_in_touch_url" varchar;
-  ALTER TABLE "footer" ADD COLUMN "get_in_touch_label" varchar NOT NULL;
+  ALTER TABLE "footer" ADD COLUMN "get_in_touch_label" varchar;
+  UPDATE "footer" SET "get_in_touch_label" = 'Get in touch' WHERE "get_in_touch_label" IS NULL;
+  ALTER TABLE "footer" ALTER COLUMN "get_in_touch_label" SET NOT NULL;
   ALTER TABLE "image_statement" ADD CONSTRAINT "image_statement_media_id_media_id_fk" FOREIGN KEY ("media_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "image_statement" ADD CONSTRAINT "image_statement_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_image_statement_v" ADD CONSTRAINT "_image_statement_v_media_id_media_id_fk" FOREIGN KEY ("media_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
