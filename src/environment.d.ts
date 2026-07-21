@@ -4,8 +4,16 @@ declare global {
       PAYLOAD_SECRET: string
       /** Postgres connection string — local Docker by default, Neon in Vercel envs. */
       POSTGRES_URL: string
-      /** Vercel Blob token for the media store. */
-      BLOB_READ_WRITE_TOKEN: string
+      /** Cloudflare account that owns the R2 bucket — forms the S3 API endpoint. */
+      R2_ACCOUNT_ID: string
+      R2_ACCESS_KEY_ID: string
+      R2_SECRET_ACCESS_KEY: string
+      R2_BUCKET: string
+      /** Server-side base URL of the R2 custom domain, no trailing slash. */
+      R2_PUBLIC_URL: string
+      /** Same value as R2_PUBLIC_URL, exposed to the browser so client media
+       * components can load video straight from the CDN. */
+      NEXT_PUBLIC_MEDIA_URL: string
       NEXT_PUBLIC_SERVER_URL: string
       VERCEL_PROJECT_PRODUCTION_URL: string
       VERCEL_URL: string

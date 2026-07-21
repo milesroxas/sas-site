@@ -76,7 +76,8 @@ cp .env.example .env
 | `NEXT_PUBLIC_SERVER_URL` | Public site URL, e.g. `http://localhost:3001` (no trailing slash) |
 | `CRON_SECRET` | Auth for scheduled jobs / Vercel cron |
 | `PREVIEW_SECRET` | Draft and live preview URLs |
-| `BLOB_READ_WRITE_TOKEN` | Media uploads via Vercel Blob; optional for most local work |
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | Cloudflare R2 media storage (S3-compatible) |
+| `R2_PUBLIC_URL`, `NEXT_PUBLIC_MEDIA_URL` | R2 custom domain; the public one lets client components load video direct from the CDN |
 | `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`, `RESEND_FROM_NAME` | Transactional email via Resend |
 | `EMAIL_ASSET_BASE_URL` | Public base URL for images in emails |
 | `CHROMATIC_PROJECT_TOKEN` | Storybook publishing (`pnpm chromatic`) |
@@ -209,7 +210,7 @@ From `/admin`, **Seed the database** loads sample template content (pages, posts
 
 Deploys to Vercel with Neon Postgres and Vercel Blob. `vercel.json` runs `pnpm ci` on build and schedules daily job execution at `/api/payload-jobs/run` (scheduled publishing).
 
-Required secrets: `PAYLOAD_SECRET`, `CRON_SECRET`, `PREVIEW_SECRET`, Resend keys. `POSTGRES_URL` and `BLOB_READ_WRITE_TOKEN` are set by the Neon and Blob integrations.
+Required secrets: `PAYLOAD_SECRET`, `CRON_SECRET`, `PREVIEW_SECRET`, Resend keys, and the `R2_*` / `NEXT_PUBLIC_MEDIA_URL` media vars. `POSTGRES_URL` is set by the Neon integration.
 
 ## Testing
 
