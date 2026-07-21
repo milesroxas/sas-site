@@ -2,7 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
 import { resendAdapter } from '@payloadcms/email-resend'
-import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { s3Storage } from '@payloadcms/storage-s3'
 import { buildConfig, type PayloadRequest } from 'payload'
 import sharp from 'sharp'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -140,11 +140,22 @@ export default buildConfig({
   endpoints: [...newsletterPublicEndpoints, ...askPublicEndpoints],
   plugins: [
     ...plugins,
-    vercelBlobStorage({
+    s3Storage({
       collections: {
+        // Object served publicly from the R2 custom domain (CDN edge cache,
+        // zero egress). Frontend builds that URL via NEXT_PUBLIC_MEDIA_URL;
+        // the CMS `usageStatus` gate still controls API visibility of the doc.
         media: true,
       },
-      token: process.env.BLOB_READ_WRITE_TOKEN || '',
+      bucket: process.env.R2_BUCKET || '',
+      config: {
+        endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        region: 'auto',
+        credentials: {
+          accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+        },
+      },
     }),
   ],
   globals: [Header, Footer],

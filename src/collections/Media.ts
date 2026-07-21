@@ -1,5 +1,3 @@
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import {
   FixedToolbarFeature,
   InlineToolbarFeature,
@@ -9,9 +7,6 @@ import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '../access/authenticated'
 import { populateFolderFromAssetLibrary } from '../hooks/assetLibraryFolders'
-
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -97,11 +92,37 @@ export const Media: CollectionConfig = {
       options: ['website', 'pitch-deck', 'proposal', 'email', 'social'],
     },
     { name: 'assetDate', type: 'date' },
+    {
+      name: 'poster',
+      type: 'upload',
+      relationTo: 'media',
+      filterOptions: { mimeType: { contains: 'image' } },
+      admin: {
+        description:
+          'Still frame shown before a video loads and as its admin thumbnail. Required before a video can be public-approved.',
+        condition: (data) => Boolean(data?.mimeType?.startsWith('video')),
+      },
+      validate: (value: unknown, { siblingData }: { siblingData: unknown }) => {
+        const sibling = siblingData as { mimeType?: string; usageStatus?: string } | undefined
+        if (
+          sibling?.mimeType?.startsWith('video') &&
+          sibling?.usageStatus === 'public-approved' &&
+          !value
+        ) {
+          return 'A poster image is required before a video can be public-approved.'
+        }
+        return true
+      },
+    },
   ],
   upload: {
-    // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
-    staticDir: path.resolve(dirname, '../../public/media'),
-    adminThumbnail: 'thumbnail',
+    // Images optimize through Next; videos serve directly from the R2 custom
+    // domain (see VideoMedia). No local staticDir — objects live in R2.
+    mimeTypes: ['image/*', 'video/mp4', 'video/webm'],
+    adminThumbnail: ({ doc }) =>
+      typeof doc?.mimeType === 'string' && doc.mimeType.startsWith('video')
+        ? null
+        : (doc?.sizes as { thumbnail?: { url?: string } } | undefined)?.thumbnail?.url || null,
     focalPoint: true,
     imageSizes: [
       {

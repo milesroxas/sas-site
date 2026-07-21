@@ -404,6 +404,10 @@ export interface Media {
   sourceUrl?: string | null;
   approvedChannels?: ('website' | 'pitch-deck' | 'proposal' | 'email' | 'social')[] | null;
   assetDate?: string | null;
+  /**
+   * Still frame shown before a video loads and as its admin thumbnail. Required before a video can be public-approved.
+   */
+  poster?: (number | null) | Media;
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -3759,6 +3763,7 @@ export interface MediaSelect<T extends boolean = true> {
   sourceUrl?: T;
   approvedChannels?: T;
   assetDate?: T;
+  poster?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
