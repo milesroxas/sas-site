@@ -22,27 +22,18 @@ export function parseEnvValue(content: string, key: string): string | undefined 
   return undefined
 }
 
-export async function readPostgresUrlFromFile(
-  relativeOrAbsolute: string,
-): Promise<{ path: string; url: string } | { error: string }> {
-  const resolved = path.isAbsolute(relativeOrAbsolute)
-    ? relativeOrAbsolute
-    : path.join(PROJECT_ROOT, relativeOrAbsolute)
-
-  let text: string
+/**
+ * Whether the Vercel-pulled production env file already exists on disk. Callers
+ * use this to decide whether they need to run `vercel env pull` before reading
+ * the production URLs.
+ */
+export async function productionEnvExists(): Promise<boolean> {
   try {
-    text = await fs.readFile(resolved, 'utf8')
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e)
-    return { error: `Cannot read file: ${resolved} (${msg})` }
+    await fs.access(path.join(PROJECT_ROOT, VERCEL_PULL_ENV_FILE))
+    return true
+  } catch {
+    return false
   }
-
-  const url = parseEnvValue(text, 'POSTGRES_URL')
-  if (!url?.trim()) {
-    return { error: `No POSTGRES_URL in ${resolved}` }
-  }
-
-  return { path: resolved, url: url.trim() }
 }
 
 /**

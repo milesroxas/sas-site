@@ -119,7 +119,7 @@ pnpm generate:importmap
 - **Dev server — production DB**: forces `POSTGRES_URL` (and production's `PAYLOAD_SECRET`, so encrypted fields decrypt) from `.env.production.pulled`, with `PAYLOAD_DB_PUSH=false` so drizzle dev push can never touch the production schema. Writes from the admin panel are still real — read-mostly use.
 - **Pull production content → local Docker DB**: `pg_dump` production (non-pooling URL) and restore into the Docker `payload` database, backing up the local DB first to `.dev-tui/local-backup.sql`.
 
-Run **Database… → Pull Vercel production env** once before the production-DB options (needs the `vercel` CLI).
+Both production-DB options pull `.env.production.pulled` automatically when it is missing (needs the `vercel` CLI), so no separate step is required. They never refresh an existing file — use **Database… → Pull Vercel production env** to force a re-pull after credentials rotate.
 
 | File | Role |
 | --- | --- |

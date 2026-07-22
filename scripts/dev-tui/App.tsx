@@ -7,8 +7,8 @@ import { syncProductionToLocal } from './db-sync'
 import {
   assertPostgresUrl,
   maskPostgresUrlForDisplay,
+  productionEnvExists,
   readAppPostgresUrl,
-  readPostgresUrlFromFile,
   readProductionUrls,
 } from './env'
 import { checkVercelCli, ensureLocalPostgresReady } from './prereqs'
@@ -19,7 +19,6 @@ type Phase =
   | { kind: 'running'; label: string }
   | { kind: 'done'; ok: boolean; output: string }
   | { kind: 'confirm'; title: string; danger: boolean; onYes: () => void }
-  | { kind: 'input'; title: string; value: string }
 
 type Stack = 'main' | 'db' | 'payload' | 'quality'
 
@@ -86,7 +85,7 @@ const MENU: Record<Stack, MenuItem[]> = {
     {
       id: 'env-pull',
       label: `Pull Vercel production env → ${VERCEL_PULL_ENV_FILE}`,
-      hint: 'needed once before the production-DB options',
+      hint: 'force a re-pull; prod-DB options auto-pull when the file is missing',
     },
     { id: 'back', label: '← Back' },
   ],
@@ -191,6 +190,40 @@ export function App({ unmount }: { unmount: () => void }) {
     setPhase({ kind: 'done', ok: result.ok, output: result.messages.join('\n') })
   }, [])
 
+  /**
+   * Resolve the production connection URLs, pulling the Vercel env file first
+   * if it does not exist yet. Sets a failure phase and returns null when the
+   * vercel CLI is missing or the pull/read fails. Never refreshes an existing
+   * file — use the "Pull Vercel production env" menu entry to force a re-pull
+   * after credential rotation.
+   */
+  const ensureProductionUrls = useCallback(async (): Promise<{
+    runtimeUrl: string
+    dumpUrl: string
+    payloadSecret?: string
+  } | null> => {
+    if (!(await productionEnvExists())) {
+      const v = await checkVercelCli()
+      if (!v.ok) {
+        setPhase({ kind: 'done', ok: false, output: v.message })
+        return null
+      }
+      setPhase({ kind: 'running', label: `Pulling production env → ${VERCEL_PULL_ENV_FILE}…` })
+      try {
+        await runVercelEnvPull(VERCEL_PULL_ENV_FILE)
+      } catch (e) {
+        setPhase({ kind: 'done', ok: false, output: e instanceof Error ? e.message : String(e) })
+        return null
+      }
+    }
+    const r = await readProductionUrls()
+    if ('error' in r) {
+      setPhase({ kind: 'done', ok: false, output: r.error })
+      return null
+    }
+    return r
+  }, [])
+
   const handleAction = useCallback(
     async (id: ActionId) => {
       switch (id) {
@@ -209,11 +242,8 @@ export function App({ unmount }: { unmount: () => void }) {
         }
         case 'dev-prod': {
           setPhase({ kind: 'running', label: 'Reading production env…' })
-          const r = await readProductionUrls()
-          if ('error' in r) {
-            setPhase({ kind: 'done', ok: false, output: r.error })
-            return
-          }
+          const r = await ensureProductionUrls()
+          if (!r) return
           setPhase({
             kind: 'confirm',
             danger: true,
@@ -236,15 +266,14 @@ export function App({ unmount }: { unmount: () => void }) {
             danger: true,
             title:
               'Replace the local Docker `payload` database with a dump from production? ' +
+              'The production URL is read (or pulled) automatically. ' +
               'Local data is overwritten (a backup is attempted first). Env files are not changed.',
             onYes: () => {
-              setPhase({
-                kind: 'input',
-                title:
-                  `Enter — use the production URL from ${VERCEL_PULL_ENV_FILE} (non-pooling preferred). ` +
-                  'Or paste a postgres:// URL, or a path to an env file with POSTGRES_URL.',
-                value: '',
-              })
+              void (async () => {
+                const r = await ensureProductionUrls()
+                if (!r) return
+                await executeSync(r.dumpUrl)
+              })()
             },
           })
           return
@@ -330,33 +359,7 @@ export function App({ unmount }: { unmount: () => void }) {
           return
       }
     },
-    [enterMenu, exit, goBack, launchScript, runCapture],
-  )
-
-  const submitImportInput = useCallback(
-    async (rawValue: string) => {
-      const trimmed = rawValue.trim()
-      if (trimmed.startsWith('postgres')) {
-        await executeSync(trimmed)
-        return
-      }
-      if (trimmed) {
-        const r = await readPostgresUrlFromFile(trimmed)
-        if ('error' in r) {
-          setPhase({ kind: 'done', ok: false, output: r.error })
-          return
-        }
-        await executeSync(r.url)
-        return
-      }
-      const r = await readProductionUrls()
-      if ('error' in r) {
-        setPhase({ kind: 'done', ok: false, output: r.error })
-        return
-      }
-      await executeSync(r.dumpUrl)
-    },
-    [executeSync],
+    [enterMenu, ensureProductionUrls, executeSync, exit, goBack, launchScript, runCapture],
   )
 
   useInput((input, key) => {
@@ -375,25 +378,6 @@ export function App({ unmount }: { unmount: () => void }) {
       if (key.return) {
         const run = phase.onYes
         run()
-      }
-      return
-    }
-
-    if (phase.kind === 'input') {
-      if (key.escape) {
-        setPhase({ kind: 'menu' })
-        return
-      }
-      if (key.return) {
-        void submitImportInput(phase.value)
-        return
-      }
-      if (key.backspace || key.delete) {
-        setPhase((p) => (p.kind === 'input' ? { ...p, value: p.value.slice(0, -1) } : p))
-        return
-      }
-      if (input && !key.ctrl && !key.meta) {
-        setPhase((p) => (p.kind === 'input' ? { ...p, value: p.value + input } : p))
       }
       return
     }
@@ -463,22 +447,6 @@ export function App({ unmount }: { unmount: () => void }) {
         <Text>{phase.title}</Text>
         <Box marginTop={1}>
           <Text dimColor>Enter — yes · Esc — cancel</Text>
-        </Box>
-      </Box>
-    )
-  }
-
-  if (phase.kind === 'input') {
-    return (
-      <Box flexDirection="column">
-        <Text bold>Input</Text>
-        <Text>{phase.title}</Text>
-        <Text>
-          <Text color="cyan">{phase.value}</Text>
-          <Text inverse> </Text>
-        </Text>
-        <Box marginTop={1}>
-          <Text dimColor>Enter — submit · Esc — cancel</Text>
         </Box>
       </Box>
     )
