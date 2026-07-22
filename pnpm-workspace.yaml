@@ -23,3 +23,6 @@ overrides:
   # AdminErrorBoundary would capture into a second, uninitialized SDK. Force it
   # onto the app's v10 SDK (it only uses ErrorBoundary, which v10 exports).
   '@payloadcms/plugin-sentry>@sentry/nextjs': 'catalog:'
+
+patchedDependencies:
+  '@payloadcms/plugin-mcp': patches/@payloadcms__plugin-mcp.patch

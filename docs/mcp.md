@@ -79,6 +79,20 @@ from gaining team-level REST access:
 "any logged-in user" semantics must use the `authenticated` helper (or an equally strict
 check), never `Boolean(req.user)`.
 
+## Vendored patch (remove when upstream fixes)
+
+`@payloadcms/plugin-mcp@3.85.1` ships broken: `convertCollectionSchemaToZod` ran the generated
+Zod code through `ts.transpileModule` (CommonJS), whose `"use strict";` prologue made the
+`new Function` eval return the string `"use strict"` instead of a Zod schema — then
+`.partial()` on that string threw inside handler setup and **every POST to `/api/mcp` hung
+with no response**. See [payload#17125](https://github.com/payloadcms/payload/issues/17125).
+
+`patches/@payloadcms__plugin-mcp.patch` (wired via `patchedDependencies` in
+`pnpm-workspace.yaml`) fixes four things: evaluates the generated schema expression directly
+(no transpile), guards `.partial()`/`.shape` against the permissive fallback, and stops
+sending a body on GET/HEAD requests. Drop the patch when a fixed plugin version lands; retest
+`/api/mcp` initialize + tools/list after removing it.
+
 ## Operational notes
 
 - Capability checkboxes are schema fields — adding/removing exposed collections changes the

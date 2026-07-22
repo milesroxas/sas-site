@@ -1,0 +1,84 @@
+diff --git a/dist/mcp/createRequest.js b/dist/mcp/createRequest.js
+index cfbf3f0ddcfb6d310f70fd4d70553bc174d63488..345d55bb0438f0cd4cc923d89eeb5d0838af2bbd 100644
+--- a/dist/mcp/createRequest.js
++++ b/dist/mcp/createRequest.js
+@@ -3,9 +3,10 @@ export const createRequestFromPayloadRequest = (req)=>{
+     if (!req.url) {
+         throw new AuthenticationError();
+     }
++    const noBody = req.method === 'GET' || req.method === 'HEAD';
+     return new Request(req.url, {
+-        body: req.body,
+-        duplex: 'half',
++        body: noBody ? undefined : req.body,
++        duplex: noBody ? undefined : 'half',
+         headers: req.headers,
+         method: req.method
+     });
+diff --git a/dist/mcp/tools/resource/create.js b/dist/mcp/tools/resource/create.js
+index 90e88990230ca66a3f9a549387cfa0ebc5225b1b..c812ed33591157828089203794911598bda9e266 100644
+--- a/dist/mcp/tools/resource/create.js
++++ b/dist/mcp/tools/resource/create.js
+@@ -103,7 +103,7 @@ ${JSON.stringify(result)}
+         const convertedFields = convertCollectionSchemaToZod(schema);
+         // Create a new schema that combines the converted fields with create-specific parameters
+         const createResourceSchema = z.object({
+-            ...convertedFields.shape,
++            ...(convertedFields.shape ?? {}),
+             depth: z.number().int().min(0).max(10).optional().default(0).describe('How many levels deep to populate relationships in response'),
+             draft: z.boolean().optional().default(false).describe('Whether to create the document as a draft'),
+             fallbackLocale: z.string().optional().describe('Optional: fallback locale code to use when requested locale is not available'),
+diff --git a/dist/mcp/tools/resource/update.js b/dist/mcp/tools/resource/update.js
+index 1a81ee7d67a25c6a993a6c081c2f87469c4e584d..5b31a83de5787b17ba5ca147c394ef45900736c6 100644
+--- a/dist/mcp/tools/resource/update.js
++++ b/dist/mcp/tools/resource/update.js
+@@ -226,7 +226,7 @@ ${JSON.stringify(errors)}
+         // Create a new schema that combines the converted fields with update-specific parameters
+         // Use .partial() to make all fields optional for partial updates
+         const updateResourceSchema = z.object({
+-            ...convertedFields.partial().shape,
++            ...(typeof convertedFields.partial === 'function' ? convertedFields.partial().shape : {}),
+             id: z.union([
+                 z.string(),
+                 z.number()
+diff --git a/dist/utils/schemaConversion/convertCollectionSchemaToZod.js b/dist/utils/schemaConversion/convertCollectionSchemaToZod.js
+index 07a2628fdc987d663885c7e918152539ca7c1766..fdfd9c0df4921f27fa5b69216032764a918d5e82 100644
+--- a/dist/utils/schemaConversion/convertCollectionSchemaToZod.js
++++ b/dist/utils/schemaConversion/convertCollectionSchemaToZod.js
+@@ -1,5 +1,4 @@
+ import { jsonSchemaToZod } from 'json-schema-to-zod';
+-import * as ts from 'typescript';
+ import { z } from 'zod';
+ import { sanitizeJsonSchema } from './sanitizeJsonSchema.js';
+ import { simplifyRelationshipFields } from './simplifyRelationshipFields.js';
+@@ -10,15 +9,8 @@ export const convertCollectionSchemaToZod = (schema)=>{
+         const schemaClone = JSON.parse(JSON.stringify(schema));
+         const sanitized = sanitizeJsonSchema(schemaClone);
+         const pointTransformed = transformPointFieldsForMCP(sanitized);
+-        const zodSchemaAsString = jsonSchemaToZod(simplifyRelationshipFields(pointTransformed));
+-        // Transpile TypeScript to JavaScript
+-        const transpileResult = ts.transpileModule(zodSchemaAsString, {
+-            compilerOptions: {
+-                module: ts.ModuleKind.CommonJS,
+-                removeComments: true,
+-                strict: false,
+-                target: ts.ScriptTarget.ES2018
+-            }
++        const zodSchemaAsString = jsonSchemaToZod(simplifyRelationshipFields(pointTransformed), {
++            module: 'none'
+         });
+         /**
+      * This Function evaluation is safe because:
+@@ -28,7 +20,11 @@ export const convertCollectionSchemaToZod = (schema)=>{
+      * 4. The resulting Zod schema is used only for parameter validation in MCP tools, not for data processing
+      * 5. No user input or external data is involved in the schema generation process
+      */ // eslint-disable-next-line @typescript-eslint/no-implied-eval
+-        return new Function('z', `return ${transpileResult.outputText}`)(z);
++        const result = new Function('z', `return (${zodSchemaAsString})`)(z);
++        if (typeof result?.partial !== 'function') {
++            throw new Error(`converted schema is not a ZodObject (got ${typeof result})`);
++        }
++        return result;
+     } catch (error) {
+         // If schema conversion fails (e.g., due to Zod v4 toJSONSchema null-check bug
+         // with record schemas that have undefined valueType, or bundler transforms
