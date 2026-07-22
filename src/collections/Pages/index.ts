@@ -20,6 +20,7 @@ import { FeatureStatementGrid } from '../../blocks/feature/StatementGrid/config'
 import { FeatureTabs } from '../../blocks/feature/Tabs/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
+import { SplitContentNarrow } from '../../blocks/split-content/config'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
@@ -87,6 +88,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 FeatureHeadingOffset,
                 FeatureTabs,
                 FeatureImageStatement,
+                SplitContentNarrow,
               ],
               required: true,
               admin: {

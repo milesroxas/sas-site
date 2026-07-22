@@ -1,4 +1,5 @@
 import type { Block, SelectField } from 'payload'
+import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 
 const themeField = (name = 'theme'): SelectField => ({
@@ -200,6 +201,7 @@ export const CaseStudyRelatedWork: Block = {
 
 export const caseStudyBlocks = [
   CaseStudyStorySection,
+  SplitContentNarrow,
   CaseStudyMediaShowcase,
   CaseStudyKeyDecisions,
   CaseStudyMetrics,

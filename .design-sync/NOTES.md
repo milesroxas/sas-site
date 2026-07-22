@@ -91,4 +91,42 @@
 
 ## Re-sync risks
 
-(to be completed at close-out)
+- **First successful upload landed 2026-07-22** into project
+  `7a2f1269-e2c4-4265-8d83-f31c7125ed90` (Suits & Sandals Design System). Prior
+  runs built the bundle but never populated the project; it was EMPTY with no
+  `_ds_sync.json` anchor at this run's start, so this was a full first-scope
+  verify + atomic bulk upload. Future runs are anchored — expect fast, scoped
+  re-syncs (`--remote`).
+- **`[GRID_OVERFLOW] wide` on 10 components** — ContentBlock, PostCard,
+  FeatureHeadingOffsetBlock, AskWidget, Bubble, Card, Field, InputGroup,
+  Message, MessageScroller — their stories render wider than a grid cell and
+  were cropped in the product card. Fixed with `cfg.overrides.<Name>.cardMode:
+  "column"` (added to config alongside the pre-existing CodeBlock:column).
+  Presentation-only → applied via targeted `preview-rebuild.mjs`, grades carry,
+  sidecar renderHashes patched. If a NEW story is added to any of these that is
+  itself over-wide, `column` still covers it (one story per row); only a
+  fixed/portal `escape` flag would need `single` instead.
+- **CDN-dependent story images** (carried from Fixes section): media-bearing
+  stories reference `https://preview.suits-sandals.com/website-template-OG.webp`
+  (a static `public/` asset, NOT on media.suits-sandals.com). If that preview
+  domain goes away, MediaBlock/PostCard/RelatedPosts story images break on BOTH
+  the storybook oracle and synced previews — grades would then be judged against
+  broken images. Re-verify the domain resolves before trusting media-component
+  grades on a re-sync.
+- **compiled.css is a manual copy** of the largest `sb-reference/assets/*.css`
+  (content-hashed name). MUST be refreshed whenever sb-reference is rebuilt:
+  `cp "$(ls -S .design-sync/sb-reference/assets/*.css | head -1)"
+  .design-sync/compiled.css`. Stale copy → previews render against old Tailwind
+  output while grades still "match" nothing changed. Done this run.
+- **Build is slow (~30–40 min)**: 29 preview compiles each pulling the heavy
+  Next + richtext-lexical closure; no preview cache. Targeted `preview-rebuild
+  --components` also pays ~1 min/component here (10 comps ≈ >2 min). Batch all
+  config edits before paying a full rebuild.
+- **Grades: all 29 components graded `match`** (cached grades carried; sb-ref
+  rebuilt for the R2/video source change re-keyed nothing to mismatch). No
+  `close`, no skips. render-check: 29 total, 0 bad / 0 thin / 0 variantsIdentical.
+- **Concurrent git activity observed 2026-07-22**: HEAD moved mid-run
+  (3687ff7 → ee273b8, migrations/docker commits) while the durable `.design-sync/`
+  set stayed clean vs HEAD. The config (11 cardMode overrides), conventions.md,
+  and compiled.css were already committed. Re-sync inputs are intact; just be
+  aware the repo branch can shift under a long run.

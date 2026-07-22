@@ -10,6 +10,7 @@ import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Compon
 import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
+import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
 import type { Page } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
 
@@ -24,6 +25,7 @@ const blockComponents = {
   formBlock: FormBlock,
   mediaBlock: MediaBlock,
   newsletterSignup: NewsletterSignupBlock,
+  splitContentNarrow: SplitContentNarrowBlock,
 }
 
 export const RenderBlocks: React.FC<{

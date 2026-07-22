@@ -276,6 +276,7 @@ export interface Page {
     | FeatureHeadingOffsetBlock
     | FeatureTabsBlock
     | FeatureImageStatementBlock
+    | SplitContentNarrowBlock
   )[];
   meta?: {
     title?: string | null;
@@ -970,6 +971,7 @@ export interface WorkPage {
   layout?:
     | (
         | CaseStudyStorySectionBlock
+        | SplitContentNarrowBlock
         | CaseStudyMediaShowcaseBlock
         | CaseStudyKeyDecisionsBlock
         | CaseStudyMetricsBlock
@@ -1060,6 +1062,52 @@ export interface CaseStudyStorySectionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'caseStudyStorySection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitContentNarrowBlock".
+ */
+export interface SplitContentNarrowBlock {
+  /**
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Short kicker above the text.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Arrange the image on the left or the right of the text.
+   */
+  imagePosition?: ('left' | 'right') | null;
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'splitContentNarrow';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2934,6 +2982,7 @@ export interface PagesSelect<T extends boolean = true> {
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
       };
   meta?:
     | T
@@ -3120,6 +3169,22 @@ export interface FeatureImageStatementBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitContentNarrowBlock_select".
+ */
+export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
+  source?: T;
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  media?: T;
+  browseAllMedia?: T;
+  imagePosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -3173,6 +3238,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
     | T
     | {
         caseStudyStorySection?: T | CaseStudyStorySectionBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
         caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
         caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;

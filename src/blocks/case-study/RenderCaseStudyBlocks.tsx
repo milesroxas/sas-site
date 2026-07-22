@@ -1,6 +1,7 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import type { ReactNode } from 'react'
+import { Section } from '@/blocks/shared/section'
+import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type {
@@ -12,31 +13,11 @@ import type {
   CaseStudyStorySectionBlock,
   CaseStudyTestimonialBlock,
   CaseStudyTransitionBlock,
+  SplitContentNarrowBlock,
   Testimonial,
   WorkPage,
 } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-
-const themeClasses = {
-  light: 'bg-white text-black',
-  dark: 'bg-black text-white',
-  neutral: 'bg-neutral-100 text-neutral-950',
-  brand: 'bg-amber-300 text-neutral-950',
-}
-
-const Section = ({
-  children,
-  theme = 'light',
-  className,
-}: {
-  children: ReactNode
-  theme?: keyof typeof themeClasses | null
-  className?: string
-}) => (
-  <section className={cn('py-16 md:py-24', themeClasses[theme || 'light'], className)}>
-    {children}
-  </section>
-)
 
 const richTextSource = (study: CaseStudy, source: CaseStudyStorySectionBlock['source']) => {
   if (source === 'outcome-summary') return study.outcomeSummary
@@ -93,6 +74,14 @@ const StorySection = ({
       </div>
     </Section>
   )
+}
+
+const SplitNarrow = ({ block, study }: { block: SplitContentNarrowBlock; study: CaseStudy }) => {
+  const content =
+    block.source === 'custom' ? block.body : block.body || richTextSource(study, block.source)
+  const media = block.media
+  if (typeof media !== 'object' || !media) return null
+  return <SplitContentNarrow block={block} content={content} media={media} />
 }
 
 const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
@@ -316,6 +305,8 @@ export const RenderCaseStudyBlocks = async ({
       switch (block.blockType) {
         case 'caseStudyStorySection':
           return <StorySection block={block} key={block.id} study={study} />
+        case 'splitContentNarrow':
+          return <SplitNarrow block={block} key={block.id} study={study} />
         case 'caseStudyMediaShowcase':
           return <MediaShowcase block={block} key={block.id} />
         case 'caseStudyKeyDecisions':
