@@ -2706,297 +2706,105 @@ export interface PayloadMcpApiKey {
    */
   description?: string | null;
   pages?: {
-    /**
-     * Allow clients to find pages.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create pages.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update pages.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete pages.
-     */
     delete?: boolean | null;
   };
   expertisePages?: {
-    /**
-     * Allow clients to find expertise-pages.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create expertise-pages.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update expertise-pages.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete expertise-pages.
-     */
     delete?: boolean | null;
   };
   audiencePages?: {
-    /**
-     * Allow clients to find audience-pages.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create audience-pages.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update audience-pages.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete audience-pages.
-     */
     delete?: boolean | null;
   };
   workPages?: {
-    /**
-     * Allow clients to find work-pages.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create work-pages.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update work-pages.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete work-pages.
-     */
     delete?: boolean | null;
   };
   labPages?: {
-    /**
-     * Allow clients to find lab-pages.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create lab-pages.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update lab-pages.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete lab-pages.
-     */
     delete?: boolean | null;
   };
   posts?: {
-    /**
-     * Allow clients to find posts.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create posts.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update posts.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete posts.
-     */
     delete?: boolean | null;
   };
   caseStudies?: {
-    /**
-     * Allow clients to find case-studies.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create case-studies.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update case-studies.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete case-studies.
-     */
     delete?: boolean | null;
   };
   labProjects?: {
-    /**
-     * Allow clients to find lab-projects.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create lab-projects.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update lab-projects.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete lab-projects.
-     */
     delete?: boolean | null;
   };
   organizations?: {
-    /**
-     * Allow clients to find organizations.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create organizations.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update organizations.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete organizations.
-     */
     delete?: boolean | null;
   };
   projects?: {
-    /**
-     * Allow clients to find projects.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create projects.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update projects.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete projects.
-     */
     delete?: boolean | null;
   };
   testimonials?: {
-    /**
-     * Allow clients to find testimonials.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create testimonials.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update testimonials.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete testimonials.
-     */
     delete?: boolean | null;
   };
   capabilities?: {
-    /**
-     * Allow clients to find capabilities.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create capabilities.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update capabilities.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete capabilities.
-     */
     delete?: boolean | null;
   };
   categories?: {
-    /**
-     * Allow clients to find categories.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create categories.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update categories.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete categories.
-     */
     delete?: boolean | null;
   };
   industries?: {
-    /**
-     * Allow clients to find industries.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to create industries.
-     */
     create?: boolean | null;
-    /**
-     * Allow clients to update industries.
-     */
     update?: boolean | null;
-    /**
-     * Allow clients to delete industries.
-     */
     delete?: boolean | null;
   };
   assetLibraries?: {
-    /**
-     * Allow clients to find asset-libraries.
-     */
     find?: boolean | null;
   };
   media?: {
-    /**
-     * Allow clients to find media.
-     */
     find?: boolean | null;
   };
   footer?: {
-    /**
-     * Allow clients to find footer global.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to update footer global.
-     */
     update?: boolean | null;
   };
   header?: {
-    /**
-     * Allow clients to find header global.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to update header global.
-     */
     update?: boolean | null;
   };
   siteInfo?: {
-    /**
-     * Allow clients to find site-info global.
-     */
     find?: boolean | null;
-    /**
-     * Allow clients to update site-info global.
-     */
     update?: boolean | null;
   };
   updatedAt: string;

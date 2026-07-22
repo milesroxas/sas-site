@@ -25,6 +25,8 @@ import { SendPanel as SendPanel_31190afebae247357b767d1f03bd15c8 } from '@/colle
 import { InviteUserButton as InviteUserButton_12d1a33bcb436082b29bbf2ed4cf60ef } from '@/collections/Users/components/InviteUserButton'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
+import { CapabilitiesToolbar as CapabilitiesToolbar_1ba37f1a47d78984fe73dea23b65dbc9 } from '@/components/McpCapabilityControls'
+import { SectionToggleAll as SectionToggleAll_1ba37f1a47d78984fe73dea23b65dbc9 } from '@/components/McpCapabilityControls'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { AdminIcon as AdminIcon_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
@@ -62,6 +64,8 @@ export const importMap = {
   "@/collections/Users/components/InviteUserButton#InviteUserButton": InviteUserButton_12d1a33bcb436082b29bbf2ed4cf60ef,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
+  "@/components/McpCapabilityControls#CapabilitiesToolbar": CapabilitiesToolbar_1ba37f1a47d78984fe73dea23b65dbc9,
+  "@/components/McpCapabilityControls#SectionToggleAll": SectionToggleAll_1ba37f1a47d78984fe73dea23b65dbc9,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/components/AdminIcon#AdminIcon": AdminIcon_c1363893506d7ed29a71d1a4da01ddb5,

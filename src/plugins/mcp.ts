@@ -1,5 +1,5 @@
 import { type MCPPluginConfig, mcpPlugin } from '@payloadcms/plugin-mcp'
-import type { CollectionSlug, Plugin } from 'payload'
+import type { CollectionSlug, Field, GroupField, Plugin } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { CONTENT_SURFACES } from '@/shared/content/surfaces'
 
@@ -86,6 +86,91 @@ const globals: MCPPluginConfig['globals'] = {
   },
 }
 
+const CONTROLS_COMPONENT = '@/components/McpCapabilityControls'
+
+/**
+ * Matches the plugin-generated capability fields: a sidebar collapsible
+ * wrapping a single named group whose label is the literal configType
+ * ('collection' | 'global') — the source of the odd type hierarchy in the
+ * sidebar.
+ */
+const capabilityGroup = (field: Field): Extract<GroupField, { name: string }> | null => {
+  if (field.type !== 'collapsible' || field.fields.length !== 1) return null
+  const [group] = field.fields
+  if (group.type !== 'group' || !('name' in group)) return null
+  return group.label === 'collection' || group.label === 'global' ? group : null
+}
+
+/**
+ * Restyles the generated capability sections and adds bulk controls:
+ * - drops the redundant 'collection'/'global' group heading and the
+ *   per-checkbox "Allow clients to…" descriptions (labels carry the meaning)
+ * - prepends a tri-state "Select all" checkbox to each section
+ * - inserts a toolbar above the sections with select-all / deselect-all
+ *   across every capability plus an enabled count
+ */
+const withCapabilityControls = (fields: Field[]): Field[] => {
+  const sections: { label: string; ops: string[]; path: string }[] = []
+
+  const transformed = fields.map((field): Field => {
+    const group = capabilityGroup(field)
+    if (!group || field.type !== 'collapsible') return field
+
+    const ops = group.fields.flatMap((f) => (f.type === 'checkbox' && 'name' in f ? [f.name] : []))
+    const label = typeof field.label === 'string' ? field.label : group.name
+    sections.push({ label, ops, path: group.name })
+
+    return {
+      ...field,
+      admin: { ...field.admin, className: 'mcp-capability-section' },
+      label,
+      fields: [
+        {
+          ...group,
+          fields: [
+            {
+              name: 'toggleAll',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field: {
+                    clientProps: { ops, section: group.name },
+                    path: `${CONTROLS_COMPONENT}#SectionToggleAll`,
+                  },
+                },
+              },
+            },
+            ...group.fields.map(
+              (f): Field =>
+                f.type === 'checkbox' ? { ...f, admin: { ...f.admin, description: undefined } } : f,
+            ),
+          ],
+          label: false,
+        },
+      ],
+    }
+  })
+
+  const firstSectionIndex = fields.findIndex((field) => capabilityGroup(field) !== null)
+  if (firstSectionIndex === -1) return transformed
+
+  transformed.splice(firstSectionIndex, 0, {
+    name: 'capabilitiesToolbar',
+    type: 'ui',
+    admin: {
+      components: {
+        Field: {
+          clientProps: { sections },
+          path: `${CONTROLS_COMPONENT}#CapabilitiesToolbar`,
+        },
+      },
+      position: 'sidebar',
+    },
+  })
+
+  return transformed
+}
+
 export const mcp: Plugin = mcpPlugin({
   collections,
   globals,
@@ -116,5 +201,6 @@ export const mcp: Plugin = mcpPlugin({
       update: authenticated,
     },
     admin: { ...collection.admin, group: 'System' },
+    fields: withCapabilityControls(collection.fields),
   }),
 })

@@ -1,0 +1,55 @@
+/* MCP API key capability sidebar (System → API Keys). Field structure is
+   shaped in src/plugins/mcp.ts (withCapabilityControls); components live in
+   src/components/McpCapabilityControls. */
+
+.mcp-capabilities-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--base) * 0.5);
+  padding-bottom: calc(var(--base) * 0.75);
+  border-bottom: 1px solid var(--theme-elevation-100);
+
+  &__meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  &__title {
+    font-weight: 600;
+  }
+
+  &__count {
+    color: var(--theme-elevation-500);
+    font-size: calc(var(--base) * 0.6);
+  }
+
+  &__actions {
+    display: flex;
+    gap: calc(var(--base) * 0.5);
+
+    .btn {
+      margin: 0;
+    }
+  }
+}
+
+.mcp-capability-section {
+  .collapsible__header-wrap {
+    font-weight: 600;
+  }
+
+  .mcp-section-toggle {
+    padding-bottom: calc(var(--base) * 0.5);
+    margin-bottom: calc(var(--base) * 0.5);
+    border-bottom: 1px solid var(--theme-elevation-100);
+
+    .field-label {
+      color: var(--theme-elevation-600);
+    }
+  }
+
+  .field-type.checkbox:not(:last-child) {
+    margin-bottom: calc(var(--base) * 0.5);
+  }
+}

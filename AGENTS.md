@@ -328,6 +328,14 @@ export const authenticatedOrPublished: Access = ({ req: { user } }) => {
 }
 ```
 
+### Project rule: never `Boolean(req.user)` for team-only access
+
+This repo runs an MCP server (`@payloadcms/plugin-mcp`, see [docs/mcp.md](docs/mcp.md)) whose
+API keys authenticate as `req.user` over REST/GraphQL too. `Boolean(req.user)` would therefore
+grant MCP keys team-level access. Use the project `authenticated` helper
+(`src/access/authenticated.ts`), which requires `user.collection === 'users'`, for any
+team-only rule — including access overrides on plugin-created collections.
+
 ## Hooks
 
 ### Common Hook Patterns

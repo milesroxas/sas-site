@@ -1,6 +1,6 @@
 # Suits & Sandals — Website & Content Hub
 
-Marketing website and structured content hub for Suits & Sandals, built on [Payload CMS](https://payloadcms.com) and [Next.js 16](https://nextjs.org), deployed to Vercel with Postgres and Blob storage.
+Marketing website and structured content hub for Suits & Sandals, built on [Payload CMS](https://payloadcms.com) and [Next.js 16](https://nextjs.org), deployed to Vercel with Neon Postgres and Cloudflare R2 media storage.
 
 Canonical client-work content (clients, projects, case studies, testimonials, approved assets) lives in a channel-agnostic **Content Hub**. The **Website** is one publishing surface composed from that content — future surfaces (pitch decks, proposals, email) consume the same source material through Payload's API. See [docs/architecture.md](docs/architecture.md) for the full model.
 
@@ -11,6 +11,8 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | [docs/architecture.md](docs/architecture.md) | Developers | Headless CMS model, collection map, access control, publishing pipeline |
 | [docs/editorial/content-hub.md](docs/editorial/content-hub.md) | Editors | Creating clients, projects, case study content, testimonials, assets |
 | [docs/editorial/website.md](docs/editorial/website.md) | Editors | Website surfaces, composing work pages, preview and publishing |
+| [docs/aeo.md](docs/aeo.md) | Developers, Editors | Answer-engine optimization: llms.txt, IndexNow, JSON-LD, editorial guidance |
+| [docs/mcp.md](docs/mcp.md) | Developers | Internal MCP server at `/api/mcp`: API keys, capabilities, security model |
 | [docs/prds/content-hub.md](docs/prds/content-hub.md) | Reference | Original PRD and architecture amendment |
 | [AGENTS.md](AGENTS.md) | Developers | Payload development patterns and security rules |
 
@@ -20,7 +22,7 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | --- | --- |
 | App | Next.js 16 (App Router), React 19, TypeScript 6 |
 | CMS | Payload 3.85, Lexical rich text, Postgres (`@payloadcms/db-vercel-postgres`) |
-| Storage | Vercel Blob (`@payloadcms/storage-vercel-blob`) |
+| Storage | Cloudflare R2, S3-compatible (`@payloadcms/storage-s3`) |
 | Email | Resend (`@payloadcms/email-resend`), React Email |
 | UI | Tailwind CSS 4, shadcn/ui, Geist |
 | Motion / 3D | Lenis, React Three Fiber, Three.js, Tempus, GSAP |
@@ -37,7 +39,7 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 
 **Website** (publishing surfaces)
 
-- Pages (layout builder), Posts with Insights topic hubs, Work Pages (`/works`), Expertise Pages (`/expertise`), Audience Pages (`/who-we-help`)
+- Pages (layout builder), Posts with Insights topic hubs, Work Pages (`/works`), Lab Pages (`/lab`), Expertise Pages (`/expertise`), Audience Pages (`/who-we-help`)
 - Work Pages compose case-study content through typed blocks with override-then-canonical resolution
 - Draft preview, live preview, on-demand revalidation, per-surface sitemaps, SEO, search, redirects
 
@@ -46,6 +48,11 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 - Global WebGL canvas mounted once in the root layout; tunnel pattern for DOM ↔ WebGL composition
 - `ImmersiveShell` for opt-in GPU layers; site-wide Lenis smooth scroll; React View Transitions
 - Demo page at `/demo/immersive`
+
+**Agents & AI**
+
+- AEO plugin: `/llms.txt`, IndexNow pings, JSON-LD, markdown alternates ([docs/aeo.md](docs/aeo.md))
+- Internal MCP server at `/api/mcp` for agent-driven content authoring with per-key capabilities ([docs/mcp.md](docs/mcp.md))
 
 ## Prerequisites
 
@@ -138,13 +145,13 @@ src/
 │   └── (payload)/           # Admin panel + REST/GraphQL API
 ├── access/                  # Access control helpers (anyone, authenticated, authenticatedOrPublished)
 ├── blocks/                  # Generic page blocks + case-study blocks (blocks/case-study/)
-├── collections/             # 15 collections — see Content model
+├── collections/             # 20 collections — see Content model
 ├── endpoints/seed/          # Dev seed data (original template collections only)
 ├── features/immersive/      # WebGL scene feature
 ├── fields/                  # Shared fields (defaultLexical, link, linkGroup)
 ├── heros/                   # Page hero variants + CaseStudyHero
 ├── lib/                     # ImmersiveShell, SmoothScroll, WebGL canvas/tunnels
-├── plugins/                 # SEO, redirects, search, form builder, nested docs
+├── plugins/                 # SEO, redirects, search, forms, nested docs, AEO, ask-index, MCP, Sentry
 ├── search/                  # Search plugin sync + field overrides
 ├── shared/                  # View transitions, reveal sections, email templates
 ├── migrations/              # Postgres migrations
@@ -162,11 +169,12 @@ Full detail in [docs/architecture.md](docs/architecture.md).
 
 | Group | Collections | Purpose |
 | --- | --- | --- |
-| Website | `pages`, `posts`, `work-pages`, `expertise-pages`, `audience-pages` | Publishing surfaces with public URLs |
-| Content Hub | `organizations` (Clients), `projects`, `case-studies` (Case Study Content), `testimonials` | Canonical, channel-agnostic source material |
+| Website | `pages`, `posts`, `work-pages`, `lab-pages`, `expertise-pages`, `audience-pages` | Publishing surfaces with public URLs |
+| Content Hub | `organizations` (Clients), `projects`, `case-studies` (Case Study Content), `lab-projects`, `testimonials` | Canonical, channel-agnostic source material |
 | Assets | `media`, `asset-libraries` | Uploads with approval status; project-scoped libraries |
 | Taxonomy | `capabilities`, `industries`, `categories` | Shared vocabulary |
-| System | `users` | Admin auth |
+| Newsletter | `newsletters`, `audiences`, `subscribers` | Email sends via Resend; team-only access |
+| System | `users`, `payload-mcp-api-keys` | Admin auth; MCP agent API keys ([docs/mcp.md](docs/mcp.md)) |
 
 Globals: `header`, `footer`. Each Work Page presents exactly one Case Study (unique relationship); canonical content is resolved into blocks at render time and never copied.
 
@@ -231,7 +239,7 @@ From `/admin`, **Seed the database** loads sample template content (pages, posts
 
 ## Deployment
 
-Deploys to Vercel with Neon Postgres and Vercel Blob. `vercel.json` runs `pnpm ci` on build and schedules daily job execution at `/api/payload-jobs/run` (scheduled publishing).
+Deploys to Vercel with Neon Postgres and Cloudflare R2. `vercel.json` runs `pnpm ci` on build and schedules daily job execution at `/api/payload-jobs/run` (scheduled publishing).
 
 Required secrets: `PAYLOAD_SECRET`, `CRON_SECRET`, `PREVIEW_SECRET`, Resend keys, and the `R2_*` / `NEXT_PUBLIC_MEDIA_URL` media vars. `POSTGRES_URL` is set by the Neon integration.
 

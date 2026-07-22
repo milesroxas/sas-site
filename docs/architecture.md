@@ -8,7 +8,7 @@ Payload CMS runs embedded inside the Next.js app — one codebase, one deploymen
 
 - `src/app/(payload)/` serves the admin panel at `/admin` and the REST/GraphQL API.
 - `src/app/(frontend)/` serves the public site. Server components query Payload through the **Local API** (direct function calls, no HTTP hop).
-- Postgres stores content; Vercel Blob stores uploaded files; Resend sends email.
+- Postgres stores content; Cloudflare R2 (S3-compatible, via `@payloadcms/storage-s3`) stores uploaded files, served from a public custom domain with CDN edge caching; Resend sends email.
 
 "Headless" here means content is modeled independently of any one presentation. The same structured content that renders the website is available through Payload's API for future consumers — pitch decks, proposals, email — without those consumers parsing website layouts.
 
@@ -36,6 +36,7 @@ Website (presentation)                Content Hub (canonical)
 ├── pages ──────────── /[slug]        ├── organizations (Clients)
 ├── posts ──────────── /posts/[slug]  ├── projects ──→ organizations
 ├── work-pages ─────── /works/[slug] ──→ case-studies ──→ projects
+├── lab-pages ──────── /lab/[slug] ──→ lab-projects (R&D narratives)
 ├── expertise-pages ── /expertise/[slug]  ├── testimonials ──→ organizations, projects
 └── audience-pages ─── /who-we-help/[slug]└── (metrics, decisions, outcomes live on case-studies)
 
@@ -50,16 +51,20 @@ Assets                                Taxonomy
 | Website | `pages` | Generic layout-builder pages (CTA, Content, Media, Archive, Form blocks) |
 | Website | `posts` | Blog; categories power `/insights/[topic]` hubs |
 | Website | `work-pages` | Case-study presentation; blocks resolve canonical content at render time |
+| Website | `lab-pages` | Lab-project presentation (`/lab`); same override-then-canonical model |
 | Website | `expertise-pages` | Positioning by `capabilities`; auto-matches related work |
 | Website | `audience-pages` | Positioning by `industries`; auto-matches related work |
 | Content Hub | `organizations` | Clients; public description vs. auth-only `internalNotes` |
 | Content Hub | `projects` | Factual engagement record; no layout fields |
 | Content Hub | `case-studies` | Canonical narrative + evidence (tabs: Overview, Story, Evidence, Asset Libraries) |
+| Content Hub | `lab-projects` | Canonical R&D narratives rendered by lab pages |
 | Content Hub | `testimonials` | Approval-gated quotes |
 | Assets | `media` | Uploads; `usageStatus` + `approvedChannels` govern reuse |
 | Assets | `asset-libraries` | Per-project groupings of approved media |
 | Taxonomy | `capabilities`, `industries`, `categories` | Fully public read |
+| Newsletter | `newsletters`, `audiences`, `subscribers` | Email sends via Resend; team-only access (subscribers hold PII) |
 | System | `users` | Admin auth |
+| System | `payload-mcp-api-keys` | Per-key capabilities for the `/api/mcp` agent server — see [mcp.md](mcp.md) |
 
 Globals: `header`, `footer` (site navigation).
 
@@ -83,7 +88,7 @@ Three base helpers (`src/access/`), plus per-collection refinements:
 
 | Rule | Applies to |
 | --- | --- |
-| Write requires auth; anonymous reads published only (`authenticatedOrPublished`) | All Website collections, organizations, projects, case-studies |
+| Write requires auth; anonymous reads published only (`authenticatedOrPublished`) | All Website collections, organizations, projects, case-studies, lab-projects |
 | Anonymous reads require published **and** `approvalStatus = approved-public` | testimonials |
 | Anonymous reads require `usageStatus = public-approved` | media |
 | Anonymous reads require `libraryStatus = active` | asset-libraries |
@@ -91,17 +96,20 @@ Three base helpers (`src/access/`), plus per-collection refinements:
 
 Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `approvedClaims` are readable only by authenticated users — they never appear in anonymous API responses.
 
-**Known limitation:** media documents are access-filtered, but Vercel Blob file URLs are public. Do not upload confidential files.
+"Authenticated" means a team member from `users`: the `authenticated` helper checks `user.collection === 'users'`, so MCP API keys — which also authenticate as `req.user` over REST — never satisfy team-only rules. Their access is governed per-key at `/api/mcp` ([mcp.md](mcp.md)).
+
+**Known limitation:** media documents are access-filtered, but R2 file URLs (public custom domain) are not. Do not upload confidential files.
 
 ## Publishing pipeline
 
 - **Drafts & versions** — Website collections and Content Hub narrative collections use drafts with autosave, version history (max 50), and scheduled publishing (jobs run via Vercel cron, daily, authenticated by `CRON_SECRET`).
-- **Preview** — `generatePreviewPath` maps collections to URL prefixes (`work-pages` → `/works`, `expertise-pages` → `/expertise`, `audience-pages` → `/who-we-help`, `posts` → `/posts`, `pages` → `/`). Draft preview and live preview (mobile/tablet/desktop breakpoints) use `/next/preview` guarded by `PREVIEW_SECRET`.
+- **Preview** — `generatePreviewPath` maps collections to URL prefixes (`work-pages` → `/works`, `lab-pages` → `/lab`, `expertise-pages` → `/expertise`, `audience-pages` → `/who-we-help`, `posts` → `/posts`, `pages` → `/`). Draft preview and live preview (mobile/tablet/desktop breakpoints) use `/next/preview` guarded by `PREVIEW_SECRET`.
 - **Revalidation** — `afterChange`/`afterDelete` hooks revalidate the document's path, its index page, and its sitemap tag. Case Study edits revalidate every published Work Page that consumes them (`revalidateCaseStudyConsumers`).
-- **Sitemaps** — one route handler per surface (`pages`, `posts`, `works`, `expertise`, `who-we-help`), stitched together by `next-sitemap` in `postbuild`, which also generates robots.txt.
+- **Sitemaps** — one route handler per surface (`pages`, `posts`, `works`, `lab`, `expertise`, `who-we-help`), stitched together by `next-sitemap` in `postbuild`, which also generates robots.txt.
 - **SEO** — plugin generates titles (`{title} | Suits & Sandals`) and per-collection URLs.
-- **Redirects** — managed in admin (System group) for all five Website collections.
-- **Search** — plugin indexes `posts` only; served at `/search`.
+- **Redirects** — managed in admin (System group) for all six Website collections.
+- **Search** — plugin indexes all `CONTENT_SURFACES` collections (pages, posts, work/lab/expertise/audience pages); served at `/search`.
+- **MCP** — internal agent authoring server at `/api/mcp`; Bearer API keys with per-key capabilities, all operations run through the access rules above (`overrideAccess: false`). Details in [mcp.md](mcp.md).
 
 ## Frontend routes
 
@@ -111,6 +119,7 @@ Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `ap
 | `/posts`, `/posts/[slug]` | `posts` | Archive / `PostHero` + rich text |
 | `/insights`, `/insights/[topic]` | `categories` + `posts` | Topic hubs |
 | `/works`, `/works/[slug]` | `work-pages` (+ `case-studies`) | Card grid / `CaseStudyHero` + `RenderCaseStudyBlocks` |
+| `/lab`, `/lab/[slug]` | `lab-pages` (+ `lab-projects`) | Lab index / lab detail resolving canonical R&D content |
 | `/expertise`, `/expertise/[slug]` | `expertise-pages` | `RenderBlocks` + related work by capability |
 | `/who-we-help`, `/who-we-help/[slug]` | `audience-pages` | `RenderBlocks` + related work by industry |
 | `/search` | search index | Search + archive |
