@@ -183,7 +183,7 @@ Globals: `header`, `footer`. Each Work Page presents exactly one Case Study (uni
 | `pnpm generate:types` | Regenerate `payload-types.ts` |
 | `pnpm generate:importmap` | Regenerate admin `importMap.js` |
 | `pnpm migrate:create` | Generate a migration file from the schema diff (review + commit) |
-| `pnpm migrate:status` | Read-only ledger vs. files check (safe against any DB) |
+| `pnpm migrate:status` | Read-only — reports the **production** migration ledger |
 | `pnpm payload` | Payload CLI (e.g. `pnpm payload generate:db-schema`) |
 | `pnpm lint` / `pnpm lint:fix` | Biome check / fix |
 | `pnpm test:int` / `pnpm test:e2e` / `pnpm test` | Vitest integration / Playwright E2E / both |
@@ -201,13 +201,15 @@ The workflow follows Payload's recommended split: **push in dev, migrations in C
 
 ```bash
 pnpm migrate:create   # after schema changes — generates a migration file to review + commit
-pnpm migrate:status   # read-only ledger vs. files check (safe against any DB, incl. prod)
+pnpm migrate:status   # read-only — reports the PRODUCTION ledger (see note below)
 # `payload migrate` is run only by `pnpm ci` in the deploy pipeline — do not run it by hand.
 ```
 
+`pnpm migrate:status` always targets **production** (via `.env.production.pulled`), because the local push DB has no meaningful ledger. "No" = a committed migration not yet deployed; "Yes" = applied by CI. Use it before a deploy (expect your new migration "No") and after (expect "Yes"). Needs the Vercel-pulled prod env — run the dev TUI's "Pull Vercel production env" first if it is missing.
+
 **Flow:** change config → `pnpm dev` (push syncs local) → `pnpm migrate:create` → review SQL → commit `.ts` + `.json` together → CI applies on deploy.
 
-> **Note:** on the local DB `pnpm migrate:status` shows every migration as "No". That is correct — local schema is built by push, so the migration ledger is intentionally empty. It does **not** mean you need to run anything.
+> **Note:** the local DB has no meaningful migration ledger — its schema comes from push, not migrations, so a raw `payload migrate:status` against it would show every row "No". That is why `pnpm migrate:status` is wired to report **production** instead (see above). Don't run `payload migrate:status` directly against local.
 
 ### Reset local database
 

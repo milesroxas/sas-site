@@ -14,7 +14,7 @@
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
-    "migrate:status": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:status",
+    "migrate:status": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/migrate-status-prod.ts",
     "ii": "cross-env NODE_OPTIONS=--no-deprecation pnpm install",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
