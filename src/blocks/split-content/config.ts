@@ -19,7 +19,9 @@ const themeField: SelectField = {
  */
 export const SplitContentNarrow: Block = {
   slug: 'splitContentNarrow',
-  dbName: 'split_narrow',
+  // Per-parent table name: a static dbName would collapse every collection that
+  // uses this block into one table whose FK points at the first parent only.
+  dbName: ({ tableName }) => `${tableName}_split_narrow`,
   interfaceName: 'SplitContentNarrowBlock',
   labels: { singular: 'Split content (narrow)', plural: 'Split content (narrow)' },
   fields: [

@@ -3,7 +3,9 @@ import { featureSourceField } from '../shared'
 
 export const FeatureImageStatement: Block = {
   slug: 'featureImageStatement',
-  dbName: 'image_statement',
+  // Per-parent table name: a static dbName would collapse every collection that
+  // uses this block into one table whose FK points at the first parent only.
+  dbName: ({ tableName }) => `${tableName}_image_statement`,
   interfaceName: 'FeatureImageStatementBlock',
   labels: { singular: 'Feature: image statement', plural: 'Feature: image statements' },
   fields: [
