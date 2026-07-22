@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+#
+# Pre-push migration guard.
+#
+# Fails the push when schema-defining Payload source changed in the pushed
+# commits but no new migration file was added alongside it. This is the exact
+# failure mode that keeps breaking prod: a field/collection is committed, dev's
+# drizzle `push` masks it locally, the shared Neon DB never gets the column, and
+# the Vercel `ci` build crashes querying a column that does not exist.
+#
+# Bypass (use only when you are certain the change needs no migration):
+#   SKIP_MIGRATION_GUARD=1 git push
+#   git push --no-verify
+#
+set -euo pipefail
+
+if [[ "${SKIP_MIGRATION_GUARD:-}" == "1" ]]; then
+  exit 0
+fi
+
+# Paths whose changes imply a schema diff (Drizzle table/column changes).
+SCHEMA_PATHS=(
+  'src/collections/'
+  'src/blocks/'
+  'src/fields/'
+  'src/globals/'
+  'src/Header/'
+  'src/Footer/'
+  'src/payload.config.ts'
+)
+# A migration was added if a numbered migration file (not index.ts) is added.
+MIGRATION_RE='^src/migrations/[0-9].*\.(ts|json)$'
+# Only these block-level files define schema; component/story/style edits do not.
+SCHEMA_BLOCK_RE='^src/blocks/.*(config\.ts|/fields\.ts|/fields/.*\.ts)$'
+
+zero='0000000000000000000000000000000000000000'
+fail=0
+
+check_range() {
+  local base="$1" local_sha="$2"
+
+  local changed added
+  changed="$(git diff --name-only "$base" "$local_sha" 2>/dev/null || true)"
+  added="$(git diff --diff-filter=A --name-only "$base" "$local_sha" 2>/dev/null || true)"
+
+  [[ -z "$changed" ]] && return 0
+
+  # Did a new migration file land in this range?
+  local has_migration=0
+  if grep -qE "$MIGRATION_RE" <<<"$added"; then
+    has_migration=1
+  fi
+
+  # Collect schema-affecting changes.
+  local schema_hits=""
+  local f
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    local hit=0
+    local p
+    for p in "${SCHEMA_PATHS[@]}"; do
+      if [[ "$f" == "$p"* || "$f" == "$p" ]]; then
+        # For src/blocks/, only count true schema files, not Component/stories.
+        if [[ "$f" == src/blocks/* ]]; then
+          if grep -qE "$SCHEMA_BLOCK_RE" <<<"$f"; then hit=1; fi
+        else
+          hit=1
+        fi
+        break
+      fi
+    done
+    [[ "$hit" == 1 ]] && schema_hits+="  $f"$'\n'
+  done <<<"$changed"
+
+  if [[ -n "$schema_hits" && "$has_migration" == 0 ]]; then
+    echo "✖ pre-push migration guard: schema-defining files changed but no migration was added." >&2
+    echo "" >&2
+    echo "  Changed schema source:" >&2
+    printf '%s' "$schema_hits" >&2
+    echo "" >&2
+    echo "  Dev's drizzle push hides missing columns locally; the shared prod DB will not" >&2
+    echo "  have them and the Vercel build will crash. Create a migration first:" >&2
+    echo "    pnpm migrate:create <name>" >&2
+    echo "" >&2
+    echo "  If this change genuinely alters no DB schema, bypass with:" >&2
+    echo "    SKIP_MIGRATION_GUARD=1 git push" >&2
+    fail=1
+  fi
+}
+
+while read -r _local_ref local_sha _remote_ref remote_sha; do
+  [[ "$local_sha" == "$zero" ]] && continue  # branch deletion
+
+  local_base=""
+  if [[ "$remote_sha" == "$zero" ]]; then
+    # New branch on remote: diff against origin/main if available.
+    if git rev-parse --verify --quiet origin/main >/dev/null; then
+      local_base="$(git merge-base origin/main "$local_sha" 2>/dev/null || true)"
+    fi
+    [[ -z "$local_base" ]] && continue  # nothing to compare against
+  else
+    local_base="$remote_sha"
+  fi
+
+  check_range "$local_base" "$local_sha"
+done
+
+exit "$fail"

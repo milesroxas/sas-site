@@ -29,7 +29,9 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "ci": "payload migrate && pnpm build",
     "db:up": "docker compose up postgres -d",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up postgres -d",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.11",
