@@ -8,6 +8,8 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '../access/authenticated'
 import { populateFolderFromAssetLibrary } from '../hooks/assetLibraryFolders'
 
+const APPROVED_CHANNELS = ['website', 'pitch-deck', 'proposal', 'email', 'social'] as const
+
 export const Media: CollectionConfig = {
   slug: 'media',
   folders: true,
@@ -18,7 +20,17 @@ export const Media: CollectionConfig = {
     read: ({ req }) => (req.user ? true : { usageStatus: { equals: 'public-approved' } }),
     update: authenticated,
   },
-  hooks: { beforeChange: [populateFolderFromAssetLibrary] },
+  hooks: {
+    beforeChange: [
+      populateFolderFromAssetLibrary,
+      ({ data }) => {
+        if (data?.allChannels) {
+          data.approvedChannels = [...APPROVED_CHANNELS]
+        }
+        return data
+      },
+    ],
+  },
   fields: [
     { name: 'title', type: 'text' },
     {
@@ -86,10 +98,21 @@ export const Media: CollectionConfig = {
     { name: 'credit', type: 'text' },
     { name: 'sourceUrl', type: 'text' },
     {
+      name: 'allChannels',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Approve for every channel. Overrides the manual list below.',
+      },
+    },
+    {
       name: 'approvedChannels',
       type: 'select',
       hasMany: true,
-      options: ['website', 'pitch-deck', 'proposal', 'email', 'social'],
+      options: [...APPROVED_CHANNELS],
+      admin: {
+        condition: (data) => !data?.allChannels,
+      },
     },
     { name: 'assetDate', type: 'date' },
     {

@@ -41,7 +41,7 @@ type ActionId =
   | 'env-pull'
   | 'gen-types'
   | 'gen-importmap'
-  | 'migrate'
+  | 'migrate-create'
   | 'lint'
   | 'lint-fix'
   | 'test-int'
@@ -93,7 +93,7 @@ const MENU: Record<Stack, MenuItem[]> = {
   payload: [
     { id: 'gen-types', label: 'Generate TypeScript types (pnpm generate:types)' },
     { id: 'gen-importmap', label: 'Generate admin import map (pnpm generate:importmap)' },
-    { id: 'migrate', label: 'Run migrations (pnpm payload migrate)' },
+    { id: 'migrate-create', label: 'Create migration from schema diff (pnpm migrate:create)' },
     { id: 'back', label: '← Back' },
   ],
   quality: [
@@ -304,8 +304,12 @@ export function App({ unmount }: { unmount: () => void }) {
         case 'gen-importmap':
           await runCapture('generate:importmap', ['run', 'generate:importmap'])
           return
-        case 'migrate':
-          await runCapture('payload migrate', ['payload', 'migrate'])
+        case 'migrate-create':
+          // Only ever create migration files locally — never apply them. The
+          // dev DB runs Drizzle push, and Payload forbids mixing push with
+          // `migrate` on the same database. Migrations apply only in CI
+          // (`pnpm ci`) against production. See README "Database & migrations".
+          await runCapture('migrate:create', ['run', 'migrate:create'])
           return
         case 'lint':
           await runCapture('lint', ['run', 'lint'])

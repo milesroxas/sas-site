@@ -61,7 +61,7 @@ export async function syncProductionToLocal(productionUrl: string): Promise<Sync
       messages: [
         ...messages,
         `Restore to local failed: ${err.stderr || err.shortMessage || err.message || String(e)}`,
-        'Try: pnpm db:up — then pnpm payload migrate if the DB is empty.',
+        'Try: pnpm db:up — then pnpm dev to let Drizzle push rebuild the schema if the DB is empty.',
       ],
     }
   }

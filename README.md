@@ -182,7 +182,9 @@ Globals: `header`, `footer`. Each Work Page presents exactly one Case Study (uni
 | `pnpm db:up` / `pnpm db:down` | Start / stop Docker Postgres |
 | `pnpm generate:types` | Regenerate `payload-types.ts` |
 | `pnpm generate:importmap` | Regenerate admin `importMap.js` |
-| `pnpm payload` | Payload CLI (e.g. `pnpm payload migrate`) |
+| `pnpm migrate:create` | Generate a migration file from the schema diff (review + commit) |
+| `pnpm migrate:status` | Read-only ledger vs. files check (safe against any DB) |
+| `pnpm payload` | Payload CLI (e.g. `pnpm payload generate:db-schema`) |
 | `pnpm lint` / `pnpm lint:fix` | Biome check / fix |
 | `pnpm test:int` / `pnpm test:e2e` / `pnpm test` | Vitest integration / Playwright E2E / both |
 | `pnpm storybook` / `pnpm chromatic` | Storybook dev server / publish to Chromatic |
@@ -191,14 +193,19 @@ Globals: `header`, `footer`. Each Work Page presents exactly one Case Study (uni
 
 ## Database & migrations
 
-**Local:** the Postgres adapter uses schema push in development for fast iteration.
+The workflow follows Payload's recommended split: **push in dev, migrations in CI.**
 
-**Production:** use migrations; never rely on push against production.
+**Local:** the Postgres adapter uses Drizzle schema push for fast iteration. Just run `pnpm dev` and schema changes sync automatically. **Never run `payload migrate` locally** — Payload forbids mixing push and migrations on one database, and doing so corrupts the migration ledger. The dev TUI intentionally exposes only `migrate:create` (writes a file, touches nothing).
+
+**Production:** migrations are the only writer of the production schema and the `payload_migrations` ledger. They run exclusively in CI via `pnpm ci` (`payload migrate && pnpm build`).
 
 ```bash
-pnpm payload migrate:create   # after schema changes
-pnpm payload migrate          # apply on deploy (also run by pnpm ci)
+pnpm migrate:create   # after schema changes — generates a migration file to review + commit
+pnpm migrate:status   # read-only ledger vs. files check (safe against any DB, incl. prod)
+# `payload migrate` is run only by `pnpm ci` in the deploy pipeline — do not run it by hand.
 ```
+
+**Flow:** change config → `pnpm dev` (push syncs local) → `pnpm migrate:create` → review SQL → commit `.ts` + `.json` together → CI applies on deploy.
 
 ### Seed
 

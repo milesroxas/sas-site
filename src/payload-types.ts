@@ -402,6 +402,10 @@ export interface Media {
   usageStatus: 'internal' | 'client-review' | 'public-approved';
   credit?: string | null;
   sourceUrl?: string | null;
+  /**
+   * Approve for every channel. Overrides the manual list below.
+   */
+  allChannels?: boolean | null;
   approvedChannels?: ('website' | 'pitch-deck' | 'proposal' | 'email' | 'social')[] | null;
   assetDate?: string | null;
   /**
@@ -3761,6 +3765,7 @@ export interface MediaSelect<T extends boolean = true> {
   usageStatus?: T;
   credit?: T;
   sourceUrl?: T;
+  allChannels?: T;
   approvedChannels?: T;
   assetDate?: T;
   poster?: T;
