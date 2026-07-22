@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { richTextFixture } from '@/shared/testing/richTextFixture'
 import { mediaFixture } from '../../fixtures'
 import { FeatureImageStatementBlock } from './Component'
 
@@ -11,8 +12,9 @@ const meta = {
   args: {
     blockType: 'featureImageStatement',
     media: mediaFixture,
-    caption:
+    caption: richTextFixture(
       'Strong B2B branding does not remove the deeper information. It places that information in an order people can understand.',
+    ),
   },
 } satisfies Meta<typeof FeatureImageStatementBlock>
 

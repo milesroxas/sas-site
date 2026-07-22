@@ -1,5 +1,6 @@
 import type React from 'react'
 import { Media } from '@/components/Media'
+import RichText from '@/components/RichText'
 import type { FeatureStatementGridBlock as FeatureStatementGridBlockProps } from '@/payload-types'
 
 export const FeatureStatementGridBlock: React.FC<FeatureStatementGridBlockProps> = ({
@@ -17,7 +18,14 @@ export const FeatureStatementGridBlock: React.FC<FeatureStatementGridBlockProps>
       </header>
       <div className="grid gap-12 lg:grid-cols-3 lg:gap-8">
         <div className="flex flex-col justify-between gap-8">
-          <p className="text-xl md:text-2xl md:leading-tight">{statement}</p>
+          {statement ? (
+            <RichText
+              className="text-xl md:text-2xl md:leading-tight"
+              data={statement}
+              enableGutter={false}
+              enableProse={false}
+            />
+          ) : null}
           {footnote ? <p className="max-w-sm text-sm md:text-base">{footnote}</p> : null}
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-3">

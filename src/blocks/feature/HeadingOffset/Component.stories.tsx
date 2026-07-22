@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { richTextFixture } from '@/shared/testing/richTextFixture'
 import { FeatureHeadingOffsetBlock } from './Component'
 
 const meta = {
@@ -11,7 +12,9 @@ const meta = {
     blockType: 'featureHeadingOffset',
     eyebrow: 'Eyebrow text',
     heading: 'Make your expertise easier to understand and easier to choose.',
-    body: 'Suits & Sandals is a B2B branding agency for technical companies, specialized service providers, and expert-led firms with complex offerings.\n\nWe clarify positioning and messaging, build distinctive brand identities, and activate those brands through websites, sales communications, campaigns, and ongoing creative services.',
+    body: richTextFixture(
+      'Suits & Sandals is a B2B branding agency for technical companies, specialized service providers, and expert-led firms with complex offerings.\n\nWe clarify positioning and messaging, build distinctive brand identities, and activate those brands through websites, sales communications, campaigns, and ongoing creative services.',
+    ),
   },
 } satisfies Meta<typeof FeatureHeadingOffsetBlock>
 

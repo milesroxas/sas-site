@@ -13,6 +13,8 @@ import * as migration_20260719_142151_orderable_collections from './20260719_142
 import * as migration_20260719_142433_drop_legacy_order from './20260719_142433_drop_legacy_order';
 import * as migration_20260721_002854_image_statement from './20260721_002854_image_statement';
 import * as migration_20260721_221944_r2_video_poster from './20260721_221944_r2_video_poster';
+import * as migration_20260722_160300_work_page_feature_blocks from './20260722_160300_work_page_feature_blocks';
+import * as migration_20260722_161500_media_all_channels from './20260722_161500_media_all_channels';
 
 export const migrations = [
   {
@@ -88,6 +90,16 @@ export const migrations = [
   {
     up: migration_20260721_221944_r2_video_poster.up,
     down: migration_20260721_221944_r2_video_poster.down,
-    name: '20260721_221944_r2_video_poster'
+    name: '20260721_221944_r2_video_poster',
+  },
+  {
+    up: migration_20260722_160300_work_page_feature_blocks.up,
+    down: migration_20260722_160300_work_page_feature_blocks.down,
+    name: '20260722_160300_work_page_feature_blocks',
+  },
+  {
+    up: migration_20260722_161500_media_all_channels.up,
+    down: migration_20260722_161500_media_all_channels.down,
+    name: '20260722_161500_media_all_channels'
   },
 ];

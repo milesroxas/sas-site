@@ -3,6 +3,7 @@
 import { Tabs as TabsPrimitive } from 'radix-ui'
 import type React from 'react'
 import { Media } from '@/components/Media'
+import RichText from '@/components/RichText'
 import type { FeatureTabsBlock as FeatureTabsBlockProps } from '@/payload-types'
 
 export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ tabs }) => {
@@ -37,7 +38,14 @@ export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ tabs }) => {
             <div className="flex flex-col justify-between gap-12">
               <div className="flex flex-col gap-6">
                 <h3 className="text-xl md:text-2xl md:leading-tight">{tab.heading}</h3>
-                <p className="text-sm md:text-base">{tab.description}</p>
+                {tab.description ? (
+                  <RichText
+                    className="text-sm md:text-base"
+                    data={tab.description}
+                    enableGutter={false}
+                    enableProse={false}
+                  />
+                ) : null}
               </div>
               {tab.items?.length ? (
                 <div className="flex flex-col gap-3">

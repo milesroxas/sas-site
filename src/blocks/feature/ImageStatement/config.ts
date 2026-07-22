@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { featureSourceField } from '../shared'
 
 export const FeatureImageStatement: Block = {
   slug: 'featureImageStatement',
@@ -7,11 +8,13 @@ export const FeatureImageStatement: Block = {
   labels: { singular: 'Feature: image statement', plural: 'Feature: image statements' },
   fields: [
     { name: 'media', type: 'upload', relationTo: 'media', required: true },
+    featureSourceField(),
     {
       name: 'caption',
-      type: 'textarea',
-      required: true,
-      admin: { description: 'Large statement set beneath the image.' },
+      type: 'richText',
+      admin: {
+        description: 'Large statement set beneath the image. Leave empty to pull the source.',
+      },
     },
     {
       name: 'textPosition',

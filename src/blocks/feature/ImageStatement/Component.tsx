@@ -1,5 +1,6 @@
 import type React from 'react'
 import { Media } from '@/components/Media'
+import RichText from '@/components/RichText'
 import type { FeatureImageStatementBlock as FeatureImageStatementBlockProps } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 
@@ -23,16 +24,19 @@ export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProp
           textPosition === 'left' ? 'justify-start' : 'justify-end',
         )}
       >
-        <p
-          className={cn(
-            'max-w-2xl',
-            textSize === 'small'
-              ? 'text-lg/relaxed md:text-2xl/relaxed'
-              : 'text-xl/relaxed md:text-3xl/relaxed',
-          )}
-        >
-          {caption}
-        </p>
+        {caption ? (
+          <RichText
+            className={cn(
+              'max-w-2xl',
+              textSize === 'small'
+                ? 'text-lg/relaxed md:text-2xl/relaxed'
+                : 'text-xl/relaxed md:text-3xl/relaxed',
+            )}
+            data={caption}
+            enableGutter={false}
+            enableProse={false}
+          />
+        ) : null}
       </div>
     </section>
   )

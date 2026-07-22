@@ -978,6 +978,10 @@ export interface WorkPage {
         | CaseStudyTestimonialBlock
         | CaseStudyTransitionBlock
         | CaseStudyRelatedWorkBlock
+        | FeatureHeadingOffsetBlock
+        | FeatureStatementGridBlock
+        | FeatureImageStatementBlock
+        | FeatureTabsBlock
       )[]
     | null;
   coverAsset?: (number | null) | Media;
@@ -1252,6 +1256,183 @@ export interface CaseStudyRelatedWorkBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'caseStudyRelatedWork';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureHeadingOffsetBlock".
+ */
+export interface FeatureHeadingOffsetBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Supporting copy in the offset right column. Leave empty to pull the source.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureHeadingOffset';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureStatementGridBlock".
+ */
+export interface FeatureStatementGridBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
+   */
+  statement?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Short supporting line pinned below the statement.
+   */
+  footnote?: string | null;
+  cards: {
+    media?: (number | null) | Media;
+    title: string;
+    description: string;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureStatementGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureImageStatementBlock".
+ */
+export interface FeatureImageStatementBlock {
+  media: number | Media;
+  /**
+   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Large statement set beneath the image. Leave empty to pull the source.
+   */
+  caption?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Which edge the statement aligns to beneath the image.
+   */
+  textPosition?: ('right' | 'left') | null;
+  /**
+   * Small steps the statement down one type size.
+   */
+  textSize?: ('default' | 'small') | null;
+  /**
+   * Contained keeps the image in the site container; full bleeds edge to edge.
+   */
+  imageWidth?: ('contained' | 'full') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureImageStatement';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureTabsBlock".
+ */
+export interface FeatureTabsBlock {
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    heading: string;
+    /**
+     * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+     */
+    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+    /**
+     * Tab body copy. Leave empty to pull the source.
+     */
+    description?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    subheading?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * Short note shown as a card over the media.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureTabs';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1716,108 +1897,6 @@ export interface Audience {
   allowPublicSignup?: boolean | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementGridBlock".
- */
-export interface FeatureStatementGridBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading: string;
-  /**
-   * Lead paragraph in the left column — the section's core claim.
-   */
-  statement: string;
-  /**
-   * Short supporting line pinned below the statement.
-   */
-  footnote?: string | null;
-  cards: {
-    media?: (number | null) | Media;
-    title: string;
-    description: string;
-    id?: string | null;
-  }[];
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureStatementGrid';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureHeadingOffsetBlock".
- */
-export interface FeatureHeadingOffsetBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading: string;
-  /**
-   * Supporting copy in the offset right column. Blank lines create paragraphs.
-   */
-  body: string;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureHeadingOffset';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureTabsBlock".
- */
-export interface FeatureTabsBlock {
-  tabs: {
-    title: string;
-    /**
-     * Lead statement for this tab.
-     */
-    heading: string;
-    description: string;
-    subheading?: string | null;
-    items?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    media?: (number | null) | Media;
-    /**
-     * Short note shown as a card over the media.
-     */
-    caption?: string | null;
-    id?: string | null;
-  }[];
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureTabs';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureImageStatementBlock".
- */
-export interface FeatureImageStatementBlock {
-  media: number | Media;
-  /**
-   * Large statement set beneath the image.
-   */
-  caption: string;
-  /**
-   * Which edge the statement aligns to beneath the image.
-   */
-  textPosition?: ('right' | 'left') | null;
-  /**
-   * Small steps the statement down one type size.
-   */
-  textSize?: ('default' | 'small') | null;
-  /**
-   * Contained keeps the image in the site container; full bleeds edge to edge.
-   */
-  imageWidth?: ('contained' | 'full') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureImageStatement';
 }
 /**
  * Website-specific lab-project presentation, composition, SEO, preview, and publishing.
@@ -3105,6 +3184,7 @@ export interface NewsletterSignupBlockSelect<T extends boolean = true> {
 export interface FeatureStatementGridBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
+  source?: T;
   statement?: T;
   footnote?: T;
   cards?:
@@ -3125,6 +3205,7 @@ export interface FeatureStatementGridBlockSelect<T extends boolean = true> {
 export interface FeatureHeadingOffsetBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
+  source?: T;
   body?: T;
   id?: T;
   blockName?: T;
@@ -3139,6 +3220,7 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
     | {
         title?: T;
         heading?: T;
+        source?: T;
         description?: T;
         subheading?: T;
         items?:
@@ -3160,6 +3242,7 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
  */
 export interface FeatureImageStatementBlockSelect<T extends boolean = true> {
   media?: T;
+  source?: T;
   caption?: T;
   textPosition?: T;
   textSize?: T;
@@ -3245,6 +3328,10 @@ export interface WorkPagesSelect<T extends boolean = true> {
         caseStudyTestimonial?: T | CaseStudyTestimonialBlockSelect<T>;
         caseStudyTransition?: T | CaseStudyTransitionBlockSelect<T>;
         caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
+        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
       };
   coverAsset?: T;
   downloadableAssets?: T;

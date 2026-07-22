@@ -1,5 +1,9 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/Component'
+import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/feature/ImageStatement/Component'
+import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
+import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component'
 import { Section } from '@/blocks/shared/section'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { Media } from '@/components/Media'
@@ -13,6 +17,7 @@ import type {
   CaseStudyStorySectionBlock,
   CaseStudyTestimonialBlock,
   CaseStudyTransitionBlock,
+  FeatureHeadingOffsetBlock,
   SplitContentNarrowBlock,
   Testimonial,
   WorkPage,
@@ -24,6 +29,17 @@ const richTextSource = (study: CaseStudy, source: CaseStudyStorySectionBlock['so
   if (source === 'custom') return null
   return study[source]
 }
+
+/**
+ * Feature blocks carry a single rich-text body plus a `source` select. Written
+ * copy always wins; an empty body pulls from the canonical case study when a
+ * source other than `custom` is chosen.
+ */
+const resolveFeatureBody = (
+  body: FeatureHeadingOffsetBlock['body'],
+  source: FeatureHeadingOffsetBlock['source'],
+  study: CaseStudy,
+) => body || (source && source !== 'custom' ? richTextSource(study, source) : null)
 
 const defaultHeading = (source: CaseStudyStorySectionBlock['source']) =>
   ({
@@ -319,6 +335,41 @@ export const RenderCaseStudyBlocks = async ({
           return <Transition block={block} key={block.id} />
         case 'caseStudyRelatedWork':
           return <RelatedWork block={block} key={block.id} page={page} study={study} />
+        case 'featureHeadingOffset':
+          return (
+            <FeatureHeadingOffset
+              {...block}
+              body={resolveFeatureBody(block.body, block.source, study)}
+              key={block.id}
+            />
+          )
+        case 'featureStatementGrid':
+          return (
+            <FeatureStatementGrid
+              {...block}
+              key={block.id}
+              statement={resolveFeatureBody(block.statement, block.source, study)}
+            />
+          )
+        case 'featureImageStatement':
+          return (
+            <FeatureImageStatement
+              {...block}
+              caption={resolveFeatureBody(block.caption, block.source, study)}
+              key={block.id}
+            />
+          )
+        case 'featureTabs':
+          return (
+            <FeatureTabs
+              {...block}
+              key={block.id}
+              tabs={(block.tabs || []).map((tab) => ({
+                ...tab,
+                description: resolveFeatureBody(tab.description, tab.source, study),
+              }))}
+            />
+          )
         default:
           return null
       }

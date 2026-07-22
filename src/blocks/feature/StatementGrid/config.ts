@@ -1,5 +1,5 @@
 import type { Block } from 'payload'
-import { featureHeaderFields } from '../shared'
+import { featureHeaderFields, featureSourceField } from '../shared'
 
 export const FeatureStatementGrid: Block = {
   slug: 'featureStatementGrid',
@@ -7,11 +7,14 @@ export const FeatureStatementGrid: Block = {
   labels: { singular: 'Feature: statement grid', plural: 'Feature: statement grids' },
   fields: [
     ...featureHeaderFields,
+    featureSourceField(),
     {
       name: 'statement',
-      type: 'textarea',
-      required: true,
-      admin: { description: "Lead paragraph in the left column — the section's core claim." },
+      type: 'richText',
+      admin: {
+        description:
+          "Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.",
+      },
     },
     {
       name: 'footnote',

@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { featureSourceField } from '../shared'
 
 export const FeatureTabs: Block = {
   slug: 'featureTabs',
@@ -21,7 +22,12 @@ export const FeatureTabs: Block = {
           required: true,
           admin: { description: 'Lead statement for this tab.' },
         },
-        { name: 'description', type: 'textarea', required: true },
+        featureSourceField(),
+        {
+          name: 'description',
+          type: 'richText',
+          admin: { description: 'Tab body copy. Leave empty to pull the source.' },
+        },
         {
           name: 'subheading',
           type: 'text',

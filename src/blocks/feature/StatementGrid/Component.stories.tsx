@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { richTextFixture } from '@/shared/testing/richTextFixture'
 import { mediaFixture } from '../../fixtures'
 import { FeatureStatementGridBlock } from './Component'
 
@@ -12,8 +13,9 @@ const meta = {
     blockType: 'featureStatementGrid',
     eyebrow: 'Where clarity breaks down',
     heading: 'Deep expertise does not always translate into a clear market story.',
-    statement:
+    statement: richTextFixture(
       'We help technical companies and expert-led firms turn complex offerings into clear positioning, distinctive brands, and digital experiences that build buyer confidence.',
+    ),
     footnote: 'The goal is not to make the business sound simple. It is to make the value clear.',
     cards: [
       {

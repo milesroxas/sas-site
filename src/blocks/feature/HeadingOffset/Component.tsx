@@ -1,4 +1,5 @@
 import type React from 'react'
+import RichText from '@/components/RichText'
 import type { FeatureHeadingOffsetBlock as FeatureHeadingOffsetBlockProps } from '@/payload-types'
 
 export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps> = ({
@@ -13,9 +14,14 @@ export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps>
           {eyebrow ? <p className="text-sm tracking-widest uppercase">{eyebrow}</p> : null}
           <h2 className="text-4xl leading-[1.2] md:text-5xl md:leading-[1.2]">{heading}</h2>
         </div>
-        <p className="text-lg whitespace-pre-line text-muted-foreground md:text-xl/6 lg:col-span-4 lg:col-start-9 lg:pt-24">
-          {body}
-        </p>
+        {body ? (
+          <RichText
+            className="text-lg text-muted-foreground md:text-xl/6 lg:col-span-4 lg:col-start-9 lg:pt-24"
+            data={body}
+            enableGutter={false}
+            enableProse={false}
+          />
+        ) : null}
       </div>
     </section>
   )

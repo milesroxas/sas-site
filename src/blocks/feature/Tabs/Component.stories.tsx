@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { richTextFixture } from '@/shared/testing/richTextFixture'
 import { mediaFixture } from '../../fixtures'
 import { FeatureTabsBlock } from './Component'
 
@@ -15,8 +16,9 @@ const meta = {
         id: 'position',
         title: 'Position',
         heading: 'Establish a sharper position and a more useful story.',
-        description:
+        description: richTextFixture(
           'We identify what the business means, why it matters, and how it should be understood by the audiences most important to its growth.',
+        ),
         subheading: 'Included',
         items: [
           { id: 'i1', text: 'Audience and stakeholder research' },
@@ -34,8 +36,9 @@ const meta = {
         id: 'express',
         title: 'Express',
         heading: 'Build a distinctive identity that carries the position.',
-        description:
+        description: richTextFixture(
           'We translate strategy into a visual and verbal identity that is recognizable, credible, and usable across every channel.',
+        ),
         subheading: 'Included',
         items: [
           { id: 'i1', text: 'Visual identity systems' },
@@ -49,8 +52,9 @@ const meta = {
         id: 'activate',
         title: 'Activate',
         heading: 'Put the brand to work across the buying journey.',
-        description:
+        description: richTextFixture(
           'We activate the brand through websites, sales communications, campaigns, and ongoing creative services.',
+        ),
         subheading: 'Included',
         items: [
           { id: 'i1', text: 'Websites and digital experiences' },
