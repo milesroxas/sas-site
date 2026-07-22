@@ -9,7 +9,8 @@
   "storyImports": {
     "shim": [
       "blocks/Form/Component",
-      "blocks/RelatedPosts/Component"
+      "blocks/RelatedPosts/Component",
+      "blocks/split-content/Component"
     ]
   },
   "titleMap": {
@@ -22,7 +23,8 @@
     "Tabs": "FeatureTabsBlock",
     "StatementGrid": "FeatureStatementGridBlock",
     "ImageStatement": "FeatureImageStatementBlock",
-    "HeadingOffset": "FeatureHeadingOffsetBlock"
+    "HeadingOffset": "FeatureHeadingOffsetBlock",
+    "SplitContentNarrow": "SplitContentNarrowBlock"
   },
   "provider": {
     "component": "PreviewAppRouter"
