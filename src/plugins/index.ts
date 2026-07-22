@@ -1,5 +1,4 @@
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
-import { mcpPlugin } from '@payloadcms/plugin-mcp'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { searchPlugin } from '@payloadcms/plugin-search'
@@ -9,18 +8,15 @@ import type { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import * as Sentry from '@sentry/nextjs'
 import type { Plugin } from 'payload'
+import { authenticated } from '@/access/authenticated'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import type { AudiencePage, ExpertisePage, LabPage, Page, Post, WorkPage } from '@/payload-types'
 import { aeoPlugin } from '@/plugins/aeo'
 import { askIndexPlugin } from '@/plugins/ask-index'
+import { mcp } from '@/plugins/mcp'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { searchFields } from '@/search/fieldOverrides'
-import {
-  CONTENT_SURFACES,
-  SEARCH_COLLECTIONS,
-  surfaceByCollection,
-  surfaceDocPath,
-} from '@/shared/content/surfaces'
+import { SEARCH_COLLECTIONS, surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
 import { getServerSideURL } from '@/utilities/getURL'
 
 type SeoDoc = Post | Page | WorkPage | LabPage | ExpertisePage | AudiencePage
@@ -41,6 +37,13 @@ export const plugins: Plugin[] = [
   redirectsPlugin({
     collections: ['pages', 'posts', 'work-pages', 'lab-pages', 'expertise-pages', 'audience-pages'],
     overrides: {
+      // Plugin default leaves write ops at Payload's `Boolean(req.user)` —
+      // which an MCP API key satisfies over REST. Restrict writes to team.
+      access: {
+        create: authenticated,
+        delete: authenticated,
+        update: authenticated,
+      },
       admin: { group: 'System' },
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type
       fields: ({ defaultFields }) => {
@@ -74,6 +77,13 @@ export const plugins: Plugin[] = [
       payment: false,
     },
     formOverrides: {
+      // Team-only writes; MCP API keys authenticate as req.user over REST but
+      // must not manage forms. Public read stays (frontend renders forms).
+      access: {
+        create: authenticated,
+        delete: authenticated,
+        update: authenticated,
+      },
       admin: { group: 'Forms' },
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {
@@ -96,6 +106,12 @@ export const plugins: Plugin[] = [
       },
     },
     formSubmissionOverrides: {
+      // Submissions hold visitor PII: readable/deletable by team only. Public
+      // create stays (site visitors submit forms); plugin keeps update: false.
+      access: {
+        delete: authenticated,
+        read: authenticated,
+      },
       admin: { group: 'Forms' },
     },
   }),
@@ -103,6 +119,11 @@ export const plugins: Plugin[] = [
     collections: SEARCH_COLLECTIONS,
     beforeSync: beforeSyncWithSearch,
     searchOverrides: {
+      // Derived index: writable by the sync hooks (Local API) and team only.
+      access: {
+        delete: authenticated,
+        update: authenticated,
+      },
       admin: { group: 'System' },
       fields: ({ defaultFields }) => {
         return [...defaultFields, ...searchFields]
@@ -111,25 +132,9 @@ export const plugins: Plugin[] = [
   }),
   aeoPlugin(),
   askIndexPlugin(),
-  // Exposes public content surfaces to MCP clients (e.g. the OpenAI Responses
-  // API's remote-MCP tool) as read-only resources at /api/mcp. API keys are
-  // created in admin under MCP → API Keys; each key's capabilities can be
-  // narrowed further there.
-  mcpPlugin({
-    collections: Object.fromEntries(
-      CONTENT_SURFACES.map((surface) => [
-        surface.collection,
-        {
-          description: `${surface.title} — public site content published under ${surface.urlPrefix || '/'}`,
-          enabled: { find: true },
-        },
-      ]),
-    ),
-    overrideApiKeyCollection: (collection) => ({
-      ...collection,
-      admin: { ...collection.admin, group: 'System' },
-    }),
-  }),
+  // Internal-team MCP server at /api/mcp for agent-driven content authoring.
+  // Full config (collections, globals, capability policy) lives in ./mcp.
+  mcp,
   // Captures Payload REST/GraphQL/Local API errors (5xx by default) with
   // user context, and wraps the admin UI in a Sentry error boundary. Must
   // receive the app's own Sentry module so events reach the SDK instance

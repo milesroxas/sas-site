@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache.js'
 import type { GlobalAfterChangeHook, GlobalConfig } from 'payload'
+import { authenticated } from '@/access/authenticated'
 
 const revalidateSiteInfo: GlobalAfterChangeHook = ({ doc, req: { payload, context } }) => {
   if (!context.disableRevalidate) {
@@ -27,6 +28,7 @@ export const SiteInfo: GlobalConfig = {
   },
   access: {
     read: () => true,
+    update: authenticated,
   },
   fields: [
     {

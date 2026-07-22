@@ -1,5 +1,6 @@
 import type { GlobalConfig } from 'payload'
 
+import { authenticated } from '@/access/authenticated'
 import { link } from '@/fields/link'
 import { revalidateHeader } from './hooks/revalidateHeader'
 
@@ -8,6 +9,7 @@ export const Header: GlobalConfig = {
   admin: { group: 'Website' },
   access: {
     read: () => true,
+    update: authenticated,
   },
   fields: [
     {

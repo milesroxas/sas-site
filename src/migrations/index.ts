@@ -16,6 +16,7 @@ import * as migration_20260721_221944_r2_video_poster from './20260721_221944_r2
 import * as migration_20260722_160300_work_page_feature_blocks from './20260722_160300_work_page_feature_blocks';
 import * as migration_20260722_161500_media_all_channels from './20260722_161500_media_all_channels';
 import * as migration_20260722_174221_per_parent_block_tables from './20260722_174221_per_parent_block_tables';
+import * as migration_20260722_183757_mcp_authoring_capabilities from './20260722_183757_mcp_authoring_capabilities';
 
 export const migrations = [
   {
@@ -106,6 +107,11 @@ export const migrations = [
   {
     up: migration_20260722_174221_per_parent_block_tables.up,
     down: migration_20260722_174221_per_parent_block_tables.down,
-    name: '20260722_174221_per_parent_block_tables'
+    name: '20260722_174221_per_parent_block_tables',
+  },
+  {
+    up: migration_20260722_183757_mcp_authoring_capabilities.up,
+    down: migration_20260722_183757_mcp_authoring_capabilities.down,
+    name: '20260722_183757_mcp_authoring_capabilities'
   },
 ];

@@ -1,0 +1,125 @@
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-vercel-postgres'
+
+export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+  await db.execute(sql`
+   ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "pages_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "pages_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "pages_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "expertise_pages_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "expertise_pages_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "expertise_pages_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "audience_pages_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "audience_pages_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "audience_pages_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "work_pages_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "work_pages_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "work_pages_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "lab_pages_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "lab_pages_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "lab_pages_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "posts_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "posts_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "posts_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "case_studies_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "case_studies_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "case_studies_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "case_studies_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "lab_projects_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "lab_projects_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "lab_projects_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "lab_projects_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "organizations_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "organizations_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "organizations_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "organizations_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "projects_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "projects_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "projects_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "projects_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "testimonials_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "testimonials_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "testimonials_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "testimonials_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "capabilities_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "capabilities_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "capabilities_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "capabilities_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "categories_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "categories_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "categories_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "categories_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "industries_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "industries_create" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "industries_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "industries_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "asset_libraries_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "media_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "footer_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "footer_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "header_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "header_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "site_info_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "site_info_update" boolean DEFAULT false;`)
+}
+
+export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+  await db.execute(sql`
+   ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "pages_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "pages_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "pages_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "expertise_pages_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "expertise_pages_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "expertise_pages_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "audience_pages_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "audience_pages_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "audience_pages_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "work_pages_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "work_pages_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "work_pages_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "lab_pages_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "lab_pages_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "lab_pages_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "posts_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "posts_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "posts_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "case_studies_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "case_studies_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "case_studies_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "case_studies_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "lab_projects_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "lab_projects_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "lab_projects_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "lab_projects_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "organizations_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "organizations_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "organizations_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "organizations_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "projects_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "projects_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "projects_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "projects_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "testimonials_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "testimonials_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "testimonials_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "testimonials_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "capabilities_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "capabilities_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "capabilities_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "capabilities_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "categories_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "categories_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "categories_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "categories_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "industries_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "industries_create";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "industries_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "industries_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "asset_libraries_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "media_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "footer_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "footer_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "header_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "header_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "site_info_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "site_info_update";`)
+}

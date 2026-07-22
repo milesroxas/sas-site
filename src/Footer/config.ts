@@ -1,5 +1,6 @@
 import type { GlobalConfig } from 'payload'
 
+import { authenticated } from '@/access/authenticated'
 import { link } from '@/fields/link'
 import { revalidateFooter } from './hooks/revalidateFooter'
 
@@ -8,6 +9,7 @@ export const Footer: GlobalConfig = {
   admin: { group: 'Website' },
   access: {
     read: () => true,
+    update: authenticated,
   },
   fields: [
     {
