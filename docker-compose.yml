@@ -18,6 +18,9 @@ services:
       # PG 18 images moved PGDATA under /var/lib/postgresql/18/… — mount the
       # parent, not the pre-18 /var/lib/postgresql/data, or nothing persists.
       - postgres_data:/var/lib/postgresql
+      # Runs only on fresh-volume init: CREATE EXTENSION vector, so a clean
+      # reset (down -v) leaves the DB ready for push without a manual step.
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s

@@ -29,9 +29,17 @@
   },
   "tsconfig": ".design-sync/tsconfig.json",
   "overrides": {
-    "CodeBlock": {
-      "cardMode": "column"
-    }
+    "CodeBlock": { "cardMode": "column" },
+    "ContentBlock": { "cardMode": "column" },
+    "PostCard": { "cardMode": "column" },
+    "FeatureHeadingOffsetBlock": { "cardMode": "column" },
+    "AskWidget": { "cardMode": "column" },
+    "Bubble": { "cardMode": "column" },
+    "Card": { "cardMode": "column" },
+    "Field": { "cardMode": "column" },
+    "InputGroup": { "cardMode": "column" },
+    "Message": { "cardMode": "column" },
+    "MessageScroller": { "cardMode": "column" }
   },
   "cssEntry": ".design-sync/compiled.css",
   "extraFonts": [

@@ -207,6 +207,20 @@ pnpm migrate:status   # read-only ledger vs. files check (safe against any DB, i
 
 **Flow:** change config → `pnpm dev` (push syncs local) → `pnpm migrate:create` → review SQL → commit `.ts` + `.json` together → CI applies on deploy.
 
+> **Note:** on the local DB `pnpm migrate:status` shows every migration as "No". That is correct — local schema is built by push, so the migration ledger is intentionally empty. It does **not** mean you need to run anything.
+
+### Reset local database
+
+Wipes the local Docker DB and rebuilds the schema from scratch via push — use when local state is broken or you want a clean slate.
+
+```bash
+docker compose down -v   # stop container + DELETE the volume (all local data gone)
+pnpm db:up               # fresh container; initdb auto-creates the pgvector extension
+pnpm dev                 # Drizzle push rebuilds the full current schema
+```
+
+Irreversible — deletes all local pages/posts/media records. **Local only; production is untouched.** Reseed sample content from `/admin` → **Seed the database** afterward. The pgvector extension is recreated automatically on fresh init via `docker/initdb/01-extensions.sql`, so no manual `CREATE EXTENSION` is needed.
+
 ### Seed
 
 From `/admin`, **Seed the database** loads sample template content (pages, posts, categories, media, forms). Demo user: `demo-author@example.com` / `password`.
