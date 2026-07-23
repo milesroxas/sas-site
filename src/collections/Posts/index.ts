@@ -77,6 +77,18 @@ export const Posts: CollectionConfig<'posts'> = {
         {
           fields: [
             {
+              name: 'heroStyle',
+              type: 'select',
+              defaultValue: 'immersive',
+              options: [
+                { label: 'Immersive (full-bleed image)', value: 'immersive' },
+                { label: 'Banner (compact)', value: 'banner' },
+              ],
+              admin: {
+                description: 'How the hero renders on the post page.',
+              },
+            },
+            {
               name: 'heroImage',
               type: 'upload',
               relationTo: 'media',

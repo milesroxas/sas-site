@@ -4,11 +4,16 @@ import type { Post } from '@/payload-types'
 import { postImageVtName } from '@/shared/lib/view-transition'
 import { formatAuthors } from '@/utilities/formatAuthors'
 import { formatDateTime } from '@/utilities/formatDateTime'
+import { PostHeroBanner } from './Banner'
 
 export const PostHero: React.FC<{
   post: Post
 }> = ({ post }) => {
   const { categories, heroImage, populatedAuthors, publishedAt, slug, title } = post
+
+  if (post.heroStyle === 'banner') {
+    return <PostHeroBanner post={post} />
+  }
 
   const hasAuthors =
     populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''

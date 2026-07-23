@@ -25,5 +25,8 @@ export const lateralNavTransitionTypes = [NAV_LATERAL] as const satisfies readon
 /**
  * Shared-element name bridging a post's list-card image and its detail hero image.
  * Used by both `Card` and `PostHero` so the morph pair always matches.
+ *
+ * `view-transition-name` must be a valid CSS custom-ident, so any character
+ * outside [a-zA-Z0-9_-] in the slug (e.g. `@` or `.`) is replaced.
  */
-export const postImageVtName = (slug: string) => `post-image-${slug}`
+export const postImageVtName = (slug: string) => `post-image-${slug.replace(/[^a-zA-Z0-9_-]/g, '_')}`

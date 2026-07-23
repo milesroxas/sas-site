@@ -75,7 +75,20 @@ export default async function Post({ params: paramsPromise }: Args) {
 
       <div className="flex flex-col items-center gap-4 pt-8">
         <RevealSection className="container w-full" delayMs={80}>
-          <RichText className="max-w-3xl mx-auto" data={post.content} enableGutter={false} />
+          {post.heroStyle === 'banner' ? (
+            <div className="grid grid-cols-1 gap-8 py-12 lg:grid-cols-[1fr_3fr] lg:gap-20">
+              <aside className="hidden lg:block">
+                <div className="sticky top-(--header-height) border-t border-foreground py-3">
+                  <p className="font-mono text-xs leading-normal">{post.title}</p>
+                </div>
+              </aside>
+              <div className="max-w-xl border-t border-foreground py-3">
+                <RichText className="mx-0" data={post.content} enableGutter={false} />
+              </div>
+            </div>
+          ) : (
+            <RichText className="max-w-3xl mx-auto" data={post.content} enableGutter={false} />
+          )}
         </RevealSection>
         {post.relatedPosts && post.relatedPosts.length > 0 && (
           <RevealSection className="container w-full mt-12" delayMs={160}>
