@@ -1,4 +1,5 @@
 'use client'
+import { IconMenu2, IconX } from '@tabler/icons-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type React from 'react'
@@ -48,13 +49,13 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
         // Pull the header out of the page snapshot so it stays static during transitions.
         style={{ viewTransitionName: 'site-header' }}
       >
-        {/* Mobile: brand left, MENU right (theme lives inside the takeover).
-            md+: 3-col grid with a truly centered MENU and theme on the end. */}
-        <div className="flex h-full items-center justify-between gap-3 px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:px-20">
+        {/* Mobile: centered brand + menu icon on the right.
+            md+: 3-col grid with MENU text centered and theme on the end. */}
+        <div className="relative flex h-full items-center justify-end px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:px-20">
           <Link
             href="/"
             transitionTypes={[...lateralNavTransitionTypes]}
-            className="justify-self-start whitespace-nowrap text-base font-medium tracking-[0.19em]"
+            className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-base font-medium tracking-[0.19em] md:static md:translate-x-0 md:justify-self-start"
           >
             SUITS &amp; SANDALS
           </Link>
@@ -64,11 +65,15 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
             type="button"
             aria-expanded={menuOpen}
             aria-controls="site-menu"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMenuOpen((v) => !v)}
-            // -mr compensates the trailing letter-space so the label reads centered.
-            className="mr-[-0.58em] text-sm font-black tracking-[0.58em] transition-opacity hover:opacity-70"
+            // -mr compensates the trailing letter-space so the desktop label reads centered.
+            className="transition-opacity hover:opacity-70 md:mr-[-0.58em] md:text-sm md:font-black md:tracking-[0.58em]"
           >
-            {menuOpen ? 'CLOSE' : 'MENU'}
+            <span className="md:hidden">
+              {menuOpen ? <IconX className="size-6" /> : <IconMenu2 className="size-6" />}
+            </span>
+            <span className="hidden md:inline">{menuOpen ? 'CLOSE' : 'MENU'}</span>
           </button>
 
           <ThemeToggle className="hidden justify-self-end md:inline-flex" />

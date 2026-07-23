@@ -23,9 +23,10 @@ export async function Footer() {
         appearance="inline"
         // Negative margin cancels the trailing letter-space so the label
         // visually centers on its glyphs.
-        className="col-start-2 mr-[-0.58em] text-sm font-black uppercase tracking-[0.58em] text-foreground transition-colors hover:text-primary"
+        className="col-start-2 mr-[-0.4em] text-xs font-black uppercase tracking-[0.4em] text-foreground transition-colors hover:text-primary md:mr-[-0.58em] md:text-sm md:tracking-[0.58em]"
       />
-      <Clock className="col-start-3 justify-self-end" />
+      {/* Time moves into the mobile takeover menu; keep it in the footer from md up. */}
+      <Clock className="col-start-3 hidden justify-self-end md:flex" />
     </footer>
   )
 }
