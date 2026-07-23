@@ -9,6 +9,7 @@ import { useEffect, useRef } from 'react'
 import { CMSLink } from '@/components/Link'
 import type { Header as HeaderType } from '@/payload-types'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
+import { ThemeToggle } from '../ThemeToggle'
 
 gsap.registerPlugin(useGSAP)
 
@@ -202,12 +203,16 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       id="site-menu"
       aria-hidden={!open}
       className="invisible fixed inset-0 z-30 bg-secondary opacity-0 pointer-events-none"
+      // The page frame is inert while open, so it is skipped for hit-testing
+      // and clicks on the scaled page card land here — same as CLOSE.
+      onClick={onClose}
     >
       <nav
         aria-label="Site menu"
         // Mobile: lower half of the screen, below the docked page card;
         // scrollable when nav items outgrow short viewports.
         className="absolute inset-x-0 top-1/2 bottom-0 flex flex-col overflow-y-auto overscroll-contain px-8 pt-6 pb-8 md:inset-y-0 md:left-auto md:w-1/2 md:overflow-visible md:pt-0 md:pb-0 md:pr-[8vw]"
+        onClick={(event) => event.stopPropagation()}
       >
         <ul className="my-auto flex flex-col gap-5">
           {navItems.map(({ link }, i) => (
@@ -239,6 +244,9 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               Search
               <IconArrowUpRight className="size-7 opacity-40 transition-opacity group-hover:opacity-100" />
             </Link>
+          </li>
+          <li data-menu-item className="md:hidden">
+            <ThemeToggle className="text-secondary-foreground" />
           </li>
         </ul>
       </nav>
