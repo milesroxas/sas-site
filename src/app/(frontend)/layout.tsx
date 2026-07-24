@@ -41,8 +41,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
 
           <Header />
-          {/* data-page-frame: the takeover menu (Header/Menu) scales this wrapper
-              into a docked card, so page + footer must share one element. */}
+          {/* data-page-frame: the takeover menu (Header/Menu) crops this wrapper
+              into a 16:9 window, so page + footer must share one element. */}
           <div
             data-page-frame
             className="flex min-h-svh flex-col bg-background pt-(--header-height) pb-(--footer-height)"

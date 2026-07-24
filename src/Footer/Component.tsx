@@ -9,8 +9,8 @@ export async function Footer() {
     <footer
       data-site-footer
       // Fixed to the viewport bottom; while the takeover menu is open the
-      // transformed page frame becomes its containing block, so the footer
-      // docks to the bottom of the scaled-down card instead.
+      // page frame becomes its containing block (then fades out of the
+      // 16:9 preview window).
       className="fixed inset-x-0 bottom-0 z-30 grid h-(--footer-bar-height) grid-cols-[1fr_auto_1fr] items-center bg-background px-5 transition-[height] duration-300 motion-reduce:transition-none md:px-20"
       // Keep the footer static during page transitions.
       style={{ viewTransitionName: 'site-footer' }}
