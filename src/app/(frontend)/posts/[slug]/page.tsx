@@ -119,6 +119,8 @@ const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
 
   const result = await payload.find({
     collection: 'posts',
+    // Populate Lexical mediaBlock uploads + nested video posters.
+    depth: 2,
     draft,
     limit: 1,
     overrideAccess: draft,

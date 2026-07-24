@@ -1,4 +1,6 @@
+import configPromise from '@payload-config'
 import type { StaticImageData } from 'next/image'
+import { getPayload } from 'payload'
 import type React from 'react'
 // Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
 // fallow-ignore-next-line circular-dependency
@@ -33,22 +35,46 @@ const hasRichTextContent = (state: MediaDoc['caption']): boolean =>
     }),
   )
 
-export const MediaBlock: React.FC<Props> = (props) => {
+async function resolveMedia(media: Props['media']): Promise<MediaDoc | null> {
+  if (!media) return null
+  if (typeof media === 'object') return media
+
+  const payload = await getPayload({ config: configPromise })
+  try {
+    return await payload.findByID({
+      collection: 'media',
+      depth: 1,
+      id: media,
+      overrideAccess: false,
+    })
+  } catch {
+    return null
+  }
+}
+
+export const MediaBlock: React.FC<Props> = async (props) => {
   const {
     captionClassName,
     captionOverride,
     className,
     enableGutter = true,
     imgClassName,
-    media,
     size,
     staticImage,
     disableInnerContainer,
   } = props
 
+  const media = await resolveMedia(props.media)
+
   let caption: MediaDoc['caption'] | undefined
   if (captionOverride && hasRichTextContent(captionOverride)) caption = captionOverride
-  else if (media && typeof media === 'object') caption = media.caption
+  else if (media) caption = media.caption
+
+  // Videos may rely on filename + CDN rather than a populated `url`; don't
+  // require `url` or image-only fields to mount the player.
+  const hasRenderableMedia = Boolean(
+    staticImage || (media && (media.url || media.filename || media.mimeType?.startsWith('video'))),
+  )
 
   return (
     <div
@@ -61,11 +87,12 @@ export const MediaBlock: React.FC<Props> = (props) => {
       )}
     >
       <div className={sizeClasses[size ?? 'full']}>
-        {(staticImage || (media && typeof media === 'object' && media.url)) && (
+        {hasRenderableMedia && (
           <Media
             imgClassName={cn('rounded-lg border border-border', imgClassName)}
             resource={media}
             src={staticImage}
+            videoClassName={cn('rounded-lg border border-border', imgClassName)}
           />
         )}
         {caption && (

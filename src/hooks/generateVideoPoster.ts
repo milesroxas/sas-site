@@ -1,5 +1,5 @@
 import path from 'node:path'
-import type { CollectionBeforeChangeHook } from 'payload'
+import type { CollectionBeforeChangeHook, PayloadRequest } from 'payload'
 import type { Media } from '@/payload-types'
 import { extractVideoFrame } from '@/utilities/extractVideoFrame'
 
@@ -11,6 +11,11 @@ type UploadRequestFile = {
   tempFilePath?: string
 }
 
+type CloudStorageContext = {
+  file?: UploadRequestFile
+  uploadSizes?: PayloadRequest['payloadUploadSizes']
+}
+
 const relationId = (value: unknown): number | undefined => {
   if (typeof value === 'number') return value
   if (typeof value === 'object' && value !== null && 'id' in value) {
@@ -18,6 +23,46 @@ const relationId = (value: unknown): number | undefined => {
     return typeof id === 'number' ? id : undefined
   }
   return undefined
+}
+
+/**
+ * Nested `payload.create({ file, req })` reuses the parent request and sets
+ * `req.file` to the poster. `@payloadcms/plugin-cloud-storage` then prefers
+ * `req.file` over its stashed original, so the JPEG can be written to the
+ * video object key. Stash the video before the nested create and restore
+ * after so afterChange uploads the real video bytes.
+ */
+const preserveParentUpload = (req: PayloadRequest, file: UploadRequestFile) => {
+  const previousFile = req.file
+  const previousUploadSizes = req.payloadUploadSizes
+  const previousCloudStorage = (req.context?._payloadCloudStorage ?? undefined) as
+    | CloudStorageContext
+    | undefined
+
+  req.context = req.context || {}
+  // Ensure cloud-storage's preserve hook (runs after ours) and getIncomingFiles
+  // keep the parent video even if nested create mutates req.file.
+  if (!req.context._payloadCloudStorage) {
+    req.context._payloadCloudStorage = {
+      file,
+      uploadSizes: req.payloadUploadSizes,
+    }
+  }
+
+  return () => {
+    req.file = previousFile
+    req.payloadUploadSizes = previousUploadSizes
+    if (previousCloudStorage) {
+      req.context._payloadCloudStorage = previousCloudStorage
+    } else {
+      req.context._payloadCloudStorage = {
+        file,
+        uploadSizes: previousUploadSizes,
+      }
+    }
+    // Nested create merges `{ skipAutoPoster: true }` into the shared context.
+    delete req.context.skipAutoPoster
+  }
 }
 
 /**
@@ -46,6 +91,8 @@ export const generateVideoPoster: CollectionBeforeChangeHook<Media> = async ({
   const resolvedPoster = data?.poster !== undefined ? data.poster : originalDoc?.poster
   if (relationId(resolvedPoster) != null) return data
 
+  const restoreParentUpload = preserveParentUpload(req, file)
+
   try {
     const frame = await extractVideoFrame({
       data: file.data,
@@ -69,7 +116,7 @@ export const generateVideoPoster: CollectionBeforeChangeHook<Media> = async ({
         project: data?.project ?? originalDoc?.project,
         purpose: 'motion',
         title: `${titleBase} poster`,
-        usageStatus: data?.usageStatus ?? originalDoc?.usageStatus ?? 'internal',
+        usageStatus: data?.usageStatus ?? originalDoc?.usageStatus ?? 'public-approved',
       },
       file: {
         data: frame.buffer,
@@ -89,6 +136,8 @@ export const generateVideoPoster: CollectionBeforeChangeHook<Media> = async ({
       msg: 'Failed to auto-generate video poster',
       filename: file.name,
     })
+  } finally {
+    restoreParentUpload()
   }
 
   return data
