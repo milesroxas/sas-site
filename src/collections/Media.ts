@@ -57,7 +57,11 @@ export const Media: CollectionConfig = {
     afterRead: [resolveVideoAdminThumbnail],
   },
   fields: [
-    { name: 'title', type: 'text' },
+    {
+      name: 'title',
+      type: 'text',
+      admin: { description: 'Human-readable label in the admin. Defaults to the filename if empty.' },
+    },
     {
       name: 'alt',
       type: 'text',
@@ -73,13 +77,18 @@ export const Media: CollectionConfig = {
     {
       name: 'caption',
       type: 'richText',
+      admin: { description: 'Optional on-image or below-image caption when the asset is displayed.' },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [...rootFeatures, FixedToolbarFeature(), InlineToolbarFeature()]
         },
       }),
     },
-    { name: 'description', type: 'textarea' },
+    {
+      name: 'description',
+      type: 'textarea',
+      admin: { description: 'Internal context for editors. Not used as public alt text.' },
+    },
     {
       name: 'assetLibrary',
       type: 'relationship',
@@ -90,11 +99,22 @@ export const Media: CollectionConfig = {
           'Case-study assets belong to a durable Asset Library; folders organize the files within that library.',
       },
     },
-    { name: 'organization', type: 'relationship', relationTo: 'organizations' },
-    { name: 'project', type: 'relationship', relationTo: 'projects' },
+    {
+      name: 'organization',
+      type: 'relationship',
+      relationTo: 'organizations',
+      admin: { description: 'Client this asset relates to, when applicable.' },
+    },
+    {
+      name: 'project',
+      type: 'relationship',
+      relationTo: 'projects',
+      admin: { description: 'Engagement this asset relates to, when applicable.' },
+    },
     {
       name: 'purpose',
       type: 'select',
+      admin: { description: 'What this asset documents (process, result, interface, etc.).' },
       options: [
         'overview',
         'research',
@@ -116,12 +136,23 @@ export const Media: CollectionConfig = {
       name: 'usageStatus',
       type: 'select',
       required: true,
-      defaultValue: 'internal',
+      defaultValue: 'public-approved',
       options: ['internal', 'client-review', 'public-approved'],
-      admin: { description: 'Controls CMS API visibility. Blob URLs themselves remain public.' },
+      admin: {
+        description:
+          'Anonymous site visitors only see public-approved assets. Set this before publishing a page that uses the file.',
+      },
     },
-    { name: 'credit', type: 'text' },
-    { name: 'sourceUrl', type: 'text' },
+    {
+      name: 'credit',
+      type: 'text',
+      admin: { description: 'Photographer, illustrator, or source credit when required.' },
+    },
+    {
+      name: 'sourceUrl',
+      type: 'text',
+      admin: { description: 'Original source URL if this file came from elsewhere.' },
+    },
     {
       name: 'allChannels',
       type: 'checkbox',
@@ -136,10 +167,15 @@ export const Media: CollectionConfig = {
       hasMany: true,
       options: [...APPROVED_CHANNELS],
       admin: {
+        description: 'Channels cleared to use this asset (website, pitch deck, social, etc.).',
         condition: (data) => !data?.allChannels,
       },
     },
-    { name: 'assetDate', type: 'date' },
+    {
+      name: 'assetDate',
+      type: 'date',
+      admin: { description: 'When the asset was created or captured, if known.' },
+    },
     {
       name: 'poster',
       type: 'upload',

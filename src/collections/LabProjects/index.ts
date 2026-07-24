@@ -44,7 +44,12 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
         {
           label: 'Overview',
           fields: [
-            { name: 'title', type: 'text', required: true },
+            {
+              name: 'title',
+              type: 'text',
+              required: true,
+              admin: { description: 'Canonical lab project title. Channel-agnostic.' },
+            },
             {
               name: 'kind',
               type: 'select',
@@ -52,6 +57,7 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
               required: true,
               defaultValue: 'experiment',
               options: ['experiment', 'prototype', 'showcase', 'tool', 'research'],
+              admin: { description: 'What kind of internal work this is.' },
             },
             {
               name: 'status',
@@ -60,10 +66,25 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
               required: true,
               defaultValue: 'active',
               options: ['planned', 'active', 'completed', 'archived'],
+              admin: {
+                description: 'Project lifecycle. Separate from draft/publish state.',
+              },
             },
-            { name: 'startDate', type: 'date' },
-            { name: 'endDate', type: 'date' },
-            { name: 'thesis', type: 'textarea' },
+            {
+              name: 'startDate',
+              type: 'date',
+              admin: { description: 'When the lab work began.' },
+            },
+            {
+              name: 'endDate',
+              type: 'date',
+              admin: { description: 'When the lab work ended, if completed.' },
+            },
+            {
+              name: 'thesis',
+              type: 'textarea',
+              admin: { description: 'Core point of view or hypothesis in one or two sentences.' },
+            },
             {
               name: 'summaries',
               type: 'group',
@@ -72,9 +93,21 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
                   'Reused everywhere: heroes, cards, newsletters, future channels. Write them to stand alone.',
               },
               fields: [
-                { name: 'oneLine', type: 'text' },
-                { name: 'short', type: 'textarea' },
-                { name: 'medium', type: 'textarea' },
+                {
+                  name: 'oneLine',
+                  type: 'text',
+                  admin: { description: 'Single-sentence summary for tight spaces.' },
+                },
+                {
+                  name: 'short',
+                  type: 'textarea',
+                  admin: { description: 'Brief summary for cards and listings.' },
+                },
+                {
+                  name: 'medium',
+                  type: 'textarea',
+                  admin: { description: 'Longer summary for heroes and overviews.' },
+                },
               ],
             },
             {
@@ -82,10 +115,14 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
               type: 'relationship',
               relationTo: 'capabilities',
               hasMany: true,
+              admin: {
+                description: 'Capabilities demonstrated. Used for related-work matching.',
+              },
             },
             {
               name: 'technologies',
               type: 'array',
+              admin: { description: 'Tools, frameworks, or stacks used.' },
               fields: [{ name: 'name', type: 'text', required: true }],
             },
           ],
@@ -93,10 +130,26 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
         {
           label: 'Story',
           fields: [
-            { name: 'context', type: 'richText' },
-            { name: 'approach', type: 'richText' },
-            { name: 'outcome', type: 'richText' },
-            { name: 'learnings', type: 'richText' },
+            {
+              name: 'context',
+              type: 'richText',
+              admin: { description: 'Why this lab work was started.' },
+            },
+            {
+              name: 'approach',
+              type: 'richText',
+              admin: { description: 'How the work was carried out.' },
+            },
+            {
+              name: 'outcome',
+              type: 'richText',
+              admin: { description: 'What resulted from the experiment or build.' },
+            },
+            {
+              name: 'learnings',
+              type: 'richText',
+              admin: { description: 'What the team took away from the work.' },
+            },
             {
               name: 'internalNotes',
               type: 'textarea',
@@ -104,6 +157,7 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
                 read: authenticatedField,
                 update: authenticatedField,
               },
+              admin: { description: 'Internal only. Never exposed to anonymous API consumers.' },
             },
           ],
         },
@@ -115,6 +169,9 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
               type: 'upload',
               relationTo: 'media',
               filterOptions: { usageStatus: { equals: 'public-approved' } },
+              admin: {
+                description: 'Primary image. Must be public-approved media.',
+              },
             },
             {
               name: 'selectedAssets',
@@ -130,6 +187,7 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
             {
               name: 'projectLinks',
               type: 'array',
+              admin: { description: 'Related URLs. Set visibility per link.' },
               fields: [
                 { name: 'label', type: 'text', required: true },
                 { name: 'url', type: 'text', required: true },
@@ -138,6 +196,7 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
                   type: 'select',
                   defaultValue: 'public',
                   options: ['public', 'internal'],
+                  admin: { description: 'Internal links never appear in the public API.' },
                 },
               ],
             },
@@ -149,13 +208,21 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
               admin: {
                 allowCreate: false,
                 defaultColumns: ['title', 'slug', '_status', 'updatedAt'],
+                description: 'Website Lab Pages that present this lab project.',
               },
             },
           ],
         },
       ],
     },
-    { name: 'publishedAt', type: 'date', admin: { position: 'sidebar' } },
+    {
+      name: 'publishedAt',
+      type: 'date',
+      admin: {
+        position: 'sidebar',
+        description: 'Set automatically on publish. Override only if needed.',
+      },
+    },
     slugField({ name: 'key', checkboxName: 'generateKey', useAsSlug: 'title' }),
   ],
   hooks: {

@@ -43,16 +43,47 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
         {
           label: 'Overview',
           fields: [
-            { name: 'title', type: 'text', required: true },
-            { name: 'project', type: 'relationship', relationTo: 'projects', required: true },
-            { name: 'thesis', type: 'textarea' },
+            {
+              name: 'title',
+              type: 'text',
+              required: true,
+              admin: { description: 'Canonical case study title. Channel-agnostic.' },
+            },
+            {
+              name: 'project',
+              type: 'relationship',
+              relationTo: 'projects',
+              required: true,
+              admin: { description: 'The factual project record this narrative belongs to.' },
+            },
+            {
+              name: 'thesis',
+              type: 'textarea',
+              admin: { description: 'Core point of view in one or two sentences.' },
+            },
             {
               name: 'summaries',
               type: 'group',
+              admin: {
+                description:
+                  'Reused everywhere: heroes, cards, search, future channels. Write them to stand alone. At least one is required to publish.',
+              },
               fields: [
-                { name: 'oneLine', type: 'text' },
-                { name: 'short', type: 'textarea' },
-                { name: 'medium', type: 'textarea' },
+                {
+                  name: 'oneLine',
+                  type: 'text',
+                  admin: { description: 'Single-sentence summary for tight spaces.' },
+                },
+                {
+                  name: 'short',
+                  type: 'textarea',
+                  admin: { description: 'Brief summary for cards and listings.' },
+                },
+                {
+                  name: 'medium',
+                  type: 'textarea',
+                  admin: { description: 'Longer summary for heroes and overviews.' },
+                },
               ],
             },
             {
@@ -65,78 +96,203 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
                 'development-community',
                 'general',
               ],
+              admin: { description: 'Who this case study is primarily written for.' },
             },
             {
               name: 'featuredCapabilities',
               type: 'relationship',
               relationTo: 'capabilities',
               hasMany: true,
+              admin: {
+                description: 'Capabilities to highlight. Used for related-work matching.',
+              },
             },
           ],
         },
         {
           label: 'Story',
           fields: [
-            { name: 'context', type: 'richText' },
-            { name: 'challenge', type: 'richText' },
+            {
+              name: 'context',
+              type: 'richText',
+              admin: { description: 'Background: client situation before the engagement.' },
+            },
+            {
+              name: 'challenge',
+              type: 'richText',
+              admin: {
+                description: 'The problem being solved. Required to publish.',
+              },
+            },
             {
               name: 'objectives',
               type: 'array',
+              admin: { description: 'What success looked like at the start.' },
               fields: [
                 { name: 'title', type: 'text', required: true },
                 { name: 'description', type: 'textarea' },
               ],
             },
-            { name: 'strategy', type: 'richText' },
-            { name: 'approach', type: 'richText' },
+            {
+              name: 'strategy',
+              type: 'richText',
+              admin: { description: 'High-level strategic direction taken.' },
+            },
+            {
+              name: 'approach',
+              type: 'richText',
+              admin: { description: 'How the work was carried out.' },
+            },
             {
               name: 'keyDecisions',
               type: 'array',
+              admin: {
+                description:
+                  'Major decisions worth reusing. Keys must be unique; do not rename after publish.',
+              },
               fields: [
-                { name: 'key', type: 'text', required: true },
+                {
+                  name: 'key',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Stable id (e.g. organize-around-user-intent). Do not rename later.',
+                  },
+                },
                 { name: 'title', type: 'text', required: true },
-                { name: 'problem', type: 'textarea' },
-                { name: 'decision', type: 'textarea' },
-                { name: 'rationale', type: 'textarea' },
-                { name: 'impact', type: 'textarea' },
-                { name: 'featured', type: 'checkbox' },
+                {
+                  name: 'problem',
+                  type: 'textarea',
+                  admin: { description: 'What made this decision necessary.' },
+                },
+                {
+                  name: 'decision',
+                  type: 'textarea',
+                  admin: { description: 'What was decided.' },
+                },
+                {
+                  name: 'rationale',
+                  type: 'textarea',
+                  admin: { description: 'Why this path was chosen.' },
+                },
+                {
+                  name: 'impact',
+                  type: 'textarea',
+                  admin: { description: 'What changed because of the decision.' },
+                },
+                {
+                  name: 'featured',
+                  type: 'checkbox',
+                  admin: { description: 'Mark for prominence in presentations.' },
+                },
               ],
             },
-            { name: 'learnings', type: 'richText' },
+            {
+              name: 'learnings',
+              type: 'richText',
+              admin: { description: 'What the team took away from the work.' },
+            },
           ],
         },
         {
           label: 'Evidence',
           fields: [
-            { name: 'outcomeSummary', type: 'richText' },
+            {
+              name: 'outcomeSummary',
+              type: 'richText',
+              admin: {
+                description: 'Overall result of the engagement. Required to publish.',
+              },
+            },
             {
               name: 'qualitativeOutcomes',
               type: 'array',
+              admin: { description: 'Non-numeric outcomes worth citing.' },
               fields: [
                 { name: 'title', type: 'text', required: true },
                 { name: 'description', type: 'textarea' },
-                { name: 'featured', type: 'checkbox' },
+                {
+                  name: 'featured',
+                  type: 'checkbox',
+                  admin: { description: 'Mark for prominence in presentations.' },
+                },
               ],
             },
             {
               name: 'metrics',
               type: 'array',
+              admin: {
+                description:
+                  'Structured results — never pre-formatted sentences. Public only when Approved for public is checked.',
+              },
               fields: [
-                { name: 'key', type: 'text', required: true },
-                { name: 'label', type: 'text' },
-                { name: 'value', type: 'text' },
-                { name: 'unit', type: 'text' },
+                {
+                  name: 'key',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    description: 'Stable id for this metric. Must be unique; do not rename later.',
+                  },
+                },
+                {
+                  name: 'label',
+                  type: 'text',
+                  admin: { description: 'Display label (required if approved for public).' },
+                },
+                {
+                  name: 'value',
+                  type: 'text',
+                  admin: { description: 'Measured value (required if approved for public).' },
+                },
+                {
+                  name: 'unit',
+                  type: 'text',
+                  admin: { description: 'Unit if applicable (%, users, weeks).' },
+                },
                 {
                   name: 'direction',
                   type: 'select',
                   options: ['increase', 'decrease', 'neutral', 'not-applicable'],
+                  admin: { description: 'Whether the change went up, down, or stayed flat.' },
                 },
-                { name: 'qualifier', type: 'text' },
-                { name: 'comparisonBaseline', type: 'text' },
-                { name: 'timeframe', type: 'text' },
-                { name: 'source', type: 'text', access: { read: authenticatedField } },
-                { name: 'approvedForPublic', type: 'checkbox', defaultValue: false },
-                { name: 'featured', type: 'checkbox' },
+                {
+                  name: 'qualifier',
+                  type: 'text',
+                  admin: {
+                    description: 'Caveat (e.g. estimated). Needed with or instead of source when public.',
+                  },
+                },
+                {
+                  name: 'comparisonBaseline',
+                  type: 'text',
+                  admin: { description: 'What the value is compared against.' },
+                },
+                {
+                  name: 'timeframe',
+                  type: 'text',
+                  admin: { description: 'Period the metric covers.' },
+                },
+                {
+                  name: 'source',
+                  type: 'text',
+                  access: { read: authenticatedField },
+                  admin: {
+                    description: 'Internal provenance. Never public.',
+                  },
+                },
+                {
+                  name: 'approvedForPublic',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Must be checked to appear publicly. Needs label, value, and source or qualifier.',
+                  },
+                },
+                {
+                  name: 'featured',
+                  type: 'checkbox',
+                  admin: { description: 'Mark for prominence in presentations.' },
+                },
               ],
             },
             {
@@ -144,18 +300,36 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
               type: 'relationship',
               relationTo: 'testimonials',
               hasMany: true,
+              admin: {
+                description: 'Related quotes. Only approved-public ones appear publicly.',
+              },
             },
             {
               name: 'approvedClaims',
               type: 'array',
               access: { read: authenticatedField },
+              admin: {
+                description: 'Internal claim log. Never returned by the public API.',
+              },
               fields: [
                 { name: 'claim', type: 'textarea', required: true },
-                { name: 'source', type: 'text' },
-                { name: 'approved', type: 'checkbox' },
+                {
+                  name: 'source',
+                  type: 'text',
+                  admin: { description: 'Where the claim came from.' },
+                },
+                {
+                  name: 'approved',
+                  type: 'checkbox',
+                  admin: { description: 'Cleared for internal reuse in pitches and proposals.' },
+                },
               ],
             },
-            { name: 'reviewDate', type: 'date' },
+            {
+              name: 'reviewDate',
+              type: 'date',
+              admin: { description: 'Last time evidence and claims were reviewed.' },
+            },
           ],
         },
         {
@@ -179,13 +353,21 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
               admin: {
                 allowCreate: false,
                 defaultColumns: ['title', 'slug', '_status', 'updatedAt'],
+                description: 'Website Work Pages that present this case study content.',
               },
             },
           ],
         },
       ],
     },
-    { name: 'publishedAt', type: 'date', admin: { position: 'sidebar' } },
+    {
+      name: 'publishedAt',
+      type: 'date',
+      admin: {
+        position: 'sidebar',
+        description: 'Set automatically on publish. Override only if needed.',
+      },
+    },
     slugField({ name: 'key', checkboxName: 'generateKey', useAsSlug: 'title' }),
   ],
   hooks: {
