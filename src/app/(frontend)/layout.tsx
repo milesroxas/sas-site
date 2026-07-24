@@ -41,15 +41,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
 
           <Header />
+          <Footer />
           {/* data-page-frame: the takeover menu (Header/Menu) crops this wrapper
-              into a 16:9 window, so page + footer must share one element. */}
+              into a 16:9 preview window. Header/footer stay outside so they
+              remain viewport-fixed chrome. */}
           <div
             data-page-frame
             className="flex min-h-svh flex-col bg-background pt-(--header-height) pb-(--footer-height)"
           >
             {/* Page transitions live in (frontend)/template.tsx, which re-mounts per navigation. */}
             {children}
-            <Footer />
           </div>
           <GlobalCanvasRoot />
         </Providers>

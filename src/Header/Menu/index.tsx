@@ -26,8 +26,10 @@ gsap.registerPlugin(useGSAP)
  * Mobile: preview under the header; nav fills the lower half.
  */
 const PAGE_FRAME_SELECTOR = '[data-page-frame]'
+const SITE_FOOTER_SELECTOR = '[data-site-footer]'
 
 const getPageFrame = () => document.querySelector<HTMLElement>(PAGE_FRAME_SELECTOR)
+const getSiteFooter = () => document.querySelector<HTMLElement>(SITE_FOOTER_SELECTOR)
 
 /** Layout viewport width — excludes classic scrollbar / `scrollbar-gutter: stable`. */
 const getViewportWidth = () => document.documentElement.clientWidth
@@ -157,9 +159,8 @@ const getCardMotion = (metrics: PageCardMetrics, borderRadius: number) => {
 
 const clearFrameProps = (frame: HTMLElement) => {
   gsap.set(frame, { clearProps: 'all' })
-  gsap.set(frame.children, {
-    clearProps: 'opacity,visibility',
-  })
+  const footer = getSiteFooter()
+  if (footer) gsap.set(footer, { clearProps: 'opacity,visibility' })
 }
 
 type TakeoverMenuProps = {
@@ -189,7 +190,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       if (!overlay || !frame) return
 
       const items = gsap.utils.toArray<HTMLElement>('[data-menu-item]', overlay)
-      const footer = frame.querySelector<HTMLElement>('[data-site-footer]')
+      const footer = getSiteFooter()
       const mm = gsap.matchMedia()
 
       mm.add(

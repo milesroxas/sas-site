@@ -8,10 +8,10 @@ export async function Footer() {
   return (
     <footer
       data-site-footer
-      // Fixed to the viewport bottom; while the takeover menu is open the
-      // page frame becomes its containing block (then fades out of the
-      // 16:9 preview window).
-      className="fixed inset-x-0 bottom-0 z-30 grid h-(--footer-bar-height) grid-cols-[1fr_auto_1fr] items-center bg-background px-5 transition-[height] duration-300 motion-reduce:transition-none md:px-20"
+      // Viewport-fixed like the header (mounted outside [data-page-frame] so
+      // menu transforms never steal its containing block). Hidden while the
+      // takeover menu is open.
+      className="fixed inset-x-0 bottom-0 z-30 grid h-(--footer-bar-height) grid-cols-[1fr_auto_1fr] items-center bg-background px-5 shadow-[0_-8px_28px_-6px_color-mix(in_oklab,var(--foreground)_7%,transparent)] transition-[height] duration-300 motion-reduce:transition-none md:px-20"
       // Keep the footer static during page transitions.
       style={{ viewTransitionName: 'site-footer' }}
     >
