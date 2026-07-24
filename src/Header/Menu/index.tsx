@@ -29,6 +29,9 @@ const PAGE_FRAME_SELECTOR = '[data-page-frame]'
 
 const getPageFrame = () => document.querySelector<HTMLElement>(PAGE_FRAME_SELECTOR)
 
+/** Layout viewport width — excludes classic scrollbar / `scrollbar-gutter: stable`. */
+const getViewportWidth = () => document.documentElement.clientWidth
+
 const clamp = (min: number, value: number, max: number) => Math.min(max, Math.max(min, value))
 
 // --header-height is authored in rem, so convert against the root font size.
@@ -81,7 +84,7 @@ const clipPathInset = (
 
 /** Final mobile page-preview card: padded 16:9 window under the header. */
 const getMobileCardMetrics = (): PageCardMetrics => {
-  const vw = window.innerWidth
+  const vw = getViewportWidth()
   const vh = window.innerHeight
   const left = 20
   const width = vw - left * 2
@@ -98,7 +101,7 @@ const getMobileCardMetrics = (): PageCardMetrics => {
  * so left/right gaps in that band stay equal as the viewport changes.
  */
 const getDesktopMenuLayout = (): DesktopMenuLayout => {
-  const vw = window.innerWidth
+  const vw = getViewportWidth()
   const vh = window.innerHeight
 
   const padX = clamp(24, vw * 0.04, 80)
@@ -314,7 +317,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                   position: 'fixed',
                   top: 0,
                   left: 0,
-                  width: window.innerWidth,
+                  width: getViewportWidth(),
                   height: window.innerHeight,
                   minHeight: 0,
                   overflow: 'hidden',
@@ -351,20 +354,21 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       // full-viewport frame. Scale + clip-path do the rest — no width/height
       // tween, so in-page layout stays intact.
       scrollYRef.current = window.scrollY
-      const viewportWidth = window.innerWidth
-      const viewportHeight = window.innerHeight
       gsap.set(frame, {
         position: 'fixed',
         top: 0,
         left: 0,
-        width: viewportWidth,
-        height: viewportHeight,
+        width: getViewportWidth(),
+        height: window.innerHeight,
         minHeight: 0,
         overflow: 'hidden',
         zIndex: 40,
       })
       frame.scrollTop = scrollYRef.current
       frame.setAttribute('inert', '')
+      // Lock on html (same element as scrollbar-gutter). With Lenis
+      // autoToggle, this overflow change stops Lenis — do not also call
+      // lenis.stop(), which would set overflow:clip and drop the gutter.
       document.documentElement.style.overflow = 'hidden'
 
       tl.eventCallback('onComplete', () => {
@@ -417,6 +421,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     >
       <nav
         aria-label="Site menu"
+        data-lenis-prevent
         // Mobile: lower half below the preview. Desktop: column from the shared
         // layout resolver (--menu-nav-*); link block centered in the column,
         // items left-aligned within the block.

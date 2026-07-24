@@ -651,6 +651,10 @@
     @apply bg-background text-foreground min-h-screen flex flex-col;
   }
   html {
+    /* Reserve classic-scrollbar space so overflow locks (takeover menu) and
+       content height changes do not shift layout horizontally. No-op for
+       overlay scrollbars. Must stay on html with the overflow lock. */
+    scrollbar-gutter: stable;
     @apply font-sans;
   }
   /* Tailwind v4 preflight sets buttons to cursor: default; restore pointer
