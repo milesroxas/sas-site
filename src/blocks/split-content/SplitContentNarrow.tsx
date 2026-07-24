@@ -32,8 +32,10 @@ export const SplitContentNarrow = ({
           {block.eyebrow && (
             <p className="mb-3 text-sm uppercase tracking-[0.2em]">{block.eyebrow}</p>
           )}
-          {block.heading && <h2 className="mb-6 text-3xl md:text-5xl">{block.heading}</h2>}
-          <RichText className="text-xl" data={content} enableGutter={false} />
+          {block.heading && (
+            <h2 className="mb-6 text-3xl font-normal md:text-5xl">{block.heading}</h2>
+          )}
+          <RichText className="!text-base md:!text-base" data={content} enableGutter={false} />
         </div>
         <Media resource={media} imgClassName="h-auto w-full" />
       </div>

@@ -12,7 +12,9 @@ export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps>
       <div className="grid gap-12 lg:grid-cols-12 lg:gap-24">
         <div className="flex flex-col gap-2 lg:col-span-6">
           {eyebrow ? <p className="text-sm tracking-widest uppercase">{eyebrow}</p> : null}
-          <h2 className="text-4xl leading-[1.2] md:text-5xl md:leading-[1.2]">{heading}</h2>
+          <h2 className="text-4xl font-normal leading-[1.2] md:text-5xl md:leading-[1.2]">
+            {heading}
+          </h2>
         </div>
         {body ? (
           <RichText

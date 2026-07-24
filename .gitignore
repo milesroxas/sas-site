@@ -6,6 +6,7 @@ build/
 dist/
 .next/
 next-env.d.ts
+*.tsbuildinfo
 
 # Environment — secrets stay local; commit only templates
 .env

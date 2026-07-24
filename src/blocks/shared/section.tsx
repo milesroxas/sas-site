@@ -1,12 +1,29 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/utilities/ui'
 
+/**
+ * Block surface themes. Values are semantic tokens that follow the visitor's
+ * site theme (html[data-theme]) — they never force an absolute light/dark mode.
+ *
+ * - light: default page surface
+ * - dark: contrasted band within the active theme (tertiary; always low-luminance)
+ * - neutral: secondary/muted surface
+ * - brand: brand accent surface
+ *
+ * `dark` surfaces are low-luminance in both site themes, so rich text needs
+ * `prose-invert` even when the site itself is in light mode (site-level
+ * `dark:prose-invert` only applies under html[data-theme=dark]).
+ */
 export const themeClasses = {
-  light: 'bg-white text-black',
-  dark: 'bg-black text-white',
-  neutral: 'bg-neutral-100 text-neutral-950',
-  brand: 'bg-amber-300 text-neutral-950',
-}
+  light: 'bg-background text-foreground',
+  dark: [
+    'bg-tertiary text-tertiary-foreground',
+    '[--background:var(--tertiary)] [--foreground:var(--tertiary-foreground)]',
+    '[&_.payload-richtext]:prose-invert',
+  ].join(' '),
+  neutral: 'bg-secondary text-secondary-foreground',
+  brand: 'bg-brand text-brand-foreground',
+} as const
 
 export type SectionTheme = keyof typeof themeClasses
 

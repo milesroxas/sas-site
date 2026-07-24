@@ -6,6 +6,10 @@ const themeField: SelectField = {
   type: 'select',
   defaultValue: 'light',
   options: ['light', 'dark', 'neutral', 'brand'],
+  admin: {
+    description:
+      'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
+  },
 }
 
 /**

@@ -37,7 +37,7 @@ export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ tabs }) => {
           >
             <div className="flex flex-col justify-between gap-12">
               <div className="flex flex-col gap-6">
-                <h3 className="text-xl md:text-2xl md:leading-tight">{tab.heading}</h3>
+                <h3 className="text-xl font-normal md:text-2xl md:leading-tight">{tab.heading}</h3>
                 {tab.description ? (
                   <RichText
                     className="text-sm md:text-base"
@@ -49,7 +49,9 @@ export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ tabs }) => {
               </div>
               {tab.items?.length ? (
                 <div className="flex flex-col gap-3">
-                  {tab.subheading ? <h4 className="text-lg font-bold">{tab.subheading}</h4> : null}
+                  {tab.subheading ? (
+                    <h4 className="text-lg font-normal">{tab.subheading}</h4>
+                  ) : null}
                   <ul className="text-base/relaxed">
                     {tab.items.map((item, itemIndex) => (
                       <li key={item.id ?? itemIndex}>{item.text}</li>

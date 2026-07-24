@@ -65,7 +65,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockProps> = ({
                 {eyebrow}
               </p>
             ) : null}
-            <h2 className="text-2xl font-medium">{heading}</h2>
+            <h2 className="text-2xl font-normal">{heading}</h2>
             {body ? <p className="mt-3 text-sm text-muted-foreground">{body}</p> : null}
           </div>
 

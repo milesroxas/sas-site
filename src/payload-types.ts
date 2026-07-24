@@ -1236,6 +1236,9 @@ export interface WorkPage {
      */
     browseAllMedia?: boolean | null;
     layout?: ('editorial-split' | 'centered' | 'immersive' | 'media-led') | null;
+    /**
+     * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+     */
     theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
     mediaTreatment?: ('contained' | 'full-bleed' | 'floating' | 'background') | null;
   };
@@ -1335,6 +1338,9 @@ export interface CaseStudyStorySectionBlock {
    */
   browseAllMedia?: boolean | null;
   layout?: ('text-only' | 'text-left' | 'text-right' | 'centered' | 'sticky-media') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   width?: ('narrow' | 'standard' | 'wide') | null;
   id?: string | null;
@@ -1382,6 +1388,9 @@ export interface SplitContentNarrowBlock {
    * Arrange the image on the left or the right of the text.
    */
   imagePosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
@@ -1414,6 +1423,9 @@ export interface CaseStudyMediaShowcaseBlock {
    */
   browseAllMedia?: boolean | null;
   layout?: ('single' | 'grid' | 'horizontal' | 'stacked' | 'full-bleed' | 'comparison') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   showCaptions?: boolean | null;
   showCredits?: boolean | null;
@@ -1444,6 +1456,9 @@ export interface CaseStudyKeyDecisionsBlock {
   } | null;
   source?: ('featured' | 'all') | null;
   layout?: ('list' | 'cards' | 'editorial' | 'sticky') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
@@ -1472,6 +1487,9 @@ export interface CaseStudyMetricsBlock {
   } | null;
   source?: ('featured-public' | 'all-public') | null;
   layout?: ('grid' | 'row' | 'statement' | 'editorial') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
@@ -1484,6 +1502,9 @@ export interface CaseStudyMetricsBlock {
 export interface CaseStudyTestimonialBlock {
   testimonial: number | Testimonial;
   layout?: ('editorial' | 'centered' | 'split' | 'compact') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   showPortrait?: boolean | null;
   id?: string | null;
@@ -1513,6 +1534,9 @@ export interface CaseStudyTransitionBlock {
     [k: string]: unknown;
   } | null;
   layout?: ('left' | 'centered' | 'split' | 'statement') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
@@ -2200,6 +2224,9 @@ export interface LabPage {
     summaryOverride?: string | null;
     media?: (number | null) | Media;
     layout?: ('editorial-split' | 'centered' | 'immersive' | 'media-led') | null;
+    /**
+     * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+     */
     theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
     mediaTreatment?: ('contained' | 'full-bleed' | 'floating' | 'background') | null;
   };
@@ -2462,6 +2489,9 @@ export interface LabStorySectionBlock {
   } | null;
   media?: (number | null) | Media;
   layout?: ('text-only' | 'text-left' | 'text-right' | 'centered' | 'sticky-media') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   width?: ('narrow' | 'standard' | 'wide') | null;
   id?: string | null;
@@ -2491,6 +2521,9 @@ export interface LabMediaShowcaseBlock {
   } | null;
   media: (number | Media)[];
   layout?: ('single' | 'grid' | 'horizontal' | 'stacked' | 'full-bleed' | 'comparison') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   showCaptions?: boolean | null;
   showCredits?: boolean | null;
@@ -2510,6 +2543,9 @@ export interface LabFactsBlock {
    * Only links marked public are ever rendered.
    */
   showLinks?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
@@ -2538,6 +2574,9 @@ export interface LabTransitionBlock {
     [k: string]: unknown;
   } | null;
   layout?: ('left' | 'centered' | 'split' | 'statement') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
