@@ -7,8 +7,22 @@ import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '../access/authenticated'
 import { populateFolderFromAssetLibrary } from '../hooks/assetLibraryFolders'
+import { generateVideoPoster } from '../hooks/generateVideoPoster'
+import { resolveVideoAdminThumbnail } from '../hooks/resolveVideoAdminThumbnail'
 
 const APPROVED_CHANNELS = ['website', 'pitch-deck', 'proposal', 'email', 'social'] as const
+
+type MediaDocForThumbnail = {
+  mimeType?: string | null
+  poster?:
+    | number
+    | {
+        url?: string | null
+        sizes?: { thumbnail?: { url?: string | null } | null } | null
+      }
+    | null
+  sizes?: { thumbnail?: { url?: string | null } | null } | null
+}
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -23,6 +37,7 @@ export const Media: CollectionConfig = {
   hooks: {
     beforeChange: [
       populateFolderFromAssetLibrary,
+      generateVideoPoster,
       ({ data }) => {
         if (data?.allChannels) {
           data.approvedChannels = [...APPROVED_CHANNELS]
@@ -30,6 +45,7 @@ export const Media: CollectionConfig = {
         return data
       },
     ],
+    afterRead: [resolveVideoAdminThumbnail],
   },
   fields: [
     { name: 'title', type: 'text' },
@@ -119,10 +135,11 @@ export const Media: CollectionConfig = {
       name: 'poster',
       type: 'upload',
       relationTo: 'media',
+      maxDepth: 1,
       filterOptions: { mimeType: { contains: 'image' } },
       admin: {
         description:
-          'Still frame shown before a video loads and as its admin thumbnail. Required before a video can be public-approved.',
+          'Auto-generated from the first frame on video upload. Used before playback and as the admin thumbnail. Override anytime; required before a video can be public-approved.',
         condition: (data) => Boolean(data?.mimeType?.startsWith('video')),
       },
       validate: (value: unknown, { siblingData }: { siblingData: unknown }) => {
@@ -142,10 +159,17 @@ export const Media: CollectionConfig = {
     // Images optimize through Next; videos serve directly from the R2 custom
     // domain (see VideoMedia). No local staticDir — objects live in R2.
     mimeTypes: ['image/*', 'video/mp4', 'video/webm'],
-    adminThumbnail: ({ doc }) =>
-      typeof doc?.mimeType === 'string' && doc.mimeType.startsWith('video')
-        ? null
-        : (doc?.sizes as { thumbnail?: { url?: string } } | undefined)?.thumbnail?.url || null,
+    adminThumbnail: ({ doc }) => {
+      const media = doc as MediaDocForThumbnail
+      if (typeof media.mimeType === 'string' && media.mimeType.startsWith('video')) {
+        const poster = media.poster
+        if (poster && typeof poster === 'object') {
+          return poster.sizes?.thumbnail?.url || poster.url || null
+        }
+        return null
+      }
+      return media.sizes?.thumbnail?.url || null
+    },
     focalPoint: true,
     imageSizes: [
       {

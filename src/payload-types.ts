@@ -414,7 +414,7 @@ export interface Media {
   approvedChannels?: ('website' | 'pitch-deck' | 'proposal' | 'email' | 'social')[] | null;
   assetDate?: string | null;
   /**
-   * Still frame shown before a video loads and as its admin thumbnail. Required before a video can be public-approved.
+   * Auto-generated from the first frame on video upload. Used before playback and as the admin thumbnail. Override anytime; required before a video can be public-approved.
    */
   poster?: (number | null) | Media;
   folder?: (number | null) | FolderInterface;

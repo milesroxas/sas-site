@@ -11,6 +11,8 @@ allowBuilds:
   '@sentry/cli': true
   # Postinstall only prints a funding message.
   core-js: false
+  # Downloads the platform ffmpeg binary used to extract video poster frames.
+  ffmpeg-static: true
 
 # Single source of truth for the Sentry SDK version — referenced from
 # package.json and the override below via the catalog: protocol.

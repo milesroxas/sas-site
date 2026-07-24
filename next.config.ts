@@ -19,6 +19,9 @@ const posthogIngestHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.
 const posthogAssetsHost = posthogIngestHost.replace('.i.posthog.com', '-assets.i.posthog.com')
 
 const nextConfig: NextConfig = {
+  // Keep the ffmpeg binary out of the bundler — Next must load it from
+  // node_modules at runtime (video poster extraction in Media hooks).
+  serverExternalPackages: ['ffmpeg-static'],
   experimental: {
     viewTransition: true,
   },
