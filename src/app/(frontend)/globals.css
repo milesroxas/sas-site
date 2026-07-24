@@ -735,7 +735,7 @@
   --header-bar-height: var(--header-height);
   --footer-bar-height: var(--footer-height);
   /* Fixed admin bar (components/AdminBar); footer + page frame offset by it. */
-  --admin-bar-height: 3.5rem;
+  --admin-bar-height: 2rem;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
