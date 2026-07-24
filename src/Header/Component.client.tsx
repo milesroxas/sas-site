@@ -1,26 +1,22 @@
 'use client'
-import { IconMoon, IconSun } from '@tabler/icons-react'
+import { IconMenu2, IconX } from '@tabler/icons-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 
 import type { Header } from '@/payload-types'
-import { useTheme } from '@/providers/Theme'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import { TakeoverMenu } from './Menu'
+import { ThemeToggle } from './ThemeToggle'
 
 interface HeaderClientProps {
   data: Header
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
-  const { theme: siteTheme, setTheme: setSiteTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
-  /* Theme resolves client-side from the DOM, so gate the toggle icon on mount
-     to keep server and hydration renders identical. */
-  const [mounted, setMounted] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const pathname = usePathname()
 
@@ -29,10 +25,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   useEffect(() => {
     setMenuOpen(false)
   }, [pathname])
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   // Past a small scroll threshold both fixed bars shrink (globals.css keys
   // --header-bar-height/--footer-bar-height off this attribute) so more of
@@ -57,14 +49,13 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
         // Pull the header out of the page snapshot so it stays static during transitions.
         style={{ viewTransitionName: 'site-header' }}
       >
-        {/* Mobile: flex keeps brand/MENU/toggle from colliding — the brand is
-            wider than a 1fr column on phone widths. md+: original 3-col grid
-            with a truly centered MENU. */}
-        <div className="flex h-full items-center justify-between gap-3 px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:px-20">
+        {/* Mobile: centered brand + menu icon on the right.
+            md+: 3-col grid with MENU text centered and theme on the end. */}
+        <div className="relative flex h-full items-center justify-end px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:px-20">
           <Link
             href="/"
             transitionTypes={[...lateralNavTransitionTypes]}
-            className="justify-self-start whitespace-nowrap text-xs font-medium tracking-widest md:text-base md:tracking-[0.19em]"
+            className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-base font-medium tracking-[0.19em] md:static md:translate-x-0 md:justify-self-start"
           >
             SUITS &amp; SANDALS
           </Link>
@@ -74,27 +65,18 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
             type="button"
             aria-expanded={menuOpen}
             aria-controls="site-menu"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMenuOpen((v) => !v)}
-            // -mr compensates the trailing letter-space so the label reads centered.
-            className="mr-[-0.58em] text-sm font-black tracking-[0.58em] transition-opacity hover:opacity-70"
+            // -mr compensates the trailing letter-space so the desktop label reads centered.
+            className="transition-opacity hover:opacity-70 md:mr-[-0.58em] md:text-sm md:font-black md:tracking-[0.58em]"
           >
-            {menuOpen ? 'CLOSE' : 'MENU'}
+            <span className="md:hidden">
+              {menuOpen ? <IconX className="size-6" /> : <IconMenu2 className="size-6" />}
+            </span>
+            <span className="hidden md:inline">{menuOpen ? 'CLOSE' : 'MENU'}</span>
           </button>
 
-          <button
-            type="button"
-            aria-label={
-              mounted && siteTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
-            }
-            onClick={() => setSiteTheme(siteTheme === 'dark' ? 'light' : 'dark')}
-            className="justify-self-end transition-opacity hover:opacity-70"
-          >
-            {mounted && siteTheme === 'dark' ? (
-              <IconSun className="size-6" />
-            ) : (
-              <IconMoon className="size-6" />
-            )}
-          </button>
+          <ThemeToggle className="hidden justify-self-end md:inline-flex" />
         </div>
       </header>
 
