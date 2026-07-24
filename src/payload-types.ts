@@ -356,11 +356,17 @@ export interface Post {
  */
 export interface Media {
   id: number;
+  /**
+   * Human-readable label in the admin. Defaults to the filename if empty.
+   */
   title?: string | null;
   /**
    * Required before an asset can be public-approved.
    */
   alt?: string | null;
+  /**
+   * Optional on-image or below-image caption when the asset is displayed.
+   */
   caption?: {
     root: {
       type: string;
@@ -376,13 +382,25 @@ export interface Media {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Internal context for editors. Not used as public alt text.
+   */
   description?: string | null;
   /**
    * Case-study assets belong to a durable Asset Library; folders organize the files within that library.
    */
   assetLibrary?: (number | null) | AssetLibrary;
+  /**
+   * Client this asset relates to, when applicable.
+   */
   organization?: (number | null) | Organization;
+  /**
+   * Engagement this asset relates to, when applicable.
+   */
   project?: (number | null) | Project;
+  /**
+   * What this asset documents (process, result, interface, etc.).
+   */
   purpose?:
     | (
         | 'overview'
@@ -402,16 +420,28 @@ export interface Media {
       )
     | null;
   /**
-   * Controls CMS API visibility. Blob URLs themselves remain public.
+   * Anonymous site visitors only see public-approved assets. Set this before publishing a page that uses the file.
    */
   usageStatus: 'internal' | 'client-review' | 'public-approved';
+  /**
+   * Photographer, illustrator, or source credit when required.
+   */
   credit?: string | null;
+  /**
+   * Original source URL if this file came from elsewhere.
+   */
   sourceUrl?: string | null;
   /**
    * Approve for every channel. Overrides the manual list below.
    */
   allChannels?: boolean | null;
+  /**
+   * Channels cleared to use this asset (website, pitch deck, social, etc.).
+   */
   approvedChannels?: ('website' | 'pitch-deck' | 'proposal' | 'email' | 'social')[] | null;
+  /**
+   * When the asset was created or captured, if known.
+   */
   assetDate?: string | null;
   /**
    * Auto-generated from the first frame on video upload. Used before playback and as the admin thumbnail. Override anytime; required before a video can be public-approved.
@@ -532,16 +562,34 @@ export interface AssetLibrary {
 export interface Organization {
   id: number;
   _order?: string | null;
+  /**
+   * Primary client name used across the Content Hub.
+   */
   name: string;
+  /**
+   * Shorter name for cards and tight layouts.
+   */
   shortName?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
   slug: string;
+  /**
+   * Client's public website URL.
+   */
   website?: string | null;
+  /**
+   * Preferred logo for public use. Use a public-approved media item.
+   */
   logo?: (number | null) | Media;
+  /**
+   * Shared industry terms used for filtering and related work.
+   */
   industries?: (number | Industry)[] | null;
+  /**
+   * Public client description. Keep factual and channel-agnostic.
+   */
   description?: {
     root: {
       type: string;
@@ -561,6 +609,9 @@ export interface Organization {
    * Internal only. Never exposed to anonymous API consumers.
    */
   internalNotes?: string | null;
+  /**
+   * Set automatically on publish. Override only if needed.
+   */
   publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -590,21 +641,54 @@ export interface Industry {
 export interface Project {
   id: number;
   _order?: string | null;
+  /**
+   * Team-facing label. Not shown publicly.
+   */
   internalTitle: string;
+  /**
+   * Public project name when it differs from the internal title.
+   */
   publicTitle?: string | null;
+  /**
+   * Client this engagement belongs to.
+   */
   organization: number | Organization;
+  /**
+   * Engagement lifecycle. Separate from draft/publish state.
+   */
   status: 'planned' | 'active' | 'completed' | 'archived';
+  /**
+   * How the work was structured (e.g. retainer, sprint).
+   */
   engagementType?: string | null;
+  /**
+   * When the engagement began.
+   */
   startDate?: string | null;
+  /**
+   * When the engagement ended, if completed.
+   */
   endDate?: string | null;
+  /**
+   * Capabilities demonstrated. Used for related-work matching.
+   */
   capabilities?: (number | Capability)[] | null;
+  /**
+   * Industries this project applies to.
+   */
   industries?: (number | Industry)[] | null;
+  /**
+   * Platforms or products involved in the work.
+   */
   platforms?:
     | {
         name: string;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Factual public overview. Keep channel-agnostic — not website copy.
+   */
   publicSummary?: {
     root: {
       type: string;
@@ -620,6 +704,9 @@ export interface Project {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * What was in and out of scope for the engagement.
+   */
   scope?: {
     root: {
       type: string;
@@ -635,6 +722,9 @@ export interface Project {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Concrete outputs delivered.
+   */
   deliverables?:
     | {
         title: string;
@@ -642,6 +732,9 @@ export interface Project {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Known limits: timeline, tech, brand, or legal.
+   */
   constraints?: {
     root: {
       type: string;
@@ -657,14 +750,23 @@ export interface Project {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Related URLs. Set visibility per link.
+   */
   projectLinks?:
     | {
         label: string;
         url: string;
+        /**
+         * Internal links never appear in the public API.
+         */
         visibility?: ('public' | 'internal') | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Internal only. Never exposed to anonymous API consumers.
+   */
   internalNotes?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -722,18 +824,48 @@ export interface FolderInterface {
 export interface CaseStudy {
   id: number;
   _order?: string | null;
+  /**
+   * Canonical case study title. Channel-agnostic.
+   */
   title: string;
+  /**
+   * The factual project record this narrative belongs to.
+   */
   project: number | Project;
+  /**
+   * Core point of view in one or two sentences.
+   */
   thesis?: string | null;
+  /**
+   * Reused everywhere: heroes, cards, search, future channels. Write them to stand alone. At least one is required to publish.
+   */
   summaries?: {
+    /**
+     * Single-sentence summary for tight spaces.
+     */
     oneLine?: string | null;
+    /**
+     * Brief summary for cards and listings.
+     */
     short?: string | null;
+    /**
+     * Longer summary for heroes and overviews.
+     */
     medium?: string | null;
   };
+  /**
+   * Who this case study is primarily written for.
+   */
   primaryAudience?:
     | ('prospective-client' | 'existing-client' | 'design-community' | 'development-community' | 'general')
     | null;
+  /**
+   * Capabilities to highlight. Used for related-work matching.
+   */
   featuredCapabilities?: (number | Capability)[] | null;
+  /**
+   * Background: client situation before the engagement.
+   */
   context?: {
     root: {
       type: string;
@@ -749,6 +881,9 @@ export interface CaseStudy {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * The problem being solved. Required to publish.
+   */
   challenge?: {
     root: {
       type: string;
@@ -764,6 +899,9 @@ export interface CaseStudy {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * What success looked like at the start.
+   */
   objectives?:
     | {
         title: string;
@@ -771,6 +909,9 @@ export interface CaseStudy {
         id?: string | null;
       }[]
     | null;
+  /**
+   * High-level strategic direction taken.
+   */
   strategy?: {
     root: {
       type: string;
@@ -786,6 +927,9 @@ export interface CaseStudy {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * How the work was carried out.
+   */
   approach?: {
     root: {
       type: string;
@@ -801,18 +945,42 @@ export interface CaseStudy {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Major decisions worth reusing. Keys must be unique; do not rename after publish.
+   */
   keyDecisions?:
     | {
+        /**
+         * Stable id (e.g. organize-around-user-intent). Do not rename later.
+         */
         key: string;
         title: string;
+        /**
+         * What made this decision necessary.
+         */
         problem?: string | null;
+        /**
+         * What was decided.
+         */
         decision?: string | null;
+        /**
+         * Why this path was chosen.
+         */
         rationale?: string | null;
+        /**
+         * What changed because of the decision.
+         */
         impact?: string | null;
+        /**
+         * Mark for prominence in presentations.
+         */
         featured?: boolean | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * What the team took away from the work.
+   */
   learnings?: {
     root: {
       type: string;
@@ -828,6 +996,9 @@ export interface CaseStudy {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Overall result of the engagement. Required to publish.
+   */
   outcomeSummary?: {
     root: {
       type: string;
@@ -843,49 +1014,112 @@ export interface CaseStudy {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Non-numeric outcomes worth citing.
+   */
   qualitativeOutcomes?:
     | {
         title: string;
         description?: string | null;
+        /**
+         * Mark for prominence in presentations.
+         */
         featured?: boolean | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Structured results — never pre-formatted sentences. Public only when Approved for public is checked.
+   */
   metrics?:
     | {
+        /**
+         * Stable id for this metric. Must be unique; do not rename later.
+         */
         key: string;
+        /**
+         * Display label (required if approved for public).
+         */
         label?: string | null;
+        /**
+         * Measured value (required if approved for public).
+         */
         value?: string | null;
+        /**
+         * Unit if applicable (%, users, weeks).
+         */
         unit?: string | null;
+        /**
+         * Whether the change went up, down, or stayed flat.
+         */
         direction?: ('increase' | 'decrease' | 'neutral' | 'not-applicable') | null;
+        /**
+         * Caveat (e.g. estimated). Needed with or instead of source when public.
+         */
         qualifier?: string | null;
+        /**
+         * What the value is compared against.
+         */
         comparisonBaseline?: string | null;
+        /**
+         * Period the metric covers.
+         */
         timeframe?: string | null;
+        /**
+         * Internal provenance. Never public.
+         */
         source?: string | null;
+        /**
+         * Must be checked to appear publicly. Needs label, value, and source or qualifier.
+         */
         approvedForPublic?: boolean | null;
+        /**
+         * Mark for prominence in presentations.
+         */
         featured?: boolean | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Related quotes. Only approved-public ones appear publicly.
+   */
   testimonials?: (number | Testimonial)[] | null;
+  /**
+   * Internal claim log. Never returned by the public API.
+   */
   approvedClaims?:
     | {
         claim: string;
+        /**
+         * Where the claim came from.
+         */
         source?: string | null;
+        /**
+         * Cleared for internal reuse in pitches and proposals.
+         */
         approved?: boolean | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Last time evidence and claims were reviewed.
+   */
   reviewDate?: string | null;
   /**
    * Reusable project libraries containing the approved source assets for every presentation surface.
    */
   assetLibraries?: (number | AssetLibrary)[] | null;
+  /**
+   * Website Work Pages that present this case study content.
+   */
   presentations?: {
     docs?: (number | WorkPage)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  /**
+   * Set automatically on publish. Override only if needed.
+   */
   publishedAt?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -903,12 +1137,33 @@ export interface CaseStudy {
 export interface Testimonial {
   id: number;
   _order?: string | null;
+  /**
+   * Team-facing label. Not shown publicly.
+   */
   internalTitle: string;
+  /**
+   * Client the quote is associated with.
+   */
   organization: number | Organization;
+  /**
+   * Related engagement, when known.
+   */
   project?: (number | null) | Project;
+  /**
+   * Name shown with the quote.
+   */
   speakerName: string;
+  /**
+   * Speaker title or role at the time of the quote.
+   */
   speakerRole?: string | null;
+  /**
+   * Organization attributed on the quote, if different from the client record.
+   */
   speakerOrganization?: string | null;
+  /**
+   * The approved quotation text.
+   */
   quote: {
     root: {
       type: string;
@@ -924,10 +1179,25 @@ export interface Testimonial {
     };
     [k: string]: unknown;
   };
+  /**
+   * Optional speaker photo. Use a public-approved media item.
+   */
   portrait?: (number | null) | Media;
+  /**
+   * Only published + approved-public testimonials appear publicly. Everything else stays internal.
+   */
   approvalStatus: 'unverified' | 'client-review' | 'approved-public' | 'internal-only';
+  /**
+   * Internal provenance (email, call notes, etc.). Never public.
+   */
   source?: string | null;
+  /**
+   * When the client cleared this quote for use.
+   */
   approvedAt?: string | null;
+  /**
+   * Internal only. Never exposed to anonymous API consumers.
+   */
   internalNotes?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1973,27 +2243,63 @@ export interface LabPage {
 export interface LabProject {
   id: number;
   _order?: string | null;
+  /**
+   * Canonical lab project title. Channel-agnostic.
+   */
   title: string;
+  /**
+   * What kind of internal work this is.
+   */
   kind: 'experiment' | 'prototype' | 'showcase' | 'tool' | 'research';
+  /**
+   * Project lifecycle. Separate from draft/publish state.
+   */
   status: 'planned' | 'active' | 'completed' | 'archived';
+  /**
+   * When the lab work began.
+   */
   startDate?: string | null;
+  /**
+   * When the lab work ended, if completed.
+   */
   endDate?: string | null;
+  /**
+   * Core point of view or hypothesis in one or two sentences.
+   */
   thesis?: string | null;
   /**
    * Reused everywhere: heroes, cards, newsletters, future channels. Write them to stand alone.
    */
   summaries?: {
+    /**
+     * Single-sentence summary for tight spaces.
+     */
     oneLine?: string | null;
+    /**
+     * Brief summary for cards and listings.
+     */
     short?: string | null;
+    /**
+     * Longer summary for heroes and overviews.
+     */
     medium?: string | null;
   };
+  /**
+   * Capabilities demonstrated. Used for related-work matching.
+   */
   capabilities?: (number | Capability)[] | null;
+  /**
+   * Tools, frameworks, or stacks used.
+   */
   technologies?:
     | {
         name: string;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Why this lab work was started.
+   */
   context?: {
     root: {
       type: string;
@@ -2009,6 +2315,9 @@ export interface LabProject {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * How the work was carried out.
+   */
   approach?: {
     root: {
       type: string;
@@ -2024,6 +2333,9 @@ export interface LabProject {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * What resulted from the experiment or build.
+   */
   outcome?: {
     root: {
       type: string;
@@ -2039,6 +2351,9 @@ export interface LabProject {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * What the team took away from the work.
+   */
   learnings?: {
     root: {
       type: string;
@@ -2054,25 +2369,43 @@ export interface LabProject {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Internal only. Never exposed to anonymous API consumers.
+   */
   internalNotes?: string | null;
+  /**
+   * Primary image. Must be public-approved media.
+   */
   coverAsset?: (number | null) | Media;
   /**
    * Approved source assets for every presentation surface. Internal work attaches media directly rather than through client Asset Libraries.
    */
   selectedAssets?: (number | Media)[] | null;
+  /**
+   * Related URLs. Set visibility per link.
+   */
   projectLinks?:
     | {
         label: string;
         url: string;
+        /**
+         * Internal links never appear in the public API.
+         */
         visibility?: ('public' | 'internal') | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Website Lab Pages that present this lab project.
+   */
   presentations?: {
     docs?: (number | LabPage)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  /**
+   * Set automatically on publish. Override only if needed.
+   */
   publishedAt?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
