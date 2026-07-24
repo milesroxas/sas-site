@@ -30,6 +30,8 @@ export const Media: CollectionConfig = {
   admin: {
     group: 'Assets',
     useAsTitle: 'title',
+    // `filename` is where Payload paints list thumbnails (FileCell / adminThumbnail).
+    defaultColumns: ['filename', 'title', 'alt', 'usageStatus', 'updatedAt'],
     components: {
       edit: {
         // Stock Upload only previews images before save; this paints a frame for videos.
@@ -57,6 +59,16 @@ export const Media: CollectionConfig = {
     afterRead: [resolveVideoAdminThumbnail],
   },
   fields: [
+    // Merges with Payload's upload `filename` field; Cell adds thumbnail + Image/Video cue.
+    {
+      name: 'filename',
+      type: 'text',
+      admin: {
+        components: {
+          Cell: '@/components/MediaFilenameCell#MediaFilenameCell',
+        },
+      },
+    },
     {
       name: 'title',
       type: 'text',
