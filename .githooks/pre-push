@@ -8,6 +8,14 @@
 # drizzle `push` masks it locally, the shared Neon DB never gets the column, and
 # the Vercel `ci` build crashes querying a column that does not exist.
 #
+# Matching is an allowlist of files that define Drizzle/Payload schema (fields,
+# collections, globals, block configs, plugin field overrides) — not whole
+# trees. UI, hooks, endpoints, and tests under the same folders must not trip
+# this guard, or developers learn to bypass it.
+#
+# When you add a new schema-owning path (e.g. a field factory or global config),
+# add it to SCHEMA_RES below.
+#
 # Bypass (use only when you are certain the change needs no migration):
 #   SKIP_MIGRATION_GUARD=1 git push
 #   git push --no-verify
@@ -18,23 +26,43 @@ if [[ "${SKIP_MIGRATION_GUARD:-}" == "1" ]]; then
   exit 0
 fi
 
-# Paths whose changes imply a schema diff (Drizzle table/column changes).
-SCHEMA_PATHS=(
-  'src/collections/'
-  'src/blocks/'
-  'src/fields/'
-  'src/globals/'
-  'src/Header/'
-  'src/Footer/'
-  'src/payload.config.ts'
+# Files whose changes imply a schema diff (Drizzle table/column changes).
+SCHEMA_RES=(
+  '^src/payload\.config\.ts$'
+  # Flat collection configs (e.g. Media.ts) and folder entrypoints.
+  '^src/collections/[^/]+\.ts$'
+  '^src/collections/[^/]+/index\.ts$'
+  # Nested schema modules co-located with a collection (e.g. Newsletters/blocks.ts).
+  '^src/collections/[^/]+/blocks\.ts$'
+  # Block field configs only — not Component.tsx / stories / styles.
+  '^src/blocks/.*/(config\.ts|fields\.ts)$'
+  '^src/blocks/.*/fields/.*\.ts$'
+  '^src/fields/.*\.ts$'
+  '^src/heros/config\.ts$'
+  '^src/Header/config\.ts$'
+  '^src/Footer/config\.ts$'
+  # Plugin / search field overrides that reshape tables.
+  '^src/search/fieldOverrides\.ts$'
+  '^src/plugins/index\.ts$'
+  '^src/plugins/mcp\.ts$'
+  '^src/plugins/aeo/siteInfo\.ts$'
 )
 # A migration was added if a numbered migration file (not index.ts) is added.
 MIGRATION_RE='^src/migrations/[0-9].*\.(ts|json)$'
-# Only these block-level files define schema; component/story/style edits do not.
-SCHEMA_BLOCK_RE='^src/blocks/.*(config\.ts|/fields\.ts|/fields/.*\.ts)$'
 
 zero='0000000000000000000000000000000000000000'
 fail=0
+
+is_schema_path() {
+  local f="$1"
+  local re
+  for re in "${SCHEMA_RES[@]}"; do
+    if [[ "$f" =~ $re ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
 
 check_range() {
   local base="$1" local_sha="$2"
@@ -56,20 +84,9 @@ check_range() {
   local f
   while IFS= read -r f; do
     [[ -z "$f" ]] && continue
-    local hit=0
-    local p
-    for p in "${SCHEMA_PATHS[@]}"; do
-      if [[ "$f" == "$p"* || "$f" == "$p" ]]; then
-        # For src/blocks/, only count true schema files, not Component/stories.
-        if [[ "$f" == src/blocks/* ]]; then
-          if grep -qE "$SCHEMA_BLOCK_RE" <<<"$f"; then hit=1; fi
-        else
-          hit=1
-        fi
-        break
-      fi
-    done
-    [[ "$hit" == 1 ]] && schema_hits+="  $f"$'\n'
+    if is_schema_path "$f"; then
+      schema_hits+="  $f"$'\n'
+    fi
   done <<<"$changed"
 
   if [[ -n "$schema_hits" && "$has_migration" == 0 ]]; then
