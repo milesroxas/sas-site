@@ -27,7 +27,16 @@ type MediaDocForThumbnail = {
 export const Media: CollectionConfig = {
   slug: 'media',
   folders: true,
-  admin: { group: 'Assets', useAsTitle: 'title' },
+  admin: {
+    group: 'Assets',
+    useAsTitle: 'title',
+    components: {
+      edit: {
+        // Stock Upload only previews images before save; this paints a frame for videos.
+        Upload: '@/components/MediaUpload#MediaUpload',
+      },
+    },
+  },
   access: {
     create: authenticated,
     delete: authenticated,
