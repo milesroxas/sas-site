@@ -224,6 +224,10 @@ export interface Page {
   title: string;
   hero: {
     type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    /**
+     * Small label above the title, e.g. an area of expertise.
+     */
+    eyebrow?: string | null;
     richText?: {
       root: {
         type: string;
@@ -239,6 +243,10 @@ export interface Page {
       };
       [k: string]: unknown;
     } | null;
+    /**
+     * Short supporting paragraph anchored to the bottom of the hero.
+     */
+    description?: string | null;
     links?:
       | {
           link: {
@@ -2606,6 +2614,10 @@ export interface ExpertisePage {
   title: string;
   hero: {
     type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    /**
+     * Small label above the title, e.g. an area of expertise.
+     */
+    eyebrow?: string | null;
     richText?: {
       root: {
         type: string;
@@ -2621,6 +2633,10 @@ export interface ExpertisePage {
       };
       [k: string]: unknown;
     } | null;
+    /**
+     * Short supporting paragraph anchored to the bottom of the hero.
+     */
+    description?: string | null;
     links?:
       | {
           link: {
@@ -2696,6 +2712,10 @@ export interface AudiencePage {
   title: string;
   hero: {
     type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    /**
+     * Small label above the title, e.g. an area of expertise.
+     */
+    eyebrow?: string | null;
     richText?: {
       root: {
         type: string;
@@ -2711,6 +2731,10 @@ export interface AudiencePage {
       };
       [k: string]: unknown;
     } | null;
+    /**
+     * Short supporting paragraph anchored to the bottom of the hero.
+     */
+    description?: string | null;
     links?:
       | {
           link: {
@@ -3472,7 +3496,9 @@ export interface PagesSelect<T extends boolean = true> {
     | T
     | {
         type?: T;
+        eyebrow?: T;
         richText?: T;
+        description?: T;
         links?:
           | T
           | {
@@ -4018,7 +4044,9 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
     | T
     | {
         type?: T;
+        eyebrow?: T;
         richText?: T;
+        description?: T;
         links?:
           | T
           | {
@@ -4076,7 +4104,9 @@ export interface AudiencePagesSelect<T extends boolean = true> {
     | T
     | {
         type?: T;
+        eyebrow?: T;
         richText?: T;
+        description?: T;
         links?:
           | T
           | {

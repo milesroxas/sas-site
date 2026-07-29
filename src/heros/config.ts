@@ -38,6 +38,14 @@ export const hero: Field = {
       required: true,
     },
     {
+      name: 'eyebrow',
+      type: 'text',
+      admin: {
+        condition: (_, { type } = {}) => type === 'mediumImpact',
+        description: 'Small label above the title, e.g. an area of expertise.',
+      },
+    },
+    {
       name: 'richText',
       type: 'richText',
       editor: lexicalEditor({
@@ -51,6 +59,14 @@ export const hero: Field = {
         },
       }),
       label: false,
+    },
+    {
+      name: 'description',
+      type: 'textarea',
+      admin: {
+        condition: (_, { type } = {}) => ['highImpact', 'mediumImpact'].includes(type),
+        description: 'Short supporting paragraph anchored to the bottom of the hero.',
+      },
     },
     linkGroup({
       overrides: {
