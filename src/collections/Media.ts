@@ -168,7 +168,7 @@ export const Media: CollectionConfig = {
     {
       name: 'allChannels',
       type: 'checkbox',
-      defaultValue: false,
+      defaultValue: true,
       admin: {
         description: 'Approve for every channel. Overrides the manual list below.',
       },
@@ -177,6 +177,7 @@ export const Media: CollectionConfig = {
       name: 'approvedChannels',
       type: 'select',
       hasMany: true,
+      defaultValue: [...APPROVED_CHANNELS],
       options: [...APPROVED_CHANNELS],
       admin: {
         description: 'Channels cleared to use this asset (website, pitch deck, social, etc.).',
@@ -186,6 +187,7 @@ export const Media: CollectionConfig = {
     {
       name: 'assetDate',
       type: 'date',
+      defaultValue: () => new Date().toISOString(),
       admin: { description: 'When the asset was created or captured, if known.' },
     },
     {
