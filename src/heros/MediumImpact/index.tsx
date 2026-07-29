@@ -1,7 +1,6 @@
 import type React from 'react'
 import { Media } from '@/components/Media'
-import RichText from '@/components/RichText'
-import { HeroDarkTheme, HeroDescription, HeroLinks } from '@/heros/shared'
+import { HeroDarkTheme, HeroDescription, HeroLinks, HeroTitle } from '@/heros/shared'
 import type { Page } from '@/payload-types'
 
 export const MediumImpactHero: React.FC<Page['hero']> = ({
@@ -9,28 +8,22 @@ export const MediumImpactHero: React.FC<Page['hero']> = ({
   eyebrow,
   links,
   media,
-  richText,
+  title,
 }) => {
   return (
     <div
-      className="relative isolate flex min-h-[37.5rem] flex-col overflow-clip bg-background text-foreground"
+      className="relative isolate flex min-h-[37.5rem] flex-col items-start overflow-clip bg-background px-4 py-12 text-foreground md:px-8 xl:px-16"
       data-theme="dark"
     >
       <HeroDarkTheme />
-      <div className="container relative z-10 flex flex-1 flex-col justify-between gap-6 py-12">
+      <div className="relative z-10 flex w-full flex-1 flex-col items-start justify-between gap-6">
         {eyebrow && (
-          <p className="font-heading text-sm font-light tracking-tight text-accent-foreground">
+          <p className="font-heading text-sm font-normal tracking-tight text-accent-foreground">
             {eyebrow}
           </p>
         )}
 
-        {richText && (
-          <RichText
-            className="max-w-xl prose-headings:font-light prose-headings:tracking-tight prose-h1:text-5xl prose-h1:leading-tight prose-h2:text-5xl prose-h2:leading-tight"
-            data={richText}
-            enableGutter={false}
-          />
-        )}
+        <HeroTitle title={title} />
 
         <div className="flex flex-col items-start gap-8">
           <HeroDescription description={description} />

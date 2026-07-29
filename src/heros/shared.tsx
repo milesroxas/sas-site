@@ -19,6 +19,15 @@ export const HeroDarkTheme: React.FC = () => {
   return null
 }
 
+export const HeroTitle: React.FC<{ title: Hero['title'] }> = ({ title }) => {
+  if (!title) return null
+  return (
+    <h1 className="max-w-xl font-heading text-6xl font-normal tracking-tight text-foreground">
+      {title}
+    </h1>
+  )
+}
+
 export const HeroLinks: React.FC<{ links: Hero['links'] }> = ({ links }) => {
   if (!Array.isArray(links) || links.length === 0) return null
   return (
@@ -37,6 +46,6 @@ export const HeroDescription: React.FC<{ description: Hero['description'] }> = (
 }) => {
   if (!description) return null
   return (
-    <p className="max-w-[23.5rem] text-base leading-relaxed text-muted-foreground">{description}</p>
+    <p className="max-w-sm text-base leading-relaxed text-muted-foreground">{description}</p>
   )
 }

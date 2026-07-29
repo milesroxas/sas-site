@@ -105,7 +105,7 @@ describe('extractDocMarkdown', () => {
       meta: { description: 'Page description.' },
       hero: {
         type: 'highImpact',
-        richText: lexical('Hero copy about what we do.'),
+        title: 'Hero copy about what we do.',
         links: [{ link: { label: 'Learn more', url: '/contact' } }],
       },
       layout: [

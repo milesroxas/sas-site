@@ -228,6 +228,7 @@ export interface Page {
      * Small label above the title, e.g. an area of expertise.
      */
     eyebrow?: string | null;
+    title?: string | null;
     richText?: {
       root: {
         type: string;
@@ -2618,6 +2619,7 @@ export interface ExpertisePage {
      * Small label above the title, e.g. an area of expertise.
      */
     eyebrow?: string | null;
+    title?: string | null;
     richText?: {
       root: {
         type: string;
@@ -2716,6 +2718,7 @@ export interface AudiencePage {
      * Small label above the title, e.g. an area of expertise.
      */
     eyebrow?: string | null;
+    title?: string | null;
     richText?: {
       root: {
         type: string;
@@ -3497,6 +3500,7 @@ export interface PagesSelect<T extends boolean = true> {
     | {
         type?: T;
         eyebrow?: T;
+        title?: T;
         richText?: T;
         description?: T;
         links?:
@@ -4045,6 +4049,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
     | {
         type?: T;
         eyebrow?: T;
+        title?: T;
         richText?: T;
         description?: T;
         links?:
@@ -4105,6 +4110,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
     | {
         type?: T;
         eyebrow?: T;
+        title?: T;
         richText?: T;
         description?: T;
         links?:

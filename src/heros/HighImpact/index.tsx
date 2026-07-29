@@ -1,12 +1,11 @@
 'use client'
 import type React from 'react'
 import { Media } from '@/components/Media'
-import RichText from '@/components/RichText'
 import { ImmersiveShell, WebGLTunnel, WebGlBackdropScene } from '@/features/immersive'
-import { HeroDarkTheme, HeroDescription, HeroLinks } from '@/heros/shared'
+import { HeroDarkTheme, HeroDescription, HeroLinks, HeroTitle } from '@/heros/shared'
 import type { Page } from '@/payload-types'
 
-export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, media, richText }) => {
+export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, media, title }) => {
   return (
     <ImmersiveShell
       webgl
@@ -14,7 +13,7 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, med
       // isolate: contains the -z-10 image above the page frame's opaque bg-background —
       // vt-home-hero's view-transition-name only provides that stacking context in
       // browsers that support view transitions.
-      className="vt-home-hero relative isolate -mt-(--header-height) flex min-h-[80vh] flex-col overflow-clip bg-background text-foreground"
+      className="vt-home-hero relative isolate -mt-(--header-height) flex min-h-[80vh] flex-col items-start overflow-clip bg-background px-4 py-12 text-foreground md:px-8 xl:px-16"
       data-theme="dark"
     >
       <HeroDarkTheme />
@@ -22,17 +21,11 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, med
         <WebGlBackdropScene />
       </WebGLTunnel>
 
-      <div className="container relative z-10 flex flex-1 flex-col justify-center pt-(--header-height)">
-        {richText && (
-          <RichText
-            className="max-w-xl prose-headings:font-light prose-headings:tracking-tight prose-h1:text-5xl prose-h1:leading-none md:prose-h1:text-[4rem]"
-            data={richText}
-            enableGutter={false}
-          />
-        )}
+      <div className="relative z-10 flex w-full flex-1 flex-col items-start justify-center pt-(--header-height)">
+        <HeroTitle title={title} />
       </div>
 
-      <div className="container relative z-10 flex flex-col items-start gap-8 pb-12">
+      <div className="relative z-10 flex w-full flex-col items-start gap-8">
         <HeroDescription description={description} />
         <HeroLinks links={links} />
       </div>

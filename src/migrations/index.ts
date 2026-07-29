@@ -19,6 +19,7 @@ import * as migration_20260722_174221_per_parent_block_tables from './20260722_1
 import * as migration_20260722_183757_mcp_authoring_capabilities from './20260722_183757_mcp_authoring_capabilities';
 import * as migration_20260723_162716_add_post_hero_style from './20260723_162716_add_post_hero_style';
 import * as migration_20260729_200545_hero_eyebrow_description from './20260729_200545_hero_eyebrow_description';
+import * as migration_20260729_202055_hero_title from './20260729_202055_hero_title';
 
 export const migrations = [
   {
@@ -124,6 +125,11 @@ export const migrations = [
   {
     up: migration_20260729_200545_hero_eyebrow_description.up,
     down: migration_20260729_200545_hero_eyebrow_description.down,
-    name: '20260729_200545_hero_eyebrow_description'
+    name: '20260729_200545_hero_eyebrow_description',
+  },
+  {
+    up: migration_20260729_202055_hero_title.up,
+    down: migration_20260729_202055_hero_title.down,
+    name: '20260729_202055_hero_title'
   },
 ];
