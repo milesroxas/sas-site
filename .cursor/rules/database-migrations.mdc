@@ -1,0 +1,56 @@
+---
+description: Project database workflow — push in dev, migrations in CI; never auto-run migrate:create; always prescribe create/rename answers
+alwaysApply: true
+---
+
+# Database & migrations (sas-site)
+
+This project uses Payload's **push in dev, migrations in CI** split. Full human docs: [README.md](../../README.md#database--migrations).
+
+## Hard prohibitions
+
+- **Do not run `pnpm migrate:create` or `payload migrate:create` unless the user explicitly asks in this conversation.** After schema work, tell them a migration is needed and wait.
+- **Never run `payload migrate` / `pnpm ci`'s migrate step locally.** Mixing push and migrations on the local DB corrupts the ledger.
+- **Never run raw `payload migrate:status` against local.** Use `pnpm migrate:status` only when checking the **production** ledger (needs `.env.production.pulled`).
+
+## Agent workflow for schema-impacting changes
+
+1. Change Payload config / collections / globals / fields / blocks as needed.
+2. Local schema syncs via Drizzle **push** when `pnpm dev` runs (`push` defaults on unless `PAYLOAD_DB_PUSH=false`). Do not apply migrations locally.
+3. Regenerate types/import maps if needed (`pnpm generate:types`, `pnpm generate:importmap`) — allowed without asking.
+4. **Stop and ask** before generating a migration file. Only on explicit approval: `pnpm migrate:create`.
+5. Review the generated `.ts` + `.json` together; they must be committed as a pair. CI (`pnpm ci`) applies migrations to production.
+
+## Required: create / rename prompt answers (every schema-impacting task)
+
+When `pnpm migrate:create` runs, Drizzle may interactively ask whether each new table/column is a **create** or a **rename** from an old name. Wrong answers can drop data.
+
+**Whenever your completed work would trigger those prompts, end your response with a concrete answer sheet for the user.** Do this even if you are not running `migrate:create` yourself.
+
+Include:
+
+1. Suggested command: `pnpm migrate:create <short-name>` (name only; do not run unless asked).
+2. A numbered list of expected prompts and **exactly which option to choose**.
+3. One-line reason per choice (preserve data vs brand-new entity).
+
+Heuristics:
+
+- Same logical entity, new name (renamed field, collection slug, block slug, or Payload-generated table/column for that entity) → **rename** from the old name.
+- Brand-new collection/field/block/table with no prior data to keep → **create**.
+- Unsure → recommend the safer option for data and say what to verify.
+
+Example block to append when finishing schema work:
+
+```md
+### migrate:create prompt answers
+Run when ready: `pnpm migrate:create home-global`
+
+1. `home` table — **create table** (new global; no prior table)
+2. Is `pages_blocks_foo` created or renamed? — **rename** from `pages_blocks_bar` (block slug `bar` → `foo`; keep rows)
+```
+
+If the change is additive-only and you expect **no** create/rename prompts, say that explicitly.
+
+## Do not invent migrations by hand
+
+Prefer `pnpm migrate:create` (after approval) over hand-writing SQL/migration files, unless the user asks for a manual migration.

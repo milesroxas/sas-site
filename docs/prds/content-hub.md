@@ -33,7 +33,7 @@ Before implementing:
 
    * `pnpm generate:types`
    * `pnpm generate:importmap` when admin components or import paths change
-   * `pnpm payload migrate:create`
+   * `pnpm migrate:create` only with explicit user approval (agents must not auto-run it)
    * `pnpm lint`
    * `pnpm exec tsc --noEmit`
    * Relevant integration and end-to-end tests

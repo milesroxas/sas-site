@@ -129,6 +129,6 @@ All dynamic routes use `generateStaticParams`, React `cache()` on queries, draft
 
 ## Development conventions
 
-- [AGENTS.md](../AGENTS.md) is the rulebook: access control in Local API queries, transaction safety in hooks (`req` passing), avoiding hook loops, server-first components.
-- After schema changes: `pnpm generate:types`, `pnpm generate:importmap`, `pnpm migrate:create`. Dev iterates via Drizzle push; migrations apply only in CI (`pnpm ci`) against production. Never run `payload migrate` locally — mixing push and migrations on one DB corrupts the ledger.
+- [AGENTS.md](../AGENTS.md) is the slim shared agent contract (Cursor / Claude / Codex). Payload how-to is in `.agents/skills/payload`; Cursor always-on mirrors are `.cursor/rules/project-conventions.mdc` and `database-migrations.mdc`.
+- After schema changes: `pnpm generate:types`, `pnpm generate:importmap`. Dev iterates via Drizzle push; migrations apply only in CI (`pnpm ci`) against production. Never run `payload migrate` locally — mixing push and migrations on one DB corrupts the ledger. Agents must **ask before** running `pnpm migrate:create`, and after schema work must prescribe **create vs rename** prompt answers (see `AGENTS.md` and [README](../README.md#database--migrations)).
 - Tests assert the access and integrity rules above (`tests/int/content-hub.int.spec.ts`, `tests/int/website-structure.int.spec.ts`, `tests/e2e/content-hub.e2e.spec.ts`).

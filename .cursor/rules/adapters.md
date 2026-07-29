@@ -6,6 +6,8 @@ tags: [payload, database, mongodb, postgres, sqlite, transactions]
 
 # Payload CMS Adapters
 
+> **This repo:** local Postgres uses Drizzle **push** in dev (`push` on unless `PAYLOAD_DB_PUSH=false`). Do not treat the `push: false` examples below as project policy. Follow `.cursor/rules/database-migrations.mdc` — never auto-run `migrate:create`; never run `payload migrate` locally; after schema work prescribe create/rename prompt answers.
+
 ## Database Adapters
 
 ### MongoDB

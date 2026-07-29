@@ -96,9 +96,9 @@ sending a body on GET/HEAD requests. Drop the patch when a fixed plugin version 
 ## Operational notes
 
 - Capability checkboxes are schema fields — adding/removing exposed collections changes the
-  `payload-mcp-api-keys` table. Follow the normal migration workflow
-  (`pnpm migrate:create`, commit, CI applies). The initial capability schema landed in
-  `20260722_183757_mcp_authoring_capabilities`.
+  `payload-mcp-api-keys` table. Follow the normal migration workflow (ask before
+  `pnpm migrate:create`, prescribe create/rename answers, commit `.ts`+`.json`, CI applies).
+  The initial capability schema landed in `20260722_183757_mcp_authoring_capabilities`.
 - Adding a plugin (or changing its admin components) also requires `pnpm generate:types` and
   `pnpm generate:importmap`.
 - A new public content surface added to `CONTENT_SURFACES` is exposed to MCP automatically —

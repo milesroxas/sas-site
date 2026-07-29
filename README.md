@@ -14,7 +14,7 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | [docs/aeo.md](docs/aeo.md) | Developers, Editors | Answer-engine optimization: llms.txt, IndexNow, JSON-LD, editorial guidance |
 | [docs/mcp.md](docs/mcp.md) | Developers | Internal MCP server at `/api/mcp`: API keys, capabilities, security model |
 | [docs/prds/content-hub.md](docs/prds/content-hub.md) | Reference | Original PRD and architecture amendment |
-| [AGENTS.md](AGENTS.md) | Developers | Payload development patterns and security rules |
+| [AGENTS.md](AGENTS.md) | Agents (Cursor / Claude / Codex) | Slim always-on contract: DB, security, tooling; Payload how-to in `.agents/skills/payload` |
 
 ## Stack
 
@@ -216,6 +216,8 @@ pnpm migrate:status   # read-only — reports the PRODUCTION ledger (see note be
 `pnpm migrate:status` always targets **production** (via `.env.production.pulled`), because the local push DB has no meaningful ledger. "No" = a committed migration not yet deployed; "Yes" = applied by CI. Use it before a deploy (expect your new migration "No") and after (expect "Yes"). Needs the Vercel-pulled prod env — run the dev TUI's "Pull Vercel production env" first if it is missing.
 
 **Flow:** change config → `pnpm dev` (push syncs local) → `pnpm migrate:create` → review SQL → commit `.ts` + `.json` together → CI applies on deploy.
+
+**Agents / LLMs (Cursor, Claude Code, Codex):** root [`AGENTS.md`](AGENTS.md) is the shared always-on contract (Claude loads it via [`CLAUDE.md`](CLAUDE.md); Cursor also mirrors hard rules in `.cursor/rules/`). Do **not** run `pnpm migrate:create` unless the user explicitly asks. Never run `payload migrate` locally. After schema-impacting work, prescribe **create vs rename** answers. Deep Payload how-to lives in `.agents/skills/payload`, not in `AGENTS.md`.
 
 > **Note:** the local DB has no meaningful migration ledger — its schema comes from push, not migrations, so a raw `payload migrate:status` against it would show every row "No". That is why `pnpm migrate:status` is wired to report **production** instead (see above). Don't run `payload migrate:status` directly against local.
 

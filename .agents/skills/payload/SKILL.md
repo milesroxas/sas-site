@@ -1,6 +1,6 @@
 ---
 name: payload
-description: Use when working with Payload projects (payload.config.ts, collections, fields, hooks, access control, Payload API). Use when debugging validation errors, security issues, relationship queries, transactions, or hook behavior.
+description: Use when working with Payload CMS in this repo — payload.config.ts, collections, globals, fields, blocks, hooks, access control, Local/REST/GraphQL API, drafts, admin components, schema changes, or migrations. Also use when debugging validation, security, relationships, transactions, or hook loops. Always obey root AGENTS.md (DB workflow, no auto migrate:create, create/rename answer sheets) over any generic guidance here.
 ---
 
 # Payload Application Development
@@ -404,6 +404,15 @@ src/
 │   └── slugify.ts
 └── payload.config.ts
 ```
+
+## Database & migrations (this repo)
+
+**sas-site:** push in local dev, migrations only in CI. See `.cursor/rules/database-migrations.mdc` and README.
+
+- **Do not** run `pnpm migrate:create` / `payload migrate:create` unless the user explicitly asks.
+- **Never** run `payload migrate` locally (corrupts the push/migration ledger).
+- After schema changes: update config, let `pnpm dev` push locally, regenerate types/importmap if needed, then **ask** before creating a migration.
+- **When finishing schema-impacting work**, always tell the user which **create vs rename** answers to pick for each expected `migrate:create` prompt (or state that none are expected). Renamed entity → rename; brand-new → create.
 
 ## Building & Type Generation
 
