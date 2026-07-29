@@ -4,6 +4,7 @@ import type {
   AudiencePage,
   Config,
   ExpertisePage,
+  Home,
   Media,
   Page,
   Post,
@@ -33,6 +34,7 @@ export const generateMeta = async (args: {
     | Partial<WorkPage>
     | Partial<ExpertisePage>
     | Partial<AudiencePage>
+    | Partial<Home>
     | null
   /** Site-relative path of the page, e.g. '/posts/my-post'. Drives the canonical URL. */
   pathname?: string

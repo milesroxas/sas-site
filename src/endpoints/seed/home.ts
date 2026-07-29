@@ -1,4 +1,4 @@
-import type { RequiredDataFromCollectionSlug } from 'payload'
+import type { DataFromGlobalSlug } from 'payload'
 import type { Media } from '@/payload-types'
 
 type HomeArgs = {
@@ -6,37 +6,19 @@ type HomeArgs = {
   metaImage: Media
 }
 
-export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> = ({
+export const home: (args: HomeArgs) => Omit<DataFromGlobalSlug<'home'>, 'id'> = ({
   heroImage,
   metaImage,
 }) => {
   return {
-    slug: 'home',
     _status: 'published',
     hero: {
-      type: 'highImpact',
-      links: [
-        {
-          link: {
-            type: 'custom',
-            appearance: 'default',
-            label: 'All posts',
-            url: '/posts',
-          },
-        },
-        {
-          link: {
-            type: 'custom',
-            appearance: 'outline',
-            label: 'Contact',
-            url: '/contact',
-          },
-        },
-      ],
-      media: heroImage.id,
-      title: 'Payload Website Template',
+      type: 'left',
+      title: 'Make it make sense',
       description:
-        "Visit the admin dashboard to begin managing this site's content. The code for this template is completely open-source.",
+        'We bring clarity, character, and creative momentum to businesses with complex offerings, niche audiences, and more to say than their current brand can express.',
+      media: heroImage.id,
+      featuredLabel: 'Insights',
     },
     layout: [
       {

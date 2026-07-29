@@ -1,5 +1,53 @@
-import PageTemplate, { generateMetadata } from './[slug]/page'
+import configPromise from '@payload-config'
+import type { Metadata } from 'next'
+import { draftMode } from 'next/headers'
+import { getPayload } from 'payload'
+import { cache } from 'react'
+import { RenderBlocks } from '@/blocks/RenderBlocks'
+import { LivePreviewListener } from '@/components/LivePreviewListener'
+import { homeStatic } from '@/endpoints/seed/home-static'
+import { RenderHomeHero } from '@/Home/hero'
+import { generateMeta } from '@/utilities/generateMeta'
+import PageClient from './[slug]/page.client'
 
-export default PageTemplate
+export default async function HomePage() {
+  const { isEnabled: draft } = await draftMode()
+  const home = (await queryHome()) ?? homeStatic
 
-export { generateMetadata }
+  const { hero, layout } = home
+
+  return (
+    <article className="pb-24">
+      <PageClient />
+      {draft && <LivePreviewListener />}
+      <RenderHomeHero {...hero} />
+      <RenderBlocks blocks={layout} />
+    </article>
+  )
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const home = await queryHome()
+
+  return generateMeta({
+    doc: home,
+    pathname: '/',
+  })
+}
+
+const queryHome = cache(async () => {
+  const { isEnabled: draft } = await draftMode()
+  const payload = await getPayload({ config: configPromise })
+
+  const home = await payload.findGlobal({
+    slug: 'home',
+    depth: 2,
+    draft,
+    overrideAccess: draft,
+  })
+
+  const hasContent = Boolean(home?.layout?.length) || Boolean(home?.hero?.title)
+  if (!hasContent) return null
+
+  return home
+})

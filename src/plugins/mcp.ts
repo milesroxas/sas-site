@@ -80,6 +80,10 @@ const globals: MCPPluginConfig['globals'] = {
     description: 'Site header — primary navigation',
     enabled: { find: true, update: true },
   },
+  home: {
+    description: 'Site homepage — hero, layout blocks, and SEO published at /',
+    enabled: { find: true, update: true },
+  },
   'site-info': {
     description: 'Company identity used for JSON-LD, llms.txt, and default page metadata',
     enabled: { find: true, update: true },

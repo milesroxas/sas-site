@@ -1,26 +1,10 @@
-import {
-  MetaDescriptionField,
-  MetaImageField,
-  MetaTitleField,
-  OverviewField,
-  PreviewField,
-} from '@payloadcms/plugin-seo/fields'
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { hero } from '@/heros/config'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
-import { Archive } from '../../blocks/ArchiveBlock/config'
-import { CallToAction } from '../../blocks/CallToAction/config'
-import { Content } from '../../blocks/Content/config'
-import { FormBlock } from '../../blocks/Form/config'
-import { FeatureHeadingOffset } from '../../blocks/feature/HeadingOffset/config'
-import { FeatureImageStatement } from '../../blocks/feature/ImageStatement/config'
-import { FeatureStatementGrid } from '../../blocks/feature/StatementGrid/config'
-import { FeatureTabs } from '../../blocks/feature/Tabs/config'
-import { MediaBlock } from '../../blocks/MediaBlock/config'
-import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
-import { SplitContentNarrow } from '../../blocks/split-content/config'
+import { pageLayoutBlocks } from '../../fields/pageLayoutBlocks'
+import { seoMetaTabFields } from '../../fields/seoMetaTabFields'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
@@ -77,19 +61,7 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [
-                CallToAction,
-                Content,
-                MediaBlock,
-                Archive,
-                FormBlock,
-                NewsletterSignup,
-                FeatureStatementGrid,
-                FeatureHeadingOffset,
-                FeatureTabs,
-                FeatureImageStatement,
-                SplitContentNarrow,
-              ],
+              blocks: pageLayoutBlocks,
               required: true,
               admin: {
                 initCollapsed: true,
@@ -101,29 +73,7 @@ export const Pages: CollectionConfig<'pages'> = {
         {
           name: 'meta',
           label: 'SEO',
-          fields: [
-            OverviewField({
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-              imagePath: 'meta.image',
-            }),
-            MetaTitleField({
-              hasGenerateFn: true,
-            }),
-            MetaImageField({
-              relationTo: 'media',
-            }),
-
-            MetaDescriptionField({}),
-            PreviewField({
-              // if the `generateUrl` function is configured
-              hasGenerateFn: true,
-
-              // field paths to match the target field for data
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-            }),
-          ],
+          fields: seoMetaTabFields,
         },
       ],
     },

@@ -1,83 +1,13 @@
-import type { RequiredDataFromCollectionSlug } from 'payload'
+import type { DataFromGlobalSlug } from 'payload'
 
 // Used for pre-seeded content so that the homepage is not empty
-export const homeStatic: RequiredDataFromCollectionSlug<'pages'> = {
-  slug: 'home',
+export const homeStatic = {
   _status: 'published',
   hero: {
-    type: 'lowImpact',
-    richText: {
-      root: {
-        type: 'root',
-        children: [
-          {
-            type: 'heading',
-            children: [
-              {
-                type: 'text',
-                detail: 0,
-                format: 0,
-                mode: 'normal',
-                style: '',
-                text: 'Payload Website Template',
-                version: 1,
-              },
-            ],
-            direction: 'ltr',
-            format: '',
-            indent: 0,
-            tag: 'h1',
-            version: 1,
-          },
-          {
-            type: 'paragraph',
-            children: [
-              {
-                type: 'link',
-                children: [
-                  {
-                    type: 'text',
-                    detail: 0,
-                    format: 0,
-                    mode: 'normal',
-                    style: '',
-                    text: 'Visit the admin dashboard',
-                    version: 1,
-                  },
-                ],
-                direction: 'ltr',
-                fields: {
-                  linkType: 'custom',
-                  newTab: false,
-                  url: '/admin',
-                },
-                format: '',
-                indent: 0,
-                version: 2,
-              },
-              {
-                type: 'text',
-                detail: 0,
-                format: 0,
-                mode: 'normal',
-                style: '',
-                text: ' to make your account and seed content for your website.',
-                version: 1,
-              },
-            ],
-            direction: 'ltr',
-            format: '',
-            indent: 0,
-            textFormat: 0,
-            version: 1,
-          },
-        ],
-        direction: 'ltr',
-        format: '',
-        indent: 0,
-        version: 1,
-      },
-    },
+    type: 'left',
+    title: 'Make it make sense',
+    description:
+      'We bring clarity, character, and creative momentum to businesses with complex offerings, niche audiences, and more to say than their current brand can express.',
   },
   meta: {
     description: 'An open-source website built with Payload and Next.js.',
@@ -85,4 +15,4 @@ export const homeStatic: RequiredDataFromCollectionSlug<'pages'> = {
   },
   title: 'Home',
   layout: [],
-}
+} as Omit<DataFromGlobalSlug<'home'>, 'id'>

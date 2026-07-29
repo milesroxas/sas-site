@@ -38,7 +38,7 @@ export type ContentSurface = {
 }
 
 export const CONTENT_SURFACES: ContentSurface[] = [
-  { collection: 'pages', title: 'Pages', urlPrefix: '', homeSlug: 'home', body: { kind: 'walk' } },
+  { collection: 'pages', title: 'Pages', urlPrefix: '', body: { kind: 'walk' } },
   {
     collection: 'expertise-pages',
     title: 'Expertise',

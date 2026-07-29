@@ -11,7 +11,7 @@ import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
-import type { Page } from '@/payload-types'
+import type { Home, Page } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
 
 const blockComponents = {
@@ -28,8 +28,10 @@ const blockComponents = {
   splitContentNarrow: SplitContentNarrowBlock,
 }
 
+type LayoutBlock = NonNullable<Page['layout']>[number] | NonNullable<Home['layout']>[number]
+
 export const RenderBlocks: React.FC<{
-  blocks: Page['layout'][0][]
+  blocks: LayoutBlock[] | null | undefined
 }> = (props) => {
   const { blocks } = props
 

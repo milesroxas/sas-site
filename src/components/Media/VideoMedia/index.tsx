@@ -21,7 +21,7 @@ const cdnSrc = (filename: string | null | undefined, cacheTag?: string | null): 
 }
 
 export const VideoMedia: React.FC<MediaProps> = (props) => {
-  const { imgClassName, onClick, resource, videoClassName } = props
+  const { fill, imgClassName, onClick, resource, videoClassName } = props
 
   if (!resource || typeof resource !== 'object') {
     return null
@@ -44,7 +44,11 @@ export const VideoMedia: React.FC<MediaProps> = (props) => {
   return (
     <video
       autoPlay
-      className={cn('h-auto w-full', imgClassName, videoClassName)}
+      className={cn(
+        fill ? 'absolute inset-0 size-full object-cover' : 'h-auto w-full',
+        imgClassName,
+        videoClassName,
+      )}
       controls={false}
       loop
       muted

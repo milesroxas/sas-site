@@ -153,11 +153,13 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
+    home: Home;
     header: Header;
     footer: Footer;
     'site-info': SiteInfo;
   };
   globalsSelect: {
+    home: HomeSelect<false> | HomeSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-info': SiteInfoSelect<false> | SiteInfoSelect<true>;
@@ -3206,6 +3208,10 @@ export interface PayloadMcpApiKey {
     find?: boolean | null;
     update?: boolean | null;
   };
+  home?: {
+    find?: boolean | null;
+    update?: boolean | null;
+  };
   siteInfo?: {
     find?: boolean | null;
     update?: boolean | null;
@@ -5034,6 +5040,12 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         find?: T;
         update?: T;
       };
+  home?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+      };
   siteInfo?:
     | T
     | {
@@ -5128,6 +5140,61 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * The site homepage published at /. Composition and SEO only.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home".
+ */
+export interface Home {
+  id: number;
+  title: string;
+  hero: {
+    /**
+     * Left stacks the statement and description; Center centers the statement.
+     */
+    type: 'left' | 'center';
+    title: string;
+    /**
+     * Supporting paragraph shown under the statement (left) or in the footer (center).
+     */
+    description: string;
+    media?: (number | null) | Media;
+    /**
+     * Optional insight card anchored in the hero footer.
+     */
+    featuredPost?: (number | null) | Post;
+    /**
+     * Small label on the featured card, e.g. Insights.
+     */
+    featuredLabel?: string | null;
+  };
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | NewsletterSignupBlock
+    | FeatureStatementGridBlock
+    | FeatureHeadingOffsetBlock
+    | FeatureTabsBlock
+    | FeatureImageStatementBlock
+    | SplitContentNarrowBlock
+  )[];
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5239,6 +5306,50 @@ export interface SiteInfo {
   llmsNotes?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home_select".
+ */
+export interface HomeSelect<T extends boolean = true> {
+  title?: T;
+  hero?:
+    | T
+    | {
+        type?: T;
+        title?: T;
+        description?: T;
+        media?: T;
+        featuredPost?: T;
+        featuredLabel?: T;
+      };
+  layout?:
+    | T
+    | {
+        cta?: T | CallToActionBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
+        mediaBlock?: T | MediaBlockSelect<T>;
+        archive?: T | ArchiveBlockSelect<T>;
+        formBlock?: T | FormBlockSelect<T>;
+        newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
+        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
+        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
+  publishedAt?: T;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5390,7 +5501,7 @@ export interface TaskSchedulePublish {
           relationTo: 'testimonials';
           value: number | Testimonial;
         } | null);
-    global?: string | null;
+    global?: 'home' | null;
     user?: (number | null) | User;
   };
   output?: unknown;

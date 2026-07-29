@@ -31,7 +31,26 @@ const getPagesSitemap = unstable_cache(
 
     const dateFallback = new Date().toISOString()
 
+    const home = await payload.findGlobal({
+      slug: 'home',
+      depth: 0,
+      draft: false,
+      overrideAccess: false,
+      select: {
+        updatedAt: true,
+        _status: true,
+      },
+    })
+
     const defaultSitemap = [
+      ...(home?._status === 'published'
+        ? [
+            {
+              loc: `${SITE_URL}/`,
+              lastmod: home.updatedAt || dateFallback,
+            },
+          ]
+        : []),
       {
         loc: `${SITE_URL}/search`,
         lastmod: dateFallback,
@@ -47,7 +66,7 @@ const getPagesSitemap = unstable_cache(
           .filter((page) => Boolean(page?.slug))
           .map((page) => {
             return {
-              loc: page?.slug === 'home' ? `${SITE_URL}/` : `${SITE_URL}/${page?.slug}`,
+              loc: `${SITE_URL}/${page?.slug}`,
               lastmod: page.updatedAt || dateFallback,
             }
           })

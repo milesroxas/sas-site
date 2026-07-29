@@ -196,22 +196,23 @@ export const seed = async ({
 
   payload.logger.info(`— Seeding pages...`)
 
-  const [_, contactPage] = await Promise.all([
-    payload.create({
-      collection: 'pages',
-      depth: 0,
-      data: home({ heroImage: imageHomeDoc, metaImage: image2Doc }),
-    }),
-    payload.create({
-      collection: 'pages',
-      depth: 0,
-      data: contactPageData({ contactForm: contactForm }),
-    }),
-  ])
+  const contactPage = await payload.create({
+    collection: 'pages',
+    depth: 0,
+    data: contactPageData({ contactForm: contactForm }),
+  })
 
   payload.logger.info(`— Seeding globals...`)
 
   await Promise.all([
+    payload.updateGlobal({
+      slug: 'home',
+      depth: 0,
+      data: home({ heroImage: imageHomeDoc, metaImage: image2Doc }),
+      context: {
+        disableRevalidate: true,
+      },
+    }),
     payload.updateGlobal({
       slug: 'header',
       data: {

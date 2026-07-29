@@ -6,7 +6,6 @@ import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
-import { homeStatic } from '@/endpoints/seed/home-static'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import { cn } from '@/utilities/ui'
@@ -25,15 +24,11 @@ export async function generateStaticParams() {
     },
   })
 
-  const params = pages.docs
-    ?.filter((doc) => {
-      return doc.slug !== 'home'
-    })
+  return pages.docs
+    ?.filter((doc) => Boolean(doc.slug))
     .map(({ slug }) => {
       return { slug }
     })
-
-  return params
 }
 
 type Args = {
@@ -44,20 +39,13 @@ type Args = {
 
 export default async function Page({ params: paramsPromise }: Args) {
   const { isEnabled: draft } = await draftMode()
-  const { slug = 'home' } = await paramsPromise
+  const { slug = '' } = await paramsPromise
   // Decode to support slugs with special characters
   const decodedSlug = decodeURIComponent(slug)
   const url = `/${decodedSlug}`
-  let page: RequiredDataFromCollectionSlug<'pages'> | null
-
-  page = await queryPageBySlug({
+  const page: RequiredDataFromCollectionSlug<'pages'> | null = await queryPageBySlug({
     slug: decodedSlug,
   })
-
-  // Remove this code once your website is seeded
-  if (!page && slug === 'home') {
-    page = homeStatic
-  }
 
   if (!page) {
     return <PayloadRedirects url={url} />
@@ -83,7 +71,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
-  const { slug = 'home' } = await paramsPromise
+  const { slug = '' } = await paramsPromise
   // Decode to support slugs with special characters
   const decodedSlug = decodeURIComponent(slug)
   const page = await queryPageBySlug({
@@ -92,7 +80,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
   return generateMeta({
     doc: page,
-    pathname: decodedSlug === 'home' ? '/' : `/${decodedSlug}`,
+    pathname: `/${decodedSlug}`,
   })
 }
 
