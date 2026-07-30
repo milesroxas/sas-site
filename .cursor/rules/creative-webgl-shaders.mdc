@@ -1,0 +1,26 @@
+---
+description: Creative WebGL/shader/motion work — R3F, Three.js, GLSL, TSL/WebGPU, raymarching/SDFs, volumetrics, refraction/dispersion, post-processing (dither/retro/CRT/ASCII), GPU particles, spring/easing motion (CSS/GSAP/Motion). Load the creative-webgl-shaders skill.
+globs: "**/*.glsl,**/*.frag,**/*.vert,**/*.wgsl,src/features/immersive/**"
+alwaysApply: false
+---
+
+# Creative WebGL, shaders & web motion
+
+For any shader, R3F/Three.js, WebGPU/TSL, or physics-based motion task, read
+and follow **`.agents/skills/creative-webgl-shaders/SKILL.md`** (canonical,
+shared with Claude Code and Codex — do not duplicate its content here).
+
+Quick routing inside the skill:
+
+- Shader mental model / uniforms / noise → **Shader Fundamentals**
+- Meshless 3D scenes → **Raymarching & SDFs**
+- Clouds, smoke, fog → **Volumetric Rendering**
+- Glass, refraction, dispersion, Fresnel → **Light Effects**
+- Screen-space filters (pixelation, dither, CRT, ASCII, halftone) →
+  **Post-Processing**
+- WebGPU / node materials / compute → **TSL & WebGPU**
+- Springs, damping, easing in CSS/GSAP/Motion → **Web Motion**
+
+Perf non-negotiables from the skill: `useMemo` uniforms (update in
+`useFrame`), cap DPR, prefer merged post-processing Effects, respect
+`prefers-reduced-motion`.

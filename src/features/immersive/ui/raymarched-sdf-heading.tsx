@@ -19,7 +19,8 @@ import {
  * Maxime Heckel's "Painting with Math: A Gentle Study of Raymarching":
  *
  * - The heading is converted into a real signed distance field (Euclidean
- *   distance transform of the DOM glyphs) and extruded into a 3D SDF.
+ *   distance transform of the DOM glyphs) lifted into 3D as a flat sheet on
+ *   the z=0 plane.
  * - A fragment-shader raymarcher (ray origin + direction, marching by the
  *   scene SDF distance up to MAX_STEPS until within SURFACE_DIST) renders it.
  * - The reveal is a smooth-max intersection with a sweeping half-space, and
@@ -63,7 +64,6 @@ uniform float uSpread;   // SDF encode range, CSS px
 uniform float uProgress; // 0 hidden -> 1 fully resolved
 uniform float uTime;
 uniform float uSteps;    // ray-march step budget
-uniform float uDepth;    // extrusion half-depth, px
 uniform float uGooey;    // smooth-min blend radius, px
 uniform float uEdge;     // reveal-front smooth-max radius, px
 uniform vec2 uDir;       // sweep direction (unit)
@@ -74,13 +74,13 @@ uniform float uScatter;  // droplet side scatter, fraction of heading height
 uniform float uWobble;   // droplet wander amplitude, px
 uniform vec3 uLightDir;  // key light direction (unit)
 uniform float uCamZ;     // camera distance to the text plane, px
+uniform vec3 uColor;     // settled text color, sampled from the DOM heading
 in vec2 vUv;
 out vec4 outColor;
 
 const int MAX_STEPS = 96;
 const float SURFACE_DIST = 0.4;
 const int MAX_DROPLETS = 8;
-const vec3 TEXT_COLOR = vec3(0.957, 0.957, 0.961);
 const vec3 WARM = vec3(1.0, 0.85, 0.62);
 
 // Polynomial smooth minimum (Inigo Quilez), the article's gooey-union glue.
@@ -110,11 +110,11 @@ float revealFront() {
   return mix(-halfExt - pad, halfExt + pad, uProgress);
 }
 
-/** The world: extruded text, sweep-cut, unioned with droplets — all SDFs. */
+/** The world: flat text sheet, sweep-cut, unioned with droplets — all SDFs. */
 float scene(vec3 p) {
-  // Extruded text (opExtrusion of the 2D field along z).
+  // Flat text sheet on the z=0 plane (2D field lifted into 3D, no extrusion).
   float d2 = sdText(p.xy);
-  vec2 w = vec2(d2, abs(p.z) - uDepth);
+  vec2 w = vec2(d2, abs(p.z));
   float text = min(max(w.x, w.y), 0.0) + length(max(w, 0.0));
 
   // Smooth intersection with the sweeping half-space: glyphs past the front
@@ -136,7 +136,7 @@ float scene(vec3 p) {
         + sin(uTime * (0.7 + 0.6 * h2) + fi * 2.4) * uEdge * 0.3;
       float side = (h2 - 0.5) * uSize.y * uScatter
         + sin(uTime * (1.0 + 0.8 * h1) + fi * 1.7) * uWobble;
-      vec3 c = vec3(uDir * along + perp * side, sin(uTime * 1.4 + fi * 2.1) * uDepth);
+      vec3 c = vec3(uDir * along + perp * side, 0.0);
       float r = uDroplet * (0.5 + 0.7 * h1) * env;
       // Ellipsoid: scale the along-sweep axis by uStretch, then correct the
       // distance bound by the smallest axis scale so marching stays safe.
@@ -181,7 +181,7 @@ void main() {
     if (t > maxDist) break;
   }
 
-  vec3 col = TEXT_COLOR * 0.8;
+  vec3 col = uColor * 0.8;
   float alpha = 0.0;
 
   if (hit) {
@@ -190,7 +190,7 @@ void main() {
     float amb = clamp(0.5 + 0.5 * n.y, 0.0, 1.0);
     float diffuse = clamp(dot(n, uLightDir), 0.0, 1.0);
     float spec = pow(clamp(dot(reflect(-uLightDir, n), -rd), 0.0, 1.0), 24.0);
-    col = TEXT_COLOR * (0.38 + 0.34 * amb + 0.5 * diffuse) + WARM * spec * 0.45;
+    col = uColor * (0.38 + 0.34 * amb + 0.5 * diffuse) + WARM * spec * 0.45;
     // Beer's law: goo that sits behind the text plane fades exponentially.
     alpha = exp(-max(0.0, t - uCamZ) * 0.004);
   } else {
@@ -204,7 +204,7 @@ void main() {
   float aaw = max(fwidth(dFlat), 0.5);
   float crisp = 1.0 - smoothstep(-aaw, aaw, dFlat);
   float settle = smoothstep(0.82, 1.0, uProgress);
-  col = mix(col, TEXT_COLOR, settle);
+  col = mix(col, uColor, settle);
   alpha = mix(alpha, crisp, settle);
 
   alpha *= smoothstep(0.0, 0.04, uProgress);
@@ -219,8 +219,6 @@ export type RaymarchedSdfHeadingProps = {
   progressRef: RefObject<{ value: number }>
   /** Ray-march step budget (16–96). */
   steps?: number
-  /** Extrusion half-depth in px — how "thick" the 3D glyphs are. */
-  depthPx?: number
   /** smooth-min blend radius in px melting droplets into glyphs. */
   gooeyPx?: number
   /** Softness in px of the sweeping reveal front. */
@@ -247,7 +245,6 @@ type SceneProps = Pick<
   RaymarchedSdfHeadingProps,
   | 'progressRef'
   | 'steps'
-  | 'depthPx'
   | 'gooeyPx'
   | 'edgePx'
   | 'angle'
@@ -318,6 +315,8 @@ type SdfBuild = {
   height: number
   cssWidth: number
   cssHeight: number
+  /** Heading's computed CSS color as sRGB 0–1 — the shader's settled color. */
+  color: [number, number, number]
 }
 
 /**
@@ -340,12 +339,27 @@ function buildSdfField(heading: HTMLHeadingElement): SdfBuild | null {
   canvas.height = height
 
   const style = getComputedStyle(heading)
+
+  // Resolve the heading's computed color (may be oklch) to sRGB by drawing it.
+  ctx.fillStyle = style.color
+  ctx.fillRect(0, 0, 1, 1)
+  const px = ctx.getImageData(0, 0, 1, 1).data
+  const color: [number, number, number] = [px[0] / 255, px[1] / 255, px[2] / 255]
+
   ctx.clearRect(0, 0, width, height)
   ctx.font = `${style.fontWeight} ${parseFloat(style.fontSize) * SDF_SCALE}px ${style.fontFamily}`
   ctx.textAlign = 'left'
   ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = '#fff'
-  const ascent = ctx.measureText('Hg').fontBoundingBoxAscent
+
+  // CSS puts each char span's baseline at half-leading + ascent below the
+  // span's top; using the raw font ascent alone leaves the raster offset from
+  // the DOM glyphs, which reads as a snap when the overlay hands off.
+  const metrics = ctx.measureText('Hg')
+  const fontExtent = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
+  const lineHeight = parseFloat(style.lineHeight)
+  const halfLeading = Number.isFinite(lineHeight) ? (lineHeight - fontExtent) / 2 : 0
+  const baseline = (halfLeading + metrics.fontBoundingBoxAscent) * SDF_SCALE
 
   for (const span of heading.querySelectorAll<HTMLElement>('[data-char]')) {
     const ch = span.textContent
@@ -354,7 +368,7 @@ function buildSdfField(heading: HTMLHeadingElement): SdfBuild | null {
     ctx.fillText(
       ch,
       (rect.left - box.left + PAD_X) * SDF_SCALE,
-      (rect.top - box.top + PAD_Y) * SDF_SCALE + ascent,
+      (rect.top - box.top + PAD_Y) * SDF_SCALE + baseline,
     )
   }
 
@@ -387,7 +401,7 @@ function buildSdfField(heading: HTMLHeadingElement): SdfBuild | null {
     }
   }
 
-  return { data, width, height, cssWidth, cssHeight }
+  return { data, width, height, cssWidth, cssHeight, color }
 }
 
 function RaymarchScene({
@@ -395,7 +409,6 @@ function RaymarchScene({
   dirtyRef,
   progressRef,
   steps = 64,
-  depthPx = 22,
   gooeyPx = 18,
   edgePx = 56,
   angle = 0,
@@ -419,7 +432,6 @@ function RaymarchScene({
       uProgress: { value: 0 },
       uTime: { value: 0 },
       uSteps: { value: 64 },
-      uDepth: { value: 22 },
       uGooey: { value: 18 },
       uEdge: { value: 56 },
       uDir: { value: new Vector2(1, 0) },
@@ -430,6 +442,7 @@ function RaymarchScene({
       uWobble: { value: 10 },
       uLightDir: { value: new Vector3(0, 0, 1) },
       uCamZ: { value: 800 },
+      uColor: { value: new Vector3(0.957, 0.957, 0.961) },
     }),
     [],
   )
@@ -453,6 +466,7 @@ function RaymarchScene({
       const built = buildSdfField(heading)
       if (built) {
         sizeRef.current = [built.cssWidth, built.cssHeight]
+        ;(u.uColor.value as Vector3).set(...built.color)
         const texture = new DataTexture(
           built.data,
           built.width,
@@ -472,7 +486,6 @@ function RaymarchScene({
     u.uProgress.value = progressRef.current?.value ?? 0
     u.uTime.value = clock.elapsedTime
     u.uSteps.value = steps
-    u.uDepth.value = depthPx
     u.uGooey.value = Math.max(gooeyPx, 1)
     u.uEdge.value = Math.max(edgePx, 1)
     u.uDroplet.value = dropletPx
@@ -510,7 +523,7 @@ function RaymarchScene({
 
 /**
  * Heading revealed by a genuine SDF raymarcher: real DOM characters
- * (data-heading-final) are distance-transformed and extruded into a 3D scene
+ * (data-heading-final) are distance-transformed into a flat 3D scene
  * on a WebGL overlay (data-heading-gl), where a smooth-min goo sweep resolves
  * them with SDF-gradient lighting. The parent owns the GSAP timeline: it
  * tweens `progressRef` and crossfades the overlay back to the DOM heading at
@@ -534,6 +547,15 @@ export function RaymarchedSdfHeading({ text, className, ...scene }: RaymarchedSd
       dirtyRef.current = true
     })
     observer.observe(el)
+    // Theme toggles flip [data-theme] on <html>; rebuild so the shader picks
+    // up the heading's new computed color.
+    const themeObserver = new MutationObserver(() => {
+      dirtyRef.current = true
+    })
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    })
     let cancelled = false
     document.fonts?.ready.then(() => {
       if (!cancelled) dirtyRef.current = true
@@ -541,6 +563,7 @@ export function RaymarchedSdfHeading({ text, className, ...scene }: RaymarchedSd
     return () => {
       cancelled = true
       observer.disconnect()
+      themeObserver.disconnect()
     }
   }, [])
 

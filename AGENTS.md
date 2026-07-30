@@ -79,6 +79,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | DB / migrate:create (Cursor always-on) | `.cursor/rules/database-migrations.mdc` |
 | Payload how-to (collections, fields, hooks, queries, …) | `.agents/skills/payload` — use the **payload** skill |
 | CMS content migration from another system | `.agents/skills/cms-migration` |
+| WebGL / shaders / R3F / TSL / motion physics | `.agents/skills/creative-webgl-shaders` — use the **creative-webgl-shaders** skill |
 | Cursor topic rules (security, fields, hooks, …) | `.cursor/rules/` |
 | Human DB docs | [README.md](README.md#database--migrations) |
 | Architecture | [docs/architecture.md](docs/architecture.md) |

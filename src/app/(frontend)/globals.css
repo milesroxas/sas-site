@@ -848,19 +848,15 @@ html[data-scrolled] {
   --tertiary-foreground: oklch(0.9 0 0);
   --brand: oklch(0.5 0.12 75);
   --brand-foreground: oklch(0.94 0.01 95);
-  /* Optical weight match vs light mode (Geist variable axis; font-normal reads this). */
-  --font-weight-normal: 350;
-  --font-weight-medium: 450;
 }
 
-/* Grayscale AA thins light-on-dark strokes vs subpixel smoothing. */
-html[data-theme="dark"] {
+/* One rendering model for both themes: default (non-antialiased) smoothing
+   dilates strokes, so a theme-scoped `antialiased` makes the other theme read
+   bolder at the same weight. Softened dark ink (--foreground 0.9) already
+   tempers light-on-dark bloom. */
+html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-html[data-theme="dark"] body {
-  font-weight: var(--font-weight-normal);
 }
 
 @theme inline {

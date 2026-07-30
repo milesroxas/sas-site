@@ -36,16 +36,16 @@ export type TextLoadInRaymarchedProps = {
   scrambleSpeed?: number
   /** Order in which eyebrow characters lock in. */
   scrambleOrder?: ScrambleOrder
-  /** Timeline position (s) where the heading reveal begins. */
-  headingStart?: number
+  /** Seconds before the whole sequence starts. */
+  offset?: number
+  /** Seconds between element starts: eyebrow, then heading, then body. */
+  stagger?: number
   /** Seconds the heading takes to fully resolve. */
   headingDuration?: number
   /** GSAP ease shaping the heading reveal progress. */
   ease?: string
   /** Ray-march step budget (16–96). */
   marchSteps?: number
-  /** Extrusion half-depth in px — how "thick" the 3D glyphs are. */
-  depthPx?: number
   /** smooth-min blend radius in px melting droplets into glyphs. */
   gooeyPx?: number
   /** Softness in px of the sweeping reveal front. */
@@ -64,8 +64,6 @@ export type TextLoadInRaymarchedProps = {
   wobblePx?: number
   /** Key light direction in degrees around the text plane. */
   lightAngle?: number
-  /** Timeline position (s) where the body begins. */
-  bodyStart?: number
   /** Seconds the body takes to sharpen. */
   bodyDuration?: number
   /** Starting blur in px for the body. */
@@ -81,11 +79,13 @@ const SWAP_DURATION = 0.18
 /**
  * Improved take on TextLoadIn built on genuine raymarching (see
  * RaymarchedSdfHeading): the eyebrow scrambles into place while the headline
- * — a real extruded signed-distance field — is swept into existence by a
- * smooth-min goo front with metaball droplets and SDF-gradient lighting,
- * then the supporting line follows, dimmer. Plays when the block enters the
- * viewport; `replayKey` re-runs it on demand. Renders the final state
- * statically under prefers-reduced-motion.
+ * — a real signed-distance field — is swept into existence by a smooth-min
+ * goo front with metaball droplets and SDF-gradient lighting, then the
+ * supporting line follows, dimmer. Sequencing is a single global stagger:
+ * the eyebrow starts at `offset`, the heading at `offset + stagger`, the
+ * body at `offset + stagger * 2`. Plays when the block enters the viewport;
+ * `replayKey` re-runs it on demand. Renders the final state statically under
+ * prefers-reduced-motion.
  */
 export function TextLoadInRaymarched({
   eyebrow,
@@ -98,11 +98,11 @@ export function TextLoadInRaymarched({
   scrambleChars = 'upperCase',
   scrambleSpeed = 0.5,
   scrambleOrder = 'leftToRight',
-  headingStart = 0.2,
+  offset = 0,
+  stagger = 1.1,
   headingDuration = 3.4,
   ease = 'power2.inOut',
   marchSteps = 64,
-  depthPx = 22,
   gooeyPx = 18,
   edgePx = 56,
   sweepAngle = 0,
@@ -112,7 +112,6 @@ export function TextLoadInRaymarched({
   dropletScatter = 0.5,
   wobblePx = 10,
   lightAngle = 125,
-  bodyStart = 2.4,
   bodyDuration = 1.1,
   bodyBlur = 14,
   bodyRise = 14,
@@ -185,8 +184,12 @@ export function TextLoadInRaymarched({
       gsap.set('[data-heading-final]', { autoAlpha: 0 })
       gsap.set('[data-heading-gl]', { autoAlpha: 1 })
 
+      // One global rhythm: each element starts one `stagger` after the last.
+      const headingStart = offset + stagger
+      const bodyStart = offset + stagger * 2
+
       const tl = gsap.timeline()
-      tl.add(createScrambleTween(eyebrowEl, '', eyebrow, scrambleOptions), 0)
+      tl.add(createScrambleTween(eyebrowEl, '', eyebrow, scrambleOptions), offset)
       tl.to(glProgress.current, { value: 1, duration: headingDuration, ease }, headingStart)
       tl.to(
         '[data-heading-final]',
@@ -212,10 +215,10 @@ export function TextLoadInRaymarched({
         scrambleChars,
         scrambleSpeed,
         scrambleOrder,
-        headingStart,
+        offset,
+        stagger,
         headingDuration,
         ease,
-        bodyStart,
         bodyDuration,
         bodyBlur,
         bodyRise,
@@ -227,19 +230,18 @@ export function TextLoadInRaymarched({
 
   return (
     <div ref={rootRef} className={cn('space-y-5', className)}>
-      <p className="flex items-baseline gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-300">
+      <p className="flex items-baseline gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
         <span aria-hidden className="text-[7px] leading-none">
           ●
         </span>
         <span ref={eyebrowRef} aria-hidden className="inline-block min-h-[1em] whitespace-pre" />
         <span className="sr-only">{eyebrow}</span>
       </p>
-      <div className="space-y-1 text-3xl font-medium leading-tight tracking-tight md:text-4xl">
+      <div className="space-y-1">
         <RaymarchedSdfHeading
           text={heading}
           progressRef={glProgress}
           steps={marchSteps}
-          depthPx={depthPx}
           gooeyPx={gooeyPx}
           edgePx={edgePx}
           angle={sweepAngle}
@@ -249,9 +251,12 @@ export function TextLoadInRaymarched({
           dropletScatter={dropletScatter}
           wobblePx={wobblePx}
           lightAngle={lightAngle}
-          className="max-w-[24ch] text-zinc-100"
+          className="max-w-[24ch] text-4xl font-normal leading-tight tracking-tight text-foreground"
         />
-        <p data-body className="max-w-[34ch] text-zinc-500 will-change-[opacity,transform,filter]">
+        <p
+          data-body
+          className="max-w-[34ch] text-base font-normal text-muted-foreground will-change-[opacity,transform,filter]"
+        >
           {body}
         </p>
       </div>
