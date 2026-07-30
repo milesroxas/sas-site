@@ -3,7 +3,7 @@
 import { button } from 'leva'
 import { useState } from 'react'
 import { TextLoadInRaymarched } from '@/features/immersive'
-import { useDemoControls } from './demo-section'
+import { useDemoControls, useDemoSnippet } from './demo-section'
 
 const EASES = [
   'power2.inOut',
@@ -97,8 +97,36 @@ export function TextLoadInRaymarchedPlayground() {
 
   useDemoControls('Actions', { replay: button(() => setReplayKey((n) => n + 1)) })
 
+  // Copy stays out: the consumer supplies its own eyebrow, heading and body.
+  useDemoSnippet({
+    retriggerOnEnter: retrigger,
+    threshold,
+    scrambleDuration,
+    scrambleChars: charSet === 'custom' ? customChars : charSet,
+    scrambleSpeed,
+    scrambleOrder,
+    headingStart,
+    headingDuration,
+    ease,
+    marchSteps,
+    depthPx,
+    gooeyPx,
+    edgePx,
+    sweepAngle,
+    dropletPx,
+    dropletCount,
+    dropletStretch,
+    dropletScatter,
+    wobblePx,
+    lightAngle,
+    bodyStart,
+    bodyDuration,
+    bodyBlur,
+    bodyRise,
+  })
+
   return (
-    <div className="relative flex min-h-[420px] items-center overflow-hidden rounded-md bg-zinc-950 px-8 py-16 md:px-14">
+    <div className="relative flex min-h-105 items-center overflow-hidden rounded-md bg-zinc-950 px-8 py-16 md:px-14">
       <div
         aria-hidden
         className="pointer-events-none absolute -left-1/4 top-1/2 h-[150%] w-2/3 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(234,179,8,0.22),transparent)] blur-2xl"

@@ -657,6 +657,16 @@
     scrollbar-gutter: stable;
     @apply font-sans;
   }
+  /* Radix overlays (dialog, alert-dialog, modal dropdown/popover) lock scroll
+     through react-remove-scroll, which offsets the body by the measured
+     scrollbar width. The gutter above already reserves that space and keeps it
+     while the lock holds, so that offset double-counts and shifts the page.
+     Zero it — the library writes the offset with !important. Margin only: the
+     library's default gapMode is `margin` and its padding values are copies of
+     the body's own computed padding. */
+  body[data-scroll-locked] {
+    margin-right: 0 !important;
+  }
   /* Tailwind v4 preflight sets buttons to cursor: default; restore pointer
      for enabled interactive elements (v3 behavior). */
   button:not(:disabled),

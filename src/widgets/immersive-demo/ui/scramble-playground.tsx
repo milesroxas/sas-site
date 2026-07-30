@@ -4,7 +4,7 @@ import { button } from 'leva'
 import { useMemo, useRef, useState } from 'react'
 import { ChromaSplitText } from '@/features/immersive'
 import { ScrambleText } from '@/shared/ui/scramble-text'
-import { useDemoControls } from './demo-section'
+import { useDemoControls, useDemoSnippet } from './demo-section'
 
 const EASES = [
   'none',
@@ -75,6 +75,19 @@ export function ScramblePlayground() {
   useDemoControls('Actions', { replay: button(() => setRunId((n) => n + 1)) })
 
   const fitTexts = useMemo(() => [from, to], [from, to])
+
+  // Phrases stay out: the consumer supplies its own copy.
+  useDemoSnippet({
+    duration,
+    hold,
+    loop,
+    ease,
+    chars: charSet === 'custom' ? customChars : charSet,
+    speed,
+    revealDelay,
+    tweenLength,
+    order,
+  })
 
   return (
     <div className="space-y-4">

@@ -2,7 +2,7 @@
 
 import { button } from 'leva'
 import { RefractionMedia } from '@/features/immersive'
-import { useDemoControls } from './demo-section'
+import { useDemoControls, useDemoSnippet } from './demo-section'
 import { useVideoUpload } from './use-video-upload'
 
 /** Default lives in /public; the GUI upload swaps in a blob URL. */
@@ -39,26 +39,26 @@ export function RefractionPlayground() {
   })
 
   const { spread, feather, edge, refraction, chroma } = useDemoControls('Warp', {
-    spread: { value: 0.22, min: 0.05, max: 0.6, step: 0.01 },
+    spread: { value: 0.6, min: 0.05, max: 0.6, step: 0.01 },
     // 0 = edgeless gaussian falloff (no visible boundary); 1 = ringed lens.
-    edge: { value: 0, min: 0, max: 1, step: 0.05 },
+    edge: { value: 0.2, min: 0, max: 1, step: 0.05 },
     feather: {
-      value: 0.6,
+      value: 1,
       min: 0,
       max: 1,
       step: 0.05,
       render: (get) => get('Warp.edge') > 0,
     },
-    refraction: { value: 0.12, min: 0, max: 0.5, step: 0.01 },
-    chroma: { value: 0.35, min: 0, max: 1, step: 0.05 },
+    refraction: { value: 0.5, min: 0, max: 0.5, step: 0.01 },
+    chroma: { value: 1, min: 0, max: 1, step: 0.05 },
   })
 
   // leva clamps number display to 2 decimals, so tiny UV offsets read as
   // "0.00" — expose distortion ×1000 / smear ×100 and scale back down below.
   const { distortion, noiseScale, noiseSpeed } = useDemoControls('Distortion', {
-    distortion: { value: 8, min: 0, max: 40, step: 1, label: 'amount' },
-    noiseScale: { value: 6, min: 1, max: 20, step: 0.5, label: 'scale' },
-    noiseSpeed: { value: 0.4, min: 0, max: 2, step: 0.05, label: 'speed' },
+    distortion: { value: 24, min: 0, max: 40, step: 1, label: 'amount' },
+    noiseScale: { value: 2, min: 1, max: 20, step: 0.5, label: 'scale' },
+    noiseSpeed: { value: 0.15, min: 0, max: 2, step: 0.05, label: 'speed' },
   })
 
   const {
@@ -173,19 +173,48 @@ export function RefractionPlayground() {
   })
 
   const { smear, highlight, follow, ease } = useDemoControls('Motion', {
-    smear: { value: 2, min: 0, max: 10, step: 0.5 },
+    smear: { value: 5, min: 0, max: 10, step: 0.5 },
     highlight: {
-      value: 0.08,
+      value: 0.02,
       min: 0,
       max: 0.5,
       step: 0.01,
       render: (get) => get('Warp.edge') > 0,
     },
-    follow: { value: 8, min: 1, max: 20, step: 0.5 },
-    ease: { value: 6, min: 1, max: 20, step: 0.5 },
+    follow: { value: 4, min: 1, max: 20, step: 0.5 },
+    ease: { value: 3, min: 1, max: 20, step: 0.5 },
   })
 
   const isVideo = media === 'video' && Boolean(videoUrl)
+
+  // Media stays out: the hero binds its own source. Units match the shipped
+  // `LENS` object, so the snippet drops straight in.
+  useDemoSnippet({
+    spread,
+    edge,
+    feather,
+    refraction,
+    chroma,
+    distortion: distortion / 1000,
+    noiseScale,
+    noiseSpeed,
+    smear: smear / 100,
+    highlight,
+    lensVisibility: lensEnabled ? lensVisibility : 0,
+    lensSpread,
+    lensDepth,
+    lensRefraction,
+    lensChroma,
+    lensSaturation,
+    iorR,
+    iorY,
+    iorG,
+    iorC,
+    iorB,
+    iorP,
+    follow,
+    ease,
+  })
 
   return (
     <RefractionMedia

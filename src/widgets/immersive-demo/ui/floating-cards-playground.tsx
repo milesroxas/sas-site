@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { FloatingCards, type FloatingCardsEase } from '@/features/immersive'
 import { cn } from '@/utilities/ui'
-import { useDemoControls } from './demo-section'
+import { useDemoControls, useDemoSnippet } from './demo-section'
 
 /** Default lives in /public; the GUI upload swaps in a blob URL. */
 const DEFAULT_IMAGE = '/images/bg-fpo-01.jpg'
@@ -87,6 +87,21 @@ export function FloatingCardsPlayground() {
   })
 
   const cards = CARD_LAYOUT.map((layout) => ({ ...layout, src: image ?? DEFAULT_IMAGE }))
+
+  // Cards stay out: the consumer supplies its own layout and screenshots.
+  useDemoSnippet({
+    tilt,
+    cornerRadius,
+    floatSpeed,
+    floatIntensity,
+    wobble,
+    enterDuration,
+    exitDuration,
+    stagger,
+    depth,
+    rise,
+    ease,
+  })
 
   const show = (name: string) => {
     setActive(name)

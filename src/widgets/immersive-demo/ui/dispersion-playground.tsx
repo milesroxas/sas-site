@@ -2,7 +2,7 @@
 
 import { button } from 'leva'
 import { DispersionMedia, type DispersionShape } from '@/features/immersive'
-import { useDemoControls } from './demo-section'
+import { useDemoControls, useDemoSnippet } from './demo-section'
 import { useVideoUpload } from './use-video-upload'
 
 /** Default lives in /public; the GUI upload swaps in a blob URL. */
@@ -66,6 +66,23 @@ export function DispersionPlayground() {
 
   const isVideo = media === 'video' && Boolean(videoUrl)
   const src = isVideo ? videoUrl : (image ?? DEFAULT_IMAGE)
+
+  // Media stays out: the consumer binds its own source.
+  useDemoSnippet({
+    shape,
+    scale,
+    speed,
+    follow,
+    refraction,
+    chromaticAberration: chroma,
+    saturation,
+    iorR,
+    iorY,
+    iorG,
+    iorC,
+    iorB,
+    iorP,
+  })
 
   return (
     <DispersionMedia
