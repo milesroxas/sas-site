@@ -6,6 +6,7 @@ import { DispersionPlayground } from './dispersion-playground'
 import { FloatingCardsPlayground } from './floating-cards-playground'
 import { RefractionPlayground } from './refraction-playground'
 import { ScramblePlayground } from './scramble-playground'
+import { TextLoadInPlayground } from './text-load-in-playground'
 
 /**
  * Full-page demo: GlobalCanvas + tunnels. Lenis runs site-wide via SmoothScrollProvider.
@@ -72,6 +73,13 @@ export function ImmersiveDemoPage() {
           description="R3F screenshot cards tilted on Y, drifting in a slow loop. Hover a featured-work item to stagger them in from a blank scene; leave to animate them back out."
         >
           <FloatingCardsPlayground />
+        </DemoSection>
+
+        <DemoSection
+          title="Text load-in"
+          description="Scroll-triggered copy reveal: the eyebrow decodes via scramble while the headline resolves through a ray-marched smear shader that blends characters into each other as they appear, then the supporting line follows. Scroll it into view to play; edit the copy and re-run it from the GUI."
+        >
+          <TextLoadInPlayground />
         </DemoSection>
 
         <div className="h-24" />

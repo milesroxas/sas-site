@@ -22,4 +22,5 @@ export {
   type RefractionMediaProps,
   type RefractionSource,
 } from './ui/refraction-media'
+export { TextLoadIn, type TextLoadInProps } from './ui/text-load-in'
 export { WebGlBackdropScene } from './ui/webgl-backdrop-scene'
