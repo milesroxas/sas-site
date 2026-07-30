@@ -43,7 +43,7 @@ export type ScrambleTextProps = {
   onScrambleChange?: (scrambling: boolean) => void
 } & HTMLAttributes<HTMLSpanElement>
 
-const CHAR_PRESETS: Record<string, string> = {
+export const CHAR_PRESETS: Record<string, string> = {
   upperCase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
   lowerCase: 'abcdefghijklmnopqrstuvwxyz',
   upperAndLowerCase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
@@ -101,7 +101,7 @@ function buildThresholds(length: number, order: ScrambleOrder): number[] {
   return ranks.map((rank) => (rank + 1) / length)
 }
 
-type TransitionOptions = {
+export type ScrambleTweenOptions = {
   duration: number
   ease: string
   charPool: string
@@ -114,11 +114,11 @@ type TransitionOptions = {
 }
 
 /** One from→to scramble tween. Every unresolved character churns every tick. */
-function createScrambleTween(
+export function createScrambleTween(
   el: HTMLElement,
   fromText: string,
   toText: string,
-  o: TransitionOptions,
+  o: ScrambleTweenOptions,
 ) {
   const state = { p: 0 }
   const maxLength = Math.max(fromText.length, toText.length)
@@ -208,7 +208,7 @@ export function ScrambleText({
       // A rebuild can kill a mid-flight tween before its onComplete fires.
       notifyRef.current?.(false)
 
-      const options: TransitionOptions = {
+      const options: ScrambleTweenOptions = {
         duration,
         ease,
         charPool: CHAR_PRESETS[chars] ?? chars,

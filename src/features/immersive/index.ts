@@ -12,4 +12,5 @@ export {
   type FloatingCardsProps,
 } from './ui/floating-cards'
 export { RefractionImage, type RefractionImageProps } from './ui/refraction-image'
+export { TextLoadIn, type TextLoadInProps } from './ui/text-load-in'
 export { WebGlBackdropScene } from './ui/webgl-backdrop-scene'
