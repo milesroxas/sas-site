@@ -1,13 +1,13 @@
 'use client'
 
-import { RefractionImage } from '@/features/immersive'
+import { RefractionMedia } from '@/features/immersive'
 import { useDemoControls } from './demo-section'
 
 /** Default lives in /public; the GUI upload swaps in a blob URL. */
 const DEFAULT_IMAGE = '/images/bg-fpo-01.jpg'
 
 /**
- * Demo content: RefractionImage with every shader parameter wired to the
+ * Demo content: RefractionMedia with every shader parameter wired to the
  * surrounding DemoSection's GUI, plus an image upload. Demo-only — not
  * shipped UI.
  */
@@ -53,7 +53,7 @@ export function RefractionPlayground() {
   })
 
   return (
-    <RefractionImage
+    <RefractionMedia
       src={image ?? DEFAULT_IMAGE}
       spread={spread}
       feather={feather}

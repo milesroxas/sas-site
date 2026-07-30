@@ -1,27 +1,29 @@
 'use client'
 
-import { Canvas, type ThreeEvent, useFrame, useThree } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import cn from 'clsx'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   LinearFilter,
   MathUtils,
   type ShaderMaterial,
-  type Texture,
+  Texture,
   TextureLoader,
   Vector2,
+  VideoTexture,
 } from 'three'
 
 /**
- * Image panel with a cursor-driven "liquid glass" lens: refraction (space is
- * pulled toward the cursor), chromatic dispersion of that displacement, and
- * animated noise distortion, all confined to a soft radial mask around a
- * damped trailing pointer.
+ * Image or video panel with a cursor-driven "liquid glass" lens: refraction
+ * (space is pulled toward the cursor), chromatic dispersion of that
+ * displacement, and animated noise distortion, all confined to a soft radial
+ * mask around a damped trailing pointer.
  *
  * Renders in its own small classic-renderer canvas rather than the global one
  * (GlobalCanvas prefers WebGPU, where raw GLSL ShaderMaterial is unsupported)
  * and uses frameloop="demand": zero GPU work while idle — frames are only
- * requested while the lens is fading, moving, or animating.
+ * requested while the lens is fading, moving, animating, or a video source has
+ * a new frame, and never while the canvas is scrolled off screen.
  */
 
 const DPR: [number, number] = [1, 2]
@@ -140,6 +142,15 @@ void main() {
   float gauss = exp(-3.0 * dist * dist / (uRadius * uRadius));
   float mask = mix(gauss, ring, uEdge) * uHover;
 
+  // Every term below scales by mask, so outside the lens the result is just the
+  // untouched texture. Taking that path early skips two simplex evaluations and
+  // two texture fetches — on a full-bleed surface most of the screen, and all
+  // of it while idle. The mask is spatially coherent, so warps branch uniformly.
+  if (mask < 0.002) {
+    gl_FragColor = vec4(texture2D(uMap, coverUv(vUv)).rgb, 1.0);
+    return;
+  }
+
   // Refraction: pull space toward the cursor. Zero at the mask edge, so the
   // lens blends seamlessly into the undistorted image.
   vec2 displacement = (uMouse - vUv) * uRefraction * mask;
@@ -167,9 +178,23 @@ void main() {
 }
 `
 
-export type RefractionImageProps = {
-  /** Image URL — same-origin path, blob: or data: URL. */
-  src: string
+/** A DOM element already painting the media, reused as the texture source. */
+export type RefractionSource = HTMLImageElement | HTMLVideoElement
+
+const isVideoSource = (node: RefractionSource): node is HTMLVideoElement => node.tagName === 'VIDEO'
+
+export type RefractionMediaProps = {
+  /** Image URL — same-origin path, blob: or data: URL. Ignored when `source` is set. */
+  src?: string
+  /**
+   * Live `<img>` or `<video>` to sample instead of loading `src`. Reuses the
+   * bytes the browser already has, and keeps that element available as the
+   * non-WebGL fallback. Must be same-origin or CORS-enabled, otherwise the
+   * texture upload taints the canvas and throws.
+   */
+  source?: RefractionSource | null
+  /** Fired once the first texture is on the GPU — use it to reveal the canvas. */
+  onReady?: () => void
   /** Lens radius (spread) in plane UV units; 1 spans the panel's height. */
   spread?: number
   /** 0–1: edge softness of the lens falloff (0 = hard rim). */
@@ -201,10 +226,12 @@ export type RefractionImageProps = {
   className?: string
 }
 
-type SceneProps = Omit<RefractionImageProps, 'className'>
+type SceneProps = Omit<RefractionMediaProps, 'className'>
 
 function RefractionScene({
   src,
+  source,
+  onReady,
   spread = 0.22,
   feather = 0.6,
   edge = 0,
@@ -221,8 +248,9 @@ function RefractionScene({
   // Select only what's needed; `useThree()` re-renders on any R3F state change.
   const viewport = useThree((state) => state.viewport)
   const invalidate = useThree((state) => state.invalidate)
+  const canvas = useThree((state) => state.gl.domElement)
   const materialRef = useRef<ShaderMaterial>(null)
-  const [imageAspect, setImageAspect] = useState(16 / 9)
+  const [sourceAspect, setSourceAspect] = useState(16 / 9)
 
   // Pointer state lives in refs and feeds uniforms via useFrame — never React
   // state (perf-never-set-state-in-useframe).
@@ -230,6 +258,14 @@ function RefractionScene({
   const velocityTarget = useRef(new Vector2())
   const previousMouse = useRef(new Vector2(0.5, 0.5))
   const hoverTarget = useRef(0)
+  const onScreen = useRef(true)
+
+  // Read through a ref so a caller re-creating the callback never re-runs the
+  // texture effect (which would rebuild the texture on every parent render).
+  const onReadyRef = useRef(onReady)
+  useEffect(() => {
+    onReadyRef.current = onReady
+  })
 
   // Initial values only — R3F may copy this object into the material, so all
   // runtime updates go through materialRef.current.uniforms, never this object.
@@ -256,13 +292,16 @@ function RefractionScene({
     [],
   )
 
-  // Load the image; the previous texture stays visible until the new one is
-  // ready, then gets disposed (textures inside uniforms are not auto-disposed).
+  // Bind the texture. A `source` element is sampled in place (no second
+  // download); otherwise `src` is fetched. Either way the previous texture
+  // stays visible until the new one is ready, then gets disposed — textures
+  // inside uniforms are not auto-disposed.
   useEffect(() => {
     const material = materialRef.current
     if (!material) return
     let cancelled = false
-    new TextureLoader().load(src, (texture) => {
+
+    const apply = (texture: Texture, width: number, height: number) => {
       if (cancelled) {
         texture.dispose()
         return
@@ -273,14 +312,55 @@ function RefractionScene({
       const previous = material.uniforms.uMap?.value as Texture | null
       material.uniforms.uMap.value = texture
       previous?.dispose()
-      const image = texture.image as { width: number; height: number }
-      setImageAspect(image.width / image.height)
+      if (width > 0 && height > 0) setSourceAspect(width / height)
       invalidate()
+      onReadyRef.current?.()
+    }
+
+    if (source) {
+      if (isVideoSource(source)) {
+        const video = source
+        const bind = () => apply(new VideoTexture(video), video.videoWidth, video.videoHeight)
+        if (video.readyState >= video.HAVE_CURRENT_DATA) bind()
+        else video.addEventListener('loadeddata', bind, { once: true })
+        return () => {
+          cancelled = true
+          video.removeEventListener('loadeddata', bind)
+        }
+      }
+
+      const image = source
+      // Fires again whenever a responsive srcset swaps in a different file, so
+      // the existing texture is re-uploaded rather than left on the old bitmap.
+      const bind = () => {
+        if (cancelled) return
+        const existing = material.uniforms.uMap?.value as Texture | null
+        if (existing?.image === image) {
+          existing.needsUpdate = true
+          invalidate()
+          return
+        }
+        const texture = new Texture(image)
+        texture.needsUpdate = true
+        apply(texture, image.naturalWidth, image.naturalHeight)
+      }
+      if (image.complete && image.naturalWidth > 0) bind()
+      image.addEventListener('load', bind)
+      return () => {
+        cancelled = true
+        image.removeEventListener('load', bind)
+      }
+    }
+
+    if (!src) return
+    new TextureLoader().load(src, (texture) => {
+      const image = texture.image as { width: number; height: number }
+      apply(texture, image.width, image.height)
     })
     return () => {
       cancelled = true
     }
-  }, [src, invalidate])
+  }, [src, source, invalidate])
 
   useEffect(() => {
     const material = materialRef.current
@@ -289,19 +369,90 @@ function RefractionScene({
     }
   }, [])
 
-  // Cover-fit whenever the panel or image aspect changes.
+  // A video source only produces work when it produces a frame, so drive the
+  // demand loop off the decoder rather than the display refresh rate.
+  useEffect(() => {
+    if (!source || !isVideoSource(source)) return
+    const video = source
+
+    // Typed as always present, but still absent on older Safari and Firefox.
+    if (typeof video.requestVideoFrameCallback === 'function') {
+      let handle = video.requestVideoFrameCallback(function onVideoFrame() {
+        if (onScreen.current) invalidate()
+        handle = video.requestVideoFrameCallback(onVideoFrame)
+      })
+      return () => video.cancelVideoFrameCallback(handle)
+    }
+
+    // Otherwise fall back to the display clock.
+    let frame = requestAnimationFrame(function onAnimationFrame() {
+      if (onScreen.current && !video.paused) invalidate()
+      frame = requestAnimationFrame(onAnimationFrame)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [source, invalidate])
+
+  // Scrolled out of view: stop asking for frames entirely.
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      onScreen.current = entry?.isIntersecting ?? true
+      if (onScreen.current) invalidate()
+    })
+    observer.observe(canvas)
+    return () => observer.disconnect()
+  }, [canvas, invalidate])
+
+  // Pointer is tracked against the canvas rect rather than by raycasting the
+  // mesh, so the lens still follows the cursor when the canvas sits behind
+  // other content or is pointer-events-none (as a page background is).
+  useEffect(() => {
+    const handleMove = (event: PointerEvent) => {
+      if (!onScreen.current) {
+        if (hoverTarget.current !== 0) {
+          hoverTarget.current = 0
+          invalidate()
+        }
+        return
+      }
+      const rect = canvas.getBoundingClientRect()
+      if (rect.width === 0 || rect.height === 0) return
+      const x = (event.clientX - rect.left) / rect.width
+      // UV origin is bottom-left; client coordinates run top-down.
+      const y = 1 - (event.clientY - rect.top) / rect.height
+      const inside = x >= 0 && x <= 1 && y >= 0 && y <= 1
+      if (inside) pointerTarget.current.set(x, y)
+      hoverTarget.current = inside ? 1 : 0
+      invalidate()
+    }
+
+    const handleLeave = () => {
+      hoverTarget.current = 0
+      invalidate()
+    }
+
+    window.addEventListener('pointermove', handleMove, { passive: true })
+    document.addEventListener('pointerleave', handleLeave)
+    window.addEventListener('blur', handleLeave)
+    return () => {
+      window.removeEventListener('pointermove', handleMove)
+      document.removeEventListener('pointerleave', handleLeave)
+      window.removeEventListener('blur', handleLeave)
+    }
+  }, [canvas, invalidate])
+
+  // Cover-fit whenever the panel or source aspect changes.
   useEffect(() => {
     const u = materialRef.current?.uniforms
     if (!u) return
     const planeAspect = viewport.aspect
-    if (planeAspect > imageAspect) {
-      u.uCover.value.set(1, imageAspect / planeAspect)
+    if (planeAspect > sourceAspect) {
+      u.uCover.value.set(1, sourceAspect / planeAspect)
     } else {
-      u.uCover.value.set(planeAspect / imageAspect, 1)
+      u.uCover.value.set(planeAspect / sourceAspect, 1)
     }
     u.uAspect.value = planeAspect
     invalidate()
-  }, [viewport.aspect, imageAspect, invalidate])
+  }, [viewport.aspect, sourceAspect, invalidate])
 
   // Static uniforms sync on prop change (not in useFrame: with a demand
   // frameloop no frames run while idle, so GUI tweaks would go stale).
@@ -333,21 +484,6 @@ function RefractionScene({
     invalidate,
   ])
 
-  const handlePointerMove = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      if (!event.uv) return
-      pointerTarget.current.set(event.uv.x, event.uv.y)
-      hoverTarget.current = 1
-      invalidate()
-    },
-    [invalidate],
-  )
-
-  const handlePointerOut = useCallback(() => {
-    hoverTarget.current = 0
-    invalidate()
-  }, [invalidate])
-
   useFrame((_, delta) => {
     const material = materialRef.current
     if (!material) return
@@ -371,19 +507,15 @@ function RefractionScene({
     u.uTime.value += dt
 
     // Keep requesting frames only while the lens is visible or still moving;
-    // once everything settles the canvas goes fully idle.
+    // once everything settles the canvas goes fully idle. A playing video
+    // source drives its own invalidation, so it is unaffected by settling.
     const settled =
       hoverTarget.current === 0 && u.uHover.value < 0.002 && velocity.lengthSq() < 1e-6
-    if (!settled) invalidate()
+    if (!settled && onScreen.current) invalidate()
   })
 
   return (
-    <mesh
-      scale-x={viewport.width}
-      scale-y={viewport.height}
-      onPointerMove={handlePointerMove}
-      onPointerOut={handlePointerOut}
-    >
+    <mesh scale-x={viewport.width} scale-y={viewport.height} raycast={() => null}>
       <planeGeometry />
       <shaderMaterial
         ref={materialRef}
@@ -396,11 +528,11 @@ function RefractionScene({
 }
 
 /**
- * WebGL image panel with a subtle refraction/chroma/distortion lens that
+ * WebGL media panel with a subtle refraction/chroma/distortion lens that
  * trails the cursor on hover. Give it a sized container via className
- * (e.g. an aspect-ratio utility); the image cover-fits inside.
+ * (e.g. an aspect-ratio utility); the media cover-fits inside.
  */
-export function RefractionImage({ className, ...scene }: RefractionImageProps) {
+export function RefractionMedia({ className, ...scene }: RefractionMediaProps) {
   return (
     <div className={cn('relative', className)}>
       <Canvas dpr={DPR} flat linear frameloop="demand" gl={GL_OPTIONS}>

@@ -11,5 +11,9 @@ export {
   type FloatingCardsEase,
   type FloatingCardsProps,
 } from './ui/floating-cards'
-export { RefractionImage, type RefractionImageProps } from './ui/refraction-image'
+export {
+  RefractionMedia,
+  type RefractionMediaProps,
+  type RefractionSource,
+} from './ui/refraction-media'
 export { WebGlBackdropScene } from './ui/webgl-backdrop-scene'

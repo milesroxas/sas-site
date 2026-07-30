@@ -1,9 +1,9 @@
 import type React from 'react'
-import { Media } from '@/components/Media'
 import { HeroDarkTheme } from '@/heros/shared'
 import type { Home, Post } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { FeaturedCard } from './FeaturedCard'
+import { HeroBackground } from './HeroBackground'
 
 type HomeHeroData = Home['hero']
 
@@ -36,18 +36,7 @@ const HomeHero: React.FC<HomeHeroData> = ({
     >
       <HeroDarkTheme />
 
-      {media && typeof media === 'object' && (
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-          <Media
-            fill
-            htmlElement={null}
-            imgClassName="object-cover opacity-85 mix-blend-soft-light select-none"
-            priority
-            resource={media}
-            size="100vw"
-          />
-        </div>
-      )}
+      {media && typeof media === 'object' && <HeroBackground media={media} />}
 
       {/* Header inset only — section height already ends at the footer. */}
       <div className="relative z-10 flex min-h-0 flex-1 flex-col self-stretch px-gutter pt-(--header-height)">

@@ -6,6 +6,12 @@ import type { Media as MediaType } from '@/payload-types'
 export interface Props {
   alt?: string
   className?: string
+  /**
+   * Opt a cross-origin video into CORS so it can be read into a canvas/WebGL
+   * texture. Requires the media host to send `Access-Control-Allow-Origin`;
+   * without it the element fails to load rather than merely tainting.
+   */
+  crossOrigin?: 'anonymous' | 'use-credentials'
   fill?: boolean // for NextImage only
   htmlElement?: ElementType | null
   pictureClassName?: string

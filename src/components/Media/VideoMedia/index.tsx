@@ -21,7 +21,7 @@ const cdnSrc = (filename: string | null | undefined, cacheTag?: string | null): 
 }
 
 export const VideoMedia: React.FC<MediaProps> = (props) => {
-  const { fill, imgClassName, onClick, resource, videoClassName } = props
+  const { crossOrigin, fill, imgClassName, onClick, resource, videoClassName } = props
 
   if (!resource || typeof resource !== 'object') {
     return null
@@ -50,6 +50,7 @@ export const VideoMedia: React.FC<MediaProps> = (props) => {
         videoClassName,
       )}
       controls={false}
+      crossOrigin={crossOrigin}
       loop
       muted
       onClick={onClick}
