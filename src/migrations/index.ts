@@ -21,6 +21,7 @@ import * as migration_20260723_162716_add_post_hero_style from './20260723_16271
 import * as migration_20260729_200545_hero_eyebrow_description from './20260729_200545_hero_eyebrow_description';
 import * as migration_20260729_202055_hero_title from './20260729_202055_hero_title';
 import * as migration_20260729_205254_home_global from './20260729_205254_home_global';
+import * as migration_20260730_191629_platforms_taxonomy from './20260730_191629_platforms_taxonomy';
 
 export const migrations = [
   {
@@ -136,6 +137,11 @@ export const migrations = [
   {
     up: migration_20260729_205254_home_global.up,
     down: migration_20260729_205254_home_global.down,
-    name: '20260729_205254_home_global'
+    name: '20260729_205254_home_global',
+  },
+  {
+    up: migration_20260730_191629_platforms_taxonomy.up,
+    down: migration_20260730_191629_platforms_taxonomy.down,
+    name: '20260730_191629_platforms_taxonomy'
   },
 ];
