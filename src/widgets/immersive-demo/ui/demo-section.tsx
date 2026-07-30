@@ -78,5 +78,6 @@ export function DemoSection({ title, description, children }: DemoSectionProps) 
  */
 export function useDemoControls<S extends Schema>(folderName: string, schema: S) {
   const store = useStoreContext()
-  return useControls(folderName, schema, { store })
+  // Folders start collapsed so dense panels stay scannable.
+  return useControls(folderName, schema, { collapsed: true }, { store })
 }

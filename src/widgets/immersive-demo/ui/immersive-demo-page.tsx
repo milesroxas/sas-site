@@ -57,14 +57,14 @@ export function ImmersiveDemoPage() {
 
         <DemoSection
           title="Refraction hover"
-          description="Cursor-driven lens shader over an image: refraction, chromatic dispersion, noise distortion, and velocity smear. Upload your own image via the GUI."
+          description="Two-layer cursor lens over an image: the original screen-space warp (refraction, chromatic dispersion, noise distortion, velocity smear) plus a real flattened glass mesh riding the same pointer, refracting the warped image through six spectral bands (same FBO + dispersion technique as the dispersion mesh below). Dial the glass in or out with the visibility control. Upload your own image or video (10 MB max) via the GUI."
         >
           <RefractionPlayground />
         </DemoSection>
 
         <DemoSection
           title="Dispersion mesh"
-          description="Maxime Heckel's refraction + dispersion technique: a glass mesh tumbles over image or video media, refracting it through six spectral bands (RYGCBV) sampled from an FBO snapshot. Defaults to the home hero's gradient video."
+          description="Maxime Heckel's refraction + dispersion technique: a glass mesh tumbles after your cursor over image or video media, refracting it through six spectral bands (RYGCBV) sampled from an FBO snapshot. It glides back to center when the cursor leaves. Defaults to the home hero's gradient video."
         >
           <DispersionPlayground />
         </DemoSection>

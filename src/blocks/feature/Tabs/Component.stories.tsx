@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { richTextFixture } from '@/shared/testing/richTextFixture'
-import { mediaFixture } from '../../fixtures'
+import { mediaFixture, videoFixture } from '../../fixtures'
 import { FeatureTabsBlock } from './Component'
 
 const meta = {
@@ -73,6 +73,14 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
+
+export const Video: Story = {
+  args: {
+    tabs: meta.args.tabs.map((tab) =>
+      tab.media ? { ...tab, media: videoFixture } : tab,
+    ),
+  },
+}
 
 export const TwoTabs: Story = {
   args: {

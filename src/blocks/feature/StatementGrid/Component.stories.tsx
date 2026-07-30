@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { richTextFixture } from '@/shared/testing/richTextFixture'
-import { mediaFixture } from '../../fixtures'
+import { mediaFixture, videoFixture } from '../../fixtures'
 import { FeatureStatementGridBlock } from './Component'
 
 const meta = {
@@ -48,6 +48,12 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
+
+export const Video: Story = {
+  args: {
+    cards: meta.args.cards.map((card) => ({ ...card, media: videoFixture })),
+  },
+}
 
 export const WithoutMedia: Story = {
   args: {

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { richTextFixture } from '@/shared/testing/richTextFixture'
-import { mediaFixture } from '../../fixtures'
+import { mediaFixture, videoFixture } from '../../fixtures'
 import { FeatureImageStatementBlock } from './Component'
 
 const meta = {
@@ -23,6 +23,10 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
+
+export const Video: Story = {
+  args: { media: videoFixture },
+}
 
 export const TextLeft: Story = {
   args: { textPosition: 'left' },

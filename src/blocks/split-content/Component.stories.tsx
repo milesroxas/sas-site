@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { mediaFixture, paragraph, richText, text } from '../fixtures'
+import { mediaFixture, paragraph, richText, text, videoFixture } from '../fixtures'
 import { SplitContentNarrowBlock } from './Component'
 
 const body = richText(
@@ -36,6 +36,10 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const ImageRight: Story = {}
+
+export const Video: Story = {
+  args: { media: videoFixture },
+}
 
 export const ImageLeft: Story = {
   args: { imagePosition: 'left' },

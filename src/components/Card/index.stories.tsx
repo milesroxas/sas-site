@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { postFixtures } from '@/blocks/fixtures'
+import { postFixtures, videoFixture } from '@/blocks/fixtures'
 import { Card } from './index'
 import { CARD_VARIANTS } from './variants'
 
@@ -44,5 +44,16 @@ export const Open: Story = {
 
 export const Overlay: Story = {
   args: { variant: 'overlay' },
+  render: renderInColumn,
+}
+
+export const Video: Story = {
+  args: {
+    variant: 'contained',
+    doc: {
+      ...postFixtures[0],
+      meta: { ...postFixtures[0].meta, image: videoFixture },
+    },
+  },
   render: renderInColumn,
 }

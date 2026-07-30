@@ -77,6 +77,24 @@ export const mediaFixture: Media = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 }
 
+/**
+ * Absolute URL to a production media asset. `Media` routes to `VideoMedia`
+ * when `mimeType` includes `video`, matching production uploads.
+ */
+export const videoFixture: Media = {
+  id: 2,
+  usageStatus: 'public-approved',
+  alt: 'Gradient animation background video',
+  url: 'https://media.suits-sandals.com/Gradient%20Animation_converted-1.mp4',
+  filename: 'Gradient Animation_converted-1.mp4',
+  mimeType: 'video/mp4',
+  width: 1920,
+  height: 1080,
+  caption: richText(paragraph(text('A caption for a video media document.'))),
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+}
+
 const postFixture = (id: number, title: string, slug: string): Post => ({
   id,
   title,

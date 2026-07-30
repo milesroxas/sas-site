@@ -1,7 +1,9 @@
 'use client'
 
+import { button } from 'leva'
 import { DispersionMedia, type DispersionShape } from '@/features/immersive'
 import { useDemoControls } from './demo-section'
+import { useVideoUpload } from './use-video-upload'
 
 /** Default lives in /public; the GUI upload swaps in a blob URL. */
 const DEFAULT_IMAGE = '/images/bg-fpo-01.jpg'
@@ -18,6 +20,7 @@ const DEFAULT_VIDEO = '/api/media/file/Gradient%20Animation_converted-1.mp4'
  * Demo-only — not shipped UI.
  */
 export function DispersionPlayground() {
+  const pickVideo = useVideoUpload({ urlPath: 'Media.videoUrl', mediaPath: 'Media.media' })
   const { media, image, videoUrl } = useDemoControls('Media', {
     media: { value: 'video', options: ['video', 'image'] },
     image: {
@@ -30,16 +33,20 @@ export function DispersionPlayground() {
       label: 'video url',
       render: (get) => get('Media.media') === 'video',
     },
+    // leva buttons ignore `render`, so this stays visible in image mode too;
+    // picking a file flips the media select to video.
+    'upload video (≤10 MB)': button(pickVideo),
   })
 
   // leva select values widen to string; the options list is the source of truth.
-  const { shape, scale, speed } = useDemoControls('Mesh', {
+  const { shape, scale, speed, follow } = useDemoControls('Mesh', {
     shape: {
       value: 'icosahedron',
       options: ['icosahedron', 'torus'] satisfies DispersionShape[],
     },
     scale: { value: 1.4, min: 0.5, max: 2.5, step: 0.05 },
     speed: { value: 0.3, min: 0, max: 2, step: 0.05 },
+    follow: { value: 6, min: 1, max: 20, step: 0.5 },
   })
 
   const { refraction, chroma, saturation } = useDemoControls('Dispersion', {
@@ -67,6 +74,7 @@ export function DispersionPlayground() {
       shape={shape as DispersionShape}
       scale={scale}
       speed={speed}
+      follow={follow}
       refraction={refraction}
       chromaticAberration={chroma}
       saturation={saturation}

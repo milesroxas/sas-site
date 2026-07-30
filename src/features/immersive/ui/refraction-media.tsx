@@ -1,44 +1,55 @@
 'use client'
 
+import { useFBO } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import cn from 'clsx'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import { MathUtils, type Mesh, type ShaderMaterial, type Texture, Vector2 } from 'three'
+
 import {
-  LinearFilter,
-  MathUtils,
-  type ShaderMaterial,
-  Texture,
-  TextureLoader,
-  Vector2,
-  VideoTexture,
-} from 'three'
+  BACKDROP_VERTEX,
+  createDispersionUniforms,
+  DISPERSION_FRAGMENT,
+  DISPERSION_VERTEX,
+  GLASS_CAMERA,
+  GLASS_DPR,
+  GLASS_GL_OPTIONS,
+  GLASS_MESH_Z,
+  type GlassMediaSource,
+  glassPlaneSize,
+  useBackdropTexture,
+  useCoverFit,
+  useOnScreen,
+  usePointerTracking,
+  useWinResolution,
+} from './glass-media-internals'
 
 /**
- * Image or video panel with a cursor-driven "liquid glass" lens: refraction
- * (space is pulled toward the cursor), chromatic dispersion of that
- * displacement, and animated noise distortion, all confined to a soft radial
- * mask around a damped trailing pointer.
+ * Image or video panel with a two-layer cursor lens:
+ *
+ * 1. The backdrop plane runs a screen-space "liquid glass" warp — refraction
+ *    (space pulled toward the cursor), chromatic dispersion of that
+ *    displacement, animated noise distortion and velocity smear, confined to
+ *    a soft radial mask around a damped trailing pointer.
+ * 2. A real flattened glass mesh rides the same damped pointer on top,
+ *    refracting the (already warped) backdrop through Maxime Heckel's
+ *    six-band dispersion shader — the backdrop is snapshotted into an FBO
+ *    with the mesh hidden, then the mesh samples it along per-wavelength
+ *    `refract()` vectors. `lensVisibility` scales the mesh's displacement,
+ *    from fully visible glass (1) down to optically absent (0).
+ *
+ * Both layers ease in and out with hover: the warp mask fades via uHover, and
+ * the glass mesh's refraction eases to zero so every fragment reproduces the
+ * backdrop exactly — no fade or opacity pass.
  *
  * Renders in its own small classic-renderer canvas rather than the global one
  * (GlobalCanvas prefers WebGPU, where raw GLSL ShaderMaterial is unsupported)
  * and uses frameloop="demand": zero GPU work while idle — frames are only
- * requested while the lens is fading, moving, animating, or a video source has
- * a new frame, and never while the canvas is scrolled off screen.
+ * requested while the lens is easing, moving, animating, or a video source
+ * has a new frame, and never while the canvas is scrolled off screen.
  */
 
-const DPR: [number, number] = [1, 2]
-// Single textured quad: no depth/stencil needed, geometry has no edges to alias.
-const GL_OPTIONS = { antialias: false, depth: false, stencil: false }
-
-const VERTEX_SHADER = /* glsl */ `
-varying vec2 vUv;
-void main() {
-  vUv = uv;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-`
-
-const FRAGMENT_SHADER = /* glsl */ `
+const WARP_FRAGMENT = /* glsl */ `
 uniform sampler2D uMap;
 uniform vec2 uCover;
 uniform float uAspect;
@@ -179,35 +190,41 @@ void main() {
 `
 
 /** A DOM element already painting the media, reused as the texture source. */
-export type RefractionSource = HTMLImageElement | HTMLVideoElement
-
-const isVideoSource = (node: RefractionSource): node is HTMLVideoElement => node.tagName === 'VIDEO'
+export type RefractionSource = GlassMediaSource
 
 export type RefractionMediaProps = {
-  /** Image URL — same-origin path, blob: or data: URL. Ignored when `source` is set. */
+  /**
+   * Media URL — same-origin path, blob: or data: URL. Video URLs (by
+   * extension, or with `video` set) get a muted looping player created
+   * internally. Ignored when `source` is set.
+   */
   src?: string
+  /** Treat `src` as a video even when its URL has no video extension. */
+  video?: boolean
   /**
    * Live `<img>` or `<video>` to sample instead of loading `src`. Reuses the
    * bytes the browser already has, and keeps that element available as the
    * non-WebGL fallback. Must be same-origin or CORS-enabled, otherwise the
    * texture upload taints the canvas and throws.
    */
-  source?: RefractionSource | null
+  source?: GlassMediaSource | null
   /** Fired once the first texture is on the GPU — use it to reveal the canvas. */
   onReady?: () => void
-  /** Lens radius (spread) in plane UV units; 1 spans the panel's height. */
+
+  // --- Screen-space warp (the original hover effect) ---
+  /** Warp radius (spread) in plane UV units; 1 spans the panel's height. */
   spread?: number
-  /** 0–1: edge softness of the lens falloff (0 = hard rim). */
+  /** 0–1: edge softness of the warp falloff (0 = hard rim). */
   feather?: number
   /**
-   * 0–1: how defined the lens boundary is. 0 = edgeless gaussian falloff —
+   * 0–1: how defined the warp boundary is. 0 = edgeless gaussian falloff —
    * the effects remain but no rim or boundary is visible (feather and
    * highlight have no influence there). 1 = ringed lens.
    */
   edge?: number
   /** How strongly space is pulled toward the cursor (0–0.5 is sensible). */
   refraction?: number
-  /** 0–1: per-channel dispersion of the displacement (RGB fringing). */
+  /** 0–1: per-channel dispersion of the warp displacement (RGB fringing). */
   chroma?: number
   /** Noise wobble amplitude in UV space (0–0.05 is sensible). */
   distortion?: number
@@ -217,8 +234,31 @@ export type RefractionMediaProps = {
   noiseSpeed?: number
   /** How much the pointer's velocity smears the image directionally. */
   smear?: number
-  /** Rim-light strength at the lens edge. */
+  /** Rim-light strength at the warp edge. */
   highlight?: number
+
+  // --- Glass lens mesh (the dispersion technique) ---
+  /** 0–1: how visible the glass mesh is (0 disables its refraction entirely). */
+  lensVisibility?: number
+  /** Glass mesh radius as a fraction of the panel's height. */
+  lensSpread?: number
+  /** Glass thickness: z-scale relative to its radius (1 = full sphere). */
+  lensDepth?: number
+  /** Refraction offset strength per sample inside the glass. */
+  lensRefraction?: number
+  /** Spread between the glass's per-wavelength refraction vectors. */
+  lensChroma?: number
+  /** ≥1; re-saturates the pastel tint the dispersion loop introduces. */
+  lensSaturation?: number
+  /** Index of refraction per spectral band. */
+  iorR?: number
+  iorY?: number
+  iorG?: number
+  iorC?: number
+  iorB?: number
+  iorP?: number
+
+  // --- Motion ---
   /** Damping for the trailing cursor (higher = tighter follow). */
   follow?: number
   /** Damping for the hover fade in/out (higher = snappier). */
@@ -230,6 +270,7 @@ type SceneProps = Omit<RefractionMediaProps, 'className'>
 
 function RefractionScene({
   src,
+  video = false,
   source,
   onReady,
   spread = 0.22,
@@ -242,34 +283,44 @@ function RefractionScene({
   noiseSpeed = 0.4,
   smear = 0.02,
   highlight = 0.08,
+  lensVisibility = 1,
+  lensSpread = 0.22,
+  lensDepth = 0.55,
+  lensRefraction = 0.15,
+  lensChroma = 0.5,
+  lensSaturation = 1.04,
+  iorR = 1.15,
+  iorY = 1.16,
+  iorG = 1.18,
+  iorC = 1.22,
+  iorB = 1.22,
+  iorP = 1.22,
   follow = 8,
   ease = 6,
 }: SceneProps) {
   // Select only what's needed; `useThree()` re-renders on any R3F state change.
   const viewport = useThree((state) => state.viewport)
   const invalidate = useThree((state) => state.invalidate)
-  const canvas = useThree((state) => state.gl.domElement)
-  const materialRef = useRef<ShaderMaterial>(null)
-  const [sourceAspect, setSourceAspect] = useState(16 / 9)
 
-  // Pointer state lives in refs and feeds uniforms via useFrame — never React
+  const meshRef = useRef<Mesh>(null)
+  const warpMaterialRef = useRef<ShaderMaterial>(null)
+  const lensMaterialRef = useRef<ShaderMaterial>(null)
+
+  const onScreen = useOnScreen()
+  const pointer = usePointerTracking(onScreen)
+
+  // Velocity state lives in refs and feeds uniforms via useFrame — never React
   // state (perf-never-set-state-in-useframe).
-  const pointerTarget = useRef(new Vector2(0.5, 0.5))
   const velocityTarget = useRef(new Vector2())
   const previousMouse = useRef(new Vector2(0.5, 0.5))
-  const hoverTarget = useRef(0)
-  const onScreen = useRef(true)
 
-  // Read through a ref so a caller re-creating the callback never re-runs the
-  // texture effect (which would rebuild the texture on every parent render).
-  const onReadyRef = useRef(onReady)
-  useEffect(() => {
-    onReadyRef.current = onReady
-  })
+  // Scene snapshot with the mesh hidden — the glass samples the *warped*
+  // backdrop, so both effects compose.
+  const backdropFBO = useFBO()
 
-  // Initial values only — R3F may copy this object into the material, so all
-  // runtime updates go through materialRef.current.uniforms, never this object.
-  const uniforms = useMemo(
+  // Initial values only — R3F may copy these objects into the materials, so
+  // runtime updates go through the material refs, never these objects.
+  const warpUniforms = useMemo(
     () => ({
       uMap: { value: null as Texture | null },
       uCover: { value: new Vector2(1, 1) },
@@ -291,173 +342,28 @@ function RefractionScene({
     }),
     [],
   )
-
-  // Bind the texture. A `source` element is sampled in place (no second
-  // download); otherwise `src` is fetched. Either way the previous texture
-  // stays visible until the new one is ready, then gets disposed — textures
-  // inside uniforms are not auto-disposed.
-  useEffect(() => {
-    const material = materialRef.current
-    if (!material) return
-    let cancelled = false
-
-    const apply = (texture: Texture, width: number, height: number) => {
-      if (cancelled) {
-        texture.dispose()
-        return
-      }
-      texture.minFilter = LinearFilter
-      texture.magFilter = LinearFilter
-      texture.generateMipmaps = false
-      const previous = material.uniforms.uMap?.value as Texture | null
-      material.uniforms.uMap.value = texture
-      previous?.dispose()
-      if (width > 0 && height > 0) setSourceAspect(width / height)
-      invalidate()
-      onReadyRef.current?.()
-    }
-
-    if (source) {
-      if (isVideoSource(source)) {
-        const video = source
-        const bind = () => apply(new VideoTexture(video), video.videoWidth, video.videoHeight)
-        if (video.readyState >= video.HAVE_CURRENT_DATA) bind()
-        else video.addEventListener('loadeddata', bind, { once: true })
-        return () => {
-          cancelled = true
-          video.removeEventListener('loadeddata', bind)
-        }
-      }
-
-      const image = source
-      // Fires again whenever a responsive srcset swaps in a different file, so
-      // the existing texture is re-uploaded rather than left on the old bitmap.
-      const bind = () => {
-        if (cancelled) return
-        const existing = material.uniforms.uMap?.value as Texture | null
-        if (existing?.image === image) {
-          existing.needsUpdate = true
-          invalidate()
-          return
-        }
-        const texture = new Texture(image)
-        texture.needsUpdate = true
-        apply(texture, image.naturalWidth, image.naturalHeight)
-      }
-      if (image.complete && image.naturalWidth > 0) bind()
-      image.addEventListener('load', bind)
-      return () => {
-        cancelled = true
-        image.removeEventListener('load', bind)
-      }
-    }
-
-    if (!src) return
-    new TextureLoader().load(src, (texture) => {
-      const image = texture.image as { width: number; height: number }
-      apply(texture, image.width, image.height)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [src, source, invalidate])
-
-  useEffect(() => {
-    const material = materialRef.current
-    return () => {
-      ;(material?.uniforms.uMap?.value as Texture | null)?.dispose()
-    }
+  const lensUniforms = useMemo(() => {
+    const uniforms = createDispersionUniforms()
+    // The glass starts optically invisible and eases in on hover.
+    uniforms.uHover.value = 0
+    return uniforms
   }, [])
 
-  // A video source only produces work when it produces a frame, so drive the
-  // demand loop off the decoder rather than the display refresh rate.
-  useEffect(() => {
-    if (!source || !isVideoSource(source)) return
-    const video = source
+  const sourceAspect = useBackdropTexture({
+    src,
+    video,
+    source,
+    onReady,
+    materialRef: warpMaterialRef,
+    onScreen,
+  })
+  useCoverFit(warpMaterialRef, sourceAspect)
+  useWinResolution(lensMaterialRef)
 
-    // Typed as always present, but still absent on older Safari and Firefox.
-    if (typeof video.requestVideoFrameCallback === 'function') {
-      let handle = video.requestVideoFrameCallback(function onVideoFrame() {
-        if (onScreen.current) invalidate()
-        handle = video.requestVideoFrameCallback(onVideoFrame)
-      })
-      return () => video.cancelVideoFrameCallback(handle)
-    }
-
-    // Otherwise fall back to the display clock.
-    let frame = requestAnimationFrame(function onAnimationFrame() {
-      if (onScreen.current && !video.paused) invalidate()
-      frame = requestAnimationFrame(onAnimationFrame)
-    })
-    return () => cancelAnimationFrame(frame)
-  }, [source, invalidate])
-
-  // Scrolled out of view: stop asking for frames entirely.
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      onScreen.current = entry?.isIntersecting ?? true
-      if (onScreen.current) invalidate()
-    })
-    observer.observe(canvas)
-    return () => observer.disconnect()
-  }, [canvas, invalidate])
-
-  // Pointer is tracked against the canvas rect rather than by raycasting the
-  // mesh, so the lens still follows the cursor when the canvas sits behind
-  // other content or is pointer-events-none (as a page background is).
-  useEffect(() => {
-    const handleMove = (event: PointerEvent) => {
-      if (!onScreen.current) {
-        if (hoverTarget.current !== 0) {
-          hoverTarget.current = 0
-          invalidate()
-        }
-        return
-      }
-      const rect = canvas.getBoundingClientRect()
-      if (rect.width === 0 || rect.height === 0) return
-      const x = (event.clientX - rect.left) / rect.width
-      // UV origin is bottom-left; client coordinates run top-down.
-      const y = 1 - (event.clientY - rect.top) / rect.height
-      const inside = x >= 0 && x <= 1 && y >= 0 && y <= 1
-      if (inside) pointerTarget.current.set(x, y)
-      hoverTarget.current = inside ? 1 : 0
-      invalidate()
-    }
-
-    const handleLeave = () => {
-      hoverTarget.current = 0
-      invalidate()
-    }
-
-    window.addEventListener('pointermove', handleMove, { passive: true })
-    document.addEventListener('pointerleave', handleLeave)
-    window.addEventListener('blur', handleLeave)
-    return () => {
-      window.removeEventListener('pointermove', handleMove)
-      document.removeEventListener('pointerleave', handleLeave)
-      window.removeEventListener('blur', handleLeave)
-    }
-  }, [canvas, invalidate])
-
-  // Cover-fit whenever the panel or source aspect changes.
-  useEffect(() => {
-    const u = materialRef.current?.uniforms
-    if (!u) return
-    const planeAspect = viewport.aspect
-    if (planeAspect > sourceAspect) {
-      u.uCover.value.set(1, sourceAspect / planeAspect)
-    } else {
-      u.uCover.value.set(planeAspect / sourceAspect, 1)
-    }
-    u.uAspect.value = planeAspect
-    invalidate()
-  }, [viewport.aspect, sourceAspect, invalidate])
-
-  // Static uniforms sync on prop change (not in useFrame: with a demand
+  // Shader parameters sync on prop change (not in useFrame: with a demand
   // frameloop no frames run while idle, so GUI tweaks would go stale).
   useEffect(() => {
-    const u = materialRef.current?.uniforms
+    const u = warpMaterialRef.current?.uniforms
     if (!u) return
     u.uRadius.value = spread
     u.uFeather.value = feather
@@ -484,17 +390,34 @@ function RefractionScene({
     invalidate,
   ])
 
-  useFrame((_, delta) => {
-    const material = materialRef.current
-    if (!material) return
-    const u = material.uniforms
+  useEffect(() => {
+    const u = lensMaterialRef.current?.uniforms
+    if (!u) return
+    u.uRefractPower.value = lensRefraction
+    u.uChromaticAberration.value = lensChroma
+    u.uSaturation.value = lensSaturation
+    u.uIorR.value = iorR
+    u.uIorY.value = iorY
+    u.uIorG.value = iorG
+    u.uIorC.value = iorC
+    u.uIorB.value = iorB
+    u.uIorP.value = iorP
+    invalidate()
+  }, [lensRefraction, lensChroma, lensSaturation, iorR, iorY, iorG, iorC, iorB, iorP, invalidate])
+
+  useFrame((state, delta) => {
+    const mesh = meshRef.current
+    const warp = warpMaterialRef.current
+    const lens = lensMaterialRef.current
+    if (!mesh || !warp || !lens) return
+    const u = warp.uniforms
     // Clamp tab-switch deltas so damping never overshoots.
     const dt = Math.min(delta, 1 / 30)
 
     const mouse = u.uMouse.value as Vector2
     previousMouse.current.copy(mouse)
-    mouse.x = MathUtils.damp(mouse.x, pointerTarget.current.x, follow, dt)
-    mouse.y = MathUtils.damp(mouse.y, pointerTarget.current.y, follow, dt)
+    mouse.x = MathUtils.damp(mouse.x, pointer.uv.current.x, follow, dt)
+    mouse.y = MathUtils.damp(mouse.y, pointer.uv.current.y, follow, dt)
 
     velocityTarget.current
       .set((mouse.x - previousMouse.current.x) / dt, (mouse.y - previousMouse.current.y) / dt)
@@ -503,39 +426,88 @@ function RefractionScene({
     velocity.x = MathUtils.damp(velocity.x, velocityTarget.current.x, follow, dt)
     velocity.y = MathUtils.damp(velocity.y, velocityTarget.current.y, follow, dt)
 
-    u.uHover.value = MathUtils.damp(u.uHover.value, hoverTarget.current, ease, dt)
+    const hoverTarget = pointer.inside.current ? 1 : 0
+    u.uHover.value = MathUtils.damp(u.uHover.value, hoverTarget, ease, dt)
     u.uTime.value += dt
+
+    // The glass rides the same damped pointer as the warp's center, and its
+    // refraction shares the hover ease, scaled by how visible it should be.
+    const plane = glassPlaneSize(state.size.width / state.size.height)
+    mesh.position.x = (mouse.x - 0.5) * plane.width
+    mesh.position.y = (mouse.y - 0.5) * plane.height
+    lens.uniforms.uHover.value = u.uHover.value * lensVisibility
+
+    // Capture pass: hide the glass, snapshot the warped backdrop into the
+    // FBO, then let R3F's default pass render glass + backdrop to the screen.
+    // An optically absent glass (uHover ~0 would reproduce the backdrop
+    // exactly) stays hidden, skipping its fragment work entirely.
+    const { gl, scene, camera } = state
+    mesh.visible = false
+    gl.setRenderTarget(backdropFBO)
+    gl.render(scene, camera)
+    mesh.visible = lens.uniforms.uHover.value > 0.002
+    gl.setRenderTarget(null)
+    lens.uniforms.uTexture.value = backdropFBO.texture
 
     // Keep requesting frames only while the lens is visible or still moving;
     // once everything settles the canvas goes fully idle. A playing video
     // source drives its own invalidation, so it is unaffected by settling.
-    const settled =
-      hoverTarget.current === 0 && u.uHover.value < 0.002 && velocity.lengthSq() < 1e-6
+    const settled = hoverTarget === 0 && u.uHover.value < 0.002 && velocity.lengthSq() < 1e-6
     if (!settled && onScreen.current) invalidate()
   })
 
+  // Sphere radius is 1, so the world radius equals lensSpread × panel height
+  // at the glass's depth; the z-scale flattens the sphere into a lens.
+  const lensScale = lensSpread * glassPlaneSize(1).height
+
   return (
-    <mesh scale-x={viewport.width} scale-y={viewport.height} raycast={() => null}>
-      <planeGeometry />
-      <shaderMaterial
-        ref={materialRef}
-        uniforms={uniforms}
-        vertexShader={VERTEX_SHADER}
-        fragmentShader={FRAGMENT_SHADER}
-      />
-    </mesh>
+    <>
+      <mesh scale-x={viewport.width} scale-y={viewport.height} raycast={() => null}>
+        <planeGeometry />
+        <shaderMaterial
+          ref={warpMaterialRef}
+          uniforms={warpUniforms}
+          vertexShader={BACKDROP_VERTEX}
+          fragmentShader={WARP_FRAGMENT}
+        />
+      </mesh>
+
+      <mesh
+        ref={meshRef}
+        position-z={GLASS_MESH_Z}
+        scale={[lensScale, lensScale, lensScale * lensDepth]}
+        raycast={() => null}
+      >
+        <sphereGeometry args={[1, 64, 64]} />
+        <shaderMaterial
+          ref={lensMaterialRef}
+          uniforms={lensUniforms}
+          vertexShader={DISPERSION_VERTEX}
+          fragmentShader={DISPERSION_FRAGMENT}
+        />
+      </mesh>
+    </>
   )
 }
 
 /**
- * WebGL media panel with a subtle refraction/chroma/distortion lens that
- * trails the cursor on hover. Give it a sized container via className
- * (e.g. an aspect-ratio utility); the media cover-fits inside.
+ * WebGL media panel with a two-layer cursor lens: the original screen-space
+ * warp (refraction, chroma, noise, smear) plus a real glass mesh refracting
+ * the warped image through six spectral bands, both trailing the cursor on
+ * hover. Give it a sized container via className (e.g. an aspect-ratio
+ * utility); the media cover-fits inside.
  */
 export function RefractionMedia({ className, ...scene }: RefractionMediaProps) {
   return (
     <div className={cn('relative', className)}>
-      <Canvas dpr={DPR} flat linear frameloop="demand" gl={GL_OPTIONS}>
+      <Canvas
+        dpr={GLASS_DPR}
+        flat
+        linear
+        frameloop="demand"
+        camera={GLASS_CAMERA}
+        gl={GLASS_GL_OPTIONS}
+      >
         <RefractionScene {...scene} />
       </Canvas>
     </div>

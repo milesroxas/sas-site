@@ -9,9 +9,12 @@ import type { Media as MediaType } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 
 /**
- * Dialed in on /demo/immersive. `edge: 0` is an edgeless gaussian falloff —
- * the refraction, chroma, noise and smear all still apply, but the lens itself
- * has no visible rim or boundary, so `feather` and `highlight` are left off.
+ * Dialed in on /demo/immersive. Two layers trail the cursor: the original
+ * edgeless screen-space warp (`edge: 0` — refraction, chroma, noise and smear
+ * with no visible rim, so `feather` and `highlight` are left off), plus a
+ * flattened glass mesh refracting the warped image through six spectral
+ * bands. Both ease out when the pointer leaves; set `lensVisibility: 0` to
+ * run the warp alone.
  */
 const LENS = {
   spread: 0.51,
@@ -22,6 +25,12 @@ const LENS = {
   noiseScale: 16.5,
   noiseSpeed: 0.5,
   smear: 0.1,
+  lensVisibility: 1,
+  lensSpread: 0.28,
+  lensDepth: 0.55,
+  lensRefraction: 0.12,
+  lensChroma: 0.6,
+  lensSaturation: 1.04,
   follow: 6.5,
   ease: 4.5,
 } as const
@@ -33,9 +42,11 @@ const LENS = {
  * downloaded twice, and the DOM layer stays mounted underneath as the fallback
  * for reduced motion, touch, absent GPUs and lost contexts.
  *
- * Videos are read from the R2 custom domain, so they need CORS to be
- * sampleable. If the host does not allow it the element fails to load — that
- * error is caught and the whole thing degrades to a plain, uncredentialed video.
+ * Cross-origin media must be fetched with CORS to be sampleable. That is set
+ * from the first render (flipping it later leaves a tainted resource). If the
+ * host does not allow CORS the element fails to load — that error is caught
+ * and the whole thing degrades to a plain, uncredentialed media element with
+ * no WebGL overlay (otherwise the canvas would fade in black over the image).
  */
 export const HeroBackground: React.FC<{ media: MediaType }> = ({ media }) => {
   const { hasGPU } = useDeviceDetection()
@@ -47,40 +58,65 @@ export const HeroBackground: React.FC<{ media: MediaType }> = ({ media }) => {
   const isVideo = Boolean(media.mimeType?.includes('video'))
   const enabled = hasGPU && !corsBlocked
 
-  // `crossOrigin` has to be on the element from its very first render: flipping
-  // it after the fetch has begun would leave an already-tainted resource in
-  // place. It is therefore set independently of GPU detection, which only
-  // resolves after mount.
-  const crossOrigin = isVideo && !corsBlocked ? 'anonymous' : undefined
+  // Must be present on the element's first fetch — independent of GPU
+  // detection, which only resolves after mount.
+  const crossOrigin = !corsBlocked ? 'anonymous' : undefined
 
   useEffect(() => {
     if (!enabled) {
       setSource(null)
+      setReady(false)
       return
     }
-    // Swapping one image for another reuses the same node, so only a change of
-    // media type needs a fresh lookup.
-    setSource(containerRef.current?.querySelector(isVideo ? 'video' : 'img') ?? null)
-  }, [enabled, isVideo])
+    const root = containerRef.current
+    if (!root) return
+
+    const pick = () => root.querySelector(isVideo ? 'video' : 'img')
+
+    const found = pick()
+    if (found) {
+      setSource(found)
+      return
+    }
+
+    // Media remounts when CORS mode changes; wait for the new element.
+    const observer = new MutationObserver(() => {
+      const next = pick()
+      if (next) {
+        setSource(next)
+        observer.disconnect()
+      }
+    })
+    observer.observe(root, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [enabled, isVideo, crossOrigin])
 
   useEffect(() => {
     const root = containerRef.current
-    if (!root || !isVideo || corsBlocked) return
+    if (!root || corsBlocked) return
     const handleError = () => setCorsBlocked(true)
 
     // A rejected request often lands before this effect runs, leaving no event
     // to catch — only the settled state.
-    const video = root.querySelector('video')
-    if (video?.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
-      handleError()
-      return
+    if (isVideo) {
+      const video = root.querySelector('video')
+      if (video?.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+        handleError()
+        return
+      }
+    } else {
+      const image = root.querySelector('img')
+      if (image?.complete && image.naturalWidth === 0) {
+        handleError()
+        return
+      }
     }
 
     // Media `error` events do not bubble, but the capture phase still sees
-    // them, on both the <video> and the <source> child that actually fails.
+    // them (video/source or img).
     root.addEventListener('error', handleError, true)
     return () => root.removeEventListener('error', handleError, true)
-  }, [isVideo, corsBlocked])
+  }, [isVideo, corsBlocked, crossOrigin])
 
   const handleReady = useCallback(() => setReady(true), [])
 
