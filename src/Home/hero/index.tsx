@@ -50,7 +50,7 @@ const HomeHero: React.FC<HomeHeroData> = ({
       )}
 
       {/* Header inset only — section height already ends at the footer. */}
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col self-stretch px-6 pt-(--header-height) md:px-20">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col self-stretch px-gutter pt-(--header-height)">
         <div className="flex min-h-0 flex-1 flex-col py-8 sm:py-12">
           <div
             className={cn(

@@ -12,7 +12,7 @@ export const MediumImpactHero: React.FC<Page['hero']> = ({
 }) => {
   return (
     <div
-      className="relative isolate flex min-h-[37.5rem] flex-col items-start overflow-clip bg-background px-4 py-12 text-foreground md:px-8 xl:px-16"
+      className="relative isolate flex min-h-[37.5rem] flex-col items-start overflow-clip bg-background px-gutter py-12 text-foreground"
       data-theme="dark"
     >
       <HeroDarkTheme />

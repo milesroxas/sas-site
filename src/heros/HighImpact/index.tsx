@@ -13,7 +13,7 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, med
       // isolate: contains the -z-10 image above the page frame's opaque bg-background —
       // vt-home-hero's view-transition-name only provides that stacking context in
       // browsers that support view transitions.
-      className="vt-home-hero relative isolate -mt-(--header-height) flex min-h-[80vh] flex-col items-start overflow-clip bg-background px-4 py-12 text-foreground md:px-8 xl:px-16"
+      className="vt-home-hero relative isolate -mt-(--header-height) flex min-h-[80vh] flex-col items-start overflow-clip bg-background px-gutter py-12 text-foreground"
       data-theme="dark"
     >
       <HeroDarkTheme />

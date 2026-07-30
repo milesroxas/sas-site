@@ -51,7 +51,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
       >
         {/* Mobile: centered brand + menu icon on the right.
             md+: 3-col grid with MENU text centered and theme on the end. */}
-        <div className="relative flex h-full items-center justify-end px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:px-20">
+        <div className="relative flex h-full items-center justify-end px-gutter md:grid md:grid-cols-[1fr_auto_1fr]">
           <Link
             href="/"
             transitionTypes={[...lateralNavTransitionTypes]}

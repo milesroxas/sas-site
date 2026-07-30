@@ -426,7 +426,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         // Mobile: lower half below the preview. Desktop: column from the shared
         // layout resolver (--menu-nav-*); link block centered in the column,
         // items left-aligned within the block.
-        className="absolute inset-x-0 top-1/2 bottom-0 flex flex-col overflow-y-auto overscroll-contain px-8 pt-6 pb-8 md:inset-y-0 md:left-(--menu-nav-left) md:right-auto md:w-(--menu-nav-width) md:items-center md:justify-center md:overflow-visible md:px-0 md:pt-0 md:pb-0"
+        className="absolute inset-x-0 top-1/2 bottom-0 flex flex-col overflow-y-auto overscroll-contain px-gutter pt-6 pb-8 md:inset-y-0 md:left-(--menu-nav-left) md:right-auto md:w-(--menu-nav-width) md:items-center md:justify-center md:overflow-visible md:px-0 md:pt-0 md:pb-0"
         onClick={(event) => event.stopPropagation()}
       >
         <ul className="my-auto flex flex-col items-start gap-4 md:my-0 md:w-max md:gap-5">
