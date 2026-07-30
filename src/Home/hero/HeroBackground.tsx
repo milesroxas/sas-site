@@ -14,7 +14,8 @@ import { cn } from '@/utilities/ui'
  * screen-space warp runs alone as a soft ringed lens — wide spread, full
  * feather, strong refraction and chroma with a slow low-frequency wobble and
  * a faint rim highlight. `lensVisibility: 0` keeps the glass mesh optically
- * absent; its parameters fall back to the component defaults.
+ * absent; its parameters are pinned here anyway so the hero stays in lockstep
+ * with the playground defaults.
  */
 const LENS = {
   spread: 0.6,
@@ -28,6 +29,17 @@ const LENS = {
   smear: 0.05,
   highlight: 0.02,
   lensVisibility: 0,
+  lensSpread: 0.22,
+  lensDepth: 0.55,
+  lensRefraction: 0.15,
+  lensChroma: 0.5,
+  lensSaturation: 1.04,
+  iorR: 1.15,
+  iorY: 1.16,
+  iorG: 1.18,
+  iorC: 1.22,
+  iorB: 1.22,
+  iorP: 1.22,
   follow: 4,
   ease: 3,
 } as const
