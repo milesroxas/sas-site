@@ -235,12 +235,21 @@ export function useBackdropTexture({
   })
 
   useEffect(() => {
-    const material = materialRef.current
-    if (!material) return
     let cancelled = false
     let ownedVideo: HTMLVideoElement | null = null
+    let detachSource: (() => void) | undefined
+    let raf = 0
 
-    const apply = (texture: Texture, width: number, height: number) => {
+    const disposeMap = (material: ShaderMaterial) => {
+      const current = material.uniforms.uMap?.value as Texture | null
+      if (!current) return
+      // Null first so a Strict Mode remount cannot revive a disposed texture
+      // via the `existing?.image === image` short-circuit.
+      material.uniforms.uMap.value = null
+      current.dispose()
+    }
+
+    const apply = (material: ShaderMaterial, texture: Texture, width: number, height: number) => {
       if (cancelled) {
         texture.dispose()
         return
@@ -252,13 +261,17 @@ export function useBackdropTexture({
       material.uniforms.uMap.value = texture
       previous?.dispose()
       if (width > 0 && height > 0) setSourceAspect(width / height)
+      // Demand frameloop: paint now and once more after layout/ready opacity.
       invalidate()
+      requestAnimationFrame(() => {
+        if (!cancelled) invalidate()
+      })
       onReadyRef.current?.()
     }
 
-    const bindVideo = (videoEl: HTMLVideoElement) => {
+    const bindVideo = (material: ShaderMaterial, videoEl: HTMLVideoElement) => {
       const bind = () => {
-        apply(new VideoTexture(videoEl), videoEl.videoWidth, videoEl.videoHeight)
+        apply(material, new VideoTexture(videoEl), videoEl.videoWidth, videoEl.videoHeight)
         setActiveVideo(videoEl)
       }
       if (videoEl.readyState >= videoEl.HAVE_CURRENT_DATA) bind()
@@ -266,80 +279,86 @@ export function useBackdropTexture({
       return () => videoEl.removeEventListener('loadeddata', bind)
     }
 
-    if (source) {
-      if (isVideoElement(source)) {
-        const unbind = bindVideo(source)
-        return () => {
-          cancelled = true
-          setActiveVideo(null)
-          unbind()
-        }
-      }
-
-      const image = source
-      // Fires again whenever a responsive srcset swaps in a different file, so
-      // the existing texture is re-uploaded rather than left on the old bitmap.
-      const bind = () => {
-        if (cancelled) return
-        const existing = material.uniforms.uMap?.value as Texture | null
-        if (existing?.image === image) {
-          existing.needsUpdate = true
-          invalidate()
+    const attach = (material: ShaderMaterial) => {
+      if (source) {
+        if (isVideoElement(source)) {
+          detachSource = bindVideo(material, source)
           return
         }
-        const texture = new Texture(image)
-        texture.needsUpdate = true
-        apply(texture, image.naturalWidth, image.naturalHeight)
-      }
-      if (image.complete && image.naturalWidth > 0) bind()
-      image.addEventListener('load', bind)
-      return () => {
-        cancelled = true
-        setActiveVideo(null)
-        image.removeEventListener('load', bind)
-      }
-    }
 
-    if (!src) return
+        const image = source
+        // Fires again whenever a responsive srcset swaps in a different file, so
+        // the existing texture is re-uploaded rather than left on the old bitmap.
+        const bind = () => {
+          if (cancelled) return
+          const existing = material.uniforms.uMap?.value as Texture | null
+          // Only reuse when the uniform still holds a live texture for this
+          // element. A disposed texture (Strict Mode cleanup) must be replaced.
+          if (existing?.image === image && existing.source !== null) {
+            existing.needsUpdate = true
+            invalidate()
+            onReadyRef.current?.()
+            return
+          }
+          const texture = new Texture(image)
+          texture.needsUpdate = true
+          apply(material, texture, image.naturalWidth, image.naturalHeight)
+        }
+        if (image.complete && image.naturalWidth > 0) bind()
+        image.addEventListener('load', bind)
+        detachSource = () => image.removeEventListener('load', bind)
+        return
+      }
 
-    if (video || VIDEO_URL_PATTERN.test(src)) {
-      const videoEl = document.createElement('video')
-      ownedVideo = videoEl
-      videoEl.crossOrigin = 'anonymous'
-      videoEl.muted = true
-      videoEl.loop = true
-      videoEl.playsInline = true
-      videoEl.src = src
-      const unbind = bindVideo(videoEl)
-      videoEl.play().catch(() => {
-        // Autoplay rejection leaves the first decoded frame as a still.
+      if (!src) return
+
+      if (video || VIDEO_URL_PATTERN.test(src)) {
+        const videoEl = document.createElement('video')
+        ownedVideo = videoEl
+        videoEl.crossOrigin = 'anonymous'
+        videoEl.muted = true
+        videoEl.loop = true
+        videoEl.playsInline = true
+        videoEl.src = src
+        detachSource = bindVideo(material, videoEl)
+        videoEl.play().catch(() => {
+          // Autoplay rejection leaves the first decoded frame as a still.
+        })
+        return
+      }
+
+      const loader = new TextureLoader()
+      loader.setCrossOrigin('anonymous')
+      loader.load(src, (texture) => {
+        const image = texture.image as { width: number; height: number }
+        apply(material, texture, image.width, image.height)
       })
-      return () => {
-        cancelled = true
-        setActiveVideo(null)
-        unbind()
-        ownedVideo?.pause()
-        ownedVideo?.removeAttribute('src')
-        ownedVideo?.load()
-      }
     }
 
-    new TextureLoader().load(src, (texture) => {
-      const image = texture.image as { width: number; height: number }
-      apply(texture, image.width, image.height)
-    })
+    // shaderMaterial refs attach after the first commit; wait one frame if needed
+    // rather than bailing forever on a null ref.
+    const start = () => {
+      const material = materialRef.current
+      if (!material) {
+        raf = requestAnimationFrame(start)
+        return
+      }
+      attach(material)
+    }
+    start()
+
     return () => {
       cancelled = true
+      cancelAnimationFrame(raf)
       setActiveVideo(null)
+      detachSource?.()
+      ownedVideo?.pause()
+      ownedVideo?.removeAttribute('src')
+      ownedVideo?.load()
+      const material = materialRef.current
+      if (material) disposeMap(material)
     }
   }, [src, video, source, invalidate, materialRef])
-
-  useEffect(() => {
-    const material = materialRef.current
-    return () => {
-      ;(material?.uniforms.uMap?.value as Texture | null)?.dispose()
-    }
-  }, [materialRef])
 
   // A video source only produces work when it produces a frame, so drive the
   // demand loop off the decoder rather than the display refresh rate.

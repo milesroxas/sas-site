@@ -57,17 +57,17 @@ export const richText = (...children: SerializedNode[]): DefaultTypedEditorState
   }) as DefaultTypedEditorState
 
 /**
- * Absolute URL to a real file in /public (also served from the preview domain).
- * Storybook resolves it either way; the design-sync previews render as
- * standalone pages with no site root, so a root-relative path would 404 there.
+ * Absolute URL to a production media asset. Storybook resolves it either way;
+ * the design-sync previews render as standalone pages with no site root, so a
+ * root-relative path would 404 there.
  */
 export const mediaFixture: Media = {
   id: 1,
   usageStatus: 'public-approved',
-  alt: 'Website template open-graph artwork',
-  url: 'https://preview.suits-sandals.com/website-template-OG.webp',
-  filename: 'website-template-OG.webp',
-  mimeType: 'image/webp',
+  alt: 'Gradient animation background',
+  url: 'https://media.suits-sandals.com/Gradient%20Animation_converted-poster-1-1200x630.jpg',
+  filename: 'Gradient Animation_converted-poster-1-1200x630.jpg',
+  mimeType: 'image/jpeg',
   width: 1200,
   height: 630,
   caption: richText(
@@ -93,6 +93,13 @@ export const videoFixture: Media = {
   caption: richText(paragraph(text('A caption for a video media document.'))),
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
+}
+
+/** Hero image backgrounds — same placeholder still as `mediaFixture`, no caption. */
+export const heroImageFixture: Media = {
+  ...mediaFixture,
+  id: 3,
+  caption: null,
 }
 
 const postFixture = (id: number, title: string, slug: string): Post => ({

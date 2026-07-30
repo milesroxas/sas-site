@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { mediaFixture, postFixtures, videoFixture } from '@/blocks/fixtures'
+import { heroImageFixture, postFixtures, videoFixture } from '@/blocks/fixtures'
 import { RenderHomeHero } from './index'
 
 const meta = {
@@ -21,7 +21,7 @@ const meta = {
     title: 'Make it make sense',
     description:
       'Suits & Sandals is a B2B branding agency for technical companies and expert-led firms with complex offerings.',
-    media: mediaFixture,
+    media: heroImageFixture,
     featuredPost: postFixtures[0],
     featuredLabel: 'Insights',
   },

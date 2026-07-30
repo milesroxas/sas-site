@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { mediaFixture, videoFixture } from '@/blocks/fixtures'
+import { heroImageFixture, videoFixture } from '@/blocks/fixtures'
 import { MediumImpactHero } from './index'
 
 const meta = {
@@ -14,7 +14,7 @@ const meta = {
     title: 'Positioning for technical companies',
     description:
       'Turn complex offerings into a clear market story buyers can understand and choose.',
-    media: mediaFixture,
+    media: heroImageFixture,
     links: [
       {
         link: { type: 'custom', url: '/contact', label: 'Talk to us', appearance: 'default' },

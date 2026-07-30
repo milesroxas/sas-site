@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { mediaFixture, videoFixture } from '@/blocks/fixtures'
+import { heroImageFixture, videoFixture } from '@/blocks/fixtures'
 import { HighImpactHero } from './index'
 
 const meta = {
@@ -20,7 +20,7 @@ const meta = {
     title: 'Make your expertise easier to choose',
     description:
       'We clarify positioning and messaging, build distinctive brand identities, and activate those brands through websites and campaigns.',
-    media: mediaFixture,
+    media: heroImageFixture,
     links: [
       {
         link: { type: 'custom', url: '/work', label: 'See our work', appearance: 'default' },
