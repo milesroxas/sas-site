@@ -7,6 +7,7 @@ import { FloatingCardsPlayground } from './floating-cards-playground'
 import { RefractionPlayground } from './refraction-playground'
 import { ScramblePlayground } from './scramble-playground'
 import { TextLoadInPlayground } from './text-load-in-playground'
+import { TextLoadInRaymarchedPlayground } from './text-load-in-raymarched-playground'
 
 /**
  * Full-page demo: GlobalCanvas + tunnels. Lenis runs site-wide via SmoothScrollProvider.
@@ -80,6 +81,13 @@ export function ImmersiveDemoPage() {
           description="Scroll-triggered copy reveal: the eyebrow decodes via scramble while the headline resolves through a ray-marched smear shader that blends characters into each other as they appear, then the supporting line follows. Scroll it into view to play; edit the copy and re-run it from the GUI."
         >
           <TextLoadInPlayground />
+        </DemoSection>
+
+        <DemoSection
+          title="Text load-in v2 — true raymarching"
+          description="Improved take on the reveal above, built from Maxime Heckel's 'Painting with Math': the headline becomes a real signed distance field, extruded and raymarched in 3D — a smooth-min goo front sweeps it into existence with metaball droplets, lit via SDF-gradient normals, then hands off to the crisp DOM heading. Scroll it into view to play; tweak the SDF scene from the GUI."
+        >
+          <TextLoadInRaymarchedPlayground />
         </DemoSection>
 
         <div className="h-24" />

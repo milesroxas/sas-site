@@ -23,4 +23,8 @@ export {
   type RefractionSource,
 } from './ui/refraction-media'
 export { TextLoadIn, type TextLoadInProps } from './ui/text-load-in'
+export {
+  TextLoadInRaymarched,
+  type TextLoadInRaymarchedProps,
+} from './ui/text-load-in-raymarched'
 export { WebGlBackdropScene } from './ui/webgl-backdrop-scene'
