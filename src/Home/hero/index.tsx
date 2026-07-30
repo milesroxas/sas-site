@@ -44,7 +44,9 @@ const HomeHero: React.FC<HomeHeroData> = ({
           <div
             className={cn(
               'flex min-h-0 w-full flex-1 flex-col self-stretch',
-              isCenter ? 'items-center justify-center px-2' : 'items-start gap-8 pt-8 sm:gap-12 sm:pt-16',
+              isCenter
+                ? 'items-center justify-center px-2'
+                : 'items-start gap-8 pt-8 sm:gap-12 sm:pt-16',
             )}
           >
             {title && (
@@ -62,9 +64,7 @@ const HomeHero: React.FC<HomeHeroData> = ({
               </h1>
             )}
 
-            {!isCenter && description && (
-              <p className={descriptionClassName}>{description}</p>
-            )}
+            {!isCenter && description && <p className={descriptionClassName}>{description}</p>}
           </div>
 
           {(isCenter || post) && (

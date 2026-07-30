@@ -35,7 +35,8 @@ export const homeHero: Field = {
       type: 'textarea',
       required: true,
       admin: {
-        description: 'Supporting paragraph shown under the statement (left) or in the footer (center).',
+        description:
+          'Supporting paragraph shown under the statement (left) or in the footer (center).',
       },
     },
     {
