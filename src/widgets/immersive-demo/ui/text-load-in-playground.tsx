@@ -3,7 +3,7 @@
 import { button } from 'leva'
 import { useState } from 'react'
 import { TextLoadIn } from '@/features/immersive'
-import { useDemoControls, useDemoSnippet } from './demo-section'
+import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 
 const EASES = [
   'power1.out',

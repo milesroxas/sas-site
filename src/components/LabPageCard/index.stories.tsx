@@ -10,7 +10,7 @@ const project = {
   status: 'active',
   summaries: {
     oneLine: 'An interactive refraction experiment for hero backdrops.',
-    short: 'Prototyping edgeless lens refraction over image and video media.',
+    short: 'Prototyping a soft-edged refraction lens over image and video media.',
   },
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',

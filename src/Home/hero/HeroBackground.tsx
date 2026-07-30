@@ -10,47 +10,48 @@ import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { cn } from '@/utilities/ui'
 
 /**
- * Dialed in on /demo/immersive. Two layers trail the cursor: the original
- * edgeless screen-space warp (`edge: 0` — refraction, chroma, noise and smear
- * with no visible rim, so `feather` and `highlight` are left off), plus a
- * flattened glass mesh refracting the warped image through six spectral
- * bands. Both ease out when the pointer leaves; set `lensVisibility: 0` to
- * run the warp alone.
+ * Dialed in on /demo/immersive (matches the playground defaults there). The
+ * screen-space warp runs alone as a soft ringed lens — wide spread, full
+ * feather, strong refraction and chroma with a slow low-frequency wobble and
+ * a faint rim highlight. `lensVisibility: 0` keeps the glass mesh optically
+ * absent; its parameters fall back to the component defaults.
  */
 const LENS = {
-  spread: 0.51,
-  edge: 0,
-  refraction: 0.14,
-  chroma: 0.7,
-  distortion: 0.008,
-  noiseScale: 16.5,
-  noiseSpeed: 0.5,
-  smear: 0.1,
-  lensVisibility: 1,
-  lensSpread: 0.28,
-  lensDepth: 0.55,
-  lensRefraction: 0.12,
-  lensChroma: 0.6,
-  lensSaturation: 1.04,
-  follow: 6.5,
-  ease: 4.5,
+  spread: 0.6,
+  edge: 0.2,
+  feather: 1,
+  refraction: 0.5,
+  chroma: 1,
+  distortion: 0.024,
+  noiseScale: 2,
+  noiseSpeed: 0.15,
+  smear: 0.05,
+  highlight: 0.02,
+  lensVisibility: 0,
+  follow: 4,
+  ease: 3,
 } as const
 
-const MEDIA_URL = (process.env.NEXT_PUBLIC_MEDIA_URL || '').replace(/\/$/, '')
-
 const mediaSrc = (media: MediaType): string => {
-  // Absolute fixture/CDN urls win — don't rewrite them through MEDIA_URL or a
-  // missing object key (Storybook fixtures) 404s and the lens never becomes ready.
+  // Absolute fixture/CDN urls win — don't rewrite them or a missing object
+  // key (Storybook fixtures) 404s and the lens never becomes ready. The DOM
+  // layer fetches the same URL without CORS, browsers key their HTTP cache by
+  // URL alone, and R2 sends no `Vary: Origin` — so that no-CORS response
+  // would be replayed for this crossOrigin texture fetch and fail it. The
+  // marker param gives the WebGL copy its own cache entry.
   if (media.url && /^https?:\/\//i.test(media.url)) {
-    return getMediaUrl(media.url, media.updatedAt)
+    const url = getMediaUrl(media.url, media.updatedAt)
+    return `${url}${url.includes('?') ? '&' : '?'}webgl=1`
   }
-  // Prefer the R2 custom domain (same as VideoMedia) when configured.
-  if (MEDIA_URL && media.filename) {
+  // Same-origin Payload proxy, never the R2 custom domain: the CDN sends no
+  // CORS headers, so the crossOrigin texture fetch fails and the canvas never
+  // becomes ready.
+  if (media.filename) {
     const path = media.filename
       .split('/')
       .map((segment) => encodeURIComponent(segment))
       .join('/')
-    return getMediaUrl(`${MEDIA_URL}/${path}`, media.updatedAt)
+    return getMediaUrl(`/api/media/file/${path}`, media.updatedAt)
   }
   return getMediaUrl(media.url, media.updatedAt)
 }

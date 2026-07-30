@@ -3,7 +3,7 @@
 import { IconCopy } from '@tabler/icons-react'
 import { LevaPanel, LevaStoreProvider, useControls, useCreateStore, useStoreContext } from 'leva'
 import type { Schema } from 'leva/dist/declarations/src/types'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useDemoSettings } from './demo-settings'
@@ -34,6 +34,9 @@ const levaTheme = {
     level1: 'none',
   },
 }
+
+/** Panel column width — shared by the open grid track and the closed measuring box. */
+const GUI_WIDTH = '280px'
 
 type SnippetRegister = (values: Record<string, unknown>) => void
 
@@ -128,16 +131,38 @@ export function DemoSection({ title, description, paste, children }: DemoSection
         </div>
       </header>
 
-      <div className={guiOpen ? 'grid gap-4 md:grid-cols-[minmax(0,1fr)_280px]' : undefined}>
+      <div
+        className={
+          guiOpen
+            ? 'relative grid gap-4 md:grid-cols-[minmax(0,1fr)_var(--demo-gui-width)]'
+            : 'relative'
+        }
+        style={{ '--demo-gui-width': GUI_WIDTH } as CSSProperties}
+      >
         <div className="min-w-0 space-y-4">
           <SnippetContext.Provider value={registerRef.current}>
             <LevaStoreProvider store={store}>{children}</LevaStoreProvider>
           </SnippetContext.Provider>
         </div>
-        {/* Mounted once and hidden, never remounted on toggle: leva paints its
-            folders open and animates them closed on mount, which reads as the
-            panel flashing open and snapping shut every time it is revealed. */}
-        <aside aria-label={`${title} controls`} hidden={!guiOpen}>
+        {/* Mounted once and never remounted on toggle: leva paints its folders
+            open and animates them closed on mount, which reads as the panel
+            flashing open and snapping shut every time it is revealed.
+            Hidden with visibility rather than `display: none`: leva pins the
+            panel height from a measurement it takes in an effect, and a
+            subtree with no layout box measures 0 — the panel then paints its
+            rows over a collapsed, background-less box until a nested folder
+            transition bubbles up and clears the pinned height. Out of flow at
+            the panel's real width so the closed state keeps one column and
+            still measures true. */}
+        <aside
+          aria-label={`${title} controls`}
+          inert={!guiOpen}
+          className={
+            guiOpen
+              ? undefined
+              : 'invisible pointer-events-none absolute top-0 right-0 w-(--demo-gui-width)'
+          }
+        >
           <LevaPanel store={store} theme={levaTheme} fill titleBar={false} hideCopyButton />
         </aside>
       </div>

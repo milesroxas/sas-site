@@ -665,6 +665,9 @@
      library's default gapMode is `margin` and its padding values are copies of
      the body's own computed padding. */
   body[data-scroll-locked] {
+    /* biome-ignore lint/complexity/noImportantStyles: the library writes its offset
+       with !important from an injected unlayered <style>; nothing but an
+       !important in a cascade layer can outrank it. */
     margin-right: 0 !important;
   }
   /* Tailwind v4 preflight sets buttons to cursor: default; restore pointer

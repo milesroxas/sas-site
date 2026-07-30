@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { FloatingCards, type FloatingCardsEase } from '@/features/immersive'
+import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 import { cn } from '@/utilities/ui'
-import { useDemoControls, useDemoSnippet } from './demo-section'
 
 /** Default lives in /public; the GUI upload swaps in a blob URL. */
 const DEFAULT_IMAGE = '/images/bg-fpo-01.jpg'

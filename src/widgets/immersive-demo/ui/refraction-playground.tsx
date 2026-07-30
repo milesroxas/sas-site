@@ -2,7 +2,7 @@
 
 import { button } from 'leva'
 import { RefractionMedia } from '@/features/immersive'
-import { useDemoControls, useDemoSnippet } from './demo-section'
+import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 import { useVideoUpload } from './use-video-upload'
 
 /** Default lives in /public; the GUI upload swaps in a blob URL. */

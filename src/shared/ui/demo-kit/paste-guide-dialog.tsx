@@ -50,6 +50,10 @@ export function PasteGuideDialog({
             Open <code className={codeClass}>{target.file}</code> and replace{' '}
             {target.format === 'object' ? (
               <code className={codeClass}>{target.symbol}</code>
+            ) : target.format === 'css-vars' ? (
+              <>
+                the <code className={codeClass}>{target.symbol}</code> block
+              </>
             ) : (
               <>
                 the props on <code className={codeClass}>{`<${target.symbol} />`}</code>

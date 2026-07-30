@@ -1,0 +1,14 @@
+/*
+ * View-transition snapshots render in the document's top layer, above the mock
+ * browser frame and unclipped by its overflow. While the playground is mounted
+ * (MockViewport toggles this class on <html>), clip every image pair to its
+ * group box so runs stay inside the mock window: the page boundary is the
+ * window-sized box, so its pair clips slide overshoot at the frame edge, and
+ * the hero/morph groups clip to their own rects.
+ *
+ * Production is untouched — the class only exists on this route, and a
+ * full-page navigation's snapshots only ever overflow offscreen anyway.
+ */
+html.vt-sim-clip::view-transition-image-pair(*) {
+  overflow: clip;
+}

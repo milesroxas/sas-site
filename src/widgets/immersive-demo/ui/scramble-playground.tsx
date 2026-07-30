@@ -3,8 +3,8 @@
 import { button } from 'leva'
 import { useMemo, useRef, useState } from 'react'
 import { ChromaSplitText } from '@/features/immersive'
+import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 import { ScrambleText } from '@/shared/ui/scramble-text'
-import { useDemoControls, useDemoSnippet } from './demo-section'
 
 const EASES = [
   'none',

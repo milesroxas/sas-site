@@ -1,8 +1,7 @@
 'use client'
 
 import { ImmersiveShell, WebGLTunnel, WebGlBackdropScene } from '@/features/immersive'
-import { DemoSection } from './demo-section'
-import { DemoSettingsMenu, DemoSettingsProvider } from './demo-settings'
+import { DemoSection, DemoSettingsMenu, DemoSettingsProvider } from '@/shared/ui/demo-kit'
 import { DispersionPlayground } from './dispersion-playground'
 import { FloatingCardsPlayground } from './floating-cards-playground'
 import { RefractionPlayground } from './refraction-playground'
