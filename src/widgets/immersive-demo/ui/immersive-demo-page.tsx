@@ -2,6 +2,7 @@
 
 import { ImmersiveShell, WebGLTunnel, WebGlBackdropScene } from '@/features/immersive'
 import { DemoSection } from './demo-section'
+import { DispersionPlayground } from './dispersion-playground'
 import { FloatingCardsPlayground } from './floating-cards-playground'
 import { RefractionPlayground } from './refraction-playground'
 import { ScramblePlayground } from './scramble-playground'
@@ -57,6 +58,13 @@ export function ImmersiveDemoPage() {
           description="Cursor-driven lens shader over an image: refraction, chromatic dispersion, noise distortion, and velocity smear. Upload your own image via the GUI."
         >
           <RefractionPlayground />
+        </DemoSection>
+
+        <DemoSection
+          title="Dispersion mesh"
+          description="Maxime Heckel's refraction + dispersion technique: a glass mesh tumbles over image or video media, refracting it through six spectral bands (RYGCBV) sampled from an FBO snapshot. Defaults to the home hero's gradient video."
+        >
+          <DispersionPlayground />
         </DemoSection>
 
         <DemoSection

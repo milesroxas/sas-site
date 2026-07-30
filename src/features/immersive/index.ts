@@ -6,6 +6,12 @@ export { ImmersiveShell, type ImmersiveShellProps } from '@/lib/interactions/imm
 export { WebGLTunnel } from '@/lib/webgl/components/tunnel'
 export { ChromaSplitText, type ChromaSplitTextProps } from './ui/chroma-split-text'
 export {
+  DispersionMedia,
+  type DispersionMediaProps,
+  type DispersionShape,
+  type DispersionSource,
+} from './ui/dispersion-media'
+export {
   type FloatingCardDef,
   FloatingCards,
   type FloatingCardsEase,
