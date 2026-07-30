@@ -138,7 +138,7 @@ export function TextLoadInPlayground() {
   })
 
   return (
-    <div className="relative flex min-h-105 items-center overflow-hidden rounded-md bg-zinc-950 px-8 py-16 md:px-14">
+    <div className="relative flex min-h-96 items-center overflow-hidden rounded-md bg-zinc-950 px-5 py-12 sm:min-h-105 sm:px-8 sm:py-16 md:px-14">
       <div
         aria-hidden
         className="pointer-events-none absolute -left-1/4 top-1/2 h-[150%] w-2/3 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(234,179,8,0.22),transparent)] blur-2xl"

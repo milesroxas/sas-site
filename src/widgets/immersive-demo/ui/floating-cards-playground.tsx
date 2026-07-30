@@ -119,9 +119,11 @@ export function FloatingCardsPlayground() {
   }
 
   return (
-    <div className="relative h-105 overflow-hidden rounded-md bg-zinc-950">
+    // Below md the scene and list stack — the absolute overlay would leave the
+    // canvas a sliver and paint the list over it on narrow screens.
+    <div className="overflow-hidden rounded-md bg-zinc-950 md:relative md:h-105">
       <FloatingCards
-        className="absolute inset-y-0 left-0 right-60"
+        className="h-72 md:absolute md:inset-y-0 md:left-0 md:right-60 md:h-auto"
         cards={cards}
         visible={active !== null}
         contentKey={displayed}
@@ -139,7 +141,7 @@ export function FloatingCardsPlayground() {
       />
 
       <aside
-        className="absolute right-6 top-1/2 w-56 -translate-y-1/2 space-y-2"
+        className="space-y-2 p-4 pt-2 md:absolute md:right-6 md:top-1/2 md:w-56 md:-translate-y-1/2 md:p-0"
         onMouseLeave={() => setActive(null)}
       >
         <p className="px-4 text-[10px] font-medium uppercase tracking-[0.3em] text-zinc-500">

@@ -48,13 +48,15 @@ const TECHNIQUES = [
 export function TransitionDemoPage() {
   return (
     <DemoSettingsProvider>
-      <div className="container relative max-w-4xl space-y-8 py-24">
+      <div className="container relative max-w-4xl space-y-8 py-16 md:py-24">
         <header className="space-y-4">
           <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
             FSD · widgets/transition-demo
           </p>
-          <div className="flex items-center justify-between gap-4">
-            <h1 className="text-balance text-4xl font-semibold tracking-tight">Page transitions</h1>
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+            <h1 className="text-balance text-3xl sm:text-4xl font-semibold tracking-tight">
+              Page transitions
+            </h1>
             <DemoSettingsMenu />
           </div>
           <p className="max-w-prose text-pretty text-lg/relaxed text-muted-foreground">
@@ -64,7 +66,7 @@ export function TransitionDemoPage() {
           </p>
         </header>
 
-        <section className="space-y-3 rounded-lg border border-border bg-card/80 p-6 backdrop-blur-sm">
+        <section className="space-y-3 rounded-lg border border-border bg-card/80 p-4 backdrop-blur-sm sm:p-6">
           <h2 className="text-balance text-xl font-medium tracking-tight">How this page works</h2>
           <ul className="max-w-prose list-disc space-y-2 pl-5 text-pretty text-sm/relaxed text-muted-foreground">
             <li>
@@ -111,7 +113,7 @@ export function TransitionDemoPage() {
           <TransitionSimulator />
         </DemoSection>
 
-        <section className="space-y-4 rounded-lg border border-border bg-card/80 p-6 backdrop-blur-sm">
+        <section className="space-y-4 rounded-lg border border-border bg-card/80 p-4 backdrop-blur-sm sm:p-6">
           <h2 className="text-balance text-xl font-medium tracking-tight">
             Where each technique fires in production
           </h2>
