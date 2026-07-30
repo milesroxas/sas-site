@@ -75,15 +75,27 @@ export type ChromaSplitTextProps = {
   className?: string
 }
 
+/**
+ * Single source of truth for this effect's tunable defaults. The playground
+ * GUI initializes from these; site usages override per call site.
+ */
+export const CHROMA_SPLIT_TEXT_DEFAULTS = {
+  strength: 0.005,
+  speed: 0.4,
+  wobble: 0.9,
+  angle: 0,
+  radial: false,
+} as const satisfies Partial<ChromaSplitTextProps>
+
 type SceneProps = Omit<ChromaSplitTextProps, 'className'>
 
 function ChromaScene({
   sourceRef,
-  strength = 0.005,
-  speed = 0.4,
-  wobble = 0.9,
-  angle = 0,
-  radial = false,
+  strength = CHROMA_SPLIT_TEXT_DEFAULTS.strength,
+  speed = CHROMA_SPLIT_TEXT_DEFAULTS.speed,
+  wobble = CHROMA_SPLIT_TEXT_DEFAULTS.wobble,
+  angle = CHROMA_SPLIT_TEXT_DEFAULTS.angle,
+  radial = CHROMA_SPLIT_TEXT_DEFAULTS.radial,
   active = true,
   fitTexts,
 }: SceneProps) {

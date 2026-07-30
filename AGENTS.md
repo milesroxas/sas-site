@@ -71,6 +71,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 - Prefer server components; client components only for state/effects/browser APIs.
 - Admin custom components: file paths relative to importMap `baseDir` (not direct imports in config).
 - Drafts: use `versions.drafts` / `_status`; don’t invent a parallel publish `status` field unless the codebase already has one for that collection.
+- Immersive effects: import from `@/features/immersive` (barrel only). Tuning lives once — exported `*_DEFAULTS` per effect, delta-only presets in `src/features/immersive/presets.ts`; never restate defaults; second usage of a tuning → promote to a named preset. See [docs/immersive-effects.md](docs/immersive-effects.md).
 
 ## Where to look
 
@@ -80,6 +81,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | Payload how-to (collections, fields, hooks, queries, …) | `.agents/skills/payload` — use the **payload** skill |
 | CMS content migration from another system | `.agents/skills/cms-migration` |
 | WebGL / shaders / R3F / TSL / motion physics | `.agents/skills/creative-webgl-shaders` — use the **creative-webgl-shaders** skill |
+| Immersive effects — usage, defaults/presets contract | [docs/immersive-effects.md](docs/immersive-effects.md); Cursor rule `.cursor/rules/immersive-effects.mdc` |
 | Cursor topic rules (security, fields, hooks, …) | `.cursor/rules/` |
 | Human DB docs | [README.md](README.md#database--migrations) |
 | Architecture | [docs/architecture.md](docs/architecture.md) |

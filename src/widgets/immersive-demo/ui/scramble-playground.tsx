@@ -2,9 +2,9 @@
 
 import { button } from 'leva'
 import { useMemo, useRef, useState } from 'react'
-import { ChromaSplitText } from '@/features/immersive'
+import { CHROMA_SPLIT_TEXT_DEFAULTS, ChromaSplitText } from '@/features/immersive'
 import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
-import { ScrambleText } from '@/shared/ui/scramble-text'
+import { SCRAMBLE_TEXT_DEFAULTS, ScrambleText } from '@/shared/ui/scramble-text'
 
 const EASES = [
   'none',
@@ -36,24 +36,29 @@ export function ScramblePlayground() {
   })
 
   const { duration, hold, loop, ease } = useDemoControls('Timing', {
+    // duration/hold are demo-curated for a tighter loop than the component
+    // defaults; the rest mirror SCRAMBLE_TEXT_DEFAULTS.
     duration: { value: 0.7, min: 0.2, max: 6, step: 0.1 },
     hold: { value: 1.2, min: 0, max: 5, step: 0.1 },
-    loop: true,
-    ease: { value: 'none', options: EASES },
+    loop: SCRAMBLE_TEXT_DEFAULTS.loop,
+    ease: { value: SCRAMBLE_TEXT_DEFAULTS.ease, options: EASES },
   })
 
   const { charSet, customChars, speed, revealDelay, tweenLength, order } = useDemoControls(
     'Scramble',
     {
-      order: { value: 'random' as (typeof ORDERS)[number], options: [...ORDERS] },
-      charSet: { value: 'upperCase', options: CHAR_SETS },
+      order: {
+        value: SCRAMBLE_TEXT_DEFAULTS.order as (typeof ORDERS)[number],
+        options: [...ORDERS],
+      },
+      charSet: { value: SCRAMBLE_TEXT_DEFAULTS.chars, options: CHAR_SETS },
       customChars: {
         value: DEFAULT_CUSTOM_CHARS,
         render: (get) => get('Scramble.charSet') === 'custom',
       },
-      speed: { value: 0.4, min: 0.05, max: 2, step: 0.05 },
-      revealDelay: { value: 0, min: 0, max: 2, step: 0.05 },
-      tweenLength: true,
+      speed: { value: SCRAMBLE_TEXT_DEFAULTS.speed, min: 0.05, max: 2, step: 0.05 },
+      revealDelay: { value: SCRAMBLE_TEXT_DEFAULTS.revealDelay, min: 0, max: 2, step: 0.05 },
+      tweenLength: SCRAMBLE_TEXT_DEFAULTS.tweenLength,
     },
   )
 
@@ -64,11 +69,17 @@ export function ScramblePlayground() {
       transitionOnly: { value: true, label: 'transition only' },
       // leva clamps number display to 2 decimals, so tiny UV offsets read as
       // "0.00" — expose strength ×1000 and scale back down where it's applied.
-      strength: { value: 5, min: 0, max: 50, step: 0.5 },
-      chromaSpeed: { value: 0.4, min: 0, max: 5, step: 0.1, label: 'speed' },
-      wobble: { value: 0.9, min: 0, max: 1, step: 0.05 },
-      angle: { value: 0, min: 0, max: 360, step: 5 },
-      radial: false,
+      strength: { value: CHROMA_SPLIT_TEXT_DEFAULTS.strength * 1000, min: 0, max: 50, step: 0.5 },
+      chromaSpeed: {
+        value: CHROMA_SPLIT_TEXT_DEFAULTS.speed,
+        min: 0,
+        max: 5,
+        step: 0.1,
+        label: 'speed',
+      },
+      wobble: { value: CHROMA_SPLIT_TEXT_DEFAULTS.wobble, min: 0, max: 1, step: 0.05 },
+      angle: { value: CHROMA_SPLIT_TEXT_DEFAULTS.angle, min: 0, max: 360, step: 5 },
+      radial: CHROMA_SPLIT_TEXT_DEFAULTS.radial,
     },
   )
 

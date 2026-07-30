@@ -2,7 +2,7 @@
 
 import { button } from 'leva'
 import { useState } from 'react'
-import { TextLoadIn } from '@/features/immersive'
+import { TEXT_LOAD_IN_DEFAULTS as DEFAULTS, TextLoadIn } from '@/features/immersive'
 import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 
 const EASES = [
@@ -39,46 +39,77 @@ export function TextLoadInPlayground() {
   const { scrambleDuration, scrambleOrder, charSet, customChars, scrambleSpeed } = useDemoControls(
     'Eyebrow',
     {
-      scrambleDuration: { value: 1.1, min: 0.2, max: 4, step: 0.05, label: 'duration' },
+      scrambleDuration: {
+        value: DEFAULTS.scrambleDuration,
+        min: 0.2,
+        max: 4,
+        step: 0.05,
+        label: 'duration',
+      },
       scrambleOrder: {
-        value: 'leftToRight' as (typeof ORDERS)[number],
+        value: DEFAULTS.scrambleOrder as (typeof ORDERS)[number],
         options: [...ORDERS],
         label: 'order',
       },
-      charSet: { value: 'upperCase', options: CHAR_SETS },
+      charSet: { value: DEFAULTS.scrambleChars, options: CHAR_SETS },
       customChars: {
         value: DEFAULT_CUSTOM_CHARS,
         render: (get) => get('Eyebrow.charSet') === 'custom',
       },
-      scrambleSpeed: { value: 0.5, min: 0.05, max: 2, step: 0.05, label: 'churn speed' },
+      scrambleSpeed: {
+        value: DEFAULTS.scrambleSpeed,
+        min: 0.05,
+        max: 2,
+        step: 0.05,
+        label: 'churn speed',
+      },
     },
   )
 
   const { headingStart, headingDuration, ease, headingStagger } = useDemoControls('Heading', {
-    headingStart: { value: 0.25, min: 0, max: 3, step: 0.05, label: 'start (s)' },
-    headingDuration: { value: 1.6, min: 0.3, max: 5, step: 0.05, label: 'duration' },
-    ease: { value: 'power2.out', options: EASES },
-    headingStagger: { value: 0.6, min: 0, max: 1, step: 0.05, label: 'char stagger' },
+    headingStart: { value: DEFAULTS.headingStart, min: 0, max: 3, step: 0.05, label: 'start (s)' },
+    headingDuration: {
+      value: DEFAULTS.headingDuration,
+      min: 0.3,
+      max: 5,
+      step: 0.05,
+      label: 'duration',
+    },
+    ease: { value: DEFAULTS.ease, options: EASES },
+    headingStagger: {
+      value: DEFAULTS.headingStagger,
+      min: 0,
+      max: 1,
+      step: 0.05,
+      label: 'char stagger',
+    },
   })
 
   const { smearPx, marchSteps, smearAngle, gooey, fade } = useDemoControls('Smear (ray march)', {
-    smearPx: { value: 170, min: 0, max: 400, step: 2, label: 'smear (px)' },
-    marchSteps: { value: 24, min: 8, max: 32, step: 1, label: 'gather taps' },
-    smearAngle: { value: 0, min: 0, max: 360, step: 5, label: 'angle' },
-    gooey: { value: 0.5, min: 0, max: 1, step: 0.05 },
-    fade: { value: 0.35, min: 0, max: 1, step: 0.05 },
+    smearPx: { value: DEFAULTS.smearPx, min: 0, max: 400, step: 2, label: 'smear (px)' },
+    marchSteps: { value: DEFAULTS.marchSteps, min: 8, max: 32, step: 1, label: 'gather taps' },
+    smearAngle: { value: DEFAULTS.smearAngle, min: 0, max: 360, step: 5, label: 'angle' },
+    gooey: { value: DEFAULTS.gooey, min: 0, max: 1, step: 0.05 },
+    fade: { value: DEFAULTS.fade, min: 0, max: 1, step: 0.05 },
   })
 
   const { bodyStart, bodyDuration, bodyBlur, bodyRise } = useDemoControls('Body', {
-    bodyStart: { value: 0.9, min: 0, max: 4, step: 0.05, label: 'start (s)' },
-    bodyDuration: { value: 1.1, min: 0.1, max: 3, step: 0.05, label: 'duration' },
-    bodyBlur: { value: 14, min: 0, max: 40, step: 1, label: 'blur (px)' },
-    bodyRise: { value: 14, min: 0, max: 80, step: 1, label: 'rise (px)' },
+    bodyStart: { value: DEFAULTS.bodyStart, min: 0, max: 4, step: 0.05, label: 'start (s)' },
+    bodyDuration: {
+      value: DEFAULTS.bodyDuration,
+      min: 0.1,
+      max: 3,
+      step: 0.05,
+      label: 'duration',
+    },
+    bodyBlur: { value: DEFAULTS.bodyBlur, min: 0, max: 40, step: 1, label: 'blur (px)' },
+    bodyRise: { value: DEFAULTS.bodyRise, min: 0, max: 80, step: 1, label: 'rise (px)' },
   })
 
   const { retrigger, threshold } = useDemoControls('Trigger', {
+    // Demo-curated: replays on every viewport entry (component default is once).
     retrigger: { value: true, label: 're-run on enter' },
-    threshold: { value: 0.4, min: 0, max: 1, step: 0.05, label: 'visible fraction' },
+    threshold: { value: DEFAULTS.threshold, min: 0, max: 1, step: 0.05, label: 'visible fraction' },
   })
 
   useDemoControls('Actions', { replay: button(() => setReplayKey((n) => n + 1)) })

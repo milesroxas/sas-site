@@ -241,6 +241,24 @@ export type RaymarchedSdfHeadingProps = {
   className?: string
 }
 
+/**
+ * Single source of truth for this shader's tunable defaults.
+ * TextLoadInRaymarched's public defaults reference these — change them here,
+ * not at call sites.
+ */
+export const RAYMARCHED_SDF_HEADING_DEFAULTS = {
+  steps: 64,
+  gooeyPx: 18,
+  edgePx: 56,
+  angle: 0,
+  dropletPx: 12,
+  dropletCount: 5,
+  dropletStretch: 1,
+  dropletScatter: 0.5,
+  wobblePx: 10,
+  lightAngle: 125,
+} as const satisfies Partial<RaymarchedSdfHeadingProps>
+
 type SceneProps = Pick<
   RaymarchedSdfHeadingProps,
   | 'progressRef'
@@ -408,16 +426,16 @@ function RaymarchScene({
   headingRef,
   dirtyRef,
   progressRef,
-  steps = 64,
-  gooeyPx = 18,
-  edgePx = 56,
-  angle = 0,
-  dropletPx = 12,
-  dropletCount = 5,
-  dropletStretch = 1,
-  dropletScatter = 0.5,
-  wobblePx = 10,
-  lightAngle = 125,
+  steps = RAYMARCHED_SDF_HEADING_DEFAULTS.steps,
+  gooeyPx = RAYMARCHED_SDF_HEADING_DEFAULTS.gooeyPx,
+  edgePx = RAYMARCHED_SDF_HEADING_DEFAULTS.edgePx,
+  angle = RAYMARCHED_SDF_HEADING_DEFAULTS.angle,
+  dropletPx = RAYMARCHED_SDF_HEADING_DEFAULTS.dropletPx,
+  dropletCount = RAYMARCHED_SDF_HEADING_DEFAULTS.dropletCount,
+  dropletStretch = RAYMARCHED_SDF_HEADING_DEFAULTS.dropletStretch,
+  dropletScatter = RAYMARCHED_SDF_HEADING_DEFAULTS.dropletScatter,
+  wobblePx = RAYMARCHED_SDF_HEADING_DEFAULTS.wobblePx,
+  lightAngle = RAYMARCHED_SDF_HEADING_DEFAULTS.lightAngle,
 }: SceneProps) {
   const viewport = useThree((state) => state.viewport)
   const materialRef = useRef<ShaderMaterial>(null)

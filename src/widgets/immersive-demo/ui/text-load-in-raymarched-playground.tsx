@@ -2,7 +2,10 @@
 
 import { button } from 'leva'
 import { useState } from 'react'
-import { TextLoadInRaymarched } from '@/features/immersive'
+import {
+  TEXT_LOAD_IN_RAYMARCHED_DEFAULTS as DEFAULTS,
+  TextLoadInRaymarched,
+} from '@/features/immersive'
 import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 
 const EASES = [
@@ -39,62 +42,99 @@ export function TextLoadInRaymarchedPlayground() {
   const { scrambleDuration, scrambleOrder, charSet, customChars, scrambleSpeed } = useDemoControls(
     'Eyebrow',
     {
-      scrambleDuration: { value: 1.1, min: 0.2, max: 4, step: 0.05, label: 'duration' },
+      scrambleDuration: {
+        value: DEFAULTS.scrambleDuration,
+        min: 0.2,
+        max: 4,
+        step: 0.05,
+        label: 'duration',
+      },
       scrambleOrder: {
-        value: 'leftToRight' as (typeof ORDERS)[number],
+        value: DEFAULTS.scrambleOrder as (typeof ORDERS)[number],
         options: [...ORDERS],
         label: 'order',
       },
-      charSet: { value: 'upperCase', options: CHAR_SETS },
+      charSet: { value: DEFAULTS.scrambleChars, options: CHAR_SETS },
       customChars: {
         value: DEFAULT_CUSTOM_CHARS,
         render: (get) => get('Eyebrow.charSet') === 'custom',
       },
-      scrambleSpeed: { value: 0.5, min: 0.05, max: 2, step: 0.05, label: 'churn speed' },
+      scrambleSpeed: {
+        value: DEFAULTS.scrambleSpeed,
+        min: 0.05,
+        max: 2,
+        step: 0.05,
+        label: 'churn speed',
+      },
     },
   )
 
   const { offset, stagger } = useDemoControls('Timing', {
-    offset: { value: 0, min: 0, max: 3, step: 0.05, label: 'offset (s)' },
-    stagger: { value: 1.1, min: 0, max: 3, step: 0.05, label: 'stagger (s)' },
+    offset: { value: DEFAULTS.offset, min: 0, max: 3, step: 0.05, label: 'offset (s)' },
+    stagger: { value: DEFAULTS.stagger, min: 0, max: 3, step: 0.05, label: 'stagger (s)' },
   })
 
   const { headingDuration, ease } = useDemoControls('Heading', {
-    headingDuration: { value: 3.4, min: 0.5, max: 8, step: 0.05, label: 'duration' },
-    ease: { value: 'power2.inOut', options: EASES },
+    headingDuration: {
+      value: DEFAULTS.headingDuration,
+      min: 0.5,
+      max: 8,
+      step: 0.05,
+      label: 'duration',
+    },
+    ease: { value: DEFAULTS.ease, options: EASES },
   })
 
   const { marchSteps, gooeyPx, edgePx, sweepAngle, lightAngle } = useDemoControls(
     'Raymarch (SDF)',
     {
-      marchSteps: { value: 64, min: 16, max: 96, step: 1, label: 'march steps' },
-      gooeyPx: { value: 18, min: 1, max: 90, step: 1, label: 'smooth-min k' },
-      edgePx: { value: 56, min: 10, max: 240, step: 2, label: 'front softness' },
-      sweepAngle: { value: 0, min: 0, max: 360, step: 5, label: 'sweep angle' },
-      lightAngle: { value: 125, min: 0, max: 360, step: 5, label: 'light angle' },
+      marchSteps: { value: DEFAULTS.marchSteps, min: 16, max: 96, step: 1, label: 'march steps' },
+      gooeyPx: { value: DEFAULTS.gooeyPx, min: 1, max: 90, step: 1, label: 'smooth-min k' },
+      edgePx: { value: DEFAULTS.edgePx, min: 10, max: 240, step: 2, label: 'front softness' },
+      sweepAngle: { value: DEFAULTS.sweepAngle, min: 0, max: 360, step: 5, label: 'sweep angle' },
+      lightAngle: { value: DEFAULTS.lightAngle, min: 0, max: 360, step: 5, label: 'light angle' },
     },
   )
 
   const { dropletPx, dropletCount, dropletStretch, dropletScatter, wobblePx } = useDemoControls(
     'Droplets',
     {
-      dropletPx: { value: 12, min: 0, max: 60, step: 1, label: 'size (px)' },
-      dropletCount: { value: 5, min: 0, max: 8, step: 1, label: 'count' },
-      dropletStretch: { value: 1, min: 0.3, max: 4, step: 0.05, label: 'stretch' },
-      dropletScatter: { value: 0.5, min: 0, max: 1, step: 0.05, label: 'scatter' },
-      wobblePx: { value: 10, min: 0, max: 60, step: 1, label: 'wobble (px)' },
+      dropletPx: { value: DEFAULTS.dropletPx, min: 0, max: 60, step: 1, label: 'size (px)' },
+      dropletCount: { value: DEFAULTS.dropletCount, min: 0, max: 8, step: 1, label: 'count' },
+      dropletStretch: {
+        value: DEFAULTS.dropletStretch,
+        min: 0.3,
+        max: 4,
+        step: 0.05,
+        label: 'stretch',
+      },
+      dropletScatter: {
+        value: DEFAULTS.dropletScatter,
+        min: 0,
+        max: 1,
+        step: 0.05,
+        label: 'scatter',
+      },
+      wobblePx: { value: DEFAULTS.wobblePx, min: 0, max: 60, step: 1, label: 'wobble (px)' },
     },
   )
 
   const { bodyDuration, bodyBlur, bodyRise } = useDemoControls('Body', {
-    bodyDuration: { value: 1.1, min: 0.1, max: 3, step: 0.05, label: 'duration' },
-    bodyBlur: { value: 14, min: 0, max: 40, step: 1, label: 'blur (px)' },
-    bodyRise: { value: 14, min: 0, max: 80, step: 1, label: 'rise (px)' },
+    bodyDuration: {
+      value: DEFAULTS.bodyDuration,
+      min: 0.1,
+      max: 3,
+      step: 0.05,
+      label: 'duration',
+    },
+    bodyBlur: { value: DEFAULTS.bodyBlur, min: 0, max: 40, step: 1, label: 'blur (px)' },
+    bodyRise: { value: DEFAULTS.bodyRise, min: 0, max: 80, step: 1, label: 'rise (px)' },
   })
 
   const { retrigger, threshold } = useDemoControls('Trigger', {
+    // Demo-curated: replays on every viewport entry (component default is once).
     retrigger: { value: true, label: 're-run on enter' },
-    threshold: { value: 0.4, min: 0, max: 1, step: 0.05, label: 'visible fraction' },
+    threshold: { value: DEFAULTS.threshold, min: 0, max: 1, step: 0.05, label: 'visible fraction' },
   })
 
   useDemoControls('Actions', { replay: button(() => setReplayKey((n) => n + 1)) })

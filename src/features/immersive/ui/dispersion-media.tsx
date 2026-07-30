@@ -89,6 +89,27 @@ export type DispersionMediaProps = {
   className?: string
 }
 
+/**
+ * Single source of truth for this effect's tunable defaults. The playground
+ * GUI initializes from these; site usages override per call site or via a
+ * named preset (see `../presets.ts`).
+ */
+export const DISPERSION_MEDIA_DEFAULTS = {
+  shape: 'icosahedron',
+  scale: 1.4,
+  speed: 0.3,
+  follow: 6,
+  refraction: 0.4,
+  chromaticAberration: 0.6,
+  saturation: 1.08,
+  iorR: 1.15,
+  iorY: 1.16,
+  iorG: 1.18,
+  iorC: 1.22,
+  iorB: 1.22,
+  iorP: 1.22,
+} as const satisfies Partial<DispersionMediaProps>
+
 type SceneProps = Omit<DispersionMediaProps, 'className'>
 
 function DispersionScene({
@@ -96,19 +117,19 @@ function DispersionScene({
   video = false,
   source,
   onReady,
-  shape = 'icosahedron',
-  scale = 1.4,
-  speed = 0.3,
-  follow = 6,
-  refraction = 0.4,
-  chromaticAberration = 0.6,
-  saturation = 1.08,
-  iorR = 1.15,
-  iorY = 1.16,
-  iorG = 1.18,
-  iorC = 1.22,
-  iorB = 1.22,
-  iorP = 1.22,
+  shape = DISPERSION_MEDIA_DEFAULTS.shape,
+  scale = DISPERSION_MEDIA_DEFAULTS.scale,
+  speed = DISPERSION_MEDIA_DEFAULTS.speed,
+  follow = DISPERSION_MEDIA_DEFAULTS.follow,
+  refraction = DISPERSION_MEDIA_DEFAULTS.refraction,
+  chromaticAberration = DISPERSION_MEDIA_DEFAULTS.chromaticAberration,
+  saturation = DISPERSION_MEDIA_DEFAULTS.saturation,
+  iorR = DISPERSION_MEDIA_DEFAULTS.iorR,
+  iorY = DISPERSION_MEDIA_DEFAULTS.iorY,
+  iorG = DISPERSION_MEDIA_DEFAULTS.iorG,
+  iorC = DISPERSION_MEDIA_DEFAULTS.iorC,
+  iorB = DISPERSION_MEDIA_DEFAULTS.iorB,
+  iorP = DISPERSION_MEDIA_DEFAULTS.iorP,
 }: SceneProps) {
   // Select only what's needed; `useThree()` re-renders on any R3F state change.
   const viewport = useThree((state) => state.viewport)

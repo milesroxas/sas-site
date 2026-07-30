@@ -1,7 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { FloatingCards, type FloatingCardsEase } from '@/features/immersive'
+import {
+  FLOATING_CARDS_DEFAULTS as DEFAULTS,
+  FloatingCards,
+  type FloatingCardsEase,
+} from '@/features/immersive'
 import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 import { cn } from '@/utilities/ui'
 
@@ -67,23 +71,29 @@ export function FloatingCardsPlayground() {
   })
 
   const { tilt, cornerRadius } = useDemoControls('Cards', {
-    tilt: { value: -8, min: -45, max: 45, step: 1 },
-    cornerRadius: { value: 0.05, min: 0, max: 0.25, step: 0.01, label: 'corners' },
+    tilt: { value: DEFAULTS.tilt, min: -45, max: 45, step: 1 },
+    cornerRadius: { value: DEFAULTS.cornerRadius, min: 0, max: 0.25, step: 0.01, label: 'corners' },
   })
 
   const { floatSpeed, floatIntensity, wobble } = useDemoControls('Float', {
-    floatSpeed: { value: 0.25, min: 0, max: 3, step: 0.05, label: 'speed' },
-    floatIntensity: { value: 0.04, min: 0, max: 0.2, step: 0.005, label: 'drift' },
-    wobble: { value: 1.5, min: 0, max: 8, step: 0.25 },
+    floatSpeed: { value: DEFAULTS.floatSpeed, min: 0, max: 3, step: 0.05, label: 'speed' },
+    floatIntensity: {
+      value: DEFAULTS.floatIntensity,
+      min: 0,
+      max: 0.2,
+      step: 0.005,
+      label: 'drift',
+    },
+    wobble: { value: DEFAULTS.wobble, min: 0, max: 8, step: 0.25 },
   })
 
   const { enterDuration, exitDuration, stagger, depth, rise, ease } = useDemoControls('Entrance', {
-    enterDuration: { value: 0.9, min: 0.2, max: 3, step: 0.05, label: 'enter' },
-    exitDuration: { value: 0.4, min: 0.1, max: 2, step: 0.05, label: 'exit' },
-    stagger: { value: 0.12, min: 0, max: 0.5, step: 0.01 },
-    depth: { value: 0.8, min: 0, max: 4, step: 0.1 },
-    rise: { value: 0.25, min: 0, max: 2, step: 0.05 },
-    ease: { value: 'expo.out' as FloatingCardsEase, options: EASES },
+    enterDuration: { value: DEFAULTS.enterDuration, min: 0.2, max: 3, step: 0.05, label: 'enter' },
+    exitDuration: { value: DEFAULTS.exitDuration, min: 0.1, max: 2, step: 0.05, label: 'exit' },
+    stagger: { value: DEFAULTS.stagger, min: 0, max: 0.5, step: 0.01 },
+    depth: { value: DEFAULTS.depth, min: 0, max: 4, step: 0.1 },
+    rise: { value: DEFAULTS.rise, min: 0, max: 2, step: 0.05 },
+    ease: { value: DEFAULTS.ease as FloatingCardsEase, options: EASES },
   })
 
   const cards = CARD_LAYOUT.map((layout) => ({ ...layout, src: image ?? DEFAULT_IMAGE }))

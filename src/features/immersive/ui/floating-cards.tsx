@@ -119,6 +119,24 @@ export type FloatingCardsProps = {
   className?: string
 }
 
+/**
+ * Single source of truth for this effect's tunable defaults. The playground
+ * GUI initializes from these; site usages override per call site.
+ */
+export const FLOATING_CARDS_DEFAULTS = {
+  tilt: -8,
+  floatSpeed: 0.25,
+  floatIntensity: 0.04,
+  wobble: 1.5,
+  enterDuration: 0.9,
+  exitDuration: 0.4,
+  stagger: 0.12,
+  depth: 0.8,
+  rise: 0.25,
+  ease: 'expo.out',
+  cornerRadius: 0.05,
+} as const satisfies Partial<FloatingCardsProps>
+
 type SceneProps = Omit<FloatingCardsProps, 'className'>
 
 type CardHandle = {
@@ -237,17 +255,17 @@ function FloatingCardsScene({
   cards,
   visible,
   contentKey,
-  tilt = -8,
-  floatSpeed = 0.25,
-  floatIntensity = 0.04,
-  wobble = 1.5,
-  enterDuration = 0.9,
-  exitDuration = 0.4,
-  stagger = 0.12,
-  depth = 0.8,
-  rise = 0.25,
-  ease = 'expo.out',
-  cornerRadius = 0.05,
+  tilt = FLOATING_CARDS_DEFAULTS.tilt,
+  floatSpeed = FLOATING_CARDS_DEFAULTS.floatSpeed,
+  floatIntensity = FLOATING_CARDS_DEFAULTS.floatIntensity,
+  wobble = FLOATING_CARDS_DEFAULTS.wobble,
+  enterDuration = FLOATING_CARDS_DEFAULTS.enterDuration,
+  exitDuration = FLOATING_CARDS_DEFAULTS.exitDuration,
+  stagger = FLOATING_CARDS_DEFAULTS.stagger,
+  depth = FLOATING_CARDS_DEFAULTS.depth,
+  rise = FLOATING_CARDS_DEFAULTS.rise,
+  ease = FLOATING_CARDS_DEFAULTS.ease,
+  cornerRadius = FLOATING_CARDS_DEFAULTS.cornerRadius,
 }: SceneProps) {
   // Select only what's needed; `useThree()` re-renders on any R3F state change.
   const viewport = useThree((state) => state.viewport)

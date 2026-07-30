@@ -1,7 +1,11 @@
 'use client'
 
 import { button } from 'leva'
-import { DispersionMedia, type DispersionShape } from '@/features/immersive'
+import {
+  DISPERSION_MEDIA_DEFAULTS as DEFAULTS,
+  DispersionMedia,
+  type DispersionShape,
+} from '@/features/immersive'
 import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 import { useVideoUpload } from './use-video-upload'
 
@@ -41,27 +45,27 @@ export function DispersionPlayground() {
   // leva select values widen to string; the options list is the source of truth.
   const { shape, scale, speed, follow } = useDemoControls('Mesh', {
     shape: {
-      value: 'icosahedron',
+      value: DEFAULTS.shape,
       options: ['icosahedron', 'torus'] satisfies DispersionShape[],
     },
-    scale: { value: 1.4, min: 0.5, max: 2.5, step: 0.05 },
-    speed: { value: 0.3, min: 0, max: 2, step: 0.05 },
-    follow: { value: 6, min: 1, max: 20, step: 0.5 },
+    scale: { value: DEFAULTS.scale, min: 0.5, max: 2.5, step: 0.05 },
+    speed: { value: DEFAULTS.speed, min: 0, max: 2, step: 0.05 },
+    follow: { value: DEFAULTS.follow, min: 1, max: 20, step: 0.5 },
   })
 
   const { refraction, chroma, saturation } = useDemoControls('Dispersion', {
-    refraction: { value: 0.4, min: 0, max: 1, step: 0.01 },
-    chroma: { value: 0.6, min: 0, max: 1.5, step: 0.01 },
-    saturation: { value: 1.08, min: 1, max: 1.25, step: 0.01 },
+    refraction: { value: DEFAULTS.refraction, min: 0, max: 1, step: 0.01 },
+    chroma: { value: DEFAULTS.chromaticAberration, min: 0, max: 1.5, step: 0.01 },
+    saturation: { value: DEFAULTS.saturation, min: 1, max: 1.25, step: 0.01 },
   })
 
   const { iorR, iorY, iorG, iorC, iorB, iorP } = useDemoControls('IOR', {
-    iorR: { value: 1.15, min: 1, max: 2.33, step: 0.01, label: 'red' },
-    iorY: { value: 1.16, min: 1, max: 2.33, step: 0.01, label: 'yellow' },
-    iorG: { value: 1.18, min: 1, max: 2.33, step: 0.01, label: 'green' },
-    iorC: { value: 1.22, min: 1, max: 2.33, step: 0.01, label: 'cyan' },
-    iorB: { value: 1.22, min: 1, max: 2.33, step: 0.01, label: 'blue' },
-    iorP: { value: 1.22, min: 1, max: 2.33, step: 0.01, label: 'purple' },
+    iorR: { value: DEFAULTS.iorR, min: 1, max: 2.33, step: 0.01, label: 'red' },
+    iorY: { value: DEFAULTS.iorY, min: 1, max: 2.33, step: 0.01, label: 'yellow' },
+    iorG: { value: DEFAULTS.iorG, min: 1, max: 2.33, step: 0.01, label: 'green' },
+    iorC: { value: DEFAULTS.iorC, min: 1, max: 2.33, step: 0.01, label: 'cyan' },
+    iorB: { value: DEFAULTS.iorB, min: 1, max: 2.33, step: 0.01, label: 'blue' },
+    iorP: { value: DEFAULTS.iorP, min: 1, max: 2.33, step: 0.01, label: 'purple' },
   })
 
   const isVideo = media === 'video' && Boolean(videoUrl)

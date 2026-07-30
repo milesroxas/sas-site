@@ -11,7 +11,7 @@ import {
   type ScrambleOrder,
   type ScrambleTweenOptions,
 } from '@/shared/ui/scramble-text'
-import { RayMarchedHeading } from './ray-marched-heading'
+import { RAY_MARCHED_HEADING_DEFAULTS, RayMarchedHeading } from './ray-marched-heading'
 
 gsap.registerPlugin(useGSAP)
 
@@ -65,6 +65,33 @@ export type TextLoadInProps = {
   className?: string
 }
 
+/**
+ * Single source of truth for this effect's tunable defaults. The playground
+ * GUI initializes from these; site usages override per call site or via a
+ * named preset (see `../presets.ts`).
+ */
+export const TEXT_LOAD_IN_DEFAULTS = {
+  retriggerOnEnter: false,
+  threshold: 0.4,
+  scrambleDuration: 1.1,
+  scrambleChars: 'upperCase',
+  scrambleSpeed: 0.5,
+  scrambleOrder: 'leftToRight',
+  headingStart: 0.25,
+  headingDuration: 1.6,
+  ease: 'power2.out',
+  headingStagger: RAY_MARCHED_HEADING_DEFAULTS.stagger,
+  smearPx: RAY_MARCHED_HEADING_DEFAULTS.smearPx,
+  marchSteps: RAY_MARCHED_HEADING_DEFAULTS.steps,
+  smearAngle: RAY_MARCHED_HEADING_DEFAULTS.angle,
+  gooey: RAY_MARCHED_HEADING_DEFAULTS.gooey,
+  fade: RAY_MARCHED_HEADING_DEFAULTS.fade,
+  bodyStart: 0.9,
+  bodyDuration: 1.1,
+  bodyBlur: 14,
+  bodyRise: 14,
+} as const satisfies Partial<TextLoadInProps>
+
 /** Seconds over which the GL heading crossfades to the crisp DOM heading. */
 const SWAP_DURATION = 0.18
 
@@ -81,25 +108,25 @@ export function TextLoadIn({
   heading,
   body,
   replayKey = 0,
-  retriggerOnEnter = false,
-  threshold = 0.4,
-  scrambleDuration = 1.1,
-  scrambleChars = 'upperCase',
-  scrambleSpeed = 0.5,
-  scrambleOrder = 'leftToRight',
-  headingStart = 0.25,
-  headingDuration = 1.6,
-  ease = 'power2.out',
-  headingStagger = 0.6,
-  smearPx = 170,
-  marchSteps = 24,
-  smearAngle = 0,
-  gooey = 0.5,
-  fade = 0.35,
-  bodyStart = 0.9,
-  bodyDuration = 1.1,
-  bodyBlur = 14,
-  bodyRise = 14,
+  retriggerOnEnter = TEXT_LOAD_IN_DEFAULTS.retriggerOnEnter,
+  threshold = TEXT_LOAD_IN_DEFAULTS.threshold,
+  scrambleDuration = TEXT_LOAD_IN_DEFAULTS.scrambleDuration,
+  scrambleChars = TEXT_LOAD_IN_DEFAULTS.scrambleChars,
+  scrambleSpeed = TEXT_LOAD_IN_DEFAULTS.scrambleSpeed,
+  scrambleOrder = TEXT_LOAD_IN_DEFAULTS.scrambleOrder,
+  headingStart = TEXT_LOAD_IN_DEFAULTS.headingStart,
+  headingDuration = TEXT_LOAD_IN_DEFAULTS.headingDuration,
+  ease = TEXT_LOAD_IN_DEFAULTS.ease,
+  headingStagger = TEXT_LOAD_IN_DEFAULTS.headingStagger,
+  smearPx = TEXT_LOAD_IN_DEFAULTS.smearPx,
+  marchSteps = TEXT_LOAD_IN_DEFAULTS.marchSteps,
+  smearAngle = TEXT_LOAD_IN_DEFAULTS.smearAngle,
+  gooey = TEXT_LOAD_IN_DEFAULTS.gooey,
+  fade = TEXT_LOAD_IN_DEFAULTS.fade,
+  bodyStart = TEXT_LOAD_IN_DEFAULTS.bodyStart,
+  bodyDuration = TEXT_LOAD_IN_DEFAULTS.bodyDuration,
+  bodyBlur = TEXT_LOAD_IN_DEFAULTS.bodyBlur,
+  bodyRise = TEXT_LOAD_IN_DEFAULTS.bodyRise,
   className,
 }: TextLoadInProps) {
   const rootRef = useRef<HTMLDivElement>(null)

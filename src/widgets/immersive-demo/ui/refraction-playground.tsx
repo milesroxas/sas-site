@@ -1,7 +1,11 @@
 'use client'
 
 import { button } from 'leva'
-import { RefractionMedia } from '@/features/immersive'
+import {
+  REFRACTION_MEDIA_DEFAULTS as DEFAULTS,
+  HERO_LENS,
+  RefractionMedia,
+} from '@/features/immersive'
 import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 import { useVideoUpload } from './use-video-upload'
 
@@ -38,27 +42,29 @@ export function RefractionPlayground() {
     'upload video (≤10 MB)': button(pickVideo),
   })
 
+  // Initial values mirror the shipped home-hero look (HERO_LENS); lens-mesh
+  // controls fall back to the component defaults the preset leaves untouched.
   const { spread, feather, edge, refraction, chroma } = useDemoControls('Warp', {
-    spread: { value: 0.6, min: 0.05, max: 0.6, step: 0.01 },
+    spread: { value: HERO_LENS.spread, min: 0.05, max: 0.6, step: 0.01 },
     // 0 = edgeless gaussian falloff (no visible boundary); 1 = ringed lens.
-    edge: { value: 0.2, min: 0, max: 1, step: 0.05 },
+    edge: { value: HERO_LENS.edge, min: 0, max: 1, step: 0.05 },
     feather: {
-      value: 1,
+      value: HERO_LENS.feather,
       min: 0,
       max: 1,
       step: 0.05,
       render: (get) => get('Warp.edge') > 0,
     },
-    refraction: { value: 0.5, min: 0, max: 0.5, step: 0.01 },
-    chroma: { value: 1, min: 0, max: 1, step: 0.05 },
+    refraction: { value: HERO_LENS.refraction, min: 0, max: 0.5, step: 0.01 },
+    chroma: { value: HERO_LENS.chroma, min: 0, max: 1, step: 0.05 },
   })
 
   // leva clamps number display to 2 decimals, so tiny UV offsets read as
   // "0.00" — expose distortion ×1000 / smear ×100 and scale back down below.
   const { distortion, noiseScale, noiseSpeed } = useDemoControls('Distortion', {
-    distortion: { value: 24, min: 0, max: 40, step: 1, label: 'amount' },
-    noiseScale: { value: 2, min: 1, max: 20, step: 0.5, label: 'scale' },
-    noiseSpeed: { value: 0.15, min: 0, max: 2, step: 0.05, label: 'speed' },
+    distortion: { value: HERO_LENS.distortion * 1000, min: 0, max: 40, step: 1, label: 'amount' },
+    noiseScale: { value: HERO_LENS.noiseScale, min: 1, max: 20, step: 0.5, label: 'scale' },
+    noiseSpeed: { value: HERO_LENS.noiseSpeed, min: 0, max: 2, step: 0.05, label: 'speed' },
   })
 
   const {
@@ -70,9 +76,10 @@ export function RefractionPlayground() {
     lensChroma,
     lensSaturation,
   } = useDemoControls('Glass lens', {
-    lensEnabled: { value: false, label: 'enabled' },
+    // HERO_LENS ships with the mesh optically absent (lensVisibility: 0).
+    lensEnabled: { value: HERO_LENS.lensVisibility > 0, label: 'enabled' },
     lensVisibility: {
-      value: 1,
+      value: DEFAULTS.lensVisibility,
       min: 0,
       max: 1,
       step: 0.05,
@@ -80,7 +87,7 @@ export function RefractionPlayground() {
       render: (get) => get('Glass lens.lensEnabled'),
     },
     lensSpread: {
-      value: 0.22,
+      value: DEFAULTS.lensSpread,
       min: 0.05,
       max: 0.6,
       step: 0.01,
@@ -88,7 +95,7 @@ export function RefractionPlayground() {
       render: (get) => get('Glass lens.lensEnabled'),
     },
     lensDepth: {
-      value: 0.55,
+      value: DEFAULTS.lensDepth,
       min: 0.1,
       max: 1,
       step: 0.05,
@@ -96,7 +103,7 @@ export function RefractionPlayground() {
       render: (get) => get('Glass lens.lensEnabled'),
     },
     lensRefraction: {
-      value: 0.15,
+      value: DEFAULTS.lensRefraction,
       min: 0,
       max: 1,
       step: 0.01,
@@ -104,7 +111,7 @@ export function RefractionPlayground() {
       render: (get) => get('Glass lens.lensEnabled'),
     },
     lensChroma: {
-      value: 0.5,
+      value: DEFAULTS.lensChroma,
       min: 0,
       max: 1.5,
       step: 0.01,
@@ -112,7 +119,7 @@ export function RefractionPlayground() {
       render: (get) => get('Glass lens.lensEnabled'),
     },
     lensSaturation: {
-      value: 1.04,
+      value: DEFAULTS.lensSaturation,
       min: 1,
       max: 1.25,
       step: 0.01,
@@ -123,7 +130,7 @@ export function RefractionPlayground() {
 
   const { iorR, iorY, iorG, iorC, iorB, iorP } = useDemoControls('IOR', {
     iorR: {
-      value: 1.15,
+      value: DEFAULTS.iorR,
       min: 1,
       max: 2.33,
       step: 0.01,
@@ -131,7 +138,7 @@ export function RefractionPlayground() {
       render: (get) => get('Glass lens.lensEnabled'),
     },
     iorY: {
-      value: 1.16,
+      value: DEFAULTS.iorY,
       min: 1,
       max: 2.33,
       step: 0.01,
@@ -139,7 +146,7 @@ export function RefractionPlayground() {
       render: (get) => get('Glass lens.lensEnabled'),
     },
     iorG: {
-      value: 1.18,
+      value: DEFAULTS.iorG,
       min: 1,
       max: 2.33,
       step: 0.01,
@@ -147,7 +154,7 @@ export function RefractionPlayground() {
       render: (get) => get('Glass lens.lensEnabled'),
     },
     iorC: {
-      value: 1.22,
+      value: DEFAULTS.iorC,
       min: 1,
       max: 2.33,
       step: 0.01,
@@ -155,7 +162,7 @@ export function RefractionPlayground() {
       render: (get) => get('Glass lens.lensEnabled'),
     },
     iorB: {
-      value: 1.22,
+      value: DEFAULTS.iorB,
       min: 1,
       max: 2.33,
       step: 0.01,
@@ -163,7 +170,7 @@ export function RefractionPlayground() {
       render: (get) => get('Glass lens.lensEnabled'),
     },
     iorP: {
-      value: 1.22,
+      value: DEFAULTS.iorP,
       min: 1,
       max: 2.33,
       step: 0.01,
@@ -173,22 +180,22 @@ export function RefractionPlayground() {
   })
 
   const { smear, highlight, follow, ease } = useDemoControls('Motion', {
-    smear: { value: 5, min: 0, max: 10, step: 0.5 },
+    smear: { value: HERO_LENS.smear * 100, min: 0, max: 10, step: 0.5 },
     highlight: {
-      value: 0.02,
+      value: HERO_LENS.highlight,
       min: 0,
       max: 0.5,
       step: 0.01,
       render: (get) => get('Warp.edge') > 0,
     },
-    follow: { value: 4, min: 1, max: 20, step: 0.5 },
-    ease: { value: 3, min: 1, max: 20, step: 0.5 },
+    follow: { value: HERO_LENS.follow, min: 1, max: 20, step: 0.5 },
+    ease: { value: HERO_LENS.ease, min: 1, max: 20, step: 0.5 },
   })
 
   const isVideo = media === 'video' && Boolean(videoUrl)
 
   // Media stays out: the hero binds its own source. Units match the shipped
-  // `LENS` object, so the snippet drops straight in.
+  // `HERO_LENS` preset, so the snippet drops straight in.
   useDemoSnippet({
     spread,
     edge,

@@ -3,46 +3,11 @@
 import type React from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { Media } from '@/components/Media'
-import { RefractionMedia } from '@/features/immersive'
+import { HERO_LENS, RefractionMedia } from '@/features/immersive'
 import { useDeviceDetection } from '@/hooks/use-device-detection'
 import type { Media as MediaType } from '@/payload-types'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { cn } from '@/utilities/ui'
-
-/**
- * Dialed in on /demo/immersive (matches the playground defaults there). The
- * screen-space warp runs alone as a soft ringed lens — wide spread, full
- * feather, strong refraction and chroma with a slow low-frequency wobble and
- * a faint rim highlight. `lensVisibility: 0` keeps the glass mesh optically
- * absent; its parameters are pinned here anyway so the hero stays in lockstep
- * with the playground defaults.
- */
-const LENS = {
-  spread: 0.6,
-  edge: 0.2,
-  feather: 1,
-  refraction: 0.5,
-  chroma: 1,
-  distortion: 0.024,
-  noiseScale: 2,
-  noiseSpeed: 0.15,
-  smear: 0.05,
-  highlight: 0.02,
-  lensVisibility: 0,
-  lensSpread: 0.22,
-  lensDepth: 0.55,
-  lensRefraction: 0.15,
-  lensChroma: 0.5,
-  lensSaturation: 1.04,
-  iorR: 1.15,
-  iorY: 1.16,
-  iorG: 1.18,
-  iorC: 1.22,
-  iorB: 1.22,
-  iorP: 1.22,
-  follow: 4,
-  ease: 3,
-} as const
 
 const mediaSrc = (media: MediaType): string => {
   // Absolute fixture/CDN urls win — don't rewrite them or a missing object
@@ -122,7 +87,7 @@ export const HeroBackground: React.FC<{ media: MediaType }> = ({ media }) => {
             onReady={handleReady}
             src={src}
             video={isVideo}
-            {...LENS}
+            {...HERO_LENS}
           />
         </div>
       )}

@@ -1,0 +1,27 @@
+---
+description: Immersive effects DRY contract — exported *_DEFAULTS per effect, delta-only presets in features/immersive/presets.ts, rule-of-two promotion, barrel-only imports
+globs: "src/features/immersive/**,src/widgets/immersive-demo/**,src/shared/ui/scramble-text/**,src/shared/ui/demo-kit/**"
+alwaysApply: false
+---
+
+# Immersive effects (sas-site)
+
+Full guide: [docs/immersive-effects.md](../../docs/immersive-effects.md). Shader technique lives in the **creative-webgl-shaders** skill; this rule is the project contract around it.
+
+## Single source of truth — hard rules
+
+- **Every tunable number exists once.** Each effect exports `<NAME>_DEFAULTS` (`as const satisfies Partial<Props>`) next to its props type; the component's destructured defaults AND the playground's leva `value:`s read from it. Never retype the number.
+- **Internal shader layers own their numbers.** `RayMarchedHeading` / `RaymarchedSdfHeading` export their own `*_DEFAULTS`; wrappers (`TextLoadIn`, `TextLoadInRaymarched`) reference them — never restate.
+- **Presets are delta-only.** `src/features/immersive/presets.ts` holds named shipped looks (e.g. `HERO_LENS`) containing only props that differ from the component defaults. Never restate a default in a preset, consumer, or playground.
+- **Rule of two.** Tuning used once → inline props at the call site. Needed in a second place → promote to a named preset and import it from both. Never copy a prop bag between files.
+- **Barrel-only imports.** Consumers import from `@/features/immersive` — never deep-import `…/immersive/ui/*`.
+- Demo-only leva metadata (`min`/`max`/`step`/`label`) stays in playgrounds — it is curation, not component truth. Deliberate demo deviations from defaults stay literal with a `// demo-curated` comment.
+- Content (copy, media src, layouts) always comes from the consumer; effects and presets never own content.
+
+## When adding an effect
+
+Follow the checklist in [docs/immersive-effects.md](../../docs/immersive-effects.md): component + `*_DEFAULTS` → barrel export → playground wired to the defaults → register in `immersive-demo-page.tsx`.
+
+## What not to build
+
+No registries, config providers, HOCs, or theme systems around effect tuning — props + exported objects are the whole mechanism. Don't merge effects that use different techniques (mip-blur smear vs true SDF raymarch stay separate).

@@ -50,6 +50,22 @@ export const CHAR_PRESETS: Record<string, string> = {
 }
 
 /**
+ * Single source of truth for the scramble's tunable defaults. The playground
+ * GUI initializes from these; site usages override per call site.
+ */
+export const SCRAMBLE_TEXT_DEFAULTS = {
+  duration: 1.4,
+  hold: 1,
+  loop: true,
+  ease: 'none',
+  chars: 'upperCase',
+  speed: 0.4,
+  revealDelay: 0,
+  tweenLength: true,
+  order: 'random',
+} as const satisfies Partial<ScrambleTextProps>
+
+/**
  * Per-character reveal threshold in (0, 1]; a character locks in once eased
  * progress passes its threshold, so `order` shapes the resolve pattern.
  */
@@ -180,15 +196,15 @@ export function createScrambleTween(
  */
 export function ScrambleText({
   phrases,
-  duration = 1.4,
-  hold = 1,
-  loop = true,
-  ease = 'none',
-  chars = 'upperCase',
-  speed = 0.4,
-  revealDelay = 0,
-  tweenLength = true,
-  order = 'random',
+  duration = SCRAMBLE_TEXT_DEFAULTS.duration,
+  hold = SCRAMBLE_TEXT_DEFAULTS.hold,
+  loop = SCRAMBLE_TEXT_DEFAULTS.loop,
+  ease = SCRAMBLE_TEXT_DEFAULTS.ease,
+  chars = SCRAMBLE_TEXT_DEFAULTS.chars,
+  speed = SCRAMBLE_TEXT_DEFAULTS.speed,
+  revealDelay = SCRAMBLE_TEXT_DEFAULTS.revealDelay,
+  tweenLength = SCRAMBLE_TEXT_DEFAULTS.tweenLength,
+  order = SCRAMBLE_TEXT_DEFAULTS.order,
   onScrambleChange,
   className,
   ...rest

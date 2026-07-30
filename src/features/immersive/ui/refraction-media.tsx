@@ -266,6 +266,38 @@ export type RefractionMediaProps = {
   className?: string
 }
 
+/**
+ * Single source of truth for this effect's tunable defaults. The playground
+ * GUI initializes from these; site usages override per call site or via a
+ * named preset (see `../presets.ts`).
+ */
+export const REFRACTION_MEDIA_DEFAULTS = {
+  spread: 0.22,
+  feather: 0.6,
+  edge: 0,
+  refraction: 0.12,
+  chroma: 0.35,
+  distortion: 0.008,
+  noiseScale: 6,
+  noiseSpeed: 0.4,
+  smear: 0.02,
+  highlight: 0.08,
+  lensVisibility: 1,
+  lensSpread: 0.22,
+  lensDepth: 0.55,
+  lensRefraction: 0.15,
+  lensChroma: 0.5,
+  lensSaturation: 1.04,
+  iorR: 1.15,
+  iorY: 1.16,
+  iorG: 1.18,
+  iorC: 1.22,
+  iorB: 1.22,
+  iorP: 1.22,
+  follow: 8,
+  ease: 6,
+} as const satisfies Partial<RefractionMediaProps>
+
 type SceneProps = Omit<RefractionMediaProps, 'className'>
 
 function RefractionScene({
@@ -273,30 +305,30 @@ function RefractionScene({
   video = false,
   source,
   onReady,
-  spread = 0.22,
-  feather = 0.6,
-  edge = 0,
-  refraction = 0.12,
-  chroma = 0.35,
-  distortion = 0.008,
-  noiseScale = 6,
-  noiseSpeed = 0.4,
-  smear = 0.02,
-  highlight = 0.08,
-  lensVisibility = 1,
-  lensSpread = 0.22,
-  lensDepth = 0.55,
-  lensRefraction = 0.15,
-  lensChroma = 0.5,
-  lensSaturation = 1.04,
-  iorR = 1.15,
-  iorY = 1.16,
-  iorG = 1.18,
-  iorC = 1.22,
-  iorB = 1.22,
-  iorP = 1.22,
-  follow = 8,
-  ease = 6,
+  spread = REFRACTION_MEDIA_DEFAULTS.spread,
+  feather = REFRACTION_MEDIA_DEFAULTS.feather,
+  edge = REFRACTION_MEDIA_DEFAULTS.edge,
+  refraction = REFRACTION_MEDIA_DEFAULTS.refraction,
+  chroma = REFRACTION_MEDIA_DEFAULTS.chroma,
+  distortion = REFRACTION_MEDIA_DEFAULTS.distortion,
+  noiseScale = REFRACTION_MEDIA_DEFAULTS.noiseScale,
+  noiseSpeed = REFRACTION_MEDIA_DEFAULTS.noiseSpeed,
+  smear = REFRACTION_MEDIA_DEFAULTS.smear,
+  highlight = REFRACTION_MEDIA_DEFAULTS.highlight,
+  lensVisibility = REFRACTION_MEDIA_DEFAULTS.lensVisibility,
+  lensSpread = REFRACTION_MEDIA_DEFAULTS.lensSpread,
+  lensDepth = REFRACTION_MEDIA_DEFAULTS.lensDepth,
+  lensRefraction = REFRACTION_MEDIA_DEFAULTS.lensRefraction,
+  lensChroma = REFRACTION_MEDIA_DEFAULTS.lensChroma,
+  lensSaturation = REFRACTION_MEDIA_DEFAULTS.lensSaturation,
+  iorR = REFRACTION_MEDIA_DEFAULTS.iorR,
+  iorY = REFRACTION_MEDIA_DEFAULTS.iorY,
+  iorG = REFRACTION_MEDIA_DEFAULTS.iorG,
+  iorC = REFRACTION_MEDIA_DEFAULTS.iorC,
+  iorB = REFRACTION_MEDIA_DEFAULTS.iorB,
+  iorP = REFRACTION_MEDIA_DEFAULTS.iorP,
+  follow = REFRACTION_MEDIA_DEFAULTS.follow,
+  ease = REFRACTION_MEDIA_DEFAULTS.ease,
 }: SceneProps) {
   // Select only what's needed; `useThree()` re-renders on any R3F state change.
   const viewport = useThree((state) => state.viewport)

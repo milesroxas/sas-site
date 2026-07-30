@@ -11,7 +11,7 @@ import {
   type ScrambleOrder,
   type ScrambleTweenOptions,
 } from '@/shared/ui/scramble-text'
-import { RaymarchedSdfHeading } from './raymarched-sdf-heading'
+import { RAYMARCHED_SDF_HEADING_DEFAULTS, RaymarchedSdfHeading } from './raymarched-sdf-heading'
 
 gsap.registerPlugin(useGSAP)
 
@@ -73,6 +73,37 @@ export type TextLoadInRaymarchedProps = {
   className?: string
 }
 
+/**
+ * Single source of truth for this effect's tunable defaults. The playground
+ * GUI initializes from these; site usages override per call site or via a
+ * named preset (see `../presets.ts`).
+ */
+export const TEXT_LOAD_IN_RAYMARCHED_DEFAULTS = {
+  retriggerOnEnter: false,
+  threshold: 0.4,
+  scrambleDuration: 1.1,
+  scrambleChars: 'upperCase',
+  scrambleSpeed: 0.5,
+  scrambleOrder: 'leftToRight',
+  offset: 0,
+  stagger: 1.1,
+  headingDuration: 3.4,
+  ease: 'power2.inOut',
+  marchSteps: RAYMARCHED_SDF_HEADING_DEFAULTS.steps,
+  gooeyPx: RAYMARCHED_SDF_HEADING_DEFAULTS.gooeyPx,
+  edgePx: RAYMARCHED_SDF_HEADING_DEFAULTS.edgePx,
+  sweepAngle: RAYMARCHED_SDF_HEADING_DEFAULTS.angle,
+  dropletPx: RAYMARCHED_SDF_HEADING_DEFAULTS.dropletPx,
+  dropletCount: RAYMARCHED_SDF_HEADING_DEFAULTS.dropletCount,
+  dropletStretch: RAYMARCHED_SDF_HEADING_DEFAULTS.dropletStretch,
+  dropletScatter: RAYMARCHED_SDF_HEADING_DEFAULTS.dropletScatter,
+  wobblePx: RAYMARCHED_SDF_HEADING_DEFAULTS.wobblePx,
+  lightAngle: RAYMARCHED_SDF_HEADING_DEFAULTS.lightAngle,
+  bodyDuration: 1.1,
+  bodyBlur: 14,
+  bodyRise: 14,
+} as const satisfies Partial<TextLoadInRaymarchedProps>
+
 /** Seconds over which the GL heading crossfades to the crisp DOM heading. */
 const SWAP_DURATION = 0.18
 
@@ -92,29 +123,29 @@ export function TextLoadInRaymarched({
   heading,
   body,
   replayKey = 0,
-  retriggerOnEnter = false,
-  threshold = 0.4,
-  scrambleDuration = 1.1,
-  scrambleChars = 'upperCase',
-  scrambleSpeed = 0.5,
-  scrambleOrder = 'leftToRight',
-  offset = 0,
-  stagger = 1.1,
-  headingDuration = 3.4,
-  ease = 'power2.inOut',
-  marchSteps = 64,
-  gooeyPx = 18,
-  edgePx = 56,
-  sweepAngle = 0,
-  dropletPx = 12,
-  dropletCount = 5,
-  dropletStretch = 1,
-  dropletScatter = 0.5,
-  wobblePx = 10,
-  lightAngle = 125,
-  bodyDuration = 1.1,
-  bodyBlur = 14,
-  bodyRise = 14,
+  retriggerOnEnter = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.retriggerOnEnter,
+  threshold = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.threshold,
+  scrambleDuration = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.scrambleDuration,
+  scrambleChars = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.scrambleChars,
+  scrambleSpeed = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.scrambleSpeed,
+  scrambleOrder = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.scrambleOrder,
+  offset = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.offset,
+  stagger = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.stagger,
+  headingDuration = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.headingDuration,
+  ease = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.ease,
+  marchSteps = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.marchSteps,
+  gooeyPx = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.gooeyPx,
+  edgePx = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.edgePx,
+  sweepAngle = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.sweepAngle,
+  dropletPx = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.dropletPx,
+  dropletCount = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.dropletCount,
+  dropletStretch = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.dropletStretch,
+  dropletScatter = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.dropletScatter,
+  wobblePx = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.wobblePx,
+  lightAngle = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.lightAngle,
+  bodyDuration = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.bodyDuration,
+  bodyBlur = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.bodyBlur,
+  bodyRise = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.bodyRise,
   className,
 }: TextLoadInRaymarchedProps) {
   const rootRef = useRef<HTMLDivElement>(null)

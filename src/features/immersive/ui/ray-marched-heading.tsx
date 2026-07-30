@@ -152,6 +152,19 @@ export type RayMarchedHeadingProps = {
   className?: string
 }
 
+/**
+ * Single source of truth for this shader's tunable defaults. TextLoadIn's
+ * public defaults reference these — change them here, not at call sites.
+ */
+export const RAY_MARCHED_HEADING_DEFAULTS = {
+  stagger: 0.6,
+  smearPx: 170,
+  steps: 24,
+  angle: 0,
+  gooey: 0.5,
+  fade: 0.35,
+} as const satisfies Partial<RayMarchedHeadingProps>
+
 type SceneProps = Pick<
   RayMarchedHeadingProps,
   'progressRef' | 'stagger' | 'smearPx' | 'steps' | 'angle' | 'gooey' | 'fade'
@@ -208,12 +221,12 @@ function SmearScene({
   headingRef,
   dirtyRef,
   progressRef,
-  stagger = 0.6,
-  smearPx = 170,
-  steps = 24,
-  angle = 0,
-  gooey = 0.5,
-  fade = 0.35,
+  stagger = RAY_MARCHED_HEADING_DEFAULTS.stagger,
+  smearPx = RAY_MARCHED_HEADING_DEFAULTS.smearPx,
+  steps = RAY_MARCHED_HEADING_DEFAULTS.steps,
+  angle = RAY_MARCHED_HEADING_DEFAULTS.angle,
+  gooey = RAY_MARCHED_HEADING_DEFAULTS.gooey,
+  fade = RAY_MARCHED_HEADING_DEFAULTS.fade,
 }: SceneProps) {
   const viewport = useThree((state) => state.viewport)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
