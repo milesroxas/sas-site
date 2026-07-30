@@ -56,24 +56,35 @@ export function TextLoadInRaymarchedPlayground() {
 
   const { headingStart, headingDuration, ease } = useDemoControls('Heading', {
     headingStart: { value: 0.2, min: 0, max: 3, step: 0.05, label: 'start (s)' },
-    headingDuration: { value: 2.2, min: 0.5, max: 5, step: 0.05, label: 'duration' },
+    headingDuration: { value: 3.4, min: 0.5, max: 8, step: 0.05, label: 'duration' },
     ease: { value: 'power2.inOut', options: EASES },
   })
 
-  const { marchSteps, depthPx, gooeyPx, edgePx, sweepAngle, dropletPx, wobblePx, lightAngle } =
-    useDemoControls('Raymarch (SDF)', {
+  const { marchSteps, depthPx, gooeyPx, edgePx, sweepAngle, lightAngle } = useDemoControls(
+    'Raymarch (SDF)',
+    {
       marchSteps: { value: 64, min: 16, max: 96, step: 1, label: 'march steps' },
       depthPx: { value: 22, min: 2, max: 80, step: 1, label: 'extrusion (px)' },
-      gooeyPx: { value: 28, min: 1, max: 90, step: 1, label: 'smooth-min k' },
-      edgePx: { value: 90, min: 10, max: 240, step: 2, label: 'front softness' },
+      gooeyPx: { value: 18, min: 1, max: 90, step: 1, label: 'smooth-min k' },
+      edgePx: { value: 56, min: 10, max: 240, step: 2, label: 'front softness' },
       sweepAngle: { value: 0, min: 0, max: 360, step: 5, label: 'sweep angle' },
-      dropletPx: { value: 26, min: 0, max: 60, step: 1, label: 'droplet (px)' },
-      wobblePx: { value: 18, min: 0, max: 60, step: 1, label: 'wobble (px)' },
       lightAngle: { value: 125, min: 0, max: 360, step: 5, label: 'light angle' },
-    })
+    },
+  )
+
+  const { dropletPx, dropletCount, dropletStretch, dropletScatter, wobblePx } = useDemoControls(
+    'Droplets',
+    {
+      dropletPx: { value: 12, min: 0, max: 60, step: 1, label: 'size (px)' },
+      dropletCount: { value: 5, min: 0, max: 8, step: 1, label: 'count' },
+      dropletStretch: { value: 1, min: 0.3, max: 4, step: 0.05, label: 'stretch' },
+      dropletScatter: { value: 0.5, min: 0, max: 1, step: 0.05, label: 'scatter' },
+      wobblePx: { value: 10, min: 0, max: 60, step: 1, label: 'wobble (px)' },
+    },
+  )
 
   const { bodyStart, bodyDuration, bodyBlur, bodyRise } = useDemoControls('Body', {
-    bodyStart: { value: 1.4, min: 0, max: 4, step: 0.05, label: 'start (s)' },
+    bodyStart: { value: 2.4, min: 0, max: 6, step: 0.05, label: 'start (s)' },
     bodyDuration: { value: 1.1, min: 0.1, max: 3, step: 0.05, label: 'duration' },
     bodyBlur: { value: 14, min: 0, max: 40, step: 1, label: 'blur (px)' },
     bodyRise: { value: 14, min: 0, max: 80, step: 1, label: 'rise (px)' },
@@ -113,6 +124,9 @@ export function TextLoadInRaymarchedPlayground() {
         edgePx={edgePx}
         sweepAngle={sweepAngle}
         dropletPx={dropletPx}
+        dropletCount={dropletCount}
+        dropletStretch={dropletStretch}
+        dropletScatter={dropletScatter}
         wobblePx={wobblePx}
         lightAngle={lightAngle}
         bodyStart={bodyStart}

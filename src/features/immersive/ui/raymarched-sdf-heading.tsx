@@ -68,6 +68,9 @@ uniform float uGooey;    // smooth-min blend radius, px
 uniform float uEdge;     // reveal-front smooth-max radius, px
 uniform vec2 uDir;       // sweep direction (unit)
 uniform float uDroplet;  // metaball base radius, px
+uniform float uCount;    // active droplet count (0 disables)
+uniform float uStretch;  // droplet elongation along the sweep (1 = sphere)
+uniform float uScatter;  // droplet side scatter, fraction of heading height
 uniform float uWobble;   // droplet wander amplitude, px
 uniform vec3 uLightDir;  // key light direction (unit)
 uniform float uCamZ;     // camera distance to the text plane, px
@@ -76,7 +79,7 @@ out vec4 outColor;
 
 const int MAX_STEPS = 96;
 const float SURFACE_DIST = 0.4;
-const int DROPLETS = 6;
+const int MAX_DROPLETS = 8;
 const vec3 TEXT_COLOR = vec3(0.957, 0.957, 0.961);
 const vec3 WARM = vec3(1.0, 0.85, 0.62);
 
@@ -103,7 +106,7 @@ float sdText(vec2 xy) {
 
 float revealFront() {
   float halfExt = 0.5 * (abs(uDir.x) * uSize.x + abs(uDir.y) * uSize.y);
-  float pad = uEdge + uDroplet * 2.0 + uGooey;
+  float pad = uEdge + uDroplet * 2.0 * max(uStretch, 1.0) + uGooey;
   return mix(-halfExt - pad, halfExt + pad, uProgress);
 }
 
@@ -122,19 +125,27 @@ float scene(vec3 p) {
   // Metaball droplets riding the front. smooth-min melts them into the
   // emerging glyphs; their envelope shrinks to zero as the reveal settles.
   float env = smoothstep(0.02, 0.18, uProgress) * (1.0 - smoothstep(0.72, 0.96, uProgress));
-  if (env > 0.001 && uDroplet > 0.5) {
+  if (env > 0.001 && uDroplet > 0.5 && uCount > 0.5) {
     vec2 perp = vec2(-uDir.y, uDir.x);
-    for (int i = 0; i < DROPLETS; i++) {
+    for (int i = 0; i < MAX_DROPLETS; i++) {
+      if (float(i) >= uCount) break;
       float fi = float(i);
       float h1 = hash(fi + 1.3);
       float h2 = hash(fi * 7.7 + 2.9);
       float along = front - (0.3 + 1.1 * h1) * uEdge
         + sin(uTime * (0.7 + 0.6 * h2) + fi * 2.4) * uEdge * 0.3;
-      float side = (h2 - 0.5) * uSize.y * 0.5
+      float side = (h2 - 0.5) * uSize.y * uScatter
         + sin(uTime * (1.0 + 0.8 * h1) + fi * 1.7) * uWobble;
       vec3 c = vec3(uDir * along + perp * side, sin(uTime * 1.4 + fi * 2.1) * uDepth);
       float r = uDroplet * (0.5 + 0.7 * h1) * env;
-      d = smin(d, length(p - c) - r, uGooey);
+      // Ellipsoid: scale the along-sweep axis by uStretch, then correct the
+      // distance bound by the smallest axis scale so marching stays safe.
+      vec3 rel = p - c;
+      float ax = dot(rel.xy, uDir);
+      float sd = dot(rel.xy, perp);
+      vec3 lq = vec3(ax / max(uStretch, 0.05), sd, rel.z);
+      float dd = (length(lq) - r) * min(uStretch, 1.0);
+      d = smin(d, dd, uGooey);
     }
   }
   return d;
@@ -218,6 +229,12 @@ export type RaymarchedSdfHeadingProps = {
   angle?: number
   /** Metaball droplet base radius in px (0 disables droplets). */
   dropletPx?: number
+  /** Number of droplets riding the front (0–8; 0 disables). */
+  dropletCount?: number
+  /** Droplet elongation along the sweep (1 = sphere, >1 = teardrop streak). */
+  dropletStretch?: number
+  /** Side scatter of droplets, as a fraction of the heading height (0–1). */
+  dropletScatter?: number
   /** Droplet wander amplitude in px. */
   wobblePx?: number
   /** Key light direction in degrees around the text plane. */
@@ -235,6 +252,9 @@ type SceneProps = Pick<
   | 'edgePx'
   | 'angle'
   | 'dropletPx'
+  | 'dropletCount'
+  | 'dropletStretch'
+  | 'dropletScatter'
   | 'wobblePx'
   | 'lightAngle'
 > & {
@@ -376,11 +396,14 @@ function RaymarchScene({
   progressRef,
   steps = 64,
   depthPx = 22,
-  gooeyPx = 28,
-  edgePx = 90,
+  gooeyPx = 18,
+  edgePx = 56,
   angle = 0,
-  dropletPx = 26,
-  wobblePx = 18,
+  dropletPx = 12,
+  dropletCount = 5,
+  dropletStretch = 1,
+  dropletScatter = 0.5,
+  wobblePx = 10,
   lightAngle = 125,
 }: SceneProps) {
   const viewport = useThree((state) => state.viewport)
@@ -397,11 +420,14 @@ function RaymarchScene({
       uTime: { value: 0 },
       uSteps: { value: 64 },
       uDepth: { value: 22 },
-      uGooey: { value: 28 },
-      uEdge: { value: 90 },
+      uGooey: { value: 18 },
+      uEdge: { value: 56 },
       uDir: { value: new Vector2(1, 0) },
-      uDroplet: { value: 26 },
-      uWobble: { value: 18 },
+      uDroplet: { value: 12 },
+      uCount: { value: 5 },
+      uStretch: { value: 1 },
+      uScatter: { value: 0.5 },
+      uWobble: { value: 10 },
       uLightDir: { value: new Vector3(0, 0, 1) },
       uCamZ: { value: 800 },
     }),
@@ -450,6 +476,9 @@ function RaymarchScene({
     u.uGooey.value = Math.max(gooeyPx, 1)
     u.uEdge.value = Math.max(edgePx, 1)
     u.uDroplet.value = dropletPx
+    u.uCount.value = Math.min(Math.max(Math.round(dropletCount), 0), 8)
+    u.uStretch.value = Math.max(dropletStretch, 0.05)
+    u.uScatter.value = Math.max(dropletScatter, 0)
     u.uWobble.value = wobblePx
 
     const [w, h] = sizeRef.current

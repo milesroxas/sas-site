@@ -54,6 +54,12 @@ export type TextLoadInRaymarchedProps = {
   sweepAngle?: number
   /** Metaball droplet base radius in px (0 disables droplets). */
   dropletPx?: number
+  /** Number of droplets riding the front (0–8; 0 disables). */
+  dropletCount?: number
+  /** Droplet elongation along the sweep (1 = sphere, >1 = teardrop streak). */
+  dropletStretch?: number
+  /** Side scatter of droplets, as a fraction of the heading height (0–1). */
+  dropletScatter?: number
   /** Droplet wander amplitude in px. */
   wobblePx?: number
   /** Key light direction in degrees around the text plane. */
@@ -93,17 +99,20 @@ export function TextLoadInRaymarched({
   scrambleSpeed = 0.5,
   scrambleOrder = 'leftToRight',
   headingStart = 0.2,
-  headingDuration = 2.2,
+  headingDuration = 3.4,
   ease = 'power2.inOut',
   marchSteps = 64,
   depthPx = 22,
-  gooeyPx = 28,
-  edgePx = 90,
+  gooeyPx = 18,
+  edgePx = 56,
   sweepAngle = 0,
-  dropletPx = 26,
-  wobblePx = 18,
+  dropletPx = 12,
+  dropletCount = 5,
+  dropletStretch = 1,
+  dropletScatter = 0.5,
+  wobblePx = 10,
   lightAngle = 125,
-  bodyStart = 1.4,
+  bodyStart = 2.4,
   bodyDuration = 1.1,
   bodyBlur = 14,
   bodyRise = 14,
@@ -235,6 +244,9 @@ export function TextLoadInRaymarched({
           edgePx={edgePx}
           angle={sweepAngle}
           dropletPx={dropletPx}
+          dropletCount={dropletCount}
+          dropletStretch={dropletStretch}
+          dropletScatter={dropletScatter}
           wobblePx={wobblePx}
           lightAngle={lightAngle}
           className="max-w-[24ch] text-zinc-100"
