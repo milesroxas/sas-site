@@ -43,7 +43,8 @@ Website (presentation)                Content Hub (canonical)
 Assets                                Taxonomy
 ├── media (usageStatus gates reads)   ├── capabilities (expertise vocabulary)
 └── asset-libraries ──→ projects      ├── industries (audience vocabulary)
-    (scope approved media)            └── categories (post topics → /insights)
+    (scope approved media)            ├── platforms (delivery platforms/products)
+                                      └── categories (post topics → /insights)
 ```
 
 | Group | Collection | Notes |
@@ -61,7 +62,7 @@ Assets                                Taxonomy
 | Content Hub | `testimonials` | Approval-gated quotes |
 | Assets | `media` | Uploads; `usageStatus` + `approvedChannels` govern reuse |
 | Assets | `asset-libraries` | Per-project groupings of approved media |
-| Taxonomy | `capabilities`, `industries`, `categories` | Fully public read |
+| Taxonomy | `capabilities`, `industries`, `platforms`, `categories` | Fully public read |
 | Newsletter | `newsletters`, `audiences`, `subscribers` | Email sends via Resend; team-only access (subscribers hold PII) |
 | System | `users` | Admin auth |
 | System | `payload-mcp-api-keys` | Per-key capabilities for the `/api/mcp` agent server — see [mcp.md](mcp.md) |
@@ -92,7 +93,7 @@ Three base helpers (`src/access/`), plus per-collection refinements:
 | Anonymous reads require published **and** `approvalStatus = approved-public` | testimonials |
 | Anonymous reads require `usageStatus = public-approved` | media |
 | Anonymous reads require `libraryStatus = active` | asset-libraries |
-| Fully public read (`anyone`) | capabilities, industries, categories |
+| Fully public read (`anyone`) | capabilities, industries, platforms, categories |
 
 Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `approvedClaims` are readable only by authenticated users — they never appear in anonymous API responses.
 

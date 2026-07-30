@@ -18,7 +18,13 @@ export const Projects: CollectionConfig<'projects'> = {
     useAsTitle: 'internalTitle',
     defaultColumns: ['internalTitle', 'organization', 'status', '_status'],
   },
-  defaultPopulate: { publicTitle: true, organization: true, capabilities: true, industries: true },
+  defaultPopulate: {
+    publicTitle: true,
+    organization: true,
+    capabilities: true,
+    industries: true,
+    platforms: true,
+  },
   fields: [
     {
       type: 'tabs',
@@ -95,9 +101,13 @@ export const Projects: CollectionConfig<'projects'> = {
             },
             {
               name: 'platforms',
-              type: 'array',
-              admin: { description: 'Platforms or products involved in the work.' },
-              fields: [{ name: 'name', type: 'text', required: true }],
+              type: 'relationship',
+              relationTo: 'platforms',
+              hasMany: true,
+              admin: {
+                description:
+                  'Platforms or products involved in the work. Pick from the shared vocabulary; add new ones under Taxonomy → Platforms.',
+              },
             },
           ],
         },

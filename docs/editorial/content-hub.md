@@ -15,7 +15,7 @@ The Content Hub is the canonical record of client work. What you write here is t
 | Content Hub → **Lab Projects** | The factual record of internal lab work (presented on the site by Lab Pages) |
 | Assets → **Asset Libraries** | Per-project groupings of approved media |
 | Assets → **Media** | Uploaded files, each with a usage status |
-| Taxonomy → **Capabilities / Industries / Post Categories** | Shared vocabulary used across the whole system |
+| Taxonomy → **Capabilities / Industries / Platforms / Post Categories** | Shared vocabulary used across the whole system |
 
 ## Workflow: documenting an engagement
 
@@ -27,7 +27,9 @@ Content Hub → Clients. Name, short name, website, logo, industries, and a publ
 
 ### 2. Create the Project
 
-Content Hub → Projects. Link it to the Client. The project is the factual record: status, engagement type, dates, capabilities, scope, deliverables, constraints. It holds no website layout — keep it factual. Projects also have **Internal notes** (never public) and project links, each with its own public/internal visibility.
+Content Hub → Projects. Link it to the Client. The project is the factual record: status, engagement type, dates, capabilities, platforms, scope, deliverables, constraints. It holds no website layout — keep it factual. Projects also have **Internal notes** (never public) and project links, each with its own public/internal visibility.
+
+Capabilities, Industries, and Platforms are picked from the shared Taxonomy vocabularies — if a platform (e.g. Webflow, Shopify) isn't listed yet, add it under Taxonomy → Platforms first, then link it.
 
 ### 3. Create an Asset Library and upload media
 
@@ -80,4 +82,4 @@ Publishing canonical content does **not** put anything on the website — that h
 - One Work Page per Case Study — the system enforces it.
 - You cannot delete Case Study Content while a Work Page uses it; delete the Work Page first.
 - Autosave runs continuously; version history keeps the last 50 versions; publishing can be scheduled. (Applies to drafted content — media, asset libraries, and taxonomy save immediately with no drafts.)
-- Capabilities and Industries are shared vocabulary — add new terms deliberately, they drive related-work matching and site navigation.
+- Capabilities, Industries, and Platforms are shared vocabulary — add new terms deliberately and reuse existing ones. Capabilities and Industries drive related-work matching and site navigation; Platforms record what projects were delivered on.

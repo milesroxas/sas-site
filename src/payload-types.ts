@@ -83,6 +83,7 @@ export interface Config {
     'asset-libraries': AssetLibrary;
     capabilities: Capability;
     industries: Industry;
+    platforms: Platform;
     categories: Category;
     newsletters: Newsletter;
     audiences: Audience;
@@ -131,6 +132,7 @@ export interface Config {
     'asset-libraries': AssetLibrariesSelect<false> | AssetLibrariesSelect<true>;
     capabilities: CapabilitiesSelect<false> | CapabilitiesSelect<true>;
     industries: IndustriesSelect<false> | IndustriesSelect<true>;
+    platforms: PlatformsSelect<false> | PlatformsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
     audiences: AudiencesSelect<false> | AudiencesSelect<true>;
@@ -689,14 +691,9 @@ export interface Project {
    */
   industries?: (number | Industry)[] | null;
   /**
-   * Platforms or products involved in the work.
+   * Platforms or products involved in the work. Pick from the shared vocabulary; add new ones under Taxonomy → Platforms.
    */
-  platforms?:
-    | {
-        name: string;
-        id?: string | null;
-      }[]
-    | null;
+  platforms?: (number | Platform)[] | null;
   /**
    * Factual public overview. Keep channel-agnostic — not website copy.
    */
@@ -796,6 +793,31 @@ export interface Capability {
    */
   generateSlug?: boolean | null;
   slug: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Shared vocabulary of platforms and products work is delivered on (e.g. Webflow, Shopify, Figma). Projects link to these — add new platforms deliberately and reuse existing ones instead of creating near-duplicates.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "platforms".
+ */
+export interface Platform {
+  id: number;
+  _order?: string | null;
+  /**
+   * Public platform name, e.g. "Webflow". Use official product spelling.
+   */
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Optional. What this platform is and when we reach for it. May appear publicly.
+   */
   description?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -3194,6 +3216,12 @@ export interface PayloadMcpApiKey {
     update?: boolean | null;
     delete?: boolean | null;
   };
+  platforms?: {
+    find?: boolean | null;
+    create?: boolean | null;
+    update?: boolean | null;
+    delete?: boolean | null;
+  };
   assetLibraries?: {
     find?: boolean | null;
   };
@@ -3398,6 +3426,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'industries';
         value: number | Industry;
+      } | null)
+    | ({
+        relationTo: 'platforms';
+        value: number | Platform;
       } | null)
     | ({
         relationTo: 'categories';
@@ -4201,12 +4233,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   endDate?: T;
   capabilities?: T;
   industries?: T;
-  platforms?:
-    | T
-    | {
-        name?: T;
-        id?: T;
-      };
+  platforms?: T;
   publicSummary?: T;
   scope?: T;
   deliverables?:
@@ -4532,6 +4559,19 @@ export interface CapabilitiesSelect<T extends boolean = true> {
  * via the `definition` "industries_select".
  */
 export interface IndustriesSelect<T extends boolean = true> {
+  _order?: T;
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "platforms_select".
+ */
+export interface PlatformsSelect<T extends boolean = true> {
   _order?: T;
   name?: T;
   generateSlug?: T;
@@ -5011,6 +5051,14 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         delete?: T;
       };
   industries?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  platforms?:
     | T
     | {
         find?: T;

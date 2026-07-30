@@ -38,7 +38,7 @@ Local dev serves the same endpoint at `http://localhost:3001/api/mcp`.
 | --- | --- | --- |
 | Website surfaces | `pages`, `posts`, `work-pages`, `expertise-pages`, `audience-pages`, `lab-pages` (from `CONTENT_SURFACES`) | Full authoring (find, create, update, delete) |
 | Content Hub | `case-studies`, `lab-projects`, `organizations`, `projects`, `testimonials` | Full authoring |
-| Taxonomy | `capabilities`, `categories`, `industries` | Full authoring |
+| Taxonomy | `capabilities`, `categories`, `industries`, `platforms` | Full authoring |
 | Assets | `media`, `asset-libraries` | **Read-only** (find) |
 | Globals | `header`, `footer`, `site-info` | Find + update |
 

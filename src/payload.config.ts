@@ -20,6 +20,7 @@ import { Media } from './collections/Media'
 import { Newsletters } from './collections/Newsletters'
 import { Organizations } from './collections/Organizations'
 import { Pages } from './collections/Pages'
+import { Platforms } from './collections/Platforms'
 import { Posts } from './collections/Posts'
 import { Projects } from './collections/Projects'
 import { Subscribers } from './collections/Subscribers'
@@ -131,6 +132,7 @@ export default buildConfig({
     // Taxonomy
     Capabilities,
     Industries,
+    Platforms,
     Categories,
     // Newsletter
     Newsletters,

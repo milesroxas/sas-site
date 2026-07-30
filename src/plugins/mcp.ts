@@ -39,6 +39,7 @@ const TAXONOMY: Record<string, string> = {
   capabilities: 'Capability taxonomy content is tagged with',
   categories: 'Post categories (nested)',
   industries: 'Industry taxonomy organizations and content are tagged with',
+  platforms: 'Platform/product taxonomy projects are tagged with',
 }
 
 const entries = (records: Record<string, string>, enabled: McpCollectionEntry['enabled']) =>
