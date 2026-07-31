@@ -179,6 +179,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null)
   const tlRef = useRef<gsap.core.Timeline | null>(null)
+  const rebuildTimelineRef = useRef<(() => gsap.core.Timeline) | null>(null)
   const scrollYRef = useRef(0)
   const openRef = useRef(open)
   const navItems = data?.navItems || []
@@ -304,6 +305,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           // menu stays open instead of stranding an inert, invisible page.
           if (openRef.current) tl.progress(1)
 
+          // Let the open effect rebuild with fresh metrics at open time —
+          // mobile browser chrome (URL bar) changes innerHeight between mount
+          // and open, and stale insets break the card's 16:9 crop.
+          rebuildTimelineRef.current = () => {
+            tlRef.current?.kill()
+            return buildTimeline()
+          }
+
           // Keep preview + nav aligned while resizing within the desktop band.
           let resizeTimer = 0
           const onResize = () => {
@@ -334,6 +343,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             window.clearTimeout(resizeTimer)
             window.removeEventListener('resize', onResize)
             clearDesktopNavVars(overlay)
+            rebuildTimelineRef.current = null
             tlRef.current?.kill()
             tlRef.current = null
           }
@@ -345,12 +355,19 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
   useEffect(() => {
     openRef.current = open
-    const tl = tlRef.current
+    let tl = tlRef.current
     const frame = getPageFrame()
     const overlay = overlayRef.current
     if (!tl || !frame || !overlay) return
 
     if (open) {
+      // Rebuild from the current viewport before freezing: the timeline's clip
+      // insets must match the frame size read below in the same tick, or the
+      // 16:9 crop is off by however much innerHeight drifted (mobile URL bar).
+      // Skip mid-reverse re-opens — the in-flight timeline already matches.
+      if (tl.progress() === 0 && rebuildTimelineRef.current) {
+        tl = rebuildTimelineRef.current()
+      }
       // Freeze the page at its current scroll position inside a fixed
       // full-viewport frame. Scale + clip-path do the rest — no width/height
       // tween, so in-page layout stays intact.
