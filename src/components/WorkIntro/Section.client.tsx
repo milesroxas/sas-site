@@ -13,7 +13,7 @@ const { enterThreshold: ENTER_THRESHOLD, exitTimeScale: EXIT_TIME_SCALE } =
   SCROLL_REVEAL_TRIGGER_DEFAULTS
 
 /**
- * Full-screen shell for the work intro. Copy rises into place when the band
+ * Full-screen shell for the work intro. Copy drops into place when the band
  * enters the viewport and reverses out when it fully leaves, so each pass
  * through the section replays as its own moment. Server-rendered children stay
  * visible without JavaScript; reduced motion renders the final state.
@@ -39,14 +39,14 @@ export function WorkIntroSection({ children }: { children: ReactNode }) {
       const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } })
       tl.fromTo(
         title,
-        { autoAlpha: 0, y: 32, filter: 'blur(8px)' },
+        { autoAlpha: 0, y: -32, filter: 'blur(8px)' },
         { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.9 },
         0,
       )
-      tl.fromTo(eyebrow, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.3)
+      tl.fromTo(eyebrow, { autoAlpha: 0, y: -12 }, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.3)
       tl.fromTo(
         paragraphs,
-        { autoAlpha: 0, y: 24, filter: 'blur(6px)' },
+        { autoAlpha: 0, y: -24, filter: 'blur(6px)' },
         { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.8, stagger: 0.12 },
         0.4,
       )

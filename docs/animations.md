@@ -7,7 +7,7 @@ The site's motion systems, where each lives, and the single-source-of-truth cont
 | System | What it does | Source of truth | Demo / tuning surface |
 |--------|--------------|-----------------|----------------------|
 | Route transitions | View Transition API motion between pages: directional slides, fades, shared-element morphs, hero recede | `src/shared/ui/view-transition/view-transition.css` (`:root` timing vars + recipes); types in `src/shared/lib/view-transition/constants.ts` | `/demo/transitions` — simulator with network throttle |
-| Scroll reveal (GSAP) | Section entrances for content blocks: `data-reveal` text rises with a blur settle, `data-reveal="media"` fades in while scale settles; reverses on exit | `src/shared/ui/scroll-reveal/scroll-reveal.tsx` — `SCROLL_REVEAL_TEXT_DEFAULTS`, `SCROLL_REVEAL_MEDIA_DEFAULTS`, `SCROLL_REVEAL_TRIGGER_DEFAULTS` | `/demo/transitions` — text and media sections |
+| Scroll reveal (GSAP) | Section entrances for content blocks: `data-reveal` text drops in with a blur settle, `data-reveal="media"` mask-wipes open top-down; reverses on exit | `src/shared/ui/scroll-reveal/scroll-reveal.tsx` — `SCROLL_REVEAL_TEXT_DEFAULTS`, `SCROLL_REVEAL_MEDIA_DEFAULTS`, `SCROLL_REVEAL_TRIGGER_DEFAULTS` | `/demo/transitions` — text and media sections |
 | Block reveal (CSS) | Whole-block fade-up as generic page blocks enter; optional staggered children | `.reveal-section` / `.reveal-stagger-item` in `globals.css`; component in `src/shared/ui/reveal-section/` | — (two CSS rules; edit in place) |
 | Immersive effects (WebGL) | Shader-driven effects: text load-ins, refraction, dispersion, floating cards | `*_DEFAULTS` per effect in `src/features/immersive` | `/demo/immersive` (micro interactions); text load-ins on `/demo/transitions` |
 
@@ -21,8 +21,8 @@ The site's motion systems, where each lives, and the single-source-of-truth cont
 ## Scroll reveal
 
 - Wrap the section in `ScrollReveal` (from `@/shared/ui/scroll-reveal`) — or `blocks/case-study/RevealSection.client.tsx`, a thin wrapper that only adds theme + viewport sizing — and mark descendants:
-  - `data-reveal` → text track (rise + blur settle, staggered in document order)
-  - `data-reveal="media"` → media track (fade + scale settle; no blur — expensive on large media)
+  - `data-reveal` → text track (drop from above + blur settle, staggered in document order)
+  - `data-reveal="media"` → media track (top-origin mask wipes down; no fade, no blur — expensive on large media)
 - One timeline and one viewport gate per shell; the whole entrance reverses out when the section leaves, so each pass replays. Reduced motion renders the final state; server-rendered children stay visible without JS.
 - Never hand-roll a new reveal tween. If a shell needs different choreography (see `WorkIntro/Section.client.tsx`), it still imports `SCROLL_REVEAL_TRIGGER_DEFAULTS` for the shared gate.
 

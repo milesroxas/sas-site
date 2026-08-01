@@ -14,7 +14,7 @@ export type ScrollRevealProps = {
   children: ReactNode
   /** Bump to rebuild the timeline and replay the entrance (demo replay buttons). */
   replayKey?: number
-  /** Rise distance for text targets (px). */
+  /** Drop distance text targets settle down from (px). */
   textY?: number
   /** Blur the text settles out of (px). */
   textBlurPx?: number
@@ -24,8 +24,6 @@ export type ScrollRevealProps = {
   textEase?: string
   /** Document-order delay between consecutive targets (s). */
   stagger?: number
-  /** Starting scale media targets settle down from. */
-  mediaScale?: number
   /** Media entrance duration (s). */
   mediaDuration?: number
   /** GSAP ease for media targets. */
@@ -37,8 +35,8 @@ export type ScrollRevealProps = {
 }
 
 /**
- * Site-standard values for `data-reveal` text targets: rise into place with a
- * blur settle. Tune on /demo/transitions, paste back here — every consumer
+ * Site-standard values for `data-reveal` text targets: drop into place from
+ * above with a blur settle. Tune on /demo/transitions, paste back here — every consumer
  * (case-study reveal shell, and any future one) reads these.
  */
 export const SCROLL_REVEAL_TEXT_DEFAULTS = {
@@ -50,11 +48,11 @@ export const SCROLL_REVEAL_TEXT_DEFAULTS = {
 } as const satisfies Partial<ScrollRevealProps>
 
 /**
- * Site-standard values for `data-reveal="media"` targets: fade in while the
- * scale settles — blur on large images is expensive to composite.
+ * Site-standard values for `data-reveal="media"` targets: a top-origin mask
+ * wipes downward to reveal the media — no fade, no blur (expensive to
+ * composite on large images).
  */
 export const SCROLL_REVEAL_MEDIA_DEFAULTS = {
-  mediaScale: 1.04,
   mediaDuration: 1.1,
   mediaEase: 'power2.out',
 } as const satisfies Partial<ScrollRevealProps>
@@ -73,10 +71,10 @@ const DEFAULTS = {
 
 /**
  * The site's scroll-entrance motion language, owned in one place: descendants
- * marked `data-reveal` rise into place with a blur settle when the shell
- * enters the viewport, `data-reveal="media"` targets scale down instead, and
- * the whole timeline reverses out when the shell fully leaves so each pass
- * replays. Server-rendered children stay visible without JavaScript; reduced
+ * marked `data-reveal` drop into place with a blur settle when the shell
+ * enters the viewport, `data-reveal="media"` targets mask-wipe open from the
+ * top, and the whole timeline reverses out when the shell fully leaves so
+ * each pass replays. Server-rendered children stay visible without JavaScript; reduced
  * motion renders the final state.
  */
 export function ScrollReveal({
@@ -89,7 +87,6 @@ export function ScrollReveal({
   textDuration = DEFAULTS.textDuration,
   textEase = DEFAULTS.textEase,
   stagger = DEFAULTS.stagger,
-  mediaScale = DEFAULTS.mediaScale,
   mediaDuration = DEFAULTS.mediaDuration,
   mediaEase = DEFAULTS.mediaEase,
   enterThreshold = DEFAULTS.enterThreshold,
@@ -116,10 +113,10 @@ export function ScrollReveal({
         tl.fromTo(
           target,
           isMedia
-            ? { autoAlpha: 0, scale: mediaScale }
-            : { autoAlpha: 0, y: textY, filter: `blur(${textBlurPx}px)` },
+            ? { clipPath: 'inset(0% 0% 100% 0%)' }
+            : { autoAlpha: 0, y: -textY, filter: `blur(${textBlurPx}px)` },
           isMedia
-            ? { autoAlpha: 1, scale: 1, duration: mediaDuration, ease: mediaEase }
+            ? { clipPath: 'inset(0% 0% 0% 0%)', duration: mediaDuration, ease: mediaEase }
             : {
                 autoAlpha: 1,
                 y: 0,
@@ -155,7 +152,6 @@ export function ScrollReveal({
         textDuration,
         textEase,
         stagger,
-        mediaScale,
         mediaDuration,
         mediaEase,
         enterThreshold,

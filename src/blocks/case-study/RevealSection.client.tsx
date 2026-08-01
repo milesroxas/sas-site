@@ -7,9 +7,9 @@ import { cn } from '@/utilities/ui'
 
 /**
  * Full-viewport shell for work-page composition blocks. The entrance itself —
- * `data-reveal` text rise, `data-reveal="media"` scale settle, replay on each
- * pass — lives in `shared/ui/scroll-reveal`; this wrapper only supplies the
- * surface, viewport height, and theme.
+ * `data-reveal` text drop, `data-reveal="media"` top-down mask reveal, replay
+ * on each pass — lives in `shared/ui/scroll-reveal`; this wrapper only
+ * supplies the surface, viewport height, and theme.
  *
  * `as="div"` is for blocks that render their own `<section>` root; the shell
  * then only supplies the surface, viewport height, and entrance.

@@ -7,17 +7,7 @@ import {
   SCROLL_REVEAL_TEXT_DEFAULTS as TEXT,
   SCROLL_REVEAL_TRIGGER_DEFAULTS as TRIGGER,
 } from '@/shared/ui/scroll-reveal'
-
-const EASES = [
-  'power1.out',
-  'power2.out',
-  'power3.out',
-  'power4.out',
-  'sine.out',
-  'expo.out',
-  'circ.out',
-  'none',
-]
+import { useEaseControl } from './use-ease-control'
 
 /**
  * Demo content: the production `data-reveal` text entrance with every value
@@ -31,17 +21,17 @@ export function ScrollRevealTextPlayground() {
     heading: { value: 'A standard entrance for every block' },
     body: {
       value:
-        'Each element marked data-reveal rises into place in document order — the same motion on every section keeps the whole site feeling like one system.',
+        'Each element marked data-reveal drops into place in document order — the same motion on every section keeps the whole site feeling like one system.',
     },
   })
 
-  const { textY, textBlurPx, textDuration, textEase, stagger } = useDemoControls('Motion', {
-    textY: { value: TEXT.textY, min: 0, max: 120, step: 1, label: 'rise (px)' },
+  const { textY, textBlurPx, textDuration, stagger } = useDemoControls('Motion', {
+    textY: { value: TEXT.textY, min: 0, max: 120, step: 1, label: 'drop (px)' },
     textBlurPx: { value: TEXT.textBlurPx, min: 0, max: 24, step: 1, label: 'blur (px)' },
     textDuration: { value: TEXT.textDuration, min: 0.2, max: 3, step: 0.05, label: 'duration' },
-    textEase: { value: TEXT.textEase, options: EASES, label: 'ease' },
     stagger: { value: TEXT.stagger, min: 0, max: 0.5, step: 0.01, label: 'stagger (s)' },
   })
+  const textEase = useEaseControl('Motion', TEXT.textEase)
 
   const { enterThreshold, exitTimeScale } = useDemoControls('Trigger', {
     enterThreshold: {
