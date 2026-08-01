@@ -22,6 +22,7 @@ import * as migration_20260729_200545_hero_eyebrow_description from './20260729_
 import * as migration_20260729_202055_hero_title from './20260729_202055_hero_title';
 import * as migration_20260729_205254_home_global from './20260729_205254_home_global';
 import * as migration_20260730_191629_platforms_taxonomy from './20260730_191629_platforms_taxonomy';
+import * as migration_20260801_014735_work_hero_layouts_prune from './20260801_014735_work_hero_layouts_prune';
 
 export const migrations = [
   {
@@ -142,6 +143,11 @@ export const migrations = [
   {
     up: migration_20260730_191629_platforms_taxonomy.up,
     down: migration_20260730_191629_platforms_taxonomy.down,
-    name: '20260730_191629_platforms_taxonomy'
+    name: '20260730_191629_platforms_taxonomy',
+  },
+  {
+    up: migration_20260801_014735_work_hero_layouts_prune.up,
+    down: migration_20260801_014735_work_hero_layouts_prune.down,
+    name: '20260801_014735_work_hero_layouts_prune'
   },
 ];

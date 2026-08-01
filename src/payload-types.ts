@@ -1268,7 +1268,7 @@ export interface WorkPage {
      * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
      */
     browseAllMedia?: boolean | null;
-    layout?: ('editorial-split' | 'centered' | 'immersive' | 'media-led') | null;
+    layout?: ('centered-media' | 'landscape') | null;
     /**
      * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
      */

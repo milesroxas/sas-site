@@ -98,8 +98,8 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
                 {
                   name: 'layout',
                   type: 'select',
-                  defaultValue: 'editorial-split',
-                  options: ['editorial-split', 'centered', 'immersive', 'media-led'],
+                  defaultValue: 'centered-media',
+                  options: ['centered-media', 'landscape'],
                 },
                 {
                   name: 'theme',
