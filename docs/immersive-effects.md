@@ -12,7 +12,7 @@ For shader *technique* (GLSL, raymarching, dispersion, motion physics), use the 
 | Public barrel | `src/features/immersive/index.ts` | The only import path consumers use: `@/features/immersive`. |
 | Named presets | `src/features/immersive/presets.ts` | Shipped, named looks (e.g. `HERO_LENS`). |
 | Scramble text | `src/shared/ui/scramble-text/` | DOM-only scramble effect; same defaults contract. |
-| Demo playgrounds | `src/widgets/immersive-demo/ui/` | Leva-driven demos at `/demo/immersive`. Demo-only, never shipped UI. |
+| Demo playgrounds | `src/widgets/immersive-demo/ui/` | Leva-driven demos at `/demo/immersive` ("Micro interactions"). Demo-only, never shipped UI. The `TextLoadIn*` playgrounds live in `src/widgets/transition-demo/ui/` on `/demo/transitions`. |
 | Demo scaffolding | `src/shared/ui/demo-kit/` | `useDemoControls`, `useDemoSnippet`, paste guide, settings. |
 | WebGL infrastructure | `src/lib/webgl/`, `src/lib/interactions/` | Canvas, tunnel, RAF, smooth scroll, `ImmersiveShell`. |
 
@@ -61,7 +61,7 @@ Consumers spread it: `<RefractionMedia src={src} {...HERO_LENS} />`. Everything 
 
 ## Using an effect on a page
 
-1. Dial in the look at [`/demo/immersive`](/demo/immersive) — every parameter is wired to the GUI.
+1. Dial in the look at [`/demo/immersive`](/demo/immersive) (text load-ins: [`/demo/transitions`](/demo/transitions)) — every parameter is wired to the GUI.
 2. Copy the snippet (the copy button emits props in component units; the paste guide explains placement).
 3. Import from the barrel and pass the props:
 

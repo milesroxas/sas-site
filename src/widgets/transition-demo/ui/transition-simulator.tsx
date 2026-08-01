@@ -1,10 +1,9 @@
 'use client'
 
 import { IconAlertTriangle, IconInfoCircle } from '@tabler/icons-react'
-import { button } from 'leva'
 import { useEffect, useRef, useState } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
+import { useDemoAction, useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 import { type MockRoute, MockViewport, runFlags } from './mock-site'
 import { PhaseTimeline } from './phase-timeline'
 import { type SimTimings, useSimNavigation } from './use-sim-navigation'
@@ -92,11 +91,7 @@ export function TransitionSimulator() {
     runFlags,
   })
 
-  // leva's button captures its closure once; route the click through a ref so
-  // it always replays with the current run and settings.
-  const replayRef = useRef(sim.replay)
-  replayRef.current = sim.replay
-  useDemoControls('Actions', { 'replay last navigation': button(() => replayRef.current()) })
+  useDemoAction('replay last navigation', sim.replay)
 
   useDemoSnippet({
     '--vt-duration-exit': `${exitMs}ms`,

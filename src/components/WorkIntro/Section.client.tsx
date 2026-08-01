@@ -4,13 +4,13 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { type ReactNode, useRef } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
+import { SCROLL_REVEAL_TRIGGER_DEFAULTS } from '@/shared/ui/scroll-reveal'
 
 gsap.registerPlugin(useGSAP)
 
-/** Fraction of the section that must be visible before the entrance plays. */
-const ENTER_THRESHOLD = 0.35
-/** Exit reverses faster than the entrance so it never lags a quick scroll. */
-const EXIT_TIME_SCALE = 1.6
+/** Shared viewport gate — same enter fraction and exit speed as every reveal shell. */
+const { enterThreshold: ENTER_THRESHOLD, exitTimeScale: EXIT_TIME_SCALE } =
+  SCROLL_REVEAL_TRIGGER_DEFAULTS
 
 /**
  * Full-screen shell for the work intro. Copy rises into place when the band

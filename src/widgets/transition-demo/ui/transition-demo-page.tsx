@@ -1,6 +1,8 @@
 'use client'
 
 import { DemoSection, DemoSettingsMenu, DemoSettingsProvider } from '@/shared/ui/demo-kit'
+import { ScrollRevealMediaPlayground } from './scroll-reveal-media-playground'
+import { ScrollRevealTextPlayground } from './scroll-reveal-text-playground'
 import { TextLoadInPlayground } from './text-load-in-playground'
 import { TextLoadInRaymarchedPlayground } from './text-load-in-raymarched-playground'
 import { TransitionSimulator } from './transition-simulator'
@@ -139,6 +141,32 @@ export function TransitionDemoPage() {
           }}
         >
           <TextLoadInRaymarchedPlayground />
+        </DemoSection>
+
+        <DemoSection
+          title="Section text reveal"
+          description="The production entrance for content blocks: descendants marked data-reveal rise into place with a blur settle, staggered in document order, and reverse out when the section leaves the viewport. Split-content, image-pair and the feature blocks all inherit these exact values — dial them here, copy, and every block updates."
+          paste={{
+            file: 'src/shared/ui/scroll-reveal/scroll-reveal.tsx',
+            symbol: 'SCROLL_REVEAL_TEXT_DEFAULTS',
+            format: 'object',
+            note: 'Site-standard text entrance. Every data-reveal target reads these.',
+          }}
+        >
+          <ScrollRevealTextPlayground />
+        </DemoSection>
+
+        <DemoSection
+          title="Section media reveal"
+          description="The sibling entrance for images and video: data-reveal='media' targets fade in while their scale settles to rest — no blur, which is expensive to composite on large media. Runs on the same per-section timeline and viewport gate as the text reveal."
+          paste={{
+            file: 'src/shared/ui/scroll-reveal/scroll-reveal.tsx',
+            symbol: 'SCROLL_REVEAL_MEDIA_DEFAULTS',
+            format: 'object',
+            note: 'Site-standard media entrance. Every data-reveal="media" target reads these.',
+          }}
+        >
+          <ScrollRevealMediaPlayground />
         </DemoSection>
 
         <section className="space-y-4 rounded-lg border border-border bg-card/80 p-4 backdrop-blur-sm sm:p-6">

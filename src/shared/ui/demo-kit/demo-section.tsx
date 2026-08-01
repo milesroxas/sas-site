@@ -1,7 +1,14 @@
 'use client'
 
 import { IconCopy } from '@tabler/icons-react'
-import { LevaPanel, LevaStoreProvider, useControls, useCreateStore, useStoreContext } from 'leva'
+import {
+  button,
+  LevaPanel,
+  LevaStoreProvider,
+  useControls,
+  useCreateStore,
+  useStoreContext,
+} from 'leva'
 import type { Schema } from 'leva/dist/declarations/src/types'
 import type { CSSProperties, ReactNode } from 'react'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
@@ -189,4 +196,18 @@ export function useDemoControls<S extends Schema>(folderName: string, schema: S)
   const store = useStoreContext()
   // Folders start collapsed so dense panels stay scannable.
   return useControls(folderName, schema, { collapsed: true }, { store })
+}
+
+/**
+ * The section's play/replay trigger, pinned at the top of the panel: a
+ * root-level input with a negative order sorts above every folder (default 0)
+ * and can never be collapsed away.
+ */
+export function useDemoAction(label: string, onClick: () => void) {
+  const store = useStoreContext()
+  // leva captures the schema on first render; route the click through a ref so
+  // the button always fires the latest callback.
+  const onClickRef = useRef(onClick)
+  onClickRef.current = onClick
+  useControls({ [label]: { ...button(() => onClickRef.current()), order: -1 } }, { store })
 }

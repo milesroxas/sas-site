@@ -1,12 +1,12 @@
 ---
 description: Immersive effects DRY contract — exported *_DEFAULTS per effect, delta-only presets in features/immersive/presets.ts, rule-of-two promotion, barrel-only imports
-globs: "src/features/immersive/**,src/widgets/immersive-demo/**,src/shared/ui/scramble-text/**,src/shared/ui/demo-kit/**"
+globs: "src/features/immersive/**,src/widgets/immersive-demo/**,src/widgets/transition-demo/**,src/shared/ui/scramble-text/**,src/shared/ui/scroll-reveal/**,src/shared/ui/demo-kit/**"
 alwaysApply: false
 ---
 
 # Immersive effects (sas-site)
 
-Full guide: [docs/immersive-effects.md](../../docs/immersive-effects.md). Shader technique lives in the **creative-webgl-shaders** skill; this rule is the project contract around it.
+Full guide: [docs/immersive-effects.md](../../docs/immersive-effects.md); non-WebGL motion systems (scroll reveal, route transitions): [docs/animations.md](../../docs/animations.md) — same defaults contract (`src/shared/ui/scroll-reveal` exports its `SCROLL_REVEAL_*_DEFAULTS`). Shader technique lives in the **creative-webgl-shaders** skill; this rule is the project contract around it.
 
 ## Single source of truth — hard rules
 

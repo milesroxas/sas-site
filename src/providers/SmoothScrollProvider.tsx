@@ -31,24 +31,25 @@ export const rootLenisOptions: LenisOptions = {
 
 /**
  * Lenis runs in `root` mode and lives in this persistent provider, so it survives
- * navigations and keeps its previous `targetScroll`. After a push navigation Next
+ * navigations and keeps its previous `targetScroll`. After a navigation Next
  * scrolls the document to the top, but Lenis would snap the page back to the old
  * position — leaving the new page scrolled (e.g. landing at the bottom and breaking
  * shared-element morphs whose target is now off-screen). Reset Lenis to the top on
- * push navigations; defer to the browser on back/forward so scroll restoration works.
+ * every route change — back/forward included, so directional exit animations always
+ * start from the top of the incoming page. Browser scroll restoration is set to
+ * `manual` while mounted so it can't fight the reset on popstate.
  */
 const LenisRouteReset: React.FC = () => {
   const pathname = usePathname()
   const lenis = useLenis()
-  const isPopNavigation = useRef(false)
   const lastPathname = useRef(pathname)
 
   useEffect(() => {
-    const onPopState = () => {
-      isPopNavigation.current = true
+    const previous = window.history.scrollRestoration
+    window.history.scrollRestoration = 'manual'
+    return () => {
+      window.history.scrollRestoration = previous
     }
-    window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
   useEffect(() => {
@@ -56,11 +57,11 @@ const LenisRouteReset: React.FC = () => {
     if (pathname === lastPathname.current) return
     lastPathname.current = pathname
 
-    if (isPopNavigation.current) {
-      isPopNavigation.current = false
-      return
-    }
-    lenis?.scrollTo(0, { immediate: true, force: true })
+    // Honor anchor targets (`/page#section`); everything else lands at the top.
+    const anchor = window.location.hash
+      ? document.getElementById(window.location.hash.slice(1))
+      : null
+    lenis?.scrollTo(anchor ?? 0, { immediate: true, force: true })
   }, [pathname, lenis])
 
   return null

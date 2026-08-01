@@ -1,12 +1,11 @@
 'use client'
 
-import { button } from 'leva'
 import { useState } from 'react'
 import {
   TEXT_LOAD_IN_RAYMARCHED_DEFAULTS as DEFAULTS,
   TextLoadInRaymarched,
 } from '@/features/immersive'
-import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
+import { useDemoAction, useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 
 const EASES = [
   'power2.inOut',
@@ -137,7 +136,7 @@ export function TextLoadInRaymarchedPlayground() {
     threshold: { value: DEFAULTS.threshold, min: 0, max: 1, step: 0.05, label: 'visible fraction' },
   })
 
-  useDemoControls('Actions', { replay: button(() => setReplayKey((n) => n + 1)) })
+  useDemoAction('replay', () => setReplayKey((n) => n + 1))
 
   // Copy stays out: the consumer supplies its own eyebrow, heading and body.
   useDemoSnippet({
