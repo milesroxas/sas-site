@@ -14,7 +14,7 @@ export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ tabs }) => {
 
   return (
     <section className="container">
-      <TabsPrimitive.Root defaultValue={valueFor(0)}>
+      <TabsPrimitive.Root data-reveal defaultValue={valueFor(0)}>
         <TabsPrimitive.List
           aria-label="Feature tabs"
           className="flex flex-wrap items-center justify-center gap-8 pb-12 md:gap-24 md:pb-16"

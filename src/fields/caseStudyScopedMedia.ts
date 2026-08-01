@@ -12,12 +12,21 @@ const relationId = (value: unknown): number | undefined => {
 }
 
 // Media pickers on a Work Page default to the assets owned by the related case
-// study's asset libraries. The sibling `browseAllMedia` checkbox opts back into
-// the full media library, as does any state where scoping is impossible (no
-// case study selected yet, or the case study has no libraries) so the picker
-// never comes up empty.
-export const caseStudyScopedMediaFilter: FilterOptions = async ({ data, siblingData, req }) => {
-  if ((siblingData as { browseAllMedia?: boolean } | undefined)?.browseAllMedia) {
+// study's asset libraries. The `browseAllMedia` checkbox — sibling to the
+// picker, or block-level when the picker sits inside an array row — opts back
+// into the full media library, as does any state where scoping is impossible
+// (no case study selected yet, or the case study has no libraries) so the
+// picker never comes up empty.
+export const caseStudyScopedMediaFilter: FilterOptions = async ({
+  blockData,
+  data,
+  siblingData,
+  req,
+}) => {
+  const optedOut =
+    (siblingData as { browseAllMedia?: boolean } | undefined)?.browseAllMedia ||
+    (blockData as { browseAllMedia?: boolean } | undefined)?.browseAllMedia
+  if (optedOut) {
     return publicApproved
   }
 

@@ -1709,6 +1709,10 @@ export interface FeatureStatementGridBlock {
     description: string;
     id?: string | null;
   }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureStatementGrid';
@@ -1719,6 +1723,10 @@ export interface FeatureStatementGridBlock {
  */
 export interface FeatureImageStatementBlock {
   media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
   /**
    * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
    */
@@ -1804,6 +1812,10 @@ export interface FeatureTabsBlock {
     caption?: string | null;
     id?: string | null;
   }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureTabs';
@@ -3761,6 +3773,7 @@ export interface FeatureStatementGridBlockSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
+  browseAllMedia?: T;
   id?: T;
   blockName?: T;
 }
@@ -3799,6 +3812,7 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
         caption?: T;
         id?: T;
       };
+  browseAllMedia?: T;
   id?: T;
   blockName?: T;
 }
@@ -3808,6 +3822,7 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
  */
 export interface FeatureImageStatementBlockSelect<T extends boolean = true> {
   media?: T;
+  browseAllMedia?: T;
   source?: T;
   caption?: T;
   textPosition?: T;

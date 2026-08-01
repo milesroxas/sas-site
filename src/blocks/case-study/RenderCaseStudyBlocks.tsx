@@ -4,7 +4,6 @@ import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feat
 import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/feature/ImageStatement/Component'
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
 import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component'
-import { Section } from '@/blocks/shared/section'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
@@ -23,6 +22,7 @@ import type {
   WorkPage,
 } from '@/payload-types'
 import { cn } from '@/utilities/ui'
+import { RevealSection } from './RevealSection.client'
 
 const richTextSource = (study: CaseStudy, source: CaseStudyStorySectionBlock['source']) => {
   if (source === 'outcome-summary') return study.outcomeSummary
@@ -67,7 +67,7 @@ const StorySection = ({
   const width =
     block.width === 'narrow' ? 'max-w-3xl' : block.width === 'wide' ? 'max-w-7xl' : 'max-w-5xl'
   return (
-    <Section theme={block.theme}>
+    <RevealSection theme={block.theme}>
       <div
         className={cn(
           'container mx-auto grid gap-10',
@@ -77,18 +77,24 @@ const StorySection = ({
       >
         <div className={cn(block.layout === 'text-right' && 'md:order-2')}>
           {block.eyebrow && (
-            <p className="mb-3 text-sm uppercase tracking-[0.2em]">{block.eyebrow}</p>
+            <p className="mb-3 text-sm uppercase tracking-[0.2em]" data-reveal>
+              {block.eyebrow}
+            </p>
           )}
-          <h2 className="mb-6 text-3xl font-normal md:text-5xl">
+          <h2 className="mb-6 text-3xl font-normal md:text-5xl" data-reveal>
             {block.headingOverride || defaultHeading(block.source)}
           </h2>
-          <RichText data={content} enableGutter={false} />
+          <div data-reveal>
+            <RichText data={content} enableGutter={false} />
+          </div>
         </div>
         {block.media && typeof block.media === 'object' && (
-          <Media resource={block.media} imgClassName="h-auto w-full" />
+          <div data-reveal="media">
+            <Media resource={block.media} imgClassName="h-auto w-full" />
+          </div>
         )}
       </div>
-    </Section>
+    </RevealSection>
   )
 }
 
@@ -97,7 +103,11 @@ const SplitNarrow = ({ block, study }: { block: SplitContentNarrowBlock; study: 
     block.source === 'custom' ? block.body : block.body || richTextSource(study, block.source)
   const media = block.media
   if (typeof media !== 'object' || !media) return null
-  return <SplitContentNarrow block={block} content={content} media={media} />
+  return (
+    <RevealSection theme={block.theme}>
+      <SplitContentNarrow bare block={block} content={content} media={media} />
+    </RevealSection>
+  )
 }
 
 const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
@@ -107,13 +117,17 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
     ) || []
   if (!media.length) return null
   return (
-    <Section theme={block.theme}>
+    <RevealSection theme={block.theme}>
       <div className="container mx-auto">
         {block.heading && (
-          <h2 className="mb-6 text-3xl font-normal md:text-5xl">{block.heading}</h2>
+          <h2 className="mb-6 text-3xl font-normal md:text-5xl" data-reveal>
+            {block.heading}
+          </h2>
         )}
         {block.introduction && (
-          <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
+          <div data-reveal>
+            <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
+          </div>
         )}
         <div
           className={cn(
@@ -125,7 +139,7 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
           {media.map(
             (item) =>
               typeof item === 'object' && (
-                <figure className="snap-start" key={item.id}>
+                <figure className="snap-start" data-reveal="media" key={item.id}>
                   <Media resource={item} imgClassName="h-auto w-full" />
                   {block.showCaptions && item.caption && (
                     <RichText
@@ -145,7 +159,7 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
           )}
         </div>
       </div>
-    </Section>
+    </RevealSection>
   )
 }
 
@@ -161,17 +175,19 @@ const KeyDecisions = ({
   )
   if (!decisions.length) return null
   return (
-    <Section theme={block.theme}>
+    <RevealSection theme={block.theme}>
       <div className="container mx-auto">
-        <h2 className="mb-8 text-3xl font-normal md:text-5xl">
+        <h2 className="mb-8 text-3xl font-normal md:text-5xl" data-reveal>
           {block.heading || 'Key decisions'}
         </h2>
         {block.introduction && (
-          <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
+          <div data-reveal>
+            <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
+          </div>
         )}
         <div className={cn('grid gap-6', block.layout === 'cards' && 'md:grid-cols-2')}>
           {decisions.map((decision) => (
-            <article className="border-current/20 border p-6" key={decision.key}>
+            <article className="border-current/20 border p-6" data-reveal key={decision.key}>
               <h3 className="mb-4 text-2xl font-normal">{decision.title}</h3>
               {decision.decision && <p>{decision.decision}</p>}
               {decision.impact && <p className="mt-4 opacity-75">{decision.impact}</p>}
@@ -179,7 +195,7 @@ const KeyDecisions = ({
           ))}
         </div>
       </div>
-    </Section>
+    </RevealSection>
   )
 }
 
@@ -189,15 +205,19 @@ const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseSt
   )
   if (!metrics.length) return null
   return (
-    <Section theme={block.theme}>
+    <RevealSection theme={block.theme}>
       <div className="container mx-auto">
-        <h2 className="mb-8 text-3xl font-normal md:text-5xl">{block.heading || 'Results'}</h2>
+        <h2 className="mb-8 text-3xl font-normal md:text-5xl" data-reveal>
+          {block.heading || 'Results'}
+        </h2>
         {block.introduction && (
-          <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
+          <div data-reveal>
+            <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
+          </div>
         )}
         <dl className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
           {metrics.map((metric) => (
-            <div key={metric.key}>
+            <div data-reveal key={metric.key}>
               <dd className="text-4xl md:text-6xl">
                 {metric.value}
                 {metric.unit}
@@ -208,7 +228,7 @@ const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseSt
           ))}
         </dl>
       </div>
-    </Section>
+    </RevealSection>
   )
 }
 
@@ -218,15 +238,17 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
   if (testimonial?._status !== 'published' || testimonial.approvalStatus !== 'approved-public')
     return null
   return (
-    <Section theme={block.theme}>
+    <RevealSection theme={block.theme}>
       <figure className="container mx-auto max-w-4xl text-center">
         {block.showPortrait && testimonial.portrait && typeof testimonial.portrait === 'object' && (
-          <Media
-            className="mx-auto mb-6 w-24 overflow-hidden rounded-full"
-            resource={testimonial.portrait}
-          />
+          <div data-reveal="media">
+            <Media
+              className="mx-auto mb-6 w-24 overflow-hidden rounded-full"
+              resource={testimonial.portrait}
+            />
+          </div>
         )}
-        <blockquote>
+        <blockquote data-reveal>
           <RichText
             className="text-2xl md:text-4xl"
             data={testimonial.quote}
@@ -234,24 +256,34 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
             enableProse={false}
           />
         </blockquote>
-        <figcaption className="mt-6">
+        <figcaption className="mt-6" data-reveal>
           <strong>{testimonial.speakerName}</strong>
           {testimonial.speakerRole && `, ${testimonial.speakerRole}`}
           {testimonial.speakerOrganization && ` — ${testimonial.speakerOrganization}`}
         </figcaption>
       </figure>
-    </Section>
+    </RevealSection>
   )
 }
 
 const Transition = ({ block }: { block: CaseStudyTransitionBlock }) => (
-  <Section theme={block.theme}>
+  <RevealSection theme={block.theme}>
     <div className="container mx-auto max-w-5xl text-center">
-      {block.eyebrow && <p className="mb-3 text-sm uppercase tracking-[0.2em]">{block.eyebrow}</p>}
-      <h2 className="text-4xl font-normal md:text-7xl">{block.heading}</h2>
-      {block.body && <RichText className="mt-8" data={block.body} enableGutter={false} />}
+      {block.eyebrow && (
+        <p className="mb-3 text-sm uppercase tracking-[0.2em]" data-reveal>
+          {block.eyebrow}
+        </p>
+      )}
+      <h2 className="text-4xl font-normal md:text-7xl" data-reveal>
+        {block.heading}
+      </h2>
+      {block.body && (
+        <div data-reveal>
+          <RichText className="mt-8" data={block.body} enableGutter={false} />
+        </div>
+      )}
     </div>
-  </Section>
+  </RevealSection>
 )
 
 const RelatedWork = async ({
@@ -291,14 +323,14 @@ const RelatedWork = async ({
   pages = pages.slice(0, block.limit || 3)
   if (!pages.length) return null
   return (
-    <section className="py-16 md:py-24">
+    <RevealSection>
       <div className="container mx-auto">
-        <h2 className="mb-8 text-3xl font-normal md:text-5xl">
+        <h2 className="mb-8 text-3xl font-normal md:text-5xl" data-reveal>
           {block.heading || 'Related work'}
         </h2>
         <div className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
           {pages.map((item) => (
-            <a className="group block" href={`/works/${item.slug}`} key={item.id}>
+            <a className="group block" data-reveal href={`/works/${item.slug}`} key={item.id}>
               {item.coverAsset && typeof item.coverAsset === 'object' && (
                 <Media resource={item.coverAsset} imgClassName="h-auto w-full" />
               )}
@@ -309,7 +341,7 @@ const RelatedWork = async ({
           ))}
         </div>
       </div>
-    </section>
+    </RevealSection>
   )
 }
 
@@ -343,38 +375,42 @@ export const RenderCaseStudyBlocks = async ({
           return <RelatedWork block={block} key={block.id} page={page} study={study} />
         case 'featureHeadingOffset':
           return (
-            <FeatureHeadingOffset
-              {...block}
-              body={resolveFeatureBody(block.body, block.source, study)}
-              key={block.id}
-            />
+            <RevealSection as="div" key={block.id}>
+              <FeatureHeadingOffset
+                {...block}
+                body={resolveFeatureBody(block.body, block.source, study)}
+              />
+            </RevealSection>
           )
         case 'featureStatementGrid':
           return (
-            <FeatureStatementGrid
-              {...block}
-              key={block.id}
-              statement={resolveFeatureBody(block.statement, block.source, study)}
-            />
+            <RevealSection as="div" key={block.id}>
+              <FeatureStatementGrid
+                {...block}
+                statement={resolveFeatureBody(block.statement, block.source, study)}
+              />
+            </RevealSection>
           )
         case 'featureImageStatement':
           return (
-            <FeatureImageStatement
-              {...block}
-              caption={resolveFeatureBody(block.caption, block.source, study)}
-              key={block.id}
-            />
+            <RevealSection as="div" key={block.id}>
+              <FeatureImageStatement
+                {...block}
+                caption={resolveFeatureBody(block.caption, block.source, study)}
+              />
+            </RevealSection>
           )
         case 'featureTabs':
           return (
-            <FeatureTabs
-              {...block}
-              key={block.id}
-              tabs={(block.tabs || []).map((tab) => ({
-                ...tab,
-                description: resolveFeatureBody(tab.description, tab.source, study),
-              }))}
-            />
+            <RevealSection as="div" key={block.id}>
+              <FeatureTabs
+                {...block}
+                tabs={(block.tabs || []).map((tab) => ({
+                  ...tab,
+                  description: resolveFeatureBody(tab.description, tab.source, study),
+                }))}
+              />
+            </RevealSection>
           )
         default:
           return null

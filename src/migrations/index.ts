@@ -26,6 +26,7 @@ import * as migration_20260801_014735_work_hero_layouts_prune from './20260801_0
 import * as migration_20260801_022709_work_intro_overrides_toggle from './20260801_022709_work_intro_overrides_toggle';
 import * as migration_20260801_023936_lab_hero_overrides_toggle from './20260801_023936_lab_hero_overrides_toggle';
 import * as migration_20260801_032239_split_content_lab_expertise_audience from './20260801_032239_split_content_lab_expertise_audience';
+import * as migration_20260801_142426_scoped_media_feature_blocks from './20260801_142426_scoped_media_feature_blocks';
 
 export const migrations = [
   {
@@ -166,6 +167,11 @@ export const migrations = [
   {
     up: migration_20260801_032239_split_content_lab_expertise_audience.up,
     down: migration_20260801_032239_split_content_lab_expertise_audience.down,
-    name: '20260801_032239_split_content_lab_expertise_audience'
+    name: '20260801_032239_split_content_lab_expertise_audience',
+  },
+  {
+    up: migration_20260801_142426_scoped_media_feature_blocks.up,
+    down: migration_20260801_142426_scoped_media_feature_blocks.down,
+    name: '20260801_142426_scoped_media_feature_blocks'
   },
 ];

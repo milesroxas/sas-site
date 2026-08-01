@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { featureSourceField } from '../shared'
 
 export const FeatureImageStatement: Block = {
@@ -9,7 +10,14 @@ export const FeatureImageStatement: Block = {
   interfaceName: 'FeatureImageStatementBlock',
   labels: { singular: 'Feature: image statement', plural: 'Feature: image statements' },
   fields: [
-    { name: 'media', type: 'upload', relationTo: 'media', required: true },
+    {
+      name: 'media',
+      type: 'upload',
+      relationTo: 'media',
+      required: true,
+      filterOptions: caseStudyScopedMediaFilter,
+    },
+    browseAllMediaField(),
     featureSourceField(),
     {
       name: 'caption',

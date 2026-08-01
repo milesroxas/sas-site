@@ -14,7 +14,7 @@ export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProp
   const fullBleed = imageWidth === 'full'
   return (
     <section className={cn('flex flex-col gap-6', !fullBleed && 'container')}>
-      <div className="relative aspect-3/2 w-full bg-muted md:aspect-21/9">
+      <div className="relative aspect-3/2 w-full bg-muted md:aspect-21/9" data-reveal="media">
         <Media fill imgClassName="object-cover" resource={media} size="100vw" />
       </div>
       <div
@@ -25,17 +25,19 @@ export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProp
         )}
       >
         {caption ? (
-          <RichText
-            className={cn(
-              'max-w-2xl',
-              textSize === 'small'
-                ? 'text-lg/relaxed md:text-2xl/relaxed'
-                : 'text-xl/relaxed md:text-3xl/relaxed',
-            )}
-            data={caption}
-            enableGutter={false}
-            enableProse={false}
-          />
+          <div data-reveal>
+            <RichText
+              className={cn(
+                'max-w-2xl',
+                textSize === 'small'
+                  ? 'text-lg/relaxed md:text-2xl/relaxed'
+                  : 'text-xl/relaxed md:text-3xl/relaxed',
+              )}
+              data={caption}
+              enableGutter={false}
+              enableProse={false}
+            />
+          </div>
         ) : null}
       </div>
     </section>

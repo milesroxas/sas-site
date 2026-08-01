@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { featureSourceField } from '../shared'
 
 export const FeatureTabs: Block = {
@@ -40,7 +41,12 @@ export const FeatureTabs: Block = {
           labels: { singular: 'Item', plural: 'Items' },
           fields: [{ name: 'text', type: 'text', required: true }],
         },
-        { name: 'media', type: 'upload', relationTo: 'media' },
+        {
+          name: 'media',
+          type: 'upload',
+          relationTo: 'media',
+          filterOptions: caseStudyScopedMediaFilter,
+        },
         {
           name: 'caption',
           type: 'textarea',
@@ -49,5 +55,6 @@ export const FeatureTabs: Block = {
         },
       ],
     },
+    browseAllMediaField(),
   ],
 }

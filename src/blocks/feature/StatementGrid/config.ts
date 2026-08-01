@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { featureHeaderFields, featureSourceField } from '../shared'
 
 export const FeatureStatementGrid: Block = {
@@ -30,10 +31,16 @@ export const FeatureStatementGrid: Block = {
       labels: { singular: 'Card', plural: 'Cards' },
       admin: { initCollapsed: true },
       fields: [
-        { name: 'media', type: 'upload', relationTo: 'media' },
+        {
+          name: 'media',
+          type: 'upload',
+          relationTo: 'media',
+          filterOptions: caseStudyScopedMediaFilter,
+        },
         { name: 'title', type: 'text', required: true },
         { name: 'description', type: 'textarea', required: true },
       ],
     },
+    browseAllMediaField(),
   ],
 }
