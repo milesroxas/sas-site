@@ -2314,7 +2314,14 @@ export interface LabPage {
    * Website composition only. Canonical narrative remains in the related Lab Project record.
    */
   layout?:
-    | (LabStorySectionBlock | LabMediaShowcaseBlock | LabFactsBlock | LabTransitionBlock | LabRelatedProjectsBlock)[]
+    | (
+        | LabStorySectionBlock
+        | LabMediaShowcaseBlock
+        | LabFactsBlock
+        | LabTransitionBlock
+        | LabRelatedProjectsBlock
+        | SplitContentNarrowBlock
+      )[]
     | null;
   /**
    * Used on cards, indexes, and as the hero fallback.
@@ -2746,6 +2753,7 @@ export interface ExpertisePage {
     | FeatureHeadingOffsetBlock
     | FeatureTabsBlock
     | FeatureImageStatementBlock
+    | SplitContentNarrowBlock
   )[];
   /**
    * Canonical capabilities this offering bundles. Drives automatic related-work matching.
@@ -2845,6 +2853,7 @@ export interface AudiencePage {
     | FeatureHeadingOffsetBlock
     | FeatureTabsBlock
     | FeatureImageStatementBlock
+    | SplitContentNarrowBlock
   )[];
   /**
    * Industries this segment spans. Drives automatic related-work matching.
@@ -4047,6 +4056,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         labFacts?: T | LabFactsBlockSelect<T>;
         labTransition?: T | LabTransitionBlockSelect<T>;
         labRelatedProjects?: T | LabRelatedProjectsBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
       };
   coverAsset?: T;
   relatedLabPages?: T;
@@ -4179,6 +4189,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
       };
   capabilities?: T;
   relatedWorkPages?: T;
@@ -4240,6 +4251,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
       };
   industries?: T;
   relatedWorkPages?: T;

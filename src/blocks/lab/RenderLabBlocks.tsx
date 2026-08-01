@@ -1,8 +1,9 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { Section } from '@/blocks/shared/section'
+import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import { Section } from '@/blocks/shared/section'
 import type {
   LabFactsBlock,
   LabMediaShowcaseBlock,
@@ -262,6 +263,8 @@ export const RenderLabBlocks = async ({
           return <Transition block={block} key={block.id} />
         case 'labRelatedProjects':
           return <RelatedProjects block={block} key={block.id} page={page} project={project} />
+        case 'splitContentNarrow':
+          return <SplitContentNarrowBlock {...block} key={block.id} />
         default:
           return null
       }

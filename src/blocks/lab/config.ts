@@ -1,4 +1,5 @@
 import type { Block, SelectField } from 'payload'
+import { SplitContentNarrow } from '@/blocks/split-content/config'
 
 const themeField = (name = 'theme'): SelectField => ({
   name,
@@ -149,4 +150,5 @@ export const labBlocks = [
   LabFacts,
   LabTransition,
   LabRelatedProjects,
+  SplitContentNarrow,
 ]

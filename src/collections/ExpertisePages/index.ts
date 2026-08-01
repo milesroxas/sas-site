@@ -19,6 +19,7 @@ import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
+import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { hero } from '@/heros/config'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
@@ -73,6 +74,7 @@ export const ExpertisePages: CollectionConfig<'expertise-pages'> = {
                 FeatureHeadingOffset,
                 FeatureTabs,
                 FeatureImageStatement,
+                SplitContentNarrow,
               ],
               required: true,
               admin: { initCollapsed: true },
