@@ -250,6 +250,7 @@ describe.sequential('website IA surfaces', () => {
         title: `Work ${suffix}`,
         slug: `work-${suffix}`,
         caseStudy: study.id,
+        intro: { title: 'Intro title' },
         layout: [
           {
             blockType: 'caseStudyTransition',

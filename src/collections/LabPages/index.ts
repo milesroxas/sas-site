@@ -11,6 +11,7 @@ import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { labBlocks } from '@/blocks/lab/config'
+import { overridesVisible, showOverridesField } from '@/fields/overrides'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { revalidateLabPage, revalidateLabPageDelete } from './hooks/revalidateLabPage'
@@ -76,56 +77,82 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
           ],
         },
         {
-          label: 'Presentation',
+          label: 'Opening',
+          description: 'The full-screen opening of the page: the hero.',
           fields: [
             {
               name: 'hero',
               type: 'group',
               fields: [
-                { name: 'eyebrow', type: 'text' },
                 {
-                  name: 'titleOverride',
-                  type: 'text',
-                  admin: { description: 'Website-only. Leave empty to use the canonical title.' },
+                  type: 'collapsible',
+                  label: 'Content',
+                  fields: [
+                    { name: 'eyebrow', type: 'text' },
+                    showOverridesField(),
+                    {
+                      name: 'titleOverride',
+                      type: 'text',
+                      admin: {
+                        description: 'Website-only. Leave empty to use the canonical title.',
+                        condition: overridesVisible,
+                      },
+                    },
+                    {
+                      name: 'summaryOverride',
+                      type: 'textarea',
+                      admin: {
+                        description: 'Website-only. Leave empty to use the canonical summary.',
+                        condition: overridesVisible,
+                      },
+                    },
+                  ],
                 },
                 {
-                  name: 'summaryOverride',
-                  type: 'textarea',
-                  admin: { description: 'Website-only. Leave empty to use the canonical summary.' },
-                },
-                {
-                  name: 'media',
-                  type: 'upload',
-                  relationTo: 'media',
-                  filterOptions: { usageStatus: { equals: 'public-approved' } },
-                },
-                {
-                  name: 'layout',
-                  type: 'select',
-                  defaultValue: 'editorial-split',
-                  options: ['editorial-split', 'centered', 'immersive', 'media-led'],
-                },
-                {
-                  name: 'theme',
-                  type: 'select',
-                  defaultValue: 'light',
-                  options: ['light', 'dark', 'neutral', 'brand'],
-                  admin: {
-                    description:
-                      'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
-                  },
-                },
-                {
-                  name: 'mediaTreatment',
-                  type: 'select',
-                  defaultValue: 'contained',
-                  options: ['contained', 'full-bleed', 'floating', 'background'],
+                  type: 'collapsible',
+                  label: 'Media & layout',
+                  fields: [
+                    {
+                      name: 'media',
+                      type: 'upload',
+                      relationTo: 'media',
+                      filterOptions: { usageStatus: { equals: 'public-approved' } },
+                    },
+                    {
+                      name: 'layout',
+                      type: 'select',
+                      defaultValue: 'editorial-split',
+                      options: ['editorial-split', 'centered', 'immersive', 'media-led'],
+                    },
+                    {
+                      name: 'theme',
+                      type: 'select',
+                      defaultValue: 'light',
+                      options: ['light', 'dark', 'neutral', 'brand'],
+                      admin: {
+                        description:
+                          'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
+                      },
+                    },
+                    {
+                      name: 'mediaTreatment',
+                      type: 'select',
+                      defaultValue: 'contained',
+                      options: ['contained', 'full-bleed', 'floating', 'background'],
+                    },
+                  ],
                 },
               ],
             },
+          ],
+        },
+        {
+          label: 'Composition',
+          fields: [
             {
               name: 'layout',
               type: 'blocks',
+              label: 'Composition',
               blocks: labBlocks,
               admin: {
                 initCollapsed: true,
@@ -133,6 +160,11 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
                   'Website composition only. Canonical narrative remains in the related Lab Project record.',
               },
             },
+          ],
+        },
+        {
+          label: 'Assets',
+          fields: [
             {
               name: 'coverAsset',
               type: 'upload',

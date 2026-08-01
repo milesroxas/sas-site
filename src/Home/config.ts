@@ -35,13 +35,14 @@ export const Home: GlobalConfig = {
       tabs: [
         {
           fields: [homeHero],
-          label: 'Hero',
+          label: 'Opening',
         },
         {
           fields: [
             {
               name: 'layout',
               type: 'blocks',
+              label: 'Composition',
               blocks: pageLayoutBlocks,
               required: true,
               admin: {
@@ -49,7 +50,7 @@ export const Home: GlobalConfig = {
               },
             },
           ],
-          label: 'Content',
+          label: 'Composition',
         },
         {
           name: 'meta',

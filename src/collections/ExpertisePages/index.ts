@@ -55,13 +55,14 @@ export const ExpertisePages: CollectionConfig<'expertise-pages'> = {
     {
       type: 'tabs',
       tabs: [
-        { label: 'Hero', fields: [hero] },
+        { label: 'Opening', fields: [hero] },
         {
-          label: 'Content',
+          label: 'Composition',
           fields: [
             {
               name: 'layout',
               type: 'blocks',
+              label: 'Composition',
               blocks: [
                 CallToAction,
                 Content,

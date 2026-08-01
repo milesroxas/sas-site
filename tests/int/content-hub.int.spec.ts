@@ -219,6 +219,7 @@ describe.sequential('content hub and website surfaces', () => {
           slug: `invalid-work-${suffix}`,
           caseStudy: noLibrary.id,
           _status: 'published',
+          intro: { title: 'Intro title' },
           layout: [{ blockType: 'caseStudyTransition', heading: 'Transition' }],
         },
       }),

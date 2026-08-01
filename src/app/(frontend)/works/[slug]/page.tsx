@@ -7,6 +7,7 @@ import { RenderCaseStudyBlocks } from '@/blocks/case-study/RenderCaseStudyBlocks
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
+import { WorkIntro } from '@/components/WorkIntro'
 import { CaseStudyHero } from '@/heros/CaseStudyHero'
 import type { CaseStudy } from '@/payload-types'
 import { generateMeta } from '@/utilities/generateMeta'
@@ -51,6 +52,14 @@ export default async function WorkPageRoute({ params }: Args) {
       <PayloadRedirects disableNotFound url={url} />
       {draft && <LivePreviewListener />}
       <CaseStudyHero page={page} study={study} />
+      {page.intro?.title ? (
+        <WorkIntro
+          body={page.intro.bodyOverride}
+          eyebrow={page.intro.eyebrow}
+          summary={study.summaries?.medium || study.summaries?.short || study.summaries?.oneLine}
+          title={page.intro.title}
+        />
+      ) : null}
       {page.layout?.length ? (
         <RenderCaseStudyBlocks blocks={page.layout} page={page} study={study} />
       ) : null}

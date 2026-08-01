@@ -82,6 +82,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | CMS content migration from another system | `.agents/skills/cms-migration` |
 | WebGL / shaders / R3F / TSL / motion physics | `.agents/skills/creative-webgl-shaders` — use the **creative-webgl-shaders** skill |
 | Immersive effects — usage, defaults/presets contract | [docs/immersive-effects.md](docs/immersive-effects.md); Cursor rule `.cursor/rules/immersive-effects.mdc` |
+| CMS admin naming (tabs, groups, overrides, blocks) | [docs/cms-naming.md](docs/cms-naming.md) |
 | Cursor topic rules (security, fields, hooks, …) | `.cursor/rules/` |
 | Human DB docs | [README.md](README.md#database--migrations) |
 | Architecture | [docs/architecture.md](docs/architecture.md) |

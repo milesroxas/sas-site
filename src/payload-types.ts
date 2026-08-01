@@ -1256,6 +1256,10 @@ export interface WorkPage {
   hero?: {
     eyebrow?: string | null;
     /**
+     * Reveal the website-only override fields. Saved overrides still apply while hidden.
+     */
+    showOverrides?: boolean | null;
+    /**
      * Website-only. Leave empty to use the canonical title.
      */
     titleOverride?: string | null;
@@ -1275,6 +1279,7 @@ export interface WorkPage {
     theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
     mediaTreatment?: ('contained' | 'full-bleed' | 'floating' | 'background') | null;
   };
+  intro: WorkIntro;
   /**
    * Website composition only. Canonical narrative remains in the related Case Study Content record.
    */
@@ -1320,6 +1325,44 @@ export interface WorkPage {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * Full-screen introduction band rendered right after the hero. The body is the canonical case-study summary from the Content Hub.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkIntro".
+ */
+export interface WorkIntro {
+  /**
+   * Short label above the introduction copy, e.g. "Introduction".
+   */
+  eyebrow?: string | null;
+  /**
+   * Statement headline for the section.
+   */
+  title: string;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Website-only override for the canonical summary; canonical content is unchanged.
+   */
+  bodyOverride?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2247,6 +2290,10 @@ export interface LabPage {
   labProject: number | LabProject;
   hero?: {
     eyebrow?: string | null;
+    /**
+     * Reveal the website-only override fields. Saved overrides still apply while hidden.
+     */
+    showOverrides?: boolean | null;
     /**
      * Website-only. Leave empty to use the canonical title.
      */
@@ -3820,6 +3867,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
     | T
     | {
         eyebrow?: T;
+        showOverrides?: T;
         titleOverride?: T;
         summaryOverride?: T;
         media?: T;
@@ -3828,6 +3876,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         theme?: T;
         mediaTreatment?: T;
       };
+  intro?: T | WorkIntroSelect<T>;
   layout?:
     | T
     | {
@@ -3863,6 +3912,16 @@ export interface WorkPagesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkIntro_select".
+ */
+export interface WorkIntroSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  showOverrides?: T;
+  bodyOverride?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3972,6 +4031,7 @@ export interface LabPagesSelect<T extends boolean = true> {
     | T
     | {
         eyebrow?: T;
+        showOverrides?: T;
         titleOverride?: T;
         summaryOverride?: T;
         media?: T;

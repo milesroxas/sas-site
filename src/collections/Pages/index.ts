@@ -54,13 +54,14 @@ export const Pages: CollectionConfig<'pages'> = {
       tabs: [
         {
           fields: [hero],
-          label: 'Hero',
+          label: 'Opening',
         },
         {
           fields: [
             {
               name: 'layout',
               type: 'blocks',
+              label: 'Composition',
               blocks: pageLayoutBlocks,
               required: true,
               admin: {
@@ -68,7 +69,7 @@ export const Pages: CollectionConfig<'pages'> = {
               },
             },
           ],
-          label: 'Content',
+          label: 'Composition',
         },
         {
           name: 'meta',

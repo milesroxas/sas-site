@@ -142,7 +142,7 @@ export const Posts: CollectionConfig<'posts'> = {
               relationTo: 'categories',
             },
           ],
-          label: 'Meta',
+          label: 'Related & Categories',
         },
         {
           name: 'meta',

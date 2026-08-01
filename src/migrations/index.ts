@@ -23,6 +23,8 @@ import * as migration_20260729_202055_hero_title from './20260729_202055_hero_ti
 import * as migration_20260729_205254_home_global from './20260729_205254_home_global';
 import * as migration_20260730_191629_platforms_taxonomy from './20260730_191629_platforms_taxonomy';
 import * as migration_20260801_014735_work_hero_layouts_prune from './20260801_014735_work_hero_layouts_prune';
+import * as migration_20260801_022709_work_intro_overrides_toggle from './20260801_022709_work_intro_overrides_toggle';
+import * as migration_20260801_023936_lab_hero_overrides_toggle from './20260801_023936_lab_hero_overrides_toggle';
 
 export const migrations = [
   {
@@ -148,6 +150,16 @@ export const migrations = [
   {
     up: migration_20260801_014735_work_hero_layouts_prune.up,
     down: migration_20260801_014735_work_hero_layouts_prune.down,
-    name: '20260801_014735_work_hero_layouts_prune'
+    name: '20260801_014735_work_hero_layouts_prune',
+  },
+  {
+    up: migration_20260801_022709_work_intro_overrides_toggle.up,
+    down: migration_20260801_022709_work_intro_overrides_toggle.down,
+    name: '20260801_022709_work_intro_overrides_toggle',
+  },
+  {
+    up: migration_20260801_023936_lab_hero_overrides_toggle.up,
+    down: migration_20260801_023936_lab_hero_overrides_toggle.down,
+    name: '20260801_023936_lab_hero_overrides_toggle'
   },
 ];

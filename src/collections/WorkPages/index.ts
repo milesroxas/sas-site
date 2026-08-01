@@ -12,6 +12,7 @@ import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { caseStudyBlocks } from '@/blocks/case-study/config'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { overridesVisible, showOverridesField } from '@/fields/overrides'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { revalidateWorkPage, revalidateWorkPageDelete } from './hooks/revalidateWorkPage'
@@ -71,57 +72,117 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
           ],
         },
         {
-          label: 'Presentation',
+          label: 'Opening',
+          description: 'The full-screen opening of the page: hero, then the introduction band.',
           fields: [
             {
               name: 'hero',
               type: 'group',
               fields: [
-                { name: 'eyebrow', type: 'text' },
                 {
-                  name: 'titleOverride',
-                  type: 'text',
-                  admin: { description: 'Website-only. Leave empty to use the canonical title.' },
+                  type: 'collapsible',
+                  label: 'Content',
+                  fields: [
+                    { name: 'eyebrow', type: 'text' },
+                    showOverridesField(),
+                    {
+                      name: 'titleOverride',
+                      type: 'text',
+                      admin: {
+                        description: 'Website-only. Leave empty to use the canonical title.',
+                        condition: overridesVisible,
+                      },
+                    },
+                    {
+                      name: 'summaryOverride',
+                      type: 'textarea',
+                      admin: {
+                        description: 'Website-only. Leave empty to use the canonical summary.',
+                        condition: overridesVisible,
+                      },
+                    },
+                  ],
                 },
                 {
-                  name: 'summaryOverride',
-                  type: 'textarea',
-                  admin: { description: 'Website-only. Leave empty to use the canonical summary.' },
-                },
-                {
-                  name: 'media',
-                  type: 'upload',
-                  relationTo: 'media',
-                  filterOptions: caseStudyScopedMediaFilter,
-                },
-                browseAllMediaField(),
-                {
-                  name: 'layout',
-                  type: 'select',
-                  defaultValue: 'centered-media',
-                  options: ['centered-media', 'landscape'],
-                },
-                {
-                  name: 'theme',
-                  type: 'select',
-                  defaultValue: 'light',
-                  options: ['light', 'dark', 'neutral', 'brand'],
-                  admin: {
-                    description:
-                      'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
-                  },
-                },
-                {
-                  name: 'mediaTreatment',
-                  type: 'select',
-                  defaultValue: 'contained',
-                  options: ['contained', 'full-bleed', 'floating', 'background'],
+                  type: 'collapsible',
+                  label: 'Media & layout',
+                  fields: [
+                    {
+                      name: 'media',
+                      type: 'upload',
+                      relationTo: 'media',
+                      filterOptions: caseStudyScopedMediaFilter,
+                    },
+                    browseAllMediaField(),
+                    {
+                      name: 'layout',
+                      type: 'select',
+                      defaultValue: 'centered-media',
+                      options: ['centered-media', 'landscape'],
+                    },
+                    {
+                      name: 'theme',
+                      type: 'select',
+                      defaultValue: 'light',
+                      options: ['light', 'dark', 'neutral', 'brand'],
+                      admin: {
+                        description:
+                          'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
+                      },
+                    },
+                    {
+                      name: 'mediaTreatment',
+                      type: 'select',
+                      defaultValue: 'contained',
+                      options: ['contained', 'full-bleed', 'floating', 'background'],
+                    },
+                  ],
                 },
               ],
             },
             {
+              name: 'intro',
+              type: 'group',
+              interfaceName: 'WorkIntro',
+              admin: {
+                description:
+                  'Full-screen introduction band rendered right after the hero. The body is the canonical case-study summary from the Content Hub.',
+              },
+              fields: [
+                {
+                  name: 'eyebrow',
+                  type: 'text',
+                  admin: {
+                    description: 'Short label above the introduction copy, e.g. "Introduction".',
+                  },
+                },
+                {
+                  name: 'title',
+                  type: 'text',
+                  required: true,
+                  admin: { description: 'Statement headline for the section.' },
+                },
+                showOverridesField(),
+                {
+                  name: 'bodyOverride',
+                  type: 'richText',
+                  admin: {
+                    description:
+                      'Website-only override for the canonical summary; canonical content is unchanged.',
+                    condition: overridesVisible,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Composition',
+          fields: [
+            {
               name: 'layout',
               type: 'blocks',
+              label: 'Composition',
               blocks: caseStudyBlocks,
               admin: {
                 initCollapsed: true,

@@ -122,6 +122,7 @@ const createFixture = async (payload: Payload, suffix: string) => {
       slug: `canonical-${suffix}`,
       caseStudy: canonicalStudy.id,
       _status: 'published',
+      intro: { title: 'Canonical intro title' },
       layout: [
         {
           blockType: 'caseStudyStorySection',
@@ -153,6 +154,7 @@ const createFixture = async (payload: Payload, suffix: string) => {
       slug: `override-${suffix}`,
       caseStudy: overrideStudy.id,
       _status: 'published',
+      intro: { title: 'Override intro title' },
       hero: {
         titleOverride: 'Website override title',
         summaryOverride: 'Website override summary',
