@@ -1,16 +1,6 @@
-import type { Block, SelectField } from 'payload'
+import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
-
-const themeField: SelectField = {
-  name: 'theme',
-  type: 'select',
-  defaultValue: 'light',
-  options: ['light', 'dark', 'neutral', 'brand'],
-  admin: {
-    description:
-      'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
-  },
-}
 
 /**
  * Split layout: a narrow text column beside a large image, with the image
@@ -73,6 +63,6 @@ export const SplitContentNarrow: Block = {
       options: ['left', 'right'],
       admin: { description: 'Arrange the image on the left or the right of the text.' },
     },
-    themeField,
+    themeField(),
   ],
 }

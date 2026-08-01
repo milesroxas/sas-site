@@ -1,6 +1,8 @@
 'use client'
 
 import { DemoSection, DemoSettingsMenu, DemoSettingsProvider } from '@/shared/ui/demo-kit'
+import { TextLoadInPlayground } from './text-load-in-playground'
+import { TextLoadInRaymarchedPlayground } from './text-load-in-raymarched-playground'
 import { TransitionSimulator } from './transition-simulator'
 
 /** Every transition technique in production, where it fires, and what tags it. */
@@ -111,6 +113,32 @@ export function TransitionDemoPage() {
           }}
         >
           <TransitionSimulator />
+        </DemoSection>
+
+        <DemoSection
+          title="Text load-in"
+          description="A scroll-triggered reveal: the eyebrow decodes via scramble, the headline resolves through a smear shader that bleeds characters into each other, then the supporting line rises in. Edit the copy and replay it from the GUI."
+          paste={{
+            file: 'src/features/immersive/ui/text-load-in.tsx',
+            symbol: 'TextLoadIn',
+            format: 'props',
+            note: 'Reveal timing and smear settings. The copy stays at the call site.',
+          }}
+        >
+          <TextLoadInPlayground />
+        </DemoSection>
+
+        <DemoSection
+          title="Text load-in v2 — true raymarching"
+          description="The same reveal built on a real signed distance field: the headline is extruded and raymarched in 3D, a smooth-min front sweeps it into existence with metaball droplets lit by SDF-gradient normals, then hands off to the crisp DOM heading. Tune the SDF scene from the GUI."
+          paste={{
+            file: 'src/features/immersive/ui/text-load-in-raymarched.tsx',
+            symbol: 'TextLoadInRaymarched',
+            format: 'props',
+            note: 'SDF, droplet and timing settings. The copy stays at the call site.',
+          }}
+        >
+          <TextLoadInRaymarchedPlayground />
         </DemoSection>
 
         <section className="space-y-4 rounded-lg border border-border bg-card/80 p-4 backdrop-blur-sm sm:p-6">

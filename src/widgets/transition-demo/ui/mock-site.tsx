@@ -189,7 +189,7 @@ function MockScroller({ children }: { children: React.ReactNode }) {
 
   return (
     <ScrollArea
-      className="h-96 md:h-112"
+      className="h-[80vh]"
       viewportRef={viewportRef}
       viewportClassName="overscroll-contain"
     >

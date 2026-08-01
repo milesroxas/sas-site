@@ -4,6 +4,7 @@ import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feat
 import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/feature/ImageStatement/Component'
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
 import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component'
+import { ImagePair } from '@/blocks/image-pair/ImagePair'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
@@ -17,6 +18,7 @@ import type {
   CaseStudyTestimonialBlock,
   CaseStudyTransitionBlock,
   FeatureHeadingOffsetBlock,
+  ImagePairBlock,
   SplitContentNarrowBlock,
   Testimonial,
   WorkPage,
@@ -106,6 +108,25 @@ const SplitNarrow = ({ block, study }: { block: SplitContentNarrowBlock; study: 
   return (
     <RevealSection theme={block.theme}>
       <SplitContentNarrow bare block={block} content={content} media={media} />
+    </RevealSection>
+  )
+}
+
+const ImagePairSection = ({ block, study }: { block: ImagePairBlock; study: CaseStudy }) => {
+  const content =
+    block.source === 'custom' ? block.body : block.body || richTextSource(study, block.source)
+  const { landscapeMedia, portraitMedia } = block
+  if (typeof portraitMedia !== 'object' || !portraitMedia) return null
+  if (typeof landscapeMedia !== 'object' || !landscapeMedia) return null
+  return (
+    <RevealSection theme={block.theme}>
+      <ImagePair
+        bare
+        block={block}
+        content={content}
+        landscape={landscapeMedia}
+        portrait={portraitMedia}
+      />
     </RevealSection>
   )
 }
@@ -361,6 +382,8 @@ export const RenderCaseStudyBlocks = async ({
           return <StorySection block={block} key={block.id} study={study} />
         case 'splitContentNarrow':
           return <SplitNarrow block={block} key={block.id} study={study} />
+        case 'imagePair':
+          return <ImagePairSection block={block} key={block.id} study={study} />
         case 'caseStudyMediaShowcase':
           return <MediaShowcase block={block} key={block.id} />
         case 'caseStudyKeyDecisions':

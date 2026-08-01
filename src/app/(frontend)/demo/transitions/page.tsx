@@ -3,7 +3,7 @@ import { TransitionDemoPage } from '@/widgets/transition-demo'
 
 export default function TransitionDemoRoute() {
   return (
-    <article className="pt-16">
+    <article>
       <TransitionDemoPage />
     </article>
   )

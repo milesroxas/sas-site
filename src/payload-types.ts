@@ -1287,6 +1287,7 @@ export interface WorkPage {
     | (
         | CaseStudyStorySectionBlock
         | SplitContentNarrowBlock
+        | ImagePairBlock
         | CaseStudyMediaShowcaseBlock
         | CaseStudyKeyDecisionsBlock
         | CaseStudyMetricsBlock
@@ -1471,6 +1472,62 @@ export interface SplitContentNarrowBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'splitContentNarrow';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImagePairBlock".
+ */
+export interface ImagePairBlock {
+  /**
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Cropped to 4:5.
+   */
+  portraitMedia: number | Media;
+  /**
+   * Cropped to 16:10.
+   */
+  landscapeMedia: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Arrange the portrait on the left or the right; the landscape fills the other column. On small screens the left image stacks first.
+   */
+  portraitPosition?: ('left' | 'right') | null;
+  /**
+   * Which image the text sits under. Under the portrait it stays compact; under the landscape it runs larger and wider.
+   */
+  textPosition?: ('under-portrait' | 'under-landscape') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'imagePair';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3906,6 +3963,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
     | {
         caseStudyStorySection?: T | CaseStudyStorySectionBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        imagePair?: T | ImagePairBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
         caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
         caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
@@ -3962,6 +4020,23 @@ export interface CaseStudyStorySectionBlockSelect<T extends boolean = true> {
   layout?: T;
   theme?: T;
   width?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImagePairBlock_select".
+ */
+export interface ImagePairBlockSelect<T extends boolean = true> {
+  source?: T;
+  heading?: T;
+  body?: T;
+  portraitMedia?: T;
+  landscapeMedia?: T;
+  browseAllMedia?: T;
+  portraitPosition?: T;
+  textPosition?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }

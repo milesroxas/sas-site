@@ -1,21 +1,12 @@
-import type { Block, SelectField } from 'payload'
+import type { Block } from 'payload'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
+import { ImagePair } from '@/blocks/image-pair/config'
+import { themeField } from '@/blocks/shared/fields'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
-
-const themeField = (name = 'theme'): SelectField => ({
-  name,
-  type: 'select',
-  defaultValue: 'light',
-  options: ['light', 'dark', 'neutral', 'brand'],
-  admin: {
-    description:
-      'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
-  },
-})
 
 export const CaseStudyStorySection: Block = {
   slug: 'caseStudyStorySection',
@@ -210,6 +201,7 @@ export const CaseStudyRelatedWork: Block = {
 export const caseStudyBlocks = [
   CaseStudyStorySection,
   SplitContentNarrow,
+  ImagePair,
   CaseStudyMediaShowcase,
   CaseStudyKeyDecisions,
   CaseStudyMetrics,
