@@ -21,14 +21,17 @@ export const Platforms: CollectionConfig<'platforms'> = {
       name: 'name',
       type: 'text',
       required: true,
-      admin: { description: 'Public platform name, e.g. "Webflow". Use official product spelling.' },
+      admin: {
+        description: 'Public platform name, e.g. "Webflow". Use official product spelling.',
+      },
     },
     slugField({ fieldToUse: 'name' }),
     {
       name: 'description',
       type: 'textarea',
       admin: {
-        description: 'Optional. What this platform is and when we reach for it. May appear publicly.',
+        description:
+          'Optional. What this platform is and when we reach for it. May appear publicly.',
       },
     },
   ],

@@ -76,9 +76,7 @@ export const Default: Story = {}
 
 export const Video: Story = {
   args: {
-    tabs: meta.args.tabs.map((tab) =>
-      tab.media ? { ...tab, media: videoFixture } : tab,
-    ),
+    tabs: meta.args.tabs.map((tab) => (tab.media ? { ...tab, media: videoFixture } : tab)),
   },
 }
 

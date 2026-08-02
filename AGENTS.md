@@ -66,8 +66,6 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 
 ## Stack conventions
 
-- Package manager: **pnpm**.
-- Layout: `src/collections`, `src/globals`, `src/access`, `src/hooks`, `src/app/(frontend)`, `src/app/(payload)`, `src/payload.config.ts`.
 - Prefer server components; client components only for state/effects/browser APIs.
 - Admin custom components: file paths relative to importMap `baseDir` (not direct imports in config).
 - Drafts: use `versions.drafts` / `_status`; don’t invent a parallel publish `status` field unless the codebase already has one for that collection.

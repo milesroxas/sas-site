@@ -156,7 +156,8 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
                   type: 'text',
                   required: true,
                   admin: {
-                    description: 'Stable id (e.g. organize-around-user-intent). Do not rename later.',
+                    description:
+                      'Stable id (e.g. organize-around-user-intent). Do not rename later.',
                   },
                 },
                 { name: 'title', type: 'text', required: true },
@@ -259,7 +260,8 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
                   name: 'qualifier',
                   type: 'text',
                   admin: {
-                    description: 'Caveat (e.g. estimated). Needed with or instead of source when public.',
+                    description:
+                      'Caveat (e.g. estimated). Needed with or instead of source when public.',
                   },
                 },
                 {
@@ -285,7 +287,8 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
                   type: 'checkbox',
                   defaultValue: false,
                   admin: {
-                    description: 'Must be checked to appear publicly. Needs label, value, and source or qualifier.',
+                    description:
+                      'Must be checked to appear publicly. Needs label, value, and source or qualifier.',
                   },
                 },
                 {

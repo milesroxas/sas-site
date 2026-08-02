@@ -72,7 +72,9 @@ export const Media: CollectionConfig = {
     {
       name: 'title',
       type: 'text',
-      admin: { description: 'Human-readable label in the admin. Defaults to the filename if empty.' },
+      admin: {
+        description: 'Human-readable label in the admin. Defaults to the filename if empty.',
+      },
     },
     {
       name: 'alt',
@@ -89,7 +91,9 @@ export const Media: CollectionConfig = {
     {
       name: 'caption',
       type: 'richText',
-      admin: { description: 'Optional on-image or below-image caption when the asset is displayed.' },
+      admin: {
+        description: 'Optional on-image or below-image caption when the asset is displayed.',
+      },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [...rootFeatures, FixedToolbarFeature(), InlineToolbarFeature()]

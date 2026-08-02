@@ -1,8 +1,8 @@
 'use client'
 
 import { DemoSection, DemoSettingsMenu, DemoSettingsProvider } from '@/shared/ui/demo-kit'
-import { ScrollRevealMediaPlayground } from './scroll-reveal-media-playground'
-import { ScrollRevealTextPlayground } from './scroll-reveal-text-playground'
+import { ScrollRevealIntroPlayground } from './scroll-reveal-intro-playground'
+import { ScrollRevealUnderMediaPlayground } from './scroll-reveal-under-media-playground'
 import { TextLoadInPlayground } from './text-load-in-playground'
 import { TextLoadInRaymarchedPlayground } from './text-load-in-raymarched-playground'
 import { TransitionSimulator } from './transition-simulator'
@@ -144,29 +144,29 @@ export function TransitionDemoPage() {
         </DemoSection>
 
         <DemoSection
-          title="Section text reveal"
-          description="The production entrance for content blocks: descendants marked data-reveal rise into place with a blur settle, staggered in document order, and reverse out when the section leaves the viewport. Split-content, image-pair and the feature blocks all inherit these exact values — dial them here, copy, and every block updates."
+          title="Reveal — intro / text only"
+          description="The complete reveal for introduction and text-only blocks: descendants marked data-reveal rise into place with a blur settle, staggered in document order, and reverse out when the section leaves the viewport. This reveal is owned whole — tuning it never touches the media + text reveal. The timeline below plots exactly when each line starts."
           paste={{
             file: 'src/shared/ui/scroll-reveal/scroll-reveal.tsx',
-            symbol: 'SCROLL_REVEAL_TEXT_DEFAULTS',
+            symbol: 'SCROLL_REVEAL_INTRO',
             format: 'object',
-            note: 'Site-standard text entrance. Every data-reveal target reads these.',
+            note: 'The whole intro reveal. Every block tagged variant="intro" reads these.',
           }}
         >
-          <ScrollRevealTextPlayground />
+          <ScrollRevealIntroPlayground />
         </DemoSection>
 
         <DemoSection
-          title="Section media reveal"
-          description="The sibling entrance for images and video: data-reveal='media' targets fade in while their scale settles to rest — no blur, which is expensive to composite on large media. Runs on the same per-section timeline and viewport gate as the text reveal."
+          title="Reveal — media + text"
+          description="The complete reveal for copy paired with media: the container is a clipped window — the mask wipes open from the top while the content settles down from a zoom behind it (no fade or blur, expensive to composite on large media) — and the text runs on its own track with its own stagger. The sync offset decides whether the tracks overlap or run sequentially. Preview it stacked or beside the copy (image left / right), with your own image or video like the immersive demos. The timeline below plots both tracks."
           paste={{
             file: 'src/shared/ui/scroll-reveal/scroll-reveal.tsx',
-            symbol: 'SCROLL_REVEAL_MEDIA_DEFAULTS',
+            symbol: 'SCROLL_REVEAL_UNDER_MEDIA',
             format: 'object',
-            note: 'Site-standard media entrance. Every data-reveal="media" target reads these.',
+            note: 'The whole under-media reveal. Every block tagged variant="underMedia" reads these.',
           }}
         >
-          <ScrollRevealMediaPlayground />
+          <ScrollRevealUnderMediaPlayground />
         </DemoSection>
 
         <section className="space-y-4 rounded-lg border border-border bg-card/80 p-4 backdrop-blur-sm sm:p-6">

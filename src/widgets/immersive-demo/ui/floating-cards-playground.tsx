@@ -6,11 +6,8 @@ import {
   FloatingCards,
   type FloatingCardsEase,
 } from '@/features/immersive'
-import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
+import { DEMO_IMAGE_SRC, useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
 import { cn } from '@/utilities/ui'
-
-/** Default lives in /public; the GUI upload swaps in a blob URL. */
-const DEFAULT_IMAGE = '/images/bg-fpo-01.jpg'
 
 const EASES: FloatingCardsEase[] = ['expo.out', 'power3.out', 'back.out', 'sine.out']
 
@@ -96,7 +93,7 @@ export function FloatingCardsPlayground() {
     ease: { value: DEFAULTS.ease as FloatingCardsEase, options: EASES },
   })
 
-  const cards = CARD_LAYOUT.map((layout) => ({ ...layout, src: image ?? DEFAULT_IMAGE }))
+  const cards = CARD_LAYOUT.map((layout) => ({ ...layout, src: image ?? DEMO_IMAGE_SRC }))
 
   // Cards stay out: the consumer supplies its own layout and screenshots.
   useDemoSnippet({

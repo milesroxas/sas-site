@@ -6,17 +6,13 @@ import {
   HERO_LENS,
   RefractionMedia,
 } from '@/features/immersive'
-import { useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
-import { useVideoUpload } from './use-video-upload'
-
-/** Default lives in /public; the GUI upload swaps in a blob URL. */
-const DEFAULT_IMAGE = '/images/bg-fpo-01.jpg'
-/**
- * The home hero's gradient video (media #22), through the same-origin Payload
- * proxy — the R2 custom domain sends no CORS headers, so sampling it
- * cross-origin would taint the WebGL canvas.
- */
-const DEFAULT_VIDEO = '/api/media/file/Gradient%20Animation_converted-1.mp4'
+import {
+  DEMO_IMAGE_SRC,
+  DEMO_VIDEO_SRC,
+  useDemoControls,
+  useDemoSnippet,
+  useVideoUpload,
+} from '@/shared/ui/demo-kit'
 
 /**
  * Demo content: RefractionMedia with every shader parameter wired to the
@@ -33,7 +29,7 @@ export function RefractionPlayground() {
       render: (get) => get('Media.media') === 'image',
     },
     videoUrl: {
-      value: DEFAULT_VIDEO,
+      value: DEMO_VIDEO_SRC,
       label: 'video url',
       render: (get) => get('Media.media') === 'video',
     },
@@ -225,7 +221,7 @@ export function RefractionPlayground() {
 
   return (
     <RefractionMedia
-      src={isVideo ? videoUrl : (image ?? DEFAULT_IMAGE)}
+      src={isVideo ? videoUrl : (image ?? DEMO_IMAGE_SRC)}
       video={isVideo}
       spread={spread}
       feather={feather}

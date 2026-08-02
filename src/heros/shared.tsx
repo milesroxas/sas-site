@@ -45,7 +45,5 @@ export const HeroDescription: React.FC<{ description: Hero['description'] }> = (
   description,
 }) => {
   if (!description) return null
-  return (
-    <p className="max-w-sm text-base leading-relaxed text-muted-foreground">{description}</p>
-  )
+  return <p className="max-w-sm text-base leading-relaxed text-muted-foreground">{description}</p>
 }

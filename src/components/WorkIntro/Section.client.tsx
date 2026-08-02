@@ -4,13 +4,25 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { type ReactNode, useRef } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
-import { SCROLL_REVEAL_TRIGGER_DEFAULTS } from '@/shared/ui/scroll-reveal'
+import { SCROLL_REVEAL_INTRO, SCROLL_REVEAL_TRIGGER_DEFAULTS } from '@/shared/ui/scroll-reveal'
 
 gsap.registerPlugin(useGSAP)
 
 /** Shared viewport gate — same enter fraction and exit speed as every reveal shell. */
 const { enterThreshold: ENTER_THRESHOLD, exitTimeScale: EXIT_TIME_SCALE } =
   SCROLL_REVEAL_TRIGGER_DEFAULTS
+
+/**
+ * The choreography here is bespoke (title leads, eyebrow and body follow on
+ * their own offsets), but this is the site's introduction moment — every value
+ * the intro reveal also owns is imported from it, not restated.
+ */
+const {
+  textEase: EASE,
+  textDuration: TITLE_DURATION,
+  textBlurPx: BODY_BLUR_PX,
+  stagger: BODY_STAGGER,
+} = SCROLL_REVEAL_INTRO
 
 /**
  * Full-screen shell for the work intro. Copy drops into place when the band
@@ -36,18 +48,18 @@ export function WorkIntroSection({ children }: { children: ReactNode }) {
         return
       }
 
-      const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } })
+      const tl = gsap.timeline({ paused: true, defaults: { ease: EASE } })
       tl.fromTo(
         title,
         { autoAlpha: 0, y: -32, filter: 'blur(8px)' },
-        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.9 },
+        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: TITLE_DURATION },
         0,
       )
       tl.fromTo(eyebrow, { autoAlpha: 0, y: -12 }, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.3)
       tl.fromTo(
         paragraphs,
-        { autoAlpha: 0, y: -24, filter: 'blur(6px)' },
-        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.8, stagger: 0.12 },
+        { autoAlpha: 0, y: -24, filter: `blur(${BODY_BLUR_PX}px)` },
+        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.8, stagger: BODY_STAGGER },
         0.4,
       )
 

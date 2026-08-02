@@ -8,11 +8,16 @@ const idOf = (value: unknown): number | string | null => {
   return null
 }
 
+// Every upload field on a layout block ends in "media" (media, portraitMedia,
+// largeMedia, …); non-upload matches like browseAllMedia are booleans and fall
+// out of the later idOf() pass.
 const blockMedia = (layout: WorkPage['layout']) =>
-  (layout || []).flatMap((block) => {
-    if (!('media' in block) || !block.media) return []
-    return Array.isArray(block.media) ? block.media : [block.media]
-  })
+  (layout || []).flatMap((block) =>
+    Object.entries(block).flatMap(([key, value]) => {
+      if (!/media$/i.test(key) || !value) return []
+      return Array.isArray(value) ? value : [value]
+    }),
+  )
 
 export const validateWorkPage: CollectionBeforeValidateHook<WorkPage> = async ({
   data,

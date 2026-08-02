@@ -6,6 +6,7 @@ import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { ImagePair } from '@/blocks/image-pair/config'
 import { themeField } from '@/blocks/shared/fields'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
+import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 
 export const CaseStudyStorySection: Block = {
@@ -202,6 +203,7 @@ export const caseStudyBlocks = [
   CaseStudyStorySection,
   SplitContentNarrow,
   ImagePair,
+  SplitImageOffset,
   CaseStudyMediaShowcase,
   CaseStudyKeyDecisions,
   CaseStudyMetrics,

@@ -6,6 +6,7 @@ import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feat
 import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
+import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type {
@@ -20,6 +21,7 @@ import type {
   FeatureHeadingOffsetBlock,
   ImagePairBlock,
   SplitContentNarrowBlock,
+  SplitImageOffsetBlock,
   Testimonial,
   WorkPage,
 } from '@/payload-types'
@@ -68,8 +70,9 @@ const StorySection = ({
   if (!content) return null
   const width =
     block.width === 'narrow' ? 'max-w-3xl' : block.width === 'wide' ? 'max-w-7xl' : 'max-w-5xl'
+  const hasMedia = Boolean(block.media && typeof block.media === 'object')
   return (
-    <RevealSection theme={block.theme}>
+    <RevealSection theme={block.theme} variant={hasMedia ? 'underMedia' : 'intro'}>
       <div
         className={cn(
           'container mx-auto grid gap-10',
@@ -106,7 +109,7 @@ const SplitNarrow = ({ block, study }: { block: SplitContentNarrowBlock; study: 
   const media = block.media
   if (typeof media !== 'object' || !media) return null
   return (
-    <RevealSection theme={block.theme}>
+    <RevealSection theme={block.theme} variant="underMedia">
       <SplitContentNarrow bare block={block} content={content} media={media} />
     </RevealSection>
   )
@@ -119,13 +122,38 @@ const ImagePairSection = ({ block, study }: { block: ImagePairBlock; study: Case
   if (typeof portraitMedia !== 'object' || !portraitMedia) return null
   if (typeof landscapeMedia !== 'object' || !landscapeMedia) return null
   return (
-    <RevealSection theme={block.theme}>
+    <RevealSection theme={block.theme} variant="underMedia">
       <ImagePair
         bare
         block={block}
         content={content}
         landscape={landscapeMedia}
         portrait={portraitMedia}
+      />
+    </RevealSection>
+  )
+}
+
+const SplitImageOffsetSection = ({
+  block,
+  study,
+}: {
+  block: SplitImageOffsetBlock
+  study: CaseStudy
+}) => {
+  const content =
+    block.source === 'custom' ? block.body : block.body || richTextSource(study, block.source)
+  const { largeMedia, smallMedia } = block
+  if (typeof largeMedia !== 'object' || !largeMedia) return null
+  if (typeof smallMedia !== 'object' || !smallMedia) return null
+  return (
+    <RevealSection theme={block.theme} variant="underMedia">
+      <SplitImageOffset
+        bare
+        block={block}
+        content={content}
+        large={largeMedia}
+        small={smallMedia}
       />
     </RevealSection>
   )
@@ -138,7 +166,7 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
     ) || []
   if (!media.length) return null
   return (
-    <RevealSection theme={block.theme}>
+    <RevealSection theme={block.theme} variant="underMedia">
       <div className="container mx-auto">
         {block.heading && (
           <h2 className="mb-6 text-3xl font-normal md:text-5xl" data-reveal>
@@ -196,7 +224,7 @@ const KeyDecisions = ({
   )
   if (!decisions.length) return null
   return (
-    <RevealSection theme={block.theme}>
+    <RevealSection theme={block.theme} variant="intro">
       <div className="container mx-auto">
         <h2 className="mb-8 text-3xl font-normal md:text-5xl" data-reveal>
           {block.heading || 'Key decisions'}
@@ -226,7 +254,7 @@ const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseSt
   )
   if (!metrics.length) return null
   return (
-    <RevealSection theme={block.theme}>
+    <RevealSection theme={block.theme} variant="intro">
       <div className="container mx-auto">
         <h2 className="mb-8 text-3xl font-normal md:text-5xl" data-reveal>
           {block.heading || 'Results'}
@@ -258,8 +286,11 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
     typeof block.testimonial === 'object' ? (block.testimonial as Testimonial) : null
   if (testimonial?._status !== 'published' || testimonial.approvalStatus !== 'approved-public')
     return null
+  const hasPortrait = Boolean(
+    block.showPortrait && testimonial.portrait && typeof testimonial.portrait === 'object',
+  )
   return (
-    <RevealSection theme={block.theme}>
+    <RevealSection theme={block.theme} variant={hasPortrait ? 'underMedia' : 'intro'}>
       <figure className="container mx-auto max-w-4xl text-center">
         {block.showPortrait && testimonial.portrait && typeof testimonial.portrait === 'object' && (
           <div data-reveal="media">
@@ -288,7 +319,7 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
 }
 
 const Transition = ({ block }: { block: CaseStudyTransitionBlock }) => (
-  <RevealSection theme={block.theme}>
+  <RevealSection theme={block.theme} variant="intro">
     <div className="container mx-auto max-w-5xl text-center">
       {block.eyebrow && (
         <p className="mb-3 text-sm uppercase tracking-[0.2em]" data-reveal>
@@ -344,7 +375,7 @@ const RelatedWork = async ({
   pages = pages.slice(0, block.limit || 3)
   if (!pages.length) return null
   return (
-    <RevealSection>
+    <RevealSection variant="intro">
       <div className="container mx-auto">
         <h2 className="mb-8 text-3xl font-normal md:text-5xl" data-reveal>
           {block.heading || 'Related work'}
@@ -384,6 +415,8 @@ export const RenderCaseStudyBlocks = async ({
           return <SplitNarrow block={block} key={block.id} study={study} />
         case 'imagePair':
           return <ImagePairSection block={block} key={block.id} study={study} />
+        case 'splitImageOffset':
+          return <SplitImageOffsetSection block={block} key={block.id} study={study} />
         case 'caseStudyMediaShowcase':
           return <MediaShowcase block={block} key={block.id} />
         case 'caseStudyKeyDecisions':
@@ -398,7 +431,7 @@ export const RenderCaseStudyBlocks = async ({
           return <RelatedWork block={block} key={block.id} page={page} study={study} />
         case 'featureHeadingOffset':
           return (
-            <RevealSection as="div" key={block.id}>
+            <RevealSection as="div" key={block.id} variant="intro">
               <FeatureHeadingOffset
                 {...block}
                 body={resolveFeatureBody(block.body, block.source, study)}
@@ -407,7 +440,7 @@ export const RenderCaseStudyBlocks = async ({
           )
         case 'featureStatementGrid':
           return (
-            <RevealSection as="div" key={block.id}>
+            <RevealSection as="div" key={block.id} variant="intro">
               <FeatureStatementGrid
                 {...block}
                 statement={resolveFeatureBody(block.statement, block.source, study)}
@@ -416,7 +449,7 @@ export const RenderCaseStudyBlocks = async ({
           )
         case 'featureImageStatement':
           return (
-            <RevealSection as="div" key={block.id}>
+            <RevealSection as="div" key={block.id} variant="underMedia">
               <FeatureImageStatement
                 {...block}
                 caption={resolveFeatureBody(block.caption, block.source, study)}
@@ -425,7 +458,7 @@ export const RenderCaseStudyBlocks = async ({
           )
         case 'featureTabs':
           return (
-            <RevealSection as="div" key={block.id}>
+            <RevealSection as="div" key={block.id} variant="intro">
               <FeatureTabs
                 {...block}
                 tabs={(block.tabs || []).map((tab) => ({
