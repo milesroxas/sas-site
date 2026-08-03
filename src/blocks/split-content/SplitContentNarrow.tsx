@@ -48,6 +48,7 @@ export const SplitContentNarrow = ({
         >
           <Media
             fill
+            htmlElement={null}
             imgClassName="object-cover"
             resource={media}
             size="(max-width: 768px) 100vw, 72vw"

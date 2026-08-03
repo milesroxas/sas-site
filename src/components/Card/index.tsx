@@ -1,8 +1,10 @@
 'use client'
+import { IconArrowRight, IconColorSwatch } from '@tabler/icons-react'
 import Link from 'next/link'
 import type React from 'react'
 import { Fragment, ViewTransition } from 'react'
 import { Media } from '@/components/Media'
+import { Badge } from '@/components/ui/badge'
 import {
   CardContent,
   CardDescription,
@@ -24,6 +26,8 @@ export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title'> 
 const variantClassNames: Record<CardVariant, string> = {
   contained: '',
   open: 'rounded-none bg-transparent ring-0',
+  // Split renders its own layout branch; no CardUi chrome to override.
+  split: '',
   overlay: 'relative min-h-80 justify-end bg-muted ring-0 text-white',
 }
 
@@ -56,6 +60,65 @@ export const Card: React.FC<{
 
   const isOpen = variant === 'open'
   const isOverlay = variant === 'overlay'
+
+  if (variant === 'split') {
+    const firstCategory = hasCategories
+      ? categories.find((category) => typeof category === 'object')
+      : undefined
+
+    const splitMedia = metaImage && typeof metaImage !== 'string' && (
+      <Media fill imgClassName="object-cover" resource={metaImage} size="256px" />
+    )
+
+    return (
+      <div className={cn('group flex cursor-pointer gap-3', className)} ref={card.ref}>
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            {titleToUse && (
+              <h3 className="text-xl font-normal md:text-lg lg:text-xl">
+                <Link
+                  className="hover:underline"
+                  href={href}
+                  ref={link.ref}
+                  transitionTypes={[...forwardNavTransitionTypes]}
+                >
+                  {titleToUse}
+                </Link>
+              </h3>
+            )}
+            {sanitizedDescription && (
+              <p className="text-base text-muted-foreground md:text-sm lg:text-base">
+                {sanitizedDescription}
+              </p>
+            )}
+          </div>
+          {/* Decorative affordance — the title link (and clickable card) carry navigation. */}
+          <span aria-hidden className="flex items-center gap-1 text-xs font-medium">
+            Read more
+            <IconArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </div>
+        <div className="relative min-w-0 max-w-64 flex-1">
+          <div className="relative aspect-4/5 overflow-hidden rounded-xs bg-muted">
+            {splitMedia &&
+              (slug ? (
+                <ViewTransition default="none" name={postImageVtName(slug)} share="morph">
+                  {splitMedia}
+                </ViewTransition>
+              ) : (
+                splitMedia
+              ))}
+          </div>
+          {showCategories && firstCategory && (
+            <Badge className="absolute top-3 right-3" variant="secondary">
+              <IconColorSwatch />
+              {firstCategory.title || 'Untitled category'}
+            </Badge>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   const media = metaImage && typeof metaImage !== 'string' && (
     <Media

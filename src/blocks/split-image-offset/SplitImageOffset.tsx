@@ -48,6 +48,7 @@ export const SplitImageOffset = ({
         >
           <Media
             fill
+            htmlElement={null}
             imgClassName="object-cover"
             resource={large}
             size="(max-width: 768px) 100vw, 60vw"
@@ -65,6 +66,7 @@ export const SplitImageOffset = ({
           >
             <Media
               fill
+              htmlElement={null}
               imgClassName="object-cover"
               resource={small}
               size="(max-width: 768px) 80vw, 30vw"

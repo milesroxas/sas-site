@@ -15,7 +15,7 @@ export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProp
   return (
     <section className={cn('flex flex-col gap-6', !fullBleed && 'container')}>
       <div className="relative aspect-3/2 w-full bg-muted md:aspect-21/9" data-reveal="media">
-        <Media fill imgClassName="object-cover" resource={media} size="100vw" />
+        <Media fill htmlElement={null} imgClassName="object-cover" resource={media} size="100vw" />
       </div>
       <div
         className={cn(

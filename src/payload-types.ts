@@ -2148,7 +2148,7 @@ export interface ArchiveBlock {
   /**
    * How each post card renders in this archive.
    */
-  cardVariant?: ('contained' | 'open' | 'overlay') | null;
+  cardVariant?: ('contained' | 'open' | 'overlay' | 'split') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'archive';

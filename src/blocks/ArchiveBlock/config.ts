@@ -92,7 +92,7 @@ export const Archive: Block = {
       admin: {
         description: 'How each post card renders in this archive.',
       },
-      defaultValue: 'contained',
+      defaultValue: 'split',
       label: 'Card Style',
       options: CARD_VARIANTS.map((variant) => ({
         label: CARD_VARIANT_LABELS[variant],

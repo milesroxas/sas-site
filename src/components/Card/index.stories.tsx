@@ -47,6 +47,15 @@ export const Overlay: Story = {
   render: renderInColumn,
 }
 
+export const Split: Story = {
+  args: { variant: 'split' },
+  render: (args) => (
+    <div className="w-100">
+      <Card {...args} />
+    </div>
+  ),
+}
+
 export const Video: Story = {
   args: {
     variant: 'contained',

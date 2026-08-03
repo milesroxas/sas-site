@@ -35,6 +35,7 @@ export const ImagePair = ({
     >
       <Media
         fill
+        htmlElement={null}
         imgClassName="object-cover"
         resource={portrait}
         size="(max-width: 768px) 100vw, 33vw"
@@ -51,6 +52,7 @@ export const ImagePair = ({
     >
       <Media
         fill
+        htmlElement={null}
         imgClassName="object-cover"
         resource={landscape}
         size="(max-width: 768px) 100vw, 66vw"

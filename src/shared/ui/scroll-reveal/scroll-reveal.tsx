@@ -31,6 +31,12 @@ export type ScrollRevealTuning = {
    * Scale the media content settles down from during the wipe: the
    * `data-reveal="media"` container is a clipped window (its mask holds the
    * frame) while its first child zooms out to rest. 1 = no scale.
+   *
+   * The first child must own the window's full box (be in-flow with size, or
+   * `absolute inset-0` against the container). The scale transform makes it
+   * the containing block for absolutely-positioned descendants, so a zero-size
+   * static wrapper (e.g. `<Media fill>`'s default div — pass
+   * `htmlElement={null}` instead) collapses the media to nothing.
    */
   mediaScaleFrom?: number
   /**
