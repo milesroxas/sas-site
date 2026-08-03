@@ -39,29 +39,40 @@ export function WorkIntroSection({ children }: { children: ReactNode }) {
       const root = rootRef.current
       if (!root) return
 
-      const title = '[data-intro-title]'
-      const eyebrow = '[data-intro-eyebrow]'
-      const paragraphs = '[data-intro-body] p'
+      // Resolve optional nodes from the scoped root — eyebrow/body are often absent.
+      const title = root.querySelector<HTMLElement>('[data-intro-title]')
+      const eyebrow = root.querySelector<HTMLElement>('[data-intro-eyebrow]')
+      const paragraphs = root.querySelectorAll<HTMLElement>('[data-intro-body] p')
+      const targets = [title, eyebrow, ...paragraphs].filter(
+        (el): el is HTMLElement => el != null,
+      )
+      if (!targets.length) return
 
       if (prefersReducedMotion) {
-        gsap.set([title, eyebrow, paragraphs], { clearProps: 'all' })
+        gsap.set(targets, { clearProps: 'all' })
         return
       }
 
       const tl = gsap.timeline({ paused: true, defaults: { ease: EASE } })
-      tl.fromTo(
-        title,
-        { autoAlpha: 0, y: -32, filter: 'blur(8px)' },
-        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: TITLE_DURATION },
-        0,
-      )
-      tl.fromTo(eyebrow, { autoAlpha: 0, y: -12 }, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.3)
-      tl.fromTo(
-        paragraphs,
-        { autoAlpha: 0, y: -24, filter: `blur(${BODY_BLUR_PX}px)` },
-        { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.8, stagger: BODY_STAGGER },
-        0.4,
-      )
+      if (title) {
+        tl.fromTo(
+          title,
+          { autoAlpha: 0, y: -32, filter: 'blur(8px)' },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: TITLE_DURATION },
+          0,
+        )
+      }
+      if (eyebrow) {
+        tl.fromTo(eyebrow, { autoAlpha: 0, y: -12 }, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.3)
+      }
+      if (paragraphs.length) {
+        tl.fromTo(
+          paragraphs,
+          { autoAlpha: 0, y: -24, filter: `blur(${BODY_BLUR_PX}px)` },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.8, stagger: BODY_STAGGER },
+          0.4,
+        )
+      }
 
       const observer = new IntersectionObserver(
         ([entry]) => {
