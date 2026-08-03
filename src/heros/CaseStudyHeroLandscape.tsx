@@ -22,9 +22,9 @@ const DetailGroup = ({ label, values }: { label: string; values: string[] }) => 
 )
 
 /**
- * `landscape` hero layout: headline and detail columns (client, industry,
- * capabilities) share the top band, then a full-width landscape media strip —
- * 21:9 on large screens, 5:4 below. Flows with the page; no summary.
+ * `landscape` hero layout: title on its own row, then detail columns (client,
+ * industry, capabilities) right-aligned on the next — guttered top band, then
+ * an edge-to-edge landscape media strip (21:9 lg / 5:4 below). No summary.
  */
 export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study: CaseStudy }) => {
   const project = typeof study.project === 'object' ? (study.project as Project) : null
@@ -40,12 +40,12 @@ export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study:
   const client = organization?.name || organization?.shortName
 
   return (
-    <header className="container flex flex-col gap-20 pt-16 pb-16 md:gap-32 md:pt-20 lg:gap-8">
-      <div className="flex flex-col gap-10 md:gap-32 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+    <header className="flex flex-col gap-20 pt-16 pb-16 md:gap-32 lg:gap-8 lg:pt-32">
+      <div className="container flex flex-col gap-10 md:gap-32 lg:gap-8 lg:pb-4">
         <h1 className="max-w-xl font-heading text-3xl/9 font-normal tracking-tight text-foreground md:text-5xl/12">
           {page.hero?.titleOverride || study.title}
         </h1>
-        <dl className="flex flex-col gap-8 md:flex-row md:gap-20 lg:shrink-0 lg:gap-12 lg:justify-end xl:gap-20">
+        <dl className="flex flex-col gap-8 md:flex-row md:gap-20 lg:gap-12 lg:self-end xl:gap-20">
           {client && <DetailGroup label="Client" values={[client]} />}
           {industries.length > 0 && (
             <DetailGroup
@@ -60,6 +60,7 @@ export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study:
         <Media
           priority
           resource={media}
+          size="100vw"
           imgClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
           videoClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
         />
