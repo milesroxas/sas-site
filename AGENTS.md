@@ -29,6 +29,7 @@ Keep this file short. Deep Payload reference lives in skills and `.cursor/rules/
 3. Regenerate types/import maps if needed (allowed without asking).
 4. Ask before `pnpm migrate:create`. On approval, review and commit `.ts` + `.json` together. CI (`pnpm ci`) applies to production.
 5. Prefer `migrate:create` (after approval) over hand-written schema migrations.
+6. After generating/editing a migration, run `pnpm check:migrations`. **Never ship** `ALTER TYPE ... ADD VALUE 'x'` plus use of `'x'` (e.g. `SET DEFAULT`) in the same `up()` — Payload runs migrations in a transaction and Postgres rejects that (`unsafe use of new value`). Recreate the enum in one migration, or split ADD VALUE and use across two migrations. Details: `.cursor/rules/database-migrations.mdc`.
 
 ### Required: create / rename prompt answers
 

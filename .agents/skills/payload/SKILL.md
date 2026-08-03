@@ -413,6 +413,7 @@ src/
 - **Never** run `payload migrate` locally (corrupts the push/migration ledger).
 - After schema changes: update config, let `pnpm dev` push locally, regenerate types/importmap if needed, then **ask** before creating a migration.
 - **When finishing schema-impacting work**, always tell the user which **create vs rename** answers to pick for each expected `migrate:create` prompt (or state that none are expected). Renamed entity → rename; brand-new → create.
+- **Enum pitfall:** after `migrate:create`, run `pnpm check:migrations`. Never leave `ALTER TYPE ... ADD VALUE 'x'` plus use of `'x'` (e.g. `SET DEFAULT`) in the same `up()` — Payload transactions + Postgres = deploy failure. Recreate the enum, or split across two migrations.
 
 ## Building & Type Generation
 

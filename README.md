@@ -192,6 +192,7 @@ Globals: `header`, `footer`. Each Work Page presents exactly one Case Study (uni
 | `pnpm generate:types` | Regenerate `payload-types.ts` |
 | `pnpm generate:importmap` | Regenerate admin `importMap.js` |
 | `pnpm migrate:create` | Generate a migration file from the schema diff (review + commit) |
+| `pnpm check:migrations` | Static check — fails if a migration `ADD VALUE`s an enum label and uses it in the same `up()` |
 | `pnpm migrate:status` | Read-only — reports the **production** migration ledger |
 | `pnpm payload` | Payload CLI (e.g. `pnpm payload generate:db-schema`) |
 | `pnpm lint` / `pnpm lint:fix` | Biome check / fix |
@@ -209,14 +210,28 @@ The workflow follows Payload's recommended split: **push in dev, migrations in C
 **Production:** migrations are the only writer of the production schema and the `payload_migrations` ledger. They run exclusively in CI via `pnpm ci` (`payload migrate && pnpm build`).
 
 ```bash
-pnpm migrate:create   # after schema changes — generates a migration file to review + commit
-pnpm migrate:status   # read-only — reports the PRODUCTION ledger (see note below)
+pnpm migrate:create     # after schema changes — generates a migration file to review + commit
+pnpm check:migrations   # after migrate:create — catches unsafe enum ADD VALUE + use in one up()
+pnpm migrate:status     # read-only — reports the PRODUCTION ledger (see note below)
 # `payload migrate` is run only by `pnpm ci` in the deploy pipeline — do not run it by hand.
 ```
 
 `pnpm migrate:status` always targets **production** (via `.env.production.pulled`), because the local push DB has no meaningful ledger. "No" = a committed migration not yet deployed; "Yes" = applied by CI. Use it before a deploy (expect your new migration "No") and after (expect "Yes"). Needs the Vercel-pulled prod env — run the dev TUI's "Pull Vercel production env" first if it is missing.
 
-**Flow:** change config → `pnpm dev` (push syncs local) → `pnpm migrate:create` → review SQL → commit `.ts` + `.json` together → CI applies on deploy.
+**Flow:** change config → `pnpm dev` (push syncs local) → `pnpm migrate:create` → review SQL → `pnpm check:migrations` → commit `.ts` + `.json` together → CI applies on deploy.
+
+#### Postgres enum `ADD VALUE`
+
+Payload runs each migration inside a **transaction**. Postgres will not let you use a label added with `ALTER TYPE ... ADD VALUE` until that transaction commits (`unsafe use of new value` on Neon/Vercel).
+
+`migrate:create` often emits both in one file when you add a select option and change its default:
+
+```sql
+ALTER TYPE ... ADD VALUE 'split';
+ALTER TABLE ... ALTER COLUMN ... SET DEFAULT 'split';  -- fails in the same transaction
+```
+
+**Fix before push:** recreate the enum in that migration (cast to `text` → drop/create type with the full value list → cast back), or split into two migrations (ADD VALUE first; use the label in the next). `pnpm check:migrations` and the pre-push hook catch the unsafe pattern.
 
 **Agents / LLMs (Cursor, Claude Code, Codex):** root [`AGENTS.md`](AGENTS.md) is the shared always-on contract (Claude loads it via [`CLAUDE.md`](CLAUDE.md); Cursor also mirrors hard rules in `.cursor/rules/`). Do **not** run `pnpm migrate:create` unless the user explicitly asks. Never run `payload migrate` locally. After schema-impacting work, prescribe **create vs rename** answers. Deep Payload how-to lives in `.agents/skills/payload`, not in `AGENTS.md`.
 

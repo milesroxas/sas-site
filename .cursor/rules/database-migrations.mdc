@@ -20,6 +20,25 @@ This project uses Payload's **push in dev, migrations in CI** split. Full human 
 3. Regenerate types/import maps if needed (`pnpm generate:types`, `pnpm generate:importmap`) — allowed without asking.
 4. **Stop and ask** before generating a migration file. Only on explicit approval: `pnpm migrate:create`.
 5. Review the generated `.ts` + `.json` together; they must be committed as a pair. CI (`pnpm ci`) applies migrations to production.
+6. After `migrate:create`, run `pnpm check:migrations` (also runs from `.githooks/pre-push` on changed migration `.ts` files).
+
+## Postgres enum `ADD VALUE` (review every select/enum migration)
+
+Payload wraps each migration `up()` in a **transaction**. Postgres rule: a value added with `ALTER TYPE ... ADD VALUE` **cannot be used until that transaction commits** (`unsafe use of new value`).
+
+Generated migrations often do both in one `up()`:
+
+- `ALTER TYPE ... ADD VALUE 'new_label'`
+- `ALTER TABLE ... SET DEFAULT 'new_label'` (or other use of that label)
+
+That **fails on Vercel/Neon** even though local Drizzle push already applied the schema.
+
+**Fix before commit** (pick one):
+
+1. **Preferred for a single migration:** recreate the enum — cast column to `text`, `DROP TYPE`, `CREATE TYPE ... AS ENUM(...)` including the new label, cast back and set default.
+2. **Or** split into two migrations: first only `ADD VALUE` (commits); second uses the new label as default/data.
+
+`ADD VALUE` alone (no use of the new label in the same `up()`) is fine. Do not “fix” by running `payload migrate` locally.
 
 ## Required: create / rename prompt answers (every schema-impacting task)
 

@@ -9,7 +9,7 @@ Root **`AGENTS.md` is canonical** for Cursor, Claude Code, and OpenAI Codex.
 
 Before schema, access-control, or Local API work, follow that file. Highlights:
 
-- **DB:** push in dev; never `payload migrate` locally; never `migrate:create` unless the user asks; after schema work prescribe **create vs rename** answers.
+- **DB:** push in dev; never `payload migrate` locally; never `migrate:create` unless the user asks; after schema work prescribe **create vs rename** answers; never ship enum `ADD VALUE` + use in the same migration `up()` (`pnpm check:migrations`).
 - **Security:** `overrideAccess: false` when passing `user`; pass `req` in hooks; use `src/access/authenticated.ts` (not `Boolean(req.user)`) for team-only access because of MCP keys.
 - **Tooling:** pnpm; `generate:types` / `generate:importmap` after schema/admin component changes; `tsc --noEmit` when types matter.
 

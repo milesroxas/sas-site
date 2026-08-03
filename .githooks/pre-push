@@ -2,11 +2,13 @@
 #
 # Pre-push migration guard.
 #
-# Fails the push when schema-defining Payload source changed in the pushed
-# commits but no new migration file was added alongside it. This is the exact
-# failure mode that keeps breaking prod: a field/collection is committed, dev's
-# drizzle `push` masks it locally, the shared Neon DB never gets the column, and
-# the Vercel `ci` build crashes querying a column that does not exist.
+# 1) Fails the push when schema-defining Payload source changed in the pushed
+#    commits but no new migration file was added alongside it. This is the exact
+#    failure mode that keeps breaking prod: a field/collection is committed, dev's
+#    drizzle `push` masks it locally, the shared Neon DB never gets the column, and
+#    the Vercel `ci` build crashes querying a column that does not exist.
+# 2) Runs scripts/check-migration-enum-safety.ts on changed migration .ts files so
+#    ALTER TYPE ... ADD VALUE + use of that label in the same up() never reaches CI.
 #
 # Matching is an allowlist of files that define Drizzle/Payload schema (fields,
 # collections, globals, block configs, plugin field overrides) — not whole
@@ -49,6 +51,7 @@ SCHEMA_RES=(
 )
 # A migration was added if a numbered migration file (not index.ts) is added.
 MIGRATION_RE='^src/migrations/[0-9].*\.(ts|json)$'
+MIGRATION_TS_RE='^src/migrations/[0-9].*\.ts$'
 
 zero='0000000000000000000000000000000000000000'
 fail=0
@@ -102,6 +105,23 @@ check_range() {
     echo "  If this change genuinely alters no DB schema, bypass with:" >&2
     echo "    SKIP_MIGRATION_GUARD=1 git push" >&2
     fail=1
+  fi
+
+  # Postgres forbids using a newly ADD VALUE'd enum label in the same transaction.
+  # Payload wraps each migration in a transaction — catch generated ADD VALUE +
+  # SET DEFAULT (etc.) before CI fails on Neon.
+  local migration_ts=()
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    if [[ "$f" =~ $MIGRATION_TS_RE ]]; then
+      migration_ts+=("$f")
+    fi
+  done <<<"$changed"
+
+  if ((${#migration_ts[@]} > 0)); then
+    if ! pnpm exec tsx scripts/check-migration-enum-safety.ts "${migration_ts[@]}" >&2; then
+      fail=1
+    fi
   fi
 }
 
