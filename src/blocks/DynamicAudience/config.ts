@@ -67,9 +67,6 @@ export const DynamicAudience: Block = {
         },
       ],
     },
-    {
-      ...themeField(),
-      defaultValue: 'dark',
-    },
+    themeField(),
   ],
 }

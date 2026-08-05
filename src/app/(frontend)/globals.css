@@ -704,6 +704,11 @@
   /* Outer page gutter — use `px-gutter` / `ps-gutter` / etc. Change once here.
      Mobile value below; ≥md override further down (must live outside @theme). */
   --spacing-gutter: 1rem; /* = px-4 */
+  /* Block content max-widths — pair with `.container` via `container-narrow` /
+     `container-standard`, or use `Container` from `@/blocks/shared/container`.
+     Expansive / cinematic blocks keep uncapped `.container` alone. */
+  --width-content-narrow: 48rem; /* ~768px — reading, forms */
+  --width-content-standard: 80rem; /* ~1280px — default marketing content */
 }
 
 @media (width >= 48rem) {
@@ -715,12 +720,21 @@
 @layer utilities {
   /* Full-width with the shared page gutter — matches the fixed header/footer
      bars (px-gutter) so content edges align at every viewport width.
-     max-width: none overrides Tailwind's built-in `container` breakpoint caps. */
+     max-width: none overrides Tailwind's built-in `container` breakpoint caps.
+     Cap with `.container-narrow` / `.container-standard` when needed. */
   .container {
     width: 100%;
     max-width: none;
     margin-inline: auto;
     padding-inline: var(--spacing-gutter);
+  }
+
+  .container-narrow {
+    max-width: var(--width-content-narrow);
+  }
+
+  .container-standard {
+    max-width: var(--width-content-standard);
   }
 }
 

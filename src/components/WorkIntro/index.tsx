@@ -1,4 +1,5 @@
 import type React from 'react'
+import { Container } from '@/blocks/shared/container'
 import RichText from '@/components/RichText'
 import type { WorkIntro as WorkIntroData } from '@/payload-types'
 import { WorkIntroSection } from './Section.client'
@@ -19,7 +20,7 @@ type Props = {
  */
 export const WorkIntro: React.FC<Props> = ({ eyebrow, title, body, summary }) => (
   <WorkIntroSection>
-    <div className="container grid gap-8 md:grid-cols-2 lg:grid-cols-12">
+    <Container width="standard" className="grid gap-8 md:grid-cols-2 lg:grid-cols-12">
       <h2
         className="max-w-xl font-heading text-4xl/10 font-normal tracking-tight text-balance lg:col-span-5"
         data-intro-title
@@ -44,6 +45,6 @@ export const WorkIntro: React.FC<Props> = ({ eyebrow, title, body, summary }) =>
           </div>
         ) : null}
       </div>
-    </div>
+    </Container>
   </WorkIntroSection>
 )
