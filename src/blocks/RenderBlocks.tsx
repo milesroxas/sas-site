@@ -3,6 +3,7 @@ import { Fragment } from 'react'
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
+import { DynamicAudienceBlock } from '@/blocks/DynamicAudience/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Component'
@@ -19,6 +20,7 @@ const blockComponents = {
   archive: ArchiveBlock,
   content: ContentBlock,
   cta: CallToActionBlock,
+  dynamicAudience: DynamicAudienceBlock,
   featureHeadingOffset: FeatureHeadingOffsetBlock,
   featureImageStatement: FeatureImageStatementBlock,
   featureStatementGrid: FeatureStatementGridBlock,

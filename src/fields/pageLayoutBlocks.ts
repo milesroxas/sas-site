@@ -3,6 +3,7 @@ import type { Block } from 'payload'
 import { Archive } from '@/blocks/ArchiveBlock/config'
 import { CallToAction } from '@/blocks/CallToAction/config'
 import { Content } from '@/blocks/Content/config'
+import { DynamicAudience } from '@/blocks/DynamicAudience/config'
 import { FormBlock } from '@/blocks/Form/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
@@ -27,4 +28,5 @@ export const pageLayoutBlocks: Block[] = [
   FeatureImageStatement,
   SplitContentNarrow,
   TestimonialsMarquee,
+  DynamicAudience,
 ]

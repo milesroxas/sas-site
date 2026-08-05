@@ -291,6 +291,7 @@ export interface Page {
     | FeatureImageStatementBlock
     | SplitContentNarrowBlock
     | TestimonialsMarqueeBlock
+    | DynamicAudienceBlock
   )[];
   meta?: {
     title?: string | null;
@@ -2451,6 +2452,51 @@ export interface TestimonialsMarqueeBlock {
   blockType: 'testimonialsMarquee';
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DynamicAudienceBlock".
+ */
+export interface DynamicAudienceBlock {
+  /**
+   * Static text before the audience dropdown.
+   */
+  heading: string;
+  /**
+   * Each row is a dropdown option. Selecting it swaps the subheading, intro, list, and media.
+   */
+  audiences: {
+    /**
+     * Shown in the dropdown (e.g. teams, leaders).
+     */
+    title: string;
+    /**
+     * Continues the headline after the dropdown for this audience.
+     */
+    subheading: string;
+    /**
+     * Lead paragraph for this audience.
+     */
+    intro: string;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Image or video for this audience. Cropped to 4:5.
+     */
+    media: number | Media;
+    id?: string | null;
+  }[];
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'dynamicAudience';
+}
+/**
  * Website-specific lab-project presentation, composition, SEO, preview, and publishing.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3807,6 +3853,7 @@ export interface PagesSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
+        dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
       };
   meta?:
     | T
@@ -4036,6 +4083,31 @@ export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
         id?: T;
       };
   testimonials?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DynamicAudienceBlock_select".
+ */
+export interface DynamicAudienceBlockSelect<T extends boolean = true> {
+  heading?: T;
+  audiences?:
+    | T
+    | {
+        title?: T;
+        subheading?: T;
+        intro?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        media?: T;
+        id?: T;
+      };
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5545,6 +5617,7 @@ export interface Home {
     | FeatureImageStatementBlock
     | SplitContentNarrowBlock
     | TestimonialsMarqueeBlock
+    | DynamicAudienceBlock
   )[];
   meta?: {
     title?: string | null;
@@ -5701,6 +5774,7 @@ export interface HomeSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
+        dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
       };
   meta?:
     | T
