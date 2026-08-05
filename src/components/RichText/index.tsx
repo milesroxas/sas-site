@@ -68,7 +68,7 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
  */
 const variantClasses = {
   default: '',
-  emphasis: 'text-muted-foreground [&_strong]:font-medium [&_strong]:text-foreground',
+  emphasis: 'text-muted-foreground [&_strong]:font-normal [&_strong]:text-foreground',
 } as const
 
 export type RichTextVariant = keyof typeof variantClasses
