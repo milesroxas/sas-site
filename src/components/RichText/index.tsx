@@ -57,14 +57,31 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
   },
 })
 
+/**
+ * Rich text ink variants, owned once here so every block reads the same
+ * treatment.
+ *
+ * - `default`: inherit the surrounding ink.
+ * - `emphasis`: body copy renders muted; words the editor bolds are the
+ *   emphasis and restore foreground ink. Pair with `enableProse={false}` so
+ *   Tailwind Typography's own ink colors don't compete.
+ */
+const variantClasses = {
+  default: '',
+  emphasis: 'text-muted-foreground [&_strong]:font-medium [&_strong]:text-foreground',
+} as const
+
+export type RichTextVariant = keyof typeof variantClasses
+
 type Props = {
   data: DefaultTypedEditorState
   enableGutter?: boolean
   enableProse?: boolean
+  variant?: RichTextVariant
 } & React.HTMLAttributes<HTMLDivElement>
 
 export default function RichText(props: Props) {
-  const { className, enableProse = true, enableGutter = true, ...rest } = props
+  const { className, enableProse = true, enableGutter = true, variant = 'default', ...rest } = props
   return (
     <ConvertRichText
       converters={jsxConverters}
@@ -75,6 +92,7 @@ export default function RichText(props: Props) {
           'max-w-none': !enableGutter,
           'mx-auto prose md:prose-md prose-headings:font-normal dark:prose-invert': enableProse,
         },
+        variantClasses[variant],
         className,
       )}
       {...rest}

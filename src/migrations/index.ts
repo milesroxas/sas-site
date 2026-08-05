@@ -30,6 +30,7 @@ import * as migration_20260801_142426_scoped_media_feature_blocks from './202608
 import * as migration_20260801_161022_image_pair_block from './20260801_161022_image_pair_block';
 import * as migration_20260802_161402_split_image_offset_block from './20260802_161402_split_image_offset_block';
 import * as migration_20260803_135528_card_variant_split from './20260803_135528_card_variant_split';
+import * as migration_20260805_172815_testimonials_marquee_block from './20260805_172815_testimonials_marquee_block';
 
 export const migrations = [
   {
@@ -190,6 +191,11 @@ export const migrations = [
   {
     up: migration_20260803_135528_card_variant_split.up,
     down: migration_20260803_135528_card_variant_split.down,
-    name: '20260803_135528_card_variant_split'
+    name: '20260803_135528_card_variant_split',
+  },
+  {
+    up: migration_20260805_172815_testimonials_marquee_block.up,
+    down: migration_20260805_172815_testimonials_marquee_block.down,
+    name: '20260805_172815_testimonials_marquee_block'
   },
 ];

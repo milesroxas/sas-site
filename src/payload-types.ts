@@ -290,6 +290,7 @@ export interface Page {
     | FeatureTabsBlock
     | FeatureImageStatementBlock
     | SplitContentNarrowBlock
+    | TestimonialsMarqueeBlock
   )[];
   meta?: {
     title?: string | null;
@@ -2395,6 +2396,61 @@ export interface Audience {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsMarqueeBlock".
+ */
+export interface TestimonialsMarqueeBlock {
+  /**
+   * Renders in muted ink. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
+   */
+  richText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Cards loop through these in order. Only published, publicly approved testimonials render.
+   */
+  testimonials: (number | Testimonial)[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonialsMarquee';
+}
+/**
  * Website-specific lab-project presentation, composition, SEO, preview, and publishing.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3750,6 +3806,7 @@ export interface PagesSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
       };
   meta?:
     | T
@@ -3954,6 +4011,31 @@ export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
   browseAllMedia?: T;
   imagePosition?: T;
   theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsMarqueeBlock_select".
+ */
+export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
+  richText?: T;
+  links?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+              label?: T;
+              appearance?: T;
+            };
+        id?: T;
+      };
+  testimonials?: T;
   id?: T;
   blockName?: T;
 }
@@ -5462,6 +5544,7 @@ export interface Home {
     | FeatureTabsBlock
     | FeatureImageStatementBlock
     | SplitContentNarrowBlock
+    | TestimonialsMarqueeBlock
   )[];
   meta?: {
     title?: string | null;
@@ -5617,6 +5700,7 @@ export interface HomeSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
       };
   meta?:
     | T

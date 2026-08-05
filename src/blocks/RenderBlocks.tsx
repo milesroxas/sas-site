@@ -11,6 +11,7 @@ import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
+import { TestimonialsMarqueeBlock } from '@/blocks/TestimonialsMarquee/Component'
 import type { Home, Page } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
 
@@ -26,6 +27,7 @@ const blockComponents = {
   mediaBlock: MediaBlock,
   newsletterSignup: NewsletterSignupBlock,
   splitContentNarrow: SplitContentNarrowBlock,
+  testimonialsMarquee: TestimonialsMarqueeBlock,
 }
 
 type LayoutBlock = NonNullable<Page['layout']>[number] | NonNullable<Home['layout']>[number]

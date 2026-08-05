@@ -4,7 +4,7 @@
  * generated payload-types so stories type-check against real block props.
  */
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
-import type { Media, Post } from '@/payload-types'
+import type { Media, Post, Testimonial } from '@/payload-types'
 
 type SerializedNode = Record<string, unknown>
 
@@ -131,4 +131,44 @@ const postFixture = (id: number, title: string, slug: string): Post => ({
 export const postFixtures: Post[] = [
   postFixture(1, 'Designing resilient content models', 'designing-resilient-content-models'),
   postFixture(2, 'Shipping faster with block-based pages', 'shipping-faster-with-blocks'),
+]
+
+const testimonialFixture = (
+  id: number,
+  quote: string,
+  speakerOrganization: string,
+): Testimonial => ({
+  id,
+  internalTitle: `${speakerOrganization} quote`,
+  organization: 1,
+  speakerName: 'Jordan Avery',
+  speakerOrganization,
+  quote: richText(paragraph(text(quote))),
+  approvalStatus: 'approved-public',
+  _status: 'published',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+})
+
+export const testimonialFixtures: Testimonial[] = [
+  testimonialFixture(
+    1,
+    'The result is a clearer story, a stronger system, and something people can understand and use.',
+    'Interchecks',
+  ),
+  testimonialFixture(
+    2,
+    '“From the beginning, they’ve been proactive, intelligent, and interested in our product’s success.”',
+    'Blindcut',
+  ),
+  testimonialFixture(
+    3,
+    'They took a sprawling set of ideas and shaped it into a brand we can actually grow with.',
+    'Northbeam',
+  ),
+  testimonialFixture(
+    4,
+    'Every conversation moved the work forward. The site finally says what we do — plainly and well.',
+    'Fieldnote Labs',
+  ),
 ]

@@ -28,6 +28,9 @@ export const Testimonials: CollectionConfig<'testimonials'> = {
     speakerOrganization: true,
     quote: true,
     portrait: true,
+    // Frontend blocks gate on these before rendering a populated testimonial.
+    approvalStatus: true,
+    _status: true,
   },
   fields: [
     {

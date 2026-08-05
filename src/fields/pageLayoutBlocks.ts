@@ -11,6 +11,7 @@ import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { NewsletterSignup } from '@/blocks/NewsletterSignup/config'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
+import { TestimonialsMarquee } from '@/blocks/TestimonialsMarquee/config'
 
 /** Layout blocks shared by Pages and the Home global. */
 export const pageLayoutBlocks: Block[] = [
@@ -25,4 +26,5 @@ export const pageLayoutBlocks: Block[] = [
   FeatureTabs,
   FeatureImageStatement,
   SplitContentNarrow,
+  TestimonialsMarquee,
 ]
