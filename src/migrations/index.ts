@@ -33,6 +33,7 @@ import * as migration_20260803_135528_card_variant_split from './20260803_135528
 import * as migration_20260805_172815_testimonials_marquee_block from './20260805_172815_testimonials_marquee_block';
 import * as migration_20260805_201354_dynamic_audience from './20260805_201354_dynamic_audience';
 import * as migration_20260805_201645_dynamic_audience from './20260805_201645_dynamic_audience';
+import * as migration_20260805_213226_home_statement from './20260805_213226_home_statement';
 
 export const migrations = [
   {
@@ -208,6 +209,11 @@ export const migrations = [
   {
     up: migration_20260805_201645_dynamic_audience.up,
     down: migration_20260805_201645_dynamic_audience.down,
-    name: '20260805_201645_dynamic_audience'
+    name: '20260805_201645_dynamic_audience',
+  },
+  {
+    up: migration_20260805_213226_home_statement.up,
+    down: migration_20260805_213226_home_statement.down,
+    name: '20260805_213226_home_statement'
   },
 ];

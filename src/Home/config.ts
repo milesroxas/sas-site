@@ -6,6 +6,7 @@ import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
 import { generateHomePreviewPath } from '@/utilities/generatePreviewPath'
 import { homeHero } from './hero/config'
 import { revalidateHome } from './hooks/revalidateHome'
+import { homeStatement } from './statement/config'
 
 export const Home: GlobalConfig = {
   slug: 'home',
@@ -34,8 +35,9 @@ export const Home: GlobalConfig = {
       type: 'tabs',
       tabs: [
         {
-          fields: [homeHero],
+          fields: [homeHero, homeStatement],
           label: 'Opening',
+          description: 'The full-screen opening of the page: hero, then the statement band.',
         },
         {
           fields: [

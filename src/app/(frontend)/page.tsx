@@ -7,6 +7,7 @@ import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { homeStatic } from '@/endpoints/seed/home-static'
 import { RenderHomeHero } from '@/Home/hero'
+import { HomeStatement } from '@/Home/statement'
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './[slug]/page.client'
 
@@ -14,13 +15,14 @@ export default async function HomePage() {
   const { isEnabled: draft } = await draftMode()
   const home = (await queryHome()) ?? homeStatic
 
-  const { hero, layout } = home
+  const { hero, layout, statement } = home
 
   return (
     <article className="pb-24">
       <PageClient />
       {draft && <LivePreviewListener />}
       <RenderHomeHero {...hero} />
+      {statement ? <HomeStatement {...statement} /> : null}
       <RenderBlocks blocks={layout} />
     </article>
   )

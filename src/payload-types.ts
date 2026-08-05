@@ -5604,6 +5604,7 @@ export interface Home {
      */
     featuredLabel?: string | null;
   };
+  statement?: HomeStatement;
   layout: (
     | CallToActionBlock
     | ContentBlock
@@ -5631,6 +5632,32 @@ export interface Home {
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * Large statement band rendered after the hero.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeStatement".
+ */
+export interface HomeStatement {
+  /**
+   * Renders in muted ink. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5759,6 +5786,7 @@ export interface HomeSelect<T extends boolean = true> {
         featuredPost?: T;
         featuredLabel?: T;
       };
+  statement?: T | HomeStatementSelect<T>;
   layout?:
     | T
     | {
@@ -5788,6 +5816,13 @@ export interface HomeSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeStatement_select".
+ */
+export interface HomeStatementSelect<T extends boolean = true> {
+  body?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
