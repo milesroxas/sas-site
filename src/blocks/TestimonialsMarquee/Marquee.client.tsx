@@ -10,25 +10,25 @@ gsap.registerPlugin(useGSAP)
 
 /**
  * Every tunable the marquee reads, owned once here (same contract as
- * `SCROLL_REVEAL_*` — see docs/animations.md). Columns scroll upward on an
- * endless linear loop; each successive column runs a longer loop and starts
- * further into it, so the lanes stay offset and drift apart over time.
+ * `SCROLL_REVEAL_*` — see docs/animations.md). Lanes run endless linear loops
+ * at the same speed in alternating directions — even lanes scroll up, odd
+ * lanes scroll down — and each successive lane starts offset by a fraction of
+ * its first card.
  */
 export const TESTIMONIALS_MARQUEE_DEFAULTS = {
-  /** Seconds the first column takes to travel one full loop. */
+  /** Seconds a column takes to travel one full loop. */
   loopDuration: 36,
-  /** Extra loop seconds per successive column, so lanes never sync up. */
-  columnDurationStep: 6,
   /** Vertical head start per successive column, measured in first-card heights. */
   columnCardOffset: 0.5,
 } as const
 
-const { loopDuration, columnDurationStep, columnCardOffset } = TESTIMONIALS_MARQUEE_DEFAULTS
+const { loopDuration, columnCardOffset } = TESTIMONIALS_MARQUEE_DEFAULTS
 
 /**
  * Vertical auto-scrolling card lanes. Each column renders its cards twice and
- * loops `yPercent: -50`, so the wrap point is invisible. Cards fade to the
- * section's background token at the bottom edge and along an angled top-right
+ * loops across half its track height, so the wrap point is invisible; odd
+ * lanes travel the same loop in the opposite direction. Cards fade to the
+ * section's background token at the bottom edge and along an angled top-left
  * band as they enter and leave the window. Reduced motion renders the resting
  * state — static offset columns under the same fades.
  */
@@ -46,6 +46,11 @@ export function TestimonialsMarquee({
   useGSAP(
     () => {
       const tracks = gsap.utils.toArray<HTMLElement>('[data-marquee-track]', rootRef.current)
+      // One loop travels half a track (the duplicated copy). Lanes share one
+      // pixel speed — the first lane's half height over `loopDuration` — so a
+      // lane with taller content scales its duration instead of moving faster.
+      const referenceHalf = (tracks[0]?.offsetHeight ?? 0) / 2
+
       tracks.forEach((track, index) => {
         // Head start per lane in pixels: a fraction of that lane's first card.
         const firstCard = track.firstElementChild?.firstElementChild as HTMLElement | null
@@ -56,15 +61,21 @@ export function TestimonialsMarquee({
           return
         }
 
-        const tween = gsap.to(track, {
-          yPercent: -50,
-          duration: loopDuration + index * columnDurationStep,
-          ease: 'none',
-          repeat: -1,
-        })
-        // One loop travels half the track (the duplicated copy), so express
-        // the pixel offset as loop progress to keep the lane gap-free.
         const halfHeight = track.offsetHeight / 2
+        // Odd lanes run the same loop in the opposite direction (downward).
+        const scrollsDown = index % 2 === 1
+        const tween = gsap.fromTo(
+          track,
+          { yPercent: scrollsDown ? -50 : 0 },
+          {
+            yPercent: scrollsDown ? 0 : -50,
+            duration:
+              referenceHalf > 0 ? loopDuration * (halfHeight / referenceHalf) : loopDuration,
+            ease: 'none',
+            repeat: -1,
+          },
+        )
+        // Express the pixel offset as loop progress to keep the lane gap-free.
         if (halfHeight > 0) tween.progress((offsetPx / halfHeight) % 1)
       })
     },
