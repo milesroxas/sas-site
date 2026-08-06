@@ -3,12 +3,13 @@ import { PROJECT_ROOT } from './constants'
 
 export async function runPnpmCapture(
   args: string[],
+  env?: Record<string, string>,
 ): Promise<{ stdout: string; stderr: string; exitCode: number | null }> {
   const r = await execa('pnpm', args, {
     cwd: PROJECT_ROOT,
     all: true,
     reject: false,
-    env: { ...process.env, FORCE_COLOR: '0' },
+    env: { ...process.env, FORCE_COLOR: '0', ...env },
   })
   const combined =
     typeof (r as { all?: string }).all === 'string'

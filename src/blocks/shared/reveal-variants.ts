@@ -16,6 +16,10 @@ export const blockRevealVariants = {
   featureImageStatement: 'underMedia',
   splitContentNarrow: 'underMedia',
   featureStatementLinks: 'self',
+  // Pinned ScrollTrigger shell (sticky viewport + scrubbed list) — a CSS
+  // reveal wrapper would put transform/opacity on its ancestor and break the
+  // pin measurement.
+  homeFeaturedWork: 'self',
 } as const satisfies Record<string, ScrollRevealVariant | 'self'>
 
 export type RevealMappedBlockSlug = keyof typeof blockRevealVariants

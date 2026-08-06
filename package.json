@@ -21,6 +21,8 @@
     "lint:fix": "biome check --write .",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm install",
+    "seed": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file=.env scripts/seed/index.ts",
+    "seed:drop": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file=.env scripts/seed/index.ts --drop",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "chromatic": "cross-env NODE_OPTIONS=--no-deprecation chromatic --build-script-name=storybook:build",
     "storybook": "cross-env NODE_OPTIONS=--no-deprecation storybook dev -p 6006",

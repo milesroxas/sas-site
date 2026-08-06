@@ -37,6 +37,8 @@ type ActionId =
   | 'back'
   | 'db-up'
   | 'db-down'
+  | 'seed'
+  | 'seed-drop'
   | 'env-pull'
   | 'gen-types'
   | 'gen-importmap'
@@ -82,6 +84,16 @@ const MENU: Record<Stack, MenuItem[]> = {
   db: [
     { id: 'db-up', label: 'Docker: start Postgres (pnpm db:up)' },
     { id: 'db-down', label: 'Docker: stop compose (pnpm db:down)' },
+    {
+      id: 'seed',
+      label: 'Seed placeholder content → local Docker DB (pnpm seed)',
+      hint: 'upserts review content in place; media and users untouched',
+    },
+    {
+      id: 'seed-drop',
+      label: 'Drop content + reseed → local Docker DB (pnpm seed:drop)',
+      hint: 'wipes pages, posts, work, content-hub records first',
+    },
     {
       id: 'env-pull',
       label: `Pull Vercel production env → ${VERCEL_PULL_ENV_FILE}`,
@@ -147,17 +159,20 @@ export function App({ unmount }: { unmount: () => void }) {
     setSelected(0)
   }, [])
 
-  const runCapture = useCallback(async (label: string, args: string[]) => {
-    setPhase({ kind: 'running', label })
-    const r = await runPnpmCapture(args)
-    const out = [r.stdout, r.stderr].filter(Boolean).join('\n').trim()
-    const ok = r.exitCode === 0
-    setPhase({
-      kind: 'done',
-      ok,
-      output: out || (ok ? '(no output)' : `Exit code ${r.exitCode ?? 'unknown'}`),
-    })
-  }, [])
+  const runCapture = useCallback(
+    async (label: string, args: string[], env?: Record<string, string>) => {
+      setPhase({ kind: 'running', label })
+      const r = await runPnpmCapture(args, env)
+      const out = [r.stdout, r.stderr].filter(Boolean).join('\n').trim()
+      const ok = r.exitCode === 0
+      setPhase({
+        kind: 'done',
+        ok,
+        output: out || (ok ? '(no output)' : `Exit code ${r.exitCode ?? 'unknown'}`),
+      })
+    },
+    [],
+  )
 
   /** Hand the terminal to a long-running pnpm script and leave the TUI. */
   const launchScript = useCallback(
@@ -306,6 +321,41 @@ export function App({ unmount }: { unmount: () => void }) {
           return
         case 'db-down':
           await runCapture('pnpm db:down', ['run', 'db:down'])
+          return
+        case 'seed': {
+          setPhase({ kind: 'running', label: 'Starting local Postgres (Docker)…' })
+          const ready = await ensureLocalPostgresReady()
+          if (!ready.ok) {
+            setPhase({ kind: 'done', ok: false, output: ready.message })
+            return
+          }
+          // POSTGRES_URL is forced local so the seed never touches a remote DB
+          // regardless of the .env chain (the script refuses remote URLs too).
+          await runCapture('pnpm seed', ['run', 'seed'], { POSTGRES_URL: LOCAL_POSTGRES_DB })
+          return
+        }
+        case 'seed-drop':
+          setPhase({
+            kind: 'confirm',
+            danger: true,
+            title:
+              'Wipe content collections in the LOCAL Docker database (pages, posts, work pages, ' +
+              'content-hub records, taxonomy, forms) and reseed placeholder content? ' +
+              'Media and users are kept. Restore real content later via "Pull production content".',
+            onYes: () => {
+              void (async () => {
+                setPhase({ kind: 'running', label: 'Starting local Postgres (Docker)…' })
+                const ready = await ensureLocalPostgresReady()
+                if (!ready.ok) {
+                  setPhase({ kind: 'done', ok: false, output: ready.message })
+                  return
+                }
+                await runCapture('pnpm seed:drop', ['run', 'seed:drop'], {
+                  POSTGRES_URL: LOCAL_POSTGRES_DB,
+                })
+              })()
+            },
+          })
           return
         case 'env-pull': {
           const v = await checkVercelCli()

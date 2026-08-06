@@ -2,7 +2,6 @@ import configPromise from '@payload-config'
 import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 import type React from 'react'
-import { Container } from '@/blocks/shared/container'
 import { Section, type SectionTheme } from '@/blocks/shared/section'
 import type { HomeFeaturedWorkBlock as HomeFeaturedWorkBlockProps, WorkPage } from '@/payload-types'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
@@ -51,11 +50,11 @@ export const HomeFeaturedWorkBlock: React.FC<
   if (resolved.length === 0) return null
 
   return (
-    <Section className="my-0" theme={(theme as SectionTheme | null) ?? 'dark'}>
+    // The pinned client shell owns viewport sizing and its own containers, so
+    // the section band carries no vertical padding of its own.
+    <Section className="my-0 py-0 md:py-0" theme={(theme as SectionTheme | null) ?? 'dark'}>
       <div id={id ? `block-${id}` : undefined}>
-        <Container width="standard">
-          <FeaturedWorkList eyebrow={eyebrow} entries={resolved} />
-        </Container>
+        <FeaturedWorkList eyebrow={eyebrow} entries={resolved} />
       </div>
     </Section>
   )
