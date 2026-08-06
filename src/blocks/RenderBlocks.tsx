@@ -17,6 +17,8 @@ import { TestimonialsMarqueeBlock } from '@/blocks/TestimonialsMarquee/Component
 import { HomeFeaturedWorkBlock } from '@/Home/featured-work/Component'
 import type { Home, Page } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
+import { ScrollReveal } from '@/shared/ui/scroll-reveal'
+import { blockRevealVariants, type RevealMappedBlockSlug } from './shared/reveal-variants'
 
 const blockComponents = {
   archive: ArchiveBlock,
@@ -38,11 +40,11 @@ const blockComponents = {
 
 type LayoutBlock = NonNullable<Page['layout']>[number] | NonNullable<Home['layout']>[number]
 
-/**
- * Blocks that own a GSAP `ScrollReveal` shell — skip the CSS block-reveal wrap
- * so the two entrance systems never stack.
- */
-const selfRevealingBlocks = new Set<keyof typeof blockComponents>(['featureStatementLinks'])
+/** GSAP variant for marker-carrying blocks (`'self'` = block owns its shell). */
+const gsapReveal = (blockType: keyof typeof blockComponents) =>
+  blockType in blockRevealVariants
+    ? blockRevealVariants[blockType as RevealMappedBlockSlug]
+    : undefined
 
 export const RenderBlocks: React.FC<{
   blocks: LayoutBlock[] | null | undefined
@@ -61,10 +63,25 @@ export const RenderBlocks: React.FC<{
             const Block = blockComponents[blockType]
 
             if (Block) {
-              if (selfRevealingBlocks.has(blockType)) {
+              const reveal = gsapReveal(blockType)
+
+              // Blocks with their own GSAP shell — never add a second entrance.
+              if (reveal === 'self') {
                 return (
                   // @ts-expect-error there may be some mismatch between the expected types here
                   <Block key={index} {...block} disableInnerContainer />
+                )
+              }
+
+              // Blocks carrying `data-reveal` markers play the shared GSAP
+              // reveal here too, so the same CMS block moves identically on
+              // Pages/Home and work pages.
+              if (reveal) {
+                return (
+                  <ScrollReveal as="div" className="my-16" key={index} variant={reveal}>
+                    {/* @ts-expect-error there may be some mismatch between the expected types here */}
+                    <Block {...block} disableInnerContainer />
+                  </ScrollReveal>
                 )
               }
 

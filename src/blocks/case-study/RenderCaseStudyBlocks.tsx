@@ -27,6 +27,7 @@ import type {
   WorkPage,
 } from '@/payload-types'
 import { cn } from '@/utilities/ui'
+import { blockRevealVariants } from '../shared/reveal-variants'
 import { RevealSection } from './RevealSection.client'
 
 const richTextSource = (study: CaseStudy, source: CaseStudyStorySectionBlock['source']) => {
@@ -110,7 +111,7 @@ const SplitNarrow = ({ block, study }: { block: SplitContentNarrowBlock; study: 
   const media = block.media
   if (typeof media !== 'object' || !media) return null
   return (
-    <RevealSection theme={block.theme} variant="underMedia">
+    <RevealSection theme={block.theme} variant={blockRevealVariants.splitContentNarrow}>
       <SplitContentNarrow bare block={block} content={content} media={media} />
     </RevealSection>
   )
@@ -432,7 +433,11 @@ export const RenderCaseStudyBlocks = async ({
           return <RelatedWork block={block} key={block.id} page={page} study={study} />
         case 'featureHeadingOffset':
           return (
-            <RevealSection as="div" key={block.id} variant="intro">
+            <RevealSection
+              as="div"
+              key={block.id}
+              variant={blockRevealVariants.featureHeadingOffset}
+            >
               <FeatureHeadingOffset
                 {...block}
                 body={resolveFeatureBody(block.body, block.source, study)}
@@ -441,7 +446,11 @@ export const RenderCaseStudyBlocks = async ({
           )
         case 'featureStatementGrid':
           return (
-            <RevealSection as="div" key={block.id} variant="intro">
+            <RevealSection
+              as="div"
+              key={block.id}
+              variant={blockRevealVariants.featureStatementGrid}
+            >
               <FeatureStatementGrid
                 {...block}
                 statement={resolveFeatureBody(block.statement, block.source, study)}
@@ -453,7 +462,11 @@ export const RenderCaseStudyBlocks = async ({
           return <FeatureStatementLinks key={block.id} {...block} />
         case 'featureImageStatement':
           return (
-            <RevealSection as="div" key={block.id} variant="underMedia">
+            <RevealSection
+              as="div"
+              key={block.id}
+              variant={blockRevealVariants.featureImageStatement}
+            >
               <FeatureImageStatement
                 {...block}
                 caption={resolveFeatureBody(block.caption, block.source, study)}
@@ -462,7 +475,7 @@ export const RenderCaseStudyBlocks = async ({
           )
         case 'featureTabs':
           return (
-            <RevealSection as="div" key={block.id} variant="intro">
+            <RevealSection as="div" key={block.id} variant={blockRevealVariants.featureTabs}>
               <FeatureTabs
                 {...block}
                 tabs={(block.tabs || []).map((tab) => ({

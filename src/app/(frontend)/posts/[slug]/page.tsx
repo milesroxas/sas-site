@@ -74,7 +74,10 @@ export default async function Post({ params: paramsPromise }: Args) {
       <PostHero post={post} />
 
       <div className="flex flex-col items-center gap-4 pt-8">
-        <RevealSection className="container w-full" delayMs={80}>
+        {/* No entrance wrap on the body: embedded blocks (e.g. statement links)
+            mount their own GSAP reveal, and a CSS reveal here would stack a
+            second entrance on top of it. */}
+        <div className="container w-full">
           {post.heroStyle === 'banner' ? (
             <div className="grid grid-cols-1 gap-8 py-12 lg:grid-cols-[1fr_3fr] lg:gap-20">
               <aside className="hidden lg:block">
@@ -89,9 +92,9 @@ export default async function Post({ params: paramsPromise }: Args) {
           ) : (
             <RichText className="max-w-3xl mx-auto" data={post.content} enableGutter={false} />
           )}
-        </RevealSection>
+        </div>
         {post.relatedPosts && post.relatedPosts.length > 0 && (
-          <RevealSection className="container w-full mt-12" delayMs={160}>
+          <RevealSection className="container w-full mt-12">
             <RelatedPosts
               className="max-w-208 lg:grid lg:grid-cols-subgrid col-start-1 col-span-3 grid-rows-[2fr]"
               docs={post.relatedPosts.filter((post) => typeof post === 'object')}

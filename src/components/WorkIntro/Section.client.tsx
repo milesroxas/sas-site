@@ -3,8 +3,10 @@
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { type ReactNode, useRef } from 'react'
+import { fullViewportSectionClassName, themeClasses } from '@/blocks/shared/section'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { SCROLL_REVEAL_INTRO, SCROLL_REVEAL_TRIGGER_DEFAULTS } from '@/shared/ui/scroll-reveal'
+import { cn } from '@/utilities/ui'
 
 gsap.registerPlugin(useGSAP)
 
@@ -25,6 +27,22 @@ const {
 } = SCROLL_REVEAL_INTRO
 
 /**
+ * What only this choreography owns: the title's deeper drop and heavier blur,
+ * and the fixed follow-on offsets/drops for eyebrow and body. Each value lives
+ * here once — tune here, nowhere else.
+ */
+const WORK_INTRO = {
+  titleY: 32,
+  titleBlurPx: 8,
+  eyebrowY: 12,
+  eyebrowDuration: 0.6,
+  eyebrowAt: 0.3,
+  bodyY: 24,
+  bodyDuration: 0.8,
+  bodyAt: 0.4,
+} as const
+
+/**
  * Full-screen shell for the work intro. Copy drops into place when the band
  * enters the viewport and reverses out when it fully leaves, so each pass
  * through the section replays as its own moment. Server-rendered children stay
@@ -43,9 +61,7 @@ export function WorkIntroSection({ children }: { children: ReactNode }) {
       const title = root.querySelector<HTMLElement>('[data-intro-title]')
       const eyebrow = root.querySelector<HTMLElement>('[data-intro-eyebrow]')
       const paragraphs = root.querySelectorAll<HTMLElement>('[data-intro-body] p')
-      const targets = [title, eyebrow, ...paragraphs].filter(
-        (el): el is HTMLElement => el != null,
-      )
+      const targets = [title, eyebrow, ...paragraphs].filter((el): el is HTMLElement => el != null)
       if (!targets.length) return
 
       if (prefersReducedMotion) {
@@ -57,20 +73,31 @@ export function WorkIntroSection({ children }: { children: ReactNode }) {
       if (title) {
         tl.fromTo(
           title,
-          { autoAlpha: 0, y: -32, filter: 'blur(8px)' },
+          { autoAlpha: 0, y: -WORK_INTRO.titleY, filter: `blur(${WORK_INTRO.titleBlurPx}px)` },
           { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: TITLE_DURATION },
           0,
         )
       }
       if (eyebrow) {
-        tl.fromTo(eyebrow, { autoAlpha: 0, y: -12 }, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.3)
+        tl.fromTo(
+          eyebrow,
+          { autoAlpha: 0, y: -WORK_INTRO.eyebrowY },
+          { autoAlpha: 1, y: 0, duration: WORK_INTRO.eyebrowDuration },
+          WORK_INTRO.eyebrowAt,
+        )
       }
       if (paragraphs.length) {
         tl.fromTo(
           paragraphs,
-          { autoAlpha: 0, y: -24, filter: `blur(${BODY_BLUR_PX}px)` },
-          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.8, stagger: BODY_STAGGER },
-          0.4,
+          { autoAlpha: 0, y: -WORK_INTRO.bodyY, filter: `blur(${BODY_BLUR_PX}px)` },
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: WORK_INTRO.bodyDuration,
+            stagger: BODY_STAGGER,
+          },
+          WORK_INTRO.bodyAt,
         )
       }
 
@@ -92,10 +119,7 @@ export function WorkIntroSection({ children }: { children: ReactNode }) {
   )
 
   return (
-    <section
-      className="flex min-h-[calc(100svh-var(--footer-height))] flex-col justify-center overflow-clip bg-background py-16 text-foreground md:py-20 lg:py-24"
-      ref={rootRef}
-    >
+    <section className={cn(fullViewportSectionClassName, themeClasses.light)} ref={rootRef}>
       {children}
     </section>
   )

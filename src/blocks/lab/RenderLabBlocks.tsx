@@ -1,5 +1,6 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { blockRevealVariants } from '@/blocks/shared/reveal-variants'
 import { Section } from '@/blocks/shared/section'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
 import { Media } from '@/components/Media'
@@ -13,6 +14,8 @@ import type {
   LabStorySectionBlock,
   LabTransitionBlock,
 } from '@/payload-types'
+import { RevealSection } from '@/shared/ui/reveal-section'
+import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
 const richTextSource = (project: LabProject, source: LabStorySectionBlock['source']) => {
@@ -241,6 +244,11 @@ const RelatedProjects = async ({
   )
 }
 
+/**
+ * Lab blocks enter like generic page blocks: the CSS block reveal wraps each
+ * section, except `splitContentNarrow`, whose `data-reveal` markers play the
+ * shared GSAP reveal — the same motion it has on every other surface.
+ */
 export const RenderLabBlocks = async ({
   blocks,
   page,
@@ -252,22 +260,31 @@ export const RenderLabBlocks = async ({
 }) => (
   <>
     {blocks.map((block) => {
-      switch (block.blockType) {
-        case 'labStorySection':
-          return <StorySection block={block} key={block.id} project={project} />
-        case 'labMediaShowcase':
-          return <MediaShowcase block={block} key={block.id} />
-        case 'labFacts':
-          return <Facts block={block} key={block.id} project={project} />
-        case 'labTransition':
-          return <Transition block={block} key={block.id} />
-        case 'labRelatedProjects':
-          return <RelatedProjects block={block} key={block.id} page={page} project={project} />
-        case 'splitContentNarrow':
-          return <SplitContentNarrowBlock {...block} key={block.id} />
-        default:
-          return null
+      if (block.blockType === 'splitContentNarrow') {
+        return (
+          <ScrollReveal as="div" key={block.id} variant={blockRevealVariants.splitContentNarrow}>
+            <SplitContentNarrowBlock {...block} />
+          </ScrollReveal>
+        )
       }
+      const content = (() => {
+        switch (block.blockType) {
+          case 'labStorySection':
+            return <StorySection block={block} project={project} />
+          case 'labMediaShowcase':
+            return <MediaShowcase block={block} />
+          case 'labFacts':
+            return <Facts block={block} project={project} />
+          case 'labTransition':
+            return <Transition block={block} />
+          case 'labRelatedProjects':
+            return <RelatedProjects block={block} page={page} project={project} />
+          default:
+            return null
+        }
+      })()
+      if (!content) return null
+      return <RevealSection key={block.id}>{content}</RevealSection>
     })}
   </>
 )
