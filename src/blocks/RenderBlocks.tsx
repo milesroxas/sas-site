@@ -13,6 +13,7 @@ import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
 import { TestimonialsMarqueeBlock } from '@/blocks/TestimonialsMarquee/Component'
+import { HomeFeaturedWorkBlock } from '@/Home/featured-work/Component'
 import type { Home, Page } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
 
@@ -26,6 +27,7 @@ const blockComponents = {
   featureStatementGrid: FeatureStatementGridBlock,
   featureTabs: FeatureTabsBlock,
   formBlock: FormBlock,
+  homeFeaturedWork: HomeFeaturedWorkBlock,
   mediaBlock: MediaBlock,
   newsletterSignup: NewsletterSignupBlock,
   splitContentNarrow: SplitContentNarrowBlock,
