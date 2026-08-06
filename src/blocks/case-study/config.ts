@@ -2,6 +2,7 @@ import type { Block } from 'payload'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
+import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { ImagePair } from '@/blocks/image-pair/config'
 import { themeField } from '@/blocks/shared/fields'
@@ -212,6 +213,7 @@ export const caseStudyBlocks = [
   CaseStudyRelatedWork,
   FeatureHeadingOffset,
   FeatureStatementGrid,
+  FeatureStatementLinks,
   FeatureImageStatement,
   FeatureTabs,
 ]

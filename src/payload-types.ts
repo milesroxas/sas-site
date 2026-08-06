@@ -286,6 +286,7 @@ export interface Page {
     | FormBlock
     | NewsletterSignupBlock
     | FeatureStatementGridBlock
+    | FeatureStatementLinksBlock
     | FeatureHeadingOffsetBlock
     | FeatureTabsBlock
     | FeatureImageStatementBlock
@@ -1299,6 +1300,7 @@ export interface WorkPage {
         | CaseStudyRelatedWorkBlock
         | FeatureHeadingOffsetBlock
         | FeatureStatementGridBlock
+        | FeatureStatementLinksBlock
         | FeatureImageStatementBlock
         | FeatureTabsBlock
       )[]
@@ -1828,6 +1830,56 @@ export interface FeatureStatementGridBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureStatementGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureStatementLinksBlock".
+ */
+export interface FeatureStatementLinksBlock {
+  /**
+   * Renders in muted ink. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
+   */
+  statement?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Stacked in order beside the statement, in the right-hand column.
+   */
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureStatementLinks';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3848,6 +3900,7 @@ export interface PagesSelect<T extends boolean = true> {
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
@@ -3988,6 +4041,29 @@ export interface FeatureStatementGridBlockSelect<T extends boolean = true> {
         id?: T;
       };
   browseAllMedia?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureStatementLinksBlock_select".
+ */
+export interface FeatureStatementLinksBlockSelect<T extends boolean = true> {
+  statement?: T;
+  links?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+              label?: T;
+            };
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -4180,6 +4256,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
       };
@@ -5613,6 +5690,7 @@ export interface Home {
     | FormBlock
     | NewsletterSignupBlock
     | FeatureStatementGridBlock
+    | FeatureStatementLinksBlock
     | FeatureHeadingOffsetBlock
     | FeatureTabsBlock
     | FeatureImageStatementBlock
@@ -5819,6 +5897,7 @@ export interface HomeSelect<T extends boolean = true> {
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;

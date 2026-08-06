@@ -12,17 +12,25 @@ import {
 import { BannerBlock } from '@/blocks/Banner/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { CodeBlock, type CodeBlockProps } from '@/blocks/Code/Component'
+import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import type {
   BannerBlock as BannerBlockProps,
   CallToActionBlock as CTABlockProps,
+  FeatureStatementLinksBlock as FeatureStatementLinksBlockProps,
   MediaBlock as MediaBlockProps,
 } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 
 type NodeTypes =
   | DefaultNodeTypes
-  | SerializedBlockNode<CTABlockProps | MediaBlockProps | BannerBlockProps | CodeBlockProps>
+  | SerializedBlockNode<
+      | CTABlockProps
+      | MediaBlockProps
+      | BannerBlockProps
+      | CodeBlockProps
+      | FeatureStatementLinksBlockProps
+    >
 
 const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   const doc = linkNode.fields.doc
@@ -54,6 +62,7 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
     ),
     code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
     cta: ({ node }) => <CallToActionBlock {...node.fields} />,
+    featureStatementLinks: ({ node }) => <FeatureStatementLinksBlock {...node.fields} />,
   },
 })
 

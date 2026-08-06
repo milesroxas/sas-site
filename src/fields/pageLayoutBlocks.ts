@@ -8,6 +8,7 @@ import { FormBlock } from '@/blocks/Form/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
+import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { NewsletterSignup } from '@/blocks/NewsletterSignup/config'
@@ -23,6 +24,7 @@ export const pageLayoutBlocks: Block[] = [
   FormBlock,
   NewsletterSignup,
   FeatureStatementGrid,
+  FeatureStatementLinks,
   FeatureHeadingOffset,
   FeatureTabs,
   FeatureImageStatement,

@@ -8,6 +8,7 @@ import { FormBlock } from '@/blocks/Form/Component'
 import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Component'
 import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
+import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
 import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
@@ -25,6 +26,7 @@ const blockComponents = {
   featureHeadingOffset: FeatureHeadingOffsetBlock,
   featureImageStatement: FeatureImageStatementBlock,
   featureStatementGrid: FeatureStatementGridBlock,
+  featureStatementLinks: FeatureStatementLinksBlock,
   featureTabs: FeatureTabsBlock,
   formBlock: FormBlock,
   homeFeaturedWork: HomeFeaturedWorkBlock,

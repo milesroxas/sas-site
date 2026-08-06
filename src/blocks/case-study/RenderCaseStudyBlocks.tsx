@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/feature/ImageStatement/Component'
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
+import { FeatureStatementLinksBlock as FeatureStatementLinks } from '@/blocks/feature/StatementLinks/Component'
 import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
@@ -445,6 +446,12 @@ export const RenderCaseStudyBlocks = async ({
                 {...block}
                 statement={resolveFeatureBody(block.statement, block.source, study)}
               />
+            </RevealSection>
+          )
+        case 'featureStatementLinks':
+          return (
+            <RevealSection as="div" key={block.id} variant="intro">
+              <FeatureStatementLinks {...block} />
             </RevealSection>
           )
         case 'featureImageStatement':
