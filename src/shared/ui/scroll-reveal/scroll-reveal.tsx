@@ -109,6 +109,14 @@ export const SCROLL_REVEAL_TRIGGER_DEFAULTS = {
   exitTimeScale: 1.6,
 } as const satisfies ScrollRevealTuning
 
+/**
+ * Enter gate for full-viewport shells (`fullViewportSectionClassName`
+ * surfaces): a band that holds the whole screen waits for near-half
+ * visibility so the entrance lands while the section owns the view. Shorter
+ * shells keep `SCROLL_REVEAL_TRIGGER_DEFAULTS`.
+ */
+export const SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD = 0.45
+
 /** The two block shapes; each variant is a complete, independently tuned reveal. */
 const SCROLL_REVEAL_VARIANTS = {
   intro: SCROLL_REVEAL_INTRO,

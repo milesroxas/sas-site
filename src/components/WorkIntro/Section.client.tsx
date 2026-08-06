@@ -5,14 +5,18 @@ import gsap from 'gsap'
 import { type ReactNode, useRef } from 'react'
 import { fullViewportSectionClassName, themeClasses } from '@/blocks/shared/section'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
-import { SCROLL_REVEAL_INTRO, SCROLL_REVEAL_TRIGGER_DEFAULTS } from '@/shared/ui/scroll-reveal'
+import {
+  SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD,
+  SCROLL_REVEAL_INTRO,
+  SCROLL_REVEAL_TRIGGER_DEFAULTS,
+} from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
 gsap.registerPlugin(useGSAP)
 
-/** Shared viewport gate — same enter fraction and exit speed as every reveal shell. */
-const { enterThreshold: ENTER_THRESHOLD, exitTimeScale: EXIT_TIME_SCALE } =
-  SCROLL_REVEAL_TRIGGER_DEFAULTS
+/** Full-viewport shell: fullscreen enter gate, shared exit speed. */
+const ENTER_THRESHOLD = SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD
+const { exitTimeScale: EXIT_TIME_SCALE } = SCROLL_REVEAL_TRIGGER_DEFAULTS
 
 /**
  * The choreography here is bespoke (title leads, eyebrow and body follow on

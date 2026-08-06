@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { type CSSProperties, useState } from 'react'
 import { Media } from '@/components/Media'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
@@ -20,7 +20,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
   return (
     <div className="flex flex-col gap-16 md:gap-20">
       {eyebrow ? (
-        <div className="flex items-center gap-2.5">
+        <div className="reveal-stagger-item flex items-center gap-2.5">
           <span aria-hidden className="block h-px w-8 shrink-0 bg-muted-foreground" />
           <p className="font-mono text-base/none font-medium text-muted-foreground uppercase">
             {eyebrow}
@@ -29,14 +29,15 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
       ) : null}
 
       <ul className="flex flex-col gap-8" onMouseLeave={() => setActiveId(null)}>
-        {entries.map((entry) => {
+        {entries.map((entry, index) => {
           const active = activeId === entry.id
           const showDetails = active && Boolean(entry.client || entry.industry || entry.media)
 
           return (
             <li
               key={entry.id}
-              className="border-b border-muted-foreground"
+              className="reveal-stagger-item border-b border-muted-foreground"
+              style={{ '--stagger': index + (eyebrow ? 1 : 0) } as CSSProperties}
               onMouseEnter={() => setActiveId(entry.id)}
             >
               <Link

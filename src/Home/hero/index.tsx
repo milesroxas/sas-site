@@ -1,6 +1,7 @@
 import type React from 'react'
 import { HeroDarkTheme } from '@/heros/shared'
 import type { Home, Post } from '@/payload-types'
+import { SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD, ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 import { FeaturedCard } from './FeaturedCard'
 import { HeroBackground } from './HeroBackground'
@@ -39,7 +40,12 @@ const HomeHero: React.FC<HomeHeroData> = ({
       {media && typeof media === 'object' && <HeroBackground media={media} />}
 
       {/* Header inset only — section height already ends at the footer. */}
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col self-stretch px-gutter pt-(--header-height)">
+      <ScrollReveal
+        as="div"
+        className="relative z-10 flex min-h-0 flex-1 flex-col self-stretch px-gutter pt-(--header-height)"
+        enterThreshold={SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD}
+        variant="intro"
+      >
         <div className="flex min-h-0 flex-1 flex-col py-8 sm:py-12">
           <div
             className={cn(
@@ -51,6 +57,7 @@ const HomeHero: React.FC<HomeHeroData> = ({
           >
             {title && (
               <h1
+                data-reveal
                 className={cn(
                   'font-heading font-light tracking-tight text-foreground',
                   isCenter
@@ -64,11 +71,16 @@ const HomeHero: React.FC<HomeHeroData> = ({
               </h1>
             )}
 
-            {!isCenter && description && <p className={descriptionClassName}>{description}</p>}
+            {!isCenter && description && (
+              <p className={descriptionClassName} data-reveal>
+                {description}
+              </p>
+            )}
           </div>
 
           {(isCenter || post) && (
             <div
+              data-reveal
               className={cn(
                 'flex w-full shrink-0 self-stretch',
                 isCenter
@@ -98,7 +110,7 @@ const HomeHero: React.FC<HomeHeroData> = ({
             </div>
           )}
         </div>
-      </div>
+      </ScrollReveal>
     </section>
   )
 }

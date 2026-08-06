@@ -10,7 +10,7 @@ import { CMSLink } from '@/components/Link'
 // fallow-ignore-next-line circular-dependency
 import RichText from '@/components/RichText'
 import type { FeatureStatementLinksBlock as FeatureStatementLinksBlockProps } from '@/payload-types'
-import { ScrollReveal } from '@/shared/ui/scroll-reveal'
+import { SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD, ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
 /**
@@ -26,6 +26,7 @@ export const FeatureStatementLinksBlock: React.FC<FeatureStatementLinksBlockProp
 }) => {
   return (
     <ScrollReveal
+      enterThreshold={SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD}
       variant="intro"
       className={cn(
         fullViewportSectionClassName,
