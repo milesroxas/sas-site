@@ -38,6 +38,12 @@ const blockComponents = {
 
 type LayoutBlock = NonNullable<Page['layout']>[number] | NonNullable<Home['layout']>[number]
 
+/**
+ * Blocks that own a GSAP `ScrollReveal` shell — skip the CSS block-reveal wrap
+ * so the two entrance systems never stack.
+ */
+const selfRevealingBlocks = new Set<keyof typeof blockComponents>(['featureStatementLinks'])
+
 export const RenderBlocks: React.FC<{
   blocks: LayoutBlock[] | null | undefined
 }> = (props) => {
@@ -55,6 +61,13 @@ export const RenderBlocks: React.FC<{
             const Block = blockComponents[blockType]
 
             if (Block) {
+              if (selfRevealingBlocks.has(blockType)) {
+                return (
+                  // @ts-expect-error there may be some mismatch between the expected types here
+                  <Block key={index} {...block} disableInnerContainer />
+                )
+              }
+
               return (
                 <RevealSection className="my-16" delayMs={Math.min(index * 72, 420)} key={index}>
                   {/* @ts-expect-error there may be some mismatch between the expected types here */}

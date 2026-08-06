@@ -27,6 +27,14 @@ export const themeClasses = {
 
 export type SectionTheme = keyof typeof themeClasses
 
+/**
+ * Full-viewport band used by composition blocks that center one section of
+ * content. Owned here so GSAP `ScrollReveal` shells and plain sections share
+ * the same height/padding — never restate these classes at a call site.
+ */
+export const fullViewportSectionClassName =
+  'flex min-h-[calc(100svh-var(--footer-height))] flex-col justify-center overflow-clip py-16 md:py-24'
+
 /** Shared vertical-rhythm + theme wrapper used across block families. */
 export const Section = ({
   children,

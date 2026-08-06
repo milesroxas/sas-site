@@ -449,11 +449,8 @@ export const RenderCaseStudyBlocks = async ({
             </RevealSection>
           )
         case 'featureStatementLinks':
-          return (
-            <RevealSection as="div" key={block.id} variant="intro">
-              <FeatureStatementLinks {...block} />
-            </RevealSection>
-          )
+          // Owns its own GSAP intro `ScrollReveal` shell — do not wrap again.
+          return <FeatureStatementLinks key={block.id} {...block} />
         case 'featureImageStatement':
           return (
             <RevealSection as="div" key={block.id} variant="underMedia">

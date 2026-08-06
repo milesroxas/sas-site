@@ -1837,7 +1837,7 @@ export interface FeatureStatementGridBlock {
  */
 export interface FeatureStatementLinksBlock {
   /**
-   * Renders in muted ink. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
+   * Renders in muted ink at regular weight. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
    */
   statement?: {
     root: {
@@ -1877,6 +1877,10 @@ export interface FeatureStatementLinksBlock {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureStatementLinks';
@@ -4064,6 +4068,7 @@ export interface FeatureStatementLinksBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  theme?: T;
   id?: T;
   blockName?: T;
 }

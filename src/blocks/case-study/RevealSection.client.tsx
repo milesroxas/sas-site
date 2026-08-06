@@ -1,7 +1,11 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { type SectionTheme, themeClasses } from '@/blocks/shared/section'
+import {
+  fullViewportSectionClassName,
+  type SectionTheme,
+  themeClasses,
+} from '@/blocks/shared/section'
 import { ScrollReveal, type ScrollRevealVariant } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
@@ -33,11 +37,7 @@ export function RevealSection({
     <ScrollReveal
       as={as}
       variant={variant}
-      className={cn(
-        'flex min-h-[calc(100svh-var(--footer-height))] flex-col justify-center overflow-clip py-16 md:py-24',
-        themeClasses[theme || 'light'],
-        className,
-      )}
+      className={cn(fullViewportSectionClassName, themeClasses[theme || 'light'], className)}
     >
       {children}
     </ScrollReveal>

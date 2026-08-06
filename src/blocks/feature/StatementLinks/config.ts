@@ -1,8 +1,9 @@
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 import { linkGroup } from '@/fields/linkGroup'
 
 /**
- * Wide statement paragraph beside a stacked column of ruled navigation links.
+ * Full-viewport statement beside a stacked column of ruled navigation links.
  */
 export const FeatureStatementLinks: Block = {
   slug: 'featureStatementLinks',
@@ -18,7 +19,7 @@ export const FeatureStatementLinks: Block = {
       type: 'richText',
       admin: {
         description:
-          'Renders in muted ink. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.',
+          'Renders in muted ink at regular weight. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.',
       },
     },
     linkGroup({
@@ -27,5 +28,6 @@ export const FeatureStatementLinks: Block = {
         admin: { description: 'Stacked in order beside the statement, in the right-hand column.' },
       },
     }),
+    themeField(),
   ],
 }
