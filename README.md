@@ -11,10 +11,14 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | [docs/architecture.md](docs/architecture.md) | Developers | Headless CMS model, collection map, access control, publishing pipeline |
 | [docs/editorial/content-hub.md](docs/editorial/content-hub.md) | Editors | Creating clients, projects, case study content, testimonials, assets |
 | [docs/editorial/website.md](docs/editorial/website.md) | Editors | Website surfaces, composing work pages, preview and publishing |
+| [docs/editorial/editorial-guide.md](docs/editorial/editorial-guide.md) | Editors | Voice, structure, and writing standards for published content |
+| [docs/cms-naming.md](docs/cms-naming.md) | Developers, Editors | Admin naming conventions: tabs, groups, field labels, block names |
 | [docs/aeo.md](docs/aeo.md) | Developers, Editors | Answer-engine optimization: llms.txt, IndexNow, JSON-LD, editorial guidance |
 | [docs/mcp.md](docs/mcp.md) | Developers | Internal MCP server at `/api/mcp`: API keys, capabilities, security model |
+| [docs/animations.md](docs/animations.md) | Developers | Route transitions, scroll reveals, marquee; tuning workflow |
 | [docs/immersive-effects.md](docs/immersive-effects.md) | Developers | WebGL effects: architecture, defaults/presets contract, playground workflow |
 | [docs/prds/content-hub.md](docs/prds/content-hub.md) | Reference | Original PRD and architecture amendment |
+| [docs/ask-rag-roadmap.md](docs/ask-rag-roadmap.md) | Reference | Roadmap for the `/ask` retrieval-augmented answering feature |
 | [AGENTS.md](AGENTS.md) | Agents (Cursor / Claude / Codex) | Slim always-on contract: DB, security, tooling; Payload how-to in `.agents/skills/payload` |
 
 ## Stack
@@ -25,8 +29,10 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | CMS | Payload 3.85, Lexical rich text, Postgres (`@payloadcms/db-vercel-postgres`) |
 | Storage | Cloudflare R2, S3-compatible (`@payloadcms/storage-s3`) |
 | Email | Resend (`@payloadcms/email-resend`), React Email |
-| UI | Tailwind CSS 4, shadcn/ui, Geist |
-| Motion / 3D | Lenis, React Three Fiber, Three.js, Tempus, GSAP |
+| UI | Tailwind CSS 4, shadcn/ui, Radix UI, Geist |
+| Motion / 3D | Lenis, Tempus, GSAP, React Three Fiber, Three.js |
+| AI | Vercel AI SDK + OpenAI, pgvector embeddings (`/ask`) |
+| Analytics / monitoring | Sentry, PostHog, GA4, Vercel Speed Insights, c15t consent |
 | Tooling | pnpm, Biome, Vitest, Playwright, Storybook + Chromatic |
 
 ## Features
@@ -43,17 +49,20 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 - Pages (layout builder), Posts with Insights topic hubs, Work Pages (`/works`), Lab Pages (`/lab`), Expertise Pages (`/expertise`), Audience Pages (`/who-we-help`)
 - Work Pages compose case-study content through typed blocks with override-then-canonical resolution
 - Draft preview, live preview, on-demand revalidation, per-surface sitemaps, SEO, search, redirects
+- Newsletter sends through Resend, queued as Payload jobs, with double opt-in and bounce handling
 
-**Immersive stack** (custom)
+**Motion stack** (custom)
 
 - Global WebGL canvas mounted once in the root layout; tunnel pattern for DOM ↔ WebGL composition
 - `ImmersiveShell` for opt-in GPU layers; site-wide Lenis smooth scroll; React View Transitions
-- Demo page at `/demo/immersive`
+- GSAP scroll reveals and marquee under a shared defaults contract ([docs/animations.md](docs/animations.md))
+- Demo pages at `/demo/immersive` and `/demo/transitions`
 
 **Agents & AI**
 
 - AEO plugin: `/llms.txt`, IndexNow pings, JSON-LD, markdown alternates ([docs/aeo.md](docs/aeo.md))
 - Internal MCP server at `/api/mcp` for agent-driven content authoring with per-key capabilities ([docs/mcp.md](docs/mcp.md))
+- `/ask` retrieval-augmented answering over published content, indexed into pgvector on publish ([docs/ask-rag-roadmap.md](docs/ask-rag-roadmap.md))
 
 ## Prerequisites
 
@@ -77,17 +86,32 @@ pnpm install
 cp .env.example .env
 ```
 
+Core:
+
 | Variable | Purpose |
 | --- | --- |
 | `PAYLOAD_SECRET` | JWT signing; use a long random string |
 | `POSTGRES_URL` | Database URL. Default matches Docker (`pnpm db:up`, port `54320`, db `payload`) |
 | `NEXT_PUBLIC_SERVER_URL` | Public site URL, e.g. `http://localhost:3001` (no trailing slash) |
-| `CRON_SECRET` | Auth for scheduled jobs / Vercel cron |
+| `CRON_SECRET` | Auth for the jobs runner (`/api/payload-jobs/run`) — Vercel cron and the GitHub Actions workflow |
 | `PREVIEW_SECRET` | Draft and live preview URLs |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | Cloudflare R2 media storage (S3-compatible) |
 | `R2_PUBLIC_URL`, `NEXT_PUBLIC_MEDIA_URL` | R2 custom domain; the public one lets client components load video direct from the CDN |
 | `RESEND_API_KEY`, `RESEND_FROM_ADDRESS`, `RESEND_FROM_NAME` | Transactional email via Resend |
 | `EMAIL_ASSET_BASE_URL` | Public base URL for images in emails |
+
+Optional — each feature is disabled when its variable is unset:
+
+| Variable | Purpose |
+| --- | --- |
+| `OPENAI_API_KEY` | `/api/ask` answer model and content embeddings; the endpoint returns 503 without it |
+| `RESEND_WEBHOOK_SECRET` | Svix signing secret for the Resend bounce/complaint webhook |
+| `NEWSLETTER_FROM_ADDRESS`, `NEWSLETTER_FROM_NAME` | Newsletter-specific sender; falls back to `RESEND_FROM_*` |
+| `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | Sentry monitoring; the DSN enables the SDK, the rest enable build-time source map upload |
+| `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` | PostHog analytics (host defaults to US cloud) |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics 4 |
+| `NEXT_PUBLIC_C15T_URL` | c15t consent backend; unset = consent stored in the browser only |
+| `INDEXNOW_KEY` | Served at `/indexnow.txt`; pings only fire in production |
 | `CHROMATIC_PROJECT_TOKEN` | Storybook publishing (`pnpm chromatic`) |
 
 `.env` is the single env file for local dev (gitignored). Avoid `.env.local`: it silently outranks `.env`, and a bare `vercel env pull` writes a full cloud-env dump there — including a `POSTGRES_URL` that hijacks your DB. Pull cloud envs through the dev TUI instead; it writes them to `.env.*.pulled` files that Next.js never auto-loads.
@@ -120,7 +144,7 @@ pnpm generate:importmap
 
 ## Dev TUI
 
-`pnpm dev:tui` opens an interactive menu (Node 20+, real TTY) for the dev server, database tasks, Payload CLI, quality checks, and builds. The top-level entries cover the common database workflows:
+`pnpm dev:tui` opens an interactive menu (needs a real TTY) for the dev server, database tasks, Payload CLI, quality checks, and builds. The top-level entries cover the common database workflows:
 
 - **Dev server — default env**: plain `pnpm dev`; `POSTGRES_URL` resolves from the `.env` chain (the footer shows which file wins).
 - **Dev server — local Docker DB**: forces `POSTGRES_URL` to the compose Postgres for that run only (no env files edited) and starts/waits for the container.
@@ -142,24 +166,31 @@ Deliberately not `.env.production.local` / `.env.local`: Next.js auto-loads thos
 ```
 src/
 ├── app/
-│   ├── (frontend)/          # Public site: pages, posts, insights, works, expertise, who-we-help, search
+│   ├── (frontend)/          # Public site, /ask, /demo, sitemaps, llms.txt
 │   └── (payload)/           # Admin panel + REST/GraphQL API
-├── access/                  # Access control helpers (anyone, authenticated, authenticatedOrPublished)
-├── blocks/                  # Generic page blocks + case-study blocks (blocks/case-study/)
-├── collections/             # 20 collections — see Content model
-├── endpoints/seed/          # Dev seed data (original template collections only)
-├── features/immersive/      # WebGL scene feature
-├── fields/                  # Shared fields (defaultLexical, link, linkGroup)
+├── access/                  # Access control helpers (document and field level)
+├── blocks/                  # Generic page blocks + case-study/ and lab/ block sets
+├── collections/             # 21 collections — see Content model
+├── components/              # Shared React components (Link, Media, Card, RichText, …)
+├── endpoints/               # Custom endpoints: seed/, ask, newsletter
+├── features/                # ask/ (RAG index) and immersive/ (WebGL scenes)
+├── fields/                  # Reusable field definitions and overrides
 ├── heros/                   # Page hero variants + CaseStudyHero
-├── lib/                     # ImmersiveShell, SmoothScroll, WebGL canvas/tunnels
+├── hooks/                   # Payload collection hooks + React client hooks
+├── jobs/                    # Payload job tasks (newsletter send)
+├── lib/                     # interactions/ (ImmersiveShell, Lenis) and webgl/ (canvas, tunnels)
 ├── plugins/                 # SEO, redirects, search, forms, nested docs, AEO, ask-index, MCP, Sentry
+├── providers/               # Theme, consent, analytics, smooth scroll
 ├── search/                  # Search plugin sync + field overrides
-├── shared/                  # View transitions, reveal sections, email templates
+├── shared/                  # View transitions, scroll reveal, demo kit, email templates
+├── utilities/               # Framework-agnostic helpers
+├── widgets/                 # Demo playgrounds (transition-demo, immersive-demo)
+├── Header/, Footer/, Home/  # Global configs and their components
 ├── migrations/              # Postgres migrations
 └── payload.config.ts
-scripts/dev-tui/             # Interactive local dev tooling
+scripts/                     # Dev TUI, migration checks, ask-index backfill
 tests/                       # Vitest integration + Playwright E2E
-docs/                        # Architecture + editorial documentation
+docs/                        # Architecture, editorial, and system documentation
 ```
 
 Path alias: `@/*` → `src/*`. Payload config: `@payload-config`.
@@ -168,16 +199,20 @@ Path alias: `@/*` → `src/*`. Payload config: `@payload-config`.
 
 Full detail in [docs/architecture.md](docs/architecture.md).
 
+21 collections are defined in `src/collections/`:
+
 | Group | Collections | Purpose |
 | --- | --- | --- |
 | Website | `pages`, `posts`, `work-pages`, `lab-pages`, `expertise-pages`, `audience-pages` | Publishing surfaces with public URLs |
 | Content Hub | `organizations` (Clients), `projects`, `case-studies` (Case Study Content), `lab-projects`, `testimonials` | Canonical, channel-agnostic source material |
 | Assets | `media`, `asset-libraries` | Uploads with approval status; project-scoped libraries |
-| Taxonomy | `capabilities`, `industries`, `categories` | Shared vocabulary |
+| Taxonomy | `capabilities`, `industries`, `platforms`, `categories` | Shared vocabulary |
 | Newsletter | `newsletters`, `audiences`, `subscribers` | Email sends via Resend; team-only access |
-| System | `users`, `payload-mcp-api-keys` | Admin auth; MCP agent API keys ([docs/mcp.md](docs/mcp.md)) |
+| System | `users` | Admin auth |
 
-Globals: `header`, `footer`. Each Work Page presents exactly one Case Study (unique relationship); canonical content is resolved into blocks at render time and never copied.
+Plugins add `redirects`, `forms`, `form-submissions`, `search`, and `payload-mcp-api-keys` ([docs/mcp.md](docs/mcp.md)).
+
+Globals: `home`, `header`, `footer`, and `site-info` (added by the AEO plugin). Each Work Page presents exactly one Case Study (unique relationship); canonical content is resolved into blocks at render time and never copied.
 
 ## Scripts
 
@@ -189,6 +224,7 @@ Globals: `header`, `footer`. Each Work Page presents exactly one Case Study (uni
 | `pnpm start` | Serve production build |
 | `pnpm dev:prod` | Clean build + start (prod smoke test) |
 | `pnpm db:up` / `pnpm db:down` | Start / stop Docker Postgres |
+| `pnpm db:reset` | Destroy the Docker volume and start a fresh empty Postgres |
 | `pnpm generate:types` | Regenerate `payload-types.ts` |
 | `pnpm generate:importmap` | Regenerate admin `importMap.js` |
 | `pnpm migrate:create` | Generate a migration file from the schema diff (review + commit) |
@@ -233,6 +269,10 @@ ALTER TABLE ... ALTER COLUMN ... SET DEFAULT 'split';  -- fails in the same tran
 
 **Fix before push:** recreate the enum in that migration (cast to `text` → drop/create type with the full value list → cast back), or split into two migrations (ADD VALUE first; use the label in the next). `pnpm check:migrations` and the pre-push hook catch the unsafe pattern.
 
+#### Pre-push guard
+
+`.githooks/pre-push` (wired up by `pnpm install`) rejects a push when it touches schema-defining files without adding a migration — the failure mode where drizzle push masks a new column locally and the Vercel build then crashes querying it. It also runs the enum-safety check on changed migrations. Bypass with `SKIP_MIGRATION_GUARD=1 git push` only when you are certain no migration is needed.
+
 **Agents / LLMs (Cursor, Claude Code, Codex):** root [`AGENTS.md`](AGENTS.md) is the shared always-on contract (Claude loads it via [`CLAUDE.md`](CLAUDE.md); Cursor also mirrors hard rules in `.cursor/rules/`). Do **not** run `pnpm migrate:create` unless the user explicitly asks. Never run `payload migrate` locally. After schema-impacting work, prescribe **create vs rename** answers. Deep Payload how-to lives in `.agents/skills/payload`, not in `AGENTS.md`.
 
 > **Note:** the local DB has no meaningful migration ledger — its schema comes from push, not migrations, so a raw `payload migrate:status` against it would show every row "No". That is why `pnpm migrate:status` is wired to report **production** instead (see above). Don't run `payload migrate:status` directly against local.
@@ -242,32 +282,35 @@ ALTER TABLE ... ALTER COLUMN ... SET DEFAULT 'split';  -- fails in the same tran
 Wipes the local Docker DB and rebuilds the schema from scratch via push — use when local state is broken or you want a clean slate.
 
 ```bash
-docker compose down -v   # stop container + DELETE the volume (all local data gone)
-pnpm db:up               # fresh container; initdb auto-creates the pgvector extension
-pnpm dev                 # Drizzle push rebuilds the full current schema
+pnpm db:reset   # destroy the volume, start a fresh container (initdb creates pgvector)
+pnpm dev        # Drizzle push rebuilds the full current schema
 ```
 
 Irreversible — deletes all local pages/posts/media records. **Local only; production is untouched.** Reseed sample content from `/admin` → **Seed the database** afterward. The pgvector extension is recreated automatically on fresh init via `docker/initdb/01-extensions.sql`, so no manual `CREATE EXTENSION` is needed.
 
 ### Seed
 
-From `/admin`, **Seed the database** loads sample template content (pages, posts, categories, media, forms). Demo user: `demo-author@example.com` / `password`.
+From `/admin`, **Seed the database** loads sample template content (pages, posts, categories, media, a contact form) and overwrites the `home`, `header`, and `footer` globals. Demo user: `demo-author@example.com` / `password`.
 
-> **Warning:** seeding is destructive — it deletes existing pages, posts, categories, media, and forms. Content Hub collections are not seeded, but deleting media breaks any Content Hub records that reference it. Use on fresh environments only.
+> **Warning:** seeding is destructive — it wipes `pages`, `posts`, `categories`, `media`, `forms`, `form-submissions`, and `search`, along with their versions. Content Hub collections are not seeded, but deleting media breaks any Content Hub records that reference it. Use on fresh environments only.
 
 ## Deployment
 
-Deploys to Vercel with Neon Postgres and Cloudflare R2. `vercel.json` runs `pnpm ci` on build and schedules daily job execution at `/api/payload-jobs/run` (scheduled publishing).
+Deploys to Vercel with Neon Postgres and Cloudflare R2. `vercel.json` sets the build command to `pnpm ci` and schedules one daily cron (06:00 UTC) against `/api/payload-jobs/run`.
 
-Required secrets: `PAYLOAD_SECRET`, `CRON_SECRET`, `PREVIEW_SECRET`, Resend keys, and the `R2_*` / `NEXT_PUBLIC_MEDIA_URL` media vars. `POSTGRES_URL` is set by the Neon integration.
+The Payload job queue drives newsletter sends and scheduled publishing, and a daily run is too coarse for it. Because Vercel Hobby allows only daily crons, `.github/workflows/payload-jobs.yml` hits the same endpoint every 10 minutes and the Vercel cron stays as a backstop. That workflow needs the `PAYLOAD_JOBS_URL`, `CRON_SECRET`, and `VERCEL_AUTOMATION_BYPASS_SECRET` repo secrets.
+
+Required Vercel env vars: `PAYLOAD_SECRET`, `CRON_SECRET`, `PREVIEW_SECRET`, Resend keys, and the `R2_*` / `NEXT_PUBLIC_MEDIA_URL` media vars. `POSTGRES_URL` is set by the Neon integration.
 
 ## Testing
 
 ```bash
-pnpm test:int    # API / integration (Vitest) — access control, content-hub rules, website structure
-pnpm test:e2e    # Browser flows (Playwright) — admin, frontend, work-page rendering
+pnpm test:int    # Vitest — content-hub access rules, website structure, ask/RAG, lab, newsletter, WebGL store
+pnpm test:e2e    # Playwright — admin panel, frontend rendering, content-hub work-page flows
 pnpm test        # both
 ```
+
+Visual regression runs in CI: `.github/workflows/chromatic.yml` publishes Storybook on every push and uses TurboSnap so only stories affected by the diff are snapshotted.
 
 ## License
 

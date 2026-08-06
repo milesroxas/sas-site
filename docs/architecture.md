@@ -67,7 +67,7 @@ Assets                                Taxonomy
 | System | `users` | Admin auth |
 | System | `payload-mcp-api-keys` | Per-key capabilities for the `/api/mcp` agent server — see [mcp.md](mcp.md) |
 
-Globals: `header`, `footer` (site navigation).
+Globals: `home`, `header`, `footer`, and `site-info` (added by the AEO plugin).
 
 ## How a Work Page resolves content
 
