@@ -400,6 +400,9 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
               duration: snapDuration,
               ease: activateEase,
               delay: snapDelay,
+              // Judge from position, not projected momentum — a hard flick
+              // must not overshoot items the eye never saw.
+              inertia: false,
             },
             invalidateOnRefresh: true,
             onUpdate(self) {
