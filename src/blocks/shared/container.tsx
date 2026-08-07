@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ReactNode, Ref } from 'react'
 import { cn } from '@/utilities/ui'
 
 /**
@@ -23,12 +23,17 @@ export const Container = ({
   children,
   width = 'expansive',
   className,
+  ref,
 }: {
   children: ReactNode
   width?: ContainerWidth | null
   className?: string
+  ref?: Ref<HTMLDivElement>
 }) => (
-  <div className={cn('container', containerWidthClasses[width || 'expansive'], className)}>
+  <div
+    className={cn('container', containerWidthClasses[width || 'expansive'], className)}
+    ref={ref}
+  >
     {children}
   </div>
 )
