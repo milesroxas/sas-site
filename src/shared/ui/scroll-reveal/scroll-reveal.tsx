@@ -103,19 +103,24 @@ export const SCROLL_REVEAL_UNDER_MEDIA = {
   mediaOffset: -0.5,
 } as const satisfies ScrollRevealTuning
 
-/** Shared viewport gate: one observer per shell drives both reveals alike. */
+/**
+ * Shared viewport gate: one observer per shell drives both reveals alike.
+ * Entrances hold until half the shell is on screen, so content is near
+ * mid-viewport before it plays; shells taller than twice the viewport clamp
+ * to what their box can actually reach (see the observer setup).
+ */
 export const SCROLL_REVEAL_TRIGGER_DEFAULTS = {
-  enterThreshold: 0.35,
+  enterThreshold: 0.5,
   exitTimeScale: 1.6,
 } as const satisfies ScrollRevealTuning
 
 /**
  * Enter gate for full-viewport shells (`fullViewportSectionClassName`
- * surfaces): a band that holds the whole screen waits for near-half
- * visibility so the entrance lands while the section owns the view. Shorter
- * shells keep `SCROLL_REVEAL_TRIGGER_DEFAULTS`.
+ * surfaces): a band that holds the whole screen waits for half visibility so
+ * the entrance lands while the section owns the view. Kept as its own export
+ * so the two gates can diverge again without touching call sites.
  */
-export const SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD = 0.45
+export const SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD = 0.5
 
 /** The two block shapes; each variant is a complete, independently tuned reveal. */
 const SCROLL_REVEAL_VARIANTS = {
@@ -250,16 +255,23 @@ export function ScrollReveal({
         }
       })
 
+      // A shell taller than the viewport can never expose a large fraction of
+      // itself, so the gate caps at the ratio its box can actually reach —
+      // with headroom for rounding — or tall content would never play.
+      const reachableRatio =
+        root.offsetHeight > 0 ? Math.min(1, (window.innerHeight / root.offsetHeight) * 0.85) : 1
+      const gate = Math.min(enterThreshold, reachableRatio)
+
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (!entry) return
-          if (entry.intersectionRatio >= enterThreshold) {
+          if (entry.intersectionRatio >= gate) {
             tl.timeScale(1).play()
           } else if (!entry.isIntersecting) {
             tl.timeScale(exitTimeScale).reverse()
           }
         },
-        { threshold: [0, enterThreshold] },
+        { threshold: [0, gate] },
       )
       observer.observe(root)
       return () => observer.disconnect()

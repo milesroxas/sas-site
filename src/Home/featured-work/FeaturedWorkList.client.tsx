@@ -25,18 +25,26 @@ if (typeof window !== 'undefined') {
 /**
  * The pinned featured-work roll: the section holds the viewport while scroll
  * walks the list, keeping the active entry locked to the vertical center. The
- * band stays blank until the section covers half the viewport, then the site
- * reveal staggers everything in (`entranceStart`). Everything this
+ * band stays blank through the approach and the site reveal staggers
+ * everything in the moment the pin engages (`entranceStart`); the next scroll
+ * input walks the list. Everything this
  * choreography owns lives here once; the media wipe and the shared ease are
  * imported from the scroll-reveal source of truth, never restated.
  *
- * `dimOpacity` / `dimBlurPx` are mirrored by the `opacity-30 blur-xs` classes
- * on non-first items so the server-rendered frame matches the settled state —
+ * Inactive titles dim with distance from the active item
+ * (`restingTitleOpacity`), which also styles the server-rendered frame
+ * inline; `dimBlurPx` is mirrored by the `blur-xs` class on non-first items —
  * change one, change both.
  */
 const FEATURED_WORK_PIN = {
   /** Scroll depth (svh) each item transition consumes. */
   stepSvh: 70,
+  /**
+   * Scroll depth (svh) held at the top of the pin while the entrance plays:
+   * the list stays put, so arrival momentum can't carry the roll past the
+   * first item before the reveal lands.
+   */
+  entranceHoldSvh: 40,
   /**
    * Scroll maps to the list continuously — no rest plateaus, so input always
    * moves something. Centering comes from the snap glide instead: after the
@@ -45,8 +53,18 @@ const FEATURED_WORK_PIN = {
   snapDuration: { min: 0.2, max: 0.5 },
   /** Pause after the last scroll input before the snap glide starts (s). */
   snapDelay: 0.05,
-  /** Inactive title resting opacity (class mirror: `opacity-30`). */
+  /**
+   * Fraction of a step to travel, in the scroll direction, before the glide
+   * commits to the next item; anything shorter settles back. Low enough that
+   * a flick advances, high enough that arrival overshoot can't skip item one.
+   */
+  snapAdvanceFraction: 0.35,
+  /** Resting opacity of the inactive titles nearest the active one. */
   dimOpacity: 0.3,
+  /** Each further step from the active item multiplies the dim by this. */
+  dimFalloff: 0.6,
+  /** Depth floor: no title dims past this, so the roll stays legible. */
+  dimMinOpacity: 0.08,
   /** Inactive title resting blur (class mirror: `blur-xs` = 4px). */
   dimBlurPx: 4,
   /** Inactive title settles slightly back, origin left. */
@@ -58,8 +76,15 @@ const FEATURED_WORK_PIN = {
   metaY: 10,
   /** Counter roll travel (px), signed by scroll direction. */
   counterY: 10,
-  /** Entrance gate: the reveal plays once the section covers half the viewport. */
-  entranceStart: 'top 50%',
+  /** Entrance gate: the reveal plays the moment the pin engages. */
+  entranceStart: 'top top',
+  /**
+   * The reveal reverses only once the section is clearly leaving upward.
+   * Kept apart from `entranceStart`: the snap glide can rest scroll exactly
+   * on the pin boundary, which a shared line would read as a leave-back and
+   * hide the section mid-view.
+   */
+  entranceExit: 'top 80%',
 } as const
 
 /**
@@ -87,6 +112,18 @@ const {
 
 const padIndex = (index: number) => String(index + 1).padStart(2, '0')
 
+/**
+ * Resting opacity for a title `distance` steps from the active item: full at
+ * center, `dimOpacity` beside it, falling off toward the floor with depth.
+ * Also styles the server-rendered frame (distance from item one) so the
+ * settled state matches before hydration.
+ */
+const restingTitleOpacity = (distance: number) => {
+  const { dimOpacity, dimFalloff, dimMinOpacity } = FEATURED_WORK_PIN
+  if (distance === 0) return 1
+  return Math.max(dimMinOpacity, dimOpacity * dimFalloff ** (distance - 1))
+}
+
 type Props = {
   eyebrow?: string | null
   entries: FeaturedWorkEntry[]
@@ -95,7 +132,7 @@ type Props = {
 const EyebrowRule: React.FC<{ label: string }> = ({ label }) => (
   <div className="flex items-center gap-2.5">
     <span aria-hidden className="block h-px w-8 shrink-0 bg-muted-foreground" />
-    <p className="font-mono text-base/none font-medium text-muted-foreground uppercase">{label}</p>
+    <p className="font-mono text-sm/none font-medium text-muted-foreground uppercase">{label}</p>
   </div>
 )
 
@@ -156,7 +193,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
       const counter = root.querySelector<HTMLElement>('[data-work-counter]')
 
       const centers = () => items.map((item) => item.offsetTop + item.offsetHeight / 2)
-      const { activateDuration, activateEase, dimOpacity, dimBlurPx, dimScale, metaY, counterY } =
+      const { activateDuration, activateEase, dimBlurPx, dimScale, metaY, counterY } =
         FEATURED_WORK_PIN
 
       let current = -1
@@ -170,24 +207,13 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
         items.forEach((item, index) => {
           const on = index === next
           const title = item.querySelector('[data-work-title]')
-          const marker = item.querySelector('[data-work-marker]')
           const meta = item.querySelector('[data-work-meta]')
           if (title) {
             gsap.to(title, {
-              opacity: on ? 1 : dimOpacity,
+              opacity: restingTitleOpacity(Math.abs(index - next)),
               scale: on ? 1 : dimScale,
               transformOrigin: 'left center',
               filter: `blur(${on ? 0 : dimBlurPx}px)`,
-              duration,
-              ease: activateEase,
-              overwrite: 'auto',
-            })
-          }
-          if (marker) {
-            gsap.to(marker, {
-              autoAlpha: on ? 1 : 0,
-              scaleX: on ? 1 : 0,
-              transformOrigin: 'left center',
               duration,
               ease: activateEase,
               overwrite: 'auto',
@@ -291,10 +317,10 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
       gsap.set(list, { y: -centers()[0] })
       activate(0, true)
 
-      // Entrance: the section stays blank until it covers half the viewport,
-      // then plays the site reveal — eyebrow and counter lead, titles cascade,
-      // the media frame mask-wipes open on the under-media offset. Reverses on
-      // the way back out so every approach replays.
+      // Entrance: the band stays blank through the approach; the moment the
+      // pin engages the site reveal plays — eyebrow and counter lead, titles
+      // cascade, the media frame mask-wipes open on the under-media offset.
+      // Reverses when the section unpins upward so every approach replays.
       const leads = Array.from(root.querySelectorAll<HTMLElement>('[data-work-entrance="lead"]'))
       const mediaShell = root.querySelector<HTMLElement>('[data-work-entrance="media"]')
       const entranceText = [...leads, ...items]
@@ -335,13 +361,33 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
         trigger: root,
         start: FEATURED_WORK_PIN.entranceStart,
         onEnter: () => entrance.timeScale(1).play(),
+      })
+      ScrollTrigger.create({
+        trigger: root,
+        start: FEATURED_WORK_PIN.entranceExit,
         onLeaveBack: () =>
           entrance.timeScale(SCROLL_REVEAL_TRIGGER_DEFAULTS.exitTimeScale).reverse(),
       })
 
       let timeline: gsap.core.Timeline | null = null
       if (count > 1) {
-        const { snapDuration, snapDelay } = FEATURED_WORK_PIN
+        const { snapDuration, snapDelay, snapAdvanceFraction, entranceHoldSvh, stepSvh } =
+          FEATURED_WORK_PIN
+        // Timeline time in step units; the hold is a fraction of a step.
+        const hold = entranceHoldSvh / stepSvh
+        const total = hold + count - 1
+        // Item i rests centered at time `hold + i`. The glide commits to the
+        // next item only past `snapAdvanceFraction` of a step in the scroll
+        // direction — a flick advances, but arrival overshoot (which lands in
+        // the hold or barely past it) always settles back on item one.
+        const snapToItem = (value: number, self?: ScrollTrigger) => {
+          const step = gsap.utils.clamp(0, count - 1, value * total - hold)
+          const fraction = step - Math.floor(step)
+          const threshold =
+            (self?.direction ?? 1) < 0 ? 1 - snapAdvanceFraction : snapAdvanceFraction
+          const index = fraction >= threshold ? Math.ceil(step) : Math.floor(step)
+          return (hold + index) / total
+        }
         timeline = gsap.timeline({
           defaults: { ease: 'none' },
           scrollTrigger: {
@@ -349,18 +395,16 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
             start: 'top top',
             end: 'bottom bottom',
             scrub: true,
-            // Progress i/(count-1) centers item i, so the uniform snap grid
-            // lands every glide on an item center.
             snap: {
-              snapTo: 1 / (count - 1),
+              snapTo: snapToItem,
               duration: snapDuration,
               ease: activateEase,
               delay: snapDelay,
-              directional: true,
             },
             invalidateOnRefresh: true,
             onUpdate(self) {
-              activate(Math.round(self.progress * (count - 1)))
+              const time = self.progress * total
+              activate(gsap.utils.clamp(0, count - 1, Math.round(time - hold)))
             },
             onRefresh(self) {
               // Function-based tween values re-measure themselves; the resting
@@ -369,14 +413,15 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
             },
           },
         })
-        // One unit of timeline time per transition, continuous end to end —
-        // the snap glide, not a plateau, owns the centered rest.
+        // The hold, then one unit of timeline time per transition, continuous
+        // to the end — the snap glide, not a plateau, owns the centered rest.
+        timeline.to({}, { duration: hold }, 0)
         for (let index = 1; index < count; index++) {
           timeline.fromTo(
             list,
             { y: () => -centers()[index - 1] },
             { y: () => -centers()[index], duration: 1, immediateRender: false },
-            index - 1,
+            hold + index - 1,
           )
         }
       }
@@ -400,7 +445,13 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
     <div
       className="relative"
       ref={rootRef}
-      style={{ height: `calc(100svh + ${(count - 1) * FEATURED_WORK_PIN.stepSvh}svh)` }}
+      style={{
+        height: `calc(100svh + ${
+          count > 1
+            ? FEATURED_WORK_PIN.entranceHoldSvh + (count - 1) * FEATURED_WORK_PIN.stepSvh
+            : 0
+        }svh)`,
+      }}
     >
       {/* Padding mirrors the fixed header/footer bars so `top-1/2` anchors —
           the list and the media frame — center within the visible content
@@ -414,27 +465,19 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
                 {entries.map((entry, index) => (
                   <li data-work-item key={entry.id}>
                     <Link
-                      className="group block py-5 outline-none md:py-6 md:pl-13"
+                      className="group block py-5 outline-none md:py-6"
                       href={entry.href}
                       onFocus={() => activateRef.current?.(index)}
                       transitionTypes={[...forwardNavTransitionTypes]}
                     >
                       <h3
                         className={cn(
-                          'relative text-2xl/9 font-light text-foreground md:text-3xl/9',
-                          index > 0 && 'opacity-30 blur-xs',
+                          'text-2xl/9 font-light text-foreground md:text-3xl/9',
+                          index > 0 && 'blur-xs',
                         )}
                         data-work-title
+                        style={{ opacity: restingTitleOpacity(index) }}
                       >
-                        {/* Anchored to the first line via `lh` so wrapped titles keep the rule on line one. */}
-                        <span
-                          aria-hidden
-                          className={cn(
-                            'absolute top-[0.5lh] right-full mr-5 hidden h-px w-8 bg-foreground md:block',
-                            index > 0 && 'opacity-0',
-                          )}
-                          data-work-marker
-                        />
                         {entry.title}
                       </h3>
                       <MetaLine className={cn(index > 0 && 'opacity-0')} entry={entry} />
