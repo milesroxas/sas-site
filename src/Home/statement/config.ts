@@ -14,6 +14,15 @@ export const homeStatement: Field = {
   },
   fields: [
     {
+      name: 'hidden',
+      type: 'checkbox',
+      label: 'Hide statement section',
+      defaultValue: false,
+      admin: {
+        description: 'Hide the statement band on the homepage without deleting its content.',
+      },
+    },
+    {
       name: 'body',
       type: 'richText',
       label: 'Statement',

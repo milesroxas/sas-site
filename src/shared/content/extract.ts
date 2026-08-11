@@ -39,6 +39,7 @@ const TEXT_KEYS = new Set([
   'question',
   'quote',
   'rationale',
+  'secondline',
   'short',
   'statement',
   'subheading',

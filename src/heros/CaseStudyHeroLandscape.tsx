@@ -1,10 +1,6 @@
+import { termNames } from '@/blocks/shared/resolve-work-entry'
 import { Media } from '@/components/Media'
 import type { CaseStudy, Organization, Project, WorkPage } from '@/payload-types'
-
-const termNames = (terms?: (number | { name: string })[] | null): string[] =>
-  (terms ?? [])
-    .filter((term): term is { name: string } => typeof term === 'object' && term !== null)
-    .map((term) => term.name)
 
 const DetailGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-4">

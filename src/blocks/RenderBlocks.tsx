@@ -10,6 +10,7 @@ import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Comp
 import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
 import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
 import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
+import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
@@ -32,6 +33,7 @@ const blockComponents = {
   featureTabs: FeatureTabsBlock,
   formBlock: FormBlock,
   homeFeaturedWork: HomeFeaturedWorkBlock,
+  industryWork: IndustryWorkBlock,
   mediaBlock: MediaBlock,
   newsletterSignup: NewsletterSignupBlock,
   splitContentNarrow: SplitContentNarrowBlock,

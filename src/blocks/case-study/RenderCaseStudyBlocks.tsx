@@ -5,6 +5,7 @@ import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/fe
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
 import { FeatureStatementLinksBlock as FeatureStatementLinks } from '@/blocks/feature/StatementLinks/Component'
 import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component'
+import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
@@ -460,6 +461,9 @@ export const RenderCaseStudyBlocks = async ({
         case 'featureStatementLinks':
           // Owns its own GSAP intro `ScrollReveal` shell — do not wrap again.
           return <FeatureStatementLinks key={block.id} {...block} />
+        case 'industryWork':
+          // Owns its own full-viewport `ScrollReveal` shell — do not wrap again.
+          return <IndustryWorkBlock key={block.id} {...block} />
         case 'featureImageStatement':
           return (
             <RevealSection

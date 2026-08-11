@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Link from 'next/link'
 import { useRef } from 'react'
 import { Container } from '@/blocks/shared/container'
+import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Media } from '@/components/Media'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
@@ -16,7 +17,6 @@ import {
   scrollRevealTrackStarts,
 } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
-import type { FeaturedWorkEntry } from './resolveEntry'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(useGSAP, ScrollTrigger)
@@ -126,7 +126,7 @@ const restingTitleOpacity = (distance: number) => {
 
 type Props = {
   eyebrow?: string | null
-  entries: FeaturedWorkEntry[]
+  entries: WorkEntry[]
 }
 
 const EyebrowRule: React.FC<{ label: string }> = ({ label }) => (
@@ -136,10 +136,7 @@ const EyebrowRule: React.FC<{ label: string }> = ({ label }) => (
   </div>
 )
 
-const MetaLine: React.FC<{ entry: FeaturedWorkEntry; className?: string }> = ({
-  entry,
-  className,
-}) => {
+const MetaLine: React.FC<{ entry: WorkEntry; className?: string }> = ({ entry, className }) => {
   const parts = [entry.client, entry.industry].filter(Boolean)
   return (
     // Height is reserved even when empty so activation never reflows the list.

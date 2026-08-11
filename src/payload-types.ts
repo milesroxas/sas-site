@@ -293,6 +293,7 @@ export interface Page {
     | SplitContentNarrowBlock
     | TestimonialsMarqueeBlock
     | DynamicAudienceBlock
+    | IndustryWorkBlock
   )[];
   meta?: {
     title?: string | null;
@@ -1303,6 +1304,7 @@ export interface WorkPage {
         | FeatureStatementLinksBlock
         | FeatureImageStatementBlock
         | FeatureTabsBlock
+        | IndustryWorkBlock
       )[]
     | null;
   coverAsset?: (number | null) | Media;
@@ -1987,6 +1989,45 @@ export interface FeatureTabsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureTabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IndustryWorkBlock".
+ */
+export interface IndustryWorkBlock {
+  /**
+   * Static text before the industry dropdown.
+   */
+  heading: string;
+  /**
+   * Each row is a dropdown option: an industry, the sentence continuing the headline, and the work entry it features.
+   */
+  industries: {
+    /**
+     * Shown in the dropdown by name.
+     */
+    industry: number | Industry;
+    /**
+     * First line: continues the headline inline after the dropdown for this industry.
+     */
+    subheading: string;
+    /**
+     * Second line: renders below the first. Leave empty for a one-line headline.
+     */
+    secondLine?: string | null;
+    /**
+     * Work page featured for this industry (list narrows to that industry once one is picked). Title, media, client, and capabilities come from it.
+     */
+    work: number | WorkPage;
+    id?: string | null;
+  }[];
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'industryWork';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3911,6 +3952,7 @@ export interface PagesSelect<T extends boolean = true> {
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
+        industryWork?: T | IndustryWorkBlockSelect<T>;
       };
   meta?:
     | T
@@ -4194,6 +4236,25 @@ export interface DynamicAudienceBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IndustryWorkBlock_select".
+ */
+export interface IndustryWorkBlockSelect<T extends boolean = true> {
+  heading?: T;
+  industries?:
+    | T
+    | {
+        industry?: T;
+        subheading?: T;
+        secondLine?: T;
+        work?: T;
+        id?: T;
+      };
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -4264,6 +4325,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
+        industryWork?: T | IndustryWorkBlockSelect<T>;
       };
   coverAsset?: T;
   downloadableAssets?: T;
@@ -5702,6 +5764,7 @@ export interface Home {
     | SplitContentNarrowBlock
     | TestimonialsMarqueeBlock
     | DynamicAudienceBlock
+    | IndustryWorkBlock
     | HomeFeaturedWorkBlock
   )[];
   meta?: {
@@ -5724,6 +5787,10 @@ export interface Home {
  * via the `definition` "HomeStatement".
  */
 export interface HomeStatement {
+  /**
+   * Hide the statement band on the homepage without deleting its content.
+   */
+  hidden?: boolean | null;
   /**
    * Renders in muted ink. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
    */
@@ -5909,6 +5976,7 @@ export interface HomeSelect<T extends boolean = true> {
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
+        industryWork?: T | IndustryWorkBlockSelect<T>;
         homeFeaturedWork?: T | HomeFeaturedWorkBlockSelect<T>;
       };
   meta?:
@@ -5929,6 +5997,7 @@ export interface HomeSelect<T extends boolean = true> {
  * via the `definition` "HomeStatement_select".
  */
 export interface HomeStatementSelect<T extends boolean = true> {
+  hidden?: T;
   body?: T;
 }
 /**

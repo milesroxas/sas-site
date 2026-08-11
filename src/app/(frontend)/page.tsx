@@ -22,7 +22,7 @@ export default async function HomePage() {
       <PageClient />
       {draft && <LivePreviewListener />}
       <RenderHomeHero {...hero} />
-      {statement ? <HomeStatement {...statement} /> : null}
+      {statement && !statement.hidden ? <HomeStatement {...statement} /> : null}
       <RenderBlocks blocks={layout} />
     </article>
   )

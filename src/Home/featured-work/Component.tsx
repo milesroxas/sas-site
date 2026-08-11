@@ -2,10 +2,10 @@ import configPromise from '@payload-config'
 import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 import type React from 'react'
+import { resolveWorkEntry, type WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Section, type SectionTheme } from '@/blocks/shared/section'
 import type { HomeFeaturedWorkBlock as HomeFeaturedWorkBlockProps, WorkPage } from '@/payload-types'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
-import { type FeaturedWorkEntry, resolveFeaturedWorkEntry } from './resolveEntry'
 
 export const HomeFeaturedWorkBlock: React.FC<
   HomeFeaturedWorkBlockProps & {
@@ -35,17 +35,17 @@ export const HomeFeaturedWorkBlock: React.FC<
 
   const byId = new Map(docs.map((doc) => [doc.id, doc]))
 
-  const resolved: FeaturedWorkEntry[] = ids
+  const resolved: WorkEntry[] = ids
     .map((entryId) => {
       const fromQuery = byId.get(entryId)
-      if (fromQuery) return resolveFeaturedWorkEntry(fromQuery)
+      if (fromQuery) return resolveWorkEntry(fromQuery)
 
       const fromSelection = selected.find(
         (entry): entry is WorkPage => typeof entry === 'object' && entry.id === entryId,
       )
-      return fromSelection ? resolveFeaturedWorkEntry(fromSelection) : null
+      return fromSelection ? resolveWorkEntry(fromSelection) : null
     })
-    .filter((entry): entry is FeaturedWorkEntry => entry !== null)
+    .filter((entry): entry is WorkEntry => entry !== null)
 
   if (resolved.length === 0) return null
 

@@ -9,3 +9,4 @@ export {
   type ScrollRevealVariant,
   scrollRevealTrackStarts,
 } from './scroll-reveal'
+export { useRevealSwap } from './use-reveal-swap'
