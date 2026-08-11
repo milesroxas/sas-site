@@ -27,6 +27,14 @@ export type IndustryWorkPanel = {
   work: WorkEntry
 }
 
+/**
+ * Media-track start against the text track (s). The under-media reveal leads
+ * with the wipe (`mediaOffset: -0.5`); here the headline sits above the media,
+ * so the wipe trails the text instead and the entrance reads top to bottom:
+ * heading → title column → media → details.
+ */
+const INDUSTRY_WORK_MEDIA_OFFSET = 0.2
+
 const MetaGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-2">
     <dt className="font-mono text-xs/none font-medium text-muted-foreground">{label}</dt>
@@ -64,10 +72,14 @@ export const IndustryWorkClient = ({
   return (
     <ScrollReveal
       enterThreshold={SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD}
+      mediaOffset={INDUSTRY_WORK_MEDIA_OFFSET}
       variant="underMedia"
       className={cn(
         fullViewportSectionClassName,
         themeClasses[(theme as SectionTheme | null) || 'dark'],
+        // Deeper vertical rhythm than the shared full-viewport band: extra
+        // breathing room so neighboring sections don't crowd the spotlight.
+        'py-32 md:py-48',
       )}
     >
       <Container
