@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 
 import { Archive } from '@/blocks/ArchiveBlock/config'
+import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { CallToAction } from '@/blocks/CallToAction/config'
 import { Content } from '@/blocks/Content/config'
 import { DynamicAudience } from '@/blocks/DynamicAudience/config'
@@ -32,5 +33,6 @@ export const pageLayoutBlocks: Block[] = [
   SplitContentNarrow,
   TestimonialsMarquee,
   DynamicAudience,
+  AudienceTabs,
   IndustryWork,
 ]

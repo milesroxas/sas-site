@@ -10,6 +10,7 @@ import type { ScrollRevealVariant } from '@/shared/ui/scroll-reveal'
  * wrap them in a second entrance.
  */
 export const blockRevealVariants = {
+  audienceTabs: 'underMedia',
   dynamicAudience: 'underMedia',
   featureHeadingOffset: 'intro',
   featureStatementGrid: 'intro',

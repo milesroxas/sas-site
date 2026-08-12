@@ -11,6 +11,7 @@ import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { Archive } from '@/blocks/ArchiveBlock/config'
+import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { CallToAction } from '@/blocks/CallToAction/config'
 import { Content } from '@/blocks/Content/config'
 import { FormBlock } from '@/blocks/Form/config'
@@ -75,6 +76,7 @@ export const AudiencePages: CollectionConfig<'audience-pages'> = {
                 FeatureTabs,
                 FeatureImageStatement,
                 SplitContentNarrow,
+                AudienceTabs,
               ],
               required: true,
               admin: { initCollapsed: true },

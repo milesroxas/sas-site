@@ -1,5 +1,6 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
 import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/feature/ImageStatement/Component'
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
@@ -475,6 +476,12 @@ export const RenderCaseStudyBlocks = async ({
                 {...block}
                 caption={resolveFeatureBody(block.caption, block.source, study)}
               />
+            </RevealSection>
+          )
+        case 'audienceTabs':
+          return (
+            <RevealSection as="div" key={block.id} variant={blockRevealVariants.audienceTabs}>
+              <AudienceTabsBlock {...block} />
             </RevealSection>
           )
         case 'featureTabs':

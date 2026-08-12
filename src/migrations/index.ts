@@ -40,6 +40,7 @@ import * as migration_20260806_174658_feature_statement_links_theme from './2026
 import * as migration_20260811_035729_industry_work_block from './20260811_035729_industry_work_block';
 import * as migration_20260811_040332_home_statement_hidden from './20260811_040332_home_statement_hidden';
 import * as migration_20260812_191458_project_engagement_type from './20260812_191458_project_engagement_type';
+import * as migration_20260812_212404_audience_tabs_block from './20260812_212404_audience_tabs_block';
 
 export const migrations = [
   {
@@ -250,6 +251,11 @@ export const migrations = [
   {
     up: migration_20260812_191458_project_engagement_type.up,
     down: migration_20260812_191458_project_engagement_type.down,
-    name: '20260812_191458_project_engagement_type'
+    name: '20260812_191458_project_engagement_type',
+  },
+  {
+    up: migration_20260812_212404_audience_tabs_block.up,
+    down: migration_20260812_212404_audience_tabs_block.down,
+    name: '20260812_212404_audience_tabs_block'
   },
 ];

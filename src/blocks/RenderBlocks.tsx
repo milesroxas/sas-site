@@ -1,6 +1,7 @@
 import type React from 'react'
 import { Fragment } from 'react'
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
+import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
 import { DynamicAudienceBlock } from '@/blocks/DynamicAudience/Component'
@@ -23,6 +24,7 @@ import { blockRevealVariants, type RevealMappedBlockSlug } from './shared/reveal
 
 const blockComponents = {
   archive: ArchiveBlock,
+  audienceTabs: AudienceTabsBlock,
   content: ContentBlock,
   cta: CallToActionBlock,
   dynamicAudience: DynamicAudienceBlock,

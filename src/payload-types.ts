@@ -293,6 +293,7 @@ export interface Page {
     | SplitContentNarrowBlock
     | TestimonialsMarqueeBlock
     | DynamicAudienceBlock
+    | AudienceTabsBlock
     | IndustryWorkBlock
   )[];
   meta?: {
@@ -1304,6 +1305,7 @@ export interface WorkPage {
         | FeatureStatementLinksBlock
         | FeatureImageStatementBlock
         | FeatureTabsBlock
+        | AudienceTabsBlock
         | IndustryWorkBlock
       )[]
     | null;
@@ -1989,6 +1991,42 @@ export interface FeatureTabsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureTabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AudienceTabsBlock".
+ */
+export interface AudienceTabsBlock {
+  /**
+   * Centered statement above the tab chips.
+   */
+  heading: string;
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    intro: string;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media: number | Media;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'audienceTabs';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3075,6 +3113,7 @@ export interface ExpertisePage {
     | FeatureTabsBlock
     | FeatureImageStatementBlock
     | SplitContentNarrowBlock
+    | AudienceTabsBlock
   )[];
   /**
    * Canonical capabilities this offering bundles. Drives automatic related-work matching.
@@ -3175,6 +3214,7 @@ export interface AudiencePage {
     | FeatureTabsBlock
     | FeatureImageStatementBlock
     | SplitContentNarrowBlock
+    | AudienceTabsBlock
   )[];
   /**
    * Industries this segment spans. Drives automatic related-work matching.
@@ -3952,6 +3992,7 @@ export interface PagesSelect<T extends boolean = true> {
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
+        audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
       };
   meta?:
@@ -4236,6 +4277,31 @@ export interface DynamicAudienceBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AudienceTabsBlock_select".
+ */
+export interface AudienceTabsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  tabs?:
+    | T
+    | {
+        title?: T;
+        intro?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        media?: T;
+        id?: T;
+      };
+  browseAllMedia?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "IndustryWorkBlock_select".
  */
 export interface IndustryWorkBlockSelect<T extends boolean = true> {
@@ -4325,6 +4391,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
+        audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
       };
   coverAsset?: T;
@@ -4648,6 +4715,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        audienceTabs?: T | AudienceTabsBlockSelect<T>;
       };
   capabilities?: T;
   relatedWorkPages?: T;
@@ -4710,6 +4778,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        audienceTabs?: T | AudienceTabsBlockSelect<T>;
       };
   industries?: T;
   relatedWorkPages?: T;
@@ -5764,6 +5833,7 @@ export interface Home {
     | SplitContentNarrowBlock
     | TestimonialsMarqueeBlock
     | DynamicAudienceBlock
+    | AudienceTabsBlock
     | IndustryWorkBlock
     | HomeFeaturedWorkBlock
   )[];
@@ -5976,6 +6046,7 @@ export interface HomeSelect<T extends boolean = true> {
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
+        audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
         homeFeaturedWork?: T | HomeFeaturedWorkBlockSelect<T>;
       };
