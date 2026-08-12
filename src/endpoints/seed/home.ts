@@ -545,6 +545,54 @@ export const home: (args: HomeArgs) => Omit<DataFromGlobalSlug<'home'>, 'id'> = 
           },
         },
       },
+      {
+        blockName: 'Audience Tabs',
+        blockType: 'audienceTabs',
+        heading:
+          'Different roles see different parts of the problem. We help bring the whole picture into focus.',
+        tabs: [
+          {
+            title: 'Leaders',
+            intro:
+              "We help leadership define the company's purpose, significance, and direction.",
+            items: [
+              { text: 'Clarify the company story and strategic position' },
+              { text: 'Build alignment around a shared direction' },
+              { text: 'Give teams language for explaining the business' },
+              { text: 'Connect brand decisions to business priorities' },
+              { text: 'Create a stronger foundation for what comes next' },
+            ],
+            media: heroImage.id,
+          },
+          {
+            title: 'Teams',
+            intro:
+              'We give marketing and product teams everything they need to stay on-message across every channel and touchpoint.',
+            items: [
+              { text: 'Turn complex ideas into messages people understand' },
+              { text: 'Build a brand system that works across channels' },
+              { text: 'Organize content around what audiences need' },
+              { text: 'Create a website that makes the value visible' },
+              { text: 'Give internal teams tools they can keep using' },
+            ],
+            media: metaImage.id,
+          },
+          {
+            title: 'Experts',
+            intro:
+              'We simplify dense material into something people can follow while preserving its value.',
+            items: [
+              { text: 'Structure complex ideas around audience needs' },
+              { text: 'Translate specialist language into clear, credible messaging' },
+              { text: 'Create visual frameworks that explain difficult subjects' },
+              { text: 'Build content systems for sharing knowledge over time' },
+              { text: 'Turn expertise into a distinctive brand and digital presence' },
+            ],
+            media: heroImage.id,
+          },
+        ],
+        theme: 'dark',
+      },
     ],
     meta: {
       description: 'An open-source website built with Payload and Next.js.',
