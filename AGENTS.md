@@ -30,6 +30,8 @@ Keep this file short. Deep Payload reference lives in skills and `.cursor/rules/
 4. Ask before `pnpm migrate:create`. On approval, review and commit `.ts` + `.json` together. CI (`pnpm ci`) applies to production.
 5. Prefer `migrate:create` (after approval) over hand-written schema migrations.
 6. After generating/editing a migration, run `pnpm check:migrations`. **Never ship** `ALTER TYPE ... ADD VALUE 'x'` plus use of `'x'` (e.g. `SET DEFAULT`) in the same `up()` — Payload runs migrations in a transaction and Postgres rejects that (`unsafe use of new value`). Recreate the enum in one migration, or split ADD VALUE and use across two migrations. Details: `.cursor/rules/database-migrations.mdc`.
+7. **Converting `text` → `select` (enum):** the generated `USING col::enum` cast fails in CI on any production value outside the enum — including `''`. Check real production values first (sas-cms MCP `find*` tools), then add normalizing `UPDATE`s before the cast (lower/trim; NULL anything not in the enum). `pnpm check:migrations` enforces this.
+8. **Migration must cover every schema change in the branch.** Adding a field after a migration was generated leaves prod missing the column — local build passes (dev push syncs it), prod prerender dies with `column does not exist`. Before commit, diff the migration's columns against the fields you added; if a field came later, regenerate the migration (ask first).
 
 ### Required: create / rename prompt answers
 

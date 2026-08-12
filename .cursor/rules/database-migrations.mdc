@@ -40,6 +40,35 @@ That **fails on Vercel/Neon** even though local Drizzle push already applied the
 
 `ADD VALUE` alone (no use of the new label in the same `up()`) is fine. Do not “fix” by running `payload migrate` locally.
 
+## Column type change to enum (`text` → `select`) — normalize data first
+
+Drizzle generates `ALTER COLUMN ... SET DATA TYPE enum USING "col"::enum` **blind to production data**. Any prod row outside the enum — a different case (`"Project"`), free text, or empty string `''` — aborts `payload migrate` in CI, and everything after it in the same transaction never runs. Local checks all pass (dev DB is push-synced); only the CI migrate step fails.
+
+**Required before the cast, in the same `up()`:**
+
+1. Check actual production values first (sas-cms MCP `find*` tools target prod; or `pnpm migrate:status` env). Never assume dev data matches.
+2. Normalize:
+
+```sql
+UPDATE "projects" SET "engagement_type" = lower(btrim("engagement_type"));
+UPDATE "projects" SET "engagement_type" = NULL WHERE "engagement_type" NOT IN ('project', 'retainer');
+```
+
+3. Same for the versions table (`_x_v` / `version_` column).
+4. If normalization discards a real value (no enum equivalent), tell the user which rows lose data.
+
+`pnpm check:migrations` fails on an enum cast with no prior `UPDATE` on that column (migrations after 2026-08-12 baseline).
+
+## Migration must cover every schema change in the branch
+
+A migration generated mid-branch does **not** pick up fields added afterwards. Local dev keeps working (Drizzle push syncs the dev DB), so build/typecheck pass — but prod is migration-only, and the first prerender touching the block errors with `column ... does not exist`, failing every deploy.
+
+Before committing schema work:
+
+- Diff the migration's created columns against every field added in the branch (check the block/collection config, not payload-types alone).
+- If a field landed after `migrate:create` ran, the migration is stale — regenerate it (ask first) or add the missing columns to the pending migration if it is not yet applied (`pnpm migrate:status` shows the prod ledger).
+- Symptom signature: Vercel deploy fails, `pnpm migrate:status` shows the migration **applied** → build-stage failure; reproduce with `set -a && source .env.production.pulled && set +a && pnpm build`.
+
 ## Required: create / rename prompt answers (every schema-impacting task)
 
 When `pnpm migrate:create` runs, Drizzle may interactively ask whether each new table/column is a **create** or a **rename** from an old name. Wrong answers can drop data.
