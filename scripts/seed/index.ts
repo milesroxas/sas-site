@@ -345,7 +345,7 @@ async function run() {
           publicTitle: item.title,
           organization: orgId,
           status: 'completed',
-          engagementType: 'Full engagement',
+          engagementType: 'project',
           capabilities: capabilityIds,
           industries: [industryIds.get(item.sector)],
           publicSummary: para(item.oneLine),

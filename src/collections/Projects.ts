@@ -65,8 +65,15 @@ export const Projects: CollectionConfig<'projects'> = {
             },
             {
               name: 'engagementType',
-              type: 'text',
-              admin: { description: 'How the work was structured (e.g. retainer, sprint).' },
+              type: 'select',
+              enumName: 'project_engagement_type',
+              options: [
+                { label: 'Project', value: 'project' },
+                { label: 'Retainer', value: 'retainer' },
+              ],
+              admin: {
+                description: 'How the engagement was structured: one-off project or retainer.',
+              },
             },
             {
               name: 'startDate',

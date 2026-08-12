@@ -675,9 +675,9 @@ export interface Project {
    */
   status: 'planned' | 'active' | 'completed' | 'archived';
   /**
-   * How the work was structured (e.g. retainer, sprint).
+   * How the engagement was structured: one-off project or retainer.
    */
-  engagementType?: string | null;
+  engagementType?: ('project' | 'retainer') | null;
   /**
    * When the engagement began.
    */
