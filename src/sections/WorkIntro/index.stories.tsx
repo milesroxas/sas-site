@@ -6,7 +6,7 @@ const summary =
   'We connected solutions to the relevant products, services, languages, and industries.\n\nVisitors gained a clearer path through the platform while retaining access to the technical depth they needed.'
 
 const meta = {
-  title: 'Components/WorkIntro',
+  title: 'Sections/WorkIntro',
   component: WorkIntro,
   parameters: {
     layout: 'fullscreen',

@@ -3,7 +3,7 @@ import { postFixtures, videoFixture } from '@/blocks/fixtures'
 import { CollectionArchive } from './index'
 
 const meta = {
-  title: 'Components/CollectionArchive',
+  title: 'Sections/CollectionArchive',
   component: CollectionArchive,
   parameters: {
     layout: 'padded',

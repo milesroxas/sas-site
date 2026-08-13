@@ -35,7 +35,7 @@ const pages = [
 ] as WorkPage[]
 
 const meta = {
-  title: 'Components/RelatedWorkSection',
+  title: 'Sections/RelatedWork',
   component: RelatedWorkSection,
   parameters: {
     layout: 'padded',

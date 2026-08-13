@@ -1,9 +1,9 @@
 import configPromise from '@payload-config'
 import type { Metadata } from 'next/types'
 import { getPayload } from 'payload'
-import { CollectionArchive } from '@/components/CollectionArchive'
 import { PageRange } from '@/components/PageRange'
 import { Pagination } from '@/components/Pagination'
+import { CollectionArchive } from '@/sections/CollectionArchive'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import PageClient from './page.client'
 
