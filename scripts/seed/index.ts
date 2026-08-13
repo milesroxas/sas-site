@@ -1108,7 +1108,8 @@ async function run() {
       },
       {
         title: 'Experts',
-        intro: 'We simplify dense material into something people can follow while preserving its value.',
+        intro:
+          'We simplify dense material into something people can follow while preserving its value.',
         items: [
           { text: 'Structure complex ideas around audience needs' },
           { text: 'Translate specialist language into clear, credible messaging' },

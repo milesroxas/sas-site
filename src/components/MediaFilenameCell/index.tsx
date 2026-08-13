@@ -57,7 +57,7 @@ export const MediaFilenameCell: FC<DefaultCellComponentProps> = ({
         />
         {isVideo ? (
           <span aria-hidden className="media-filename-cell__play">
-            <svg fill="currentColor" height="10" viewBox="0 0 10 12" width="8">
+            <svg aria-hidden="true" fill="currentColor" height="10" viewBox="0 0 10 12" width="8">
               <path d="M1 1.2v9.6L9 6 1 1.2Z" />
             </svg>
           </span>

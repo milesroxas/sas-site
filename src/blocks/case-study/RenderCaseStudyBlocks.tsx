@@ -6,6 +6,7 @@ import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/fe
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
 import { FeatureStatementLinksBlock as FeatureStatementLinks } from '@/blocks/feature/StatementLinks/Component'
 import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component'
+import { FullMedia } from '@/blocks/full-media/FullMedia'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
@@ -22,6 +23,7 @@ import type {
   CaseStudyTestimonialBlock,
   CaseStudyTransitionBlock,
   FeatureHeadingOffsetBlock,
+  FullMediaBlock,
   ImagePairBlock,
   SplitContentNarrowBlock,
   SplitImageOffsetBlock,
@@ -48,6 +50,16 @@ const resolveFeatureBody = (
   source: FeatureHeadingOffsetBlock['source'],
   study: CaseStudy,
 ) => body || (source && source !== 'custom' ? richTextSource(study, source) : null)
+
+/**
+ * Media blocks (split narrow, full media, image pair, split offset) share one
+ * body field: `custom` renders the body as-is, any other source falls back to
+ * the canonical story content when the body is empty.
+ */
+const resolveStoryBody = (
+  block: Pick<SplitContentNarrowBlock, 'source' | 'body'>,
+  study: CaseStudy,
+) => (block.source === 'custom' ? block.body : block.body || richTextSource(study, block.source))
 
 const defaultHeading = (source: CaseStudyStorySectionBlock['source']) =>
   ({
@@ -108,8 +120,7 @@ const StorySection = ({
 }
 
 const SplitNarrow = ({ block, study }: { block: SplitContentNarrowBlock; study: CaseStudy }) => {
-  const content =
-    block.source === 'custom' ? block.body : block.body || richTextSource(study, block.source)
+  const content = resolveStoryBody(block, study)
   const media = block.media
   if (typeof media !== 'object' || !media) return null
   return (
@@ -119,9 +130,19 @@ const SplitNarrow = ({ block, study }: { block: SplitContentNarrowBlock; study: 
   )
 }
 
+const FullMediaSection = ({ block, study }: { block: FullMediaBlock; study: CaseStudy }) => {
+  const content = resolveStoryBody(block, study)
+  const media = block.media
+  if (typeof media !== 'object' || !media) return null
+  return (
+    <RevealSection theme={block.theme} variant={blockRevealVariants.fullMedia}>
+      <FullMedia bare block={block} content={content} media={media} />
+    </RevealSection>
+  )
+}
+
 const ImagePairSection = ({ block, study }: { block: ImagePairBlock; study: CaseStudy }) => {
-  const content =
-    block.source === 'custom' ? block.body : block.body || richTextSource(study, block.source)
+  const content = resolveStoryBody(block, study)
   const { landscapeMedia, portraitMedia } = block
   if (typeof portraitMedia !== 'object' || !portraitMedia) return null
   if (typeof landscapeMedia !== 'object' || !landscapeMedia) return null
@@ -145,8 +166,7 @@ const SplitImageOffsetSection = ({
   block: SplitImageOffsetBlock
   study: CaseStudy
 }) => {
-  const content =
-    block.source === 'custom' ? block.body : block.body || richTextSource(study, block.source)
+  const content = resolveStoryBody(block, study)
   const { largeMedia, smallMedia } = block
   if (typeof largeMedia !== 'object' || !largeMedia) return null
   if (typeof smallMedia !== 'object' || !smallMedia) return null
@@ -417,6 +437,8 @@ export const RenderCaseStudyBlocks = async ({
           return <StorySection block={block} key={block.id} study={study} />
         case 'splitContentNarrow':
           return <SplitNarrow block={block} key={block.id} study={study} />
+        case 'fullMedia':
+          return <FullMediaSection block={block} key={block.id} study={study} />
         case 'imagePair':
           return <ImagePairSection block={block} key={block.id} study={study} />
         case 'splitImageOffset':

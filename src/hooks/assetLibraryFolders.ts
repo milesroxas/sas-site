@@ -15,10 +15,8 @@ const relationId = (value: unknown): number | undefined => {
   return undefined
 }
 
-const resolvedRelation = (
-  incoming: unknown,
-  fallback: unknown,
-): number | undefined => relationId(incoming !== undefined ? incoming : fallback)
+const resolvedRelation = (incoming: unknown, fallback: unknown): number | undefined =>
+  relationId(incoming !== undefined ? incoming : fallback)
 
 // Payload folders and Asset Libraries are wired together only by convention (the
 // library's `rootFolder`), so a library saved without one would leave its assets
@@ -123,10 +121,7 @@ export const ensureMediaFolder: CollectionBeforeValidateHook<Media> = async ({
 
     const inside = await folderIsInsideLibrary(req, folderId, rootFolderId)
     if (!inside) {
-      throw new APIError(
-        'Folder must be this Asset Library’s root or a subfolder inside it.',
-        400,
-      )
+      throw new APIError('Folder must be this Asset Library’s root or a subfolder inside it.', 400)
     }
     return data
   }

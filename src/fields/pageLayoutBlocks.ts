@@ -11,6 +11,7 @@ import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
+import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { NewsletterSignup } from '@/blocks/NewsletterSignup/config'
@@ -31,6 +32,7 @@ export const pageLayoutBlocks: Block[] = [
   FeatureTabs,
   FeatureImageStatement,
   SplitContentNarrow,
+  FullMedia,
   TestimonialsMarquee,
   DynamicAudience,
   AudienceTabs,

@@ -73,7 +73,9 @@ export function ArchiveRail({ children, className }: ArchiveRailProps) {
       ro.disconnect()
       window.removeEventListener('resize', measure)
     }
-  }, [measure, prefersReducedMotion, scrub, children])
+    // Content changes need no dep here: the track is `w-max`, so any change to
+    // its children resizes its border-box and the ResizeObserver re-measures.
+  }, [measure, prefersReducedMotion, scrub])
 
   const lenis = useLenis(() => {
     if (prefersReducedMotion) return

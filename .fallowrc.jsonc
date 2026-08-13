@@ -13,6 +13,7 @@
   "dynamicallyLoaded": [
     "src/components/BeforeLogin/**",
     "src/components/AdminIcon/**",
+    "src/components/MediaFilenameCell/**",
     "src/shared/email/templates/**",
     "src/Footer/RowLabel.tsx",
     "src/Header/RowLabel.tsx",

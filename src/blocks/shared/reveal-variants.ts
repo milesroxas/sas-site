@@ -17,6 +17,7 @@ export const blockRevealVariants = {
   featureTabs: 'intro',
   featureImageStatement: 'underMedia',
   splitContentNarrow: 'underMedia',
+  fullMedia: 'underMedia',
   featureStatementLinks: 'self',
   // Pinned ScrollTrigger shell (sticky viewport + scrubbed list) — a CSS
   // reveal wrapper would put transform/opacity on its ancestor and break the

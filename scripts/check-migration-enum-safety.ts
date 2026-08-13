@@ -83,7 +83,9 @@ function checkAddValueThenUse(filePath: string, sql: string): string[] {
   return [
     `${path.relative(process.cwd(), filePath)}: ADD VALUE then use in same migration (Postgres + Payload transaction): ${conflicts
       .map((v) => JSON.stringify(v))
-      .join(', ')}. Recreate the enum in one migration, or split ADD VALUE and use across two migrations.`,
+      .join(
+        ', ',
+      )}. Recreate the enum in one migration, or split ADD VALUE and use across two migrations.`,
   ]
 }
 
@@ -93,10 +95,7 @@ function checkUnguardedEnumCast(filePath: string, sql: string): string[] {
     const [, table, column] = match
     if (!table || !column || match.index === undefined) continue
     const before = sql.slice(0, match.index)
-    const guardRe = new RegExp(
-      `UPDATE\\s+"${table}"\\s+SET\\s+"${column}"`,
-      'i',
-    )
+    const guardRe = new RegExp(`UPDATE\\s+"${table}"\\s+SET\\s+"${column}"`, 'i')
     if (guardRe.test(before)) continue
     errors.push(
       `${path.relative(process.cwd(), filePath)}: "${table}"."${column}" is cast to an enum without a normalizing UPDATE first. Legacy production values outside the enum (including '') abort payload migrate in CI. Add before the cast: UPDATE "${table}" SET "${column}" = lower(btrim("${column}")); UPDATE "${table}" SET "${column}" = NULL WHERE "${column}" NOT IN (...enum values...); — and check real production values first.`,

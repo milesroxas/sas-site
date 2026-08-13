@@ -5,6 +5,7 @@ import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
+import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
 import { themeField } from '@/blocks/shared/fields'
@@ -205,6 +206,7 @@ export const CaseStudyRelatedWork: Block = {
 export const caseStudyBlocks = [
   CaseStudyStorySection,
   SplitContentNarrow,
+  FullMedia,
   ImagePair,
   SplitImageOffset,
   CaseStudyMediaShowcase,

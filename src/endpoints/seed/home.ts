@@ -553,8 +553,7 @@ export const home: (args: HomeArgs) => Omit<DataFromGlobalSlug<'home'>, 'id'> = 
         tabs: [
           {
             title: 'Leaders',
-            intro:
-              "We help leadership define the company's purpose, significance, and direction.",
+            intro: "We help leadership define the company's purpose, significance, and direction.",
             items: [
               { text: 'Clarify the company story and strategic position' },
               { text: 'Build alignment around a shared direction' },

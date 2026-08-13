@@ -11,6 +11,7 @@ import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Comp
 import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
 import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
 import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
+import { FullMediaBlock } from '@/blocks/full-media/Component'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
@@ -34,6 +35,7 @@ const blockComponents = {
   featureStatementLinks: FeatureStatementLinksBlock,
   featureTabs: FeatureTabsBlock,
   formBlock: FormBlock,
+  fullMedia: FullMediaBlock,
   homeFeaturedWork: HomeFeaturedWorkBlock,
   industryWork: IndustryWorkBlock,
   mediaBlock: MediaBlock,

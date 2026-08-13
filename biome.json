@@ -11,6 +11,7 @@
       "**",
       "!**/.next",
       "!**/.claude",
+      "!.design-sync",
       "!**/public",
       "!**/payload-types.ts",
       "!**/payload-generated-schema.ts",
@@ -56,6 +57,17 @@
     }
   },
   "overrides": [
+    {
+      "includes": ["src/migrations/**"],
+      "formatter": { "enabled": false },
+      "assist": { "actions": { "source": { "organizeImports": "off" } } },
+      "linter": {
+        "rules": {
+          "correctness": { "noUnusedFunctionParameters": "off" },
+          "style": { "useImportType": "off" }
+        }
+      }
+    },
     {
       "includes": ["**/globals.css"],
       "linter": {

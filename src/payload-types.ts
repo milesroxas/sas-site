@@ -291,6 +291,7 @@ export interface Page {
     | FeatureTabsBlock
     | FeatureImageStatementBlock
     | SplitContentNarrowBlock
+    | FullMediaBlock
     | TestimonialsMarqueeBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
@@ -1292,6 +1293,7 @@ export interface WorkPage {
     | (
         | CaseStudyStorySectionBlock
         | SplitContentNarrowBlock
+        | FullMediaBlock
         | ImagePairBlock
         | SplitImageOffsetBlock
         | CaseStudyMediaShowcaseBlock
@@ -1481,6 +1483,58 @@ export interface SplitContentNarrowBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'splitContentNarrow';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FullMediaBlock".
+ */
+export interface FullMediaBlock {
+  /**
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Cropped to 21:9 (16:9 on small screens).
+   */
+  media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Arrange the content row on the left or the right below the media (desktop only; smaller screens always sit left).
+   */
+  contentPosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'fullMedia';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3993,6 +4047,7 @@ export interface PagesSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
@@ -4230,6 +4285,22 @@ export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FullMediaBlock_select".
+ */
+export interface FullMediaBlockSelect<T extends boolean = true> {
+  source?: T;
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  media?: T;
+  browseAllMedia?: T;
+  contentPosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TestimonialsMarqueeBlock_select".
  */
 export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
@@ -4381,6 +4452,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
     | {
         caseStudyStorySection?: T | CaseStudyStorySectionBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
         imagePair?: T | ImagePairBlockSelect<T>;
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
@@ -5837,6 +5909,7 @@ export interface Home {
     | FeatureTabsBlock
     | FeatureImageStatementBlock
     | SplitContentNarrowBlock
+    | FullMediaBlock
     | TestimonialsMarqueeBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
@@ -6050,6 +6123,7 @@ export interface HomeSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
