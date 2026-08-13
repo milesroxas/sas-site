@@ -43,6 +43,7 @@ export const IndustryWork: Block = {
         {
           name: 'subheading',
           type: 'text',
+          label: 'Headline continuation',
           required: true,
           admin: {
             description:
@@ -52,6 +53,7 @@ export const IndustryWork: Block = {
         {
           name: 'secondLine',
           type: 'text',
+          label: 'Headline second line',
           admin: {
             description:
               'Second line: renders below the first. Leave empty for a one-line headline.',
