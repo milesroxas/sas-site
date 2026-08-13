@@ -405,7 +405,7 @@ export interface Media {
    */
   description?: string | null;
   /**
-   * Case-study assets belong to a durable Asset Library; folders organize the files within that library.
+   * Case-study assets belong to a durable Asset Library. Creating from a library files the asset into that library’s folder tree.
    */
   assetLibrary?: (number | null) | AssetLibrary;
   /**
@@ -3641,6 +3641,9 @@ export interface PayloadMcpApiKey {
   };
   assetLibraries?: {
     find?: boolean | null;
+    create?: boolean | null;
+    update?: boolean | null;
+    delete?: boolean | null;
   };
   media?: {
     find?: boolean | null;
@@ -5669,6 +5672,9 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
     | T
     | {
         find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
       };
   media?:
     | T

@@ -41,6 +41,7 @@ import * as migration_20260811_035729_industry_work_block from './20260811_03572
 import * as migration_20260811_040332_home_statement_hidden from './20260811_040332_home_statement_hidden';
 import * as migration_20260812_191458_project_engagement_type from './20260812_191458_project_engagement_type';
 import * as migration_20260812_212404_audience_tabs_block from './20260812_212404_audience_tabs_block';
+import * as migration_20260813_163946_mcp_asset_library_authoring from './20260813_163946_mcp_asset_library_authoring';
 
 export const migrations = [
   {
@@ -256,6 +257,11 @@ export const migrations = [
   {
     up: migration_20260812_212404_audience_tabs_block.up,
     down: migration_20260812_212404_audience_tabs_block.down,
-    name: '20260812_212404_audience_tabs_block'
+    name: '20260812_212404_audience_tabs_block',
+  },
+  {
+    up: migration_20260813_163946_mcp_asset_library_authoring.up,
+    down: migration_20260813_163946_mcp_asset_library_authoring.down,
+    name: '20260813_163946_mcp_asset_library_authoring',
   },
 ];

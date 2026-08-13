@@ -6,7 +6,7 @@ import {
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '../access/authenticated'
-import { populateFolderFromAssetLibrary } from '../hooks/assetLibraryFolders'
+import { ensureMediaFolder } from '../hooks/assetLibraryFolders'
 import { generateVideoPoster } from '../hooks/generateVideoPoster'
 import { resolveVideoAdminThumbnail } from '../hooks/resolveVideoAdminThumbnail'
 
@@ -46,8 +46,8 @@ export const Media: CollectionConfig = {
     update: authenticated,
   },
   hooks: {
+    beforeValidate: [ensureMediaFolder],
     beforeChange: [
-      populateFolderFromAssetLibrary,
       generateVideoPoster,
       ({ data }) => {
         if (data?.allChannels) {
@@ -112,7 +112,17 @@ export const Media: CollectionConfig = {
       index: true,
       admin: {
         description:
-          'Case-study assets belong to a durable Asset Library; folders organize the files within that library.',
+          'Case-study assets belong to a durable Asset Library. Creating from a library files the asset into that library’s folder tree.',
+      },
+    },
+    {
+      name: 'assignLibraryFolder',
+      type: 'ui',
+      admin: {
+        disableListColumn: true,
+        components: {
+          Field: '@/components/AssignLibraryFolder#AssignLibraryFolder',
+        },
       },
     },
     {

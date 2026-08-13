@@ -100,6 +100,7 @@ describe.sequential('content hub and website surfaces', () => {
     })
     libraryId = library.id
     expect(library.project).toBeDefined()
+    expect(library.rootFolder).toBeDefined()
   })
 
   it('keeps canonical publishing separate from website publishing', async () => {

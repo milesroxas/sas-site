@@ -33,17 +33,60 @@ Capabilities, Industries, and Platforms are picked from the shared Taxonomy voca
 
 ### 3. Create an Asset Library and upload media
 
-Assets → Asset Libraries. Create one library per project (link both Project and Client), then upload media into it.
+Assets → Asset Libraries. **One library per project** — not per service, not per case study. Folders inside the library are how you split research, process, and comps.
 
-Every media item has a **Usage status**:
+#### Fill the library form
 
-| Status | Meaning |
+Save the Client and Project first so they appear in the relationship pickers.
+
+| Field | Required | What to put |
+| --- | --- | --- |
+| **Name** | Yes | `{Client} {engagement}`. Same idea as the project, short enough to scan in a list. Do not call it “Asset Library” or repeat the word “vault.” Example: `Vault Brand and Website` (matches AdaCore’s `Adacore Website Redesign`). |
+| **Organization** | Yes | The Client this engagement belongs to. Pick the existing record — do not create a duplicate with the `+`. Example: `Vault Workforce Screening`. |
+| **Project** | Yes | The Project from step 2. Same rule: pick, don’t recreate. Example: `Vault Workforce Screening Brand and Website`. |
+| **Root Folder** | No | Leave empty on first save. The system creates a Media folder with the library’s name and wires it here. Do not pick another project’s folder. After save, open that folder in Assets → Media (Browse by Folder) and add **subfolders** — not more libraries. |
+| **Library Status** | Yes | `active` while you are using it (the default). Set `archived` only when the vault should drop out of the public API. Archiving does not delete files. |
+| **Description** | No | One or two sentences: whose files, from which engagement. This can appear on the public API for active libraries, so keep it factual and non-confidential. Example: `Source files for the Vault Workforce Screening brand and website engagement.` |
+| **Usage Notes** | No | Internal only — never public. The folder map and any approval caveats. Write it so the next editor knows where to put a file. |
+| **Assets** | — | Appears after save. Create/upload from here so new files inherit this library. The create drawer may briefly say **No Folder**; the library root is applied before save. Pick a subfolder in the header if it shouldn’t sit at the root. Don’t upload on the global Media list with no folder — save will fail. |
+| **Case Studies** | — | Read-only. Studies that have attached this library. You link the other direction: Case Study Content → Asset Libraries tab. |
+
+**Usage Notes** example for a brand + website project:
+
+```
+Folders:
+- Research — moodboards, concept designs, competitive and art-direction references. Purpose: research or strategy.
+- Process — wires, explorations, in-progress work. Purpose: process or wireframe.
+- Mockups — website comps, brand applications, device mockups of the finished work. Purpose: interface, design-system, result, or overview.
+
+Upload into the matching folder. A Work Page can only publish files that are public-approved and in this library.
+```
+
+Skip a folder you have no files for. Don’t create a second library named “Brand” or “Website.”
+
+**Never leave a file unfiled.** Saving with no folder is rejected. If the Asset Library is set, the file is filed in that library’s root unless you pick a subfolder.
+
+Preferred upload path:
+
+1. Assets → Media → Browse by Folder → open the library root (`Vault Brand and Website`).
+2. Create subfolders (`Research`, `Process`, `Mockups` / `Website`) if they don’t exist.
+3. Open the subfolder you want, then create the file **from inside it**.
+
+Creating from the library’s Assets list files the header chip to that library’s root (not **No Folder**). Click the chip and pick a subfolder before save if it shouldn’t sit at the root. Client and project fill in from the library when empty. A file cannot save unfiled, and it cannot sit in another library’s folder while attached to this one.
+
+Lab and site-only images still need a folder (make a `Lab` or `Website` folder and upload from there). They do not need an Asset Library.
+
+#### Then upload media
+
+Every file needs:
+
+| Field | Rule |
 | --- | --- |
-| `internal` (default) | Working file; never returned to the public API |
-| `client-review` | Awaiting client sign-off; not public |
-| `public-approved` | Cleared for public use — the only status the website can publish |
-
-Also set **Approved channels** (website, pitch deck, proposal, email, social), alt text, and credit where relevant.
+| **Usage status** | `internal` — working file, not in the public API. `client-review` — awaiting sign-off. `public-approved` — the only status a Work Page can publish. |
+| **Alt text** | Required before a file can be `public-approved`. |
+| **Approved channels** | Include website (or check **All channels**) if the site will use it. |
+| **Purpose** | What the shot documents (`research`, `process`, `interface`, `result`, …). Not the service line — that’s on the project. |
+| **Poster** | Required before a video can be `public-approved` (auto-generated on upload; override if the first frame is wrong). |
 
 > **Important:** file URLs on our storage are technically public even when the status is `internal`. Never upload confidential or legally sensitive files.
 

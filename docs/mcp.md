@@ -39,14 +39,16 @@ Local dev serves the same endpoint at `http://localhost:3001/api/mcp`.
 | Website surfaces | `pages`, `posts`, `work-pages`, `expertise-pages`, `audience-pages`, `lab-pages` (from `CONTENT_SURFACES`) | Full authoring (find, create, update, delete) |
 | Content Hub | `case-studies`, `lab-projects`, `organizations`, `projects`, `testimonials` | Full authoring |
 | Taxonomy | `capabilities`, `categories`, `industries`, `platforms` | Full authoring |
-| Assets | `media`, `asset-libraries` | **Read-only** (find) |
+| Assets | `asset-libraries` | Full authoring (find, create, update, delete) |
+| Assets | `media` | **Read-only** (find) |
 | Globals | `header`, `footer`, `site-info` | Find + update |
 
 "Offered" means the checkbox exists on the key — each key still gets only what an admin turns on.
 
-Assets are read-only by design: MCP tools cannot send binary uploads, and new media defaults to
+Media is read-only by design: MCP tools cannot send binary uploads, and new media defaults to
 the internal `usageStatus` gate anyway (see [architecture.md](architecture.md) access rules).
-Agents reference existing media documents by id.
+Agents reference existing media documents by id. Asset libraries are metadata (name, organization,
+project, status) — creating one also creates its root folder via the collection hook.
 
 **Deliberately excluded** (no MCP tools at all): `users`, `subscribers`, `newsletters`
 (accounts, PII, send machinery), `forms` / `form-submissions`, `redirects`, `search` (derived
@@ -61,6 +63,7 @@ The server's MCP instructions tell agents to:
 - Find a document first and edit from its current state before updating.
 - Pass document **ids** for relationship fields (look them up with the relevant find tool).
 - Never attempt media upload; reference existing media by id.
+- Asset libraries require `organization` and `project` ids; omit `rootFolder` to auto-create one.
 
 ## Security: the REST-bypass rule
 

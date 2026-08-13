@@ -60,11 +60,17 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
   ),
   ...entries(CONTENT_HUB, AUTHORING),
   ...entries(TAXONOMY, AUTHORING),
-  // Assets: read-only. Uploads carry binary files the MCP tools cannot send,
-  // and new media defaults to the internal `usageStatus` gate anyway.
   ...entries(
     {
-      'asset-libraries': 'Asset library folders organizing media per client/project',
+      'asset-libraries':
+        'Asset library folders organizing media per client/project. Creating one auto-creates a root folder; pass organization and project ids',
+    },
+    AUTHORING,
+  ),
+  // Media stays read-only: MCP tools cannot send binary uploads, and new media
+  // defaults to the internal `usageStatus` gate anyway.
+  ...entries(
+    {
       media:
         'Uploaded media. Read-only over MCP — reference existing documents by id; only `public-approved` items render publicly',
     },
@@ -188,6 +194,7 @@ export const mcp: Plugin = mcpPlugin({
         'Rich text fields expect Lexical editor state JSON, not markdown or HTML.',
         'Before updating a document, find it first and edit from its current state.',
         'Relationship fields take document ids — look them up with the relevant find tool.',
+        'Asset libraries require organization and project ids; omit rootFolder to auto-create one.',
         'Media cannot be uploaded here; reference existing media documents by id.',
       ].join(' '),
     },
