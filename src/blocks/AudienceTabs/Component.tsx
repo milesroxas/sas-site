@@ -59,8 +59,8 @@ export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, t
           })}
         </div>
 
-        <div className="flex w-full flex-col items-stretch gap-8 md:gap-12 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex w-full max-w-xl flex-col gap-8 md:gap-16" data-reveal>
+        <div className="grid w-full grid-cols-1 items-stretch gap-8 md:gap-12 lg:grid-cols-12 lg:items-center lg:gap-x-12">
+          <div className="flex w-full max-w-xl flex-col gap-8 md:gap-16 lg:col-span-5" data-reveal>
             <p className="max-w-md text-xl/7 font-light md:text-2xl/8" data-swap="text">
               {current.intro}
             </p>
@@ -80,7 +80,7 @@ export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, t
           </div>
 
           <div
-            className="relative aspect-4/3 w-full shrink-0 overflow-hidden rounded-md bg-muted lg:w-160"
+            className="relative aspect-4/3 w-full overflow-hidden rounded-md bg-muted lg:col-span-7"
             data-reveal="media"
           >
             <div className="absolute inset-0" data-swap="media">
@@ -90,7 +90,7 @@ export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, t
                   htmlElement={null}
                   imgClassName="object-cover"
                   resource={media}
-                  size="(max-width: 1024px) 100vw, 640px"
+                  size="(max-width: 1024px) 100vw, 58vw"
                 />
               ) : null}
             </div>

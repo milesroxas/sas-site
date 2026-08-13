@@ -488,7 +488,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
             </div>
 
             <div className="relative hidden h-full md:block">
-              <div className="absolute top-1/2 right-0 ml-auto w-full max-w-135.75 -translate-y-1/2">
+              <div className="absolute top-1/2 right-0 ml-auto w-full -translate-y-1/2">
                 <div
                   className="relative aspect-video overflow-hidden rounded-md bg-muted"
                   data-work-entrance="media"
@@ -509,7 +509,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
                               htmlElement={null}
                               imgClassName="object-cover"
                               resource={entry.media}
-                              size="544px"
+                              size="(min-width: 768px) 55vw, 100vw"
                             />
                           ) : null}
                         </div>

@@ -6,6 +6,7 @@ import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 
 import type { Header } from '@/payload-types'
+import { Container } from '@/components/Container'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import { TakeoverMenu } from './Menu'
@@ -51,7 +52,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
       >
         {/* Mobile: centered brand + menu icon on the right.
             md+: 3-col grid with MENU text centered and theme on the end. */}
-        <div className="relative flex h-full items-center justify-end px-gutter md:grid md:grid-cols-[1fr_auto_1fr]">
+        <Container className="relative flex h-full items-center justify-end md:grid md:grid-cols-[1fr_auto_1fr]">
           <Link
             href="/"
             transitionTypes={[...lateralNavTransitionTypes]}
@@ -77,7 +78,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
           </button>
 
           <ThemeToggle className="hidden justify-self-end md:inline-flex" />
-        </div>
+        </Container>
       </header>
 
       <TakeoverMenu

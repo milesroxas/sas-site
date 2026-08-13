@@ -15,10 +15,10 @@ export const HomeStatement: React.FC<HomeStatementData> = ({ body }) => {
       enterThreshold={SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD}
       variant="intro"
     >
-      <Container>
+      <Container width="narrow">
         <div data-reveal>
           <RichText
-            className="mx-auto max-w-2xl text-center text-2xl leading-snug md:text-3xl [&_p+p]:mt-4"
+            className="text-center text-2xl leading-snug md:text-3xl [&_p+p]:mt-4"
             data={body}
             enableGutter={false}
             enableProse={false}

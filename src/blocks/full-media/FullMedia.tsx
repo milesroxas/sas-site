@@ -1,4 +1,5 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
+import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { FullMediaBlock, Media as MediaDoc } from '@/payload-types'
@@ -6,10 +7,10 @@ import { cn } from '@/utilities/ui'
 import { Section } from '../shared/section'
 
 /**
- * Presentational full-media layout: container-wide media above a two-column
- * content row. Collection-agnostic — the caller resolves `content` from
- * whichever source applies (inline body or canonical story content) and
- * passes it in.
+ * Presentational full-media layout: viewport-wide media above a two-column
+ * content row in the default page column. Collection-agnostic — the caller
+ * resolves `content` from whichever source applies (inline body or canonical
+ * story content) and passes it in.
  *
  * Media is 16:9 below `md` and 21:9 from `md` up. From `lg` the content row
  * caps at `max-w-3xl` and follows `contentPosition`; below `lg` it always
@@ -34,20 +35,20 @@ export const FullMedia = ({
   if (!content) return null
   const contentRight = block.contentPosition === 'right'
   const inner = (
-    <div className="container">
-      <div className="flex flex-col gap-8">
-        <div
-          className="relative aspect-16/9 w-full overflow-hidden bg-muted md:aspect-21/9"
-          data-reveal="media"
-        >
-          <Media
-            fill
-            htmlElement={null}
-            imgClassName="object-cover"
-            resource={media}
-            size="100vw"
-          />
-        </div>
+    <div className="flex flex-col gap-8">
+      <div
+        className="relative aspect-16/9 w-full overflow-hidden bg-muted md:aspect-21/9"
+        data-reveal="media"
+      >
+        <Media
+          fill
+          htmlElement={null}
+          imgClassName="object-cover"
+          resource={media}
+          size="100vw"
+        />
+      </div>
+      <Container>
         <div
           className={cn(
             'grid grid-cols-[1fr_1fr_0.5fr] gap-8 lg:max-w-3xl lg:grid-cols-2',
@@ -71,7 +72,7 @@ export const FullMedia = ({
             />
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   )
   if (bare) return inner

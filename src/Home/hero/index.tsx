@@ -1,4 +1,5 @@
 import type React from 'react'
+import { Container } from '@/components/Container'
 import { HeroDarkTheme } from '@/heros/shared'
 import type { Home, Post } from '@/payload-types'
 import { SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD, ScrollReveal } from '@/shared/ui/scroll-reveal'
@@ -42,11 +43,11 @@ const HomeHero: React.FC<HomeHeroData> = ({
       {/* Header inset only — section height already ends at the footer. */}
       <ScrollReveal
         as="div"
-        className="relative z-10 flex min-h-0 flex-1 flex-col self-stretch px-gutter pt-(--header-height)"
+        className="relative z-10 flex min-h-0 flex-1 flex-col self-stretch pt-(--header-height)"
         enterThreshold={SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD}
         variant="intro"
       >
-        <div className="flex min-h-0 flex-1 flex-col py-8 sm:py-12">
+        <Container className="flex min-h-0 flex-1 flex-col py-8 sm:py-12">
           <div
             className={cn(
               'flex min-h-0 w-full flex-1 flex-col self-stretch',
@@ -109,7 +110,7 @@ const HomeHero: React.FC<HomeHeroData> = ({
               {post && <FeaturedCard label={featuredLabel} post={post} />}
             </div>
           )}
-        </div>
+        </Container>
       </ScrollReveal>
     </section>
   )

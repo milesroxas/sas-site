@@ -37,8 +37,8 @@ export const DynamicAudienceBlock: React.FC<DynamicAudienceBlockProps> = ({
           subheading={current.subheading}
         />
 
-        <div className="flex flex-col items-stretch gap-8 md:gap-12 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex w-full max-w-xl flex-col gap-6 md:gap-8" data-reveal>
+        <div className="grid grid-cols-1 items-stretch gap-8 md:gap-12 lg:grid-cols-12 lg:items-start lg:gap-x-12">
+          <div className="flex w-full max-w-xl flex-col gap-6 md:gap-8 lg:col-span-5" data-reveal>
             <p className="text-xl leading-8 text-foreground md:text-2xl" data-swap="text">
               {current.intro}
             </p>
@@ -58,7 +58,7 @@ export const DynamicAudienceBlock: React.FC<DynamicAudienceBlockProps> = ({
           </div>
 
           <div
-            className="relative aspect-4/5 w-full shrink-0 overflow-hidden bg-muted lg:w-118 lg:self-start"
+            className="relative aspect-4/5 w-full overflow-hidden bg-muted lg:col-span-5 lg:col-start-8 lg:self-start"
             data-reveal="media"
           >
             <div className="absolute inset-0" data-swap="media">
@@ -68,7 +68,7 @@ export const DynamicAudienceBlock: React.FC<DynamicAudienceBlockProps> = ({
                   htmlElement={null}
                   imgClassName="object-cover"
                   resource={media}
-                  size="(max-width: 1024px) 100vw, 472px"
+                  size="(max-width: 1024px) 100vw, 42vw"
                 />
               ) : null}
             </div>

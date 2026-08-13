@@ -125,7 +125,7 @@ export const IndustryWorkClient = ({
                   htmlElement={null}
                   imgClassName="object-cover"
                   resource={work.media}
-                  size="(max-width: 1024px) 100vw, 640px"
+                  size="(max-width: 1024px) 100vw, 50vw"
                 />
               ) : null}
             </div>

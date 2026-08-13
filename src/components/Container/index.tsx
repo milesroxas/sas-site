@@ -2,26 +2,23 @@ import type { ReactNode, Ref } from 'react'
 import { cn } from '@/utilities/ui'
 
 /**
- * Horizontal section widths. Always applies `.container` (full viewport + the
- * shared `--spacing-gutter`, aligned with header/footer `px-gutter`).
+ * Page widths. Tokens live in `globals.css` (`--max-width-content-*`).
  *
- * - full: site frame — gutters only, no max-width
- * - default: 96rem / 1536px — marketing grids
- * - narrow: 48rem / 768px — reading, forms
- *
- * Tokens live in `globals.css` (`--max-width-content-*`). Change once there.
+ * - default: 96rem / 1536px + gutters — the page column (header/footer too)
+ * - full: edge to edge, no gutters — viewport bleed
+ * - narrow: 40rem / 640px — single-column reading
  */
 export const containerWidthClasses = {
-  full: undefined,
-  default: 'max-w-content-default',
-  narrow: 'max-w-content-narrow',
+  default: 'container',
+  narrow: 'container container-narrow',
+  full: 'container-full',
 } as const
 
 export type ContainerWidth = keyof typeof containerWidthClasses
 
 export const Container = ({
   children,
-  width = 'full',
+  width = 'default',
   className,
   ref,
 }: {
@@ -30,7 +27,7 @@ export const Container = ({
   className?: string
   ref?: Ref<HTMLDivElement>
 }) => (
-  <div className={cn('container', containerWidthClasses[width || 'full'], className)} ref={ref}>
+  <div className={cn(containerWidthClasses[width || 'default'], className)} ref={ref}>
     {children}
   </div>
 )

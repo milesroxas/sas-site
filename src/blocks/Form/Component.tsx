@@ -7,6 +7,7 @@ import type React from 'react'
 import type { ComponentType } from 'react'
 import { useCallback, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -122,7 +123,7 @@ export const FormBlock: React.FC<
   )
 
   return (
-    <div className="container lg:max-w-3xl">
+    <Container width="narrow">
       {enableIntro && introContent && !hasSubmitted && (
         <RichText className="mb-8 lg:mb-12" data={introContent} enableGutter={false} />
       )}
@@ -176,6 +177,6 @@ export const FormBlock: React.FC<
           </FormProvider>
         </CardContent>
       </Card>
-    </div>
+    </Container>
   )
 }

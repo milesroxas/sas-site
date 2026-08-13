@@ -1,5 +1,6 @@
 'use client'
 import type React from 'react'
+import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import { ImmersiveShell, WebGLTunnel, WebGlBackdropScene } from '@/features/immersive'
 import { HeroDarkTheme, HeroDescription, HeroLinks, HeroTitle } from '@/heros/shared'
@@ -13,7 +14,7 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, med
       // isolate: contains the -z-10 image above the page frame's opaque bg-background —
       // vt-home-hero's view-transition-name only provides that stacking context in
       // browsers that support view transitions.
-      className="vt-home-hero relative isolate -mt-(--header-height) flex min-h-[80vh] flex-col items-start overflow-clip bg-background px-gutter py-12 text-foreground"
+      className="vt-home-hero relative isolate -mt-(--header-height) flex min-h-[80vh] flex-col items-start overflow-clip bg-background py-12 text-foreground"
       data-theme="dark"
     >
       <HeroDarkTheme />
@@ -21,14 +22,16 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, med
         <WebGlBackdropScene />
       </WebGLTunnel>
 
-      <div className="relative z-10 flex w-full flex-1 flex-col items-start justify-center pt-(--header-height)">
-        <HeroTitle title={title} />
-      </div>
+      <Container className="relative z-10 flex min-h-0 w-full flex-1 flex-col items-start">
+        <div className="flex w-full flex-1 flex-col items-start justify-center pt-(--header-height)">
+          <HeroTitle title={title} />
+        </div>
 
-      <div className="relative z-10 flex w-full flex-col items-start gap-8">
-        <HeroDescription description={description} />
-        <HeroLinks links={links} />
-      </div>
+        <div className="flex w-full flex-col items-start gap-8">
+          <HeroDescription description={description} />
+          <HeroLinks links={links} />
+        </div>
+      </Container>
 
       {media && typeof media === 'object' && (
         <Media

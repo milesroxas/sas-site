@@ -701,12 +701,11 @@
   --breakpoint-2xl: 86rem;
   --font-mono: var(--font-geist-mono);
   --font-sans: var(--font-geist-sans);
-  /* Outer page gutter — shared by `.container` and chrome (`px-gutter` on
-     header/footer). Mobile value below; ≥md override further down (must live
-     outside @theme). `--max-width-*` generates `max-w-content-*` utilities. */
+  /* Outer page gutter — used by `.container` / `.container-narrow`. Mobile
+     value below; ≥md override further down (must live outside @theme). */
   --spacing-gutter: 1rem; /* = px-4 */
-  --max-width-content-narrow: 48rem; /* ~768px — reading, forms */
-  --max-width-content-default: 96rem; /* ~1536px — marketing grids on wide displays */
+  --max-width-content-narrow: 40rem; /* ~640px — single-column reading */
+  --max-width-content-default: 96rem; /* ~1536px — page column */
 }
 
 @media (width >= 48rem) {
@@ -715,17 +714,24 @@
   }
 }
 
-@layer utilities {
-  /* Site frame: full viewport + shared gutter. Matches header/footer `px-gutter`
-     so content edges align at every width. `max-width: none` overrides Tailwind's
-     built-in breakpoint caps. Pair with `max-w-content-default` / `max-w-content-narrow`,
-     or use `Container` from `@/components/Container`. */
-  .container {
-    width: 100%;
-    max-width: none;
-    margin-inline: auto;
-    padding-inline: var(--spacing-gutter);
-  }
+/* Default page column (1536px + gutters). `container-narrow` is the reading
+   measure. `container-full` is true viewport bleed — no max, no gutters. */
+@utility container {
+  width: 100%;
+  max-width: var(--max-width-content-default);
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+}
+
+@utility container-narrow {
+  max-width: var(--max-width-content-narrow);
+}
+
+@utility container-full {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: 0;
 }
 
 :root {
