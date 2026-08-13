@@ -1,10 +1,10 @@
 import type React from 'react'
-import { Container } from '@/blocks/shared/container'
 import {
   fullViewportSectionClassName,
   type SectionTheme,
   themeClasses,
 } from '@/blocks/shared/section'
+import { Container } from '@/components/Container'
 import { CMSLink } from '@/components/Link'
 // Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
 // fallow-ignore-next-line circular-dependency
@@ -33,7 +33,7 @@ export const FeatureStatementLinksBlock: React.FC<FeatureStatementLinksBlockProp
         themeClasses[(theme as SectionTheme | null) || 'light'],
       )}
     >
-      <Container width="standard">
+      <Container width="default">
         <div className="flex flex-col gap-12 md:flex-row md:items-start md:justify-between">
           {statement ? (
             <div className="min-w-0 max-w-3xl flex-1" data-reveal>

@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useRef, useState } from 'react'
-import { Container } from '@/blocks/shared/container'
 import { HeadingDropdown } from '@/blocks/shared/heading-dropdown'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import {
@@ -10,6 +9,7 @@ import {
   type SectionTheme,
   themeClasses,
 } from '@/blocks/shared/section'
+import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
 import {
@@ -82,11 +82,7 @@ export const IndustryWorkClient = ({
         'py-32 md:py-48',
       )}
     >
-      <Container
-        width="standard"
-        className="flex flex-col gap-12 md:gap-16 lg:gap-24"
-        ref={rootRef}
-      >
+      <Container width="default" className="flex flex-col gap-12 md:gap-16 lg:gap-24" ref={rootRef}>
         <HeadingDropdown
           activeIndex={active}
           heading={heading}

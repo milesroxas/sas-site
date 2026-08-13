@@ -701,14 +701,12 @@
   --breakpoint-2xl: 86rem;
   --font-mono: var(--font-geist-mono);
   --font-sans: var(--font-geist-sans);
-  /* Outer page gutter — use `px-gutter` / `ps-gutter` / etc. Change once here.
-     Mobile value below; ≥md override further down (must live outside @theme). */
+  /* Outer page gutter — shared by `.container` and chrome (`px-gutter` on
+     header/footer). Mobile value below; ≥md override further down (must live
+     outside @theme). `--max-width-*` generates `max-w-content-*` utilities. */
   --spacing-gutter: 1rem; /* = px-4 */
-  /* Block content max-widths — pair with `.container` via `container-narrow` /
-     `container-standard`, or use `Container` from `@/blocks/shared/container`.
-     Expansive / cinematic blocks keep uncapped `.container` alone. */
-  --width-content-narrow: 48rem; /* ~768px — reading, forms */
-  --width-content-standard: 80rem; /* ~1280px — default marketing content */
+  --max-width-content-narrow: 48rem; /* ~768px — reading, forms */
+  --max-width-content-default: 80rem; /* ~1280px — marketing grids */
 }
 
 @media (width >= 48rem) {
@@ -718,23 +716,15 @@
 }
 
 @layer utilities {
-  /* Full-width with the shared page gutter — matches the fixed header/footer
-     bars (px-gutter) so content edges align at every viewport width.
-     max-width: none overrides Tailwind's built-in `container` breakpoint caps.
-     Cap with `.container-narrow` / `.container-standard` when needed. */
+  /* Site frame: full viewport + shared gutter. Matches header/footer `px-gutter`
+     so content edges align at every width. `max-width: none` overrides Tailwind's
+     built-in breakpoint caps. Pair with `max-w-content-default` / `max-w-content-narrow`,
+     or use `Container` from `@/components/Container`. */
   .container {
     width: 100%;
     max-width: none;
     margin-inline: auto;
     padding-inline: var(--spacing-gutter);
-  }
-
-  .container-narrow {
-    max-width: var(--width-content-narrow);
-  }
-
-  .container-standard {
-    max-width: var(--width-content-standard);
   }
 }
 

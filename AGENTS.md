@@ -70,6 +70,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 ## Stack conventions
 
 - Prefer server components; client components only for state/effects/browser APIs.
+- **Every new visual UI ships with a Storybook story** — blocks, `components/ui` primitives (including shadcn installs), and visual shared components. Server blocks that fetch (Payload Local API) story their client piece with fixtures from `src/blocks/fixtures.ts` / `richTextFixture`. Admin-only and non-visual components are exempt.
 - Admin custom components: file paths relative to importMap `baseDir` (not direct imports in config).
 - Drafts: use `versions.drafts` / `_status`; don’t invent a parallel publish `status` field unless the codebase already has one for that collection.
 - Immersive effects: import from `@/features/immersive` (barrel only). Tuning lives once — exported `*_DEFAULTS` per effect, delta-only presets in `src/features/immersive/presets.ts`; never restate defaults; second usage of a tuning → promote to a named preset. See [docs/immersive-effects.md](docs/immersive-effects.md).

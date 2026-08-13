@@ -1,6 +1,6 @@
 import type React from 'react'
-import { Container } from '@/blocks/shared/container'
 import { fullViewportSectionClassName, themeClasses } from '@/blocks/shared/section'
+import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import type { HomeStatement as HomeStatementData } from '@/payload-types'
 import { SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD, ScrollReveal } from '@/shared/ui/scroll-reveal'

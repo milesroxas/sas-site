@@ -24,8 +24,6 @@ export const FEATURE_SOURCE_OPTIONS = [
   'learnings',
 ] as const
 
-export type FeatureSource = (typeof FEATURE_SOURCE_OPTIONS)[number]
-
 /**
  * Select that lets a feature block pull its rich-text body from canonical
  * case-study copy. Only resolves on Work pages (case-study context); elsewhere

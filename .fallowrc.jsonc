@@ -13,7 +13,10 @@
   "dynamicallyLoaded": [
     "src/components/BeforeLogin/**",
     "src/components/AdminIcon/**",
+    "src/components/AssignLibraryFolder/**",
+    "src/components/McpCapabilityControls/**",
     "src/components/MediaFilenameCell/**",
+    "src/components/MediaUpload/**",
     "src/shared/email/templates/**",
     "src/Footer/RowLabel.tsx",
     "src/Header/RowLabel.tsx",
@@ -43,15 +46,27 @@
     { "file": "src/shared/ui/reveal-section/index.ts", "exports": ["RevealSectionProps"] },
     { "file": "src/shared/ui/scramble-text/index.ts", "exports": ["ScrambleTextProps"] },
     {
+      "file": "src/shared/ui/scroll-reveal/index.ts",
+      "exports": ["ScrollRevealProps", "ScrollRevealTuning"]
+    },
+    {
       "file": "src/features/immersive/index.ts",
       "exports": [
         "ImmersiveShellProps",
         "ChromaSplitTextProps",
+        "DispersionMediaProps",
+        "DispersionSource",
         "FloatingCardDef",
         "FloatingCardsProps",
-        "RefractionImageProps"
+        "RefractionMediaProps",
+        "RefractionSource",
+        "TextLoadInProps",
+        "TextLoadInRaymarchedProps"
       ]
     },
+    // Public-API aliases of the internal GlassMediaSource, consumed only via the barrel re-export
+    { "file": "src/features/immersive/ui/dispersion-media.tsx", "exports": ["DispersionSource"] },
+    { "file": "src/features/immersive/ui/refraction-media.tsx", "exports": ["RefractionSource"] },
     // DOM half of the tunnel pair; GlobalCanvas already renders its Out side
     { "file": "src/lib/webgl/components/tunnel/index.tsx", "exports": ["DOMTunnel"] },
     // Staged transactional senders, not yet wired to auth flows

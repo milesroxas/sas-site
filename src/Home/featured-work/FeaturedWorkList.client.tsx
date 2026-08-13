@@ -5,8 +5,8 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Link from 'next/link'
 import { useRef } from 'react'
-import { Container } from '@/blocks/shared/container'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
+import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
@@ -151,7 +151,7 @@ const MetaLine: React.FC<{ entry: WorkEntry; className?: string }> = ({ entry, c
 
 /** Reduced motion collapses the interaction to its final state: a plain list. */
 const StaticList: React.FC<Props> = ({ eyebrow, entries }) => (
-  <Container className="py-16 md:py-24" width="standard">
+  <Container className="py-16 md:py-24" width="default">
     <div className="flex flex-col gap-16 md:gap-20">
       {eyebrow ? <EyebrowRule label={eyebrow} /> : null}
       <ul className="flex flex-col">
@@ -458,7 +458,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
           area, not the raw viewport. Absolute children (masks, eyebrow) are
           unaffected and stay on the physical viewport edges. */}
       <div className="sticky top-0 h-svh overflow-hidden pt-(--header-height) pb-(--footer-height)">
-        <Container className="relative h-full" width="standard">
+        <Container className="relative h-full" width="default">
           <div className="grid h-full md:grid-cols-[minmax(0,32rem)_minmax(0,1fr)]">
             <div className="relative h-full">
               <ul className="absolute inset-x-0 top-1/2 will-change-transform" data-work-list>
@@ -523,7 +523,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
         </Container>
 
         <div className="absolute inset-x-0 top-(--header-height) z-30 pt-8">
-          <Container className="flex items-center justify-between" width="standard">
+          <Container className="flex items-center justify-between" width="default">
             {eyebrow ? (
               <div data-work-entrance="lead">
                 <EyebrowRule label={eyebrow} />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import type {
   AudienceTabsBlock as AudienceTabsBlockProps,
@@ -8,7 +9,6 @@ import type {
 } from '@/payload-types'
 import { useRevealSwap } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
-import { Container } from '../shared/container'
 import { Section, type SectionTheme } from '../shared/section'
 
 export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, tabs, theme }) => {
@@ -25,7 +25,7 @@ export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, t
   return (
     <Section theme={(theme as SectionTheme | null) ?? 'dark'}>
       <Container
-        width="standard"
+        width="default"
         className="flex flex-col items-center gap-10 md:gap-16"
         ref={rootRef}
       >

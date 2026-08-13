@@ -2,13 +2,13 @@
 
 import { useRef, useState } from 'react'
 import { HeadingDropdown } from '@/blocks/shared/heading-dropdown'
+import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import type {
   DynamicAudienceBlock as DynamicAudienceBlockProps,
   Media as MediaDoc,
 } from '@/payload-types'
 import { useRevealSwap } from '@/shared/ui/scroll-reveal'
-import { Container } from '../shared/container'
 import { Section, type SectionTheme } from '../shared/section'
 
 export const DynamicAudienceBlock: React.FC<DynamicAudienceBlockProps> = ({
@@ -28,7 +28,7 @@ export const DynamicAudienceBlock: React.FC<DynamicAudienceBlockProps> = ({
 
   return (
     <Section theme={(theme as SectionTheme | null) ?? 'light'}>
-      <Container width="standard" className="flex flex-col gap-8 md:gap-16 lg:gap-24" ref={rootRef}>
+      <Container width="default" className="flex flex-col gap-8 md:gap-16 lg:gap-24" ref={rootRef}>
         <HeadingDropdown
           activeIndex={active}
           heading={heading}

@@ -1,6 +1,5 @@
 export { DEMO_IMAGE_SRC, DEMO_VIDEO_SRC } from './demo-media'
 export { DemoNav } from './demo-nav'
 export { DemoSection, useDemoAction, useDemoControls, useDemoSnippet } from './demo-section'
-export { DemoSettingsMenu, DemoSettingsProvider, useDemoSettings } from './demo-settings'
-export type { PasteTarget, SnippetFormat } from './format-snippet'
+export { DemoSettingsMenu, DemoSettingsProvider } from './demo-settings'
 export { useVideoUpload } from './use-video-upload'
