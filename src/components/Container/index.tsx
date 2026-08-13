@@ -6,7 +6,7 @@ import { cn } from '@/utilities/ui'
  * shared `--spacing-gutter`, aligned with header/footer `px-gutter`).
  *
  * - full: site frame — gutters only, no max-width
- * - default: 80rem / 1280px — marketing grids
+ * - default: 96rem / 1536px — marketing grids
  * - narrow: 48rem / 768px — reading, forms
  *
  * Tokens live in `globals.css` (`--max-width-content-*`). Change once there.

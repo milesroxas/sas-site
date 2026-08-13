@@ -706,7 +706,7 @@
      outside @theme). `--max-width-*` generates `max-w-content-*` utilities. */
   --spacing-gutter: 1rem; /* = px-4 */
   --max-width-content-narrow: 48rem; /* ~768px — reading, forms */
-  --max-width-content-default: 80rem; /* ~1280px — marketing grids */
+  --max-width-content-default: 96rem; /* ~1536px — marketing grids on wide displays */
 }
 
 @media (width >= 48rem) {
