@@ -44,16 +44,18 @@ export const HeadingDropdown = ({
   const current = options[activeIndex] ?? options[0]
 
   return (
-    <h2
-      className="flex max-w-4xl flex-wrap items-center gap-x-3 gap-y-2 text-3xl font-light leading-10 text-foreground md:gap-4 md:text-4xl"
-      data-reveal
-    >
-      <span className="text-muted-foreground">{heading}</span>
+    // Inline flow (not flex): the chip and subheading sit in the same text run
+    // as the heading, so the sentence wraps word by word instead of dropping
+    // whole segments to a new line.
+    <h2 className="max-w-6xl text-3xl font-light leading-10 text-foreground md:text-4xl" data-reveal>
+      <span className="text-muted-foreground">{heading}</span>{' '}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger
           className={cn(
             'group inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1',
-            'bg-muted text-3xl font-light font-mono text-foreground',
+            // leading-none keeps the chip shorter than the line box so it
+            // rides the text baseline without stretching wrapped lines.
+            'bg-muted align-baseline text-3xl font-light font-mono leading-none text-foreground',
             'outline-none transition-colors hover:bg-accent',
             'focus:outline-none focus:ring-0',
             'focus-visible:ring-2 focus-visible:ring-ring/30',
@@ -102,13 +104,12 @@ export const HeadingDropdown = ({
             )
           })}
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu>{' '}
       <span className={subheadingClassName} data-swap="text">
         {subheading}
       </span>
       {secondLine ? (
-        // basis-full wraps the flex line, so this always starts a new row.
-        <span className={cn('basis-full', subheadingClassName)} data-swap="text">
+        <span className={cn('mt-4 block', subheadingClassName)} data-swap="text">
           {secondLine}
         </span>
       ) : null}

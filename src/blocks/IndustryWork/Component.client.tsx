@@ -101,7 +101,7 @@ export const IndustryWorkClient = ({
             className="relative z-10 flex flex-col items-start gap-6 lg:col-start-1 lg:col-end-6 lg:row-start-1 lg:gap-10 lg:pt-20"
             data-reveal
           >
-            <h3 className="text-3xl/10 font-light text-foreground md:text-4xl/12" data-swap="text">
+            <h3 className="text-3xl/10 font-light text-foreground " data-swap="text">
               {work.title}
             </h3>
             <Link
