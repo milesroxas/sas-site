@@ -30,20 +30,20 @@ export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, t
         ref={rootRef}
       >
         <h2
-          className="max-w-3xl text-center text-3xl/9 font-light text-foreground/80 md:text-4xl/10"
+          className="max-w-4xl text-center text-3xl/9 font-light text-foreground/80 md:text-4xl/10"
           data-reveal
         >
           {heading}
         </h2>
 
-        <div className="flex flex-wrap items-center justify-center gap-3" data-reveal>
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-12" data-reveal>
           {panels.map((tab, index) => {
             const selected = index === active
             return (
               <button
                 aria-pressed={selected}
                 className={cn(
-                  'flex items-center gap-2.5 rounded-full border px-8 py-2.5 text-base/none transition-colors',
+                  'flex items-center gap-2 rounded-full border px-4 py-2 text-lg/none transition-colors',
                   selected
                     ? 'border-transparent bg-foreground/15 text-foreground'
                     : 'border-foreground/25 text-muted-foreground hover:text-foreground',
@@ -52,14 +52,16 @@ export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, t
                 onClick={() => selectTab(index)}
                 type="button"
               >
-                {selected ? <span aria-hidden className="size-1.5 rounded-full bg-brand" /> : null}
+                {selected ? (
+                  <span aria-hidden className="size-1.75 rounded-full bg-green-600" />
+                ) : null}
                 {tab.title}
               </button>
             )
           })}
         </div>
 
-        <div className="grid w-full grid-cols-1 items-stretch gap-8 md:gap-12 lg:grid-cols-12 lg:items-center lg:gap-x-12">
+        <div className="grid w-full grid-cols-1 items-stretch gap-8 md:gap-12 lg:grid-cols-12  lg:gap-x-12">
           <div className="flex w-full max-w-xl flex-col gap-8 md:gap-16 lg:col-span-5" data-reveal>
             <p className="max-w-md text-xl/7 font-light md:text-2xl/8" data-swap="text">
               {current.intro}
@@ -68,7 +70,7 @@ export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, t
               <ul className="flex flex-col divide-y divide-foreground/20">
                 {current.items.map((item, itemIndex) => (
                   <li
-                    className="py-3 text-lg/6 first:pt-0 last:pb-0 md:text-xl/7"
+                    className="py-3 text-lg/6 first:pt-0 last:pb-0 md:text-lg"
                     data-swap="text"
                     key={item.id ?? itemIndex}
                   >
