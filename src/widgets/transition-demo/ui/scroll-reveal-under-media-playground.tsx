@@ -97,20 +97,13 @@ export function ScrollRevealUnderMediaPlayground() {
     },
   })
 
-  const { enterThreshold, exitTimeScale } = useDemoControls('Trigger', {
+  const { enterThreshold } = useDemoControls('Trigger', {
     enterThreshold: {
       value: TRIGGER.enterThreshold,
       min: 0,
       max: 1,
       step: 0.05,
       label: 'visible fraction',
-    },
-    exitTimeScale: {
-      value: TRIGGER.exitTimeScale,
-      min: 1,
-      max: 4,
-      step: 0.1,
-      label: 'exit speed ×',
     },
   })
 
@@ -161,7 +154,6 @@ export function ScrollRevealUnderMediaPlayground() {
         as="div"
         className="relative overflow-hidden rounded-md bg-background px-5 py-12 sm:px-8 sm:py-16 md:px-14"
         enterThreshold={enterThreshold}
-        exitTimeScale={exitTimeScale}
         key={layout}
         mediaDuration={mediaDuration}
         mediaEase={mediaEase}

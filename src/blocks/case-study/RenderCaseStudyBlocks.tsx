@@ -501,11 +501,8 @@ export const RenderCaseStudyBlocks = async ({
             </RevealSection>
           )
         case 'audienceTabs':
-          return (
-            <RevealSection as="div" key={block.id} variant={blockRevealVariants.audienceTabs}>
-              <AudienceTabsBlock {...block} />
-            </RevealSection>
-          )
+          // Owns its own GSAP entrance + swap shell — do not wrap again.
+          return <AudienceTabsBlock key={block.id} {...block} />
         case 'featureTabs':
           return (
             <RevealSection as="div" key={block.id} variant={blockRevealVariants.featureTabs}>

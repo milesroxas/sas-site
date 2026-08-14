@@ -8,15 +8,13 @@ import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import {
   SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD,
   SCROLL_REVEAL_INTRO,
-  SCROLL_REVEAL_TRIGGER_DEFAULTS,
 } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
 gsap.registerPlugin(useGSAP)
 
-/** Full-viewport shell: fullscreen enter gate, shared exit speed. */
+/** Full-viewport shell: fullscreen enter gate. */
 const ENTER_THRESHOLD = SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD
-const { exitTimeScale: EXIT_TIME_SCALE } = SCROLL_REVEAL_TRIGGER_DEFAULTS
 
 /**
  * The choreography here is bespoke (title leads, eyebrow and body follow on
@@ -47,10 +45,10 @@ const WORK_INTRO = {
 } as const
 
 /**
- * Full-screen shell for the work intro. Copy drops into place when the band
- * enters the viewport and reverses out when it fully leaves, so each pass
- * through the section replays as its own moment. Server-rendered children stay
- * visible without JavaScript; reduced motion renders the final state.
+ * Full-screen shell for the work intro. Copy drops into place once, when the
+ * band first enters the viewport — scrolling back past it never reverses or
+ * replays the entrance. Server-rendered children stay visible without
+ * JavaScript; reduced motion renders the final state.
  */
 export function WorkIntroSection({ children }: { children: ReactNode }) {
   const rootRef = useRef<HTMLElement>(null)
@@ -105,13 +103,13 @@ export function WorkIntroSection({ children }: { children: ReactNode }) {
         )
       }
 
+      // Play-once: start the entrance at the gate, then disconnect.
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (!entry) return
           if (entry.intersectionRatio >= ENTER_THRESHOLD) {
-            tl.timeScale(1).play()
-          } else if (!entry.isIntersecting) {
-            tl.timeScale(EXIT_TIME_SCALE).reverse()
+            tl.play()
+            observer.disconnect()
           }
         },
         { threshold: [0, ENTER_THRESHOLD] },

@@ -12,7 +12,6 @@ import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
 import {
   SCROLL_REVEAL_INTRO,
-  SCROLL_REVEAL_TRIGGER_DEFAULTS,
   SCROLL_REVEAL_UNDER_MEDIA,
   scrollRevealTrackStarts,
 } from '@/shared/ui/scroll-reveal'
@@ -78,13 +77,6 @@ const FEATURED_WORK_PIN = {
   counterY: 10,
   /** Entrance gate: the reveal plays the moment the pin engages. */
   entranceStart: 'top top',
-  /**
-   * The reveal reverses only once the section is clearly leaving upward.
-   * Kept apart from `entranceStart`: the snap glide can rest scroll exactly
-   * on the pin boundary, which a shared line would read as a leave-back and
-   * hide the section mid-view.
-   */
-  entranceExit: 'top 80%',
 } as const
 
 /**
@@ -317,7 +309,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
       // Entrance: the band stays blank through the approach; the moment the
       // pin engages the site reveal plays — eyebrow and counter lead, titles
       // cascade, the media frame mask-wipes open on the under-media offset.
-      // Reverses when the section unpins upward so every approach replays.
+      // Play-once: scrolling back up never reverses or replays it.
       const leads = Array.from(root.querySelectorAll<HTMLElement>('[data-work-entrance="lead"]'))
       const mediaShell = root.querySelector<HTMLElement>('[data-work-entrance="media"]')
       const entranceText = [...leads, ...items]
@@ -357,13 +349,8 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
       ScrollTrigger.create({
         trigger: root,
         start: FEATURED_WORK_PIN.entranceStart,
-        onEnter: () => entrance.timeScale(1).play(),
-      })
-      ScrollTrigger.create({
-        trigger: root,
-        start: FEATURED_WORK_PIN.entranceExit,
-        onLeaveBack: () =>
-          entrance.timeScale(SCROLL_REVEAL_TRIGGER_DEFAULTS.exitTimeScale).reverse(),
+        once: true,
+        onEnter: () => entrance.play(),
       })
 
       let timeline: gsap.core.Timeline | null = null

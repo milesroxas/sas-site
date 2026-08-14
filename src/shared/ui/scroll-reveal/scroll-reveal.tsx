@@ -49,8 +49,6 @@ export type ScrollRevealTuning = {
   mediaOffset?: number
   /** Fraction of the shell that must be visible before the entrance plays. */
   enterThreshold?: number
-  /** Exit reverses faster than the entrance so it never lags a quick scroll. */
-  exitTimeScale?: number
 }
 
 export type ScrollRevealProps = ScrollRevealTuning & {
@@ -107,12 +105,20 @@ export const SCROLL_REVEAL_UNDER_MEDIA = {
  * Shared viewport gate: one observer per shell drives both reveals alike.
  * Entrances hold until half the shell is on screen, so content is near
  * mid-viewport before it plays; shells taller than twice the viewport clamp
- * to what their box can actually reach (see the observer setup).
+ * to what their box can actually reach (see the observer setup). Each
+ * entrance plays once — scrolling back past a revealed section never
+ * reverses or replays it.
  */
 export const SCROLL_REVEAL_TRIGGER_DEFAULTS = {
   enterThreshold: 0.5,
-  exitTimeScale: 1.6,
 } as const satisfies ScrollRevealTuning
+
+/**
+ * Click-driven swap exits (panel/tab swaps) lift the outgoing content out
+ * faster than the entrance settles it in. Scroll exits don't animate at all —
+ * entrances are play-once.
+ */
+export const SCROLL_REVEAL_EXIT_TIME_SCALE = 1.6
 
 /**
  * Enter gate for full-viewport shells (`fullViewportSectionClassName`
@@ -176,11 +182,11 @@ function resolveTuning(
 /**
  * The site's scroll-entrance motion language, owned in one place: descendants
  * marked `data-reveal` drop into place with a blur settle when the shell
- * enters the viewport, `data-reveal="media"` targets mask-wipe open from the
- * top, and the whole timeline reverses out when the shell fully leaves so
- * each pass replays. Text and media run as separate tracks so `mediaOffset`
- * can sync or sequence them. Server-rendered children stay visible without
- * JavaScript; reduced motion renders the final state.
+ * enters the viewport, and `data-reveal="media"` targets mask-wipe open from
+ * the top. The entrance plays once — scrolling back past a revealed shell
+ * never reverses or replays it. Text and media run as separate tracks so
+ * `mediaOffset` can sync or sequence them. Server-rendered children stay
+ * visible without JavaScript; reduced motion renders the final state.
  */
 export function ScrollReveal({
   as: Tag = 'section',
@@ -203,7 +209,6 @@ export function ScrollReveal({
     mediaScaleFrom,
     mediaOffset,
     enterThreshold,
-    exitTimeScale,
   } = resolveTuning(variant, tuning)
 
   useGSAP(
@@ -262,13 +267,14 @@ export function ScrollReveal({
         root.offsetHeight > 0 ? Math.min(1, (window.innerHeight / root.offsetHeight) * 0.85) : 1
       const gate = Math.min(enterThreshold, reachableRatio)
 
+      // Play-once: the observer's only job is to start the entrance, so it
+      // disconnects the moment the gate is met — no exit reverse, no replay.
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (!entry) return
           if (entry.intersectionRatio >= gate) {
-            tl.timeScale(1).play()
-          } else if (!entry.isIntersecting) {
-            tl.timeScale(exitTimeScale).reverse()
+            tl.play()
+            observer.disconnect()
           }
         },
         { threshold: [0, gate] },
@@ -291,7 +297,6 @@ export function ScrollReveal({
         mediaScaleFrom,
         mediaOffset,
         enterThreshold,
-        exitTimeScale,
       ],
       revertOnUpdate: true,
     },

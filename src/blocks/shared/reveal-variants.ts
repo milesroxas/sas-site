@@ -10,7 +10,10 @@ import type { ScrollRevealVariant } from '@/shared/ui/scroll-reveal'
  * wrap them in a second entrance.
  */
 export const blockRevealVariants = {
-  audienceTabs: 'underMedia',
+  // Bespoke shell (use-audience-tabs-motion.ts): phased entrance — heading →
+  // tab buttons → list items → media wipe last — plus the scramble tab swap;
+  // shared values imported from the reveals and scramble defaults.
+  audienceTabs: 'self',
   dynamicAudience: 'underMedia',
   featureHeadingOffset: 'intro',
   featureStatementGrid: 'intro',

@@ -38,20 +38,13 @@ export function ScrollRevealIntroPlayground() {
   })
   const textEase = useEaseControl('Motion', INTRO.textEase)
 
-  const { enterThreshold, exitTimeScale } = useDemoControls('Trigger', {
+  const { enterThreshold } = useDemoControls('Trigger', {
     enterThreshold: {
       value: TRIGGER.enterThreshold,
       min: 0,
       max: 1,
       step: 0.05,
       label: 'visible fraction',
-    },
-    exitTimeScale: {
-      value: TRIGGER.exitTimeScale,
-      min: 1,
-      max: 4,
-      step: 0.1,
-      label: 'exit speed ×',
     },
   })
 
@@ -68,7 +61,6 @@ export function ScrollRevealIntroPlayground() {
         as="div"
         className="relative flex min-h-96 items-center overflow-hidden rounded-md bg-background px-5 py-12 sm:px-8 sm:py-16 md:px-14"
         enterThreshold={enterThreshold}
-        exitTimeScale={exitTimeScale}
         replayKey={replayKey}
         stagger={stagger}
         textBlurPx={textBlurPx}

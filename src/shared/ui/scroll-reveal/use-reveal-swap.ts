@@ -4,7 +4,10 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { type RefObject, useRef } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
-import { SCROLL_REVEAL_TRIGGER_DEFAULTS, SCROLL_REVEAL_UNDER_MEDIA } from './scroll-reveal'
+import {
+  SCROLL_REVEAL_EXIT_TIME_SCALE as EXIT_TIME_SCALE,
+  SCROLL_REVEAL_UNDER_MEDIA,
+} from './scroll-reveal'
 
 gsap.registerPlugin(useGSAP)
 
@@ -26,14 +29,13 @@ const {
   mediaEase: MEDIA_EASE,
   mediaScaleFrom: MEDIA_SCALE_FROM,
 } = SCROLL_REVEAL_UNDER_MEDIA
-const { exitTimeScale: EXIT_TIME_SCALE } = SCROLL_REVEAL_TRIGGER_DEFAULTS
 
 const SWAP_TEXT = '[data-swap="text"]'
 const SWAP_MEDIA = '[data-swap="media"]'
 
 /**
  * Two-half swap: the current panel's `data-swap` targets lift out (sped up
- * like every reveal exit), `onSwap` re-renders the next panel, and the
+ * like every swap exit), `onSwap` re-renders the next panel, and the
  * entrance half plays over the fresh nodes. Reduced motion swaps state
  * directly. Returns the context-safe select function.
  */
