@@ -50,6 +50,8 @@ export const AUDIENCE_TABS_MOTION = {
   itemStagger: 0.08,
   /** Media wipe starts this long after the last list item begins. */
   mediaLag: 0.1,
+  /** Incoming swap copy fades in fast — reads as a snap into place. */
+  swapTextInDuration: 0.18,
 } as const
 
 const ENTRANCE_HEADING = '[data-entrance="heading"]'
@@ -70,7 +72,7 @@ const SWAP_MEDIA = '[data-swap="media"]'
  * The incoming image immediately wipes down over the outgoing one (which
  * stays put underneath, so the container background never shows) while the
  * outgoing text fades out in place (sped up like every swap exit); the
- * incoming text then slides down into place and fades in. Selection and
+ * incoming text then snaps into place with a fast fade. Selection and
  * media key on `active` (swapped at click); panel copy keys on `textIndex`
  * (swapped once the fade-out finishes).
  *
@@ -274,16 +276,17 @@ export function useAudienceTabsMotion({
       const texts = root.querySelectorAll<HTMLElement>(SWAP_TEXT)
       if (!texts.length) return
 
-      // Incoming copy slides down into place (the reveal drop) and fades in
-      // on the media wipe's clock.
-      textTlRef.current = gsap
-        .timeline()
-        .fromTo(
-          texts,
-          { autoAlpha: 0, y: -TEXT_Y },
-          { autoAlpha: 1, y: 0, duration: MEDIA_DURATION, ease: TEXT_EASE },
-          0,
-        )
+      // Incoming copy snaps into place: a fast fade, no movement.
+      textTlRef.current = gsap.timeline().fromTo(
+        texts,
+        { autoAlpha: 0, y: 0 },
+        {
+          autoAlpha: 1,
+          duration: AUDIENCE_TABS_MOTION.swapTextInDuration,
+          ease: TEXT_EASE,
+        },
+        0,
+      )
     },
     { scope: rootRef, dependencies: [textIndex, prefersReducedMotion] },
   )
