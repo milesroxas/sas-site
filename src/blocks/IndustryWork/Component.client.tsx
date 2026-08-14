@@ -82,7 +82,7 @@ export const IndustryWorkClient = ({
         'py-32 md:py-48',
       )}
     >
-      <Container width="default" className="flex flex-col gap-12 md:gap-16 lg:gap-24" ref={rootRef}>
+      <Container width="default" className="flex flex-col gap-12 md:gap-16 lg:gap-32" ref={rootRef}>
         <HeadingDropdown
           activeIndex={active}
           heading={heading}
