@@ -1,4 +1,4 @@
-import type { SplitImageOffsetBlock as SplitImageOffsetBlockType } from '@/payload-types'
+import type { WorkSplitImageOffsetBlock as SplitImageOffsetBlockType } from '@/payload-types'
 import { SplitImageOffset } from './SplitImageOffset'
 
 export const SplitImageOffsetBlock = (

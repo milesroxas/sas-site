@@ -1,4 +1,4 @@
-import type { ImagePairBlock as ImagePairBlockType } from '@/payload-types'
+import type { WorkImagePairBlock as ImagePairBlockType } from '@/payload-types'
 import { ImagePair } from './ImagePair'
 
 export const ImagePairBlock = (props: ImagePairBlockType & { disableInnerContainer?: boolean }) => {

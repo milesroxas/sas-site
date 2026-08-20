@@ -1,8 +1,13 @@
 import type React from 'react'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import type { FeatureImageStatementBlock as FeatureImageStatementBlockProps } from '@/payload-types'
+import type { FeatureImageStatementBlock as FeatureImageStatementBlockData } from '@/payload-types'
 import { cn } from '@/utilities/ui'
+
+type FeatureImageStatementBlockProps = Pick<
+  FeatureImageStatementBlockData,
+  'blockType' | 'caption' | 'imageWidth' | 'media' | 'textPosition' | 'textSize'
+>
 
 export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProps> = ({
   media,

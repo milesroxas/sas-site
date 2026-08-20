@@ -28,7 +28,7 @@ export const FullMedia = ({
   media,
 }: {
   bare?: boolean
-  block: FullMediaBlock
+  block: Pick<FullMediaBlock, 'contentPosition' | 'eyebrow' | 'heading' | 'theme'>
   content: DefaultTypedEditorState | null | undefined
   media: MediaDoc
 }) => {
@@ -40,13 +40,7 @@ export const FullMedia = ({
         className="relative aspect-16/9 w-full overflow-hidden bg-muted md:aspect-21/9"
         data-reveal="media"
       >
-        <Media
-          fill
-          htmlElement={null}
-          imgClassName="object-cover"
-          resource={media}
-          size="100vw"
-        />
+        <Media fill htmlElement={null} imgClassName="object-cover" resource={media} size="100vw" />
       </div>
       <Container>
         <div

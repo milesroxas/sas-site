@@ -56,6 +56,10 @@ than any technical plumbing. When writing or updating pages:
 - **Answer first.** Open each section with a direct 40–80-word answer, then elaborate. Question-
   format H2s that match how people actually ask. Each section should stand alone — retrieval
   systems quote chunks, not pages.
+- **Make Story Beats retrieval-sized.** In Case Study Content, a beat should carry one
+  self-contained idea with an honest heading. Work Pages render these server-side, and the Ask
+  corpus hydrates them from the canonical record, so the same unit can support a web section and
+  a future answer, deck, or proposal without copied text.
 - **Every cornerstone page carries at least one named-source statistic and one attributable
   quote.** This is the single strongest proven lever.
 - **Keep dates honest and content genuinely fresh** — quarterly passes over money pages.

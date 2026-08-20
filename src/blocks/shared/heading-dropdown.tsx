@@ -47,7 +47,10 @@ export const HeadingDropdown = ({
     // Inline flow (not flex): the chip and subheading sit in the same text run
     // as the heading, so the sentence wraps word by word instead of dropping
     // whole segments to a new line.
-    <h2 className="max-w-6xl text-3xl font-light leading-10 text-foreground md:text-4xl" data-reveal>
+    <h2
+      className="max-w-6xl text-3xl font-light leading-10 text-foreground md:text-4xl"
+      data-reveal
+    >
       <span className="text-muted-foreground">{heading}</span>{' '}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger

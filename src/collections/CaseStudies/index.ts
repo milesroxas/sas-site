@@ -9,6 +9,7 @@ import {
   revalidateCaseStudyConsumers,
 } from './hooks/revalidateCaseStudy'
 import { validateCaseStudy } from './hooks/validateCaseStudy'
+import { CASE_STUDY_STORY_SECTION_DEFINITIONS, caseStudyStorySectionField } from './story'
 
 export const CaseStudies: CollectionConfig<'case-studies'> = {
   slug: 'case-studies',
@@ -110,20 +111,16 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
           ],
         },
         {
-          label: 'Story',
+          label: 'Narrative',
+          description:
+            'Channel-neutral prose, organized by story role. Each section can stay continuous or be split into reusable Story Beats.',
+          fields: CASE_STUDY_STORY_SECTION_DEFINITIONS.map(caseStudyStorySectionField),
+        },
+        {
+          label: 'Objectives & Decisions',
+          description:
+            'Structured engagement intent and consequential choices. These are reusable records, not page sections.',
           fields: [
-            {
-              name: 'context',
-              type: 'richText',
-              admin: { description: 'Background: client situation before the engagement.' },
-            },
-            {
-              name: 'challenge',
-              type: 'richText',
-              admin: {
-                description: 'The problem being solved. Required to publish.',
-              },
-            },
             {
               name: 'objectives',
               type: 'array',
@@ -132,16 +129,6 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
                 { name: 'title', type: 'text', required: true },
                 { name: 'description', type: 'textarea' },
               ],
-            },
-            {
-              name: 'strategy',
-              type: 'richText',
-              admin: { description: 'High-level strategic direction taken.' },
-            },
-            {
-              name: 'approach',
-              type: 'richText',
-              admin: { description: 'How the work was carried out.' },
             },
             {
               name: 'keyDecisions',
@@ -188,23 +175,11 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
                 },
               ],
             },
-            {
-              name: 'learnings',
-              type: 'richText',
-              admin: { description: 'What the team took away from the work.' },
-            },
           ],
         },
         {
           label: 'Evidence',
           fields: [
-            {
-              name: 'outcomeSummary',
-              type: 'richText',
-              admin: {
-                description: 'Overall result of the engagement. Required to publish.',
-              },
-            },
             {
               name: 'qualitativeOutcomes',
               type: 'array',

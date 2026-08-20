@@ -30,12 +30,13 @@ A Work Page turns one Case Study Content document into a public case study. It n
 ### Composing
 
 1. **Content Source** — pick the Case Study Content. One Work Page per study; the title field is just an editorial label.
-2. **Presentation → Hero** — layout (editorial-split, centered, immersive, media-led), theme (light / dark / neutral / brand), media treatment (contained / full-bleed / floating / background), optional eyebrow and media. Leave override fields empty to inherit the canonical title and summary; fill them only when the web needs different phrasing.
-3. **Presentation → Layout blocks** — order tells the story:
+2. **Opening** — configure the hero and introduction. Leave override fields empty to inherit the canonical title and summary; fill them only when the web needs different phrasing.
+3. **Composition** — add and order blocks to tell the website story:
 
 | Block | What it does |
 | --- | --- |
-| Story Section | Renders one canonical section (context, challenge, strategy, approach, outcome summary, learnings) with optional heading/body override, or fully custom copy |
+| Story Section | Selects a canonical section (context, challenge, strategy, approach, outcomes, learnings), then optionally one Story Beat within it; heading/body overrides remain website-only |
+| Narrative + media blocks | Split content, full media, image pair, split image, and supported feature blocks use the same section-first, optional-beat source pattern |
 | Media Showcase | A set of approved media in a chosen layout |
 | Key Decisions | The study's key decisions — featured only, or all |
 | Metrics | The study's metrics — only ever the publicly approved ones |
@@ -46,6 +47,20 @@ A Work Page turns one Case Study Content document into a public case study. It n
 4. **Assets** — cover asset (used on `/works` cards) and optional downloadable assets. A sidebar **Featured** checkbox drives card treatment and ordering on `/works`.
 5. **Related Work** — manual related pages, used by the Related Work block's document-settings mode.
 6. **SEO** — meta title, description, image.
+
+### Pairing narrative paragraphs with media
+
+If each passage should have its own visual treatment, split the canonical section into Story Beats
+on the related Case Study Content record. In each Work Page block:
+
+1. Choose the canonical section in **Source**, such as `Approach`.
+2. Choose one optional **Story beat** from that section.
+3. Add the block's media and layout treatment.
+4. Leave the body override empty unless the website genuinely needs different wording.
+
+Use the same section in several blocks with different beat selections to create pacing without
+copying prose. Leave Story beat empty when the block should render the complete section body and
+all of its beats in canonical order.
 
 ### Publishing requirements
 

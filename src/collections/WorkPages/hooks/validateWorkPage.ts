@@ -1,4 +1,5 @@
 import { APIError, type CollectionBeforeValidateHook } from 'payload'
+import { getCaseStudyStorySection, storyBeatReferences } from '@/collections/CaseStudies/story'
 import type { CaseStudy, WorkPage } from '@/payload-types'
 
 const idOf = (value: unknown): number | string | null => {
@@ -42,6 +43,18 @@ export const validateWorkPage: CollectionBeforeValidateHook<WorkPage> = async ({
 
   if (caseStudy._status !== 'published') {
     throw new APIError('The related Case Study Content must be published first.', 400)
+  }
+
+  const beatReferences = storyBeatReferences(merged.layout)
+  const missingBeat = beatReferences.find((reference) => {
+    const beats = getCaseStudyStorySection(caseStudy, reference.section)?.storyBeats || []
+    return !beats.some((beat) => beat.key === reference.key)
+  })
+  if (missingBeat) {
+    throw new APIError(
+      `${missingBeat.section} Story Beat ${missingBeat.key} does not exist on the related Case Study Content record.`,
+      400,
+    )
   }
 
   const libraryIDs = (caseStudy.assetLibraries || []).map(idOf).filter(Boolean)

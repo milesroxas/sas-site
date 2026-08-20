@@ -25,7 +25,7 @@ export const SplitContentNarrow = ({
   media,
 }: {
   bare?: boolean
-  block: SplitContentNarrowBlock
+  block: Pick<SplitContentNarrowBlock, 'eyebrow' | 'heading' | 'imagePosition' | 'theme'>
   content: DefaultTypedEditorState | null | undefined
   media: MediaDoc
 }) => {

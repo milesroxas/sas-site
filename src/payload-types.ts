@@ -903,41 +903,371 @@ export interface CaseStudy {
    */
   featuredCapabilities?: (number | Capability)[] | null;
   /**
-   * Background: client situation before the engagement.
+   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
    */
   context?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
+    /**
+     * Background and the client situation before the engagement. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     */
+    body?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
         version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
+     */
+    storyBeats?:
+      | {
+          /**
+           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
+           */
+          key: string;
+          /**
+           * Internal name shown in presentation selectors.
+           */
+          label: string;
+          /**
+           * Optional channel-neutral public heading. A presentation can override it.
+           */
+          heading?: string | null;
+          /**
+           * Self-contained canonical copy for this reusable narrative beat.
+           */
+          body: {
+            root: {
+              type: string;
+              children: {
+                type: any;
+                version: number;
+                [k: string]: unknown;
+              }[];
+              direction: ('ltr' | 'rtl') | null;
+              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+              indent: number;
+              version: number;
+            };
+            [k: string]: unknown;
+          };
+          id?: string | null;
+        }[]
+      | null;
+  };
   /**
-   * The problem being solved. Required to publish.
+   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
    */
   challenge?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
+    /**
+     * The problem being solved. Required to publish. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     */
+    body?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
         version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
+     */
+    storyBeats?:
+      | {
+          /**
+           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
+           */
+          key: string;
+          /**
+           * Internal name shown in presentation selectors.
+           */
+          label: string;
+          /**
+           * Optional channel-neutral public heading. A presentation can override it.
+           */
+          heading?: string | null;
+          /**
+           * Self-contained canonical copy for this reusable narrative beat.
+           */
+          body: {
+            root: {
+              type: string;
+              children: {
+                type: any;
+                version: number;
+                [k: string]: unknown;
+              }[];
+              direction: ('ltr' | 'rtl') | null;
+              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+              indent: number;
+              version: number;
+            };
+            [k: string]: unknown;
+          };
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
+   */
+  strategy?: {
+    /**
+     * The high-level strategic direction taken. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     */
+    body?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
+     */
+    storyBeats?:
+      | {
+          /**
+           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
+           */
+          key: string;
+          /**
+           * Internal name shown in presentation selectors.
+           */
+          label: string;
+          /**
+           * Optional channel-neutral public heading. A presentation can override it.
+           */
+          heading?: string | null;
+          /**
+           * Self-contained canonical copy for this reusable narrative beat.
+           */
+          body: {
+            root: {
+              type: string;
+              children: {
+                type: any;
+                version: number;
+                [k: string]: unknown;
+              }[];
+              direction: ('ltr' | 'rtl') | null;
+              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+              indent: number;
+              version: number;
+            };
+            [k: string]: unknown;
+          };
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
+   */
+  approach?: {
+    /**
+     * How the work was carried out. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     */
+    body?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
+     */
+    storyBeats?:
+      | {
+          /**
+           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
+           */
+          key: string;
+          /**
+           * Internal name shown in presentation selectors.
+           */
+          label: string;
+          /**
+           * Optional channel-neutral public heading. A presentation can override it.
+           */
+          heading?: string | null;
+          /**
+           * Self-contained canonical copy for this reusable narrative beat.
+           */
+          body: {
+            root: {
+              type: string;
+              children: {
+                type: any;
+                version: number;
+                [k: string]: unknown;
+              }[];
+              direction: ('ltr' | 'rtl') | null;
+              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+              indent: number;
+              version: number;
+            };
+            [k: string]: unknown;
+          };
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
+   */
+  outcomeSummary?: {
+    /**
+     * The overall result of the engagement. Required to publish. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     */
+    body?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
+     */
+    storyBeats?:
+      | {
+          /**
+           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
+           */
+          key: string;
+          /**
+           * Internal name shown in presentation selectors.
+           */
+          label: string;
+          /**
+           * Optional channel-neutral public heading. A presentation can override it.
+           */
+          heading?: string | null;
+          /**
+           * Self-contained canonical copy for this reusable narrative beat.
+           */
+          body: {
+            root: {
+              type: string;
+              children: {
+                type: any;
+                version: number;
+                [k: string]: unknown;
+              }[];
+              direction: ('ltr' | 'rtl') | null;
+              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+              indent: number;
+              version: number;
+            };
+            [k: string]: unknown;
+          };
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
+   */
+  learnings?: {
+    /**
+     * What the team took away from the work. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     */
+    body?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
+     */
+    storyBeats?:
+      | {
+          /**
+           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
+           */
+          key: string;
+          /**
+           * Internal name shown in presentation selectors.
+           */
+          label: string;
+          /**
+           * Optional channel-neutral public heading. A presentation can override it.
+           */
+          heading?: string | null;
+          /**
+           * Self-contained canonical copy for this reusable narrative beat.
+           */
+          body: {
+            root: {
+              type: string;
+              children: {
+                type: any;
+                version: number;
+                [k: string]: unknown;
+              }[];
+              direction: ('ltr' | 'rtl') | null;
+              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+              indent: number;
+              version: number;
+            };
+            [k: string]: unknown;
+          };
+          id?: string | null;
+        }[]
+      | null;
+  };
   /**
    * What success looked like at the start.
    */
@@ -948,42 +1278,6 @@ export interface CaseStudy {
         id?: string | null;
       }[]
     | null;
-  /**
-   * High-level strategic direction taken.
-   */
-  strategy?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * How the work was carried out.
-   */
-  approach?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
   /**
    * Major decisions worth reusing. Keys must be unique; do not rename after publish.
    */
@@ -1017,42 +1311,6 @@ export interface CaseStudy {
         id?: string | null;
       }[]
     | null;
-  /**
-   * What the team took away from the work.
-   */
-  learnings?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Overall result of the engagement. Required to publish.
-   */
-  outcomeSummary?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
   /**
    * Non-numeric outcomes worth citing.
    */
@@ -1291,22 +1549,22 @@ export interface WorkPage {
    */
   layout?:
     | (
-        | CaseStudyStorySectionBlock
-        | SplitContentNarrowBlock
-        | FullMediaBlock
-        | ImagePairBlock
-        | SplitImageOffsetBlock
+        | WorkCaseStudyStorySectionBlock
+        | WorkSplitContentNarrowBlock
+        | WorkFullMediaBlock
+        | WorkImagePairBlock
+        | WorkSplitImageOffsetBlock
         | CaseStudyMediaShowcaseBlock
         | CaseStudyKeyDecisionsBlock
         | CaseStudyMetricsBlock
         | CaseStudyTestimonialBlock
         | CaseStudyTransitionBlock
         | CaseStudyRelatedWorkBlock
-        | FeatureHeadingOffsetBlock
-        | FeatureStatementGridBlock
+        | WorkFeatureHeadingOffsetBlock
+        | WorkFeatureStatementGridBlock
         | FeatureStatementLinksBlock
-        | FeatureImageStatementBlock
-        | FeatureTabsBlock
+        | WorkFeatureImageStatementBlock
+        | WorkFeatureTabsBlock
         | AudienceTabsBlock
         | IndustryWorkBlock
       )[]
@@ -1378,13 +1636,17 @@ export interface WorkIntro {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyStorySectionBlock".
+ * via the `definition` "WorkCaseStudyStorySectionBlock".
  */
-export interface CaseStudyStorySectionBlock {
+export interface WorkCaseStudyStorySectionBlock {
   /**
-   * Uses canonical story content unless a website override is supplied.
+   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
    */
   source: 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings' | 'custom';
+  /**
+   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   */
+  storyBeatKey?: string | null;
   eyebrow?: string | null;
   headingOverride?: string | null;
   /**
@@ -1437,13 +1699,17 @@ export interface CaseStudyStorySectionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SplitContentNarrowBlock".
+ * via the `definition` "WorkSplitContentNarrowBlock".
  */
-export interface SplitContentNarrowBlock {
+export interface WorkSplitContentNarrowBlock {
   /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   */
+  storyBeatKey?: string | null;
   /**
    * Short kicker above the text.
    */
@@ -1486,13 +1752,17 @@ export interface SplitContentNarrowBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FullMediaBlock".
+ * via the `definition` "WorkFullMediaBlock".
  */
-export interface FullMediaBlock {
+export interface WorkFullMediaBlock {
   /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   */
+  storyBeatKey?: string | null;
   /**
    * Short kicker above the heading.
    */
@@ -1538,13 +1808,17 @@ export interface FullMediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ImagePairBlock".
+ * via the `definition` "WorkImagePairBlock".
  */
-export interface ImagePairBlock {
+export interface WorkImagePairBlock {
   /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   */
+  storyBeatKey?: string | null;
   heading?: string | null;
   /**
    * Shown when source is "Custom", or as a Work Page override for canonical content.
@@ -1594,13 +1868,17 @@ export interface ImagePairBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SplitImageOffsetBlock".
+ * via the `definition` "WorkSplitImageOffsetBlock".
  */
-export interface SplitImageOffsetBlock {
+export interface WorkSplitImageOffsetBlock {
   /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   */
+  storyBeatKey?: string | null;
   heading?: string | null;
   /**
    * Shown when source is "Custom", or as a Work Page override for canonical content.
@@ -1805,18 +2083,22 @@ export interface CaseStudyRelatedWorkBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureHeadingOffsetBlock".
+ * via the `definition` "WorkFeatureHeadingOffsetBlock".
  */
-export interface FeatureHeadingOffsetBlock {
+export interface WorkFeatureHeadingOffsetBlock {
   /**
    * Short kicker above the heading.
    */
   eyebrow?: string | null;
   heading: string;
   /**
-   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   */
+  storyBeatKey?: string | null;
   /**
    * Supporting copy in the offset right column. Leave empty to pull the source.
    */
@@ -1841,18 +2123,22 @@ export interface FeatureHeadingOffsetBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementGridBlock".
+ * via the `definition` "WorkFeatureStatementGridBlock".
  */
-export interface FeatureStatementGridBlock {
+export interface WorkFeatureStatementGridBlock {
   /**
    * Short kicker above the heading.
    */
   eyebrow?: string | null;
   heading: string;
   /**
-   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   */
+  storyBeatKey?: string | null;
   /**
    * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
    */
@@ -1945,18 +2231,22 @@ export interface FeatureStatementLinksBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureImageStatementBlock".
+ * via the `definition` "WorkFeatureImageStatementBlock".
  */
-export interface FeatureImageStatementBlock {
+export interface WorkFeatureImageStatementBlock {
   media: number | Media;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
   browseAllMedia?: boolean | null;
   /**
-   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   */
+  storyBeatKey?: string | null;
   /**
    * Large statement set beneath the image. Leave empty to pull the source.
    */
@@ -1993,9 +2283,9 @@ export interface FeatureImageStatementBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureTabsBlock".
+ * via the `definition` "WorkFeatureTabsBlock".
  */
-export interface FeatureTabsBlock {
+export interface WorkFeatureTabsBlock {
   tabs: {
     title: string;
     /**
@@ -2003,9 +2293,13 @@ export interface FeatureTabsBlock {
      */
     heading: string;
     /**
-     * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+     * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
      */
     source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+    /**
+     * Leave empty to use the complete section, or choose one reusable beat from that section.
+     */
+    storyBeatKey?: string | null;
     /**
      * Tab body copy. Leave empty to pull the source.
      */
@@ -2584,6 +2878,296 @@ export interface Audience {
   allowPublicSignup?: boolean | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureStatementGridBlock".
+ */
+export interface FeatureStatementGridBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
+   */
+  statement?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Short supporting line pinned below the statement.
+   */
+  footnote?: string | null;
+  cards: {
+    media?: (number | null) | Media;
+    title: string;
+    description: string;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureStatementGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureHeadingOffsetBlock".
+ */
+export interface FeatureHeadingOffsetBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Supporting copy in the offset right column. Leave empty to pull the source.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureHeadingOffset';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureTabsBlock".
+ */
+export interface FeatureTabsBlock {
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    heading: string;
+    /**
+     * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+     */
+    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+    /**
+     * Tab body copy. Leave empty to pull the source.
+     */
+    description?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    subheading?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * Short note shown as a card over the media.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureTabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureImageStatementBlock".
+ */
+export interface FeatureImageStatementBlock {
+  media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Large statement set beneath the image. Leave empty to pull the source.
+   */
+  caption?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Which edge the statement aligns to beneath the image.
+   */
+  textPosition?: ('right' | 'left') | null;
+  /**
+   * Small steps the statement down one type size.
+   */
+  textSize?: ('default' | 'small') | null;
+  /**
+   * Contained keeps the image in the site container; full bleeds edge to edge.
+   */
+  imageWidth?: ('contained' | 'full') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureImageStatement';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitContentNarrowBlock".
+ */
+export interface SplitContentNarrowBlock {
+  /**
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Short kicker above the text.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Arrange the image on the left or the right of the text.
+   */
+  imagePosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'splitContentNarrow';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FullMediaBlock".
+ */
+export interface FullMediaBlock {
+  /**
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Cropped to 21:9 (16:9 on small screens).
+   */
+  media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Arrange the content row on the left or the right below the media (desktop only; smaller screens always sit left).
+   */
+  contentPosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'fullMedia';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4450,22 +5034,22 @@ export interface WorkPagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        caseStudyStorySection?: T | CaseStudyStorySectionBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        imagePair?: T | ImagePairBlockSelect<T>;
-        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
+        caseStudyStorySection?: T | WorkCaseStudyStorySectionBlockSelect<T>;
+        splitContentNarrow?: T | WorkSplitContentNarrowBlockSelect<T>;
+        fullMedia?: T | WorkFullMediaBlockSelect<T>;
+        imagePair?: T | WorkImagePairBlockSelect<T>;
+        splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
         caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
         caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
         caseStudyTestimonial?: T | CaseStudyTestimonialBlockSelect<T>;
         caseStudyTransition?: T | CaseStudyTransitionBlockSelect<T>;
         caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
-        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureHeadingOffset?: T | WorkFeatureHeadingOffsetBlockSelect<T>;
+        featureStatementGrid?: T | WorkFeatureStatementGridBlockSelect<T>;
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
-        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
+        featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
+        featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
       };
@@ -4501,10 +5085,11 @@ export interface WorkIntroSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyStorySectionBlock_select".
+ * via the `definition` "WorkCaseStudyStorySectionBlock_select".
  */
-export interface CaseStudyStorySectionBlockSelect<T extends boolean = true> {
+export interface WorkCaseStudyStorySectionBlockSelect<T extends boolean = true> {
   source?: T;
+  storyBeatKey?: T;
   eyebrow?: T;
   headingOverride?: T;
   bodyOverride?: T;
@@ -4519,10 +5104,45 @@ export interface CaseStudyStorySectionBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ImagePairBlock_select".
+ * via the `definition` "WorkSplitContentNarrowBlock_select".
  */
-export interface ImagePairBlockSelect<T extends boolean = true> {
+export interface WorkSplitContentNarrowBlockSelect<T extends boolean = true> {
   source?: T;
+  storyBeatKey?: T;
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  media?: T;
+  browseAllMedia?: T;
+  imagePosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFullMediaBlock_select".
+ */
+export interface WorkFullMediaBlockSelect<T extends boolean = true> {
+  source?: T;
+  storyBeatKey?: T;
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  media?: T;
+  browseAllMedia?: T;
+  contentPosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkImagePairBlock_select".
+ */
+export interface WorkImagePairBlockSelect<T extends boolean = true> {
+  source?: T;
+  storyBeatKey?: T;
   heading?: T;
   body?: T;
   portraitMedia?: T;
@@ -4536,10 +5156,11 @@ export interface ImagePairBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SplitImageOffsetBlock_select".
+ * via the `definition` "WorkSplitImageOffsetBlock_select".
  */
-export interface SplitImageOffsetBlockSelect<T extends boolean = true> {
+export interface WorkSplitImageOffsetBlockSelect<T extends boolean = true> {
   source?: T;
+  storyBeatKey?: T;
   heading?: T;
   body?: T;
   largeMedia?: T;
@@ -4626,6 +5247,86 @@ export interface CaseStudyRelatedWorkBlockSelect<T extends boolean = true> {
   selectionMode?: T;
   limit?: T;
   layout?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFeatureHeadingOffsetBlock_select".
+ */
+export interface WorkFeatureHeadingOffsetBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  source?: T;
+  storyBeatKey?: T;
+  body?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFeatureStatementGridBlock_select".
+ */
+export interface WorkFeatureStatementGridBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  source?: T;
+  storyBeatKey?: T;
+  statement?: T;
+  footnote?: T;
+  cards?:
+    | T
+    | {
+        media?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  browseAllMedia?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFeatureImageStatementBlock_select".
+ */
+export interface WorkFeatureImageStatementBlockSelect<T extends boolean = true> {
+  media?: T;
+  browseAllMedia?: T;
+  source?: T;
+  storyBeatKey?: T;
+  caption?: T;
+  textPosition?: T;
+  textSize?: T;
+  imageWidth?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFeatureTabsBlock_select".
+ */
+export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
+  tabs?:
+    | T
+    | {
+        title?: T;
+        heading?: T;
+        source?: T;
+        storyBeatKey?: T;
+        description?: T;
+        subheading?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        media?: T;
+        caption?: T;
+        id?: T;
+      };
+  browseAllMedia?: T;
   id?: T;
   blockName?: T;
 }
@@ -4949,8 +5650,90 @@ export interface CaseStudiesSelect<T extends boolean = true> {
       };
   primaryAudience?: T;
   featuredCapabilities?: T;
-  context?: T;
-  challenge?: T;
+  context?:
+    | T
+    | {
+        body?: T;
+        storyBeats?:
+          | T
+          | {
+              key?: T;
+              label?: T;
+              heading?: T;
+              body?: T;
+              id?: T;
+            };
+      };
+  challenge?:
+    | T
+    | {
+        body?: T;
+        storyBeats?:
+          | T
+          | {
+              key?: T;
+              label?: T;
+              heading?: T;
+              body?: T;
+              id?: T;
+            };
+      };
+  strategy?:
+    | T
+    | {
+        body?: T;
+        storyBeats?:
+          | T
+          | {
+              key?: T;
+              label?: T;
+              heading?: T;
+              body?: T;
+              id?: T;
+            };
+      };
+  approach?:
+    | T
+    | {
+        body?: T;
+        storyBeats?:
+          | T
+          | {
+              key?: T;
+              label?: T;
+              heading?: T;
+              body?: T;
+              id?: T;
+            };
+      };
+  outcomeSummary?:
+    | T
+    | {
+        body?: T;
+        storyBeats?:
+          | T
+          | {
+              key?: T;
+              label?: T;
+              heading?: T;
+              body?: T;
+              id?: T;
+            };
+      };
+  learnings?:
+    | T
+    | {
+        body?: T;
+        storyBeats?:
+          | T
+          | {
+              key?: T;
+              label?: T;
+              heading?: T;
+              body?: T;
+              id?: T;
+            };
+      };
   objectives?:
     | T
     | {
@@ -4958,8 +5741,6 @@ export interface CaseStudiesSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
-  strategy?: T;
-  approach?: T;
   keyDecisions?:
     | T
     | {
@@ -4972,8 +5753,6 @@ export interface CaseStudiesSelect<T extends boolean = true> {
         featured?: T;
         id?: T;
       };
-  learnings?: T;
-  outcomeSummary?: T;
   qualitativeOutcomes?:
     | T
     | {

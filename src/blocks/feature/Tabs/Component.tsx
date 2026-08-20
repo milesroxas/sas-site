@@ -4,7 +4,13 @@ import { Tabs as TabsPrimitive } from 'radix-ui'
 import type React from 'react'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import type { FeatureTabsBlock as FeatureTabsBlockProps } from '@/payload-types'
+import type { FeatureTabsBlock as FeatureTabsBlockData } from '@/payload-types'
+
+type FeatureTab = Omit<NonNullable<FeatureTabsBlockData['tabs']>[number], 'source'>
+type FeatureTabsBlockProps = {
+  blockType?: FeatureTabsBlockData['blockType']
+  tabs: FeatureTab[]
+}
 
 export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ tabs }) => {
   const panels = tabs ?? []

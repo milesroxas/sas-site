@@ -64,6 +64,10 @@ The server's MCP instructions tell agents to:
 - Pass document **ids** for relationship fields (look them up with the relevant find tool).
 - Never attempt media upload; reference existing media by id.
 - Asset libraries require `organization` and `project` ids; omit `rootFolder` to auto-create one.
+- Case Study narrative is section-owned: `context`, `challenge`, `strategy`, `approach`,
+  `outcomeSummary`, and `learnings` each contain `body` plus ordered `storyBeats`. Beat keys are
+  stable and unique within their section. Work Page blocks reference a beat with the section in
+  `source` plus `storyBeatKey`; there is no global `story-beat` source.
 
 ## Security: the REST-bypass rule
 

@@ -96,12 +96,30 @@ Content Hub → Testimonials. Link to the Client (and Project where known). Each
 
 ### 5. Write the Case Study Content
 
-Content Hub → Case Study Content. Link it to the Project. Four tabs:
+Content Hub → Case Study Content. Link it to the Project. Five tabs:
 
 - **Overview** — title, thesis, the Project link, primary audience, featured capabilities, and three summaries (one-line, short, medium). Summaries are reused everywhere: heroes, cards, search, future channels. Write them to stand alone.
-- **Story** — context, challenge, objectives, strategy, approach, key decisions, learnings. Key decisions each need a title and a stable **key** (e.g. `organize-around-user-intent`); once published, don't rename keys — other systems may reference them.
-- **Evidence** — outcome summary, qualitative outcomes, metrics, testimonials, approved claims. Metrics are structured (stable key, label, value, unit, direction, timeframe, qualifier, comparison baseline, source) — never write them as pre-formatted sentences. A metric appears publicly only when **Approved for public** is checked, and publishing requires each approved metric to have a label, value, and a source or qualifier. Duplicate keys (on metrics or key decisions) are rejected on every save.
+- **Narrative** — context, challenge, strategy, approach, outcomes, and learnings. Every section contains an optional **Section body** followed by ordered **Story Beats**. Use the body for a short opening or a continuous section. Use beats for self-contained ideas that a website, deck, proposal, or another surface may present independently. Do not repeat a beat's copy in the section body.
+- **Objectives & Decisions** — structured objectives and key decisions. Key decisions each need a title and a stable **key** (e.g. `organize-around-user-intent`); once published, don't rename keys because other systems may reference them.
+- **Evidence** — qualitative outcomes, metrics, testimonials, approved claims, and the review date. Metrics are structured (stable key, label, value, unit, direction, timeframe, qualifier, comparison baseline, source) — never write them as pre-formatted sentences. A metric appears publicly only when **Approved for public** is checked, and publishing requires each approved metric to have a label, value, and a source or qualifier. Duplicate keys (on metrics or key decisions) are rejected on every save.
 - **Asset Libraries** — attach the project's libraries. The website can only use media from these libraries.
+
+#### When to create Story Beats
+
+Create a beat when a passage has one durable idea and could reasonably stand beside its own
+image, video, layout, slide, or proposal section. A beat is not automatically every paragraph.
+Split only where the meaning and presentation can stand independently.
+
+Each beat needs:
+
+- A stable **key**, unique within its parent section.
+- An internal **label** for presentation selectors.
+- An optional public **heading**.
+- A self-contained rich-text **body**.
+
+For example, Vault's four Approach paragraphs can become four Approach Story Beats. A Work Page
+then selects `Approach` and optionally one of those beats. The copy stays canonical in the Content
+Hub; do not paste it into website overrides.
 
 ### 6. Publish
 

@@ -1,7 +1,12 @@
 import type React from 'react'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import type { FeatureStatementGridBlock as FeatureStatementGridBlockProps } from '@/payload-types'
+import type { FeatureStatementGridBlock as FeatureStatementGridBlockData } from '@/payload-types'
+
+type FeatureStatementGridBlockProps = Pick<
+  FeatureStatementGridBlockData,
+  'blockType' | 'cards' | 'eyebrow' | 'footnote' | 'heading' | 'statement'
+>
 
 export const FeatureStatementGridBlock: React.FC<FeatureStatementGridBlockProps> = ({
   eyebrow,

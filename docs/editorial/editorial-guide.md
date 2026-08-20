@@ -505,6 +505,28 @@ A proof strip should reinforce the claim above it. It should not become another 
 
 
 
+# Case Study Narrative and Story Beats
+
+Case Study Content is canonical source material, not a website draft. Organize narrative under
+Context, Challenge, Strategy, Approach, Outcomes, and Learnings. Each section may contain a
+continuous section body, ordered Story Beats, or both.
+
+Use the section body for an opening or for prose that should remain continuous. Create a Story
+Beat when one idea can stand on its own beside distinct media, in a slide, or in another channel.
+A beat should preserve meaning without needing the preceding beat to make sense.
+
+Do not split mechanically at every paragraph. Split where the idea, evidence, or visual treatment
+changes. Give each beat a stable internal key, a scannable internal label, an optional public
+heading, and self-contained body copy. Do not repeat beat copy in the section body.
+
+Website composition chooses the canonical section first and may then choose one beat within it.
+Use a website override only when the web genuinely needs different wording, never as a place to
+paste canonical copy.
+
+---
+
+
+
 # Content Preservation Process
 
 Before writing, internally create a source map with the following categories:

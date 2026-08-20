@@ -212,7 +212,7 @@ Full detail in [docs/architecture.md](docs/architecture.md).
 
 Plugins add `redirects`, `forms`, `form-submissions`, `search`, and `payload-mcp-api-keys` ([docs/mcp.md](docs/mcp.md)).
 
-Globals: `home`, `header`, `footer`, and `site-info` (added by the AEO plugin). Each Work Page presents exactly one Case Study (unique relationship); canonical content is resolved into blocks at render time and never copied.
+Globals: `home`, `header`, `footer`, and `site-info` (added by the AEO plugin). Each Work Page presents exactly one Case Study (unique relationship); canonical narrative sections contain optional section bodies plus reusable Story Beats, and Work blocks resolve either a full section or one stable beat at render time without copying it.
 
 ## Scripts
 

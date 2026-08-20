@@ -12,6 +12,7 @@ import { themeField } from '@/blocks/shared/fields'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { withStoryBeatSource } from '@/fields/storyBeatSource'
 
 export const CaseStudyStorySection: Block = {
   slug: 'caseStudyStorySection',
@@ -203,23 +204,48 @@ export const CaseStudyRelatedWork: Block = {
   ],
 }
 
-export const caseStudyBlocks = [
+const WorkCaseStudyStorySection = withStoryBeatSource(
   CaseStudyStorySection,
+  'WorkCaseStudyStorySectionBlock',
+)
+const WorkSplitContentNarrow = withStoryBeatSource(
   SplitContentNarrow,
-  FullMedia,
-  ImagePair,
-  SplitImageOffset,
+  'WorkSplitContentNarrowBlock',
+)
+const WorkFullMedia = withStoryBeatSource(FullMedia, 'WorkFullMediaBlock')
+const WorkImagePair = withStoryBeatSource(ImagePair, 'WorkImagePairBlock')
+const WorkSplitImageOffset = withStoryBeatSource(SplitImageOffset, 'WorkSplitImageOffsetBlock')
+const WorkFeatureHeadingOffset = withStoryBeatSource(
+  FeatureHeadingOffset,
+  'WorkFeatureHeadingOffsetBlock',
+)
+const WorkFeatureStatementGrid = withStoryBeatSource(
+  FeatureStatementGrid,
+  'WorkFeatureStatementGridBlock',
+)
+const WorkFeatureImageStatement = withStoryBeatSource(
+  FeatureImageStatement,
+  'WorkFeatureImageStatementBlock',
+)
+const WorkFeatureTabs = withStoryBeatSource(FeatureTabs, 'WorkFeatureTabsBlock')
+
+export const caseStudyBlocks = [
+  WorkCaseStudyStorySection,
+  WorkSplitContentNarrow,
+  WorkFullMedia,
+  WorkImagePair,
+  WorkSplitImageOffset,
   CaseStudyMediaShowcase,
   CaseStudyKeyDecisions,
   CaseStudyMetrics,
   CaseStudyTestimonial,
   CaseStudyTransition,
   CaseStudyRelatedWork,
-  FeatureHeadingOffset,
-  FeatureStatementGrid,
+  WorkFeatureHeadingOffset,
+  WorkFeatureStatementGrid,
   FeatureStatementLinks,
-  FeatureImageStatement,
-  FeatureTabs,
+  WorkFeatureImageStatement,
+  WorkFeatureTabs,
   AudienceTabs,
   IndustryWork,
 ]

@@ -43,6 +43,7 @@ import * as migration_20260812_191458_project_engagement_type from './20260812_1
 import * as migration_20260812_212404_audience_tabs_block from './20260812_212404_audience_tabs_block';
 import * as migration_20260813_163946_mcp_asset_library_authoring from './20260813_163946_mcp_asset_library_authoring';
 import * as migration_20260813_183147_full_media_block from './20260813_183147_full_media_block';
+import * as migration_20260820_172200_case_study_section_story_beat from './20260820_172200_case_study_section_story_beat';
 
 export const migrations = [
   {
@@ -268,6 +269,11 @@ export const migrations = [
   {
     up: migration_20260813_183147_full_media_block.up,
     down: migration_20260813_183147_full_media_block.down,
-    name: '20260813_183147_full_media_block'
+    name: '20260813_183147_full_media_block',
+  },
+  {
+    up: migration_20260820_172200_case_study_section_story_beat.up,
+    down: migration_20260820_172200_case_study_section_story_beat.down,
+    name: '20260820_172200_case_study_section_story_beat'
   },
 ];

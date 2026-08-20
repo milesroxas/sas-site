@@ -57,7 +57,7 @@ Assets                                Taxonomy
 | Website | `audience-pages` | Positioning by `industries`; auto-matches related work |
 | Content Hub | `organizations` | Clients; public description vs. auth-only `internalNotes` |
 | Content Hub | `projects` | Factual engagement record; no layout fields |
-| Content Hub | `case-studies` | Canonical narrative + evidence (tabs: Overview, Story, Evidence, Asset Libraries) |
+| Content Hub | `case-studies` | Canonical narrative + evidence (tabs: Overview, Narrative, Objectives & Decisions, Evidence, Asset Libraries) |
 | Content Hub | `lab-projects` | Canonical R&D narratives rendered by lab pages |
 | Content Hub | `testimonials` | Approval-gated quotes |
 | Assets | `media` | Uploads; `usageStatus` + `approvedChannels` govern reuse |
@@ -74,12 +74,17 @@ Globals: `home`, `header`, `footer`, and `site-info` (added by the AEO plugin).
 `/works/[slug]` queries the Work Page with its Case Study populated (depth 4), then renders:
 
 1. **Hero** (`CaseStudyHero`) — override-then-canonical at each field: `titleOverride` → study title; `summaryOverride` → short summary → one-line → thesis; hero media → cover asset; eyebrow → client short name → client name.
-2. **Blocks** (`RenderCaseStudyBlocks`) — each block declares a `source` and optional overrides:
-   - `caseStudyStorySection` — picks a canonical rich-text field (context, challenge, strategy, approach, outcome summary, learnings) or `custom`; `bodyOverride` wins when present.
+2. **Blocks** (`RenderCaseStudyBlocks`) — each narrative-capable block declares a canonical `source`, may narrow that source to a stable Story Beat, and may carry website overrides:
+   - Case Study narrative is hierarchical: `context`, `challenge`, `strategy`, `approach`, `outcomeSummary`, and `learnings` each contain an optional section body plus ordered `storyBeats`. Whole-section consumers compose the body followed by the beats; an individual beat is addressed by `(source, storyBeatKey)`.
+   - `caseStudyStorySection` — picks one complete canonical narrative section or one beat within it, or uses `custom`; `bodyOverride` wins when present.
    - `caseStudyKeyDecisions` / `caseStudyMetrics` — read arrays from the study, filtered by `featured` flags and (for metrics) `approvedForPublic`.
    - `caseStudyTestimonial` — renders only published, `approved-public` testimonials.
    - `caseStudyMediaShowcase` / `caseStudyTransition` — website-only media and copy.
    - `caseStudyRelatedWork` — manual selection or automatic capability match.
+
+Story Beat keys are unique within their parent section, not globally. Nesting preserves the
+business meaning in the API, while the composite `(section, key)` reference stays stable across
+website blocks and future presentation collections.
 
 Publish-time integrity (`validateWorkPage`): the linked Case Study must itself be published and have at least one Asset Library, and every media reference on the page (cover, hero, downloads, block media) must be `public-approved` **and** belong to one of the study's libraries. Deleting a Case Study that a Work Page references is blocked.
 

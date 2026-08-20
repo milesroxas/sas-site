@@ -1,8 +1,9 @@
 import { getPayload, type Payload, type PayloadRequest } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { resolveCaseStudyStoryBody } from '@/collections/CaseStudies/story'
 import { Media } from '@/collections/Media'
 import config from '@/payload.config'
-import type { User } from '@/payload-types'
+import type { CaseStudy, User } from '@/payload-types'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 
 const richText = (text: string) => ({
@@ -128,8 +129,8 @@ describe.sequential('content hub and website surfaces', () => {
         key: `published-${suffix}`,
         project: projectId,
         summaries: { short: 'A public canonical summary' },
-        challenge: richText('Challenge'),
-        outcomeSummary: richText('Outcome'),
+        challenge: { body: richText('Challenge') },
+        outcomeSummary: { body: richText('Outcome') },
         approvedClaims: [{ claim: 'Internal evidence', source: 'Private source', approved: false }],
         assetLibraries: [libraryId],
         _status: 'published',
@@ -173,6 +174,7 @@ describe.sequential('content hub and website surfaces', () => {
         slug: `published-work-${suffix}`,
         caseStudy: published.id,
         _status: 'published',
+        intro: { title: 'Published work introduction' },
         layout: [
           {
             blockType: 'caseStudyTransition',
@@ -203,8 +205,8 @@ describe.sequential('content hub and website surfaces', () => {
         key: `no-library-${suffix}`,
         project: projectId,
         summaries: { short: 'Summary' },
-        challenge: richText('Challenge'),
-        outcomeSummary: richText('Outcome'),
+        challenge: { body: richText('Challenge') },
+        outcomeSummary: { body: richText('Outcome') },
         _status: 'published',
       },
       context: { disableRevalidate: true },
@@ -280,6 +282,155 @@ describe.sequential('content hub and website surfaces', () => {
         },
       }),
     ).rejects.toThrow('Key decision key must be unique')
+
+    await expect(
+      payload.create({
+        collection: 'case-studies',
+        user,
+        overrideAccess: false,
+        draft: true,
+        data: {
+          title: `Duplicate Beats ${suffix}`,
+          key: `duplicate-beats-${suffix}`,
+          project: projectId,
+          approach: {
+            storyBeats: [
+              { key: 'same-beat', label: 'One', body: richText('One') },
+              { key: 'same-beat', label: 'Two', body: richText('Two') },
+            ],
+          },
+        },
+      }),
+    ).rejects.toThrow('Approach Story Beat key must be unique')
+
+    await expect(
+      payload.create({
+        collection: 'case-studies',
+        user,
+        overrideAccess: false,
+        draft: true,
+        data: {
+          title: `Section Scoped Beats ${suffix}`,
+          key: `section-scoped-beats-${suffix}`,
+          project: projectId,
+          challenge: {
+            storyBeats: [{ key: 'shared-key', label: 'Challenge beat', body: richText('One') }],
+          },
+          approach: {
+            storyBeats: [{ key: 'shared-key', label: 'Approach beat', body: richText('Two') }],
+          },
+        },
+      }),
+    ).resolves.toMatchObject({ title: `Section Scoped Beats ${suffix}` })
+  })
+
+  it('resolves stable Story Beats on Work Pages and protects referenced keys', async () => {
+    const study = await payload.create({
+      collection: 'case-studies',
+      user,
+      overrideAccess: false,
+      context: { disableRevalidate: true },
+      data: {
+        title: `Story Beats ${suffix}`,
+        key: `story-beats-${suffix}`,
+        project: projectId,
+        summaries: { short: 'Structured narrative' },
+        challenge: { body: richText('Challenge') },
+        outcomeSummary: { body: richText('Outcome') },
+        approach: {
+          storyBeats: [
+            {
+              key: 'detail-beat',
+              label: 'Detailed approach',
+              body: richText('Reusable beat body'),
+            },
+          ],
+        },
+        assetLibraries: [libraryId],
+        _status: 'published',
+      },
+    })
+
+    const page = await payload.create({
+      collection: 'work-pages',
+      user,
+      overrideAccess: false,
+      context: { disableRevalidate: true },
+      data: {
+        title: `Story Beat Work ${suffix}`,
+        slug: `story-beat-work-${suffix}`,
+        caseStudy: study.id,
+        _status: 'published',
+        intro: { title: 'Story beat introduction' },
+        layout: [
+          {
+            blockType: 'caseStudyStorySection',
+            source: 'approach',
+            storyBeatKey: 'detail-beat',
+          },
+        ],
+      },
+    })
+
+    await expect(
+      payload.update({
+        collection: 'work-pages',
+        id: page.id,
+        user,
+        overrideAccess: false,
+        context: { disableRevalidate: true },
+        data: {
+          layout: [
+            {
+              blockType: 'caseStudyStorySection',
+              source: 'approach',
+              storyBeatKey: 'missing-beat',
+            },
+          ],
+        },
+      }),
+    ).rejects.toThrow('does not exist on the related Case Study Content record')
+
+    await expect(
+      payload.update({
+        collection: 'case-studies',
+        id: study.id,
+        user,
+        overrideAccess: false,
+        context: { disableRevalidate: true },
+        data: {
+          approach: {
+            storyBeats: [
+              {
+                key: 'renamed-beat',
+                label: 'Detailed approach',
+                body: richText('Reusable beat body'),
+              },
+            ],
+          },
+          _status: 'published',
+        },
+      }),
+    ).rejects.toThrow('is used by a Work Page')
+  })
+
+  it('resolves one Story Beat or composes an ordered canonical section', () => {
+    const first = richText('First beat')
+    const second = richText('Second beat')
+    const study = {
+      approach: {
+        body: richText('Approach opening'),
+        storyBeats: [
+          { key: 'first', label: 'First', body: first },
+          { key: 'second', label: 'Second', body: second },
+        ],
+      },
+    } as unknown as CaseStudy
+
+    expect(resolveCaseStudyStoryBody(study, 'approach', 'second')).toEqual(second)
+    const section = JSON.stringify(resolveCaseStudyStoryBody(study, 'approach'))
+    expect(section.indexOf('Approach opening')).toBeLessThan(section.indexOf('First beat'))
+    expect(section.indexOf('First beat')).toBeLessThan(section.indexOf('Second beat'))
   })
 
   it('defines Media library ownership, public filtering, and Work Page preview paths', async () => {

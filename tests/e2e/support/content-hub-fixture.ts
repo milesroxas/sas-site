@@ -76,8 +76,8 @@ const createFixture = async (payload: Payload, suffix: string) => {
   const common = {
     project: project.id,
     summaries: { short: 'Canonical hero summary' },
-    challenge: richText('Canonical story challenge'),
-    outcomeSummary: richText('Canonical outcome'),
+    challenge: { body: richText('Canonical story challenge') },
+    outcomeSummary: { body: richText('Canonical outcome') },
     assetLibraries: [library.id],
     _status: 'published' as const,
   }

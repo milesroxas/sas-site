@@ -3,7 +3,7 @@ import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type {
   Media as MediaDoc,
-  SplitImageOffsetBlock as SplitImageOffsetBlockType,
+  WorkSplitImageOffsetBlock as SplitImageOffsetBlockType,
 } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { Section } from '../shared/section'
@@ -16,7 +16,7 @@ export const SplitImageOffset = ({
   small,
 }: {
   bare?: boolean
-  block: SplitImageOffsetBlockType
+  block: Pick<SplitImageOffsetBlockType, 'captionPosition' | 'heading' | 'theme'>
   content: DefaultTypedEditorState | null | undefined
   large: MediaDoc
   small: MediaDoc

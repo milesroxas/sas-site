@@ -1,6 +1,11 @@
 import type React from 'react'
 import RichText from '@/components/RichText'
-import type { FeatureHeadingOffsetBlock as FeatureHeadingOffsetBlockProps } from '@/payload-types'
+import type { FeatureHeadingOffsetBlock as FeatureHeadingOffsetBlockData } from '@/payload-types'
+
+type FeatureHeadingOffsetBlockProps = Pick<
+  FeatureHeadingOffsetBlockData,
+  'blockType' | 'body' | 'eyebrow' | 'heading'
+>
 
 export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps> = ({
   eyebrow,

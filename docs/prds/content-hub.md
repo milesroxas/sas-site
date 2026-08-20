@@ -10,6 +10,15 @@
 
 > **Architecture amendment — July 13, 2026:** The Website is a publishing surface, not a tab on a canonical Case Study. The implemented model therefore keeps reusable source material in `case-studies`, creates website presentations in the separate `work-pages` collection under the Website admin group, and manages project media through `asset-libraries` under the Assets admin group. Each Work Page has exactly one canonical Case Study, and each Case Study has at most one Work Page within the Website surface; future surfaces such as pitch decks or lead-generation experiences should use their own presentation collections. Media used by a published Work Page must be public-approved and belong to one of its Case Study's Asset Libraries. Any later requirement in this document that colocates website presentation fields on `case-studies`, or models assets as an ad hoc selected-image list, is superseded by this amendment.
 
+> **Narrative amendment — August 20, 2026:** Canonical Case Study narrative is hierarchical and
+> section-owned. `context`, `challenge`, `strategy`, `approach`, `outcomeSummary`, and `learnings`
+> each contain an optional section body plus ordered Story Beats. Story Beats are not a global
+> bucket and are not a website-only block type. A presentation selects a canonical section in
+> `source`, then may select one stable beat within that section using `storyBeatKey`; an empty beat
+> selection means the complete section. The Case Study admin separates `Narrative` from structured
+> `Objectives & Decisions` and from `Evidence`. Any later flat rich-text or global Story Beat
+> requirement is superseded by this amendment.
+
 ---
 
 ## 1. Instructions for Codex
@@ -71,13 +80,13 @@ Canonical fields should describe the actual engagement:
 
 * Client
 * Project
-* Context
-* Challenge
+* Context section body and Story Beats
+* Challenge section body and Story Beats
 * Objectives
-* Strategy
-* Approach
+* Strategy section body and Story Beats
+* Approach section body and Story Beats
 * Decisions
-* Outcomes
+* Outcomes section body and Story Beats
 * Metrics
 * Testimonials
 * Assets
@@ -267,25 +276,25 @@ The Case Study contains the reusable narrative:
 * Title
 * Thesis
 * Summaries
-* Context
-* Challenge
+* Context, with optional ordered Story Beats
+* Challenge, with optional ordered Story Beats
 * Objectives
-* Strategy
-* Approach
+* Strategy, with optional ordered Story Beats
+* Approach, with optional ordered Story Beats
 * Key decisions
-* Outcomes
+* Outcomes, with optional ordered Story Beats
 * Metrics
 * Testimonials
 * Selected assets
 
 ### Step 5: Compose the website page
 
-Within the Website tab of the same Case Study, the editor:
+Within the separate Work Page presentation, the editor:
 
 * Sets the slug and SEO fields.
 * Configures the website hero.
 * Adds and reorders website composition blocks.
-* Selects canonical content sources.
+* Selects canonical narrative sections and, where useful, individual Story Beats.
 * Adds optional website-specific headings or transition copy.
 * Selects visual layouts and media treatments.
 * Previews the final page.
@@ -700,11 +709,13 @@ This is the primary collection for the feature.
 Use Payload tabs with the following organization:
 
 1. Overview
-2. Story
-3. Evidence
-4. Assets
-5. Website
-6. SEO
+2. Narrative
+3. Objectives & Decisions
+4. Evidence
+5. Asset Libraries
+
+Website composition, assets, and SEO live on the related `work-pages` presentation collection per
+the architecture amendment.
 
 ### Overview tab
 
@@ -738,26 +749,45 @@ Use Payload tabs with the following organization:
   * Checkbox
   * Sidebar is acceptable
 
-### Story tab
+### Narrative tab
 
 * `context`
 
-  * Rich text
+  * Group: optional `body` rich text plus ordered `storyBeats`
 * `challenge`
 
-  * Rich text
+  * Group: optional `body` rich text plus ordered `storyBeats`
+* `strategy`
+
+  * Group: optional `body` rich text plus ordered `storyBeats`
+* `approach`
+
+  * Group: optional `body` rich text plus ordered `storyBeats`
+* `outcomeSummary`
+
+  * Group: optional `body` rich text plus ordered `storyBeats`
+* `learnings`
+
+  * Group: optional `body` rich text plus ordered `storyBeats`
+
+Every Story Beat contains:
+
+* `key` — stable within its parent section
+* `label` — internal selector label
+* `heading` — optional public, channel-neutral heading
+* `body` — self-contained rich text
+
+Whole-section consumers compose the section body followed by its beats in order. A body should
+not duplicate beat copy.
+
+### Objectives & Decisions tab
+
 * `objectives`
 
   * Array:
 
     * title
     * description
-* `strategy`
-
-  * Rich text
-* `approach`
-
-  * Rich text
 * `keyDecisions`
 
   * Array:
@@ -771,17 +801,10 @@ Use Payload tabs with the following organization:
     * `rationale`
     * `impact`
     * `featured`
-* `learnings`
-
-  * Rich text
-
 The `key` must remain stable so a future presentation system can identify a decision without depending on its array index.
 
 ### Evidence tab
 
-* `outcomeSummary`
-
-  * Rich text
 * `qualitativeOutcomes`
 
   * Array:
@@ -977,6 +1000,10 @@ Fields:
   * outcome-summary
   * learnings
   * custom
+* `storyBeatKey`
+
+  * Optional stable key from the selected canonical section
+  * Empty means the complete section
 * `eyebrow`
 * `headingOverride`
 * `bodyOverride`
@@ -1011,10 +1038,11 @@ Fields:
 
 Rendering behavior:
 
-1. Use the selected canonical field by default.
-2. Use `bodyOverride` only when supplied.
-3. Use `customBody` only for custom website-specific transitions.
-4. Never overwrite canonical content when an override is edited.
+1. Use the selected canonical section by default.
+2. When `storyBeatKey` is selected, use only that beat from the selected section.
+3. Use `bodyOverride` only when supplied.
+4. Use `customBody` only for custom website-specific transitions.
+5. Never overwrite canonical content when an override is edited.
 
 ### 8.2 Media Showcase block
 
@@ -1334,7 +1362,7 @@ If `/works` does not already exist in the repository, create a minimal index pag
 
 The purpose of the content model is to support future applications.
 
-A future API consumer must be able to retrieve a case study without reading `websiteLayout`.
+A future API consumer must be able to retrieve a Case Study without reading a Work Page's `layout`.
 
 Canonical API data should expose:
 
@@ -1355,7 +1383,7 @@ Canonical API data should expose:
 * Capabilities
 * Public URL
 
-Website presentation data should remain available separately under the Website group.
+Website presentation data remains available separately in the `work-pages` collection.
 
 Do not create a separate content API package in this phase.
 
@@ -1405,10 +1433,6 @@ Add useful validation without making authoring unnecessarily rigid.
 * At least one summary required before publication
 * Challenge required before publication
 * Outcome summary required before publication
-* Website layout required when:
-
-  * Website enabled
-  * Document is published
 * Public metrics must include:
 
   * Label
@@ -1416,6 +1440,14 @@ Add useful validation without making authoring unnecessarily rigid.
   * Source or qualifier where applicable
 * Key decision keys must be unique within the Case Study
 * Metric keys must be unique within the Case Study
+* Story Beat keys must be unique within their parent narrative section
+* A published presentation's `storyBeatKey` must exist inside its selected canonical `source`
+
+### Work Page
+
+* A website layout is required before publication
+* The related Case Study Content record must already be published
+* Every selected `storyBeatKey` must exist within the selected canonical `source`
 
 Validation may use collection hooks when field-level validation does not have enough document context.
 
@@ -1443,6 +1475,7 @@ Use native Payload Admin functionality first.
   * Canonical content
   * Website override
   * Website-only content
+  * Complete narrative sections and section-owned Story Beats
 * Preview and Live Preview
 * Draft status visibility
 

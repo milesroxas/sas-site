@@ -11,6 +11,12 @@ import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
+import {
+  type CaseStudyStoryBody,
+  type CaseStudyStorySource,
+  findCaseStudyStoryBeat,
+  resolveCaseStudyStoryBody,
+} from '@/collections/CaseStudies/story'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type {
@@ -19,26 +25,19 @@ import type {
   CaseStudyMediaShowcaseBlock,
   CaseStudyMetricsBlock,
   CaseStudyRelatedWorkBlock,
-  CaseStudyStorySectionBlock,
   CaseStudyTestimonialBlock,
   CaseStudyTransitionBlock,
-  FeatureHeadingOffsetBlock,
-  FullMediaBlock,
-  ImagePairBlock,
-  SplitContentNarrowBlock,
-  SplitImageOffsetBlock,
   Testimonial,
+  WorkCaseStudyStorySectionBlock,
+  WorkFullMediaBlock,
+  WorkImagePairBlock,
   WorkPage,
+  WorkSplitContentNarrowBlock,
+  WorkSplitImageOffsetBlock,
 } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { blockRevealVariants } from '../shared/reveal-variants'
 import { RevealSection } from './RevealSection.client'
-
-const richTextSource = (study: CaseStudy, source: CaseStudyStorySectionBlock['source']) => {
-  if (source === 'outcome-summary') return study.outcomeSummary
-  if (source === 'custom') return null
-  return study[source]
-}
 
 /**
  * Feature blocks carry a single rich-text body plus a `source` select. Written
@@ -46,10 +45,11 @@ const richTextSource = (study: CaseStudy, source: CaseStudyStorySectionBlock['so
  * source other than `custom` is chosen.
  */
 const resolveFeatureBody = (
-  body: FeatureHeadingOffsetBlock['body'],
-  source: FeatureHeadingOffsetBlock['source'],
+  body: CaseStudyStoryBody | null | undefined,
+  source: CaseStudyStorySource | null | undefined,
+  storyBeatKey: string | null | undefined,
   study: CaseStudy,
-) => body || (source && source !== 'custom' ? richTextSource(study, source) : null)
+) => body || resolveCaseStudyStoryBody(study, source, storyBeatKey)
 
 /**
  * Media blocks (split narrow, full media, image pair, split offset) share one
@@ -57,11 +57,24 @@ const resolveFeatureBody = (
  * the canonical story content when the body is empty.
  */
 const resolveStoryBody = (
-  block: Pick<SplitContentNarrowBlock, 'source' | 'body'>,
+  block: Pick<WorkSplitContentNarrowBlock, 'source' | 'storyBeatKey' | 'body'>,
   study: CaseStudy,
-) => (block.source === 'custom' ? block.body : block.body || richTextSource(study, block.source))
+) =>
+  block.source === 'custom'
+    ? block.body
+    : block.body || resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey)
 
-const defaultHeading = (source: CaseStudyStorySectionBlock['source']) =>
+const storyBeatHeading = (
+  study: CaseStudy,
+  source: CaseStudyStorySource | null | undefined,
+  storyBeatKey: string | null | undefined,
+) => {
+  if (!source || source === 'custom' || !storyBeatKey) return undefined
+  const beat = findCaseStudyStoryBeat(study, source, storyBeatKey)
+  return beat?.heading || beat?.label
+}
+
+const defaultHeading = (source: CaseStudyStorySource) =>
   ({
     context: 'Context',
     challenge: 'Challenge',
@@ -76,13 +89,13 @@ const StorySection = ({
   block,
   study,
 }: {
-  block: CaseStudyStorySectionBlock
+  block: WorkCaseStudyStorySectionBlock
   study: CaseStudy
 }) => {
   const content =
     block.source === 'custom'
       ? block.customBody
-      : block.bodyOverride || richTextSource(study, block.source)
+      : block.bodyOverride || resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey)
   if (!content) return null
   const width =
     block.width === 'narrow' ? 'max-w-3xl' : block.width === 'wide' ? 'max-w-7xl' : 'max-w-5xl'
@@ -103,7 +116,9 @@ const StorySection = ({
             </p>
           )}
           <h2 className="mb-6 text-3xl font-normal md:text-5xl" data-reveal>
-            {block.headingOverride || defaultHeading(block.source)}
+            {block.headingOverride ||
+              storyBeatHeading(study, block.source, block.storyBeatKey) ||
+              defaultHeading(block.source)}
           </h2>
           <div data-reveal>
             <RichText data={content} enableGutter={false} />
@@ -119,38 +134,56 @@ const StorySection = ({
   )
 }
 
-const SplitNarrow = ({ block, study }: { block: SplitContentNarrowBlock; study: CaseStudy }) => {
+const SplitNarrow = ({
+  block,
+  study,
+}: {
+  block: WorkSplitContentNarrowBlock
+  study: CaseStudy
+}) => {
   const content = resolveStoryBody(block, study)
   const media = block.media
   if (typeof media !== 'object' || !media) return null
+  const presentationBlock = {
+    ...block,
+    heading: block.heading || storyBeatHeading(study, block.source, block.storyBeatKey),
+  }
   return (
     <RevealSection theme={block.theme} variant={blockRevealVariants.splitContentNarrow}>
-      <SplitContentNarrow bare block={block} content={content} media={media} />
+      <SplitContentNarrow bare block={presentationBlock} content={content} media={media} />
     </RevealSection>
   )
 }
 
-const FullMediaSection = ({ block, study }: { block: FullMediaBlock; study: CaseStudy }) => {
+const FullMediaSection = ({ block, study }: { block: WorkFullMediaBlock; study: CaseStudy }) => {
   const content = resolveStoryBody(block, study)
   const media = block.media
   if (typeof media !== 'object' || !media) return null
+  const presentationBlock = {
+    ...block,
+    heading: block.heading || storyBeatHeading(study, block.source, block.storyBeatKey),
+  }
   return (
     <RevealSection theme={block.theme} variant={blockRevealVariants.fullMedia}>
-      <FullMedia bare block={block} content={content} media={media} />
+      <FullMedia bare block={presentationBlock} content={content} media={media} />
     </RevealSection>
   )
 }
 
-const ImagePairSection = ({ block, study }: { block: ImagePairBlock; study: CaseStudy }) => {
+const ImagePairSection = ({ block, study }: { block: WorkImagePairBlock; study: CaseStudy }) => {
   const content = resolveStoryBody(block, study)
   const { landscapeMedia, portraitMedia } = block
   if (typeof portraitMedia !== 'object' || !portraitMedia) return null
   if (typeof landscapeMedia !== 'object' || !landscapeMedia) return null
+  const presentationBlock = {
+    ...block,
+    heading: block.heading || storyBeatHeading(study, block.source, block.storyBeatKey),
+  }
   return (
     <RevealSection theme={block.theme} variant="underMedia">
       <ImagePair
         bare
-        block={block}
+        block={presentationBlock}
         content={content}
         landscape={landscapeMedia}
         portrait={portraitMedia}
@@ -163,18 +196,22 @@ const SplitImageOffsetSection = ({
   block,
   study,
 }: {
-  block: SplitImageOffsetBlock
+  block: WorkSplitImageOffsetBlock
   study: CaseStudy
 }) => {
   const content = resolveStoryBody(block, study)
   const { largeMedia, smallMedia } = block
   if (typeof largeMedia !== 'object' || !largeMedia) return null
   if (typeof smallMedia !== 'object' || !smallMedia) return null
+  const presentationBlock = {
+    ...block,
+    heading: block.heading || storyBeatHeading(study, block.source, block.storyBeatKey),
+  }
   return (
     <RevealSection theme={block.theme} variant="underMedia">
       <SplitImageOffset
         bare
-        block={block}
+        block={presentationBlock}
         content={content}
         large={largeMedia}
         small={smallMedia}
@@ -464,7 +501,7 @@ export const RenderCaseStudyBlocks = async ({
             >
               <FeatureHeadingOffset
                 {...block}
-                body={resolveFeatureBody(block.body, block.source, study)}
+                body={resolveFeatureBody(block.body, block.source, block.storyBeatKey, study)}
               />
             </RevealSection>
           )
@@ -477,7 +514,12 @@ export const RenderCaseStudyBlocks = async ({
             >
               <FeatureStatementGrid
                 {...block}
-                statement={resolveFeatureBody(block.statement, block.source, study)}
+                statement={resolveFeatureBody(
+                  block.statement,
+                  block.source,
+                  block.storyBeatKey,
+                  study,
+                )}
               />
             </RevealSection>
           )
@@ -496,7 +538,7 @@ export const RenderCaseStudyBlocks = async ({
             >
               <FeatureImageStatement
                 {...block}
-                caption={resolveFeatureBody(block.caption, block.source, study)}
+                caption={resolveFeatureBody(block.caption, block.source, block.storyBeatKey, study)}
               />
             </RevealSection>
           )
@@ -510,7 +552,12 @@ export const RenderCaseStudyBlocks = async ({
                 {...block}
                 tabs={(block.tabs || []).map((tab) => ({
                   ...tab,
-                  description: resolveFeatureBody(tab.description, tab.source, study),
+                  description: resolveFeatureBody(
+                    tab.description,
+                    tab.source,
+                    tab.storyBeatKey,
+                    study,
+                  ),
                 }))}
               />
             </RevealSection>

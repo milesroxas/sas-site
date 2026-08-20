@@ -18,7 +18,7 @@ Conventions for naming tabs, groups, fields, blocks, and admin copy across the P
 | Composition | The tab holding the page's `layout` blocks field | — |
 | Opening | The tab holding the full-screen sections before the composition (hero, intro) | — |
 | `theme` | Section surface select (`light`, `dark`, `neutral`, `brand`) within the visitor's site theme | Light/dark mode |
-| `source` | Where a block pulls canonical copy from (`context`, `challenge`, …, `custom`) | Attribution/credit (use `credit`) |
+| `source` | Which complete canonical section a block pulls from (`context`, `challenge`, …, `custom`) | A Story Beat (use `storyBeatKey`) or attribution/credit (use `credit`) |
 | `*Override` | Website-only value that wins over canonical content when set; never copies it | A default or fallback |
 | `internal*` | Team-only content, excluded from every public surface (RAG, llms.txt, API) | — |
 | Canonical | The Content Hub record (case study, project, …) | The website page |
@@ -32,7 +32,7 @@ Standard tab set for website page collections (in order; omit tabs a collection 
 - **Content Source** — the relationship to the canonical Content Hub record.
 - **Opening** — full-screen sections before the composed body (hero group, intro group). Give the tab a `description` naming its sections.
 - **Composition** — the `layout` blocks field. Website composition only; canonical narrative stays in the hub.
-- Content Hub collections name tabs by content role instead (`Overview`, `Story`, `Evidence` on case studies) — that is the correct pattern there; don't force the website tab set onto hub collections.
+- Content Hub collections name tabs by content role instead. Case Studies use `Overview`, `Narrative`, `Objectives & Decisions`, `Evidence`, and `Asset Libraries`; don't force the website tab set onto hub collections.
 - Tabs are label-only unless they have a `name` — keep them unnamed so labels can change freely without schema impact.
 
 ## Groups and collapsibles
@@ -45,6 +45,7 @@ Standard tab set for website page collections (in order; omit tabs a collection 
 - camelCase names; select option values in kebab-case (`centered-media`, `outcome-summary`) with auto-derived labels.
 - Reader-facing plain-text fields must use a name in `TEXT_KEYS` (`src/shared/content/extract.ts`) or be `<key>Override` of one, or the copy is invisible to RAG/llms.txt. richText fields are picked up automatically. `internal*` is always excluded.
 - Boolean admin toggles read as verbs or states: `showOverrides`, `featured`, `browseAllMedia` — never `isX`/`hasX`.
+- A Story Beat is always owned by a canonical narrative section. Presentation records store the section in `source` and the optional stable beat key in `storyBeatKey`; never add a global `story-beat` source value.
 
 ## Overrides
 
@@ -68,7 +69,7 @@ Applied across the CMS:
 - [x] `LabPages` — `Presentation` split into Opening / Composition / Assets; hero collapsibles + overrides toggle.
 - [x] `Pages`, `Home`, `ExpertisePages`, `AudiencePages` — `Hero` → `Opening`, `Content` → `Composition` (+ field label). `Positioning` kept (content-role name).
 - [x] `Posts` — `Meta` tab relabeled `Related & Categories` (collided with the SEO tab's `meta` name). `Content` tab kept — it holds the actual post body, not a composition.
-- [x] Content Hub collections (`CaseStudies`, `LabProjects`) — content-role tabs confirmed correct as-is.
+- [x] Content Hub collections (`CaseStudies`, `LabProjects`) — tabs are organized by editorial role; Case Study narrative and structured records are separated.
 
 Still open (schema decisions, not label drift — decide before removing):
 
