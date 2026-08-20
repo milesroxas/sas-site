@@ -1,20 +1,36 @@
 'use client'
 
-import { Thumbnail } from '@payloadcms/ui'
+import { Thumbnail, useConfig, useListDrawerContext } from '@payloadcms/ui'
+import Link from 'next/link'
 import type { DefaultCellComponentProps } from 'payload'
-import { getBestFitFromSizes, isImage } from 'payload/shared'
-import type { FC } from 'react'
+import { formatAdminURL, getBestFitFromSizes, isImage } from 'payload/shared'
+import type { FC, ReactNode } from 'react'
 
 import './index.scss'
 
 /**
  * Payload only renders list thumbnails on the `filename` column (FileCell).
  * This cell keeps that behavior and adds an immediate Image / Video cue.
+ *
+ * A custom Cell replaces Payload's RenderDefaultCell entirely, so it must
+ * also reproduce the linked-column wrapper: an edit link in list views and
+ * an onSelect button inside relationship/upload list drawers — otherwise
+ * media pickers show rows that cannot be selected.
  */
 export const MediaFilenameCell: FC<DefaultCellComponentProps> = ({
   cellData: filename,
+  collectionSlug,
+  link,
+  linkURL,
   rowData,
 }) => {
+  const { isInDrawer, onSelect } = useListDrawerContext()
+  const {
+    config: {
+      routes: { admin: adminRoute },
+    },
+  } = useConfig()
+
   const mimeType = typeof rowData?.mimeType === 'string' ? rowData.mimeType : ''
   const isFileImage = isImage(mimeType)
   const isVideo = mimeType.startsWith('video/')
@@ -35,8 +51,8 @@ export const MediaFilenameCell: FC<DefaultCellComponentProps> = ({
 
   const typeLabel = isVideo ? 'Video' : isFileImage ? 'Image' : 'File'
 
-  return (
-    <div className="media-filename-cell">
+  const content = (
+    <>
       <div
         className={[
           'media-filename-cell__preview',
@@ -67,6 +83,46 @@ export const MediaFilenameCell: FC<DefaultCellComponentProps> = ({
         <span className="media-filename-cell__filename">{String(filename ?? '')}</span>
         <span className="media-filename-cell__type">{typeLabel}</span>
       </div>
-    </div>
+    </>
   )
+
+  const wrap = (children: ReactNode) => {
+    if (link !== false && isInDrawer && typeof onSelect === 'function') {
+      return (
+        <button
+          className="media-filename-cell media-filename-cell--button"
+          onClick={() =>
+            onSelect({
+              collectionSlug,
+              doc: rowData,
+              docID: String(rowData.id),
+            })
+          }
+          type="button"
+        >
+          {children}
+        </button>
+      )
+    }
+    if (link) {
+      return (
+        <Link
+          className="media-filename-cell"
+          href={
+            linkURL ||
+            formatAdminURL({
+              adminRoute,
+              path: `/collections/${collectionSlug}/${encodeURIComponent(String(rowData.id))}`,
+            })
+          }
+          prefetch={false}
+        >
+          {children}
+        </Link>
+      )
+    }
+    return <div className="media-filename-cell">{children}</div>
+  }
+
+  return wrap(content)
 }
