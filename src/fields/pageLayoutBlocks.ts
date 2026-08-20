@@ -18,23 +18,33 @@ import { NewsletterSignup } from '@/blocks/NewsletterSignup/config'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { TestimonialsMarquee } from '@/blocks/TestimonialsMarquee/config'
 
-/** Layout blocks shared by Pages and the Home global. */
+/**
+ * Layout blocks shared by Pages and the Home global.
+ * Ordered by `admin.group` — the blocks drawer renders groups in first-appearance order.
+ */
 export const pageLayoutBlocks: Block[] = [
-  CallToAction,
+  // Text
   Content,
+  // Media
   MediaBlock,
-  Archive,
-  FormBlock,
-  NewsletterSignup,
+  FullMedia,
+  // Split layouts
+  SplitContentNarrow,
+  // Statements
   FeatureStatementGrid,
   FeatureStatementLinks,
   FeatureHeadingOffset,
-  FeatureTabs,
   FeatureImageStatement,
-  SplitContentNarrow,
-  FullMedia,
-  TestimonialsMarquee,
+  // Interactive
+  FeatureTabs,
   DynamicAudience,
   AudienceTabs,
   IndustryWork,
+  TestimonialsMarquee,
+  // Lists & grids
+  Archive,
+  // Forms & CTAs
+  CallToAction,
+  FormBlock,
+  NewsletterSignup,
 ]

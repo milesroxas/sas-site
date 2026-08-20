@@ -1,8 +1,11 @@
 import type { Block } from 'payload'
+
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { linkGroup } from '@/fields/linkGroup'
 
 export const TestimonialsMarquee: Block = {
   slug: 'testimonialsMarquee',
+  admin: { group: BLOCK_GROUPS.interactive },
   interfaceName: 'TestimonialsMarqueeBlock',
   labels: { singular: 'Testimonials marquee', plural: 'Testimonials marquees' },
   fields: [

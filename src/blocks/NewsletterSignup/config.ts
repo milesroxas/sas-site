@@ -1,7 +1,10 @@
 import type { Block } from 'payload'
 
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
+
 export const NewsletterSignup: Block = {
   slug: 'newsletterSignup',
+  admin: { group: BLOCK_GROUPS.forms },
   interfaceName: 'NewsletterSignupBlock',
   labels: { singular: 'Newsletter signup', plural: 'Newsletter signups' },
   fields: [

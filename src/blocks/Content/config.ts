@@ -6,6 +6,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 import type { Block, Field } from 'payload'
 
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { link } from '@/fields/link'
 
 const columnFields: Field[] = [
@@ -64,6 +65,7 @@ const columnFields: Field[] = [
 
 export const Content: Block = {
   slug: 'content',
+  admin: { group: BLOCK_GROUPS.text },
   interfaceName: 'ContentBlock',
   fields: [
     {

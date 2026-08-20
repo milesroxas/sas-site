@@ -1,9 +1,12 @@
 import type { Block } from 'payload'
+
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { featureSourceField } from '../shared'
 
 export const FeatureImageStatement: Block = {
   slug: 'featureImageStatement',
+  admin: { group: BLOCK_GROUPS.statements },
   // Per-parent table name: a static dbName would collapse every collection that
   // uses this block into one table whose FK points at the first parent only.
   dbName: ({ tableName }) => `${tableName}_image_statement`,

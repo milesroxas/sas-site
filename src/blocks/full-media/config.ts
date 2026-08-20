@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 
 /**
@@ -14,6 +15,7 @@ import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseSt
  */
 export const FullMedia: Block = {
   slug: 'fullMedia',
+  admin: { group: BLOCK_GROUPS.media },
   // Per-parent table name: a static dbName would collapse every collection that
   // uses this block into one table whose FK points at the first parent only.
   dbName: ({ tableName }) => `${tableName}_full_media`,

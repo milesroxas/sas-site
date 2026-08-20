@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 
 /**
  * Full-screen work spotlight with an inline industry dropdown. Selecting an
@@ -9,6 +10,7 @@ import { themeField } from '@/blocks/shared/fields'
  */
 export const IndustryWork: Block = {
   slug: 'industryWork',
+  admin: { group: BLOCK_GROUPS.interactive },
   // Per-parent table name: reused on Pages, Home, and Work Pages.
   dbName: ({ tableName }) => `${tableName}_ind_work`,
   interfaceName: 'IndustryWorkBlock',

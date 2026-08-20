@@ -66,17 +66,24 @@ export const ExpertisePages: CollectionConfig<'expertise-pages'> = {
               type: 'blocks',
               label: 'Composition',
               blocks: [
-                CallToAction,
+                // Text
                 Content,
+                // Media
                 MediaBlock,
-                Archive,
-                FormBlock,
+                // Split layouts
+                SplitContentNarrow,
+                // Statements
                 FeatureStatementGrid,
                 FeatureHeadingOffset,
-                FeatureTabs,
                 FeatureImageStatement,
-                SplitContentNarrow,
+                // Interactive
+                FeatureTabs,
                 AudienceTabs,
+                // Lists & grids
+                Archive,
+                // Forms & CTAs
+                CallToAction,
+                FormBlock,
               ],
               required: true,
               admin: { initCollapsed: true },

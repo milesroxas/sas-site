@@ -1,9 +1,11 @@
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 
 export const LabStorySection: Block = {
   slug: 'labStorySection',
+  admin: { group: BLOCK_GROUPS.narrative },
   dbName: 'lp_story',
   interfaceName: 'LabStorySectionBlock',
   labels: { singular: 'Story section', plural: 'Story sections' },
@@ -52,6 +54,7 @@ export const LabStorySection: Block = {
 
 export const LabMediaShowcase: Block = {
   slug: 'labMediaShowcase',
+  admin: { group: BLOCK_GROUPS.media },
   dbName: 'lp_media',
   interfaceName: 'LabMediaShowcaseBlock',
   labels: { singular: 'Media showcase', plural: 'Media showcases' },
@@ -80,6 +83,7 @@ export const LabMediaShowcase: Block = {
 
 export const LabFacts: Block = {
   slug: 'labFacts',
+  admin: { group: BLOCK_GROUPS.lists },
   dbName: 'lp_facts',
   interfaceName: 'LabFactsBlock',
   labels: { singular: 'Project facts', plural: 'Project facts' },
@@ -99,6 +103,7 @@ export const LabFacts: Block = {
 
 export const LabTransition: Block = {
   slug: 'labTransition',
+  admin: { group: BLOCK_GROUPS.narrative },
   dbName: 'lp_transition',
   interfaceName: 'LabTransitionBlock',
   labels: { singular: 'Rich transition', plural: 'Rich transitions' },
@@ -118,6 +123,7 @@ export const LabTransition: Block = {
 
 export const LabRelatedProjects: Block = {
   slug: 'labRelatedProjects',
+  admin: { group: BLOCK_GROUPS.lists },
   dbName: 'lp_related',
   interfaceName: 'LabRelatedProjectsBlock',
   labels: { singular: 'Related lab projects', plural: 'Related lab projects' },
@@ -134,11 +140,16 @@ export const LabRelatedProjects: Block = {
   ],
 }
 
+// Ordered by `admin.group` — the blocks drawer renders groups in first-appearance order.
 export const labBlocks = [
+  // Narrative
   LabStorySection,
-  LabMediaShowcase,
-  LabFacts,
   LabTransition,
-  LabRelatedProjects,
+  // Media
+  LabMediaShowcase,
+  // Split layouts
   SplitContentNarrow,
+  // Lists & grids
+  LabFacts,
+  LabRelatedProjects,
 ]

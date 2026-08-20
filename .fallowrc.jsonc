@@ -11,6 +11,7 @@
   // - admin components referenced by string path in payload.config.ts (resolved via generated importMap)
   // - react-email templates bundled by the `email dev` preview server (package.json "email" script)
   "dynamicallyLoaded": [
+    "src/components/admin/**",
     "src/components/BeforeLogin/**",
     "src/components/AdminIcon/**",
     "src/components/AssignLibraryFolder/**",

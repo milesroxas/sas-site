@@ -6,10 +6,13 @@ import {
 } from '@payloadcms/richtext-lexical'
 import type { Block } from 'payload'
 
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
+
 import { linkGroup } from '../../fields/linkGroup'
 
 export const CallToAction: Block = {
   slug: 'cta',
+  admin: { group: BLOCK_GROUPS.forms },
   interfaceName: 'CallToActionBlock',
   fields: [
     {
