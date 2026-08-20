@@ -903,11 +903,11 @@ export interface CaseStudy {
    */
   featuredCapabilities?: (number | Capability)[] | null;
   /**
-   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
+   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
    */
   context?: {
     /**
-     * Background and the client situation before the engagement. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     * Background and the client situation before the engagement. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
      */
     body?: {
       root: {
@@ -964,11 +964,11 @@ export interface CaseStudy {
       | null;
   };
   /**
-   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
+   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
    */
   challenge?: {
     /**
-     * The problem being solved. Required to publish. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     * The problem being solved. Required to publish. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
      */
     body?: {
       root: {
@@ -1025,11 +1025,11 @@ export interface CaseStudy {
       | null;
   };
   /**
-   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
+   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
    */
   strategy?: {
     /**
-     * The high-level strategic direction taken. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     * The high-level strategic direction taken. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
      */
     body?: {
       root: {
@@ -1086,11 +1086,11 @@ export interface CaseStudy {
       | null;
   };
   /**
-   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
+   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
    */
   approach?: {
     /**
-     * How the work was carried out. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     * How the work was carried out. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
      */
     body?: {
       root: {
@@ -1147,11 +1147,11 @@ export interface CaseStudy {
       | null;
   };
   /**
-   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
+   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
    */
   outcomeSummary?: {
     /**
-     * The overall result of the engagement. Required to publish. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     * The overall result of the engagement. Required to publish. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
      */
     body?: {
       root: {
@@ -1208,11 +1208,11 @@ export interface CaseStudy {
       | null;
   };
   /**
-   * Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.
+   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
    */
   learnings?: {
     /**
-     * What the team took away from the work. Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.
+     * What the team took away from the work. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
      */
     body?: {
       root: {

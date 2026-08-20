@@ -1,3 +1,16 @@
+/* Case Study story sections: the Story Beats array title renders as an h3
+   section header by default, reading as a sibling of the section group label
+   (e.g. Challenge). Scale it down to match its peer field label (Overview).
+   Field className is set in src/collections/CaseStudies/story.ts. */
+
+.array-field.story-section-beats > .array-field__header .array-field__title {
+  font-size: 1rem;
+  line-height: calc(var(--base) * 1.25);
+  font-weight: 400;
+  font-family: var(--font-body);
+  color: var(--theme-elevation-800);
+}
+
 /* MCP API key capability sidebar (System → API Keys). Field structure is
    shaped in src/plugins/mcp.ts (withCapabilityControls); components live in
    src/components/McpCapabilityControls. */

@@ -110,15 +110,15 @@ export const caseStudyStorySectionField = (definition: StorySectionDefinition): 
   label: definition.label,
   admin: {
     description:
-      'Canonical narrative for this part of the case study. The body and beats are composed in order for whole-section consumers.',
+      'Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.',
   },
   fields: [
     {
       name: 'body',
       type: 'richText',
-      label: 'Section body',
+      label: 'Overview',
       admin: {
-        description: `${definition.bodyDescription} Use this for an opening or a continuous section; when beats exist, it renders before them and should not repeat their copy.`,
+        description: `${definition.bodyDescription} Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.`,
       },
     },
     {
@@ -126,6 +126,7 @@ export const caseStudyStorySectionField = (definition: StorySectionDefinition): 
       type: 'array',
       labels: { singular: 'Story beat', plural: 'Story beats' },
       admin: {
+        className: 'story-section-beats',
         initCollapsed: true,
         description:
           'Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.',
