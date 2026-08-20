@@ -17,6 +17,7 @@
     "src/components/McpCapabilityControls/**",
     "src/components/MediaFilenameCell/**",
     "src/components/MediaUpload/**",
+    "src/components/StoryBeatSelect/**",
     "src/shared/email/templates/**",
     "src/Footer/RowLabel.tsx",
     "src/Header/RowLabel.tsx",
