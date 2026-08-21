@@ -17,6 +17,8 @@ export const Projects: CollectionConfig<'projects'> = {
     group: 'Content Hub',
     useAsTitle: 'internalTitle',
     defaultColumns: ['internalTitle', 'organization', 'status', '_status'],
+    description:
+      'The factual record of a client engagement: what happened, when, scope, deliverables, and classification. Create one for every engagement, even if it never becomes a case study. Case Study Content holds the reusable story and evidence; Work Pages handle website presentation. Projects also anchor assets and testimonials for reuse in proposals, pitch decks, and other channels.',
   },
   defaultPopulate: {
     publicTitle: true,
