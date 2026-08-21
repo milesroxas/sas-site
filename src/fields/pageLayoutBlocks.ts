@@ -3,6 +3,7 @@ import type { Block } from 'payload'
 import { Archive } from '@/blocks/ArchiveBlock/config'
 import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { CallToAction } from '@/blocks/CallToAction/config'
+import { Carousel } from '@/blocks/Carousel/config'
 import { Content } from '@/blocks/Content/config'
 import { DynamicAudience } from '@/blocks/DynamicAudience/config'
 import { FormBlock } from '@/blocks/Form/config'
@@ -21,6 +22,7 @@ import { TestimonialsMarquee } from '@/blocks/TestimonialsMarquee/config'
 /** Layout blocks shared by Pages and the Home global. */
 export const pageLayoutBlocks: Block[] = [
   CallToAction,
+  Carousel,
   Content,
   MediaBlock,
   Archive,

@@ -5,6 +5,8 @@ import type { Media as MediaType } from '@/payload-types'
 
 export interface Props {
   alt?: string
+  /** Video only. Defaults to true; pass false when playback is driven externally. */
+  autoPlay?: boolean
   className?: string
   /**
    * Opt a cross-origin image or video into CORS so it can be read into a

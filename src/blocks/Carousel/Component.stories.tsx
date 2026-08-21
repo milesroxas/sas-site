@@ -1,0 +1,79 @@
+import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { mediaFixture, videoFixture } from '../fixtures'
+import { CarouselBlock } from './Component'
+
+const slides = Array.from({ length: 5 }, (_, i) => ({
+  id: `slide-${i + 1}`,
+  media: mediaFixture,
+  caption: `Slide ${i + 1} caption`,
+}))
+
+const meta = {
+  title: 'Blocks/Carousel',
+  component: CarouselBlock,
+  parameters: {
+    layout: 'fullscreen',
+  },
+  args: {
+    blockType: 'carousel',
+    slides,
+    slideSize: 'full',
+    width: 'contained',
+    showArrows: true,
+  },
+} satisfies Meta<typeof CarouselBlock>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+export const Default: Story = {}
+
+export const WithoutArrows: Story = {
+  args: {
+    showArrows: false,
+  },
+}
+
+export const FullWidth: Story = {
+  args: {
+    width: 'full-width',
+    slideSize: 'half',
+  },
+}
+
+export const Half: Story = {
+  args: {
+    slideSize: 'half',
+  },
+}
+
+export const Third: Story = {
+  args: {
+    slideSize: 'third',
+  },
+}
+
+export const WithoutCaptions: Story = {
+  args: {
+    slides: slides.map((slide) => ({ ...slide, caption: null })),
+  },
+}
+
+export const MixedAspectRatios: Story = {
+  args: {
+    slideSize: 'third',
+    slides: [
+      { id: 'wide', media: mediaFixture, caption: 'Wide (1200×630)' },
+      { id: 'square', media: { ...mediaFixture, width: 630, height: 630 }, caption: 'Square' },
+      { id: 'short', media: { ...mediaFixture, width: 1200, height: 300 }, caption: 'Short' },
+      { id: 'wide-2', media: mediaFixture, caption: 'Wide (1200×630)' },
+    ],
+  },
+}
+
+export const WithVideo: Story = {
+  args: {
+    slides: [slides[0], { id: 'slide-video', media: videoFixture, caption: null }, slides[2]],
+  },
+}
