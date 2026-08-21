@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type React from 'react'
 import { Media } from '@/components/Media'
+import { cursorTarget } from '@/features/cursor'
 import type { Post } from '@/payload-types'
 
 type FeaturedCardProps = {
@@ -18,8 +19,12 @@ export const FeaturedCard: React.FC<FeaturedCardProps> = ({ label = 'Insights', 
 
   return (
     <Link
-      className="grid w-max max-w-full grid-cols-[191px_auto] items-stretch gap-3 rounded-md bg-black/35 p-3 shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.16),inset_0_1px_0_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-[background-color,box-shadow] hover:bg-black/45 hover:shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.24),inset_0_1px_0_0_rgba(255,255,255,0.14)] supports-[backdrop-filter]:bg-white/8 supports-[backdrop-filter]:hover:bg-white/12"
+      // Hover state is continuous, driven by the cursor feature's
+      // `--cursor-proximity` (0–1) — see the contract in
+      // src/features/cursor/variants.ts. Base state = var fallback 0.
+      className="grid w-max max-w-full grid-cols-[191px_auto] items-stretch gap-3 rounded-md bg-[rgb(0_0_0/calc(35%_+_10%_*_var(--cursor-proximity,0)))] p-3 shadow-[inset_0_0_0_0.5px_rgb(255_255_255/calc(16%_+_8%_*_var(--cursor-proximity,0))),inset_0_1px_0_0_rgb(255_255_255/calc(10%_+_4%_*_var(--cursor-proximity,0)))] backdrop-blur-md scale-[calc(1_+_0.02_*_var(--cursor-proximity,0))] supports-[backdrop-filter]:bg-[rgb(255_255_255/calc(8%_+_4%_*_var(--cursor-proximity,0)))]"
       href={`/posts/${post.slug}`}
+      {...cursorTarget({ variant: 'emphasize', label: 'Read post' })}
     >
       <div className="flex min-w-0 flex-col gap-3">
         <div className="flex items-center gap-2">

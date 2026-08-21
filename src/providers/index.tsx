@@ -1,5 +1,6 @@
 import type React from 'react'
 
+import { CustomCursorProvider } from '@/features/cursor'
 import { AnalyticsProvider } from './Analytics'
 import { ConsentProvider } from './Consent'
 import { HeaderThemeProvider } from './HeaderTheme'
@@ -16,7 +17,9 @@ export const Providers: React.FC<{
         {/* AnalyticsProvider reads useConsentManager, so it must sit below ConsentProvider. */}
         <AnalyticsProvider>
           <HeaderThemeProvider>
-            <SmoothScrollProvider>{children}</SmoothScrollProvider>
+            <SmoothScrollProvider>
+              <CustomCursorProvider>{children}</CustomCursorProvider>
+            </SmoothScrollProvider>
           </HeaderThemeProvider>
         </AnalyticsProvider>
       </ConsentProvider>

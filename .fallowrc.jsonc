@@ -51,6 +51,20 @@
       "file": "src/shared/ui/scroll-reveal/index.ts",
       "exports": ["ScrollRevealProps", "ScrollRevealTuning"]
     },
+    // Cursor feature public contract: tuning SSOT (defaults/variants) and the
+    // target styling contract (proximity var + active attr); see src/features/cursor/variants.ts
+    {
+      "file": "src/features/cursor/index.ts",
+      "exports": [
+        "CURSOR_ACTIVE_ATTR",
+        "CURSOR_DEFAULTS",
+        "CURSOR_PROXIMITY_VAR",
+        "CURSOR_VARIANTS",
+        "CursorTargetOptions",
+        "CursorVariantName",
+        "CursorVariantTuning"
+      ]
+    },
     {
       "file": "src/features/immersive/index.ts",
       "exports": [
