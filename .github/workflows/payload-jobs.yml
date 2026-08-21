@@ -45,10 +45,24 @@ jobs:
             exit 1
           fi
 
-          args=(--fail-with-body --silent --show-error --max-time 240
+          args=(--fail-with-body --silent --show-error
+                --connect-timeout 15 --max-time 240
                 -H "Authorization: Bearer $CRON_SECRET")
           if [ -n "$VERCEL_AUTOMATION_BYPASS_SECRET" ]; then
             args+=(-H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET")
           fi
 
+          # Exit 28 (operation timeout) means the endpoint accepted the request
+          # and is still processing — the route's maxDuration (300s) exceeds our
+          # --max-time, and the jobs queue is durable with a 10-minute cadence,
+          # so a slow run is not a failure. Everything else (refused connection,
+          # auth 4xx, 5xx) still fails the workflow.
+          set +e
           curl "${args[@]}" "$PAYLOAD_JOBS_URL"
+          status=$?
+          set -e
+          if [ "$status" -eq 28 ]; then
+            echo "::warning::Jobs endpoint still processing after 240s; server-side run continues (route maxDuration 300s). Next scheduled tick will pick up any remainder."
+            exit 0
+          fi
+          exit "$status"
