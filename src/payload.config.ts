@@ -49,6 +49,7 @@ export default buildConfig({
       graphics: {
         Icon: '@/components/AdminIcon#AdminIcon',
       },
+      providers: ['@/components/admin/BlocksDrawerTabs#BlocksDrawerTabs'],
     },
     importMap: {
       baseDir: path.resolve(dirname),

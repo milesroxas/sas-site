@@ -9,6 +9,7 @@ import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
 import { themeField } from '@/blocks/shared/fields'
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
@@ -16,6 +17,7 @@ import { withStoryBeatSource } from '@/fields/storyBeatSource'
 
 export const CaseStudyStorySection: Block = {
   slug: 'caseStudyStorySection',
+  admin: { group: BLOCK_GROUPS.narrative },
   dbName: 'wp_story',
   interfaceName: 'CaseStudyStorySectionBlock',
   labels: { singular: 'Story section', plural: 'Story sections' },
@@ -73,6 +75,7 @@ export const CaseStudyStorySection: Block = {
 
 export const CaseStudyMediaShowcase: Block = {
   slug: 'caseStudyMediaShowcase',
+  admin: { group: BLOCK_GROUPS.media },
   dbName: 'wp_media',
   interfaceName: 'CaseStudyMediaShowcaseBlock',
   labels: { singular: 'Media showcase', plural: 'Media showcases' },
@@ -102,6 +105,7 @@ export const CaseStudyMediaShowcase: Block = {
 
 export const CaseStudyKeyDecisions: Block = {
   slug: 'caseStudyKeyDecisions',
+  admin: { group: BLOCK_GROUPS.lists },
   dbName: 'wp_decisions',
   interfaceName: 'CaseStudyKeyDecisionsBlock',
   labels: { singular: 'Key decisions', plural: 'Key decisions' },
@@ -121,6 +125,7 @@ export const CaseStudyKeyDecisions: Block = {
 
 export const CaseStudyMetrics: Block = {
   slug: 'caseStudyMetrics',
+  admin: { group: BLOCK_GROUPS.lists },
   dbName: 'wp_metrics',
   interfaceName: 'CaseStudyMetricsBlock',
   labels: { singular: 'Metrics', plural: 'Metrics' },
@@ -145,6 +150,7 @@ export const CaseStudyMetrics: Block = {
 
 export const CaseStudyTestimonial: Block = {
   slug: 'caseStudyTestimonial',
+  admin: { group: BLOCK_GROUPS.statements },
   dbName: 'wp_quote',
   interfaceName: 'CaseStudyTestimonialBlock',
   labels: { singular: 'Testimonial', plural: 'Testimonials' },
@@ -169,6 +175,7 @@ export const CaseStudyTestimonial: Block = {
 
 export const CaseStudyTransition: Block = {
   slug: 'caseStudyTransition',
+  admin: { group: BLOCK_GROUPS.narrative },
   dbName: 'wp_transition',
   interfaceName: 'CaseStudyTransitionBlock',
   labels: { singular: 'Rich transition', plural: 'Rich transitions' },
@@ -188,6 +195,7 @@ export const CaseStudyTransition: Block = {
 
 export const CaseStudyRelatedWork: Block = {
   slug: 'caseStudyRelatedWork',
+  admin: { group: BLOCK_GROUPS.lists },
   dbName: 'wp_related',
   interfaceName: 'CaseStudyRelatedWorkBlock',
   labels: { singular: 'Related work', plural: 'Related work' },
@@ -229,23 +237,30 @@ const WorkFeatureImageStatement = withStoryBeatSource(
 )
 const WorkFeatureTabs = withStoryBeatSource(FeatureTabs, 'WorkFeatureTabsBlock')
 
+// Ordered by `admin.group` — the blocks drawer renders groups in first-appearance order.
 export const caseStudyBlocks = [
+  // Narrative
   WorkCaseStudyStorySection,
-  WorkSplitContentNarrow,
+  CaseStudyTransition,
+  // Media
   WorkFullMedia,
   WorkImagePair,
   WorkSplitImageOffset,
   CaseStudyMediaShowcase,
-  CaseStudyKeyDecisions,
-  CaseStudyMetrics,
-  CaseStudyTestimonial,
-  CaseStudyTransition,
-  CaseStudyRelatedWork,
-  WorkFeatureHeadingOffset,
+  // Split layouts
+  WorkSplitContentNarrow,
+  // Statements
   WorkFeatureStatementGrid,
   FeatureStatementLinks,
+  WorkFeatureHeadingOffset,
   WorkFeatureImageStatement,
+  CaseStudyTestimonial,
+  // Interactive
   WorkFeatureTabs,
   AudienceTabs,
   IndustryWork,
+  // Lists & grids
+  CaseStudyKeyDecisions,
+  CaseStudyMetrics,
+  CaseStudyRelatedWork,
 ]

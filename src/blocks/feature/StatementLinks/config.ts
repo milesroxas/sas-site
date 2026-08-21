@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { linkGroup } from '@/fields/linkGroup'
 
 /**
@@ -7,6 +8,7 @@ import { linkGroup } from '@/fields/linkGroup'
  */
 export const FeatureStatementLinks: Block = {
   slug: 'featureStatementLinks',
+  admin: { group: BLOCK_GROUPS.statements },
   // Shortened per-parent table name: the default
   // `<parent>_blocks_feature_statement_links_links` overruns Postgres'
   // 63-character identifier limit once index suffixes are appended.

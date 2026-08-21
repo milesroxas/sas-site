@@ -6,8 +6,11 @@ import {
 } from '@payloadcms/richtext-lexical'
 import type { Block } from 'payload'
 
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
+
 export const FormBlock: Block = {
   slug: 'formBlock',
+  admin: { group: BLOCK_GROUPS.forms },
   interfaceName: 'FormBlock',
   fields: [
     {

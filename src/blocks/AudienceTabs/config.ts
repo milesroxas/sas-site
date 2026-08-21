@@ -1,9 +1,11 @@
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 
 export const AudienceTabs: Block = {
   slug: 'audienceTabs',
+  admin: { group: BLOCK_GROUPS.interactive },
   // Per-parent table name: reused on Pages, Home, work, expertise, audience.
   dbName: ({ tableName }) => `${tableName}_aud_tabs`,
   interfaceName: 'AudienceTabsBlock',

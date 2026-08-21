@@ -279,24 +279,24 @@ export interface Page {
     media?: (number | null) | Media;
   };
   layout: (
-    | CallToActionBlock
-    | CarouselBlock
     | ContentBlock
     | MediaBlock
-    | ArchiveBlock
-    | FormBlock
-    | NewsletterSignupBlock
+    | FullMediaBlock
+    | SplitContentNarrowBlock
     | FeatureStatementGridBlock
     | FeatureStatementLinksBlock
     | FeatureHeadingOffsetBlock
-    | FeatureTabsBlock
     | FeatureImageStatementBlock
-    | SplitContentNarrowBlock
-    | FullMediaBlock
-    | TestimonialsMarqueeBlock
+    | FeatureTabsBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
     | IndustryWorkBlock
+    | TestimonialsMarqueeBlock
+    | CarouselBlock
+    | ArchiveBlock
+    | CallToActionBlock
+    | FormBlock
+    | NewsletterSignupBlock
   )[];
   meta?: {
     title?: string | null;
@@ -1551,23 +1551,23 @@ export interface WorkPage {
   layout?:
     | (
         | WorkCaseStudyStorySectionBlock
-        | WorkSplitContentNarrowBlock
+        | CaseStudyTransitionBlock
         | WorkFullMediaBlock
         | WorkImagePairBlock
         | WorkSplitImageOffsetBlock
         | CaseStudyMediaShowcaseBlock
-        | CaseStudyKeyDecisionsBlock
-        | CaseStudyMetricsBlock
-        | CaseStudyTestimonialBlock
-        | CaseStudyTransitionBlock
-        | CaseStudyRelatedWorkBlock
-        | WorkFeatureHeadingOffsetBlock
+        | WorkSplitContentNarrowBlock
         | WorkFeatureStatementGridBlock
         | FeatureStatementLinksBlock
+        | WorkFeatureHeadingOffsetBlock
         | WorkFeatureImageStatementBlock
+        | CaseStudyTestimonialBlock
         | WorkFeatureTabsBlock
         | AudienceTabsBlock
         | IndustryWorkBlock
+        | CaseStudyKeyDecisionsBlock
+        | CaseStudyMetricsBlock
+        | CaseStudyRelatedWorkBlock
       )[]
     | null;
   coverAsset?: (number | null) | Media;
@@ -1700,25 +1700,11 @@ export interface WorkCaseStudyStorySectionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkSplitContentNarrowBlock".
+ * via the `definition` "CaseStudyTransitionBlock".
  */
-export interface WorkSplitContentNarrowBlock {
-  /**
-   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
-   */
-  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
-  /**
-   * Leave empty to use the complete section, or choose one reusable beat from that section.
-   */
-  storyBeatKey?: string | null;
-  /**
-   * Short kicker above the text.
-   */
+export interface CaseStudyTransitionBlock {
   eyebrow?: string | null;
-  heading?: string | null;
-  /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
-   */
+  heading: string;
   body?: {
     root: {
       type: string;
@@ -1734,22 +1720,14 @@ export interface WorkSplitContentNarrowBlock {
     };
     [k: string]: unknown;
   } | null;
-  media: number | Media;
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Arrange the image on the left or the right of the text.
-   */
-  imagePosition?: ('left' | 'right') | null;
+  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
   /**
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'splitContentNarrow';
+  blockType: 'caseStudyTransition';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1962,146 +1940,24 @@ export interface CaseStudyMediaShowcaseBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyKeyDecisionsBlock".
+ * via the `definition` "WorkSplitContentNarrowBlock".
  */
-export interface CaseStudyKeyDecisionsBlock {
-  heading?: string | null;
-  introduction?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  source?: ('featured' | 'all') | null;
-  layout?: ('list' | 'cards' | 'editorial' | 'sticky') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'caseStudyKeyDecisions';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyMetricsBlock".
- */
-export interface CaseStudyMetricsBlock {
-  heading?: string | null;
-  introduction?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  source?: ('featured-public' | 'all-public') | null;
-  layout?: ('grid' | 'row' | 'statement' | 'editorial') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'caseStudyMetrics';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyTestimonialBlock".
- */
-export interface CaseStudyTestimonialBlock {
-  testimonial: number | Testimonial;
-  layout?: ('editorial' | 'centered' | 'split' | 'compact') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  showPortrait?: boolean | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'caseStudyTestimonial';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyTransitionBlock".
- */
-export interface CaseStudyTransitionBlock {
-  eyebrow?: string | null;
-  heading: string;
-  body?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'caseStudyTransition';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyRelatedWorkBlock".
- */
-export interface CaseStudyRelatedWorkBlock {
-  heading?: string | null;
-  selectionMode?: ('document-settings' | 'automatic-capability-match') | null;
-  limit?: number | null;
-  layout?: ('grid' | 'list' | 'feature') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'caseStudyRelatedWork';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureHeadingOffsetBlock".
- */
-export interface WorkFeatureHeadingOffsetBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading: string;
+export interface WorkSplitContentNarrowBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
    */
-  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
   /**
    * Leave empty to use the complete section, or choose one reusable beat from that section.
    */
   storyBeatKey?: string | null;
   /**
-   * Supporting copy in the offset right column. Leave empty to pull the source.
+   * Short kicker above the text.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work Page override for canonical content.
    */
   body?: {
     root: {
@@ -2118,9 +1974,22 @@ export interface WorkFeatureHeadingOffsetBlock {
     };
     [k: string]: unknown;
   } | null;
+  media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Arrange the image on the left or the right of the text.
+   */
+  imagePosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'featureHeadingOffset';
+  blockType: 'splitContentNarrow';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2232,6 +2101,46 @@ export interface FeatureStatementLinksBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFeatureHeadingOffsetBlock".
+ */
+export interface WorkFeatureHeadingOffsetBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Supporting copy in the offset right column. Leave empty to pull the source.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureHeadingOffset';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "WorkFeatureImageStatementBlock".
  */
 export interface WorkFeatureImageStatementBlock {
@@ -2281,6 +2190,22 @@ export interface WorkFeatureImageStatementBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureImageStatement';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyTestimonialBlock".
+ */
+export interface CaseStudyTestimonialBlock {
+  testimonial: number | Testimonial;
+  layout?: ('editorial' | 'centered' | 'split' | 'compact') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  showPortrait?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyTestimonial';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2418,6 +2343,81 @@ export interface IndustryWorkBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyKeyDecisionsBlock".
+ */
+export interface CaseStudyKeyDecisionsBlock {
+  heading?: string | null;
+  introduction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  source?: ('featured' | 'all') | null;
+  layout?: ('list' | 'cards' | 'editorial' | 'sticky') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyKeyDecisions';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyMetricsBlock".
+ */
+export interface CaseStudyMetricsBlock {
+  heading?: string | null;
+  introduction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  source?: ('featured-public' | 'all-public') | null;
+  layout?: ('grid' | 'row' | 'statement' | 'editorial') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyMetrics';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyRelatedWorkBlock".
+ */
+export interface CaseStudyRelatedWorkBlock {
+  heading?: string | null;
+  selectionMode?: ('document-settings' | 'automatic-capability-match') | null;
+  limit?: number | null;
+  layout?: ('grid' | 'list' | 'feature') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyRelatedWork';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
 export interface Category {
@@ -2470,83 +2470,6 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock".
- */
-export interface CallToActionBlock {
-  richText?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  links?:
-    | {
-        link: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'cta';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CarouselBlock".
- */
-export interface CarouselBlock {
-  slides: {
-    media: number | Media;
-    /**
-     * Optional. Renders below the slide.
-     */
-    caption?: string | null;
-    id?: string | null;
-  }[];
-  /**
-   * Full width runs edge to edge of the browser window.
-   */
-  width?: ('contained' | 'full-width') | null;
-  /**
-   * Previous/next buttons. Contained places them beside the slides; full width overlays them on the slides.
-   */
-  showArrows?: boolean | null;
-  /**
-   * Slides visible at once on desktop; mobile always shows one.
-   */
-  slideSize?: ('full' | 'half' | 'third') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'carousel';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2632,6 +2555,425 @@ export interface MediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FullMediaBlock".
+ */
+export interface FullMediaBlock {
+  /**
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Cropped to 21:9 (16:9 on small screens).
+   */
+  media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Arrange the content row on the left or the right below the media (desktop only; smaller screens always sit left).
+   */
+  contentPosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'fullMedia';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitContentNarrowBlock".
+ */
+export interface SplitContentNarrowBlock {
+  /**
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Short kicker above the text.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Arrange the image on the left or the right of the text.
+   */
+  imagePosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'splitContentNarrow';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureStatementGridBlock".
+ */
+export interface FeatureStatementGridBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
+   */
+  statement?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Short supporting line pinned below the statement.
+   */
+  footnote?: string | null;
+  cards: {
+    media?: (number | null) | Media;
+    title: string;
+    description: string;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureStatementGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureHeadingOffsetBlock".
+ */
+export interface FeatureHeadingOffsetBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Supporting copy in the offset right column. Leave empty to pull the source.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureHeadingOffset';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureImageStatementBlock".
+ */
+export interface FeatureImageStatementBlock {
+  media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Large statement set beneath the image. Leave empty to pull the source.
+   */
+  caption?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Which edge the statement aligns to beneath the image.
+   */
+  textPosition?: ('right' | 'left') | null;
+  /**
+   * Small steps the statement down one type size.
+   */
+  textSize?: ('default' | 'small') | null;
+  /**
+   * Contained keeps the image in the site container; full bleeds edge to edge.
+   */
+  imageWidth?: ('contained' | 'full') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureImageStatement';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureTabsBlock".
+ */
+export interface FeatureTabsBlock {
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    heading: string;
+    /**
+     * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+     */
+    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+    /**
+     * Tab body copy. Leave empty to pull the source.
+     */
+    description?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    subheading?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * Short note shown as a card over the media.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureTabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "DynamicAudienceBlock".
+ */
+export interface DynamicAudienceBlock {
+  /**
+   * Static text before the audience dropdown.
+   */
+  heading: string;
+  /**
+   * Each row is a dropdown option. Selecting it swaps the subheading, intro, list, and media.
+   */
+  audiences: {
+    /**
+     * Shown in the dropdown (e.g. teams, leaders).
+     */
+    title: string;
+    /**
+     * Continues the headline after the dropdown for this audience.
+     */
+    subheading: string;
+    /**
+     * Lead paragraph for this audience.
+     */
+    intro: string;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Image or video for this audience. Cropped to 4:5.
+     */
+    media: number | Media;
+    id?: string | null;
+  }[];
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'dynamicAudience';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsMarqueeBlock".
+ */
+export interface TestimonialsMarqueeBlock {
+  /**
+   * Renders in muted ink. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
+   */
+  richText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Cards loop through these in order. Only published, publicly approved testimonials render.
+   */
+  testimonials: (number | Testimonial)[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonialsMarquee';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselBlock".
+ */
+export interface CarouselBlock {
+  slides: {
+    media: number | Media;
+    /**
+     * Optional. Renders below the slide.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Full width runs edge to edge of the browser window.
+   */
+  width?: ('contained' | 'full-width') | null;
+  /**
+   * Previous/next buttons. Contained places them beside the slides; full width overlays them on the slides.
+   */
+  showArrows?: boolean | null;
+  /**
+   * Slides visible at once on desktop; mobile always shows one.
+   */
+  slideSize?: ('full' | 'half' | 'third') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'carousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ArchiveBlock".
  */
 export interface ArchiveBlock {
@@ -2667,6 +3009,54 @@ export interface ArchiveBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'archive';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CallToActionBlock".
+ */
+export interface CallToActionBlock {
+  richText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cta';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2901,396 +3291,6 @@ export interface Audience {
   createdAt: string;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementGridBlock".
- */
-export interface FeatureStatementGridBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading: string;
-  /**
-   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
-   */
-  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-  /**
-   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
-   */
-  statement?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Short supporting line pinned below the statement.
-   */
-  footnote?: string | null;
-  cards: {
-    media?: (number | null) | Media;
-    title: string;
-    description: string;
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureStatementGrid';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureHeadingOffsetBlock".
- */
-export interface FeatureHeadingOffsetBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading: string;
-  /**
-   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
-   */
-  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-  /**
-   * Supporting copy in the offset right column. Leave empty to pull the source.
-   */
-  body?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureHeadingOffset';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureTabsBlock".
- */
-export interface FeatureTabsBlock {
-  tabs: {
-    title: string;
-    /**
-     * Lead statement for this tab.
-     */
-    heading: string;
-    /**
-     * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
-     */
-    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-    /**
-     * Tab body copy. Leave empty to pull the source.
-     */
-    description?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    subheading?: string | null;
-    items?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    media?: (number | null) | Media;
-    /**
-     * Short note shown as a card over the media.
-     */
-    caption?: string | null;
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureTabs';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureImageStatementBlock".
- */
-export interface FeatureImageStatementBlock {
-  media: number | Media;
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
-   */
-  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-  /**
-   * Large statement set beneath the image. Leave empty to pull the source.
-   */
-  caption?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Which edge the statement aligns to beneath the image.
-   */
-  textPosition?: ('right' | 'left') | null;
-  /**
-   * Small steps the statement down one type size.
-   */
-  textSize?: ('default' | 'small') | null;
-  /**
-   * Contained keeps the image in the site container; full bleeds edge to edge.
-   */
-  imageWidth?: ('contained' | 'full') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureImageStatement';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SplitContentNarrowBlock".
- */
-export interface SplitContentNarrowBlock {
-  /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
-   */
-  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
-  /**
-   * Short kicker above the text.
-   */
-  eyebrow?: string | null;
-  heading?: string | null;
-  /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
-   */
-  body?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  media: number | Media;
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Arrange the image on the left or the right of the text.
-   */
-  imagePosition?: ('left' | 'right') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'splitContentNarrow';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FullMediaBlock".
- */
-export interface FullMediaBlock {
-  /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
-   */
-  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading?: string | null;
-  /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
-   */
-  body?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Cropped to 21:9 (16:9 on small screens).
-   */
-  media: number | Media;
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Arrange the content row on the left or the right below the media (desktop only; smaller screens always sit left).
-   */
-  contentPosition?: ('left' | 'right') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'fullMedia';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TestimonialsMarqueeBlock".
- */
-export interface TestimonialsMarqueeBlock {
-  /**
-   * Renders in muted ink. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
-   */
-  richText?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  links?:
-    | {
-        link: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Cards loop through these in order. Only published, publicly approved testimonials render.
-   */
-  testimonials: (number | Testimonial)[];
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'testimonialsMarquee';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "DynamicAudienceBlock".
- */
-export interface DynamicAudienceBlock {
-  /**
-   * Static text before the audience dropdown.
-   */
-  heading: string;
-  /**
-   * Each row is a dropdown option. Selecting it swaps the subheading, intro, list, and media.
-   */
-  audiences: {
-    /**
-     * Shown in the dropdown (e.g. teams, leaders).
-     */
-    title: string;
-    /**
-     * Continues the headline after the dropdown for this audience.
-     */
-    subheading: string;
-    /**
-     * Lead paragraph for this audience.
-     */
-    intro: string;
-    items?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Image or video for this audience. Cropped to 4:5.
-     */
-    media: number | Media;
-    id?: string | null;
-  }[];
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'dynamicAudience';
-}
-/**
  * Website-specific lab-project presentation, composition, SEO, preview, and publishing.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3334,11 +3334,11 @@ export interface LabPage {
   layout?:
     | (
         | LabStorySectionBlock
-        | LabMediaShowcaseBlock
-        | LabFactsBlock
         | LabTransitionBlock
-        | LabRelatedProjectsBlock
+        | LabMediaShowcaseBlock
         | SplitContentNarrowBlock
+        | LabFactsBlock
+        | LabRelatedProjectsBlock
       )[]
     | null;
   /**
@@ -3605,6 +3605,37 @@ export interface LabStorySectionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabTransitionBlock".
+ */
+export interface LabTransitionBlock {
+  eyebrow?: string | null;
+  heading: string;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'labTransition';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LabMediaShowcaseBlock".
  */
 export interface LabMediaShowcaseBlock {
@@ -3655,37 +3686,6 @@ export interface LabFactsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'labFacts';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabTransitionBlock".
- */
-export interface LabTransitionBlock {
-  eyebrow?: string | null;
-  heading: string;
-  body?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'labTransition';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3762,17 +3762,17 @@ export interface ExpertisePage {
     media?: (number | null) | Media;
   };
   layout: (
-    | CallToActionBlock
     | ContentBlock
     | MediaBlock
-    | ArchiveBlock
-    | FormBlock
+    | SplitContentNarrowBlock
     | FeatureStatementGridBlock
     | FeatureHeadingOffsetBlock
-    | FeatureTabsBlock
     | FeatureImageStatementBlock
-    | SplitContentNarrowBlock
+    | FeatureTabsBlock
     | AudienceTabsBlock
+    | ArchiveBlock
+    | CallToActionBlock
+    | FormBlock
   )[];
   /**
    * Canonical capabilities this offering bundles. Drives automatic related-work matching.
@@ -3863,17 +3863,17 @@ export interface AudiencePage {
     media?: (number | null) | Media;
   };
   layout: (
-    | CallToActionBlock
     | ContentBlock
     | MediaBlock
-    | ArchiveBlock
-    | FormBlock
+    | SplitContentNarrowBlock
     | FeatureStatementGridBlock
     | FeatureHeadingOffsetBlock
-    | FeatureTabsBlock
     | FeatureImageStatementBlock
-    | SplitContentNarrowBlock
+    | FeatureTabsBlock
     | AudienceTabsBlock
+    | ArchiveBlock
+    | CallToActionBlock
+    | FormBlock
   )[];
   /**
    * Industries this segment spans. Drives automatic related-work matching.
@@ -4640,24 +4640,24 @@ export interface PagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        cta?: T | CallToActionBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
-        archive?: T | ArchiveBlockSelect<T>;
-        formBlock?: T | FormBlockSelect<T>;
-        newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
+        testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
+        archive?: T | ArchiveBlockSelect<T>;
+        cta?: T | CallToActionBlockSelect<T>;
+        formBlock?: T | FormBlockSelect<T>;
+        newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
   meta?:
     | T
@@ -4672,48 +4672,6 @@ export interface PagesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock_select".
- */
-export interface CallToActionBlockSelect<T extends boolean = true> {
-  richText?: T;
-  links?:
-    | T
-    | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-              appearance?: T;
-            };
-        id?: T;
-      };
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CarouselBlock_select".
- */
-export interface CarouselBlockSelect<T extends boolean = true> {
-  slides?:
-    | T
-    | {
-        media?: T;
-        caption?: T;
-        id?: T;
-      };
-  width?: T;
-  showArrows?: T;
-  slideSize?: T;
-  id?: T;
-  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4754,40 +4712,33 @@ export interface MediaBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ArchiveBlock_select".
+ * via the `definition` "FullMediaBlock_select".
  */
-export interface ArchiveBlockSelect<T extends boolean = true> {
-  introContent?: T;
-  populateBy?: T;
-  relationTo?: T;
-  categories?: T;
-  limit?: T;
-  selectedDocs?: T;
-  cardVariant?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FormBlock_select".
- */
-export interface FormBlockSelect<T extends boolean = true> {
-  form?: T;
-  enableIntro?: T;
-  introContent?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "NewsletterSignupBlock_select".
- */
-export interface NewsletterSignupBlockSelect<T extends boolean = true> {
+export interface FullMediaBlockSelect<T extends boolean = true> {
+  source?: T;
   eyebrow?: T;
   heading?: T;
   body?: T;
-  buttonLabel?: T;
-  audience?: T;
+  media?: T;
+  browseAllMedia?: T;
+  contentPosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitContentNarrowBlock_select".
+ */
+export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
+  source?: T;
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  media?: T;
+  browseAllMedia?: T;
+  imagePosition?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -4851,6 +4802,21 @@ export interface FeatureHeadingOffsetBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureImageStatementBlock_select".
+ */
+export interface FeatureImageStatementBlockSelect<T extends boolean = true> {
+  media?: T;
+  browseAllMedia?: T;
+  source?: T;
+  caption?: T;
+  textPosition?: T;
+  textSize?: T;
+  imageWidth?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "FeatureTabsBlock_select".
  */
 export interface FeatureTabsBlockSelect<T extends boolean = true> {
@@ -4873,78 +4839,6 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
         id?: T;
       };
   browseAllMedia?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureImageStatementBlock_select".
- */
-export interface FeatureImageStatementBlockSelect<T extends boolean = true> {
-  media?: T;
-  browseAllMedia?: T;
-  source?: T;
-  caption?: T;
-  textPosition?: T;
-  textSize?: T;
-  imageWidth?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SplitContentNarrowBlock_select".
- */
-export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
-  source?: T;
-  eyebrow?: T;
-  heading?: T;
-  body?: T;
-  media?: T;
-  browseAllMedia?: T;
-  imagePosition?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FullMediaBlock_select".
- */
-export interface FullMediaBlockSelect<T extends boolean = true> {
-  source?: T;
-  eyebrow?: T;
-  heading?: T;
-  body?: T;
-  media?: T;
-  browseAllMedia?: T;
-  contentPosition?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TestimonialsMarqueeBlock_select".
- */
-export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
-  richText?: T;
-  links?:
-    | T
-    | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-              appearance?: T;
-            };
-        id?: T;
-      };
-  testimonials?: T;
   id?: T;
   blockName?: T;
 }
@@ -5019,6 +4913,112 @@ export interface IndustryWorkBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsMarqueeBlock_select".
+ */
+export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
+  richText?: T;
+  links?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+              label?: T;
+              appearance?: T;
+            };
+        id?: T;
+      };
+  testimonials?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselBlock_select".
+ */
+export interface CarouselBlockSelect<T extends boolean = true> {
+  slides?:
+    | T
+    | {
+        media?: T;
+        caption?: T;
+        id?: T;
+      };
+  width?: T;
+  showArrows?: T;
+  slideSize?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ArchiveBlock_select".
+ */
+export interface ArchiveBlockSelect<T extends boolean = true> {
+  introContent?: T;
+  populateBy?: T;
+  relationTo?: T;
+  categories?: T;
+  limit?: T;
+  selectedDocs?: T;
+  cardVariant?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CallToActionBlock_select".
+ */
+export interface CallToActionBlockSelect<T extends boolean = true> {
+  richText?: T;
+  links?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              url?: T;
+              label?: T;
+              appearance?: T;
+            };
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FormBlock_select".
+ */
+export interface FormBlockSelect<T extends boolean = true> {
+  form?: T;
+  enableIntro?: T;
+  introContent?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterSignupBlock_select".
+ */
+export interface NewsletterSignupBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  buttonLabel?: T;
+  audience?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -5075,23 +5075,23 @@ export interface WorkPagesSelect<T extends boolean = true> {
     | T
     | {
         caseStudyStorySection?: T | WorkCaseStudyStorySectionBlockSelect<T>;
-        splitContentNarrow?: T | WorkSplitContentNarrowBlockSelect<T>;
+        caseStudyTransition?: T | CaseStudyTransitionBlockSelect<T>;
         fullMedia?: T | WorkFullMediaBlockSelect<T>;
         imagePair?: T | WorkImagePairBlockSelect<T>;
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
-        caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
-        caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
-        caseStudyTestimonial?: T | CaseStudyTestimonialBlockSelect<T>;
-        caseStudyTransition?: T | CaseStudyTransitionBlockSelect<T>;
-        caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
-        featureHeadingOffset?: T | WorkFeatureHeadingOffsetBlockSelect<T>;
+        splitContentNarrow?: T | WorkSplitContentNarrowBlockSelect<T>;
         featureStatementGrid?: T | WorkFeatureStatementGridBlockSelect<T>;
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
+        featureHeadingOffset?: T | WorkFeatureHeadingOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
+        caseStudyTestimonial?: T | CaseStudyTestimonialBlockSelect<T>;
         featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
+        caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
+        caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
+        caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
       };
   coverAsset?: T;
   downloadableAssets?: T;
@@ -5144,17 +5144,13 @@ export interface WorkCaseStudyStorySectionBlockSelect<T extends boolean = true> 
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkSplitContentNarrowBlock_select".
+ * via the `definition` "CaseStudyTransitionBlock_select".
  */
-export interface WorkSplitContentNarrowBlockSelect<T extends boolean = true> {
-  source?: T;
-  storyBeatKey?: T;
+export interface CaseStudyTransitionBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
   body?: T;
-  media?: T;
-  browseAllMedia?: T;
-  imagePosition?: T;
+  layout?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -5229,77 +5225,18 @@ export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyKeyDecisionsBlock_select".
+ * via the `definition` "WorkSplitContentNarrowBlock_select".
  */
-export interface CaseStudyKeyDecisionsBlockSelect<T extends boolean = true> {
-  heading?: T;
-  introduction?: T;
-  source?: T;
-  layout?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyMetricsBlock_select".
- */
-export interface CaseStudyMetricsBlockSelect<T extends boolean = true> {
-  heading?: T;
-  introduction?: T;
-  source?: T;
-  layout?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyTestimonialBlock_select".
- */
-export interface CaseStudyTestimonialBlockSelect<T extends boolean = true> {
-  testimonial?: T;
-  layout?: T;
-  theme?: T;
-  showPortrait?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyTransitionBlock_select".
- */
-export interface CaseStudyTransitionBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  heading?: T;
-  body?: T;
-  layout?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyRelatedWorkBlock_select".
- */
-export interface CaseStudyRelatedWorkBlockSelect<T extends boolean = true> {
-  heading?: T;
-  selectionMode?: T;
-  limit?: T;
-  layout?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureHeadingOffsetBlock_select".
- */
-export interface WorkFeatureHeadingOffsetBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  heading?: T;
+export interface WorkSplitContentNarrowBlockSelect<T extends boolean = true> {
   source?: T;
   storyBeatKey?: T;
+  eyebrow?: T;
+  heading?: T;
   body?: T;
+  media?: T;
+  browseAllMedia?: T;
+  imagePosition?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5328,6 +5265,19 @@ export interface WorkFeatureStatementGridBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFeatureHeadingOffsetBlock_select".
+ */
+export interface WorkFeatureHeadingOffsetBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  source?: T;
+  storyBeatKey?: T;
+  body?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "WorkFeatureImageStatementBlock_select".
  */
 export interface WorkFeatureImageStatementBlockSelect<T extends boolean = true> {
@@ -5339,6 +5289,18 @@ export interface WorkFeatureImageStatementBlockSelect<T extends boolean = true> 
   textPosition?: T;
   textSize?: T;
   imageWidth?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyTestimonialBlock_select".
+ */
+export interface CaseStudyTestimonialBlockSelect<T extends boolean = true> {
+  testimonial?: T;
+  layout?: T;
+  theme?: T;
+  showPortrait?: T;
   id?: T;
   blockName?: T;
 }
@@ -5372,6 +5334,44 @@ export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyKeyDecisionsBlock_select".
+ */
+export interface CaseStudyKeyDecisionsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  introduction?: T;
+  source?: T;
+  layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyMetricsBlock_select".
+ */
+export interface CaseStudyMetricsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  introduction?: T;
+  source?: T;
+  layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyRelatedWorkBlock_select".
+ */
+export interface CaseStudyRelatedWorkBlockSelect<T extends boolean = true> {
+  heading?: T;
+  selectionMode?: T;
+  limit?: T;
+  layout?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "lab-pages_select".
  */
 export interface LabPagesSelect<T extends boolean = true> {
@@ -5393,11 +5393,11 @@ export interface LabPagesSelect<T extends boolean = true> {
     | T
     | {
         labStorySection?: T | LabStorySectionBlockSelect<T>;
-        labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
-        labFacts?: T | LabFactsBlockSelect<T>;
         labTransition?: T | LabTransitionBlockSelect<T>;
-        labRelatedProjects?: T | LabRelatedProjectsBlockSelect<T>;
+        labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        labFacts?: T | LabFactsBlockSelect<T>;
+        labRelatedProjects?: T | LabRelatedProjectsBlockSelect<T>;
       };
   coverAsset?: T;
   relatedLabPages?: T;
@@ -5436,6 +5436,19 @@ export interface LabStorySectionBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabTransitionBlock_select".
+ */
+export interface LabTransitionBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LabMediaShowcaseBlock_select".
  */
 export interface LabMediaShowcaseBlockSelect<T extends boolean = true> {
@@ -5458,19 +5471,6 @@ export interface LabFactsBlockSelect<T extends boolean = true> {
   showStatus?: T;
   showTechnologies?: T;
   showLinks?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabTransitionBlock_select".
- */
-export interface LabTransitionBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  heading?: T;
-  body?: T;
-  layout?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -5521,17 +5521,17 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
-        archive?: T | ArchiveBlockSelect<T>;
-        formBlock?: T | FormBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
+        archive?: T | ArchiveBlockSelect<T>;
+        cta?: T | CallToActionBlockSelect<T>;
+        formBlock?: T | FormBlockSelect<T>;
       };
   capabilities?: T;
   relatedWorkPages?: T;
@@ -5584,17 +5584,17 @@ export interface AudiencePagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
-        archive?: T | ArchiveBlockSelect<T>;
-        formBlock?: T | FormBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
+        archive?: T | ArchiveBlockSelect<T>;
+        cta?: T | CallToActionBlockSelect<T>;
+        formBlock?: T | FormBlockSelect<T>;
       };
   industries?: T;
   relatedWorkPages?: T;
@@ -6716,24 +6716,24 @@ export interface Home {
   };
   statement?: HomeStatement;
   layout: (
-    | CallToActionBlock
-    | CarouselBlock
     | ContentBlock
     | MediaBlock
-    | ArchiveBlock
-    | FormBlock
-    | NewsletterSignupBlock
+    | FullMediaBlock
+    | SplitContentNarrowBlock
     | FeatureStatementGridBlock
     | FeatureStatementLinksBlock
     | FeatureHeadingOffsetBlock
-    | FeatureTabsBlock
     | FeatureImageStatementBlock
-    | SplitContentNarrowBlock
-    | FullMediaBlock
-    | TestimonialsMarqueeBlock
+    | FeatureTabsBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
     | IndustryWorkBlock
+    | TestimonialsMarqueeBlock
+    | CarouselBlock
+    | ArchiveBlock
+    | CallToActionBlock
+    | FormBlock
+    | NewsletterSignupBlock
     | HomeFeaturedWorkBlock
   )[];
   meta?: {
@@ -6931,24 +6931,24 @@ export interface HomeSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        cta?: T | CallToActionBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
-        archive?: T | ArchiveBlockSelect<T>;
-        formBlock?: T | FormBlockSelect<T>;
-        newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
+        testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
+        archive?: T | ArchiveBlockSelect<T>;
+        cta?: T | CallToActionBlockSelect<T>;
+        formBlock?: T | FormBlockSelect<T>;
+        newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
         homeFeaturedWork?: T | HomeFeaturedWorkBlockSelect<T>;
       };
   meta?:

@@ -1,9 +1,12 @@
 import type { Block } from 'payload'
+
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { featureHeaderFields, featureSourceField } from '../shared'
 
 export const FeatureStatementGrid: Block = {
   slug: 'featureStatementGrid',
+  admin: { group: BLOCK_GROUPS.statements },
   interfaceName: 'FeatureStatementGridBlock',
   labels: { singular: 'Feature: statement grid', plural: 'Feature: statement grids' },
   fields: [

@@ -1,9 +1,12 @@
 import type { Block } from 'payload'
+
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { featureSourceField } from '../shared'
 
 export const FeatureTabs: Block = {
   slug: 'featureTabs',
+  admin: { group: BLOCK_GROUPS.interactive },
   interfaceName: 'FeatureTabsBlock',
   labels: { singular: 'Feature: tabs', plural: 'Feature: tabs' },
   fields: [

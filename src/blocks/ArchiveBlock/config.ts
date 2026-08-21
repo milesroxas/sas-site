@@ -5,10 +5,13 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { Block } from 'payload'
+
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { CARD_VARIANT_LABELS, CARD_VARIANTS } from '@/components/Card/variants'
 
 export const Archive: Block = {
   slug: 'archive',
+  admin: { group: BLOCK_GROUPS.lists },
   interfaceName: 'ArchiveBlock',
   fields: [
     {

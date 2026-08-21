@@ -1,8 +1,11 @@
 import type { Block } from 'payload'
+
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { featureHeaderFields, featureSourceField } from '../shared'
 
 export const FeatureHeadingOffset: Block = {
   slug: 'featureHeadingOffset',
+  admin: { group: BLOCK_GROUPS.statements },
   interfaceName: 'FeatureHeadingOffsetBlock',
   labels: { singular: 'Feature: heading offset', plural: 'Feature: heading offsets' },
   fields: [

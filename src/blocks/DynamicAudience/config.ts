@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 
 /**
  * Headline with an inline audience dropdown. Selecting an option swaps the
@@ -7,6 +8,7 @@ import { themeField } from '@/blocks/shared/fields'
  */
 export const DynamicAudience: Block = {
   slug: 'dynamicAudience',
+  admin: { group: BLOCK_GROUPS.interactive },
   // Per-parent table name: reused on Pages and Home.
   dbName: ({ tableName }) => `${tableName}_dyn_aud`,
   interfaceName: 'DynamicAudienceBlock',

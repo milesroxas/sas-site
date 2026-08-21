@@ -1,7 +1,10 @@
 import type { Block } from 'payload'
 
+import { BLOCK_GROUPS } from '@/blocks/shared/groups'
+
 export const MediaBlock: Block = {
   slug: 'mediaBlock',
+  admin: { group: BLOCK_GROUPS.media },
   interfaceName: 'MediaBlock',
   fields: [
     {
