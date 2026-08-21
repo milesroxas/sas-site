@@ -39,6 +39,15 @@
   ],
   // Webpack-style tilde import inside Payload admin SCSS, resolved by Payload's bundler
   "ignoreUnresolvedImports": ["**/~@payloadcms/ui/scss"],
+  "health": {
+    "thresholdOverrides": [
+      {
+        "files": ["src/components/ui/**"],
+        "maxCrap": 60,
+        "reason": "Vendored shadcn primitives (ejected) — kept byte-close to upstream for future diffs, not restructured to satisfy CRAP"
+      }
+    ]
+  },
   "ignoreExports": [
     // Vendored shadcn primitives (ejected) — keep the full upstream export surface for future diffs
     { "file": "src/components/ui/**", "exports": ["*"] },

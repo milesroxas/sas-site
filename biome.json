@@ -10,7 +10,7 @@
     "includes": [
       "**",
       "!**/.next",
-      "!**/.claude",
+      "!.claude",
       "!.design-sync",
       "!**/public",
       "!**/payload-types.ts",

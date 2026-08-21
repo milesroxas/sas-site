@@ -58,13 +58,13 @@ describe('HeaderClient', () => {
     usePathnameMock.mockReset()
   })
 
-  it('renders the brand link and a closed MENU button by default', () => {
+  it('renders the brand link and a closed menu button by default', () => {
     render(<HeaderClient data={mockHeaderData} />)
 
     const brandLink = screen.getByRole('link', { name: 'SUITS & SANDALS' })
     expect(brandLink.getAttribute('href')).toBe('/')
 
-    const menuButton = screen.getByRole('button', { name: 'MENU' })
+    const menuButton = screen.getByRole('button', { name: 'Open menu' })
     expect(menuButton.getAttribute('aria-expanded')).toBe('false')
     expect(screen.getByTestId('takeover-menu').getAttribute('data-open')).toBe('false')
   })
@@ -78,31 +78,31 @@ describe('HeaderClient', () => {
     expect(toggle.className).toContain('md:inline-flex')
   })
 
-  it('toggles the MENU/CLOSE label, aria-expanded, and the takeover menu open state', () => {
+  it('toggles the menu label, aria-expanded, and the takeover menu open state', () => {
     render(<HeaderClient data={mockHeaderData} />)
-    const menuButton = screen.getByRole('button', { name: 'MENU' })
+    const menuButton = screen.getByRole('button', { name: 'Open menu' })
 
     fireEvent.click(menuButton)
 
-    expect(screen.getByRole('button', { name: 'CLOSE' })).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Close menu' })).not.toBeNull()
     expect(menuButton.getAttribute('aria-expanded')).toBe('true')
     expect(screen.getByTestId('takeover-menu').getAttribute('data-open')).toBe('true')
 
-    fireEvent.click(screen.getByRole('button', { name: 'CLOSE' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Close menu' }))
 
-    expect(screen.getByRole('button', { name: 'MENU' })).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Open menu' })).not.toBeNull()
     expect(screen.getByTestId('takeover-menu').getAttribute('data-open')).toBe('false')
   })
 
   it('closes the menu when the takeover menu invokes its onClose callback', () => {
     render(<HeaderClient data={mockHeaderData} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'MENU' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByTestId('takeover-menu').getAttribute('data-open')).toBe('true')
 
     fireEvent.click(screen.getByText('mock-close'))
 
-    expect(screen.getByRole('button', { name: 'MENU' })).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Open menu' })).not.toBeNull()
     expect(screen.getByTestId('takeover-menu').getAttribute('data-open')).toBe('false')
   })
 })

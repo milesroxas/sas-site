@@ -92,6 +92,11 @@
   }
 }
 
+/* Carousel slides animate all three per frame; promote them together. */
+@utility will-change-slide {
+  will-change: filter, opacity, transform;
+}
+
 /* scroll-fade */
 @property --scroll-fade-t {
   syntax: "<length-percentage>";

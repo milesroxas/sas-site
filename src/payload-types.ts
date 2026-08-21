@@ -292,6 +292,7 @@ export interface Page {
     | AudienceTabsBlock
     | IndustryWorkBlock
     | TestimonialsMarqueeBlock
+    | CarouselBlock
     | ArchiveBlock
     | CallToActionBlock
     | FormBlock
@@ -2944,6 +2945,35 @@ export interface TestimonialsMarqueeBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselBlock".
+ */
+export interface CarouselBlock {
+  slides: {
+    media: number | Media;
+    /**
+     * Optional. Renders below the slide.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Full width runs edge to edge of the browser window.
+   */
+  width?: ('contained' | 'full-width') | null;
+  /**
+   * Previous/next buttons. Contained places them beside the slides; full width overlays them on the slides.
+   */
+  showArrows?: boolean | null;
+  /**
+   * Slides visible at once on desktop; mobile always shows one.
+   */
+  slideSize?: ('full' | 'half' | 'third') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'carousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ArchiveBlock".
  */
 export interface ArchiveBlock {
@@ -4623,6 +4653,7 @@ export interface PagesSelect<T extends boolean = true> {
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
@@ -4902,6 +4933,24 @@ export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
         id?: T;
       };
   testimonials?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselBlock_select".
+ */
+export interface CarouselBlockSelect<T extends boolean = true> {
+  slides?:
+    | T
+    | {
+        media?: T;
+        caption?: T;
+        id?: T;
+      };
+  width?: T;
+  showArrows?: T;
+  slideSize?: T;
   id?: T;
   blockName?: T;
 }
@@ -6680,6 +6729,7 @@ export interface Home {
     | AudienceTabsBlock
     | IndustryWorkBlock
     | TestimonialsMarqueeBlock
+    | CarouselBlock
     | ArchiveBlock
     | CallToActionBlock
     | FormBlock
@@ -6894,6 +6944,7 @@ export interface HomeSelect<T extends boolean = true> {
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;

@@ -3,6 +3,7 @@ import type { Block } from 'payload'
 import { Archive } from '@/blocks/ArchiveBlock/config'
 import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { CallToAction } from '@/blocks/CallToAction/config'
+import { Carousel } from '@/blocks/Carousel/config'
 import { Content } from '@/blocks/Content/config'
 import { DynamicAudience } from '@/blocks/DynamicAudience/config'
 import { FormBlock } from '@/blocks/Form/config'
@@ -41,6 +42,7 @@ export const pageLayoutBlocks: Block[] = [
   AudienceTabs,
   IndustryWork,
   TestimonialsMarquee,
+  Carousel,
   // Lists & grids
   Archive,
   // Forms & CTAs

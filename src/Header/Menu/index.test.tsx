@@ -87,7 +87,8 @@ describe('TakeoverMenu', () => {
     const themeToggleButton = screen.getByRole('button', {
       name: /switch to (dark|light) theme/i,
     })
-    const themeToggleItem = themeToggleButton.closest('li')
+    // The toggle lives in the trailing utility row, hidden from md up.
+    const themeToggleItem = themeToggleButton.closest('[data-menu-item]')
     expect(themeToggleItem).not.toBeNull()
     expect(themeToggleItem?.className).toContain('md:hidden')
   })

@@ -20,8 +20,27 @@ const cdnSrc = (filename: string | null | undefined, cacheTag?: string | null): 
   return getMediaUrl(`${MEDIA_URL}/${path}`, cacheTag)
 }
 
+/** Resolve a video media doc's poster image URL (populated relation only). */
+export const getVideoPosterUrl = (resource: MediaProps['resource']): string | undefined => {
+  if (!resource || typeof resource !== 'object') return undefined
+  const posterDoc = resource.poster
+  if (!posterDoc || typeof posterDoc !== 'object') return undefined
+  const cdn = cdnSrc(posterDoc.filename, posterDoc.updatedAt)
+  if (cdn) return cdn
+  if (!posterDoc.url) return undefined
+  return getMediaUrl(posterDoc.url, posterDoc.updatedAt)
+}
+
 export const VideoMedia: React.FC<MediaProps> = (props) => {
-  const { crossOrigin, fill, imgClassName, onClick, resource, videoClassName } = props
+  const {
+    autoPlay = true,
+    crossOrigin,
+    fill,
+    imgClassName,
+    onClick,
+    resource,
+    videoClassName,
+  } = props
 
   if (!resource || typeof resource !== 'object') {
     return null
@@ -35,15 +54,11 @@ export const VideoMedia: React.FC<MediaProps> = (props) => {
   }
 
   // poster may be a populated media doc or an unresolved id — only usable when populated.
-  const posterDoc = resource.poster && typeof resource.poster === 'object' ? resource.poster : null
-  const poster =
-    cdnSrc(posterDoc?.filename, posterDoc?.updatedAt) ||
-    (posterDoc?.url ? getMediaUrl(posterDoc.url, posterDoc.updatedAt) : undefined) ||
-    undefined
+  const poster = getVideoPosterUrl(resource)
 
   return (
     <video
-      autoPlay
+      autoPlay={autoPlay}
       className={cn(
         fill ? 'absolute inset-0 size-full object-cover' : 'h-auto w-full',
         imgClassName,

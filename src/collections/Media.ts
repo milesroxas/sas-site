@@ -208,7 +208,9 @@ export const Media: CollectionConfig = {
       name: 'poster',
       type: 'upload',
       relationTo: 'media',
-      maxDepth: 1,
+      // Root-relative: 2 lets the poster populate through page → media → poster
+      // (frontend blocks render it); 1 only covered direct media queries.
+      maxDepth: 2,
       filterOptions: { mimeType: { contains: 'image' } },
       admin: {
         description:
