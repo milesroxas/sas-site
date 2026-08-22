@@ -37,6 +37,9 @@ const buttonVariants = cva(
         // Unpadded size for text-flow usage (e.g. nav links via CMSLink's
         // `link` appearance) where button chrome would break the text rhythm.
         clear: "gap-1 [&_svg:not([class*='size-'])]:size-3.5",
+        // Takeover-menu pill: letterspaced all-caps capsule (CLOSE / GET IN
+        // TOUCH). Trailing letter-space is offset so the label reads centered.
+        pill: "h-8 gap-1 rounded-full px-6 text-sm/none font-semibold tracking-widest uppercase [&>span]:mr-[-0.1em] [&_svg:not([class*='size-'])]:size-4",
       },
     },
     defaultVariants: {

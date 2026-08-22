@@ -255,6 +255,13 @@ const CursorOverlay: React.FC = () => {
         let bestEl: HTMLElement | null = null
         let bestVariant = resolveCursorVariant(undefined)
         for (const el of document.querySelectorAll<HTMLElement>(`[${CURSOR_ATTR}]`)) {
+          // Targets inside an inert subtree can't be interacted with — e.g. the
+          // page frame docked behind the open takeover menu. They must neither
+          // pull the rings nor keep a stale proximity var.
+          if (el.closest('[inert]')) {
+            writeProximity(el, 0)
+            continue
+          }
           const variant = resolveCursorVariant(el.getAttribute(CURSOR_ATTR) ?? undefined)
           const rect = el.getBoundingClientRect()
           const dx = Math.max(rect.left - lastX, 0, lastX - rect.right)

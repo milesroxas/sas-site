@@ -35,7 +35,10 @@ export const LabHero = ({ page, project }: { page: LabPage; project: LabProject 
         </p>
       </div>
       {media && typeof media === 'object' && (
-        <Media priority resource={media} imgClassName="h-auto w-full" />
+        // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
+        <div data-hero-media className="contents">
+          <Media priority resource={media} imgClassName="h-auto w-full" />
+        </div>
       )}
     </header>
   )

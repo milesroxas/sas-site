@@ -26,12 +26,15 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
       type="button"
       aria-label={mounted && theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className={cn('transition-opacity hover:opacity-70', className)}
+      className={cn(
+        'inline-flex size-8 items-center justify-center rounded-full bg-secondary text-secondary-foreground transition-opacity hover:opacity-70',
+        className,
+      )}
     >
       {mounted && theme === 'dark' ? (
-        <IconSun className="size-6" />
+        <IconSun className="size-4" />
       ) : (
-        <IconMoon className="size-6" />
+        <IconMoon className="size-4" />
       )}
     </button>
   )

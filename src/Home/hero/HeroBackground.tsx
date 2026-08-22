@@ -64,6 +64,9 @@ export const HeroBackground: React.FC<{ media: MediaType }> = ({ media }) => {
       aria-hidden
       // Opacity belongs to the group rather than the layers: at 85% each, the
       // undistorted DOM media would show through the canvas covering it.
+      // data-hero-media: takeover-menu dissolve source (src/Header/Menu) —
+      // the DOM media element gets cloned, never the WebGL canvas.
+      data-hero-media
       className="pointer-events-none absolute inset-0 -z-10 opacity-85"
     >
       <Media

@@ -34,12 +34,15 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, med
       </Container>
 
       {media && typeof media === 'object' && (
-        <Media
-          fill
-          imgClassName="-z-10 object-cover opacity-85 mix-blend-soft-light select-none"
-          priority
-          resource={media}
-        />
+        // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
+        <div data-hero-media className="contents">
+          <Media
+            fill
+            imgClassName="-z-10 object-cover opacity-85 mix-blend-soft-light select-none"
+            priority
+            resource={media}
+          />
+        </div>
       )}
     </ImmersiveShell>
   )

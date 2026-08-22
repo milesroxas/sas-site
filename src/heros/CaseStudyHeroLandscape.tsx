@@ -53,13 +53,16 @@ export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study:
         </dl>
       </div>
       {media && typeof media === 'object' && (
-        <Media
-          priority
-          resource={media}
-          size="100vw"
-          imgClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
-          videoClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
-        />
+        // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
+        <div data-hero-media className="contents">
+          <Media
+            priority
+            resource={media}
+            size="100vw"
+            imgClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
+            videoClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
+          />
+        </div>
       )}
     </header>
   )

@@ -76,6 +76,18 @@
   }
 }
 
+/* Takeover-menu chat panel: settle up into the window's place. */
+@keyframes menu-chat-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 @supports (view-transition-name: none) {
   /*
    * Active animations are gated behind `no-preference` so reduced-motion users
@@ -124,6 +136,18 @@
     }
     ::view-transition-image-pair(.morph) {
       animation-name: vt-via-blur;
+    }
+
+    /*
+     * Takeover-menu chat swap: the Ask transcript replacing the docked page
+     * window (MenuAsk). Fast ease-in-out — it trades places with a window
+     * that is fading under it, so it settles rather than slides.
+     */
+    ::view-transition-new(.menu-chat) {
+      animation: var(--vt-duration-enter) ease-in-out both menu-chat-in;
+    }
+    ::view-transition-old(.menu-chat) {
+      animation: var(--vt-duration-exit) ease-in-out both menu-chat-in reverse;
     }
 
     /*

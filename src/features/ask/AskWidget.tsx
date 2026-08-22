@@ -3,9 +3,7 @@
 import { useChat } from '@ai-sdk/react'
 import { IconArrowUp } from '@tabler/icons-react'
 import { type ChatTransport, DefaultChatTransport, type UIMessage } from 'ai'
-import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Bubble, BubbleContent } from '@/components/ui/bubble'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   InputGroup,
@@ -13,7 +11,6 @@ import {
   InputGroupButton,
   InputGroupTextarea,
 } from '@/components/ui/input-group'
-import { Message, MessageContent } from '@/components/ui/message'
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -23,6 +20,7 @@ import {
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller'
 import { Spinner } from '@/components/ui/spinner'
+import { AskMessage, errorText } from './messages'
 
 const MIN_QUESTION_LENGTH = 3
 
@@ -34,59 +32,6 @@ type AskWidgetProps = {
   transport?: ChatTransport<UIMessage>
   /** Seed the transcript, e.g. for stories or resuming a conversation. */
   initialMessages?: UIMessage[]
-}
-
-function errorText(error: Error): string {
-  try {
-    const parsed = JSON.parse(error.message) as { error?: unknown }
-    if (typeof parsed.error === 'string') return parsed.error
-  } catch {
-    // not a JSON error body — fall through
-  }
-  return error.message || 'Something went wrong — try again.'
-}
-
-function AssistantSources({ message }: { message: UIMessage }) {
-  const sources = message.parts.filter(
-    (part): part is Extract<typeof part, { type: 'source-url' }> => part.type === 'source-url',
-  )
-  if (sources.length === 0) return null
-
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="text-muted-foreground text-xs font-medium">Sources</p>
-      <ul className="flex flex-col gap-1">
-        {sources.map((source) => (
-          <li key={source.sourceId}>
-            <Link href={source.url} className="text-xs underline underline-offset-4">
-              {source.title ?? source.url}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-function AskMessage({ message }: { message: UIMessage }) {
-  const isUser = message.role === 'user'
-  const text = message.parts
-    .filter((part): part is Extract<typeof part, { type: 'text' }> => part.type === 'text')
-    .map((part) => part.text)
-    .join('')
-
-  return (
-    <Message align={isUser ? 'end' : 'start'}>
-      <MessageContent>
-        <Bubble align={isUser ? 'end' : 'start'} variant={isUser ? 'default' : 'ghost'}>
-          <BubbleContent>
-            <p className="whitespace-pre-wrap">{text}</p>
-          </BubbleContent>
-        </Bubble>
-        {!isUser && <AssistantSources message={message} />}
-      </MessageContent>
-    </Message>
-  )
 }
 
 export function AskWidget({ transport, initialMessages }: AskWidgetProps) {
