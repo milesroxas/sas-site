@@ -69,7 +69,8 @@ export const PostHero: React.FC<{
           </div>
         </div>
       </div>
-      <div className="min-h-[80vh] select-none">
+      {/* data-hero-media: takeover-menu dissolve source (src/Header/Menu). */}
+      <div data-hero-media className="min-h-[80vh] select-none">
         {heroImage &&
           typeof heroImage !== 'string' &&
           (slug ? (

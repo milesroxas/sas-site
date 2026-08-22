@@ -113,4 +113,31 @@ describe('CustomCursorProvider', () => {
     expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
     expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
   })
+
+  it('ignores targets inside an inert subtree (the docked page frame)', () => {
+    const view = render(
+      <CustomCursorProvider>
+        <div inert>
+          <button type="button" {...cursorTarget({ variant: 'emphasize' })}>
+            behind menu
+          </button>
+        </div>
+      </CustomCursorProvider>,
+    )
+    const target = view.getByRole('button', { hidden: true })
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(TARGET_RECT)
+    pointerMove(150, 150)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+  })
+
+  it('drops a hot target once its subtree turns inert', () => {
+    const { target } = renderWithTarget()
+    pointerMove(150, 150)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
+    target.parentElement?.setAttribute('inert', '')
+    pointerMove(151, 150)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+  })
 })

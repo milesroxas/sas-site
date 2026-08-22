@@ -52,6 +52,24 @@ export const Composer: Story = {
   ),
 }
 
+/**
+ * The takeover menu's floating "ask" capsule. The variant owns its metrics:
+ * popover surface, full radius, and the focus-grow width transition.
+ */
+export const Pill: Story = {
+  render: () => (
+    <InputGroup variant="pill">
+      <InputGroupInput placeholder="Ask anything…" />
+      <InputGroupAddon align="inline-end">
+        <InputGroupButton type="submit" variant="default" size="icon-sm">
+          <IconArrowUp />
+          <span className="sr-only">Ask</span>
+        </InputGroupButton>
+      </InputGroupAddon>
+    </InputGroup>
+  ),
+}
+
 export const Disabled: Story = {
   render: () => (
     <InputGroup data-disabled="true">

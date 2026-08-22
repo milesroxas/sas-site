@@ -64,7 +64,8 @@ export const CaseStudyHeroCenteredMedia = ({
           )}
         </div>
         {media && typeof media === 'object' && (
-          <div className="md:px-8 lg:px-0">
+          // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
+          <div data-hero-media className="md:px-8 lg:px-0">
             <Media
               priority
               resource={media}

@@ -26,7 +26,8 @@ export const PostHeroBanner: React.FC<{
   return (
     // isolate: keeps the -z-10 background image inside this stacking context so it
     // doesn't drop beneath the page frame's opaque bg-background (layout.tsx).
-    <div className="relative isolate flex min-h-75 items-center overflow-hidden">
+    // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
+    <div data-hero-media className="relative isolate flex min-h-75 items-center overflow-hidden">
       {image &&
         (slug ? (
           // Shared element: receives the morph from the clicked post card's image

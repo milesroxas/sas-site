@@ -47,6 +47,7 @@ vi.mock('./ThemeToggle', () => ({
 }))
 
 const mockHeaderData: Header = { id: 1, navItems: [] }
+const mockMenuContent = { expertise: [], audiences: [], works: [], pageMedia: {} }
 
 describe('HeaderClient', () => {
   beforeEach(() => {
@@ -59,7 +60,7 @@ describe('HeaderClient', () => {
   })
 
   it('renders the brand link and a closed menu button by default', () => {
-    render(<HeaderClient data={mockHeaderData} />)
+    render(<HeaderClient data={mockHeaderData} menuContent={mockMenuContent} />)
 
     const brandLink = screen.getByRole('link', { name: 'SUITS & SANDALS' })
     expect(brandLink.getAttribute('href')).toBe('/')
@@ -70,7 +71,7 @@ describe('HeaderClient', () => {
   })
 
   it('renders the ThemeToggle hidden on mobile and inline-flex from md up', () => {
-    render(<HeaderClient data={mockHeaderData} />)
+    render(<HeaderClient data={mockHeaderData} menuContent={mockMenuContent} />)
 
     const toggle = screen.getByTestId('theme-toggle')
     expect(toggle.className).toContain('hidden')
@@ -79,7 +80,7 @@ describe('HeaderClient', () => {
   })
 
   it('toggles the menu label, aria-expanded, and the takeover menu open state', () => {
-    render(<HeaderClient data={mockHeaderData} />)
+    render(<HeaderClient data={mockHeaderData} menuContent={mockMenuContent} />)
     const menuButton = screen.getByRole('button', { name: 'Open menu' })
 
     fireEvent.click(menuButton)
@@ -95,7 +96,7 @@ describe('HeaderClient', () => {
   })
 
   it('closes the menu when the takeover menu invokes its onClose callback', () => {
-    render(<HeaderClient data={mockHeaderData} />)
+    render(<HeaderClient data={mockHeaderData} menuContent={mockMenuContent} />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
     expect(screen.getByTestId('takeover-menu').getAttribute('data-open')).toBe('true')

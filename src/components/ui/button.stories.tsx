@@ -19,7 +19,18 @@ const meta = {
     },
     size: {
       control: 'select',
-      options: ['default', 'xs', 'sm', 'lg', 'icon', 'icon-xs', 'icon-sm', 'icon-lg', 'clear'],
+      options: [
+        'default',
+        'xs',
+        'sm',
+        'lg',
+        'icon',
+        'icon-xs',
+        'icon-sm',
+        'icon-lg',
+        'clear',
+        'pill',
+      ],
     },
     asChild: {
       table: { disable: true },
@@ -63,6 +74,15 @@ export const Small: Story = {
 
 export const Large: Story = {
   args: { size: 'lg' },
+}
+
+/** Takeover-menu capsule: letterspaced all-caps label (CLOSE / GET IN TOUCH). */
+export const Pill: Story = {
+  args: { size: 'pill', children: <span>Get in touch</span> },
+}
+
+export const PillSecondary: Story = {
+  args: { size: 'pill', variant: 'secondary', children: <span>Close</span> },
 }
 
 export const Icon: Story = {

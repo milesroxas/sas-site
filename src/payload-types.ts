@@ -655,6 +655,8 @@ export interface Industry {
   createdAt: string;
 }
 /**
+ * The factual record of a client engagement: what happened, when, scope, deliverables, and classification. Create one for every engagement, even if it never becomes a case study. Case Study Content holds the reusable story and evidence; Work Pages handle website presentation. Projects also anchor assets and testimonials for reuse in proposals, pitch decks, and other channels.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "projects".
  */
