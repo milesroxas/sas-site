@@ -6,4 +6,5 @@ export {
   ScrambleText,
   type ScrambleTextProps,
   type ScrambleTweenOptions,
+  scrambleTweenDefaults,
 } from './ScrambleText'

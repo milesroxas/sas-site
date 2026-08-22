@@ -102,7 +102,7 @@ export function ScramblePlayground() {
 
   return (
     <div className="space-y-4">
-      <p ref={sourceRef} className="min-h-16 text-2xl font-medium tracking-tight">
+      <p ref={sourceRef} className="min-h-16 text-heading-3">
         <ScrambleText
           key={runId}
           phrases={[from, to]}

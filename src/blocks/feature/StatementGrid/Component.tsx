@@ -22,14 +22,14 @@ export const FeatureStatementGridBlock: React.FC<FeatureStatementGridBlockProps>
         data-reveal
       >
         {eyebrow ? <p className="text-sm tracking-widest uppercase">{eyebrow}</p> : null}
-        <h2 className="text-2xl font-normal md:text-3xl">{heading}</h2>
+        <h2 className="text-heading-3">{heading}</h2>
       </header>
       <div className="grid gap-12 lg:grid-cols-3 lg:gap-8">
         <div className="flex flex-col justify-between gap-8">
           {statement ? (
             <div data-reveal>
               <RichText
-                className="text-xl md:text-2xl md:leading-tight"
+                className="text-lead md:leading-tight"
                 data={statement}
                 enableGutter={false}
                 enableProse={false}

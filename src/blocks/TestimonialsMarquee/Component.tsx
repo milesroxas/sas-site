@@ -55,7 +55,7 @@ export const TestimonialsMarqueeBlock: React.FC<TestimonialsMarqueeBlockProps> =
         <div className="max-w-xl">
           {richText && (
             <RichText
-              className="text-2xl leading-snug md:text-3xl [&_p+p]:mt-4"
+              className="text-heading-3 leading-snug [&_p+p]:mt-4"
               data={richText}
               enableGutter={false}
               enableProse={false}

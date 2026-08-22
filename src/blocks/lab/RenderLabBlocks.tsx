@@ -53,7 +53,7 @@ const StorySection = ({ block, project }: { block: LabStorySectionBlock; project
           {block.eyebrow && (
             <p className="mb-3 text-sm uppercase tracking-[0.2em]">{block.eyebrow}</p>
           )}
-          <h2 className="mb-6 text-3xl font-normal md:text-5xl">
+          <h2 className="mb-6 text-heading-2">
             {block.headingOverride || defaultHeading(block.source)}
           </h2>
           <RichText data={content} enableGutter={false} />
@@ -75,9 +75,7 @@ const MediaShowcase = ({ block }: { block: LabMediaShowcaseBlock }) => {
   return (
     <Section theme={block.theme}>
       <div className="container mx-auto">
-        {block.heading && (
-          <h2 className="mb-6 text-3xl font-normal md:text-5xl">{block.heading}</h2>
-        )}
+        {block.heading && <h2 className="mb-6 text-heading-2">{block.heading}</h2>}
         {block.introduction && (
           <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
         )}
@@ -132,9 +130,7 @@ const Facts = ({ block, project }: { block: LabFactsBlock; project: LabProject }
   return (
     <Section theme={block.theme}>
       <div className="container mx-auto max-w-5xl">
-        {block.heading && (
-          <h2 className="mb-8 text-3xl font-normal md:text-5xl">{block.heading}</h2>
-        )}
+        {block.heading && <h2 className="mb-8 text-heading-2">{block.heading}</h2>}
         <dl className="grid gap-8 md:grid-cols-3">
           {showStatus && (
             <div>
@@ -179,7 +175,7 @@ const Transition = ({ block }: { block: LabTransitionBlock }) => (
   <Section theme={block.theme}>
     <div className="container mx-auto max-w-5xl text-center">
       {block.eyebrow && <p className="mb-3 text-sm uppercase tracking-[0.2em]">{block.eyebrow}</p>}
-      <h2 className="text-4xl font-normal md:text-7xl">{block.heading}</h2>
+      <h2 className="text-display">{block.heading}</h2>
       {block.body && <RichText className="mt-8" data={block.body} enableGutter={false} />}
     </div>
   </Section>
@@ -224,16 +220,14 @@ const RelatedProjects = async ({
   return (
     <section className="py-16 md:py-24">
       <div className="container mx-auto">
-        <h2 className="mb-8 text-3xl font-normal md:text-5xl">
-          {block.heading || 'More from the lab'}
-        </h2>
+        <h2 className="mb-8 text-heading-2">{block.heading || 'More from the lab'}</h2>
         <div className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
           {pages.map((item) => (
             <a className="group block" href={`/lab/${item.slug}`} key={item.id}>
               {item.coverAsset && typeof item.coverAsset === 'object' && (
                 <Media resource={item.coverAsset} imgClassName="h-auto w-full" />
               )}
-              <h3 className="mt-4 text-2xl font-normal group-hover:underline">
+              <h3 className="mt-4 text-heading-3 group-hover:underline">
                 {typeof item.labProject === 'object' ? item.labProject.title : item.title}
               </h3>
             </a>

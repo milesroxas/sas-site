@@ -16,11 +16,11 @@ export default async function ExpertiseIndexPage() {
   })
   return (
     <main className="container mx-auto py-24">
-      <h1 className="mb-12 text-5xl md:text-8xl">Expertise</h1>
+      <h1 className="mb-12 text-display">Expertise</h1>
       <div className="grid gap-12 md:grid-cols-2">
         {docs.map((page) => (
           <a className="group" href={`/expertise/${page.slug}`} key={page.id}>
-            <h2 className="text-3xl group-hover:underline">{page.title}</h2>
+            <h2 className="text-heading-3 group-hover:underline">{page.title}</h2>
             {page.meta?.description && <p className="mt-2 opacity-75">{page.meta.description}</p>}
           </a>
         ))}

@@ -29,7 +29,7 @@ export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ tabs }) => {
             <TabsPrimitive.Trigger
               key={tab.id ?? index}
               value={valueFor(index)}
-              className="font-heading text-2xl text-muted-foreground transition-colors hover:text-foreground data-[state=active]:text-primary md:text-3xl"
+              className="text-heading-3 text-muted-foreground transition-colors hover:text-foreground data-[state=active]:text-primary"
             >
               {tab.title}
             </TabsPrimitive.Trigger>
@@ -43,7 +43,7 @@ export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ tabs }) => {
           >
             <div className="flex flex-col justify-between gap-12">
               <div className="flex flex-col gap-6">
-                <h3 className="text-xl font-normal md:text-2xl md:leading-tight">{tab.heading}</h3>
+                <h3 className="text-heading-3">{tab.heading}</h3>
                 {tab.description ? (
                   <RichText
                     className="text-sm md:text-base"

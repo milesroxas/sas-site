@@ -19,7 +19,7 @@ export const WorkPageCard: React.FC<Props> = ({ page, titleAs: TitleTag = 'h2' }
       {page.coverAsset && typeof page.coverAsset === 'object' && (
         <Media resource={page.coverAsset} imgClassName="h-auto w-full" />
       )}
-      <TitleTag className="mt-5 text-3xl group-hover:underline">
+      <TitleTag className="mt-5 text-heading-3 group-hover:underline">
         {study?.title || page.title}
       </TitleTag>
       {study && (

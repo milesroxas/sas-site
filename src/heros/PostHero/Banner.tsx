@@ -45,7 +45,7 @@ export const PostHeroBanner: React.FC<{
             <span className="uppercase">{` // ${categoryTitles.join(', ')}`}</span>
           )}
         </p>
-        <h1 className="max-w-xl text-2xl leading-normal">{title}</h1>
+        <h1 className="max-w-xl text-heading-3">{title}</h1>
       </div>
     </div>
   )

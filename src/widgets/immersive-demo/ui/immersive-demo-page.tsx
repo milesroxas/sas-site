@@ -24,9 +24,7 @@ export function ImmersiveDemoPage() {
               FSD · widgets/immersive-demo
             </p>
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-              <h1 className="text-balance text-3xl sm:text-4xl font-semibold tracking-tight">
-                Micro interactions
-              </h1>
+              <h1 className="text-balance text-heading-2">Micro interactions</h1>
               <DemoSettingsMenu />
             </div>
             <p className="max-w-prose text-pretty text-lg/relaxed text-muted-foreground">
@@ -36,7 +34,7 @@ export function ImmersiveDemoPage() {
           </header>
 
           <section className="rounded-lg border border-border bg-card/80 backdrop-blur-sm p-4 sm:p-6 space-y-3">
-            <h2 className="text-balance text-xl font-medium tracking-tight">How this page works</h2>
+            <h2 className="text-balance text-xl tracking-tight">How this page works</h2>
             <ul className="max-w-prose list-disc space-y-2 pl-5 text-pretty text-sm/relaxed text-muted-foreground">
               <li>
                 One WebGL canvas backs the whole route —{' '}

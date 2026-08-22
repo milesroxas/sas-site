@@ -59,11 +59,7 @@ export const SplitContentNarrow = ({
             {block.eyebrow && (
               <p className="hidden font-mono text-xs/none font-medium md:block">{block.eyebrow}</p>
             )}
-            {block.heading && (
-              <h2 className="font-heading text-4xl/10 font-normal tracking-tight text-balance md:text-2xl/8">
-                {block.heading}
-              </h2>
-            )}
+            {block.heading && <h2 className="text-heading-3 text-balance">{block.heading}</h2>}
           </div>
           <div className="flex flex-col gap-8 pt-20 md:pt-0" data-reveal>
             {block.eyebrow && (

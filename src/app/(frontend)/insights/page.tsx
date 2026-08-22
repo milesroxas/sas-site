@@ -34,7 +34,7 @@ export default async function InsightsPage() {
       <PageClient />
       <RevealSection className="container mb-16" delayMs={0}>
         <div className="prose dark:prose-invert max-w-none">
-          <h1>Insights</h1>
+          <h1 className="mb-12 text-display">Insights</h1>
         </div>
       </RevealSection>
 
@@ -44,7 +44,7 @@ export default async function InsightsPage() {
             .filter((topic) => topic.slug)
             .map((topic) => (
               <a className="group" href={`/insights/${topic.slug}`} key={topic.id}>
-                <h2 className="text-2xl group-hover:underline">{topic.title}</h2>
+                <h2 className="text-heading-3 group-hover:underline">{topic.title}</h2>
                 {topic.description && <p className="mt-2 opacity-75">{topic.description}</p>}
               </a>
             ))}
@@ -52,7 +52,7 @@ export default async function InsightsPage() {
       </RevealSection>
 
       <RevealSection className="container mb-8" delayMs={120}>
-        <h2 className="text-3xl">Latest insights</h2>
+        <h2 className="text-heading-3">Latest insights</h2>
       </RevealSection>
 
       <CollectionArchive posts={posts.docs} />

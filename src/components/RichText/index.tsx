@@ -99,7 +99,7 @@ export default function RichText(props: Props) {
         {
           container: enableGutter,
           'max-w-none': !enableGutter,
-          'mx-auto prose md:prose-md prose-headings:font-normal dark:prose-invert': enableProse,
+          'mx-auto prose prose-headings:font-(--heading-weight) dark:prose-invert': enableProse,
         },
         variantClasses[variant],
         className,

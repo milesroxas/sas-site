@@ -58,9 +58,7 @@ export function TransitionDemoPage() {
             FSD · widgets/transition-demo
           </p>
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-            <h1 className="text-balance text-3xl sm:text-4xl font-semibold tracking-tight">
-              Page transitions
-            </h1>
+            <h1 className="text-balance text-heading-2">Page transitions</h1>
             <DemoSettingsMenu />
           </div>
           <p className="max-w-prose text-pretty text-lg/relaxed text-muted-foreground">
@@ -71,7 +69,7 @@ export function TransitionDemoPage() {
         </header>
 
         <section className="space-y-3 rounded-lg border border-border bg-card/80 p-4 backdrop-blur-sm sm:p-6">
-          <h2 className="text-balance text-xl font-medium tracking-tight">How this page works</h2>
+          <h2 className="text-balance text-xl tracking-tight">How this page works</h2>
           <ul className="max-w-prose list-disc space-y-2 pl-5 text-pretty text-sm/relaxed text-muted-foreground">
             <li>
               Every run in the frame goes through the production{' '}
@@ -170,7 +168,7 @@ export function TransitionDemoPage() {
         </DemoSection>
 
         <section className="space-y-4 rounded-lg border border-border bg-card/80 p-4 backdrop-blur-sm sm:p-6">
-          <h2 className="text-balance text-xl font-medium tracking-tight">
+          <h2 className="text-balance text-xl tracking-tight">
             Where each technique fires in production
           </h2>
           <dl className="space-y-3">

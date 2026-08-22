@@ -85,13 +85,13 @@ export const IndustryWorkClient = ({
       <Container width="default" className="flex flex-col gap-12 md:gap-16 lg:gap-32" ref={rootRef}>
         <HeadingDropdown
           activeIndex={active}
+          continuationFor={(index) => panels[index] ?? current}
           heading={heading}
           lowercase
           onSelect={selectIndustry}
           options={panels.map((panel) => panel.industry)}
           secondLine={current.secondLine}
           subheading={current.subheading}
-          subheadingClassName="text-muted-foreground"
         />
 
         <div className="grid grid-cols-1 gap-8 md:gap-10 lg:grid-cols-12 lg:gap-x-8 lg:gap-y-0">
@@ -101,7 +101,7 @@ export const IndustryWorkClient = ({
             className="relative z-10 flex flex-col items-start gap-6 lg:col-start-1 lg:col-end-6 lg:row-start-1 lg:gap-10 lg:pt-20"
             data-reveal
           >
-            <h3 className="text-3xl/10 font-light text-foreground " data-swap="text">
+            <h3 className="text-heading-3 font-light text-foreground" data-swap="text">
               {work.title}
             </h3>
             <Link

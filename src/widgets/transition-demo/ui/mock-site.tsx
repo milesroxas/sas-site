@@ -315,9 +315,7 @@ function MockHome() {
         <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           Suits &amp; Sandals
         </p>
-        <h3 className="mt-2 text-balance text-3xl font-semibold tracking-tight">
-          Make it make sense
-        </h3>
+        <h3 className="mt-2 text-balance text-heading-3">Make it make sense</h3>
         <p className="mt-3 max-w-sm text-pretty text-sm/relaxed text-muted-foreground">
           Leave this page and the hero recedes on its own 560ms track, dollying back over the
           incoming page while the rest of the route swaps underneath.
@@ -327,7 +325,7 @@ function MockHome() {
         </Button>
       </section>
       <section className="space-y-4 px-5 py-6">
-        <h4 className="text-sm font-medium text-muted-foreground">Featured work</h4>
+        <h4 className="text-sm text-muted-foreground">Featured work</h4>
         <div className="grid gap-3 sm:grid-cols-2">
           {FEATURED.map((post) => (
             <MockCard key={post.slug} post={post} />
@@ -385,7 +383,7 @@ function MockPosts({ page }: { page: 1 | 2 }) {
 
   return (
     <div className="space-y-4 px-5 py-6">
-      <h3 className="text-xl font-semibold tracking-tight">Journal</h3>
+      <h3 className="text-xl tracking-tight">Journal</h3>
       <div className="grid gap-3 sm:grid-cols-3">
         {posts.map((post) => (
           <MockCard key={post.slug} post={post} />
@@ -435,7 +433,7 @@ function MockPostDetail({ post }: { post: MockPost }) {
       </ViewTransition>
       <div className="space-y-3 px-5 pt-5">
         <p className="font-mono text-xs uppercase text-muted-foreground">{post.category}</p>
-        <h3 className="text-2xl font-semibold tracking-tight">{post.title}</h3>
+        <h3 className="text-heading-3">{post.title}</h3>
         <p className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">{post.body}</p>
         <p className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">
           Everything in this frame runs through the production DirectionalTransition and the recipes
@@ -450,7 +448,7 @@ function MockPostDetail({ post }: { post: MockPost }) {
 function MockAbout() {
   return (
     <div className="space-y-3 px-5 py-6">
-      <h3 className="text-xl font-semibold tracking-tight">About</h3>
+      <h3 className="text-xl tracking-tight">About</h3>
       <p className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">
         You arrived laterally — a pure fade with no spatial direction, the default for menu links,
         the logo, and every CMSLink that does not opt into a direction.

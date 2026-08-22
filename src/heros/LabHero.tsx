@@ -26,10 +26,8 @@ export const LabHero = ({ page, project }: { page: LabPage; project: LabProject 
         <p className="mb-4 text-sm uppercase tracking-[0.2em]">
           {page.hero?.eyebrow || `Lab — ${kindLabels[project.kind]}`}
         </p>
-        <h1 className="text-5xl leading-none md:text-8xl">
-          {page.hero?.titleOverride || project.title}
-        </h1>
-        <p className="mt-8 text-xl md:text-2xl">
+        <h1 className="text-display">{page.hero?.titleOverride || project.title}</h1>
+        <p className="mt-8 text-lead">
           {page.hero?.summaryOverride ||
             project.summaries?.short ||
             project.summaries?.oneLine ||

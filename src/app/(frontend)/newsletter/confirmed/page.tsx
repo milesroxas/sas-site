@@ -20,7 +20,7 @@ export default async function NewsletterConfirmedPage({ searchParams }: Args) {
       <div className="max-w-xl">
         {invalid ? (
           <>
-            <h1 className="text-3xl font-medium">That link didn&apos;t work</h1>
+            <h1 className="text-heading-2">That link didn&apos;t work</h1>
             <p className="mt-4 text-muted-foreground">
               The confirmation link is invalid or was already used. If you&apos;re trying to
               subscribe, sign up again and we&apos;ll send a fresh link.
@@ -28,7 +28,7 @@ export default async function NewsletterConfirmedPage({ searchParams }: Args) {
           </>
         ) : (
           <>
-            <h1 className="text-3xl font-medium">You&apos;re on the list</h1>
+            <h1 className="text-heading-2">You&apos;re on the list</h1>
             <p className="mt-4 text-muted-foreground">
               Your subscription is confirmed. The next letter from the studio will land in your
               inbox — until then, feel free to browse our latest thinking.

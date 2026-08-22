@@ -21,10 +21,7 @@ type Props = {
 export const WorkIntro: React.FC<Props> = ({ eyebrow, title, body, summary }) => (
   <WorkIntroSection>
     <Container width="default" className="grid gap-8 md:grid-cols-2 lg:grid-cols-12">
-      <h2
-        className="max-w-xl font-heading text-4xl/10 font-normal tracking-tight text-balance lg:col-span-5"
-        data-intro-title
-      >
+      <h2 className="max-w-xl text-heading-2 text-balance lg:col-span-5" data-intro-title>
         {title}
       </h2>
       <div className="flex flex-col gap-8 pt-20 md:pt-32 lg:col-span-5 lg:col-start-8 lg:pt-20">
@@ -34,7 +31,7 @@ export const WorkIntro: React.FC<Props> = ({ eyebrow, title, body, summary }) =>
           </p>
         ) : null}
         {body || summary ? (
-          <div className="max-w-lg text-xl/7 lg:text-2xl/8 [&_p+p]:mt-6" data-intro-body>
+          <div className="max-w-lg text-lead [&_p+p]:mt-6" data-intro-body>
             {body ? (
               <RichText data={body} enableGutter={false} enableProse={false} />
             ) : (

@@ -74,9 +74,7 @@ export const SplitImageOffset = ({
           </div>
           <div className="flex w-4/5 max-w-80 flex-col gap-4 md:w-full" data-reveal>
             {block.heading && (
-              <h2 className="pr-8 font-heading text-4xl/10 font-normal tracking-tight text-balance md:pr-24 md:text-2xl/8">
-                {block.heading}
-              </h2>
+              <h2 className="pr-8 text-heading-3 text-balance md:pr-24">{block.heading}</h2>
             )}
             <RichText
               className="text-lg/7 [&_p+p]:mt-6"

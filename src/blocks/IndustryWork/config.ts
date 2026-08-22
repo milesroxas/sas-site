@@ -48,8 +48,7 @@ export const IndustryWork: Block = {
           label: 'Headline continuation',
           required: true,
           admin: {
-            description:
-              'First line: continues the headline inline after the dropdown for this industry.',
+            description: 'Continues the headline inline after the dropdown for this industry.',
           },
         },
         {
@@ -58,7 +57,7 @@ export const IndustryWork: Block = {
           label: 'Headline second line',
           admin: {
             description:
-              'Second line: renders below the first. Leave empty for a one-line headline.',
+              'Continues the headline in the same wrapping sentence. Leave empty to stop after the first continuation.',
           },
         },
         {

@@ -60,12 +60,12 @@ const HomeHero: React.FC<HomeHeroData> = ({
               <h1
                 data-reveal
                 className={cn(
-                  'font-heading font-light tracking-tight text-foreground',
+                  'font-light text-foreground',
                   isCenter
                     ? // Center stays a short statement: fluid size, balanced wrap, never wider than the band.
-                      'max-w-[18ch] text-center text-balance text-4xl leading-tight sm:max-w-[22ch] sm:text-5xl md:max-w-[36.5rem] md:text-6xl'
+                      'max-w-[18ch] text-center text-balance text-heading-1 sm:max-w-[22ch] md:max-w-146'
                     : // Left: em width tracks type so "Make it" / "make sense" stays two lines.
-                      'max-w-[5.35em] text-6xl leading-tight sm:text-7xl lg:text-8xl',
+                      'max-w-[5.35em] text-display',
                 )}
               >
                 {title}

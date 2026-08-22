@@ -51,11 +51,7 @@ export const FullMedia = ({
         >
           <div className="flex flex-col gap-3" data-reveal>
             {block.eyebrow && <p className="font-mono text-xs/none font-medium">{block.eyebrow}</p>}
-            {block.heading && (
-              <h2 className="font-heading text-2xl/8 font-normal tracking-tight text-balance">
-                {block.heading}
-              </h2>
-            )}
+            {block.heading && <h2 className="text-heading-3 text-balance">{block.heading}</h2>}
           </div>
           <div data-reveal>
             <RichText

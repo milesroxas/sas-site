@@ -174,7 +174,7 @@ export function ScrollRevealUnderMediaPlayground() {
         >
           {mediaFigure}
           <div className="space-y-4">
-            <h3 className="text-balance text-2xl font-normal sm:text-3xl" data-reveal>
+            <h3 className="text-balance text-heading-3" data-reveal>
               Copy that sits with the image
             </h3>
             <p

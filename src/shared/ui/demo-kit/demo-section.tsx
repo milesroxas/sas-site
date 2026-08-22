@@ -113,7 +113,7 @@ export function DemoSection({ title, description, paste, children }: DemoSection
     <section className="rounded-lg border border-border bg-card/80 backdrop-blur-sm p-4 sm:p-6 space-y-4">
       <header className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
         <div className="space-y-2">
-          <h2 className="text-balance text-xl font-medium tracking-tight">{title}</h2>
+          <h2 className="text-balance text-xl tracking-tight">{title}</h2>
           {description ? (
             <p className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">
               {description}

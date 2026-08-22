@@ -37,7 +37,7 @@ export default async function Page({ params: paramsPromise }: Args) {
       <PageClient />
       <RevealSection className="container mb-16">
         <div className="prose dark:prose-invert max-w-none">
-          <h1>Posts</h1>
+          <h1 className="mb-12 text-display">Posts</h1>
         </div>
       </RevealSection>
 

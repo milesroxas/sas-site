@@ -9,33 +9,26 @@ const config = {
               '--tw-prose-body': 'var(--text)',
               '--tw-prose-headings': 'var(--text)',
               h1: {
-                fontWeight: 'normal',
+                fontWeight: 'var(--heading-weight)',
                 marginBottom: '0.25em',
               },
             },
           ],
         },
+        // Rich-text headings ride the same fluid scale as the rest of the
+        // site (tokens in globals.css @theme) — no breakpoint variants needed.
         base: {
           css: [
             {
               h1: {
-                fontSize: '2.5rem',
+                fontSize: 'var(--text-heading-2)',
+                lineHeight: 'var(--text-heading-2--line-height)',
+                letterSpacing: 'var(--text-heading-2--letter-spacing)',
               },
               h2: {
-                fontSize: '1.25rem',
-                fontWeight: 600,
-              },
-            },
-          ],
-        },
-        md: {
-          css: [
-            {
-              h1: {
-                fontSize: '3.5rem',
-              },
-              h2: {
-                fontSize: '1.5rem',
+                fontSize: 'var(--text-heading-3)',
+                lineHeight: 'var(--text-heading-3--line-height)',
+                fontWeight: 'var(--heading-weight)',
               },
             },
           ],

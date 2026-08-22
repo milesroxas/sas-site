@@ -34,9 +34,7 @@ export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProp
             <RichText
               className={cn(
                 'max-w-2xl',
-                textSize === 'small'
-                  ? 'text-lg/relaxed md:text-2xl/relaxed'
-                  : 'text-xl/relaxed md:text-3xl/relaxed',
+                textSize === 'small' ? 'text-lead/relaxed' : 'text-heading-3/relaxed',
               )}
               data={caption}
               enableGutter={false}

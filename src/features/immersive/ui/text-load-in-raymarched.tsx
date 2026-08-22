@@ -282,7 +282,7 @@ export function TextLoadInRaymarched({
           dropletScatter={dropletScatter}
           wobblePx={wobblePx}
           lightAngle={lightAngle}
-          className="max-w-[24ch] text-3xl font-normal leading-tight tracking-tight text-foreground md:text-4xl"
+          className="max-w-[24ch] text-heading-2 text-foreground"
         />
         <p
           data-body

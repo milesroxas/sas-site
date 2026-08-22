@@ -17,7 +17,7 @@ export default async function NewsletterUnsubscribePage({ searchParams }: Args) 
   return (
     <div className="container pt-32 pb-24">
       <div className="max-w-xl">
-        <h1 className="text-3xl font-medium">Unsubscribe from the newsletter</h1>
+        <h1 className="text-heading-2">Unsubscribe from the newsletter</h1>
         {token ? (
           <>
             <p className="mt-4 text-muted-foreground">

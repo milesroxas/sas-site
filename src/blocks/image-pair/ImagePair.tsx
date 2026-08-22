@@ -79,10 +79,7 @@ export const ImagePair = ({
         >
           {block.heading && (
             <h2
-              className={cn(
-                'pr-8 font-heading text-4xl/10 font-normal tracking-tight text-balance',
-                !textUnderLandscape && 'md:pr-24 md:text-2xl/8',
-              )}
+              className={cn('pr-8 text-heading-3 text-balance', !textUnderLandscape && 'md:pr-24')}
             >
               {block.heading}
             </h2>

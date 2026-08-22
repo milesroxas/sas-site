@@ -117,6 +117,27 @@ function buildThresholds(length: number, order: ScrambleOrder): number[] {
   return ranks.map((rank) => (rank + 1) / length)
 }
 
+/**
+ * ScrambleTweenOptions assembled from SCRAMBLE_TEXT_DEFAULTS, so one-shot
+ * `createScrambleTween` consumers inherit the tuned defaults without
+ * restating them. Spread overrides after calling if a usage needs a delta.
+ */
+export function scrambleTweenDefaults(
+  notify: ScrambleTweenOptions['notify'],
+): ScrambleTweenOptions {
+  const { duration, ease, chars, speed, revealDelay, tweenLength, order } = SCRAMBLE_TEXT_DEFAULTS
+  return {
+    duration,
+    ease,
+    charPool: CHAR_PRESETS[chars] ?? chars,
+    speed,
+    revealDelay,
+    tweenLength,
+    order,
+    notify,
+  }
+}
+
 export type ScrambleTweenOptions = {
   duration: number
   ease: string
@@ -176,6 +197,10 @@ export function createScrambleTween(
         const target = i < toText.length ? toText.charAt(i) : null
         if (target !== null && revealP >= (thresholds[i] ?? 1)) out += target
         else if (target === ' ') out += ' '
+        // Past the target's length (longer from-text mid-shrink), keep the
+        // outgoing text's spaces: the churn stays word-shaped instead of
+        // fusing into one long unbreakable glyph run that wraps badly.
+        else if (target === null && fromText.charAt(i) === ' ') out += ' '
         else out += glyphs[i] ?? ''
       }
       el.textContent = out

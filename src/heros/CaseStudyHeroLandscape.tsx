@@ -38,7 +38,7 @@ export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study:
   return (
     <header className="flex flex-col gap-20 pt-16 pb-16 md:gap-32 lg:gap-8 lg:pt-32">
       <div className="container flex flex-col gap-10 md:gap-32 lg:gap-8 lg:pb-4">
-        <h1 className="max-w-xl font-heading text-3xl/9 font-normal tracking-tight text-foreground md:text-5xl/12">
+        <h1 className="max-w-xl text-heading-1 text-foreground">
           {page.hero?.titleOverride || study.title}
         </h1>
         <dl className="flex flex-col gap-8 md:flex-row md:gap-20 lg:gap-12 lg:self-end xl:gap-20">

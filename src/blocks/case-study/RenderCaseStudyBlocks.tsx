@@ -115,7 +115,7 @@ const StorySection = ({
               {block.eyebrow}
             </p>
           )}
-          <h2 className="mb-6 text-3xl font-normal md:text-5xl" data-reveal>
+          <h2 className="mb-6 text-heading-2" data-reveal>
             {block.headingOverride ||
               storyBeatHeading(study, block.source, block.storyBeatKey) ||
               defaultHeading(block.source)}
@@ -230,7 +230,7 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
     <RevealSection theme={block.theme} variant="underMedia">
       <div className="container mx-auto">
         {block.heading && (
-          <h2 className="mb-6 text-3xl font-normal md:text-5xl" data-reveal>
+          <h2 className="mb-6 text-heading-2" data-reveal>
             {block.heading}
           </h2>
         )}
@@ -287,7 +287,7 @@ const KeyDecisions = ({
   return (
     <RevealSection theme={block.theme} variant="intro">
       <div className="container mx-auto">
-        <h2 className="mb-8 text-3xl font-normal md:text-5xl" data-reveal>
+        <h2 className="mb-8 text-heading-2" data-reveal>
           {block.heading || 'Key decisions'}
         </h2>
         {block.introduction && (
@@ -298,7 +298,7 @@ const KeyDecisions = ({
         <div className={cn('grid gap-6', block.layout === 'cards' && 'md:grid-cols-2')}>
           {decisions.map((decision) => (
             <article className="border-current/20 border p-6" data-reveal key={decision.key}>
-              <h3 className="mb-4 text-2xl font-normal">{decision.title}</h3>
+              <h3 className="mb-4 text-heading-3">{decision.title}</h3>
               {decision.decision && <p>{decision.decision}</p>}
               {decision.impact && <p className="mt-4 opacity-75">{decision.impact}</p>}
             </article>
@@ -317,7 +317,7 @@ const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseSt
   return (
     <RevealSection theme={block.theme} variant="intro">
       <div className="container mx-auto">
-        <h2 className="mb-8 text-3xl font-normal md:text-5xl" data-reveal>
+        <h2 className="mb-8 text-heading-2" data-reveal>
           {block.heading || 'Results'}
         </h2>
         {block.introduction && (
@@ -328,7 +328,7 @@ const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseSt
         <dl className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
           {metrics.map((metric) => (
             <div data-reveal key={metric.key}>
-              <dd className="text-4xl md:text-6xl">
+              <dd className="text-heading-1">
                 {metric.value}
                 {metric.unit}
               </dd>
@@ -363,7 +363,7 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
         )}
         <blockquote data-reveal>
           <RichText
-            className="text-2xl md:text-4xl"
+            className="text-heading-2 leading-snug"
             data={testimonial.quote}
             enableGutter={false}
             enableProse={false}
@@ -387,7 +387,7 @@ const Transition = ({ block }: { block: CaseStudyTransitionBlock }) => (
           {block.eyebrow}
         </p>
       )}
-      <h2 className="text-4xl font-normal md:text-7xl" data-reveal>
+      <h2 className="text-display" data-reveal>
         {block.heading}
       </h2>
       {block.body && (
@@ -438,7 +438,7 @@ const RelatedWork = async ({
   return (
     <RevealSection variant="intro">
       <div className="container mx-auto">
-        <h2 className="mb-8 text-3xl font-normal md:text-5xl" data-reveal>
+        <h2 className="mb-8 text-heading-2" data-reveal>
           {block.heading || 'Related work'}
         </h2>
         <div className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
@@ -447,7 +447,7 @@ const RelatedWork = async ({
               {item.coverAsset && typeof item.coverAsset === 'object' && (
                 <Media resource={item.coverAsset} imgClassName="h-auto w-full" />
               )}
-              <h3 className="mt-4 text-2xl font-normal group-hover:underline">
+              <h3 className="mt-4 text-heading-3 group-hover:underline">
                 {typeof item.caseStudy === 'object' ? item.caseStudy.title : item.title}
               </h3>
             </a>

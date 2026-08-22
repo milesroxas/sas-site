@@ -247,7 +247,7 @@ export function TextLoadIn({
         <span ref={eyebrowRef} aria-hidden className="inline-block min-h-[1em] whitespace-pre" />
         <span className="sr-only">{eyebrow}</span>
       </p>
-      <div className="space-y-1 text-3xl font-medium leading-tight tracking-tight md:text-4xl">
+      <div className="space-y-1 text-heading-2">
         <RayMarchedHeading
           text={heading}
           progressRef={glProgress}

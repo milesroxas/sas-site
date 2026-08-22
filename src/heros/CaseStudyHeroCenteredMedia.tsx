@@ -42,7 +42,7 @@ export const CaseStudyHeroCenteredMedia = ({
               <span aria-hidden className="hidden h-px w-6 bg-foreground md:block" />
               {page.hero?.eyebrow || organization?.shortName || organization?.name || 'Case study'}
             </p>
-            <h1 className="font-heading text-3xl/8 font-normal tracking-tight text-foreground md:text-3xl/9 lg:text-6xl/18">
+            <h1 className="text-heading-1 text-foreground">
               {page.hero?.titleOverride || study.title}
             </h1>
           </div>

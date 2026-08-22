@@ -21,10 +21,7 @@ export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps>
               {eyebrow}
             </p>
           ) : null}
-          <h2
-            className="text-4xl font-normal leading-[1.2] md:text-5xl md:leading-[1.2]"
-            data-reveal
-          >
+          <h2 className="text-heading-2" data-reveal>
             {heading}
           </h2>
         </div>

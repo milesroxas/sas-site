@@ -10,7 +10,7 @@ export const RelatedWorkSection: React.FC<Props> = ({ pages, heading = 'Related 
   if (!pages.length) return null
   return (
     <section className="container mt-24">
-      <h2 className="mb-12 text-4xl">{heading}</h2>
+      <h2 className="mb-12 text-heading-2">{heading}</h2>
       <div className="grid gap-12 md:grid-cols-2">
         {pages.map((page) => (
           <WorkPageCard key={page.id} page={page} titleAs="h3" />
