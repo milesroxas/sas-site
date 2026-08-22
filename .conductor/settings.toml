@@ -1,0 +1,21 @@
+# Conductor shared repository settings — https://www.conductor.build/docs
+#
+# Each workspace gets: its own .env (copied from the main checkout), its own
+# port ($CONDUCTOR_PORT), and its own Postgres database (payload_<workspace>)
+# cloned from the main dev DB inside the one shared docker container.
+# Archive drops that database. See .conductor/*.sh.
+
+[scripts]
+setup = "bash .conductor/setup.sh"
+archive = "bash .conductor/archive.sh"
+# Workspaces are fully isolated (own port, own DB) — safe to run several at once.
+run_mode = "concurrent"
+
+[scripts.run.dev]
+command = "bash .conductor/run-dev.sh"
+default = true
+icon = "play"
+
+[scripts.run.storybook]
+command = "bash .conductor/run-storybook.sh"
+icon = "book"
