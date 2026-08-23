@@ -17,6 +17,11 @@
   --vt-duration-move: 400ms;
   /* Hero recede runs longer than the page swap so it overlaps the incoming page. */
   --vt-duration-hero: 560ms;
+  /* Work-media takeover beats — travel to the hero rect, then grow into it.
+     Sequenced in work-image-morph.ts (WAAPI); CSS uses their sum for the
+     fallback glide and the incoming page's fade delay. */
+  --vt-duration-hero-move: 360ms;
+  --vt-duration-hero-grow: 300ms;
   --vt-ease-hero: cubic-bezier(0.22, 1, 0.36, 1);
   /* How far forward/back navigations slide; each recipe signs it per direction. */
   --vt-slide-distance: 60px;
@@ -102,6 +107,24 @@
       animation: var(--vt-duration-enter) ease-out var(--vt-duration-exit) both vt-fade;
     }
 
+    /*
+     * Work-open root swap. Three strict beats around the `morph-hero` glide
+     * (below): the old page fades out and *stays* out (`both` — the plain
+     * `.fade-out` has no fill, so its snapshot would pop back mid-glide),
+     * the new page holds invisible for the exit + glide, then its text and
+     * chrome-free content fade in once the media has landed. Between the two
+     * fades, the only things on screen are the persistent chrome, the live
+     * canvas backdrop, and the traveling media.
+     */
+    ::view-transition-old(.work-exit) {
+      animation: var(--vt-duration-exit) ease-in both vt-fade reverse;
+    }
+    ::view-transition-new(.work-enter) {
+      animation: var(--vt-duration-enter) ease-out
+        calc(var(--vt-duration-exit) + var(--vt-duration-hero-move) + var(--vt-duration-hero-grow))
+        both vt-fade;
+    }
+
     /* Forward — going deeper (list -> detail, next page). */
     ::view-transition-old(.nav-forward) {
       --vt-slide-offset: calc(var(--vt-slide-distance) * -1);
@@ -136,6 +159,46 @@
     }
     ::view-transition-image-pair(.morph) {
       animation-name: vt-via-blur;
+    }
+
+    /*
+     * Work media takeover — IndustryWork spotlight media -> case-study hero
+     * media. Three beats: the root's `work-open` fade clears the old page
+     * first, then — after `--vt-duration-exit`, fill-held at the spotlight's
+     * rect during the delay — the media travels at the spotlight's size until
+     * it rests centered on the hero rect (`--vt-duration-hero-move`), then
+     * grows in place into the hero's size (`--vt-duration-hero-grow`). The
+     * travel/grow split is imperative (`sequenceWorkImageMorph`, attached via
+     * `onShare` on the IndustryWork side, replaces the browser's one-rect
+     * group tween with two WAAPI beats); the group timing
+     * below is the fallback single glide when that bails. The incoming page
+     * holds invisible for the whole glide (`.work-enter` above) and fades in
+     * only after the media lands. All four pseudo-layers share the delay and
+     * the summed duration so the crossfade and blur ride the glide, not the
+     * fade beat. Snapshot geometry is pinned to `cover` so the 8/5 spotlight
+     * frame and the 8/5 / 21/9 hero frames never letterbox mid-flight.
+     */
+    ::view-transition-group(.morph-hero),
+    ::view-transition-image-pair(.morph-hero),
+    ::view-transition-old(.morph-hero),
+    ::view-transition-new(.morph-hero) {
+      animation-duration: calc(var(--vt-duration-hero-move) + var(--vt-duration-hero-grow));
+      animation-delay: var(--vt-duration-exit);
+      animation-fill-mode: both;
+      animation-timing-function: var(--vt-ease-hero);
+    }
+    ::view-transition-group(.morph-hero) {
+      z-index: 50;
+    }
+    ::view-transition-image-pair(.morph-hero) {
+      animation-name: vt-via-blur;
+      overflow: clip;
+    }
+    ::view-transition-old(.morph-hero),
+    ::view-transition-new(.morph-hero) {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
     }
 
     /*

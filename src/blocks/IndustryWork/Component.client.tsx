@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, useState } from 'react'
+import { useRef, useState, ViewTransition } from 'react'
 import { HeadingDropdown } from '@/blocks/shared/heading-dropdown'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import {
@@ -11,7 +11,12 @@ import {
 } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
-import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
+import {
+  sequenceWorkImageMorph,
+  WORK_OPEN,
+  workImageVtName,
+  workOpenTransitionTypes,
+} from '@/shared/lib/view-transition'
 import {
   SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD,
   ScrollReveal,
@@ -108,28 +113,46 @@ export const IndustryWorkClient = ({
               className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
               data-swap="text"
               href={work.href}
-              transitionTypes={[...forwardNavTransitionTypes]}
+              // Tags the navigation `work-open`: the root fades while the
+              // media below morphs into the case-study hero (see
+              // `view-transition.css` `.morph-hero`).
+              transitionTypes={[...workOpenTransitionTypes]}
             >
               View case study
             </Link>
           </div>
 
-          <div
-            className="relative -order-1 aspect-8/5 w-full overflow-hidden bg-muted lg:order-0 lg:col-start-4 lg:col-end-10 lg:row-start-1"
-            data-reveal="media"
+          {/* Shared element: on "View case study" this box morphs into the
+              case-study hero media's rect — travel first, then grow
+              (`sequenceWorkImageMorph`; React fires `onShare` on this,
+              the unmounting, side). Matching `name` in `CaseStudyHero*`. */}
+          <ViewTransition
+            default="none"
+            name={workImageVtName(work.slug)}
+            onShare={(_instance, types) =>
+              types.includes(WORK_OPEN)
+                ? sequenceWorkImageMorph(workImageVtName(work.slug))
+                : undefined
+            }
+            share="morph-hero"
           >
-            <div className="absolute inset-0" data-swap="media">
-              {work.media ? (
-                <Media
-                  fill
-                  htmlElement={null}
-                  imgClassName="object-cover"
-                  resource={work.media}
-                  size="(max-width: 1024px) 100vw, 50vw"
-                />
-              ) : null}
+            <div
+              className="relative -order-1 aspect-8/5 w-full overflow-hidden bg-muted lg:order-0 lg:col-start-4 lg:col-end-10 lg:row-start-1"
+              data-reveal="media"
+            >
+              <div className="absolute inset-0" data-swap="media">
+                {work.media ? (
+                  <Media
+                    fill
+                    htmlElement={null}
+                    imgClassName="object-cover"
+                    resource={work.media}
+                    size="(max-width: 1024px) 100vw, 50vw"
+                  />
+                ) : null}
+              </div>
             </div>
-          </div>
+          </ViewTransition>
 
           {(work.client || work.capabilities.length > 0) && (
             <dl

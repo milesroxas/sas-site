@@ -192,7 +192,8 @@ const CursorOverlay: React.FC = () => {
           overwrite: 'auto',
         })
         gsap.to(label, {
-          top: variant.labelPlacement === 'center' ? 0 : variant.outerSize / 2 + variant.labelOffset,
+          top:
+            variant.labelPlacement === 'center' ? 0 : variant.outerSize / 2 + variant.labelOffset,
           yPercent: variant.labelPlacement === 'center' ? -50 : 0,
           duration: fadeIn,
           ease: 'power2.out',

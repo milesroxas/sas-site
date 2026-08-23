@@ -1,6 +1,7 @@
 import { termNames } from '@/blocks/shared/resolve-work-entry'
 import { Media } from '@/components/Media'
 import type { CaseStudy, Organization, Project, WorkPage } from '@/payload-types'
+import { WorkImageTransition } from '@/shared/lib/view-transition'
 
 const MetaGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-2 md:items-end md:text-right">
@@ -66,13 +67,15 @@ export const CaseStudyHeroCenteredMedia = ({
         {media && typeof media === 'object' && (
           // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
           <div data-hero-media className="md:px-8 lg:px-0">
-            <Media
-              priority
-              resource={media}
-              className="lg:mx-auto lg:w-4/9"
-              imgClassName="aspect-8/5 w-full object-cover"
-              videoClassName="aspect-8/5 w-full object-cover"
-            />
+            <WorkImageTransition slug={page.slug}>
+              <Media
+                priority
+                resource={media}
+                className="lg:mx-auto lg:w-4/9"
+                imgClassName="aspect-8/5 w-full object-cover"
+                videoClassName="aspect-8/5 w-full object-cover"
+              />
+            </WorkImageTransition>
           </div>
         )}
         {capabilities.length > 0 && (

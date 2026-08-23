@@ -3,15 +3,19 @@ import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { mediaFixture, videoFixture } from '../fixtures'
 import { IndustryWorkClient, type IndustryWorkPanel } from './Component.client'
 
-const workEntry = (id: number, title: string, client: string, media = mediaFixture): WorkEntry => ({
-  id,
-  href: `/works/${title.toLowerCase().replace(/\s+/g, '-')}`,
-  title,
-  client,
-  industry: null,
-  capabilities: ['Brand strategy', 'Web design'],
-  media,
-})
+const workEntry = (id: number, title: string, client: string, media = mediaFixture): WorkEntry => {
+  const slug = title.toLowerCase().replace(/\s+/g, '-')
+  return {
+    id,
+    slug,
+    href: `/works/${slug}`,
+    title,
+    client,
+    industry: null,
+    capabilities: ['Brand strategy', 'Web design'],
+    media,
+  }
+}
 
 const panels: IndustryWorkPanel[] = [
   {

@@ -183,9 +183,9 @@ describe('CustomCursorProvider', () => {
 
     expect(carousel.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('0.5')
     expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(true)
-    expect(view.baseElement.querySelector('[aria-hidden]')?.getAttribute('data-cursor-variant')).toBe(
-      'drag',
-    )
+    expect(
+      view.baseElement.querySelector('[aria-hidden]')?.getAttribute('data-cursor-variant'),
+    ).toBe('drag')
 
     pointerMove(150, 400)
     expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(false)
