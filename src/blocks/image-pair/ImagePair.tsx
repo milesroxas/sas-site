@@ -84,12 +84,7 @@ export const ImagePair = ({
               {block.heading}
             </h2>
           )}
-          <RichText
-            className="text-lg/7 [&_p+p]:mt-6"
-            data={content}
-            enableGutter={false}
-            enableProse={false}
-          />
+          <RichText className="text-lg/7" data={content} enableGutter={false} enableProse={false} />
         </div>
       </div>
     </div>

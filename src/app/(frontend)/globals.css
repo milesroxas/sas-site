@@ -708,7 +708,10 @@
        content height changes do not shift layout horizontally. No-op for
        overlay scrollbars. Must stay on html with the overflow lock. */
     scrollbar-gutter: stable;
-    @apply font-sans;
+    /* font-normal is remapped to the 380 base ink weight in @theme; setting
+       it here (not per-element) lets everything inherit it, including
+       headings after the unset above. */
+    @apply font-sans font-normal;
   }
   /* Radix overlays (dialog, alert-dialog, modal dropdown/popover) lock scroll
      through react-remove-scroll, which offsets the body by the measured
@@ -754,6 +757,12 @@
   --breakpoint-2xl: 86rem;
   --font-mono: var(--font-geist-mono);
   --font-sans: var(--font-geist-sans);
+  /* Base ink weight on Geist's variable axis — the site's stand-in for the
+     browser default 400. Overriding Tailwind's own token keeps one source:
+     `font-normal`, the html base rule and the --text-* companions all read
+     380. Geist is variable (100–900); 380 reads a touch lighter than regular
+     without approaching light (300). */
+  --font-weight-normal: 380;
   /* Outer page gutter — used by `.container` / `.container-narrow`. Mobile
      value below; ≥md override further down (must live outside @theme). */
   --spacing-gutter: 1rem; /* = px-4 */
@@ -763,24 +772,24 @@
   /* Fluid type scale — clamps interpolate 375px → 1440px viewports (rem-based,
      so browser zoom still scales). Tokens own size, line-height, tracking and
      default weight; call sites own layout (max-w, alignment, spacing, color)
-     and may override weight/leading for art direction. Heading weight is the
-     single var below — Geist is variable (100–900), 380 reads a touch lighter
-     than regular without approaching light (300). */
+     and may override weight/leading for art direction. Weight companions read
+     the base ink weight (--font-weight-normal above), so headings and body
+     share the same 380 default. */
   --text-display: clamp(3rem, 1.95rem + 4.51vw, 6rem); /* route/hero statements */
   --text-display--line-height: 1.05;
   --text-display--letter-spacing: -0.025em;
-  --text-display--font-weight: var(--heading-weight);
+  --text-display--font-weight: var(--font-weight-normal);
   --text-heading-1: clamp(2.25rem, 1.72rem + 2.25vw, 3.75rem); /* page/hero h1 */
   --text-heading-1--line-height: 1.1;
   --text-heading-1--letter-spacing: -0.025em;
-  --text-heading-1--font-weight: var(--heading-weight);
+  --text-heading-1--font-weight: var(--font-weight-normal);
   --text-heading-2: clamp(1.875rem, 1.48rem + 1.69vw, 3rem); /* section h2 */
   --text-heading-2--line-height: 1.15;
   --text-heading-2--letter-spacing: -0.025em;
-  --text-heading-2--font-weight: var(--heading-weight);
+  --text-heading-2--font-weight: var(--font-weight-normal);
   --text-heading-3: clamp(1.5rem, 1.37rem + 0.56vw, 1.875rem); /* subsection/card */
   --text-heading-3--line-height: 1.3;
-  --text-heading-3--font-weight: var(--heading-weight);
+  --text-heading-3--font-weight: var(--font-weight-normal);
   --text-lead: clamp(1.25rem, 1.16rem + 0.38vw, 1.5rem); /* intro/standfirst body */
   --text-lead--line-height: 1.5;
 }
@@ -811,12 +820,18 @@
   padding-inline: 0;
 }
 
+/* Vertical rhythm for bare (non-prose) Payload rich text — paragraph spacing
+   scales with the block's type size, so statement, body and caption blocks all
+   keep proportional rhythm without restating it. Call sites may tighten with a
+   utility ([&_p+p]:mt-4); utilities outrank this layer. Prose-enabled rich
+   text keeps Tailwind Typography's own margins. */
+@layer components {
+  .payload-richtext:not(.prose) :where(p + p) {
+    margin-top: 1.25em;
+  }
+}
+
 :root {
-  /* Default heading weight on Geist's variable axis — referenced by the
-     --text-*--font-weight companions in @theme and by prose headings
-     (RichText). Plain :root var, not @theme --font-weight-*, so it never
-     generates a utility colliding with `font-heading` (the family alias). */
-  --heading-weight: 380;
   /* Fixed site header (Header/Component.client.tsx); page frame + heroes offset by it. */
   --header-height: 4rem;
   /* Fixed site footer (Footer/Component.tsx); page frame is padded by it. */

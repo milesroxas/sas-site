@@ -77,7 +77,7 @@ export const SplitImageOffset = ({
               <h2 className="pr-8 text-heading-3 text-balance md:pr-24">{block.heading}</h2>
             )}
             <RichText
-              className="text-lg/7 [&_p+p]:mt-6"
+              className="text-lg/7"
               data={content}
               enableGutter={false}
               enableProse={false}

@@ -66,7 +66,7 @@ export const SplitContentNarrow = ({
               <p className="text-base/none font-normal md:hidden">{block.eyebrow}</p>
             )}
             <RichText
-              className="text-xl/7 md:text-lg/7 [&_p+p]:mt-6"
+              className="text-xl/7 md:text-lg/7"
               data={content}
               enableGutter={false}
               enableProse={false}

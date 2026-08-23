@@ -85,12 +85,16 @@ export default async function Post({ params: paramsPromise }: Args) {
                   <p className="font-mono text-xs leading-normal">{post.title}</p>
                 </div>
               </aside>
-              <div className="max-w-xl border-t border-foreground py-3">
+              <div className="max-w-(--max-width-content-narrow) border-t border-foreground py-3">
                 <RichText className="mx-0" data={post.content} enableGutter={false} />
               </div>
             </div>
           ) : (
-            <RichText className="max-w-3xl mx-auto" data={post.content} enableGutter={false} />
+            <RichText
+              className="max-w-(--max-width-content-narrow) mx-auto"
+              data={post.content}
+              enableGutter={false}
+            />
           )}
         </div>
         {post.relatedPosts && post.relatedPosts.length > 0 && (
