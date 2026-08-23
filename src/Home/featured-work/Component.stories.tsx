@@ -4,15 +4,19 @@ import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Section } from '@/blocks/shared/section'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
 
-const workEntry = (id: number, title: string, client: string, media = mediaFixture): WorkEntry => ({
-  id,
-  href: `/works/${title.toLowerCase().replace(/\s+/g, '-')}`,
-  title,
-  client,
-  industry: 'fintech',
-  capabilities: ['Brand strategy', 'Web design'],
-  media,
-})
+const workEntry = (id: number, title: string, client: string, media = mediaFixture): WorkEntry => {
+  const slug = title.toLowerCase().replace(/\s+/g, '-')
+  return {
+    id,
+    slug,
+    href: `/works/${slug}`,
+    title,
+    client,
+    industry: 'fintech',
+    capabilities: ['Brand strategy', 'Web design'],
+    media,
+  }
+}
 
 const entries: WorkEntry[] = [
   workEntry(1, 'Clarity for a payments platform', 'Interchecks'),

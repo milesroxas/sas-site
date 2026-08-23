@@ -2,6 +2,7 @@ import type { CaseStudy, Media as MediaDoc, Organization, Project, WorkPage } fr
 
 export type WorkEntry = {
   id: number
+  slug: string
   href: string
   title: string
   client: string | null
@@ -41,6 +42,7 @@ export function resolveWorkEntry(page: WorkPage): WorkEntry | null {
 
   return {
     id: page.id,
+    slug: page.slug,
     href: `/works/${page.slug}`,
     title: study?.title || page.title,
     client: organization?.name || organization?.shortName || null,

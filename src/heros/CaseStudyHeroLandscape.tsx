@@ -1,6 +1,7 @@
 import { termNames } from '@/blocks/shared/resolve-work-entry'
 import { Media } from '@/components/Media'
 import type { CaseStudy, Organization, Project, WorkPage } from '@/payload-types'
+import { WorkImageTransition } from '@/shared/lib/view-transition'
 
 const DetailGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-4">
@@ -55,13 +56,16 @@ export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study:
       {media && typeof media === 'object' && (
         // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
         <div data-hero-media className="contents">
-          <Media
-            priority
-            resource={media}
-            size="100vw"
-            imgClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
-            videoClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
-          />
+          {/* VT name lands on Media's own wrapper (the `contents` div above can't snapshot). */}
+          <WorkImageTransition slug={page.slug}>
+            <Media
+              priority
+              resource={media}
+              size="100vw"
+              imgClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
+              videoClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
+            />
+          </WorkImageTransition>
         </div>
       )}
     </header>

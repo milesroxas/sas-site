@@ -22,12 +22,18 @@ export function DirectionalTransition({ children }: { children: React.ReactNode 
         'nav-forward': 'nav-forward',
         'nav-back': 'nav-back',
         'nav-lateral': 'fade-in',
+        // Case-study open: the incoming page holds invisible while the
+        // `morph-hero` media glides into the hero rect, then fades in —
+        // only the media (over the persistent chrome/canvas) is on stage
+        // during the move.
+        'work-open': 'work-enter',
         default: 'none',
       }}
       exit={{
         'nav-forward': 'nav-forward',
         'nav-back': 'nav-back',
         'nav-lateral': 'fade-out',
+        'work-open': 'work-exit',
         default: 'none',
       }}
       default="none"

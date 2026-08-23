@@ -4,7 +4,7 @@ import type { LenisOptions } from 'lenis'
 import { useLenis } from 'lenis/react'
 import { usePathname } from 'next/navigation'
 import type React from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { SmoothScroll } from '@/lib/interactions/smooth-scroll'
 
@@ -38,6 +38,17 @@ export const rootLenisOptions: LenisOptions = {
  * every route change — back/forward included, so directional exit animations always
  * start from the top of the incoming page. Browser scroll restoration is set to
  * `manual` while mounted so it can't fight the reset on popstate.
+ *
+ * The reset must be a *layout* effect. React commits the new route inside
+ * `document.startViewTransition`'s update callback and the browser captures the
+ * incoming page's snapshots as soon as that callback resolves. A passive effect
+ * runs after that capture — and in the gap Lenis's RAF keeps lerping toward the
+ * old page's scroll position, undoing Next's scroll-to-top. The new page then
+ * gets snapshotted at a stale offset (shared-element targets off-screen, morphs
+ * flying to nowhere) before the late reset yanks the page to the top mid-
+ * animation. The layout effect runs synchronously in the same callback: scroll
+ * and Lenis's internal target both sit at the destination before any snapshot
+ * is taken or Lenis frame runs.
  */
 const LenisRouteReset: React.FC = () => {
   const pathname = usePathname()
@@ -52,7 +63,7 @@ const LenisRouteReset: React.FC = () => {
     }
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Only act on an actual route change (not initial mount or lenis hydration).
     if (pathname === lastPathname.current) return
     lastPathname.current = pathname
