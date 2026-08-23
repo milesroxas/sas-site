@@ -106,6 +106,11 @@ const {
 /** Minimum best-proximity change that counts as approaching/receding. */
 const T_EPSILON = 0.001
 
+/** Re-scan cadence while any target is engaged: the DOM can change under a
+ *  stationary pointer (a menu or dialog opens/closes) with no pointer event
+ *  to notice it, and stale rings must release. */
+const REVALIDATE_MS = 250
+
 const CursorOverlay: React.FC = () => {
   const rootRef = useRef<HTMLDivElement>(null)
   const outerWrapRef = useRef<HTMLDivElement>(null)
@@ -156,10 +161,20 @@ const CursorOverlay: React.FC = () => {
       // Two scale layers so continuous growth and the discrete hover pop never
       // fight over one property: the wrapper tracks proximity (quickTo), the
       // ring itself carries the eased lock-on pop (tween).
-      const scaleOuter = gsap.quickTo(outerScale, 'scale', {
+      // quickTo drives values through `tween.resetTo()`, which can't handle
+      // the compound `scale` alias — split into scaleX/scaleY.
+      const scaleOuterX = gsap.quickTo(outerScale, 'scaleX', {
         duration: outerGrowLag,
         ease: 'power3.out',
       })
+      const scaleOuterY = gsap.quickTo(outerScale, 'scaleY', {
+        duration: outerGrowLag,
+        ease: 'power3.out',
+      })
+      const scaleOuter = (value: number) => {
+        scaleOuterX(value)
+        scaleOuterY(value)
+      }
 
       let lastX = 0
       let lastY = 0
@@ -350,18 +365,60 @@ const CursorOverlay: React.FC = () => {
         fadeLabel(labelTeaseOpacity, fadeIn)
       }
 
+      // Hidden targets keep their layout geometry: the closed takeover menu is
+      // visibility:hidden yet laid out at its open-state positions, so rect
+      // math alone would ring its items from a blank page. checkVisibility
+      // ignores the visibility property unless asked; absent the API (older
+      // engines, jsdom) → computed style.
+      const isVisible = (el: HTMLElement) =>
+        el.checkVisibility
+          ? el.checkVisibility({ visibilityProperty: true })
+          : getComputedStyle(el).visibility === 'visible'
+
+      // A target only counts when the pointer would actually reach it: hit-test
+      // the point of the target nearest the pointer. Under a dialog, scrim, or
+      // any overlay — or scrolled off-screen — something else wins the hit test
+      // and the target must not pull the cursor.
+      const isHittable = (el: HTMLElement, rect: DOMRect, onTarget: boolean) => {
+        if (typeof document.elementFromPoint !== 'function') return true
+        const hit = document.elementFromPoint(
+          Math.min(Math.max(lastX, rect.left), rect.right),
+          Math.min(Math.max(lastY, rect.top), rect.bottom),
+        )
+        if (hit && (hit === el || el.contains(hit))) return true
+        // Pointer on the target and something else won: it is covered.
+        if (onTarget) return false
+        // Approaching: the nearest edge point can land on a rounded corner or
+        // an overlapping neighbor — let the target's center decide.
+        const center = document.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+        )
+        return center !== null && (center === el || el.contains(center))
+      }
+
       // Live query + rect reads per move, like the targets' own hover CSS
       // would cost: target counts stay small (a handful per page).
       const scanTargets = () => {
+        const targets = document.querySelectorAll<HTMLElement>(CURSOR_TARGET_SELECTOR)
+        // A removed target is never revisited by the loop below; a stale hot
+        // entry would pin the revalidation interval and retain the detached
+        // element until blur or unmount.
+        if (hot.size) {
+          const live = new Set<HTMLElement>(targets)
+          for (const el of [...hot]) {
+            if (!live.has(el)) writeProximity(el, 0)
+          }
+        }
         let bestT = 0
         let bestEl: HTMLElement | null = null
         let bestVariantName: string | undefined
         let bestVariant = resolveCursorVariant(undefined)
-        for (const el of document.querySelectorAll<HTMLElement>(CURSOR_TARGET_SELECTOR)) {
-          // Targets inside an inert subtree can't be interacted with — e.g. the
-          // page frame docked behind the open takeover menu. They must neither
-          // pull the rings nor keep a stale proximity var.
-          if (el.closest('[inert]')) {
+        for (const el of targets) {
+          // Targets inside an inert subtree (the page frame docked behind the
+          // open takeover menu) or hidden ones can't be interacted with. They
+          // must neither pull the rings nor keep a stale proximity var.
+          if (el.closest('[inert]') || !isVisible(el)) {
             writeProximity(el, 0)
             continue
           }
@@ -370,7 +427,9 @@ const CursorOverlay: React.FC = () => {
           const rect = el.getBoundingClientRect()
           const dx = Math.max(rect.left - lastX, 0, lastX - rect.right)
           const dy = Math.max(rect.top - lastY, 0, lastY - rect.bottom)
-          const t = Math.max(0, 1 - Math.hypot(dx, dy) / variant.proximityRadius)
+          const distance = Math.hypot(dx, dy)
+          const raw = Math.max(0, 1 - distance / variant.proximityRadius)
+          const t = raw > 0 && isHittable(el, rect, distance === 0) ? raw : 0
           writeProximity(el, t)
           if (t > bestT) {
             bestT = t
@@ -386,6 +445,20 @@ const CursorOverlay: React.FC = () => {
         if (hovering || bestT > lastBestT + T_EPSILON) teaseSuppressed = false
         else if (bestT < lastBestT - T_EPSILON) teaseSuppressed = true
         lastBestT = bestT
+      }
+
+      // Pointer events only fire on movement, so an engaged target that the
+      // DOM hides, covers, or removes under a still pointer would strand the
+      // rings. While engaged, a low-frequency re-scan releases them.
+      let revalidateTimer = 0
+      const syncRevalidation = () => {
+        const engaged = hot.size > 0 || activeEl !== null
+        if (engaged && !revalidateTimer) {
+          revalidateTimer = window.setInterval(() => update(), REVALIDATE_MS)
+        } else if (!engaged && revalidateTimer) {
+          window.clearInterval(revalidateTimer)
+          revalidateTimer = 0
+        }
       }
 
       const update = () => {
@@ -412,6 +485,7 @@ const CursorOverlay: React.FC = () => {
         )
         // Ring size tracks proximity: seed at rest, grown at the target's edge.
         scaleOuter(outerScaleMin + (outerScaleMax - outerScaleMin) * bestT)
+        syncRevalidation()
       }
 
       const onMove = (event: PointerEvent) => {
@@ -449,6 +523,7 @@ const CursorOverlay: React.FC = () => {
         setActiveTarget(null)
         clearProximity()
         lastBestT = 0
+        syncRevalidation()
       }
 
       const onPointerOut = (event: PointerEvent) => {
@@ -465,6 +540,7 @@ const CursorOverlay: React.FC = () => {
         window.removeEventListener('pointerout', onPointerOut)
         window.removeEventListener('blur', hide)
         window.clearTimeout(idleTimer)
+        window.clearInterval(revalidateTimer)
         setNativeCursorHidden(false)
         setActiveTarget(null)
         clearProximity()

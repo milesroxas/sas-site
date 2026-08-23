@@ -1,7 +1,7 @@
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { GeistMono } from 'geist/font/mono'
 import { GeistSans } from 'geist/font/sans'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { draftMode } from 'next/headers'
 import type React from 'react'
 import { AdminBar } from '@/components/AdminBar'
@@ -57,6 +57,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </body>
     </html>
   )
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  // Software keyboard shrinks the layout viewport (Chromium) so fixed surfaces
+  // like the menu's chat composer stay above it instead of being covered.
+  // Zoom stays enabled — the 16px control font handles iOS focus zoom.
+  interactiveWidget: 'resizes-content',
 }
 
 export const metadata: Metadata = {

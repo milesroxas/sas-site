@@ -45,6 +45,11 @@
         "files": ["src/components/ui/**"],
         "maxCrap": 60,
         "reason": "Vendored shadcn primitives (ejected) — kept byte-close to upstream for future diffs, not restructured to satisfy CRAP"
+      },
+      {
+        "files": ["src/Header/Menu/index.tsx"],
+        "maxCrap": 40,
+        "reason": "GSAP open/close orchestration — branch count is DOM/ref precondition gating, covered by jsdom integration tests; pure decision logic lives extracted and unit-tested in motion.ts"
       }
     ]
   },

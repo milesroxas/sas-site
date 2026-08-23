@@ -15,8 +15,10 @@ const inputGroupVariants = cva(
         default: '',
         // Floating "ask" pill (takeover menu): capsule on the popover surface
         // that grows while the field has focus — the width transition is the
-        // affordance, so it lives here rather than at call sites.
-        pill: 'h-12 w-64 rounded-full border-transparent bg-popover px-2 shadow-xl transition-[width,background-color,border-color] duration-200 ease-in-out focus-within:w-80 has-data-[align=inline-end]:rounded-full has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0 dark:bg-popover **:data-[slot=button]:rounded-full [&>[data-slot=input-group-control]]:h-full [&>[data-slot=input-group-control]]:pl-3 [&>[data-slot=input-group-control]]:text-sm',
+        // affordance, so it lives here rather than at call sites. Mobile is
+        // full-width with no focus-grow (the jump fights the software keyboard
+        // and w-80 overflows narrow phones) and 16px text (iOS focus zoom).
+        pill: 'h-12 w-full rounded-full border-transparent bg-popover px-2 shadow-xl transition-[width,background-color,border-color] duration-200 ease-in-out has-data-[align=inline-end]:rounded-full has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0 md:w-64 md:focus-within:w-80 dark:bg-popover **:data-[slot=button]:rounded-full [&>[data-slot=input-group-control]]:h-full [&>[data-slot=input-group-control]]:pl-3 [&>[data-slot=input-group-control]]:text-base md:[&>[data-slot=input-group-control]]:text-sm',
       },
     },
     defaultVariants: {

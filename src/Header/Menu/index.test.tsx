@@ -42,6 +42,12 @@ vi.mock('@/features/ask/MenuAsk', () => ({
   ),
 }))
 
+const routerPush = vi.fn()
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+  useRouter: () => ({ push: routerPush }),
+}))
+
 vi.mock('next/link', () => ({
   default: ({
     href,
@@ -195,5 +201,37 @@ describe('TakeoverMenu', () => {
     fireEvent.click(screen.getByRole('link', { name: /Search/ }))
 
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('falls back to the plain close when a link has media but the handoff preconditions fail', () => {
+    // jsdom rects are all zero, so the preview slot is unmeasurable — the
+    // click must take the ordinary close path (Link navigates, menu undocks)
+    // instead of starting a hero handoff.
+    const withMedia: MenuContent = {
+      ...mockMenuContent,
+      expertise: [
+        {
+          title: 'Clarifying Complex Stories',
+          href: '/expertise/clarifying-complex-stories',
+          media: { url: '/media/hero.jpg', mime: 'image/jpeg' },
+        },
+      ],
+    }
+    const onClose = vi.fn()
+    render(
+      <TakeoverMenu
+        data={mockHeaderData}
+        menuContent={withMedia}
+        open
+        onClose={onClose}
+        menuButtonRef={{ current: null }}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('link', { name: 'Clarifying Complex Stories' }))
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(routerPush).not.toHaveBeenCalled()
+    expect(document.querySelector('[data-menu-hero-traveler]')).toBeNull()
   })
 })

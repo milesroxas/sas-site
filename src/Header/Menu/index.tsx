@@ -2,10 +2,12 @@
 
 import { useGSAP } from '@gsap/react'
 import { IconArrowUpRight } from '@tabler/icons-react'
+import type { ChatTransport, UIMessage } from 'ai'
 import gsap from 'gsap'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import type React from 'react'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CMSLink } from '@/components/Link'
 import { Button } from '@/components/ui/button'
 import { Clock } from '@/Footer/Clock'
@@ -13,8 +15,25 @@ import { MenuAsk } from '@/features/ask/MenuAsk'
 import { cursorTarget } from '@/features/cursor'
 import type { Header as HeaderType } from '@/payload-types'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
+import { cn } from '@/utilities/ui'
 import type { MenuContent, MenuMedia } from '../getMenuContent'
 import { ThemeToggle } from '../ThemeToggle'
+import { createMenuMediaElement, type HeroHandoff, startHeroHandoff } from './heroHandoff'
+import {
+  CARD_RADIUS_DESKTOP,
+  CARD_RADIUS_MOBILE,
+  canStartHeroHandoff,
+  DESKTOP_CARD_SHADOW,
+  DISSOLVE_DURATION,
+  DISSOLVE_EASE,
+  FRAME_Z,
+  getCardMotion,
+  getViewportWidth,
+  HERO_MEDIA_SELECTOR,
+  isInAppNavClick,
+  MENU_EASE,
+  MOBILE_CARD_SHADOW,
+} from './motion'
 
 gsap.registerPlugin(useGSAP)
 
@@ -33,24 +52,23 @@ const PAGE_FRAME_SELECTOR = '[data-page-frame]'
 const SITE_FOOTER_SELECTOR = '[data-site-footer]'
 const PREVIEW_SLOT_SELECTOR = '[data-menu-preview-slot]'
 /**
- * Hero-media contract: each hero marks its media region with `data-hero-media`
- * (see src/heros/*). On open, the first img/video inside it is cloned into a
- * dissolve layer injected INTO the page frame, so the window's scale + clip
- * mask crop it exactly like the page — the cross-fade can never paint outside
- * the animating mask. The docking window dissolves from page to media; the
+ * On open, the first img/video inside the hero's `data-hero-media` region
+ * (HERO_MEDIA_SELECTOR — see ./motion) is cloned into a dissolve layer
+ * injected INTO the page frame, so the window's scale + clip mask crop it
+ * exactly like the page — the cross-fade can never paint outside the
+ * animating mask. The docking window dissolves from page to media; the
  * settled menu shows only the current page's media. Pages without hero media
  * keep the scaled page view.
  */
-const HERO_MEDIA_SELECTOR = '[data-hero-media] img, [data-hero-media] video'
 const HERO_LAYER_SELECTOR = '[data-menu-hero-media]'
 /** The current page's own media inside the layer — the hover-preview resting state. */
 const HERO_BASE_SELECTOR = '[data-menu-hero-base]'
 /** Hover-preview elements stacked above the base inside the layer. */
 const HOVER_ITEM_SELECTOR = '[data-menu-hover-item]'
 
-/* Menu motion — every tunable lives here (docs/animations.md contract). */
-/** Fast ease-in-out shared by the window dock and its clip mask. */
-const MENU_EASE = 'power2.inOut'
+/* Menu motion — every open/close tunable lives here; shared primitives (ease,
+   dissolve, geometry) in ./motion, handoff tunables in ./heroHandoff
+   (docs/animations.md contract). */
 const FRAME_DURATION = 0.8
 /** Clip mask trails the shrink slightly so the crop reads as a sliding window. */
 const CLIP_LAG = 0.1
@@ -60,8 +78,6 @@ const ITEMS_START = FRAME_DURATION / 2
 const ITEM_DURATION = 0.45
 const ITEM_STAGGER = 0.03
 const ITEM_EASE = 'power2.out'
-/** Preview window fade when the Ask transcript takes its place. */
-const CHAT_SWAP_FADE = 0.3
 /** Footer bar fade-out — leaves immediately, independent of the window dock. */
 const FOOTER_FADE_DURATION = 0.35
 /** Page window dissolves into the page's hero media across the dock's back
@@ -69,70 +85,31 @@ const FOOTER_FADE_DURATION = 0.35
 const HERO_DISSOLVE_START = ITEMS_START
 const HERO_DISSOLVE_END = CLIP_LAG + FRAME_DURATION
 const HERO_DISSOLVE_EASE = 'power1.inOut'
-/** Hovering a menu link cross-dissolves the window to that page's hero media;
- *  leaving all links dissolves back to the current page. Fast ease-out. */
-const HOVER_DISSOLVE_DURATION = 0.35
-const HOVER_DISSOLVE_EASE = 'power2.out'
 /** Grace before dissolving back to base — lets the pointer travel between
  *  adjacent links without flashing the resting state. */
 const HOVER_CLEAR_DELAY_MS = 80
 
-/** Docked page frame stacking: above the overlay (z-40), below the header (z-50). */
-const FRAME_Z = 45
+/** Chat swap: the transcript panel lives in the overlay (z-40) and can never
+ *  paint above the docked frame (FRAME_Z 45), so the mask runs *inside* the
+ *  frame instead — an opaque cover (popover-colored, cropped by the dock's own
+ *  clip mask) wipes down over the window's media, then the frame hides in a
+ *  same-color switch to the panel waiting fully drawn beneath. MenuAsk stages
+ *  its content reveal to land at this wipe's end (340ms transition delay). */
+const CHAT_WIPE_DURATION = 0.34
+const CHAT_WIPE_EASE = 'power3.out'
+/** Exit: the frame returns instantly (still fully covered — same color, no
+ *  visible change), then the cover retracts upward, unmasking the media. */
+const CHAT_UNWIPE_DURATION = 0.2
+const CHAT_UNWIPE_EASE = 'power1.in'
+const CHAT_COVER_SELECTOR = '[data-menu-chat-cover]'
 
 const getPageFrame = () => document.querySelector<HTMLElement>(PAGE_FRAME_SELECTOR)
 const getSiteFooter = () => document.querySelector<HTMLElement>(SITE_FOOTER_SELECTOR)
 
-/** Layout viewport width — excludes classic scrollbar / `scrollbar-gutter: stable`. */
-const getViewportWidth = () => document.documentElement.clientWidth
-
-/** Largest rect of the slot's aspect that fits the viewport, in local (unscaled)
- *  px. Insets are centered so the mask closes from all sides toward the middle. */
-const getViewportCrop = (vw: number, vh: number, targetAspect: number) => {
-  if (vw / vh > targetAspect) {
-    // Viewport wider than the slot — crop the sides equally.
-    const clipH = vh
-    const clipW = vh * targetAspect
-    const insetX = (vw - clipW) / 2
-    return { clipW, clipH, insetT: 0, insetR: insetX, insetB: 0, insetL: insetX }
-  }
-  // Viewport taller — crop top and bottom equally toward center.
-  const clipW = vw
-  const clipH = vw / targetAspect
-  const insetY = (vh - clipH) / 2
-  return { clipW, clipH, insetT: insetY, insetR: 0, insetB: insetY, insetL: 0 }
-}
-
-const clipPathInset = (
-  insetT: number,
-  insetR: number,
-  insetB: number,
-  insetL: number,
-  radius: number,
-) => `inset(${insetT}px ${insetR}px ${insetB}px ${insetL}px round ${radius}px)`
-
-const MOBILE_CARD_SHADOW = '0 0 0 1px oklch(50% 0 0 / 30%), 0 24px 64px oklch(0 0 0 / 35%)'
-const DESKTOP_CARD_SHADOW = '0 0 0 1px oklch(50% 0 0 / 30%), 0 32px 96px oklch(0 0 0 / 35%)'
-
-/** Transform + clip-path values that land the frame on the measured slot. */
-const getCardMotion = (slot: DOMRect, borderRadius: number) => {
-  const vw = getViewportWidth()
-  const vh = window.innerHeight
-  const crop = getViewportCrop(vw, vh, slot.width / slot.height)
-  // Scale from the crop width so the masked window matches the slot size.
-  const scale = slot.width / crop.clipW
-  return {
-    scale,
-    // Origin top-left so x/y map 1:1 to the slot's viewport position.
-    x: slot.left - crop.insetL * scale,
-    y: slot.top - crop.insetT * scale,
-    clipPath: clipPathInset(crop.insetT, crop.insetR, crop.insetB, crop.insetL, borderRadius),
-    openClipPath: clipPathInset(0, 0, 0, 0, 0),
-  }
-}
-
 const clearFrameProps = (frame: HTMLElement) => {
   frame.querySelector(HERO_LAYER_SELECTOR)?.remove()
+  // The chat-view swap may still be tweening the frame's opacity.
+  gsap.killTweensOf(frame)
   gsap.set(frame, { clearProps: 'all' })
   const footer = getSiteFooter()
   if (footer) gsap.set(footer, { clearProps: 'opacity,visibility' })
@@ -215,6 +192,20 @@ const mountHeroMedia = (frame: HTMLElement, scrollTop: number) => {
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /**
+ * Base open timeline for the non-animating paths (reduced motion, detached
+ * render): instant overlay crossfade only. Overlay start values are explicit
+ * (fromTo, never to/set): the timeline is rebuilt while OPEN on
+ * resize/breakpoint change, and a `.to` initialized at progress(1) would
+ * record the open state as its start — reversing it could then never restore
+ * closed.
+ */
+const overlayFadeTimeline = (overlay: HTMLElement) =>
+  gsap
+    .timeline({ paused: true, defaults: { duration: 0.2, ease: 'none' } })
+    .set(overlay, { pointerEvents: 'auto' })
+    .fromTo(overlay, { autoAlpha: 0 }, { autoAlpha: 1 }, 0)
+
+/**
  * Hover preview: dissolve the docked window's media to `media`, or back to
  * the resting state (the page's own hero / the scaled page view) on `null`.
  * The incoming element fades in above the stack and drops what it covers on
@@ -224,7 +215,7 @@ const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: r
 const showHoverMedia = (media: MenuMedia | null) => {
   const layer = getPageFrame()?.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
   if (!layer) return
-  const duration = prefersReducedMotion() ? 0 : HOVER_DISSOLVE_DURATION
+  const duration = prefersReducedMotion() ? 0 : DISSOLVE_DURATION
   const previous = Array.from(layer.querySelectorAll<HTMLElement>(HOVER_ITEM_SELECTOR))
 
   if (!media) {
@@ -232,7 +223,7 @@ const showHoverMedia = (media: MenuMedia | null) => {
       gsap.to(el, {
         autoAlpha: 0,
         duration,
-        ease: HOVER_DISSOLVE_EASE,
+        ease: DISSOLVE_EASE,
         overwrite: 'auto',
         onComplete: () => el.remove(),
       })
@@ -248,7 +239,7 @@ const showHoverMedia = (media: MenuMedia | null) => {
     gsap.to(last, {
       autoAlpha: 1,
       duration,
-      ease: HOVER_DISSOLVE_EASE,
+      ease: DISSOLVE_EASE,
       overwrite: 'auto',
       onComplete: () => {
         for (const p of previous) {
@@ -259,21 +250,7 @@ const showHoverMedia = (media: MenuMedia | null) => {
     return
   }
 
-  let el: HTMLImageElement | HTMLVideoElement
-  if (media.mime.startsWith('video/')) {
-    const video = document.createElement('video')
-    video.muted = true
-    video.loop = true
-    video.playsInline = true
-    video.src = media.url
-    el = video
-  } else {
-    const img = document.createElement('img')
-    img.decoding = 'async'
-    img.src = media.url
-    img.alt = ''
-    el = img
-  }
+  const el = createMenuMediaElement(media)
   el.setAttribute('data-menu-hover-item', media.url)
   gsap.set(el, {
     position: 'absolute',
@@ -287,7 +264,7 @@ const showHoverMedia = (media: MenuMedia | null) => {
   gsap.to(el, {
     autoAlpha: 1,
     duration,
-    ease: HOVER_DISSOLVE_EASE,
+    ease: DISSOLVE_EASE,
     overwrite: 'auto',
     // Fully covered now — drop the outgoing stack beneath.
     onComplete: () => {
@@ -316,6 +293,9 @@ type TakeoverMenuProps = {
   onClose: () => void
   /** Focus returns here when the menu closes. */
   menuButtonRef: React.RefObject<HTMLButtonElement | null>
+  /** Ask transport override — stories/tests script the chat without /api/ask. */
+  askTransport?: ChatTransport<UIMessage>
+  askInitialMessages?: UIMessage[]
 }
 
 export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
@@ -324,6 +304,8 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   open,
   onClose,
   menuButtonRef,
+  askTransport,
+  askInitialMessages,
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null)
   const tlRef = useRef<gsap.core.Timeline | null>(null)
@@ -333,9 +315,133 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   const navItems = data?.navItems || []
   const { expertise, audiences, works, pageMedia } = menuContent
 
+  /**
+   * A close has two exits with opposite scroll contracts. Dismissal (Escape,
+   * backdrop, CLOSE button) returns to the same page, so the undock restores
+   * the scroll position frozen at open. Navigation must NOT — restoring would
+   * stamp the old page's offset onto the new route, overriding LenisRouteReset
+   * (the undock reverse outlives the route commit, so this cleanup runs last).
+   */
+  const pendingNavRef = useRef(false)
+  /** In-flight hero handoff (see ./heroHandoff) — owns the exit while active. */
+  const handoffRef = useRef<HeroHandoff | null>(null)
+  const pathname = usePathname()
+  const lastPathnameRef = useRef(pathname)
+  const router = useRouter()
+  const hoverClearTimer = useRef(0)
+
+  /** Unfreeze the frozen page frame. `navigated`: land on the new route's
+   *  top/anchor; otherwise restore the offset frozen at open. */
+  const restoreFrame = useCallback((navigated: boolean) => {
+    const frame = getPageFrame()
+    if (!frame) return
+    frame.removeAttribute('inert')
+    clearFrameProps(frame)
+    document.documentElement.style.overflow = ''
+    if (navigated) {
+      const anchor = window.location.hash
+        ? document.getElementById(window.location.hash.slice(1))
+        : null
+      if (anchor) anchor.scrollIntoView()
+      else window.scrollTo(0, 0)
+    } else {
+      window.scrollTo(0, scrollYRef.current)
+    }
+  }, [])
+
+  /**
+   * Same-tab in-app link → this close is a navigation. When the destination
+   * has hero media and the menu is fully open, the click starts the hero
+   * handoff instead of the undock: the docked window holds the media and
+   * expands to FULL SCREEN while the route pushes underneath (untagged → no
+   * view-transition motion), then collapses clip-only onto the new page's
+   * hero — one axis at a time, never diagonally. Every unmet precondition
+   * falls back to the plain close, where the Link performs the navigation
+   * itself.
+   */
+  const onNavItemClick = useCallback(
+    (media: MenuMedia | null) => (event: React.MouseEvent) => {
+      const anchor = (event.target as HTMLElement).closest('a')
+      if (!isInAppNavClick(anchor, event)) {
+        onClose()
+        return
+      }
+      pendingNavRef.current = true
+
+      const frame = getPageFrame()
+      const overlay = overlayRef.current
+      const slotRect = overlay
+        ?.querySelector<HTMLElement>(PREVIEW_SLOT_SELECTOR)
+        ?.getBoundingClientRect()
+      const canHandoff =
+        media &&
+        frame &&
+        overlay &&
+        slotRect &&
+        canStartHeroHandoff({
+          slotRect,
+          reducedMotion: prefersReducedMotion(),
+          handoffActive: !!handoffRef.current?.active,
+          timelineProgress: tlRef.current?.progress(),
+          destinationPathname: anchor.pathname,
+          currentPathname: window.location.pathname,
+        })
+      if (!canHandoff) {
+        onClose()
+        return
+      }
+
+      event.preventDefault()
+      window.clearTimeout(hoverClearTimer.current)
+      // The handoff replaces both the open timeline's end state and its
+      // reverse — freeze it so nothing else mutates the overlay or frame.
+      tlRef.current?.kill()
+      handoffRef.current = startHeroHandoff({
+        media,
+        overlay,
+        frame,
+        items: gsap.utils.toArray<HTMLElement>('[data-menu-item]', overlay),
+        slotRect,
+        desktop: window.matchMedia('(min-width: 768px)').matches,
+        restoreFrame,
+        onDone: () => {
+          handoffRef.current = null
+          const ov = overlayRef.current
+          if (ov) gsap.set(ov, { clearProps: 'all' })
+          // Fresh paused timeline so the next open records pristine start values.
+          rebuildTimelineRef.current?.()
+        },
+      })
+      // Untagged push: DirectionalTransition's `default: 'none'` keeps the
+      // route swap a hard cut — the traveler owns all visible motion.
+      router.push(anchor.pathname + anchor.search + anchor.hash)
+      onClose()
+    },
+    [onClose, restoreFrame, router],
+  )
+
+  // Route committed while the frame is still frozen (menu open or mid-undock):
+  // it now holds the NEW page. During a hero handoff that commit is the signal
+  // to unfreeze and measure; otherwise re-pin the frame to the top so the
+  // undock reveals the new page from its start, and zero the restore target so
+  // the cleanup's scroll restore agrees with LenisRouteReset.
+  useEffect(() => {
+    if (pathname === lastPathnameRef.current) return
+    lastPathnameRef.current = pathname
+    if (handoffRef.current?.active) {
+      handoffRef.current.routeChanged()
+      return
+    }
+    const frame = getPageFrame()
+    if (!frame?.hasAttribute('inert')) return
+    scrollYRef.current = 0
+    frame.scrollTop = 0
+    const heroLayer = frame.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
+    if (heroLayer) gsap.set(heroLayer, { top: 0 })
+  }, [pathname])
+
   // Hover preview wiring: entering a link dissolves the docked window to that
   // page's hero media; leaving all links dissolves back after a short grace.
-  const hoverClearTimer = useRef(0)
   const hoverHandlers = useCallback(
     (media: MenuMedia | null) => ({
       onPointerEnter: (event: React.PointerEvent) => {
@@ -353,6 +459,15 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       },
     }),
     [],
+  )
+
+  /** Click + hover wiring for a menu item, keyed to one media source. */
+  const itemHandlers = useCallback(
+    (media: MenuMedia | null) => ({
+      onClickCapture: onNavItemClick(media),
+      ...hoverHandlers(media),
+    }),
+    [onNavItemClick, hoverHandlers],
   )
 
   const hoverMediaList = useMemo(() => {
@@ -404,15 +519,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
           const buildTimeline = () => {
             const slotEl = overlay.querySelector<HTMLElement>(PREVIEW_SLOT_SELECTOR)
-            const borderRadius = desktop ? 24 : 20
+            const borderRadius = desktop ? CARD_RADIUS_DESKTOP : CARD_RADIUS_MOBILE
             const boxShadow = desktop ? DESKTOP_CARD_SHADOW : MOBILE_CARD_SHADOW
             // Overlay is visibility:hidden while closed but still laid out, so
             // the slot measures at its final open-state position.
             const slotRect = slotEl?.getBoundingClientRect()
             if (!slotRect || slotRect.width === 0 || slotRect.height === 0) {
               // No usable slot (e.g. detached render) — content-only fallback.
-              const tl = gsap.timeline({ paused: true, defaults: { duration: 0.2, ease: 'none' } })
-              tl.set(overlay, { pointerEvents: 'auto' }).to(overlay, { autoAlpha: 1 }, 0)
+              const tl = overlayFadeTimeline(overlay)
               tlRef.current = tl
               return tl
             }
@@ -428,24 +542,21 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             let tl: gsap.core.Timeline
             if (!motionOK) {
               // Reduced motion: crossfade + snap to the final window.
-              tl = gsap.timeline({ paused: true, defaults: { duration: 0.2, ease: 'none' } })
-              tl.set(overlay, { pointerEvents: 'auto' })
-                .to(overlay, { autoAlpha: 1 }, 0)
-                .fromTo(items, { autoAlpha: 0 }, { autoAlpha: 1 }, 0)
-                .set(
-                  frame,
-                  {
-                    transformOrigin: '0 0',
-                    scale: motion.scale,
-                    x: motion.x,
-                    y: motion.y,
-                    clipPath: motion.clipPath,
-                    borderRadius,
-                    boxShadow,
-                    overflow: 'hidden',
-                  },
-                  0,
-                )
+              tl = overlayFadeTimeline(overlay)
+              tl.fromTo(items, { autoAlpha: 0 }, { autoAlpha: 1 }, 0).set(
+                frame,
+                {
+                  transformOrigin: '0 0',
+                  scale: motion.scale,
+                  x: motion.x,
+                  y: motion.y,
+                  clipPath: motion.clipPath,
+                  borderRadius,
+                  boxShadow,
+                  overflow: 'hidden',
+                },
+                0,
+              )
               // Snap straight to the settled view: hero media fills the window.
               if (heroLayer) tl.set(heroLayer, { autoAlpha: 1 }, 0)
               if (footer) tl.set(footer, { autoAlpha: 0 }, 0)
@@ -456,13 +567,17 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                 paused: true,
                 defaults: { ease: MENU_EASE },
               })
+              // fromTo (not to) everywhere below that touches overlay/footer:
+              // rebuilds happen while OPEN (resize, breakpoint change) and a
+              // start value recorded at progress(1) would poison the reverse.
               tl.set(overlay, { pointerEvents: 'auto' })
                 .set(frame, {
                   transformOrigin: '0 0',
                   clipPath: motion.openClipPath,
                 })
-                .to(
+                .fromTo(
                   overlay,
+                  { autoAlpha: 0 },
                   { autoAlpha: 1, duration: OVERLAY_FADE_DURATION, ease: 'power1.out' },
                   0,
                 )
@@ -513,8 +628,9 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               if (footer) {
                 // Footer chrome exits right away — it is page chrome, never a
                 // participant in the window dock or the content cascade.
-                tl.to(
+                tl.fromTo(
                   footer,
+                  { autoAlpha: 1 },
                   { autoAlpha: 0, duration: FOOTER_FADE_DURATION, ease: 'power1.out' },
                   0,
                 )
@@ -552,28 +668,36 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             return buildTimeline()
           }
 
-          // Keep the window docked on the slot while resizing.
+          // Keep the window docked on the slot while resizing. Only while
+          // open: closed, the open effect rebuilds with fresh metrics anyway,
+          // and killing here would strand an in-flight close reverse (its
+          // onReverseComplete cleanup — inert, scroll lock — would never run).
           let resizeTimer = 0
           const onResize = () => {
+            if (!openRef.current) return
             window.clearTimeout(resizeTimer)
             resizeTimer = window.setTimeout(() => {
-              const wasOpen = openRef.current
+              // Close may have started inside the debounce window.
+              if (!openRef.current) return
               tlRef.current?.kill()
               const next = buildTimeline()
-              if (wasOpen) {
-                // Re-freeze frame to the new viewport before snapping open.
-                gsap.set(frame, {
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  width: getViewportWidth(),
-                  height: window.innerHeight,
-                  minHeight: 0,
-                  overflow: 'hidden',
-                  zIndex: FRAME_Z,
-                })
-                next.progress(1)
-              }
+              // Re-freeze frame to the new viewport before snapping open.
+              gsap.set(frame, {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: getViewportWidth(),
+                height: window.innerHeight,
+                minHeight: 0,
+                overflow: 'hidden',
+                zIndex: FRAME_Z,
+              })
+              // Reflow at the new width can clamp the scroll offset — re-pin
+              // it and keep the hero dissolve layer over the visible box.
+              frame.scrollTop = scrollYRef.current
+              const heroLayer = frame.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
+              if (heroLayer) gsap.set(heroLayer, { top: frame.scrollTop })
+              next.progress(1)
             }, 80)
           }
           window.addEventListener('resize', onResize)
@@ -593,12 +717,19 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
   useEffect(() => {
     openRef.current = open
+    // A hero handoff owns the exit end-to-end; reopening mid-flight snaps it
+    // finished first so the dock below starts from a clean, restored page.
+    if (handoffRef.current?.active) {
+      if (!open) return
+      handoffRef.current.abort()
+    }
     let tl = tlRef.current
     const frame = getPageFrame()
     const overlay = overlayRef.current
     if (!tl || !frame || !overlay) return
 
     if (open) {
+      pendingNavRef.current = false
       // Rebuild from the current viewport before freezing: the timeline's clip
       // insets must match the frame size read below in the same tick, or the
       // crop is off by however much innerHeight drifted (mobile URL bar).
@@ -651,16 +782,19 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       // undock animation has something to show.
       gsap.set(frame, { autoAlpha: 1 })
       tl.eventCallback('onReverseComplete', () => {
-        frame.removeAttribute('inert')
-        // Also removes the injected dissolve layer.
-        clearFrameProps(frame)
-        document.documentElement.style.overflow = ''
-        window.scrollTo(0, scrollYRef.current)
+        // Navigation close never restores the old offset: if the route already
+        // committed, LenisRouteReset put the page at the top (or its anchor) —
+        // restoreFrame honors that instead of stamping a stale offset.
+        restoreFrame(pendingNavRef.current)
+        // Drop every GSAP inline style so the class-driven closed state
+        // (invisible / opacity-0 / pointer-events-none) is the single source
+        // of truth, and the next timeline records pristine start values.
+        gsap.set(overlay, { clearProps: 'all' })
         menuButtonRef.current?.focus()
       })
       tl.reverse()
     }
-  }, [open, menuButtonRef])
+  }, [open, menuButtonRef, restoreFrame])
 
   // Escape closes; safety-net cleanup if unmounted mid-open.
   useEffect(() => {
@@ -675,6 +809,8 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   useEffect(
     () => () => {
       window.clearTimeout(hoverClearTimer.current)
+      // Unmount mid-handoff: drop the traveler and restore the frame now.
+      handoffRef.current?.abort()
       const frame = getPageFrame()
       if (frame?.hasAttribute('inert')) {
         frame.removeAttribute('inert')
@@ -685,19 +821,79 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     [],
   )
 
-  // The transcript replaces the docked window: fade the frozen page frame
-  // under it. Outside the GSAP context on purpose — the frame outlives this
-  // component's scope and close/unmount always restores it via clearFrameProps.
-  const handleChatViewChange = useCallback((chatView: boolean) => {
+  // Mirrors MenuAsk's chat-view state so the mobile layout can hand the nav's
+  // space to the transcript (nav + CTA fade out, slot grows to fill).
+  const [chatView, setChatView] = useState(false)
+
+  // The media→chat mask (see CHAT_WIPE_* above). Outside the GSAP context on
+  // purpose — the frame outlives this component's scope, and close/unmount
+  // always restores it via clearFrameProps (the cover lives inside the hero
+  // layer, which clearFrameProps removes).
+  const handleChatViewChange = useCallback((next: boolean) => {
+    setChatView(next)
     const frame = getPageFrame()
-    if (!frame || !openRef.current) return
-    gsap.to(frame, {
-      autoAlpha: chatView ? 0 : 1,
-      duration: CHAT_SWAP_FADE,
-      ease: 'power1.inOut',
+    if (!frame) return
+    const layer = frame.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
+    const existing = layer?.querySelector<HTMLElement>(CHAT_COVER_SELECTOR) ?? null
+
+    if (!next) {
+      // No cover means no swap ever ran this open (e.g. the mount-time
+      // effect) — nothing to restore.
+      if (!existing) return
+      // Restore the frame even mid-close: the undock reverse needs the page
+      // visible, and the still-full cover makes the switch invisible.
+      gsap.set(frame, { autoAlpha: 1 })
+      gsap.to(existing, {
+        clipPath: 'inset(0% 0% 100% 0%)',
+        duration: prefersReducedMotion() ? 0 : CHAT_UNWIPE_DURATION,
+        ease: CHAT_UNWIPE_EASE,
+        overwrite: 'auto',
+      })
+      return
+    }
+
+    if (!layer || !openRef.current) return
+    let cover = existing
+    if (!cover) {
+      cover = document.createElement('div')
+      cover.setAttribute('data-menu-chat-cover', '')
+      cover.setAttribute('aria-hidden', 'true')
+      gsap.set(cover, {
+        position: 'absolute',
+        inset: 0,
+        // Above any hover-preview items stacked in the layer.
+        zIndex: 10,
+        pointerEvents: 'none',
+        backgroundColor: 'var(--color-popover)',
+        clipPath: 'inset(0% 0% 100% 0%)',
+      })
+      layer.appendChild(cover)
+    }
+    gsap.to(cover, {
+      clipPath: 'inset(0% 0% 0% 0%)',
+      duration: prefersReducedMotion() ? 0 : CHAT_WIPE_DURATION,
+      ease: CHAT_WIPE_EASE,
       overwrite: 'auto',
+      onComplete: () => {
+        // Media fully covered — hand the window to the identical-colored
+        // panel beneath. Skipped if the menu closed mid-wipe.
+        if (openRef.current) gsap.set(frame, { autoAlpha: 0 })
+      },
     })
   }, [])
+
+  /**
+   * Mobile chat view: nav chrome yields the column to the transcript. Fades
+   * out first, then releases its layout space (`transition-discrete` flips
+   * `display` at the fade's end); the return path snaps back under the menu's
+   * own close fade, where it's invisible. Desktop keeps its three columns.
+   */
+  const chatHideable = (extra?: string) =>
+    cn(
+      'max-md:transition-[opacity,display] max-md:transition-discrete max-md:duration-200 max-md:ease-out',
+      chatView && 'max-md:hidden max-md:opacity-0 max-md:pointer-events-none',
+      extra,
+    )
 
   // Clicks on structural empty space (columns, the docked window over the
   // inert frame) dismiss the menu — interactive children never carry the marker.
@@ -723,7 +919,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         // Mobile: preview on top, primary nav scrolls, composer + CTA pinned.
         // Desktop: three columns — editorial lists, centered window, nav.
         // Rows pin the side columns to the preview slot; ask + CTA sit below.
-        className="absolute inset-0 flex flex-col gap-6 px-gutter pt-[calc(var(--header-bar-height)+0.75rem)] pb-6 md:grid md:grid-cols-[1fr_minmax(18rem,28rem)_1fr] md:grid-rows-[minmax(0,1fr)_auto_auto] md:gap-x-12 md:gap-y-6 md:pt-[calc(var(--header-height)+2.5rem)] md:pb-10"
+        className="absolute inset-0 flex flex-col gap-6 px-gutter pt-[calc(var(--header-bar-height)+0.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] md:grid md:grid-cols-[1fr_minmax(18rem,28rem)_1fr] md:grid-rows-[minmax(0,1fr)_auto_auto] md:gap-x-12 md:gap-y-6 md:pt-[calc(var(--header-height)+2.5rem)] md:pb-10"
       >
         {/* Left column — editorial lists (desktop only). */}
         <div
@@ -738,12 +934,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               </h3>
               <ul className="flex flex-col gap-4">
                 {expertise.map((item) => (
-                  <li
-                    key={item.href}
-                    data-menu-item
-                    onClickCapture={onClose}
-                    {...hoverHandlers(item.media)}
-                  >
+                  <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
                     <Link
                       href={item.href}
                       transitionTypes={[...lateralNavTransitionTypes]}
@@ -763,12 +954,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               </h3>
               <ul className="flex flex-col gap-2">
                 {audiences.map((item) => (
-                  <li
-                    key={item.href}
-                    data-menu-item
-                    onClickCapture={onClose}
-                    {...hoverHandlers(item.media)}
-                  >
+                  <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
                     <Link
                       href={item.href}
                       transitionTypes={[...lateralNavTransitionTypes]}
@@ -785,12 +971,16 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
         {/* Center column — slot + form are MenuAsk fragment children, so they
             sit on this grid (row 1 + 2). CTA is row 3. */}
-        <MenuAsk open={open} onViewChange={handleChatViewChange} />
+        <MenuAsk
+          open={open}
+          onViewChange={handleChatViewChange}
+          transport={askTransport}
+          initialMessages={askInitialMessages}
+        />
         <div
           data-menu-item
-          onClickCapture={onClose}
-          {...hoverHandlers(pageMedia['/contact'] ?? null)}
-          className="self-center justify-self-center md:col-start-2 md:row-start-3"
+          {...itemHandlers(pageMedia['/contact'] ?? null)}
+          className={chatHideable('self-center justify-self-center md:col-start-2 md:row-start-3')}
         >
           <Button asChild variant="default" size="pill">
             <Link
@@ -807,17 +997,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         <div
           data-menu-backdrop
           data-lenis-prevent
-          className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:flex-none md:justify-between"
+          className={chatHideable(
+            'flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:flex-none md:justify-between',
+          )}
         >
           {works.length > 0 && (
             <ul className="hidden flex-col gap-6 md:flex">
               {works.map((item) => (
-                <li
-                  key={item.href}
-                  data-menu-item
-                  onClickCapture={onClose}
-                  {...hoverHandlers(item.media)}
-                >
+                <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
                   <Link
                     href={item.href}
                     transitionTypes={[...lateralNavTransitionTypes]}
@@ -847,8 +1034,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                 <li
                   key={i}
                   data-menu-item
-                  onClickCapture={onClose}
-                  {...hoverHandlers(href ? (pageMedia[href] ?? null) : null)}
+                  {...itemHandlers(href ? (pageMedia[href] ?? null) : null)}
                 >
                   <CMSLink
                     {...link}
@@ -858,11 +1044,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                 </li>
               )
             })}
-            <li
-              data-menu-item
-              onClickCapture={onClose}
-              {...hoverHandlers(pageMedia['/search'] ?? null)}
-            >
+            <li data-menu-item {...itemHandlers(pageMedia['/search'] ?? null)}>
               <Link
                 href="/search"
                 transitionTypes={[...lateralNavTransitionTypes]}

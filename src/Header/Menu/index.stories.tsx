@@ -1,15 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { useRef, useState } from 'react'
 import type { Header as HeaderType } from '@/payload-types'
+import { createChat } from '@/shared/testing/shadcn-helpers/ai-sdk'
 import type { MenuContent } from '../getMenuContent'
 import { TakeoverMenu } from './index'
 
 /**
  * The full takeover: click MENU to watch the page dock into the preview
- * window while the columns cascade in; submit the Ask pill to swap the
- * window for the transcript. GSAP runs for real against the fake page frame
- * below — no Payload, no /api/ask (the composer will surface the request
- * error if submitted, which is fine for layout review).
+ * window while the columns cascade in; submit the Ask pill to watch the
+ * media→transcript swap (in-frame GSAP clip-path wipe + message
+ * entrances). GSAP runs for real against the fake page frame below — no
+ * Payload, and the chat runs on a scripted transport, so no /api/ask and no
+ * OpenAI usage.
  */
 const headerData: HeaderType = {
   id: 1,
@@ -90,6 +92,28 @@ const menuContent: MenuContent = {
   },
 }
 
+/**
+ * Multi-turn scripted answers so repeated submits keep exercising the swap,
+ * the Thinking shimmer, and the per-message entrances.
+ */
+const scriptedAsk = createChat()
+  .assistant(({ writer }) => {
+    writer
+      .sourceUrl({
+        sourceId: '/posts/beyond-the-logo',
+        title: 'Beyond the logo: brand systems that scale',
+        url: '/posts/beyond-the-logo',
+      })
+      .text(
+        'Suits & Sandals focuses on brand strategy, identity systems, and web design for growing companies — "Beyond the logo" walks through how the identity work scales past launch.',
+      )
+  })
+  .assistant(({ writer }) => {
+    writer.text(
+      'Close the menu and reopen it to watch the transcript hand the window back to the page preview — the exit is a faster sink than the enter.',
+    )
+  })
+
 function TakeoverMenuDemo() {
   const [open, setOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
@@ -100,6 +124,7 @@ function TakeoverMenuDemo() {
       <div data-page-frame className="relative min-h-svh bg-background text-foreground">
         {/* Marked like a real hero — the menu clones this into its dissolve layer. */}
         <div data-hero-media className="absolute inset-x-0 top-0 h-svh overflow-hidden">
+          {/* biome-ignore lint/performance/noImgElement: the menu clones the raw img/video inside data-hero-media (HERO_MEDIA_SELECTOR); a next/image wrapper isn't what production heros render in Storybook */}
           <img src={heroMediaSrc} alt="" className="size-full object-cover opacity-30" />
         </div>
         <div className="container relative flex min-h-svh flex-col justify-center gap-6 py-24">
@@ -137,6 +162,9 @@ function TakeoverMenuDemo() {
         open={open}
         onClose={() => setOpen(false)}
         menuButtonRef={menuButtonRef}
+        askTransport={scriptedAsk.transport({
+          fallback: 'End of the scripted demo — reload the story to start over.',
+        })}
       />
     </>
   )
