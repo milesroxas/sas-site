@@ -71,3 +71,39 @@ export const RingsOnly: Story = {
     </CustomCursorProvider>
   ),
 }
+
+export const CarouselDrag: Story = {
+  args: { children: null },
+  render: () => (
+    <CustomCursorProvider>
+      <div className="flex min-h-svh flex-col items-center justify-center gap-12 p-12">
+        <div
+          className="grid h-72 w-full max-w-3xl grid-cols-3 gap-4 overflow-hidden rounded-lg bg-neutral-950 p-4"
+          data-slot="carousel"
+        >
+          {['01', '02', '03'].map((slide) => (
+            <div
+              className="flex items-end rounded-md bg-neutral-800 p-4 font-mono text-sm text-white"
+              key={slide}
+            >
+              {slide}
+            </div>
+          ))}
+        </div>
+        <div
+          className="grid h-72 w-full max-w-3xl grid-cols-3 gap-4 overflow-hidden rounded-lg bg-neutral-100 p-4"
+          data-slot="carousel"
+        >
+          {['01', '02', '03'].map((slide) => (
+            <div
+              className="flex items-end rounded-md bg-white p-4 font-mono text-sm text-neutral-900 shadow-[inset_0_0_0_1px_rgb(0_0_0/10%)]"
+              key={slide}
+            >
+              {slide}
+            </div>
+          ))}
+        </div>
+      </div>
+    </CustomCursorProvider>
+  ),
+}

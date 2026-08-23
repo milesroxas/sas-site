@@ -1,8 +1,14 @@
 import { cleanup, render } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CustomCursorProvider } from './CustomCursorProvider'
-import { CURSOR_ACTIVE_ATTR, CURSOR_DEFAULTS, CURSOR_PROXIMITY_VAR, cursorTarget } from './index'
-import { resolveCursorVariant } from './variants'
+import {
+  CURSOR_ACTIVE_ATTR,
+  CURSOR_DEFAULTS,
+  CURSOR_NATIVE_HIDDEN_ATTR,
+  CURSOR_PROXIMITY_VAR,
+  cursorTarget,
+} from './index'
+import { resolveCursorTargetVariant, resolveCursorVariant } from './variants'
 
 /** jsdom has no matchMedia; report a fine pointer and no reduced-motion preference. */
 function stubMatchMedia(finePointer: boolean) {
@@ -67,8 +73,30 @@ describe('resolveCursorVariant', () => {
         proximityRadius: CURSOR_DEFAULTS.proximityRadius,
         proximityMaxOpacity: CURSOR_DEFAULTS.proximityMaxOpacity,
         hoverOuterScale: CURSOR_DEFAULTS.hoverOuterScale,
+        labelActivation: CURSOR_DEFAULTS.labelActivation,
+        labelPlacement: CURSOR_DEFAULTS.labelPlacement,
+        outerSize: CURSOR_DEFAULTS.outerSize,
+        showInnerRing: CURSOR_DEFAULTS.showInnerRing,
+        hideNativeCursor: CURSOR_DEFAULTS.hideNativeCursor,
       })
     }
+  })
+
+  it('owns the automatic carousel target and uppercase drag label', () => {
+    const carousel = document.createElement('div')
+    carousel.dataset.slot = 'carousel'
+
+    expect(resolveCursorTargetVariant(carousel)).toBe('drag')
+    expect(resolveCursorVariant('drag')).toMatchObject({
+      label: 'DRAG',
+      labelActivation: 'proximity',
+      labelPlacement: 'center',
+      outerSize: 96,
+      proximityMaxOpacity: 1,
+      showInnerRing: false,
+      hideNativeCursor: true,
+      selector: '[data-slot="carousel"]',
+    })
   })
 })
 
@@ -139,5 +167,26 @@ describe('CustomCursorProvider', () => {
     pointerMove(151, 150)
     expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
     expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+  })
+
+  it('automatically tracks carousels without cursor props at the call site', () => {
+    const view = render(
+      <CustomCursorProvider>
+        <div data-slot="carousel">carousel</div>
+      </CustomCursorProvider>,
+    )
+    const carousel = view.getByText('carousel')
+    vi.spyOn(carousel, 'getBoundingClientRect').mockReturnValue(TARGET_RECT)
+
+    pointerMove(150, 250)
+
+    expect(carousel.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('0.5')
+    expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(true)
+    expect(view.baseElement.querySelector('[aria-hidden]')?.getAttribute('data-cursor-variant')).toBe(
+      'drag',
+    )
+
+    pointerMove(150, 400)
+    expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(false)
   })
 })

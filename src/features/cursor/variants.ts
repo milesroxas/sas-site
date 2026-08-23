@@ -27,6 +27,26 @@ export type CursorVariantTuning = {
   hoverOuterScale: number
 }
 
+export type CursorLabelActivation = 'hover' | 'proximity'
+export type CursorLabelPlacement = 'below' | 'center'
+
+export type CursorVariantDefinition = CursorVariantTuning & {
+  /** Provider-owned fallback copy; a target data attribute can still override it. */
+  label?: string
+  /** Whether the label appears only over the target or while approaching it. */
+  labelActivation: CursorLabelActivation
+  /** Label position relative to the outer ring. */
+  labelPlacement: CursorLabelPlacement
+  /** Outer ring diameter for this presentation, in px. */
+  outerSize: number
+  /** Whether the small ring around the pointer remains visible. */
+  showInnerRing: boolean
+  /** Replace the system cursor while this presentation is active. */
+  hideNativeCursor: boolean
+  /** Existing semantic DOM marker that opts matching elements in automatically. */
+  selector?: string
+}
+
 export const CURSOR_DEFAULTS = {
   /** Outer ring diameter, px. */
   outerSize: 64,
@@ -48,6 +68,8 @@ export const CURSOR_DEFAULTS = {
   labelScrambleDuration: 0.35,
   /** Glyph churn rate for the label scramble (scramble-text `speed`). */
   labelScrambleSpeed: 1,
+  /** Label opacity while approaching a proximity-activated target (full opacity is hover). */
+  labelTeaseOpacity: 0.7,
   /** Seconds of pointer stillness before the proximity tease fades out. */
   idleDelay: 0.3,
   /** Outer-ring scale at zero proximity — the resting seed size. */
@@ -58,37 +80,81 @@ export const CURSOR_DEFAULTS = {
   outerGrowLag: 0.3,
   /** Seconds for the hover lock-on pop (net ring scale → `hoverOuterScale`). */
   hoverPopDuration: 0.35,
-  /** Overlay stacking level — above page chrome, below nothing interactive. */
-  zIndex: 200,
+  /** Overlay stacking level — always above page content (it remains pointer-events none). */
+  zIndex: 2147483647,
   proximityRadius: 100,
   proximityMaxOpacity: 0.3,
   hoverOuterScale: 1.15,
+  labelActivation: 'hover',
+  labelPlacement: 'below',
+  showInnerRing: true,
+  hideNativeCursor: false,
 } as const
 
 /** Delta-only variant overrides on top of `CURSOR_DEFAULTS`. */
 export const CURSOR_VARIANTS = {
   /** For elements worth drawing the eye to (e.g. the home hero card). */
   emphasize: {},
-} satisfies Record<string, Partial<CursorVariantTuning>>
+  /** Automatically discovered carousel affordance; no call-site cursor styling. */
+  drag: {
+    label: 'DRAG',
+    labelActivation: 'proximity',
+    labelPlacement: 'center',
+    outerSize: 96,
+    // Native cursor is replaced while approaching, so the custom cursor
+    // must stay fully opaque — the default tease (0.3) would vanish.
+    proximityMaxOpacity: 1,
+    showInnerRing: false,
+    hideNativeCursor: true,
+    selector: '[data-slot="carousel"]',
+  },
+} satisfies Record<string, Partial<CursorVariantDefinition>>
 
 export type CursorVariantName = keyof typeof CURSOR_VARIANTS
 
 export const CURSOR_ATTR = 'data-cursor'
 export const CURSOR_LABEL_ATTR = 'data-cursor-label'
+/** Applied to `<html>` while a variant replaces the system cursor. */
+export const CURSOR_NATIVE_HIDDEN_ATTR = 'data-cursor-native-hidden'
 /** CSS custom property the provider writes on targets; consume with `var(--cursor-proximity, 0)`. */
 export const CURSOR_PROXIMITY_VAR = '--cursor-proximity'
 /** Attribute present on a target while it is truly hovered. */
 export const CURSOR_ACTIVE_ATTR = 'data-cursor-active'
 
-export function resolveCursorVariant(name: string | undefined): CursorVariantTuning {
+export function resolveCursorVariant(name: string | undefined): CursorVariantDefinition {
   const overrides =
     name && name in CURSOR_VARIANTS ? CURSOR_VARIANTS[name as CursorVariantName] : undefined
   return {
     proximityRadius: CURSOR_DEFAULTS.proximityRadius,
     proximityMaxOpacity: CURSOR_DEFAULTS.proximityMaxOpacity,
     hoverOuterScale: CURSOR_DEFAULTS.hoverOuterScale,
+    labelActivation: CURSOR_DEFAULTS.labelActivation,
+    labelPlacement: CURSOR_DEFAULTS.labelPlacement,
+    outerSize: CURSOR_DEFAULTS.outerSize,
+    showInnerRing: CURSOR_DEFAULTS.showInnerRing,
+    hideNativeCursor: CURSOR_DEFAULTS.hideNativeCursor,
     ...overrides,
   }
+}
+
+const automaticTargets = Object.entries(CURSOR_VARIANTS).flatMap(([variant, definition]) =>
+  'selector' in definition && definition.selector
+    ? [{ selector: definition.selector, variant: variant as CursorVariantName }]
+    : [],
+)
+
+/** One live-query selector for explicit targets plus provider-owned automatic targets. */
+export const CURSOR_TARGET_SELECTOR = [
+  `[${CURSOR_ATTR}]`,
+  ...automaticTargets.map(({ selector }) => selector),
+].join(',')
+
+/** Explicit target variants win over automatic semantic matches. */
+export function resolveCursorTargetVariant(element: Element): string | undefined {
+  return (
+    element.getAttribute(CURSOR_ATTR) ??
+    automaticTargets.find(({ selector }) => element.matches(selector))?.variant
+  )
 }
 
 export type CursorTargetOptions = {

@@ -13,10 +13,12 @@ import {
 } from '@/shared/ui/scramble-text'
 import {
   CURSOR_ACTIVE_ATTR,
-  CURSOR_ATTR,
   CURSOR_DEFAULTS,
   CURSOR_LABEL_ATTR,
+  CURSOR_NATIVE_HIDDEN_ATTR,
   CURSOR_PROXIMITY_VAR,
+  CURSOR_TARGET_SELECTOR,
+  resolveCursorTargetVariant,
   resolveCursorVariant,
 } from './variants'
 
@@ -71,6 +73,7 @@ const {
   labelOffset,
   labelScrambleDuration,
   labelScrambleSpeed,
+  labelTeaseOpacity,
   outerGrowLag,
   outerLag,
   outerScaleMax,
@@ -117,10 +120,18 @@ const CursorOverlay: React.FC = () => {
       const yInner = gsap.quickTo(innerWrap, 'y', { duration: innerLag, ease: 'power3.out' })
       // Opacity lives on the ring leaves: an ancestor with opacity < 1 would
       // isolate the stacking context and break mix-blend-difference.
-      const fadeRings = gsap.quickTo([outerRing, innerRing], 'opacity', {
+      const fadeOuterRing = gsap.quickTo(outerRing, 'opacity', {
         duration: fadeIn,
         ease: 'power2.out',
       })
+      const fadeInnerRing = gsap.quickTo(innerRing, 'opacity', {
+        duration: fadeIn,
+        ease: 'power2.out',
+      })
+      const fadeRings = (opacity: number, showInnerRing = true) => {
+        fadeOuterRing(opacity)
+        fadeInnerRing(showInnerRing ? opacity : 0)
+      }
       // Two scale layers so continuous growth and the discrete hover pop never
       // fight over one property: the wrapper tracks proximity (quickTo), the
       // ring itself carries the eased lock-on pop (tween).
@@ -133,6 +144,44 @@ const CursorOverlay: React.FC = () => {
       let lastY = 0
       let hasPosition = false
       let activeEl: HTMLElement | null = null
+      let labelEl: HTMLElement | null = null
+      let labelText = ''
+      let labelSettled = false
+      let presentationKey = ''
+
+      const setPresentation = (
+        variantName: string | undefined,
+        variant: ReturnType<typeof resolveCursorVariant>,
+      ) => {
+        const key = `${variantName ?? ''}:${variant.outerSize}:${variant.labelPlacement}`
+        if (key === presentationKey) return
+        presentationKey = key
+        const root = rootRef.current
+        if (root) {
+          if (variantName) root.setAttribute('data-cursor-variant', variantName)
+          else root.removeAttribute('data-cursor-variant')
+        }
+        gsap.to(outerRing, {
+          width: variant.outerSize,
+          height: variant.outerSize,
+          marginLeft: -variant.outerSize / 2,
+          marginTop: -variant.outerSize / 2,
+          duration: fadeIn,
+          ease: 'power2.out',
+          overwrite: 'auto',
+        })
+        gsap.to(label, {
+          top: variant.labelPlacement === 'center' ? 0 : variant.outerSize / 2 + labelOffset,
+          yPercent: variant.labelPlacement === 'center' ? -50 : 0,
+          duration: fadeIn,
+          ease: 'power2.out',
+          overwrite: 'auto',
+        })
+      }
+
+      const setNativeCursorHidden = (hidden: boolean) => {
+        document.documentElement.toggleAttribute(CURSOR_NATIVE_HIDDEN_ATTR, hidden)
+      }
 
       // Targets style themselves off this var (see variants.ts contract);
       // the provider only publishes proximity, never target visuals.
@@ -175,8 +224,9 @@ const CursorOverlay: React.FC = () => {
       let teaseSuppressed = false
       let idleTimer = 0
 
-      // Label scrambles in with the shared scramble-text tween (SSOT for the
-      // glyph churn) while a concurrent tween fades it up.
+      // Label: proximity-activated targets churn glyphs at a reduced opacity
+      // until true hover, then the shared scramble-text tween settles the copy.
+      // Hover-activated labels scramble-in once at full opacity.
       const scrambleNotify: ScrambleTweenOptions['notify'] = { current: undefined }
       const scrambleOptions: ScrambleTweenOptions = {
         duration: labelScrambleDuration,
@@ -201,33 +251,48 @@ const CursorOverlay: React.FC = () => {
         })
       }
 
-      const showLabel = (text: string) => {
-        label.textContent = ''
-        labelScramble = createScrambleTween(label, '', text, scrambleOptions)
+      const killScramble = () => {
+        labelScramble?.kill()
+        labelScramble = null
+      }
+
+      const popInLabel = () => {
         gsap.set(label, { scale: 0.92 })
-        gsap.to(label, {
-          opacity: 1,
-          y: 0,
-          duration: labelScrambleDuration * 0.6,
-          ease: 'power2.out',
-          overwrite: 'auto',
-        })
         gsap.to(label, { scale: 1, duration: labelScrambleDuration, ease: 'power2.inOut' })
       }
 
-      const resetLabel = () => {
-        label.textContent = ''
-        gsap.set(label, { opacity: 0, y: 6, scale: 0.92 })
-      }
-
-      const hideLabel = () => {
+      const fadeLabel = (opacity: number, duration: number) => {
         gsap.to(label, {
-          opacity: 0,
-          y: 6,
-          duration: fadeOut,
+          opacity,
+          y: opacity === 0 ? 6 : 0,
+          duration,
           ease: 'power2.out',
           overwrite: 'auto',
         })
+      }
+
+      // Same refresh cadence as scramble-text (`75 / speed` ms); local because
+      // only this overlay needs an unresolved churn that never settles.
+      const startChurn = (length: number) => {
+        killScramble()
+        const pool = scrambleOptions.charPool
+        const refresh = 75 / Math.max(labelScrambleSpeed, 0.05) / 1000
+        const churn = () => {
+          let out = ''
+          for (let i = 0; i < length; i++) {
+            out += pool.charAt(Math.floor(Math.random() * pool.length))
+          }
+          label.textContent = out
+        }
+        churn()
+        labelScramble = gsap.to(
+          {},
+          { duration: refresh, repeat: -1, ease: 'none', onRepeat: churn },
+        )
+      }
+
+      const hideLabel = () => {
+        fadeLabel(0, fadeOut)
       }
 
       const setActive = (
@@ -236,16 +301,31 @@ const CursorOverlay: React.FC = () => {
       ) => {
         if (el === activeEl) return
         activeEl = el
-        labelScramble?.kill()
-        labelScramble = null
         popRing(el !== null, netHoverScale)
-        if (!el) {
+      }
+
+      const setLabelTarget = (el: HTMLElement | null, text: string, settled: boolean) => {
+        if (el === labelEl && text === labelText && settled === labelSettled) return
+        const appearing = !labelEl || !labelText
+        labelEl = el
+        labelText = text
+        labelSettled = settled
+        if (!el || !text) {
+          killScramble()
           hideLabel()
           return
         }
-        const text = el.getAttribute(CURSOR_LABEL_ATTR) ?? ''
-        if (text) showLabel(text)
-        else resetLabel()
+        if (settled) {
+          const from = appearing ? '' : (label.textContent ?? '')
+          killScramble()
+          labelScramble = createScrambleTween(label, from, text, scrambleOptions)
+          if (appearing) popInLabel()
+          fadeLabel(1, appearing ? labelScrambleDuration * 0.6 : fadeIn)
+          return
+        }
+        startChurn(text.length)
+        if (appearing) popInLabel()
+        fadeLabel(labelTeaseOpacity, fadeIn)
       }
 
       // Live query + rect reads per move, like the targets' own hover CSS
@@ -253,8 +333,9 @@ const CursorOverlay: React.FC = () => {
       const scanTargets = () => {
         let bestT = 0
         let bestEl: HTMLElement | null = null
+        let bestVariantName: string | undefined
         let bestVariant = resolveCursorVariant(undefined)
-        for (const el of document.querySelectorAll<HTMLElement>(`[${CURSOR_ATTR}]`)) {
+        for (const el of document.querySelectorAll<HTMLElement>(CURSOR_TARGET_SELECTOR)) {
           // Targets inside an inert subtree can't be interacted with — e.g. the
           // page frame docked behind the open takeover menu. They must neither
           // pull the rings nor keep a stale proximity var.
@@ -262,7 +343,8 @@ const CursorOverlay: React.FC = () => {
             writeProximity(el, 0)
             continue
           }
-          const variant = resolveCursorVariant(el.getAttribute(CURSOR_ATTR) ?? undefined)
+          const variantName = resolveCursorTargetVariant(el)
+          const variant = resolveCursorVariant(variantName)
           const rect = el.getBoundingClientRect()
           const dx = Math.max(rect.left - lastX, 0, lastX - rect.right)
           const dy = Math.max(rect.top - lastY, 0, lastY - rect.bottom)
@@ -271,10 +353,11 @@ const CursorOverlay: React.FC = () => {
           if (t > bestT) {
             bestT = t
             bestEl = el
+            bestVariantName = variantName
             bestVariant = variant
           }
         }
-        return { bestT, bestEl, bestVariant }
+        return { bestT, bestEl, bestVariantName, bestVariant }
       }
 
       const updateTease = (hovering: boolean, bestT: number) => {
@@ -285,14 +368,26 @@ const CursorOverlay: React.FC = () => {
 
       const update = () => {
         if (!hasPosition) return
-        const { bestT, bestEl, bestVariant } = scanTargets()
+        const { bestT, bestEl, bestVariantName, bestVariant } = scanTargets()
         const hovering = bestT >= 1
+        setPresentation(bestT > 0 ? bestVariantName : undefined, bestVariant)
         setActive(hovering ? bestEl : null, bestVariant.hoverOuterScale)
         setActiveTarget(hovering ? bestEl : null)
         updateTease(hovering, bestT)
+        const showApproachLabel =
+          bestEl && bestVariant.labelActivation === 'proximity' && !teaseSuppressed
+        const nextLabelEl = hovering || showApproachLabel ? bestEl : null
+        const nextLabel = nextLabelEl
+          ? (nextLabelEl.getAttribute(CURSOR_LABEL_ATTR) ?? bestVariant.label ?? '')
+          : ''
+        setLabelTarget(nextLabelEl, nextLabel, hovering)
+        setNativeCursorHidden(Boolean(nextLabelEl && bestVariant.hideNativeCursor))
         // Approach only teases the rings (0 → proximityMaxOpacity); the ease-out
         // jump to full opacity is reserved for actually being on the target.
-        fadeRings(hovering ? 1 : teaseSuppressed ? 0 : bestT * bestVariant.proximityMaxOpacity)
+        fadeRings(
+          hovering ? 1 : teaseSuppressed ? 0 : bestT * bestVariant.proximityMaxOpacity,
+          bestVariant.showInnerRing,
+        )
         // Ring size tracks proximity: seed at rest, grown at the target's edge.
         scaleOuter(outerScaleMin + (outerScaleMax - outerScaleMin) * bestT)
       }
@@ -315,6 +410,8 @@ const CursorOverlay: React.FC = () => {
           if (!activeEl) {
             teaseSuppressed = true
             fadeRings(0)
+            setLabelTarget(null, '', false)
+            setNativeCursorHidden(false)
           }
         }, idleDelay * 1000)
         update()
@@ -325,6 +422,8 @@ const CursorOverlay: React.FC = () => {
       const hide = () => {
         fadeRings(0)
         setActive(null)
+        setLabelTarget(null, '', false)
+        setNativeCursorHidden(false)
         setActiveTarget(null)
         clearProximity()
         lastBestT = 0
@@ -344,26 +443,43 @@ const CursorOverlay: React.FC = () => {
         window.removeEventListener('pointerout', onPointerOut)
         window.removeEventListener('blur', hide)
         window.clearTimeout(idleTimer)
+        setNativeCursorHidden(false)
         setActiveTarget(null)
         clearProximity()
+        killScramble()
       }
     },
     { scope: rootRef },
   )
 
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-0"
-      ref={rootRef}
-      style={{ zIndex: CURSOR_DEFAULTS.zIndex }}
-    >
-      <div className="absolute top-0 left-0 will-change-transform" ref={outerWrapRef}>
+    <div aria-hidden className="pointer-events-none" ref={rootRef}>
+      <style>{`
+        html[${CURSOR_NATIVE_HIDDEN_ATTR}], html[${CURSOR_NATIVE_HIDDEN_ATTR}] * { cursor: none !important; }
+        /* Drag is a viewfinder: one white hairline + tracked mono, inverted
+           through mix-blend-difference. No knockout — a black stroke is what
+           made the caption vanish on dark surfaces. */
+        [data-cursor-variant="drag"] [data-cursor-part="label"] {
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 0.22em;
+          padding-left: 0.22em;
+        }
+      `}</style>
+      {/* mix-blend lives on these wraps — not a full-viewport overlay — so
+          difference composites against the page rather than an isolated layer.
+          Opacity stays on the ring/label leaves so it cannot isolate blending. */}
+      <div
+        className="fixed top-0 left-0 mix-blend-difference will-change-transform"
+        ref={outerWrapRef}
+        style={{ zIndex: CURSOR_DEFAULTS.zIndex }}
+      >
         {/* Zero-size wrapper: its transform-origin is the pointer point, so
             proximity scaling grows the ring around the cursor. */}
         <div className="absolute top-0 left-0" ref={outerScaleRef}>
           <div
-            className="absolute rounded-full border-white opacity-0 mix-blend-difference"
+            className="absolute rounded-full border-white opacity-0"
+            data-cursor-part="outer"
             ref={outerRingRef}
             style={{
               width: outerSize,
@@ -375,14 +491,19 @@ const CursorOverlay: React.FC = () => {
           />
         </div>
         <span
-          className="absolute left-0 font-mono text-sm leading-none whitespace-nowrap text-white opacity-0 mix-blend-difference select-none"
+          className="absolute left-0 font-mono text-sm leading-none font-normal whitespace-nowrap text-white uppercase opacity-0 select-none"
+          data-cursor-part="label"
           ref={labelRef}
           style={{ top: outerSize / 2 + labelOffset }}
         />
       </div>
-      <div className="absolute top-0 left-0 will-change-transform" ref={innerWrapRef}>
+      <div
+        className="fixed top-0 left-0 mix-blend-difference will-change-transform"
+        ref={innerWrapRef}
+        style={{ zIndex: CURSOR_DEFAULTS.zIndex }}
+      >
         <div
-          className="absolute rounded-full border-white opacity-0 mix-blend-difference"
+          className="absolute rounded-full border-white opacity-0"
           ref={innerRingRef}
           style={{
             width: innerSize,
