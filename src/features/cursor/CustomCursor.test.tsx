@@ -174,8 +174,9 @@ describe('CustomCursorProvider', () => {
 
   it('ignores hidden targets still in layout (the closed takeover menu)', () => {
     const { target } = renderWithTarget()
-    // jsdom has no checkVisibility — model the closed overlay's visibility:hidden.
-    target.checkVisibility = () => false
+    // jsdom has no checkVisibility — model the closed overlay's visibility:hidden,
+    // which the API only reports when the visibilityProperty option is set.
+    target.checkVisibility = (options) => options?.visibilityProperty !== true
     pointerMove(150, 150)
     expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
     expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
@@ -185,10 +186,55 @@ describe('CustomCursorProvider', () => {
     const { target } = renderWithTarget()
     pointerMove(150, 150)
     expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
-    target.checkVisibility = () => false
+    target.checkVisibility = (options) => options?.visibilityProperty !== true
     pointerMove(151, 150)
     expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
     expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+  })
+
+  /** Detachable target outside React's tree — removing a React-rendered node
+   *  would break unmount. Callers remove it (or the test removes it itself). */
+  function appendPlainTarget() {
+    render(<CustomCursorProvider>page</CustomCursorProvider>)
+    const target = document.createElement('button')
+    for (const [attr, value] of Object.entries(cursorTarget({ variant: 'emphasize' }))) {
+      target.setAttribute(attr, value)
+    }
+    document.body.appendChild(target)
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(TARGET_RECT)
+    return target
+  }
+
+  it('releases a removed target while the pointer is stationary', () => {
+    vi.useFakeTimers()
+    try {
+      const target = appendPlainTarget()
+      pointerMove(150, 150)
+      expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
+      target.remove()
+      // No pointer movement — only the engaged-state revalidation interval runs.
+      vi.advanceTimersByTime(300)
+      expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+      expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('releases a target whose cursor attribute is removed under a still pointer', () => {
+    vi.useFakeTimers()
+    try {
+      const target = appendPlainTarget()
+      pointerMove(150, 150)
+      expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
+      target.removeAttribute('data-cursor')
+      vi.advanceTimersByTime(300)
+      expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+      expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+      target.remove()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('ignores a target covered by an overlay (dialog, scrim)', () => {
@@ -236,40 +282,5 @@ describe('CustomCursorProvider', () => {
 
     pointerMove(150, 400)
     expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(false)
-  })
-
-  it('prunes a detached target from hot set during stationary-pointer revalidation', async () => {
-    const { target } = renderWithTarget()
-    pointerMove(150, 150)
-    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
-    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(true)
-
-    // Remove the target from the DOM while the pointer stays stationary.
-    target.remove()
-
-    // Wait for revalidation interval to tick (REVALIDATE_MS = 250ms).
-    await new Promise((resolve) => setTimeout(resolve, 260))
-
-    // The detached element should have been pruned from the hot set and
-    // cleared, and revalidation should have stopped (no active engagement).
-    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
-    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
-  })
-
-  it('prunes a target with removed data-cursor attribute during revalidation', async () => {
-    const { target } = renderWithTarget()
-    pointerMove(150, 150)
-    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
-    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(true)
-
-    // Remove the data-cursor attribute while the pointer stays stationary.
-    target.removeAttribute('data-cursor')
-
-    // Wait for revalidation interval to tick.
-    await new Promise((resolve) => setTimeout(resolve, 260))
-
-    // The element should have been pruned and cleared.
-    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
-    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
   })
 })

@@ -8,10 +8,10 @@ import { TakeoverMenu } from './index'
 /**
  * The full takeover: click MENU to watch the page dock into the preview
  * window while the columns cascade in; submit the Ask pill to watch the
- * media→transcript swap (in-frame GSAP clip-path wipe using CHAT_WIPE_DURATION
- * and CHAT_WIPE_EASE + message entrances). GSAP runs for real against the fake
- * page frame below — no Payload, and the chat runs on a scripted transport, so
- * no /api/ask and no OpenAI usage.
+ * media→transcript swap (in-frame GSAP clip-path wipe + message
+ * entrances). GSAP runs for real against the fake page frame below — no
+ * Payload, and the chat runs on a scripted transport, so no /api/ask and no
+ * OpenAI usage.
  */
 const headerData: HeaderType = {
   id: 1,

@@ -367,9 +367,13 @@ const CursorOverlay: React.FC = () => {
 
       // Hidden targets keep their layout geometry: the closed takeover menu is
       // visibility:hidden yet laid out at its open-state positions, so rect
-      // math alone would ring its items from a blank page. Absent API (older
-      // engines, jsdom) → assume visible.
-      const isVisible = (el: HTMLElement) => el.checkVisibility?.() ?? true
+      // math alone would ring its items from a blank page. checkVisibility
+      // ignores the visibility property unless asked; absent the API (older
+      // engines, jsdom) → computed style.
+      const isVisible = (el: HTMLElement) =>
+        el.checkVisibility
+          ? el.checkVisibility({ visibilityProperty: true })
+          : getComputedStyle(el).visibility === 'visible'
 
       // A target only counts when the pointer would actually reach it: hit-test
       // the point of the target nearest the pointer. Under a dialog, scrim, or
@@ -396,11 +400,21 @@ const CursorOverlay: React.FC = () => {
       // Live query + rect reads per move, like the targets' own hover CSS
       // would cost: target counts stay small (a handful per page).
       const scanTargets = () => {
+        const targets = document.querySelectorAll<HTMLElement>(CURSOR_TARGET_SELECTOR)
+        // A removed target is never revisited by the loop below; a stale hot
+        // entry would pin the revalidation interval and retain the detached
+        // element until blur or unmount.
+        if (hot.size) {
+          const live = new Set<HTMLElement>(targets)
+          for (const el of [...hot]) {
+            if (!live.has(el)) writeProximity(el, 0)
+          }
+        }
         let bestT = 0
         let bestEl: HTMLElement | null = null
         let bestVariantName: string | undefined
         let bestVariant = resolveCursorVariant(undefined)
-        for (const el of document.querySelectorAll<HTMLElement>(CURSOR_TARGET_SELECTOR)) {
+        for (const el of targets) {
           // Targets inside an inert subtree (the page frame docked behind the
           // open takeover menu) or hidden ones can't be interacted with. They
           // must neither pull the rings nor keep a stale proximity var.
@@ -438,13 +452,6 @@ const CursorOverlay: React.FC = () => {
       // rings. While engaged, a low-frequency re-scan releases them.
       let revalidateTimer = 0
       const syncRevalidation = () => {
-        // Prune any entries in hot that no longer match the selector — detached
-        // or attribute-removed targets must not keep revalidation active.
-        for (const el of hot) {
-          if (!el.matches(CURSOR_TARGET_SELECTOR)) {
-            writeProximity(el, 0)
-          }
-        }
         const engaged = hot.size > 0 || activeEl !== null
         if (engaged && !revalidateTimer) {
           revalidateTimer = window.setInterval(() => update(), REVALIDATE_MS)
