@@ -438,6 +438,13 @@ const CursorOverlay: React.FC = () => {
       // rings. While engaged, a low-frequency re-scan releases them.
       let revalidateTimer = 0
       const syncRevalidation = () => {
+        // Prune any entries in hot that no longer match the selector — detached
+        // or attribute-removed targets must not keep revalidation active.
+        for (const el of hot) {
+          if (!el.matches(CURSOR_TARGET_SELECTOR)) {
+            writeProximity(el, 0)
+          }
+        }
         const engaged = hot.size > 0 || activeEl !== null
         if (engaged && !revalidateTimer) {
           revalidateTimer = window.setInterval(() => update(), REVALIDATE_MS)

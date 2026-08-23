@@ -237,4 +237,39 @@ describe('CustomCursorProvider', () => {
     pointerMove(150, 400)
     expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(false)
   })
+
+  it('prunes a detached target from hot set during stationary-pointer revalidation', async () => {
+    const { target } = renderWithTarget()
+    pointerMove(150, 150)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(true)
+
+    // Remove the target from the DOM while the pointer stays stationary.
+    target.remove()
+
+    // Wait for revalidation interval to tick (REVALIDATE_MS = 250ms).
+    await new Promise((resolve) => setTimeout(resolve, 260))
+
+    // The detached element should have been pruned from the hot set and
+    // cleared, and revalidation should have stopped (no active engagement).
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+  })
+
+  it('prunes a target with removed data-cursor attribute during revalidation', async () => {
+    const { target } = renderWithTarget()
+    pointerMove(150, 150)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(true)
+
+    // Remove the data-cursor attribute while the pointer stays stationary.
+    target.removeAttribute('data-cursor')
+
+    // Wait for revalidation interval to tick.
+    await new Promise((resolve) => setTimeout(resolve, 260))
+
+    // The element should have been pruned and cleared.
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+  })
 })
