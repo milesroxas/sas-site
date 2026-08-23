@@ -95,6 +95,9 @@ importers:
       '@shadcn/react':
         specifier: ^0.2.1
         version: 0.2.1(@types/react@19.2.17)(react@19.2.7)
+      '@sitebytom/payload-media-gallery':
+        specifier: ^1.2.0
+        version: 1.2.0(@payloadcms/ui@3.88.0(@types/react@19.2.17)(monaco-editor@0.55.1)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.77.4))(payload@3.88.0(bufferutil@4.1.0)(graphql@16.14.2)(typescript@6.0.3)(utf-8-validate@6.0.6))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.77.4))(payload@3.88.0(bufferutil@4.1.0)(graphql@16.14.2)(typescript@6.0.3)(utf-8-validate@6.0.6))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@tabler/icons-react':
         specifier: ^3.44.0
         version: 3.44.0(react@19.2.7)
@@ -3276,6 +3279,20 @@ packages:
   '@sindresorhus/merge-streams@4.0.0':
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
+
+  '@sitebytom/payload-media-gallery@1.2.0':
+    resolution: {integrity: sha512-J5bTPJJhgWu/oh8eF2HBthYZcEBX0v71HvSGw6Uhk8AM8tlNqCRno3nri30Y/lxUYGYWc3bBJi9RfRS7vtkomg==}
+    engines: {node: ^18.20.2 || >=20.9.0, pnpm: ^9 || ^10}
+    peerDependencies:
+      '@payloadcms/ui': ^3.73.0
+      next: ^15.0.0 || ^16.0.0
+      payload: ^3.73.0
+      react: ^18.0.0 || ^19.0.0
+
+  '@sitebytom/use-zoom-pan@1.0.5':
+    resolution: {integrity: sha512-CQTGVHAWWkWKR/eiEZEzmKcPqFQcHFkkJnulKBt2rxclxqaB+RVseENlPhWeN8bcyQXXNrsqIsYaiPtUoaCnBQ==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@smithy/core@3.29.6':
     resolution: {integrity: sha512-TO3w25cdGWBeYqKNDaqH3v4O3jjMPpKwf39YlG5X5xhqWfpOWJbi5gQi1lrllukuwohdhY0TPB8jBEv6UC50Vg==}
@@ -10458,6 +10475,23 @@ snapshots:
       react: 19.2.7
 
   '@sindresorhus/merge-streams@4.0.0': {}
+
+  '@sitebytom/payload-media-gallery@1.2.0(@payloadcms/ui@3.88.0(@types/react@19.2.17)(monaco-editor@0.55.1)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.77.4))(payload@3.88.0(bufferutil@4.1.0)(graphql@16.14.2)(typescript@6.0.3)(utf-8-validate@6.0.6))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.77.4))(payload@3.88.0(bufferutil@4.1.0)(graphql@16.14.2)(typescript@6.0.3)(utf-8-validate@6.0.6))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+    dependencies:
+      '@dnd-kit/core': 6.3.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@dnd-kit/sortable': 10.0.0(@dnd-kit/core@6.3.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)
+      '@dnd-kit/utilities': 3.2.2(react@19.2.7)
+      '@payloadcms/ui': 3.88.0(@types/react@19.2.17)(monaco-editor@0.55.1)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.77.4))(payload@3.88.0(bufferutil@4.1.0)(graphql@16.14.2)(typescript@6.0.3)(utf-8-validate@6.0.6))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3)
+      '@sitebytom/use-zoom-pan': 1.0.5(react@19.2.7)
+      next: 16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.77.4)
+      payload: 3.88.0(bufferutil@4.1.0)(graphql@16.14.2)(typescript@6.0.3)(utf-8-validate@6.0.6)
+      react: 19.2.7
+    transitivePeerDependencies:
+      - react-dom
+
+  '@sitebytom/use-zoom-pan@1.0.5(react@19.2.7)':
+    dependencies:
+      react: 19.2.7
 
   '@smithy/core@3.29.6':
     dependencies:
