@@ -41,7 +41,9 @@ export const generateMeta = async (args: {
 }): Promise<Metadata> => {
   const { doc, pathname } = args
 
-  const ogImage = getImageURL(doc?.meta?.image)
+  // OG fields override the base SEO fields when set; each falls back independently.
+  const og = doc?.meta?.og
+  const ogImage = getImageURL(og?.image || doc?.meta?.image)
 
   const title = doc?.meta?.title ? `${doc?.meta?.title} | Suits & Sandals` : 'Suits & Sandals'
 
@@ -49,7 +51,7 @@ export const generateMeta = async (args: {
     description: doc?.meta?.description,
     ...(pathname ? { alternates: { canonical: pathname } } : {}),
     openGraph: mergeOpenGraph({
-      description: doc?.meta?.description || '',
+      description: og?.description || doc?.meta?.description || '',
       images: ogImage
         ? [
             {
@@ -57,7 +59,7 @@ export const generateMeta = async (args: {
             },
           ]
         : undefined,
-      title,
+      title: og?.title || title,
       url: pathname ?? '/',
     }),
     title,

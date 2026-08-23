@@ -1,10 +1,3 @@
-import {
-  MetaDescriptionField,
-  MetaImageField,
-  MetaTitleField,
-  OverviewField,
-  PreviewField,
-} from '@payloadcms/plugin-seo/fields'
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
@@ -12,6 +5,7 @@ import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { labBlocks } from '@/blocks/lab/config'
 import { overridesVisible, showOverridesField } from '@/fields/overrides'
+import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { revalidateLabPage, revalidateLabPageDelete } from './hooks/revalidateLabPage'
@@ -197,21 +191,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
         {
           name: 'meta',
           label: 'SEO',
-          fields: [
-            OverviewField({
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-              imagePath: 'meta.image',
-            }),
-            MetaTitleField({ hasGenerateFn: true }),
-            MetaImageField({ relationTo: 'media' }),
-            MetaDescriptionField({}),
-            PreviewField({
-              hasGenerateFn: true,
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-            }),
-          ],
+          fields: seoMetaTabFields,
         },
       ],
     },
