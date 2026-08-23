@@ -19,8 +19,19 @@ set_env NEXT_PUBLIC_SERVER_URL "http://localhost:$PORT"
 # 2. Dependencies — pnpm store is shared machine-wide, so this is mostly linking.
 pnpm install
 
-# 3. Database — shared container, isolated per-workspace DB cloned from dev content.
+# 3. Database — shared container, isolated per-workspace DB seeded from
+#    production content (fallback: clone of the main dev DB).
 ensure_postgres
 ensure_workspace_db
 
-echo "conductor: setup complete — dev server will run at http://localhost:$PORT"
+# 4. When the DB holds production content, encrypted fields (API keys etc.)
+#    only decrypt with production's PAYLOAD_SECRET — mirror the dev TUI.
+if [ "${WORKSPACE_DB_SOURCE:-}" = "production" ]; then
+  prod_secret="$(read_env_key "$PROD_ENV_FILE" PAYLOAD_SECRET || true)"
+  if [ -n "$prod_secret" ]; then
+    set_env PAYLOAD_SECRET "$prod_secret"
+    echo "conductor: PAYLOAD_SECRET set from production env (encrypted fields decrypt)"
+  fi
+fi
+
+echo "conductor: setup complete (db source: ${WORKSPACE_DB_SOURCE:-unknown}) — dev server will run at http://localhost:$PORT"
