@@ -107,6 +107,8 @@ describe('CustomCursorProvider', () => {
     cleanup()
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
+    // jsdom implements neither; tests assign them directly, so remove between runs.
+    delete (document as Partial<Document>).elementFromPoint
   })
 
   it('renders no overlay for coarse pointers', () => {
@@ -170,6 +172,51 @@ describe('CustomCursorProvider', () => {
     expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
   })
 
+  it('ignores hidden targets still in layout (the closed takeover menu)', () => {
+    const { target } = renderWithTarget()
+    // jsdom has no checkVisibility — model the closed overlay's visibility:hidden.
+    target.checkVisibility = () => false
+    pointerMove(150, 150)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+  })
+
+  it('drops a hot target once it turns hidden', () => {
+    const { target } = renderWithTarget()
+    pointerMove(150, 150)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
+    target.checkVisibility = () => false
+    pointerMove(151, 150)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+  })
+
+  it('ignores a target covered by an overlay (dialog, scrim)', () => {
+    const { target } = renderWithTarget()
+    const scrim = document.createElement('div')
+    document.body.appendChild(scrim)
+    document.elementFromPoint = () => scrim
+    pointerMove(150, 150)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+    scrim.remove()
+  })
+
+  it('keeps the approach tease when an overlap covers only the nearest edge', () => {
+    const { target } = renderWithTarget()
+    const badge = document.createElement('div')
+    document.body.appendChild(badge)
+    // Nearest edge point hits the overlapping badge; the center is the target.
+    document.elementFromPoint = vi
+      .fn<Document['elementFromPoint']>()
+      .mockReturnValueOnce(badge)
+      .mockReturnValueOnce(target)
+    // 50px below the rect's bottom edge with a 100px radius -> t = 0.5.
+    pointerMove(150, 250)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('0.5')
+    badge.remove()
+  })
+
   it('automatically tracks carousels without cursor props at the call site', () => {
     const view = render(
       <CustomCursorProvider>
@@ -183,9 +230,9 @@ describe('CustomCursorProvider', () => {
 
     expect(carousel.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('0.5')
     expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(true)
-    expect(view.baseElement.querySelector('[aria-hidden]')?.getAttribute('data-cursor-variant')).toBe(
-      'drag',
-    )
+    expect(
+      view.baseElement.querySelector('[aria-hidden]')?.getAttribute('data-cursor-variant'),
+    ).toBe('drag')
 
     pointerMove(150, 400)
     expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(false)

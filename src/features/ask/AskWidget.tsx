@@ -1,9 +1,8 @@
 'use client'
 
-import { useChat } from '@ai-sdk/react'
 import { IconArrowUp } from '@tabler/icons-react'
-import { type ChatTransport, DefaultChatTransport, type UIMessage } from 'ai'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ChatTransport, UIMessage } from 'ai'
+import { useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   InputGroup,
@@ -15,14 +14,12 @@ import {
   MessageScroller,
   MessageScrollerButton,
   MessageScrollerContent,
-  MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller'
 import { Spinner } from '@/components/ui/spinner'
-import { AskMessage, errorText } from './messages'
-
-const MIN_QUESTION_LENGTH = 3
+import { errorText, TranscriptItems } from './messages'
+import { useAskChat } from './useAskChat'
 
 type AskWidgetProps = {
   /**
@@ -35,17 +32,10 @@ type AskWidgetProps = {
 }
 
 export function AskWidget({ transport, initialMessages }: AskWidgetProps) {
-  const [question, setQuestion] = useState('')
-  const chatTransport = useMemo(
-    () => transport ?? new DefaultChatTransport<UIMessage>({ api: '/api/ask' }),
-    [transport],
-  )
-  const { messages, sendMessage, status, error } = useChat({
-    transport: chatTransport,
-    messages: initialMessages,
+  const { question, setQuestion, messages, status, error, busy, canSend, submit } = useAskChat({
+    transport,
+    initialMessages,
   })
-
-  const busy = status === 'submitted' || status === 'streaming'
   const hasTranscript = messages.length > 0
 
   // The transcript card mounts above the composer and can push it below the
@@ -54,14 +44,6 @@ export function AskWidget({ transport, initialMessages }: AskWidgetProps) {
   useEffect(() => {
     if (hasTranscript) formRef.current?.scrollIntoView({ block: 'nearest' })
   }, [hasTranscript])
-
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const trimmed = question.trim()
-    if (trimmed.length < MIN_QUESTION_LENGTH || busy) return
-    void sendMessage({ text: trimmed })
-    setQuestion('')
-  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -72,20 +54,7 @@ export function AskWidget({ transport, initialMessages }: AskWidgetProps) {
               <MessageScroller>
                 <MessageScrollerViewport>
                   <MessageScrollerContent className="p-(--card-spacing)">
-                    {messages.map((message) => (
-                      <MessageScrollerItem
-                        key={message.id}
-                        messageId={message.id}
-                        scrollAnchor={message.role === 'user'}
-                      >
-                        <AskMessage message={message} />
-                      </MessageScrollerItem>
-                    ))}
-                    {status === 'submitted' && (
-                      <MessageScrollerItem messageId="pending">
-                        <p className="shimmer text-muted-foreground text-xs/relaxed">Thinking…</p>
-                      </MessageScrollerItem>
-                    )}
+                    <TranscriptItems messages={messages} pending={status === 'submitted'} />
                   </MessageScrollerContent>
                 </MessageScrollerViewport>
                 <MessageScrollerButton />
@@ -119,7 +88,7 @@ export function AskWidget({ transport, initialMessages }: AskWidgetProps) {
               variant="default"
               size="icon-sm"
               className="ml-auto"
-              disabled={busy || question.trim().length < MIN_QUESTION_LENGTH}
+              disabled={!canSend}
             >
               {busy ? <Spinner /> : <IconArrowUp />}
               <span className="sr-only">Ask</span>
