@@ -55,7 +55,7 @@ export const FullMedia = ({
           </div>
           <div data-reveal>
             <RichText
-              className="text-base/6 lg:text-lg/7 [&_p+p]:mt-6"
+              className="text-base/6 lg:text-lg/7"
               data={content}
               enableGutter={false}
               enableProse={false}

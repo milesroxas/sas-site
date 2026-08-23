@@ -363,7 +363,7 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
         )}
         <blockquote data-reveal>
           <RichText
-            className="text-heading-2 leading-snug"
+            className="text-heading-2 leading-snug [&_p+p]:mt-4"
             data={testimonial.quote}
             enableGutter={false}
             enableProse={false}

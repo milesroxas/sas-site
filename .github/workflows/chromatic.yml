@@ -1,11 +1,16 @@
 # Chromatic — publish Storybook and run visual regression tests.
 #
-# Runs on every push so Chromatic's baseline chain stays unbroken (a GitHub
-# `paths:` filter would skip commits and orphan baselines — see
-# https://www.chromatic.com/docs/turbosnap/). Cost control comes from
-# TurboSnap (--only-changed): Chromatic traces the Vite dependency graph and
-# only snapshots stories affected by the commit's diff, so pushes that don't
-# touch story-affecting files complete with zero snapshots.
+# Runs automatically only on pushes to main, keeping the baseline chain on the
+# default branch unbroken. Feature branches run on demand via
+# workflow_dispatch (Actions tab → Chromatic → Run workflow → pick branch, or
+# `gh workflow run chromatic.yml --ref <branch>`) — this avoids burning the
+# snapshot quota on every branch push; when the quota is exhausted, runs sit
+# pending on PRs. A manual branch run still TurboSnaps against the merge-base
+# build on main; skipped branch commits just mean a larger diff in that one
+# run, not orphaned baselines.
+#
+# Cost control comes from TurboSnap (--only-changed): Chromatic traces the
+# Vite dependency graph and only snapshots stories affected by the diff.
 #
 # Required repo secret (Settings → Secrets and variables → Actions):
 #   CHROMATIC_PROJECT_TOKEN   from Chromatic → Project → Manage → Configure
@@ -14,6 +19,7 @@ name: Chromatic
 
 on:
   push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
