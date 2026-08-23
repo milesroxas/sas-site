@@ -722,13 +722,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         data-menu-backdrop
         // Mobile: preview on top, primary nav scrolls, composer + CTA pinned.
         // Desktop: three columns — editorial lists, centered window, nav.
-        className="absolute inset-0 flex flex-col gap-6 px-gutter pt-[calc(var(--header-bar-height)+0.75rem)] pb-6 md:grid md:grid-cols-[1fr_minmax(18rem,28rem)_1fr] md:gap-x-12 md:pt-[calc(var(--header-height)+2.5rem)] md:pb-10"
+        // Rows pin the side columns to the preview slot; ask + CTA sit below.
+        className="absolute inset-0 flex flex-col gap-6 px-gutter pt-[calc(var(--header-bar-height)+0.75rem)] pb-6 md:grid md:grid-cols-[1fr_minmax(18rem,28rem)_1fr] md:grid-rows-[minmax(0,1fr)_auto_auto] md:gap-x-12 md:gap-y-6 md:pt-[calc(var(--header-height)+2.5rem)] md:pb-10"
       >
         {/* Left column — editorial lists (desktop only). */}
         <div
           data-menu-backdrop
           data-lenis-prevent
-          className="hidden min-h-0 flex-col gap-12 overflow-y-auto overscroll-contain md:flex"
+          className="hidden min-h-0 flex-col gap-12 overflow-y-auto overscroll-contain md:col-start-1 md:row-start-1 md:flex"
         >
           {expertise.length > 0 && (
             <section className="flex max-w-xs flex-col gap-6">
@@ -782,34 +783,31 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           )}
         </div>
 
-        {/* Center column — docked page window, Ask pill, contact CTA. */}
+        {/* Center column — slot + form are MenuAsk fragment children, so they
+            sit on this grid (row 1 + 2). CTA is row 3. */}
+        <MenuAsk open={open} onViewChange={handleChatViewChange} />
         <div
-          data-menu-backdrop
-          className="flex shrink-0 flex-col items-center gap-6 md:min-h-0 md:shrink"
+          data-menu-item
+          onClickCapture={onClose}
+          {...hoverHandlers(pageMedia['/contact'] ?? null)}
+          className="self-center justify-self-center md:col-start-2 md:row-start-3"
         >
-          <MenuAsk open={open} onViewChange={handleChatViewChange} />
-          <div
-            data-menu-item
-            onClickCapture={onClose}
-            {...hoverHandlers(pageMedia['/contact'] ?? null)}
-          >
-            <Button asChild variant="default" size="pill">
-              <Link
-                href="/contact"
-                transitionTypes={[...lateralNavTransitionTypes]}
-                {...cursorTarget()}
-              >
-                <span>Get in touch</span>
-              </Link>
-            </Button>
-          </div>
+          <Button asChild variant="default" size="pill">
+            <Link
+              href="/contact"
+              transitionTypes={[...lateralNavTransitionTypes]}
+              {...cursorTarget()}
+            >
+              <span>Get in touch</span>
+            </Link>
+          </Button>
         </div>
 
         {/* Right column — recent work (desktop) + primary nav. */}
         <div
           data-menu-backdrop
           data-lenis-prevent
-          className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:flex-none md:justify-between md:overflow-visible"
+          className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:flex-none md:justify-between"
         >
           {works.length > 0 && (
             <ul className="hidden flex-col gap-6 md:flex">

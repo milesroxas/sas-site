@@ -2322,11 +2322,11 @@ export interface IndustryWorkBlock {
      */
     industry: number | Industry;
     /**
-     * First line: continues the headline inline after the dropdown for this industry.
+     * Continues the headline inline after the dropdown for this industry.
      */
     subheading: string;
     /**
-     * Second line: renders below the first. Leave empty for a one-line headline.
+     * Continues the headline in the same wrapping sentence. Leave empty to stop after the first continuation.
      */
     secondLine?: string | null;
     /**

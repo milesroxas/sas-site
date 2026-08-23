@@ -84,7 +84,7 @@ export function MenuAsk({ open, onViewChange, transport, initialMessages }: Menu
           menu's GSAP timeline); the transcript replaces it in place. */}
       <div
         data-menu-preview-slot
-        className="pointer-events-none relative aspect-video w-full md:aspect-auto md:min-h-0 md:flex-1"
+        className="pointer-events-none relative aspect-video w-full md:col-start-2 md:row-start-1 md:aspect-auto md:h-full md:min-h-0"
       >
         {chatView && (
           <ViewTransition enter="menu-chat" exit="menu-chat" default="none">
@@ -126,7 +126,11 @@ export function MenuAsk({ open, onViewChange, transport, initialMessages }: Menu
         )}
       </div>
 
-      <form data-menu-item onSubmit={submit}>
+      <form
+        data-menu-item
+        className="self-center justify-self-center md:col-start-2 md:row-start-2"
+        onSubmit={submit}
+      >
         <InputGroup variant="pill">
           <InputGroupInput
             value={question}
