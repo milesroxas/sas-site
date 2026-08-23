@@ -62,6 +62,7 @@
     "@react-three/fiber": "^9.6.1",
     "@sentry/nextjs": "catalog:",
     "@shadcn/react": "^0.2.1",
+    "@sitebytom/payload-media-gallery": "^1.2.0",
     "@tabler/icons-react": "^3.44.0",
     "@vercel/speed-insights": "^2.0.0",
     "ai": "^7.0.22",

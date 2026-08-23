@@ -7,6 +7,7 @@ import { seoPlugin } from '@payloadcms/plugin-seo'
 import type { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import * as Sentry from '@sentry/nextjs'
+import { mediaGalleryPlugin } from '@sitebytom/payload-media-gallery'
 import type { Plugin } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
@@ -129,6 +130,14 @@ export const plugins: Plugin[] = [
         return [...defaultFields, ...searchFields]
       },
     },
+  }),
+  // Gallery views (justified/grid/list), lightbox, and quick-edit drawer for
+  // the admin media list. Admin-UI only; works in "All Media" (not Folders).
+  mediaGalleryPlugin({
+    collections: { media: true },
+    defaultView: 'justified',
+    lightbox: true,
+    edit: true,
   }),
   aeoPlugin(),
   askIndexPlugin(),

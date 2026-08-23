@@ -47,6 +47,22 @@
   }
 }
 
+/* Media gallery lightbox (@sitebytom/payload-media-gallery) ships z-index 25,
+   below Payload's modal container, so opened from inside a list drawer (an
+   upload field's "Choose from existing") it renders behind the drawer and the
+   expand button appears dead. Raise it above the modal container. Drawers all
+   live inside that container (one stacking context), so no drawer z-index can
+   beat a body-level lightbox — instead, hide the lightbox while its quick-edit
+   doc drawer is open; it stays mounted and reappears when the drawer closes. */
+
+body .media-gallery-lightbox {
+  z-index: 200;
+}
+
+body:has(.drawer.doc-drawer.drawer--is-open) .media-gallery-lightbox {
+  visibility: hidden;
+}
+
 .mcp-capability-section {
   .collapsible__header-wrap {
     font-weight: 600;

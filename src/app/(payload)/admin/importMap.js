@@ -23,6 +23,7 @@ import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { MediaFilenameCell as MediaFilenameCell_e30d35f4a7f8b6958ff3d3dfd7138119 } from '@/components/MediaFilenameCell'
 import { MediaUpload as MediaUpload_723dfad18d90b991b29baca9a3998dd1 } from '@/components/MediaUpload'
+import { MediaGallery as MediaGallery_6f514b404e7f1589cac282e4c156f993 } from '@sitebytom/payload-media-gallery/client'
 import { OrderedListFeatureClient as OrderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { UnorderedListFeatureClient as UnorderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { SendPanel as SendPanel_31190afebae247357b767d1f03bd15c8 } from '@/collections/Newsletters/components/SendPanel'
@@ -67,6 +68,7 @@ export const importMap = {
   "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@/components/MediaFilenameCell#MediaFilenameCell": MediaFilenameCell_e30d35f4a7f8b6958ff3d3dfd7138119,
   "@/components/MediaUpload#MediaUpload": MediaUpload_723dfad18d90b991b29baca9a3998dd1,
+  "@sitebytom/payload-media-gallery/client#MediaGallery": MediaGallery_6f514b404e7f1589cac282e4c156f993,
   "@payloadcms/richtext-lexical/client#OrderedListFeatureClient": OrderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#UnorderedListFeatureClient": UnorderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/collections/Newsletters/components/SendPanel#SendPanel": SendPanel_31190afebae247357b767d1f03bd15c8,
