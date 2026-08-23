@@ -15,7 +15,7 @@ type Props = {
 export const LabPageCard: React.FC<Props> = ({ page, titleAs: TitleTag = 'h2' }) => {
   const project = typeof page.labProject === 'object' ? page.labProject : null
   return (
-    <a className="group" href={`/lab/${page.slug}`}>
+    <a className="group pressable pressable-subtle block" href={`/lab/${page.slug}`}>
       {page.coverAsset && typeof page.coverAsset === 'object' && (
         <Media resource={page.coverAsset} imgClassName="h-auto w-full" />
       )}

@@ -772,7 +772,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                     <Link
                       href={item.href}
                       transitionTypes={[...lateralNavTransitionTypes]}
-                      className="block rounded-md bg-secondary p-3 text-sm text-secondary-foreground transition-colors hover:text-primary"
+                      className="pressable block rounded-md bg-secondary p-3 text-sm text-secondary-foreground hover:text-primary"
                     >
                       {item.title}
                     </Link>

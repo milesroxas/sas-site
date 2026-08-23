@@ -71,7 +71,10 @@ export const Card: React.FC<{
     )
 
     return (
-      <div className={cn('group flex cursor-pointer gap-3', className)} ref={card.ref}>
+      <div
+        className={cn('group pressable pressable-subtle flex cursor-pointer gap-3', className)}
+        ref={card.ref}
+      >
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-4">
           <div className="flex flex-col gap-2">
             {titleToUse && (
@@ -131,7 +134,11 @@ export const Card: React.FC<{
 
   return (
     <CardUi
-      className={cn('cursor-pointer pt-0', variantClassNames[variant], className)}
+      className={cn(
+        'pressable pressable-subtle cursor-pointer pt-0',
+        variantClassNames[variant],
+        className,
+      )}
       ref={card.ref}
     >
       <div className={cn('relative w-full', isOverlay && 'absolute inset-0')}>

@@ -75,6 +75,7 @@ describe('resolveCursorVariant', () => {
         hoverOuterScale: CURSOR_DEFAULTS.hoverOuterScale,
         labelActivation: CURSOR_DEFAULTS.labelActivation,
         labelPlacement: CURSOR_DEFAULTS.labelPlacement,
+        labelOffset: CURSOR_DEFAULTS.labelOffset,
         outerSize: CURSOR_DEFAULTS.outerSize,
         showInnerRing: CURSOR_DEFAULTS.showInnerRing,
         hideNativeCursor: CURSOR_DEFAULTS.hideNativeCursor,

@@ -74,7 +74,7 @@ describe('ThemeToggle', () => {
     render(<ThemeToggle className="text-secondary-foreground" />)
 
     const button = screen.getByRole('button')
-    expect(button.className).toContain('transition-opacity')
+    expect(button.className).toContain('pressable')
     expect(button.className).toContain('text-secondary-foreground')
   })
 

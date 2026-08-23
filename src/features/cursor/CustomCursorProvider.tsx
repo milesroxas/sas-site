@@ -3,7 +3,8 @@
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import type React from 'react'
-import { useRef, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { createPortal } from 'react-dom'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import {
   CHAR_PRESETS,
@@ -41,6 +42,26 @@ function useFinePointer(): boolean {
   )
 }
 
+// Environments like Storybook docs mount one provider per story on a single
+// page. Overlays must not stack: each tracks the same pointer, and layered
+// mix-blend-difference rings visually cancel. The first enabled provider owns
+// the single overlay; the rest render children only.
+let overlayClaims = 0
+
+function useOwnsOverlay(enabled: boolean): boolean {
+  const [owns, setOwns] = useState(false)
+  useEffect(() => {
+    if (!enabled) return
+    overlayClaims += 1
+    setOwns(overlayClaims === 1)
+    return () => {
+      overlayClaims -= 1
+      setOwns(false)
+    }
+  }, [enabled])
+  return owns
+}
+
 /**
  * Proximity-driven custom cursor: a lagging thin outer ring, a tighter inner
  * ring, and a mono label revealed on true hover. Targets opt in by spreading
@@ -53,12 +74,12 @@ function useFinePointer(): boolean {
 export const CustomCursorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const finePointer = useFinePointer()
   const prefersReducedMotion = usePrefersReducedMotion()
-  const enabled = finePointer && !prefersReducedMotion
+  const ownsOverlay = useOwnsOverlay(finePointer && !prefersReducedMotion)
 
   return (
     <>
       {children}
-      {enabled && <CursorOverlay />}
+      {ownsOverlay && <CursorOverlay />}
     </>
   )
 }
@@ -171,7 +192,7 @@ const CursorOverlay: React.FC = () => {
           overwrite: 'auto',
         })
         gsap.to(label, {
-          top: variant.labelPlacement === 'center' ? 0 : variant.outerSize / 2 + labelOffset,
+          top: variant.labelPlacement === 'center' ? 0 : variant.outerSize / 2 + variant.labelOffset,
           yPercent: variant.labelPlacement === 'center' ? -50 : 0,
           duration: fadeIn,
           ease: 'power2.out',
@@ -452,7 +473,11 @@ const CursorOverlay: React.FC = () => {
     { scope: rootRef },
   )
 
-  return (
+  // Portal to <body>: `position: fixed` resolves against the nearest
+  // transformed ancestor, so rendering inline inside a transformed container
+  // (Storybook docs zoom wrapper, any future transformed layout) would pin the
+  // rings to that box instead of the viewport the pointer coords live in.
+  return createPortal(
     <div aria-hidden className="pointer-events-none" ref={rootRef}>
       <style>{`
         html[${CURSOR_NATIVE_HIDDEN_ATTR}], html[${CURSOR_NATIVE_HIDDEN_ATTR}] * { cursor: none !important; }
@@ -514,6 +539,7 @@ const CursorOverlay: React.FC = () => {
           }}
         />
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

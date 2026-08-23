@@ -43,7 +43,11 @@ export default async function InsightsPage() {
           {topics.docs
             .filter((topic) => topic.slug)
             .map((topic) => (
-              <a className="group" href={`/insights/${topic.slug}`} key={topic.id}>
+              <a
+                className="group pressable pressable-subtle block"
+                href={`/insights/${topic.slug}`}
+                key={topic.id}
+              >
                 <h2 className="text-heading-3 group-hover:underline">{topic.title}</h2>
                 {topic.description && <p className="mt-2 opacity-75">{topic.description}</p>}
               </a>

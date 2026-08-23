@@ -97,6 +97,50 @@
   will-change: filter, opacity, transform;
 }
 
+/* Press micro-interaction — single source of truth for the tuning (Apple-style:
+   quick ease-out press-down, slower spring-back release with slight overshoot).
+   Consumed by the `pressable` utility below and by bespoke wirings that must
+   merge these timings into their own transition lists (see Home FeaturedCard). */
+:root {
+  --press-scale: 0.97;
+  /* Gentler compress for large surfaces (full-width rows, media tiles) where
+     0.97 would translate edges by tens of pixels. Applied via `pressable-subtle`. */
+  --press-scale-subtle: 0.985;
+  --press-duration: 150ms;
+  --press-ease: cubic-bezier(0, 0, 0.2, 1);
+  --press-release-duration: 350ms;
+  --press-release-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Press/release interaction for interactive surfaces (buttons, card links).
+   Owns the element's `transition` — don't stack `transition-*` utilities on a
+   pressable element; colors/opacity ride the same list. The aria-haspopup
+   guard keeps open dropdown/select triggers from sitting compressed. */
+@utility pressable {
+  transition:
+    color var(--press-duration) var(--press-ease),
+    background-color var(--press-duration) var(--press-ease),
+    border-color var(--press-duration) var(--press-ease),
+    opacity var(--press-duration) var(--press-ease),
+    scale var(--press-release-duration) var(--press-release-ease);
+
+  &:active:not([aria-haspopup="true"]) {
+    scale: var(--press-scale);
+    transition-duration: var(--press-duration);
+    transition-timing-function: var(--press-ease);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0s;
+  }
+}
+
+/* Modifier for `pressable` on large surfaces — swaps in the subtle scale
+   token; timing and behavior stay owned by `pressable`. */
+@utility pressable-subtle {
+  --press-scale: var(--press-scale-subtle);
+}
+
 /* scroll-fade */
 @property --scroll-fade-t {
   syntax: "<length-percentage>";

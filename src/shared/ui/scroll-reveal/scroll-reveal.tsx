@@ -96,7 +96,7 @@ export const SCROLL_REVEAL_UNDER_MEDIA = {
   textEase: 'power3.out',
   stagger: 0.04,
   mediaDuration: 0.6,
-  mediaEase: 'power2.in',
+  mediaEase: 'power3.out',
   mediaScaleFrom: 1.15,
   mediaOffset: -0.5,
 } as const satisfies ScrollRevealTuning
@@ -230,7 +230,14 @@ export function ScrollReveal({
         mediaTargets.length > 0,
       )
 
-      const tl = gsap.timeline({ paused: true })
+      // Reveal targets may also be `pressable`, whose CSS transition covers
+      // opacity — left on, it would re-transition every per-frame GSAP write
+      // and smear the entrance. Suspend transitions for the tween, restore after.
+      const tl = gsap.timeline({
+        paused: true,
+        onStart: () => gsap.set(targets, { transition: 'none' }),
+        onComplete: () => gsap.set(targets, { clearProps: 'transition' }),
+      })
       textTargets.forEach((target, index) => {
         tl.fromTo(
           target,
