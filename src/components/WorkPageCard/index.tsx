@@ -15,7 +15,7 @@ type Props = {
 export const WorkPageCard: React.FC<Props> = ({ page, titleAs: TitleTag = 'h2' }) => {
   const study = typeof page.caseStudy === 'object' ? page.caseStudy : null
   return (
-    <a className="group" href={`/works/${page.slug}`}>
+    <a className="group pressable pressable-subtle block" href={`/works/${page.slug}`}>
       {page.coverAsset && typeof page.coverAsset === 'object' && (
         <Media resource={page.coverAsset} imgClassName="h-auto w-full" />
       )}

@@ -443,7 +443,12 @@ const RelatedWork = async ({
         </h2>
         <div className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
           {pages.map((item) => (
-            <a className="group block" data-reveal href={`/works/${item.slug}`} key={item.id}>
+            <a
+              className="group pressable pressable-subtle block"
+              data-reveal
+              href={`/works/${item.slug}`}
+              key={item.id}
+            >
               {item.coverAsset && typeof item.coverAsset === 'object' && (
                 <Media resource={item.coverAsset} imgClassName="h-auto w-full" />
               )}

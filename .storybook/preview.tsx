@@ -1,5 +1,6 @@
 import { withThemeByDataAttribute } from '@storybook/addon-themes'
 import type { Preview, ReactRenderer } from '@storybook/nextjs-vite'
+import { CustomCursorProvider } from '@/features/cursor'
 
 import '@/app/(frontend)/globals.css'
 // Provides the Geist font variables that RootLayout normally sets via next/font.
@@ -18,6 +19,15 @@ const preview: Preview = {
       attributeName: 'data-theme',
       parentSelector: 'html',
     }),
+    // Mirrors the app's Providers: any story containing `cursorTarget(...)`
+    // elements (hero FeaturedCard, carousels, …) gets the custom cursor.
+    // The overlay is pointer-events-none and only materializes near targets,
+    // so cursor-free stories are unaffected.
+    (Story) => (
+      <CustomCursorProvider>
+        <Story />
+      </CustomCursorProvider>
+    ),
   ],
   parameters: {
     // The app uses the App Router; components calling next/navigation hooks

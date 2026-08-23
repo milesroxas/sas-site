@@ -76,19 +76,22 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent })
               aria-controls="site-menu"
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               onClick={() => setMenuOpen((v) => !v)}
-              // -mr compensates the trailing letter-space so the desktop label reads
-              // centered. Open state wraps the label in a secondary capsule (the
+              // Open state wraps the label in a secondary capsule (the
               // redesigned menu's CLOSE pill) without changing the button element.
               className={cn(
-                'transition-opacity hover:opacity-70 md:mr-[-0.58em] md:text-sm md:font-black md:tracking-[0.58em]',
+                'pressable rounded-full outline-none hover:opacity-70 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-4 focus-visible:ring-offset-background md:text-sm md:font-black md:tracking-[0.58em]',
                 menuOpen &&
-                  'md:h-8 md:rounded-full md:bg-secondary md:px-6 md:text-secondary-foreground',
+                  'md:h-8 md:bg-secondary md:px-6 md:text-secondary-foreground md:focus-visible:ring-offset-0',
               )}
             >
               <span className="md:hidden">
                 {menuOpen ? <IconX className="size-6" /> : <IconMenu2 className="size-6" />}
               </span>
-              <span className="hidden md:inline">{menuOpen ? 'CLOSE' : 'MENU'}</span>
+              {/* -mr compensates the trailing letter-space so the label — and the
+                  focus ring around the button box — reads centered. */}
+              <span className="hidden md:mr-[-0.58em] md:inline">
+                {menuOpen ? 'CLOSE' : 'MENU'}
+              </span>
             </button>
 
             <ThemeToggle className="hidden justify-self-end md:inline-flex" />

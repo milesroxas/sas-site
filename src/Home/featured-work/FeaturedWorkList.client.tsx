@@ -150,7 +150,7 @@ const StaticList: React.FC<Props> = ({ eyebrow, entries }) => (
         {entries.map((entry) => (
           <li className="border-b border-muted-foreground" key={entry.id}>
             <Link
-              className="block py-8 outline-none"
+              className="pressable pressable-subtle block py-8 outline-none"
               href={entry.href}
               transitionTypes={[...forwardNavTransitionTypes]}
             >
@@ -452,7 +452,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
                 {entries.map((entry, index) => (
                   <li data-work-item key={entry.id}>
                     <Link
-                      className="group block py-5 outline-none md:py-6"
+                      className="group pressable pressable-subtle block py-5 outline-none md:py-6"
                       href={entry.href}
                       onFocus={() => activateRef.current?.(index)}
                       transitionTypes={[...forwardNavTransitionTypes]}

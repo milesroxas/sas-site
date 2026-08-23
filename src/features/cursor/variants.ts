@@ -37,6 +37,8 @@ export type CursorVariantDefinition = CursorVariantTuning & {
   labelActivation: CursorLabelActivation
   /** Label position relative to the outer ring. */
   labelPlacement: CursorLabelPlacement
+  /** Gap between the outer ring's bottom edge and a `below` label, px. */
+  labelOffset: number
   /** Outer ring diameter for this presentation, in px. */
   outerSize: number
   /** Whether the small ring around the pointer remains visible. */
@@ -94,7 +96,10 @@ export const CURSOR_DEFAULTS = {
 /** Delta-only variant overrides on top of `CURSOR_DEFAULTS`. */
 export const CURSOR_VARIANTS = {
   /** For elements worth drawing the eye to (e.g. the home hero card). */
-  emphasize: {},
+  emphasize: {
+    // Tighter ring→label gap so the label reads as part of the cursor.
+    labelOffset: 8,
+  },
   /** Automatically discovered carousel affordance; no call-site cursor styling. */
   drag: {
     label: 'DRAG',
@@ -130,6 +135,7 @@ export function resolveCursorVariant(name: string | undefined): CursorVariantDef
     hoverOuterScale: CURSOR_DEFAULTS.hoverOuterScale,
     labelActivation: CURSOR_DEFAULTS.labelActivation,
     labelPlacement: CURSOR_DEFAULTS.labelPlacement,
+    labelOffset: CURSOR_DEFAULTS.labelOffset,
     outerSize: CURSOR_DEFAULTS.outerSize,
     showInnerRing: CURSOR_DEFAULTS.showInnerRing,
     hideNativeCursor: CURSOR_DEFAULTS.hideNativeCursor,

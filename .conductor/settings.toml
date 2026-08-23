@@ -1,9 +1,11 @@
 # Conductor shared repository settings — https://www.conductor.build/docs
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
 #
 # Each workspace gets: its own .env (copied from the main checkout), its own
 # port ($CONDUCTOR_PORT), and its own Postgres database (payload_<workspace>)
-# cloned from the main dev DB inside the one shared docker container.
-# Archive drops that database. See .conductor/*.sh.
+# seeded from PRODUCTION content (vercel env pull → pg_dump) inside the one
+# shared docker container; falls back to cloning the main dev DB when
+# production is unreachable. Archive drops that database. See .conductor/*.sh.
 
 [scripts]
 setup = "bash .conductor/setup.sh"
