@@ -1,10 +1,3 @@
-import {
-  MetaDescriptionField,
-  MetaImageField,
-  MetaTitleField,
-  OverviewField,
-  PreviewField,
-} from '@payloadcms/plugin-seo/fields'
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
@@ -21,6 +14,7 @@ import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
+import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
 import { hero } from '@/heros/config'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
@@ -127,21 +121,7 @@ export const AudiencePages: CollectionConfig<'audience-pages'> = {
         {
           name: 'meta',
           label: 'SEO',
-          fields: [
-            OverviewField({
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-              imagePath: 'meta.image',
-            }),
-            MetaTitleField({ hasGenerateFn: true }),
-            MetaImageField({ relationTo: 'media' }),
-            MetaDescriptionField({}),
-            PreviewField({
-              hasGenerateFn: true,
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-            }),
-          ],
+          fields: seoMetaTabFields,
         },
       ],
     },
