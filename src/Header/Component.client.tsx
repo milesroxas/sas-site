@@ -1,15 +1,15 @@
 'use client'
 import { IconMenu2, IconX } from '@tabler/icons-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import type React from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { Container } from '@/components/Container'
 import type { Header } from '@/payload-types'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import type { MenuContent } from './getMenuContent'
 import { TakeoverMenu } from './Menu'
+import { useTakeoverMenuState } from './Menu/useTakeoverMenuState'
 import { ThemeToggle } from './ThemeToggle'
 
 interface HeaderClientProps {
@@ -18,15 +18,7 @@ interface HeaderClientProps {
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent }) => {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuButtonRef = useRef<HTMLButtonElement>(null)
-  const pathname = usePathname()
-
-  // Close the takeover menu whenever a navigation lands.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the re-run trigger, not a value the effect reads
-  useEffect(() => {
-    setMenuOpen(false)
-  }, [pathname])
+  const { menuOpen, setMenuOpen, menuButtonRef } = useTakeoverMenuState()
 
   // Past a small scroll threshold both fixed bars shrink (globals.css keys
   // --header-bar-height/--footer-bar-height off this attribute) so more of
@@ -36,7 +28,13 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent })
       document.documentElement.toggleAttribute('data-scrolled', window.scrollY > 8)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      // SiteChrome unmounts the header on demo routes with no other writer for
+      // this attribute; clear it so --header-bar-height consumers there (the
+      // demo shell's site-menu band) don't inherit the shrunk scrolled value.
+      document.documentElement.removeAttribute('data-scrolled')
+    }
   }, [])
 
   return (
@@ -78,6 +76,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent })
               onClick={() => setMenuOpen((v) => !v)}
               // Open state wraps the label in a secondary capsule (the
               // redesigned menu's CLOSE pill) without changing the button element.
+              // demo-kit's ShellSiteMenu portal renders a standalone echo of this
+              // pill recipe — restyle both together.
               className={cn(
                 'pressable rounded-full outline-none hover:opacity-70 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-4 focus-visible:ring-offset-background md:text-sm md:font-black md:tracking-[0.58em]',
                 menuOpen &&

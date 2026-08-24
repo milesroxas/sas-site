@@ -43,8 +43,13 @@
     "thresholdOverrides": [
       {
         "files": ["src/components/ui/**"],
-        "maxCrap": 60,
-        "reason": "Vendored shadcn primitives (ejected) — kept byte-close to upstream for future diffs, not restructured to satisfy CRAP"
+        "maxCrap": 75,
+        "reason": "Vendored shadcn primitives (ejected) — kept byte-close to upstream for future diffs, not restructured to satisfy CRAP; sidebar.tsx is the largest upstream primitive"
+      },
+      {
+        "files": ["src/shared/ui/demo-kit/**"],
+        "maxCrap": 75,
+        "reason": "Interactive demo tooling (leva playground shells) — exercised manually on the /demo routes, intentionally untested"
       },
       {
         "files": ["src/Header/Menu/index.tsx"],

@@ -7,6 +7,7 @@ import type React from 'react'
 import { AdminBar } from '@/components/AdminBar'
 import { GlobalCanvasRoot } from '@/components/GlobalCanvasRoot'
 import { JsonLd } from '@/components/JsonLd'
+import { SiteChrome } from '@/components/SiteChrome'
 import { Footer } from '@/Footer/Component'
 import { Header } from '@/Header/Component'
 import { Providers } from '@/providers'
@@ -40,18 +41,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             }}
           />
 
-          <Header />
-          <Footer />
-          {/* data-page-frame: the takeover menu (Header/Menu) crops this wrapper
-              into a 16:9 preview window. Header/footer stay outside so they
-              remain viewport-fixed chrome. */}
-          <div
-            data-page-frame
-            className="flex min-h-svh flex-col bg-background pt-(--header-height) pb-(--footer-height)"
+          {/* Demo routes swap the fixed header/footer for the DemoShell sidebar. */}
+          <SiteChrome
+            chrome={
+              <>
+                <Header />
+                <Footer />
+              </>
+            }
           >
             {/* Page transitions live in (frontend)/template.tsx, which re-mounts per navigation. */}
             {children}
-          </div>
+          </SiteChrome>
           <GlobalCanvasRoot />
         </Providers>
       </body>

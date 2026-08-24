@@ -17,11 +17,9 @@ const STORAGE_KEY = 'sas.immersive-demo.settings'
 export type DemoSettings = {
   /** Open the paste guide after the copy button puts values on the clipboard. */
   guideOnCopy: boolean
-  /** Every section starts with its leva panel open. */
-  panelsOpen: boolean
 }
 
-const DEFAULTS: DemoSettings = { guideOnCopy: true, panelsOpen: false }
+const DEFAULTS: DemoSettings = { guideOnCopy: true }
 
 type DemoSettingsValue = DemoSettings & {
   set: <K extends keyof DemoSettings>(key: K, value: DemoSettings[K]) => void
@@ -36,7 +34,7 @@ export function useDemoSettings() {
 
 /**
  * Holds the demo-wide GUI preferences and mirrors them to localStorage, so a
- * reload keeps the panels and the paste guide where you left them.
+ * reload keeps the paste guide where you left it.
  */
 export function DemoSettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState(DEFAULTS)
@@ -47,7 +45,8 @@ export function DemoSettingsProvider({ children }: { children: ReactNode }) {
     const stored = window.localStorage.getItem(STORAGE_KEY)
     if (!stored) return
     try {
-      setSettings({ ...DEFAULTS, ...(JSON.parse(stored) as Partial<DemoSettings>) })
+      const parsed = JSON.parse(stored) as Partial<DemoSettings>
+      setSettings({ ...DEFAULTS, guideOnCopy: parsed.guideOnCopy ?? DEFAULTS.guideOnCopy })
     } catch {
       window.localStorage.removeItem(STORAGE_KEY)
     }
@@ -70,7 +69,7 @@ export function DemoSettingsProvider({ children }: { children: ReactNode }) {
 
 /** Page-level menu for the preferences every demo section reads. */
 export function DemoSettingsMenu() {
-  const { guideOnCopy, panelsOpen, set } = useDemoSettings()
+  const { guideOnCopy, set } = useDemoSettings()
 
   return (
     <DropdownMenu>
@@ -88,12 +87,6 @@ export function DemoSettingsMenu() {
           onCheckedChange={(checked) => set('guideOnCopy', checked)}
         >
           Show paste guide after copying
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
-          checked={panelsOpen}
-          onCheckedChange={(checked) => set('panelsOpen', checked)}
-        >
-          Open GUI panels by default
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
