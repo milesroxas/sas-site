@@ -27,6 +27,12 @@ export type DemoSiteChrome = {
   getInTouch: DemoSiteLink | null
   /** Live-clock slot — the site footer's Clock, rendered by the demo layout. */
   clock?: ReactNode
+  /**
+   * Initial expanded state for the shell sidebar, read back from the shadcn
+   * `sidebar_state` cookie SidebarProvider writes — without this the cookie is
+   * write-only and a collapsed sidebar reopens on every reload.
+   */
+  sidebarDefaultOpen?: boolean
 }
 
 const DemoSiteContext = createContext<DemoSiteChrome | null>(null)

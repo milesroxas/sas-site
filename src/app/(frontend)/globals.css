@@ -1050,7 +1050,9 @@ html {
    fixed footer above it and give the page frame matching extra room. The bar
    hides below Payload's small breakpoint, so scope both rules to match. */
 @media (width >= 48rem) {
-  html[data-admin-bar] [data-page-frame] {
+  /* 'chromeless' frames (SiteChrome on demo routes) have no fixed footer to
+     make room for. */
+  html[data-admin-bar] [data-page-frame]:not([data-page-frame='chromeless']) {
     padding-bottom: calc(var(--footer-height) + var(--admin-bar-height));
   }
 

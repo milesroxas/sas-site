@@ -1,5 +1,3 @@
-'use client'
-
 /** Prose section: how the immersive playground works. */
 export function ImmersiveOverview() {
   return (

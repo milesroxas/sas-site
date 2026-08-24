@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import type React from 'react'
 import { Clock } from '@/Footer/Clock'
 import { getCachedMenuContent } from '@/Header/getMenuContent'
@@ -11,11 +12,15 @@ import { getCachedGlobal } from '@/utilities/getGlobals'
  * fields — for the demo shell's sidebar to re-home.
  */
 export default async function DemoLayout({ children }: { children: React.ReactNode }) {
-  const [header, footer, menuContent] = await Promise.all([
+  const [header, footer, menuContent, cookieStore] = await Promise.all([
     getCachedGlobal('header', 1)() as Promise<Header>,
     getCachedGlobal('footer', 1)() as Promise<Footer>,
     getCachedMenuContent(),
+    cookies(),
   ])
+  // Read-back half of shadcn's sidebar persistence: SidebarProvider writes
+  // `sidebar_state`; the server layout seeds defaultOpen from it.
+  const sidebarState = cookieStore.get('sidebar_state')?.value
 
   return (
     <DemoSiteProvider
@@ -25,6 +30,7 @@ export default async function DemoLayout({ children }: { children: React.ReactNo
         location: footer.location,
         getInTouch: toSiteLink(footer.getInTouch),
         clock: <Clock className="text-[0.625rem] text-sidebar-foreground/60" />,
+        sidebarDefaultOpen: sidebarState ? sidebarState === 'true' : true,
       }}
     >
       {children}

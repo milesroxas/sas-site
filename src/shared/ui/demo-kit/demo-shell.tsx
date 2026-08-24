@@ -90,6 +90,7 @@ const DEMO_NAV = [
 export function DemoShell({ title, sections }: DemoShellProps) {
   const [activeId, setActiveId] = useState(sections[0]?.id ?? '')
   const active = sections.find((section) => section.id === activeId) ?? sections[0]
+  const site = useDemoSiteChrome()
 
   // Site-menu state lives here, not in the sidebar: on mobile the sidebar
   // renders inside a sheet that unmounts on close, which would tear an open
@@ -113,6 +114,7 @@ export function DemoShell({ title, sections }: DemoShellProps) {
   return (
     <DemoSettingsProvider>
       <SidebarProvider
+        defaultOpen={site?.sidebarDefaultOpen ?? true}
         style={
           {
             '--demo-shell-bar-height': '3rem',
@@ -167,7 +169,9 @@ function ShellSidebar({
       <SidebarHeader>
         <ShellBrand title={title} menuButtonRef={menuButtonRef} onMenuOpen={onMenuOpen} />
       </SidebarHeader>
-      <SidebarContent>
+      {/* data-lenis-prevent: root Lenis stays mounted on demo routes and would
+          otherwise consume wheel input over this nested scroll container. */}
+      <SidebarContent data-lenis-prevent>
         <SidebarGroup>
           <SidebarGroupLabel>Sections</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -446,7 +450,12 @@ function ControlsPanel({
       aria-label="Demo controls"
       className="w-full shrink-0 border-t border-sidebar-border bg-sidebar text-sidebar-foreground lg:w-(--demo-controls-width) lg:border-t-0 lg:border-l"
     >
-      <div className="lg:sticky lg:top-(--demo-shell-bar-height) lg:max-h-[calc(100svh-var(--demo-shell-bar-height))] lg:overflow-y-auto">
+      {/* data-lenis-prevent: keeps wheel input over the pinned panel scrolling
+          the controls, not the page under root Lenis. */}
+      <div
+        data-lenis-prevent
+        className="lg:sticky lg:top-(--demo-shell-bar-height) lg:max-h-[calc(100svh-var(--demo-shell-bar-height))] lg:overflow-y-auto"
+      >
         <div className="flex h-(--demo-shell-bar-height) items-center justify-between gap-2 px-4">
           <span className="text-xs font-medium uppercase tracking-wider text-sidebar-foreground/70">
             Controls

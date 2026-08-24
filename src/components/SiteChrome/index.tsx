@@ -26,8 +26,10 @@ export function SiteChrome({
       {/* data-page-frame: the takeover menu (Header/Menu) crops this wrapper
           into a 16:9 preview window. Header/footer stay outside so they
           remain viewport-fixed chrome. */}
+      {/* 'chromeless' opts the frame out of chrome-relative CSS (the admin-bar
+          footer padding in globals.css) while presence selectors still match. */}
       <div
-        data-page-frame
+        data-page-frame={isDemo ? 'chromeless' : true}
         className={cn(
           'flex min-h-svh flex-col bg-background',
           !isDemo && 'pt-(--header-height) pb-(--footer-height)',

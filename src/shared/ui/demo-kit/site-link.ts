@@ -1,3 +1,4 @@
+import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 import type { Footer, Header } from '@/payload-types'
 import type { DemoSiteLink } from './demo-site'
 
@@ -5,16 +6,11 @@ import type { DemoSiteLink } from './demo-site'
 export type CmsLinkField = NonNullable<Header['navItems']>[number]['link'] | Footer['getInTouch']
 
 /**
- * CMSLink's href resolution (components/Link), reduced to plain data so the
- * demo layout can hand site links to the client-side shell sidebar.
+ * CMS link reduced to plain data so the demo layout can hand site links to
+ * the client-side shell sidebar.
  */
 export function toSiteLink(link: CmsLinkField | null | undefined): DemoSiteLink | null {
   if (!link) return null
-  const href =
-    link.type === 'reference' &&
-    typeof link.reference?.value === 'object' &&
-    link.reference.value.slug
-      ? `${link.reference.relationTo !== 'pages' ? `/${link.reference.relationTo}` : ''}/${link.reference.value.slug}`
-      : (link.url ?? null)
+  const href = resolveCmsLinkHref(link)
   return href ? { label: link.label, href, newTab: Boolean(link.newTab) } : null
 }

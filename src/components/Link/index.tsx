@@ -9,6 +9,7 @@ import {
   lateralNavTransitionTypes,
 } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
+import { resolveCmsLinkHref } from './resolve-href'
 
 const navTransitionTypesByDirection = {
   forward: forwardNavTransitionTypes,
@@ -49,12 +50,7 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     url,
   } = props
 
-  const href =
-    type === 'reference' && typeof reference?.value === 'object' && reference.value.slug
-      ? `${reference?.relationTo !== 'pages' ? `/${reference?.relationTo}` : ''}/${
-          reference.value.slug
-        }`
-      : url
+  const href = resolveCmsLinkHref({ type, reference, url })
 
   if (!href) return null
 

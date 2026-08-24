@@ -1,5 +1,3 @@
-'use client'
-
 /** Every transition technique in production, where it fires, and what tags it. */
 const TECHNIQUES = [
   {
