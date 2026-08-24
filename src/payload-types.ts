@@ -2352,6 +2352,10 @@ export interface AudienceTabsBlock {
      * Lead statement for this tab.
      */
     intro: string;
+    /**
+     * Supporting copy shown under the intro.
+     */
+    description?: string | null;
     items?:
       | {
           text: string;
@@ -5025,6 +5029,7 @@ export interface AudienceTabsBlockSelect<T extends boolean = true> {
     | {
         title?: T;
         intro?: T;
+        description?: T;
         items?:
           | T
           | {
