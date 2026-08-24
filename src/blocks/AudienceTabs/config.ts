@@ -36,6 +36,11 @@ export const AudienceTabs: Block = {
           admin: { description: 'Lead statement for this tab.' },
         },
         {
+          name: 'description',
+          type: 'text',
+          admin: { description: 'Supporting copy shown under the intro.' },
+        },
+        {
           name: 'items',
           type: 'array',
           labels: { singular: 'Item', plural: 'Items' },

@@ -87,9 +87,20 @@ export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, t
 
         <div className="grid w-full grid-cols-1 items-stretch gap-8 md:gap-12 lg:grid-cols-12  lg:gap-x-12">
           <div className="flex w-full max-w-xl flex-col gap-8 md:gap-16 lg:col-span-5">
-            <p className="max-w-md text-lead font-light" data-entrance="intro" data-swap="intro">
-              {current.intro}
-            </p>
+            <div className="flex max-w-md flex-col gap-4">
+              <p className="text-lead font-light" data-entrance="intro" data-swap="intro">
+                {current.intro}
+              </p>
+              {current.description ? (
+                <p
+                  className="text-sm text-muted-foreground"
+                  data-entrance="item"
+                  data-swap="text"
+                >
+                  {current.description}
+                </p>
+              ) : null}
+            </div>
             {current.items?.length ? (
               <ul className="flex flex-col divide-y divide-foreground/20">
                 {current.items.map((item, itemIndex) => (

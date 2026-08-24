@@ -46,6 +46,7 @@ import * as migration_20260813_183147_full_media_block from './20260813_183147_f
 import * as migration_20260820_172200_case_study_section_story_beat from './20260820_172200_case_study_section_story_beat';
 import * as migration_20260821_031536_carousel_block from './20260821_031536_carousel_block';
 import * as migration_20260823_163739_seo_og_fields from './20260823_163739_seo_og_fields';
+import * as migration_20260824_175955_audience_tabs_description from './20260824_175955_audience_tabs_description';
 
 export const migrations = [
   {
@@ -286,6 +287,11 @@ export const migrations = [
   {
     up: migration_20260823_163739_seo_og_fields.up,
     down: migration_20260823_163739_seo_og_fields.down,
-    name: '20260823_163739_seo_og_fields'
+    name: '20260823_163739_seo_og_fields',
+  },
+  {
+    up: migration_20260824_175955_audience_tabs_description.up,
+    down: migration_20260824_175955_audience_tabs_description.down,
+    name: '20260824_175955_audience_tabs_description'
   },
 ];
