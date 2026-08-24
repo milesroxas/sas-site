@@ -26,7 +26,7 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     () => transport ?? new DefaultChatTransport<UIMessage>({ api: '/api/ask' }),
     [transport],
   )
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, status, error, setMessages } = useChat({
     transport: chatTransport,
     messages: initialMessages,
   })
@@ -43,5 +43,5 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     onSend?.()
   }
 
-  return { question, setQuestion, messages, status, error, busy, canSend, submit }
+  return { question, setQuestion, messages, setMessages, status, error, busy, canSend, submit }
 }

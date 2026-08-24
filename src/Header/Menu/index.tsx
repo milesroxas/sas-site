@@ -308,6 +308,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   askInitialMessages,
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null)
+  // Chat-view tracking for layered dismissal: while the transcript is up,
+  // Escape / backdrop clicks step back to the preview (via the exit action
+  // MenuAsk registers); only the next dismissal closes the menu itself.
+  // Refs, not state — MenuAsk owns the view swap and its transitions.
+  const chatViewRef = useRef(false)
+  const exitChatViewRef = useRef<(() => void) | null>(null)
   const tlRef = useRef<gsap.core.Timeline | null>(null)
   const rebuildTimelineRef = useRef<(() => gsap.core.Timeline) | null>(null)
   const scrollYRef = useRef(0)
@@ -796,11 +802,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     }
   }, [open, menuButtonRef, restoreFrame])
 
-  // Escape closes; safety-net cleanup if unmounted mid-open.
+  // Escape steps back: transcript → preview first, then menu → page.
+  // Safety-net cleanup if unmounted mid-open lives in the unmount effect below.
   useEffect(() => {
     if (!open) return
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key !== 'Escape') return
+      if (chatViewRef.current && exitChatViewRef.current) exitChatViewRef.current()
+      else onClose()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -830,6 +839,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   // always restores it via clearFrameProps (the cover lives inside the hero
   // layer, which clearFrameProps removes).
   const handleChatViewChange = useCallback((next: boolean) => {
+    chatViewRef.current = next
     setChatView(next)
     const frame = getPageFrame()
     if (!frame) return
@@ -896,9 +906,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     )
 
   // Clicks on structural empty space (columns, the docked window over the
-  // inert frame) dismiss the menu — interactive children never carry the marker.
+  // inert frame) collapse the transcript back to the preview — and nothing
+  // more. They must NEVER close the menu itself: that happens only via the
+  // header CLOSE button, Escape, or navigating a link (onClickCapture).
   const onBackdropClick = (event: React.MouseEvent) => {
-    if ((event.target as HTMLElement).dataset.menuBackdrop !== undefined) onClose()
+    if ((event.target as HTMLElement).dataset.menuBackdrop === undefined) return
+    if (chatViewRef.current && exitChatViewRef.current) exitChatViewRef.current()
   }
 
   return (
@@ -925,7 +938,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         <div
           data-menu-backdrop
           data-lenis-prevent
-          className="hidden min-h-0 flex-col gap-12 overflow-y-auto overscroll-contain md:col-start-1 md:row-start-1 md:flex"
+          className="no-scrollbar hidden min-h-0 flex-col gap-12 overflow-y-auto overscroll-contain md:col-start-1 md:row-start-1 md:flex"
         >
           {expertise.length > 0 && (
             <section className="flex max-w-xs flex-col gap-6">
@@ -974,6 +987,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         <MenuAsk
           open={open}
           onViewChange={handleChatViewChange}
+          exitChatViewRef={exitChatViewRef}
           transport={askTransport}
           initialMessages={askInitialMessages}
         />
@@ -998,7 +1012,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           data-menu-backdrop
           data-lenis-prevent
           className={chatHideable(
-            'flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:flex-none md:justify-between',
+            'no-scrollbar flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:flex-none md:justify-between',
           )}
         >
           {works.length > 0 && (

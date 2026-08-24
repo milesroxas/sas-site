@@ -1,8 +1,10 @@
 'use client'
 
-import { IconArrowUp } from '@tabler/icons-react'
+import { IconArrowUp, IconRefresh, IconX } from '@tabler/icons-react'
 import type { ChatTransport, UIMessage } from 'ai'
 import { useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { CardAction, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   InputGroup,
   InputGroupAddon,
@@ -43,6 +45,13 @@ type MenuAskProps = {
    * menu's mobile layout can hand the nav's space to the transcript.
    */
   onViewChange?: (chatView: boolean) => void
+  /**
+   * Parent-owned ref this component fills with its "step back to the preview"
+   * action, so the menu's dismissal layers (Escape, backdrop clicks) can exit
+   * the transcript without closing the whole menu. Runs the same unwipe as
+   * the in-panel close button.
+   */
+  exitChatViewRef?: React.RefObject<(() => void) | null>
   /** Transport override for stories/tests, same seam as AskWidget. */
   transport?: ChatTransport<UIMessage>
   initialMessages?: UIMessage[]
@@ -53,16 +62,24 @@ type MenuAskProps = {
  * preview. Submitting swaps the preview window for the transcript panel via
  * the `panelMask` clip-path wipe above.
  */
-export function MenuAsk({ open, onViewChange, transport, initialMessages }: MenuAskProps) {
+export function MenuAsk({
+  open,
+  onViewChange,
+  exitChatViewRef,
+  transport,
+  initialMessages,
+}: MenuAskProps) {
   const [chatView, setChatView] = useState(false)
   const showTranscript = () => setChatView(true)
+  const hideTranscript = () => setChatView(false)
 
-  const { question, setQuestion, messages, status, error, busy, canSend, submit } = useAskChat({
-    transport,
-    initialMessages,
-    // Submitting swaps the preview window for the transcript panel.
-    onSend: showTranscript,
-  })
+  const { question, setQuestion, messages, setMessages, status, error, busy, canSend, submit } =
+    useAskChat({
+      transport,
+      initialMessages,
+      // Submitting swaps the preview window for the transcript panel.
+      onSend: showTranscript,
+    })
 
   // Closing the menu hands the window back to the page preview.
   useEffect(() => {
@@ -72,6 +89,22 @@ export function MenuAsk({ open, onViewChange, transport, initialMessages }: Menu
   useEffect(() => {
     onViewChange?.(chatView)
   }, [chatView, onViewChange])
+
+  // Hand the exit action to the menu so its Escape/backdrop layers can use it.
+  useEffect(() => {
+    if (!exitChatViewRef) return
+    exitChatViewRef.current = hideTranscript
+    return () => {
+      exitChatViewRef.current = null
+    }
+  })
+
+  const resetConversation = () => {
+    // A cleared transcript has nothing to show — hand the window back to the
+    // preview in the same gesture so the panel exits instead of emptying.
+    setMessages([])
+    setChatView(false)
+  }
 
   return (
     <>
@@ -96,12 +129,43 @@ export function MenuAsk({ open, onViewChange, transport, initialMessages }: Menu
           data-lenis-prevent
           inert={!chatView}
           className={cn(
-            'bg-popover text-popover-foreground shadow-2xl pointer-events-auto absolute inset-0 flex flex-col overflow-hidden rounded-[20px] md:rounded-3xl',
+            'bg-popover text-popover-foreground shadow-2xl pointer-events-auto absolute inset-0 flex flex-col overflow-hidden rounded-[20px] md:rounded-3xl [--card-spacing:--spacing(4)]',
             // No transition — the frame occludes this panel until the
             // handoff; opacity only guards against mis-stacking while idle.
             chatView ? 'opacity-100' : 'opacity-0',
           )}
         >
+          {/* Header stages in alongside the transcript, landing at the wipe's
+              end. The X steps back to the preview — the same exit the menu's
+              Escape/backdrop layers trigger via exitChatViewRef. */}
+          <CardHeader
+            className={cn(
+              'border-b pt-(--card-spacing) motion-safe:transition-[opacity,translate]',
+              chatView ? panelContent.open : panelContent.closed,
+            )}
+          >
+            <CardTitle>Ask</CardTitle>
+            <CardDescription>Answers about our work, services, and insights</CardDescription>
+            <CardAction className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="New conversation"
+                onClick={resetConversation}
+                disabled={busy}
+              >
+                <IconRefresh />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Back to menu"
+                onClick={hideTranscript}
+              >
+                <IconX />
+              </Button>
+            </CardAction>
+          </CardHeader>
           <MessageScrollerProvider autoScroll>
             <MessageScroller
               className={cn(

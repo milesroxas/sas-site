@@ -235,6 +235,25 @@
   ::view-transition-group(home-hero) {
     z-index: 50;
   }
+  /*
+   * While the takeover menu holds the page frame (inert, scaled + clipped into
+   * the docked window), the hero must NOT form its own group: snapshots ignore
+   * the frame's transform, so a view transition run while docked (a nav from a
+   * menu link) paints a giant hero ghost dollying over the menu at the wrong
+   * geometry.
+   */
+  [data-page-frame][inert] .vt-home-hero {
+    view-transition-name: none;
+  }
+  /*
+   * Same situation, the root: unname it so docked-frame navigations skip the
+   * full-viewport root cross-fade — the live menu columns stay rock-steady
+   * (no snapshot shimmer), and during a hero handoff the traveler owns all
+   * visible motion over a hard-cut route swap.
+   */
+  :root:has([data-page-frame][inert]) {
+    view-transition-name: none;
+  }
 
   /*
    * Reduced motion: collapse the browser's default group cross-fades to instant.

@@ -28,19 +28,45 @@ vi.mock('gsap', () => {
   return { default: gsapStub, ...gsapStub }
 })
 
-// MenuAsk imports React's canary-only `ViewTransition` (aliased by Next at
-// build time, absent from the stable react vitest resolves) — stub it with the
-// same structural contract: the preview slot plus a composer input.
-vi.mock('@/features/ask/MenuAsk', () => ({
-  MenuAsk: ({ open }: { open: boolean }) => (
-    <>
-      <div data-menu-preview-slot data-open={open} />
-      <form data-menu-item>
-        <input placeholder="Ask anything…" />
-      </form>
-    </>
-  ),
-}))
+// Stub MenuAsk with the same structural contract: chat-view state lives
+// inside, changes are reported via onViewChange, and the exit action is
+// handed to the menu through exitChatViewRef.
+vi.mock('@/features/ask/MenuAsk', async () => {
+  const { useEffect, useState } = await import('react')
+  const MenuAsk = ({
+    open,
+    onViewChange,
+    exitChatViewRef,
+  }: {
+    open: boolean
+    onViewChange?: (chatView: boolean) => void
+    exitChatViewRef?: React.RefObject<(() => void) | null>
+  }) => {
+    const [chatView, setChatView] = useState(false)
+    useEffect(() => {
+      onViewChange?.(chatView)
+    }, [chatView, onViewChange])
+    useEffect(() => {
+      if (!exitChatViewRef) return
+      exitChatViewRef.current = () => setChatView(false)
+      return () => {
+        exitChatViewRef.current = null
+      }
+    })
+    return (
+      <>
+        <div data-menu-preview-slot data-open={open} data-chat-view={chatView} />
+        <form data-menu-item>
+          <input placeholder="Ask anything…" />
+          <button type="button" onClick={() => setChatView(true)}>
+            show transcript
+          </button>
+        </form>
+      </>
+    )
+  }
+  return { MenuAsk }
+})
 
 const routerPush = vi.fn()
 vi.mock('next/navigation', () => ({
@@ -151,16 +177,48 @@ describe('TakeoverMenu', () => {
     )
   })
 
-  it('closes when structural backdrop space is clicked (overlay and nav container)', () => {
+  it('never closes the menu on structural backdrop clicks (overlay and nav container)', () => {
     const { onClose, container } = renderMenu()
 
     const overlay = container.querySelector('#site-menu') as HTMLElement
     expect(overlay).not.toBeNull()
     fireEvent.click(overlay)
-    expect(onClose).toHaveBeenCalledTimes(1)
-
     fireEvent.click(screen.getByRole('navigation', { name: 'Site menu' }))
-    expect(onClose).toHaveBeenCalledTimes(2)
+
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('steps back from the chat view on backdrop click, and later clicks stay inert', () => {
+    const { onClose, container } = renderMenu()
+    const overlay = container.querySelector('#site-menu') as HTMLElement
+    const slot = () => container.querySelector('[data-menu-preview-slot]') as HTMLElement
+
+    fireEvent.click(screen.getByRole('button', { name: 'show transcript' }))
+    expect(slot().getAttribute('data-chat-view')).toBe('true')
+
+    // First backdrop click dismisses only the transcript.
+    fireEvent.click(overlay)
+    expect(onClose).not.toHaveBeenCalled()
+    expect(slot().getAttribute('data-chat-view')).toBe('false')
+
+    // Further backdrop clicks do nothing — the menu never closes this way.
+    fireEvent.click(overlay)
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('steps back from the chat view on Escape instead of closing the menu', () => {
+    const { onClose, container } = renderMenu()
+    const slot = () => container.querySelector('[data-menu-preview-slot]') as HTMLElement
+
+    fireEvent.click(screen.getByRole('button', { name: 'show transcript' }))
+    expect(slot().getAttribute('data-chat-view')).toBe('true')
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(onClose).not.toHaveBeenCalled()
+    expect(slot().getAttribute('data-chat-view')).toBe('false')
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('does not close when the mobile theme toggle inside the menu is clicked', () => {
