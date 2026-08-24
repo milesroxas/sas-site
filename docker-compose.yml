@@ -3,6 +3,11 @@
 # Bump POSTGRES_DOCKER_IMAGE in scripts/dev-tui/constants.ts together with `image:` below.
 # Major/minor jumps usually need a fresh volume: docker compose down -v && pnpm db:up
 
+# Fixed project name so every checkout (main repo, Conductor workspaces) targets the
+# same container/volume — compose otherwise derives the project from the directory
+# name, and `docker compose exec` in a workspace can't see the running container.
+name: sas-site
+
 services:
   postgres:
     # pgvector build of Postgres 18 — the Ask RAG embeddings need CREATE EXTENSION vector.

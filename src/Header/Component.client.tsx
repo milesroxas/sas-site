@@ -1,15 +1,15 @@
 'use client'
 import { IconMenu2, IconX } from '@tabler/icons-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import type React from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { Container } from '@/components/Container'
 import type { Header } from '@/payload-types'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import type { MenuContent } from './getMenuContent'
 import { TakeoverMenu } from './Menu'
+import { useTakeoverMenuState } from './Menu/useTakeoverMenuState'
 import { ThemeToggle } from './ThemeToggle'
 
 interface HeaderClientProps {
@@ -18,15 +18,7 @@ interface HeaderClientProps {
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent }) => {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuButtonRef = useRef<HTMLButtonElement>(null)
-  const pathname = usePathname()
-
-  // Close the takeover menu whenever a navigation lands.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the re-run trigger, not a value the effect reads
-  useEffect(() => {
-    setMenuOpen(false)
-  }, [pathname])
+  const { menuOpen, setMenuOpen, menuButtonRef } = useTakeoverMenuState()
 
   // Past a small scroll threshold both fixed bars shrink (globals.css keys
   // --header-bar-height/--footer-bar-height off this attribute) so more of

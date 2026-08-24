@@ -2,11 +2,7 @@ import type { Metadata } from 'next'
 import { ImmersiveDemoPage } from '@/widgets/immersive-demo'
 
 export default function ImmersiveDemoRoute() {
-  return (
-    <article>
-      <ImmersiveDemoPage />
-    </article>
-  )
+  return <ImmersiveDemoPage />
 }
 
 export const metadata: Metadata = {

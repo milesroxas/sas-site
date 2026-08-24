@@ -1,188 +1,114 @@
 'use client'
 
-import { DemoSection, DemoSettingsMenu, DemoSettingsProvider } from '@/shared/ui/demo-kit'
+import {
+  IconAppWindow,
+  IconBox,
+  IconEye,
+  IconInfoCircle,
+  IconPhoto,
+  IconTypography,
+} from '@tabler/icons-react'
+import { DemoShell, type DemoShellSection } from '@/shared/ui/demo-kit'
+import { TransitionsOverview } from './overview'
 import { ScrollRevealIntroPlayground } from './scroll-reveal-intro-playground'
 import { ScrollRevealUnderMediaPlayground } from './scroll-reveal-under-media-playground'
 import { TextLoadInPlayground } from './text-load-in-playground'
 import { TextLoadInRaymarchedPlayground } from './text-load-in-raymarched-playground'
 import { TransitionSimulator } from './transition-simulator'
 
-/** Every transition technique in production, where it fires, and what tags it. */
-const TECHNIQUES = [
+/** Single source of truth for the route: sidebar entries, stage, and controls. */
+const SECTIONS: DemoShellSection[] = [
   {
-    name: 'nav-forward',
-    detail:
-      'Slide left + fade, going deeper. Card title links (components/Card) and pagination toward higher pages.',
+    id: 'overview',
+    label: 'Overview',
+    title: 'Page transitions',
+    description:
+      "The site's real navigation motion, live and tunable — with the network and server conditions a visitor actually brings. Throttle the fetch, feel the dead time, tune the timing variables, copy them back.",
+    icon: IconInfoCircle,
+    content: TransitionsOverview,
   },
   {
-    name: 'nav-back',
-    detail: 'Slide right + fade, going shallower. Pagination toward lower pages and back links.',
+    id: 'simulator',
+    label: 'Route simulator',
+    title: 'Route transition simulator',
+    description:
+      'A miniature of the site in a browser frame: cards tag nav-forward, menu links tag nav-lateral, pagination tags by direction, post images morph into their hero, the home hero recedes on its own track — and card bodies reproduce the untagged hard cut. Set the network conditions in the GUI, then navigate.',
+    icon: IconAppWindow,
+    paste: {
+      file: 'src/shared/ui/view-transition/view-transition.css',
+      symbol: ':root',
+      format: 'css-vars',
+      note: 'Site-wide transition timing. Every tagged navigation reads these variables.',
+    },
+    content: TransitionSimulator,
   },
   {
-    name: 'nav-lateral',
-    detail:
-      'Pure fade, no spatial depth. The CMSLink default — header logo, takeover menu links, 404.',
+    id: 'text-load-in',
+    label: 'Text load-in',
+    title: 'Text load-in',
+    description:
+      'A scroll-triggered reveal: the eyebrow decodes via scramble, the headline resolves through a smear shader that bleeds characters into each other, then the supporting line rises in. Edit the copy and replay it from the GUI.',
+    icon: IconTypography,
+    paste: {
+      file: 'src/features/immersive/ui/text-load-in.tsx',
+      symbol: 'TextLoadIn',
+      format: 'props',
+      note: 'Reveal timing and smear settings. The copy stays at the call site.',
+    },
+    content: TextLoadInPlayground,
   },
   {
-    name: 'shared-element morph',
-    detail:
-      'A post card image and its detail hero carry the same view-transition-name (postImageVtName), so the browser interpolates between them over the move duration.',
+    id: 'text-load-in-raymarched',
+    label: 'Raymarched load-in',
+    title: 'Text load-in v2 — true raymarching',
+    description:
+      'The same reveal built on a real signed distance field: the headline is extruded and raymarched in 3D, a smooth-min front sweeps it into existence with metaball droplets lit by SDF-gradient normals, then hands off to the crisp DOM heading. Tune the SDF scene from the GUI.',
+    icon: IconBox,
+    paste: {
+      file: 'src/features/immersive/ui/text-load-in-raymarched.tsx',
+      symbol: 'TextLoadInRaymarched',
+      format: 'props',
+      note: 'SDF, droplet and timing settings. The copy stays at the call site.',
+    },
+    content: TextLoadInRaymarchedPlayground,
   },
   {
-    name: 'home-hero recede',
-    detail:
-      'The home hero is its own group (.vt-home-hero) and dollies back over 560ms, overlapping the incoming page.',
+    id: 'reveal-intro',
+    label: 'Reveal — intro',
+    title: 'Reveal — intro / text only',
+    description:
+      'The complete reveal for introduction and text-only blocks: descendants marked data-reveal rise into place with a blur settle, staggered in document order, and reverse out when the section leaves the viewport. This reveal is owned whole — tuning it never touches the media + text reveal. The timeline below plots exactly when each line starts.',
+    icon: IconEye,
+    paste: {
+      file: 'src/shared/ui/scroll-reveal/scroll-reveal.tsx',
+      symbol: 'SCROLL_REVEAL_INTRO',
+      format: 'object',
+      note: 'The whole intro reveal. Every block tagged variant="intro" reads these.',
+    },
+    content: ScrollRevealIntroPlayground,
   },
   {
-    name: 'pinned chrome',
-    detail:
-      'site-header, site-footer and the global WebGL canvas are named groups with animation: none — they hold rock-steady through every swap.',
-  },
-  {
-    name: 'untagged — hard cut',
-    detail:
-      "Browser back/forward, revalidations, and card body clicks (the useClickableCard gap) carry no type, and default: 'none' keeps them silent by design.",
+    id: 'reveal-media',
+    label: 'Reveal — media + text',
+    title: 'Reveal — media + text',
+    description:
+      'The complete reveal for copy paired with media: the container is a clipped window — the mask wipes open from the top while the content settles down from a zoom behind it (no fade or blur, expensive to composite on large media) — and the text runs on its own track with its own stagger. The sync offset decides whether the tracks overlap or run sequentially. Preview it stacked or beside the copy (image left / right), with your own image or video like the immersive demos. The timeline below plots both tracks.',
+    icon: IconPhoto,
+    paste: {
+      file: 'src/shared/ui/scroll-reveal/scroll-reveal.tsx',
+      symbol: 'SCROLL_REVEAL_UNDER_MEDIA',
+      format: 'object',
+      note: 'The whole under-media reveal. Every block tagged variant="underMedia" reads these.',
+    },
+    content: ScrollRevealUnderMediaPlayground,
   },
 ]
 
 /**
- * Full-page playground for the site's route transitions: the production
- * `<ViewTransition>` recipes running inside a throttleable mock browser.
+ * The route's transitions playground: the production `<ViewTransition>`
+ * recipes and reveal systems, one section at a time inside the DemoShell
+ * sidebar layout.
  */
 export function TransitionDemoPage() {
-  return (
-    <DemoSettingsProvider>
-      <div className="container relative max-w-4xl space-y-8 py-16 md:py-24">
-        <header className="space-y-4">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            FSD · widgets/transition-demo
-          </p>
-          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-            <h1 className="text-balance text-heading-2">Page transitions</h1>
-            <DemoSettingsMenu />
-          </div>
-          <p className="max-w-prose text-pretty text-lg/relaxed text-muted-foreground">
-            The site&apos;s real navigation motion, live and tunable — with the network and server
-            conditions a visitor actually brings. Throttle the fetch, feel the dead time, tune the
-            timing variables, copy them back.
-          </p>
-        </header>
-
-        <section className="space-y-3 rounded-lg border border-border bg-card/80 p-4 backdrop-blur-sm sm:p-6">
-          <h2 className="text-balance text-xl tracking-tight">How this page works</h2>
-          <ul className="max-w-prose list-disc space-y-2 pl-5 text-pretty text-sm/relaxed text-muted-foreground">
-            <li>
-              Every run in the frame goes through the production{' '}
-              <code className="font-mono text-foreground/90">DirectionalTransition</code> and the
-              recipes in <code className="font-mono text-foreground/90">view-transition.css</code> —
-              the GUI live-overrides only the{' '}
-              <code className="font-mono text-foreground/90">:root</code> timing variables, and
-              clears them when you leave.
-            </li>
-            <li>
-              The network and server sliders insert the real dead time a navigation spends before
-              anything moves: Next.js fetches the RSC payload, then the transition plays. Production
-              ships no loading UI, so that stillness is the actual experience — the timeline below
-              the frame plots it.
-            </li>
-            <li>
-              A view transition freezes the whole document while it runs (browser behavior), this
-              GUI included. That is also true in production.
-            </li>
-            <li>
-              The frame scrolls through its own Lenis instance, tuned like the site&apos;s, and
-              transition snapshots are clipped to the window while you are here — nothing escapes
-              the mock browser.
-            </li>
-            <li>
-              <strong className="font-medium text-foreground/90">Copy</strong> writes the{' '}
-              <code className="font-mono text-foreground/90">:root</code> block for{' '}
-              <code className="font-mono text-foreground/90">view-transition.css</code>.
-            </li>
-          </ul>
-        </section>
-
-        <DemoSection
-          title="Route transition simulator"
-          description="A miniature of the site in a browser frame: cards tag nav-forward, menu links tag nav-lateral, pagination tags by direction, post images morph into their hero, the home hero recedes on its own track — and card bodies reproduce the untagged hard cut. Set the network conditions in the GUI, then navigate."
-          paste={{
-            file: 'src/shared/ui/view-transition/view-transition.css',
-            symbol: ':root',
-            format: 'css-vars',
-            note: 'Site-wide transition timing. Every tagged navigation reads these variables.',
-          }}
-        >
-          <TransitionSimulator />
-        </DemoSection>
-
-        <DemoSection
-          title="Text load-in"
-          description="A scroll-triggered reveal: the eyebrow decodes via scramble, the headline resolves through a smear shader that bleeds characters into each other, then the supporting line rises in. Edit the copy and replay it from the GUI."
-          paste={{
-            file: 'src/features/immersive/ui/text-load-in.tsx',
-            symbol: 'TextLoadIn',
-            format: 'props',
-            note: 'Reveal timing and smear settings. The copy stays at the call site.',
-          }}
-        >
-          <TextLoadInPlayground />
-        </DemoSection>
-
-        <DemoSection
-          title="Text load-in v2 — true raymarching"
-          description="The same reveal built on a real signed distance field: the headline is extruded and raymarched in 3D, a smooth-min front sweeps it into existence with metaball droplets lit by SDF-gradient normals, then hands off to the crisp DOM heading. Tune the SDF scene from the GUI."
-          paste={{
-            file: 'src/features/immersive/ui/text-load-in-raymarched.tsx',
-            symbol: 'TextLoadInRaymarched',
-            format: 'props',
-            note: 'SDF, droplet and timing settings. The copy stays at the call site.',
-          }}
-        >
-          <TextLoadInRaymarchedPlayground />
-        </DemoSection>
-
-        <DemoSection
-          title="Reveal — intro / text only"
-          description="The complete reveal for introduction and text-only blocks: descendants marked data-reveal rise into place with a blur settle, staggered in document order, and reverse out when the section leaves the viewport. This reveal is owned whole — tuning it never touches the media + text reveal. The timeline below plots exactly when each line starts."
-          paste={{
-            file: 'src/shared/ui/scroll-reveal/scroll-reveal.tsx',
-            symbol: 'SCROLL_REVEAL_INTRO',
-            format: 'object',
-            note: 'The whole intro reveal. Every block tagged variant="intro" reads these.',
-          }}
-        >
-          <ScrollRevealIntroPlayground />
-        </DemoSection>
-
-        <DemoSection
-          title="Reveal — media + text"
-          description="The complete reveal for copy paired with media: the container is a clipped window — the mask wipes open from the top while the content settles down from a zoom behind it (no fade or blur, expensive to composite on large media) — and the text runs on its own track with its own stagger. The sync offset decides whether the tracks overlap or run sequentially. Preview it stacked or beside the copy (image left / right), with your own image or video like the immersive demos. The timeline below plots both tracks."
-          paste={{
-            file: 'src/shared/ui/scroll-reveal/scroll-reveal.tsx',
-            symbol: 'SCROLL_REVEAL_UNDER_MEDIA',
-            format: 'object',
-            note: 'The whole under-media reveal. Every block tagged variant="underMedia" reads these.',
-          }}
-        >
-          <ScrollRevealUnderMediaPlayground />
-        </DemoSection>
-
-        <section className="space-y-4 rounded-lg border border-border bg-card/80 p-4 backdrop-blur-sm sm:p-6">
-          <h2 className="text-balance text-xl tracking-tight">
-            Where each technique fires in production
-          </h2>
-          <dl className="space-y-3">
-            {TECHNIQUES.map((technique) => (
-              <div key={technique.name} className="space-y-1">
-                <dt className="font-mono text-sm text-foreground">{technique.name}</dt>
-                <dd className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">
-                  {technique.detail}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-      </div>
-    </DemoSettingsProvider>
-  )
+  return <DemoShell title="Page transitions" sections={SECTIONS} />
 }
