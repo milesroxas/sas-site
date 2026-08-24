@@ -28,7 +28,9 @@ export function SmoothScroll({ root = true, options = {}, children }: SmoothScro
       root={root}
       options={{
         ...options,
-        lerp: options.lerp ?? 0.16,
+        // Lenis prefers `lerp` over `duration` when both are set — only apply
+        // the lerp fallback when the caller tuned neither.
+        ...(options.lerp === undefined && options.duration === undefined ? { lerp: 0.16 } : {}),
         autoRaf: false,
         anchors: true,
         autoToggle: true,

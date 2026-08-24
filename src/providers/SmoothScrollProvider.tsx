@@ -19,11 +19,15 @@ function shouldPreventLenisSmooth(node: HTMLElement | null): boolean {
 
 /** Defaults tuned for full-site scroll: touch sync, tempus RAF, and safe prevent targets. */
 export const rootLenisOptions: LenisOptions = {
-  lerp: 0.16,
+  // Duration + easeOutExpo instead of lerp: quick catch-up at the start of the
+  // curve keeps input responsive, while the asymptotic tail lands softly. A
+  // single lerp value can't decouple those two.
+  duration: 1.1,
+  easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
   wheelMultiplier: 1,
   touchMultiplier: 1.15,
   syncTouch: true,
-  syncTouchLerp: 0.14,
+  syncTouchLerp: 0.12,
   smoothWheel: true,
   anchors: true,
   autoToggle: true,
