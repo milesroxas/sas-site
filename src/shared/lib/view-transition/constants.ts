@@ -40,8 +40,9 @@ export const postImageVtName = (slug: string) =>
 /**
  * Shared-element name bridging a work entry's featured media (IndustryWork
  * spotlight) and its case-study hero media. Both sides pair via `morph-hero`
- * (see `view-transition.css`): the old page fades, then the media glides from
- * the spotlight's rect into the hero's, revealing the hero content underneath.
+ * (see `view-transition.css`): the old page fades, the media centers
+ * vertically, expands to full screen, and holds there alone, then the new
+ * page fades in as the media travels to the hero and, last, shrinks into it.
  */
 export const workImageVtName = (slug: string) =>
   `work-image-${slug.replace(/[^a-zA-Z0-9_-]/g, '_')}`

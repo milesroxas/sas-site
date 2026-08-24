@@ -4,9 +4,9 @@ import { workImageVtName } from '@/shared/lib/view-transition/constants'
 
 /**
  * Shared element: target of the work-media takeover — the block's media
- * glides into the wrapped rect. Pairs with the matching `name` in
- * `IndustryWork`, which also re-sequences the glide into travel-then-grow
- * beats (`sequenceWorkImageMorph` — React fires `onShare` on the unmounting
+ * lands on the wrapped rect. Pairs with the matching `name` in
+ * `IndustryWork`, which also re-sequences the glide into center → expand →
+ * hold → travel → shrink beats (`sequenceWorkImageMorph` — React fires `onShare` on the unmounting
  * side, so the handler lives there, not here). Renders children unwrapped
  * when the page has no slug (no source element to morph from).
  */

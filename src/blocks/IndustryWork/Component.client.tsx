@@ -113,17 +113,21 @@ export const IndustryWorkClient = ({
               className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
               data-swap="text"
               href={work.href}
-              // Tags the navigation `work-open`: the root fades while the
-              // media below morphs into the case-study hero (see
-              // `view-transition.css` `.morph-hero`).
+              // Tags the navigation `work-open`: the root fades, the media
+              // below centers vertically, expands to full screen, and holds alone,
+              // then the new route fades in as the media travels to the
+              // case-study hero and, last, shrinks into it
+              // (see `view-transition.css` `.morph-hero`).
               transitionTypes={[...workOpenTransitionTypes]}
             >
               View case study
             </Link>
           </div>
 
-          {/* Shared element: on "View case study" this box morphs into the
-              case-study hero media's rect — travel first, then grow
+          {/* Shared element: on "View case study" this box centers
+              vertically, expands to full screen, holds there alone through
+              the route swap, then travels to the case-study hero media's
+              rect and shrinks into it as the final beat
               (`sequenceWorkImageMorph`; React fires `onShare` on this,
               the unmounting, side). Matching `name` in `CaseStudyHero*`. */}
           <ViewTransition
@@ -147,7 +151,9 @@ export const IndustryWorkClient = ({
                     htmlElement={null}
                     imgClassName="object-cover"
                     resource={work.media}
-                    size="(max-width: 1024px) 100vw, 50vw"
+                    // Full-width source on purpose: the work-open transition
+                    // scales this exact raster to full screen and holds it.
+                    size="100vw"
                   />
                 ) : null}
               </div>
