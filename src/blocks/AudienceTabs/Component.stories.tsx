@@ -40,6 +40,8 @@ const meta = {
         id: 'executives',
         title: 'Executives & Founders',
         intro: 'Build a brand for the business you’re becoming.',
+        description:
+          'Strategic clarity first, then the identity and communications to carry it forward.',
         items: [
           {
             id: 'i1',
@@ -74,6 +76,7 @@ const meta = {
         id: 'product',
         title: 'Product & Digital Teams',
         intro: 'Make complex digital experiences easier to use.',
+        description: 'UX, design systems, and platforms that live up to the brand promise.',
         items: [
           {
             id: 'i1',
