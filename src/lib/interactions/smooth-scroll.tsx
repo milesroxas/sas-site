@@ -28,7 +28,7 @@ export function SmoothScroll({ root = true, options = {}, children }: SmoothScro
       root={root}
       options={{
         ...options,
-        lerp: options.lerp ?? 0.125,
+        lerp: options.lerp ?? 0.16,
         autoRaf: false,
         anchors: true,
         autoToggle: true,

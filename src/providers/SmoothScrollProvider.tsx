@@ -19,10 +19,11 @@ function shouldPreventLenisSmooth(node: HTMLElement | null): boolean {
 
 /** Defaults tuned for full-site scroll: touch sync, tempus RAF, and safe prevent targets. */
 export const rootLenisOptions: LenisOptions = {
-  lerp: 0.09,
+  lerp: 0.16,
   wheelMultiplier: 1,
   touchMultiplier: 1.15,
   syncTouch: true,
+  syncTouchLerp: 0.14,
   smoothWheel: true,
   anchors: true,
   autoToggle: true,
