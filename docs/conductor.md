@@ -85,6 +85,7 @@ A hand-made worktree (`git worktree add …`) that copies the main `.env` shares
 |---------|-------------|
 | Run: `no .env in this workspace` | Setup never ran — Conductor → Run setup script, or `bash .conductor/setup.sh` |
 | `Docker is not running` | Start Docker Desktop; Run re-ensures the container |
+| Dev server reads/writes the shared `payload` DB although `.env` names `payload_<city>` | Launcher injected `POSTGRES_URL` into the process env (Next.js prefers process env over `.env`). `lib.sh` exports the workspace URL explicitly; restart Run ▶ |
 | `.env.local sets POSTGRES_URL to a database other than …` | `vercel env pull` ran in the workspace. `mv .env.local .env.local.neon-bak`, restart |
 | `$CONDUCTOR_ROOT_PATH/.env not found` | Copy your main checkout's `.env` to `~/conductor/repos/sas-site/.env` |
 | Setup slow (~30 s) on "creating database" | Something is connected to `payload` (main dev server), so `TEMPLATE` was refused and it fell back to dump/restore. Normal |

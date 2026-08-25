@@ -107,6 +107,14 @@ assert_no_db_override() {
 # archive.sh sources lib.sh only to drop the DB; a stale .env.local must not block archiving.
 [ "${CONDUCTOR_ARCHIVING:-0}" = 1 ] || assert_no_db_override
 
+# The launcher (Conductor's Run button) can hand the script a process env that
+# already contains POSTGRES_URL from the root clone's .env, and Next.js lets the
+# process env win over the workspace .env — the dev server then silently uses
+# the shared 'payload' DB while the banner claims payload_<city>. Pin both the
+# DB URL and the public URL in the process env so .env and reality agree.
+export POSTGRES_URL="postgresql://postgres@$DB_HOST/$DB_NAME"
+export NEXT_PUBLIC_SERVER_URL="http://localhost:$PORT"
+
 # ---------------------------------------------------------------------------
 # Postgres (one shared container, one DB per workspace)
 # ---------------------------------------------------------------------------
