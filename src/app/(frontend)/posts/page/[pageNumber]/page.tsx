@@ -1,9 +1,13 @@
 import configPromise from '@payload-config'
+import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next/types'
 import { getPayload } from 'payload'
+import { insightsIndexHeroFallback, queryInsightsIndex } from '@/CollectionIndexes/queries'
+import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PageRange } from '@/components/PageRange'
 import { Pagination } from '@/components/Pagination'
+import { RenderHero } from '@/heros/RenderHero'
 import { CollectionArchive } from '@/sections/CollectionArchive'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import PageClient from './page.client'
@@ -18,7 +22,10 @@ type Args = {
 
 export default async function Page({ params: paramsPromise }: Args) {
   const { pageNumber } = await paramsPromise
+  const { isEnabled: draft } = await draftMode()
   const payload = await getPayload({ config: configPromise })
+  const postsIndex = await queryInsightsIndex()
+  const hero = postsIndex?.hero?.title ? postsIndex.hero : insightsIndexHeroFallback
 
   const sanitizedPageNumber = Number(pageNumber)
 
@@ -33,12 +40,11 @@ export default async function Page({ params: paramsPromise }: Args) {
   })
 
   return (
-    <div className="pt-24 pb-24">
+    <div className="pb-24">
       <PageClient />
-      <RevealSection className="container mb-16">
-        <div className="prose dark:prose-invert max-w-none">
-          <h1 className="mb-12 text-display">Posts</h1>
-        </div>
+      {draft && <LivePreviewListener />}
+      <RevealSection>
+        <RenderHero {...hero} />
       </RevealSection>
 
       <RevealSection className="container mb-8" delayMs={60}>

@@ -883,6 +883,10 @@
   --tertiary-foreground: oklch(0.985 0 0);
   --brand: oklch(0.87 0.14 85);
   --brand-foreground: oklch(0.22 0.04 75);
+  /* Active/selected indicator green. Per-theme lightness keeps ≥3:1 against
+     --background (WCAG 1.4.11 non-text contrast); light value also clears
+     4.5:1 as text ink. Distinct from --success (teal, status surfaces). */
+  --active: oklch(0.52 0.14 150);
 }
 
 /* Header/Component.client.tsx toggles this attribute past a small scroll
@@ -936,6 +940,7 @@ html[data-scrolled] {
   --tertiary-foreground: oklch(0.9 0 0);
   --brand: oklch(0.5 0.12 75);
   --brand-foreground: oklch(0.94 0.01 95);
+  --active: oklch(0.75 0.16 150);
 }
 
 /* One rendering model for both themes: default (non-antialiased) smoothing
@@ -990,6 +995,7 @@ html {
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+  --color-active: var(--active);
   --font-heading: var(--font-geist-sans);
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
@@ -1046,13 +1052,43 @@ html {
   }
 }
 
+/* Client-side filter swaps (sections/InsightsBrowse): the outgoing grid fades
+   fast, the incoming set re-staggers in — exit stays shorter than enter. The
+   swap flip waits out this exit (GRID_EXIT_MS in the section must match). */
+.filter-swap {
+  transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.filter-swap[data-exiting] {
+  opacity: 0;
+}
+
+.filter-swap-item {
+  opacity: 0;
+  transform: translate3d(0, 1rem, 0);
+  animation: reveal-stagger-fade 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--stagger, 0) * 40ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter-swap {
+    transition: none;
+  }
+
+  .filter-swap-item {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
 /* Admin bar (components/AdminBar) is fixed to the viewport bottom; lift the
    fixed footer above it and give the page frame matching extra room. The bar
    hides below Payload's small breakpoint, so scope both rules to match. */
 @media (width >= 48rem) {
   /* 'chromeless' frames (SiteChrome on demo routes) have no fixed footer to
      make room for. */
-  html[data-admin-bar] [data-page-frame]:not([data-page-frame='chromeless']) {
+  html[data-admin-bar] [data-page-frame]:not([data-page-frame="chromeless"]) {
     padding-bottom: calc(var(--footer-height) + var(--admin-bar-height));
   }
 

@@ -33,6 +33,17 @@ export const generatePreviewPath = ({ collection, slug }: Props) => {
   return `/next/preview?${encodedParams.toString()}`
 }
 
+/** Preview URL for a singleton global published at a fixed path (e.g. collection index pages). */
+export const generateGlobalPreviewPath = ({ global, path }: { global: string; path: string }) => {
+  const encodedParams = new URLSearchParams({
+    path,
+    global,
+    previewSecret: process.env.PREVIEW_SECRET || '',
+  })
+
+  return `/next/preview?${encodedParams.toString()}`
+}
+
 /** Preview URL for the Home global (always `/`). */
 export const generateHomePreviewPath = (_args: { req: PayloadRequest }) => {
   const encodedParams = new URLSearchParams({

@@ -1,17 +1,25 @@
 import configPromise from '@payload-config'
+import { draftMode } from 'next/headers'
 import type { Metadata } from 'next/types'
 import { getPayload } from 'payload'
+import { insightsIndexHeroFallback, queryInsightsIndex } from '@/CollectionIndexes/queries'
+import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PageRange } from '@/components/PageRange'
 import { Pagination } from '@/components/Pagination'
+import { RenderHero } from '@/heros/RenderHero'
 import { CollectionArchive } from '@/sections/CollectionArchive'
 import { RevealSection } from '@/shared/ui/reveal-section'
+import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 
-export const dynamic = 'force-static'
 export const revalidate = 600
 
+// fallow-ignore-next-line complexity -- CRAP flags coverage gap; straightforward RSC page
 export default async function Page() {
+  const { isEnabled: draft } = await draftMode()
   const payload = await getPayload({ config: configPromise })
+  const postsIndex = await queryInsightsIndex()
+  const hero = postsIndex?.hero?.title ? postsIndex.hero : insightsIndexHeroFallback
 
   const posts = await payload.find({
     collection: 'posts',
@@ -27,12 +35,11 @@ export default async function Page() {
   })
 
   return (
-    <div className="pt-24 pb-24">
+    <div className="pb-24">
       <PageClient />
-      <RevealSection className="container mb-16" delayMs={0}>
-        <div className="prose dark:prose-invert max-w-none">
-          <h1 className="mb-12 text-display">Posts</h1>
-        </div>
+      {draft && <LivePreviewListener />}
+      <RevealSection delayMs={0}>
+        <RenderHero {...hero} />
       </RevealSection>
 
       <RevealSection className="container mb-8" delayMs={60}>
@@ -55,8 +62,8 @@ export default async function Page() {
   )
 }
 
-export function generateMetadata(): Metadata {
-  return {
-    title: `Payload Website Template Posts`,
-  }
+export async function generateMetadata(): Promise<Metadata> {
+  const postsIndex = await queryInsightsIndex()
+
+  return generateMeta({ doc: postsIndex, pathname: '/posts' })
 }

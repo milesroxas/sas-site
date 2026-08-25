@@ -12,6 +12,7 @@ import {
   CardTitle,
   Card as CardUi,
 } from '@/components/ui/card'
+import { ProgressiveBlur } from '@/components/ui/progressive-blur'
 import type { Post } from '@/payload-types'
 import { forwardNavTransitionTypes, postImageVtName } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
@@ -29,6 +30,7 @@ const variantClassNames: Record<CardVariant, string> = {
   // Split renders its own layout branch; no CardUi chrome to override.
   split: '',
   overlay: 'relative min-h-80 justify-end bg-muted ring-0 text-white',
+  backdrop: 'relative isolate aspect-4/3 sm:aspect-3/2 justify-end bg-muted ring-0',
 }
 
 export const Card: React.FC<{
@@ -60,6 +62,8 @@ export const Card: React.FC<{
 
   const isOpen = variant === 'open'
   const isOverlay = variant === 'overlay'
+  const isBackdrop = variant === 'backdrop'
+  const isMediaBackground = isOverlay || isBackdrop
 
   if (variant === 'split') {
     const firstCategory = hasCategories
@@ -125,10 +129,10 @@ export const Card: React.FC<{
 
   const media = metaImage && typeof metaImage !== 'string' && (
     <Media
-      fill={isOverlay}
-      imgClassName={isOverlay ? 'object-cover' : undefined}
+      fill={isMediaBackground}
+      imgClassName={isMediaBackground ? 'object-cover' : undefined}
       resource={metaImage}
-      size="33vw"
+      size={isBackdrop ? '(min-width: 64rem) 45vw, 100vw' : '33vw'}
     />
   )
 
@@ -141,8 +145,8 @@ export const Card: React.FC<{
       )}
       ref={card.ref}
     >
-      <div className={cn('relative w-full', isOverlay && 'absolute inset-0')}>
-        {!metaImage && !isOverlay && <div>No image</div>}
+      <div className={cn('relative w-full', isMediaBackground && 'absolute inset-0')}>
+        {!metaImage && !isMediaBackground && <div>No image</div>}
         {media &&
           (slug ? (
             // Shared element: morphs into the post hero image on navigation. The
@@ -161,7 +165,17 @@ export const Card: React.FC<{
           className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-b from-transparent to-black/80"
         />
       )}
-      <CardHeader className={cn(isOpen && 'px-0', isOverlay && 'relative')}>
+      {isBackdrop && (
+        <>
+          <ProgressiveBlur className="absolute inset-x-0 bottom-0 h-2/3" />
+          {/* Token scrim doubles as the no-backdrop-filter legibility fallback. */}
+          <div
+            aria-hidden
+            className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-card/85 via-card/40 to-transparent"
+          />
+        </>
+      )}
+      <CardHeader className={cn(isOpen && 'px-0', isMediaBackground && 'relative')}>
         {showCategories && hasCategories && (
           <CardDescription className={cn('uppercase', isOverlay && 'text-white/70')}>
             {categories?.map((category, index) => {
@@ -185,7 +199,7 @@ export const Card: React.FC<{
           </CardDescription>
         )}
         {titleToUse && (
-          <CardTitle>
+          <CardTitle className={cn(isBackdrop && 'text-xl/snug font-normal')}>
             <Link
               className="hover:underline"
               href={href}
@@ -197,7 +211,8 @@ export const Card: React.FC<{
           </CardTitle>
         )}
       </CardHeader>
-      {description && (
+      {/* Backdrop keeps the surface title-only — the media is the content. */}
+      {description && !isBackdrop && (
         <CardContent className={cn(isOpen && 'px-0', isOverlay && 'relative text-white/80')}>
           <p>{sanitizedDescription}</p>
         </CardContent>

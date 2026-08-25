@@ -41,7 +41,7 @@ export const hero: Field = {
       name: 'eyebrow',
       type: 'text',
       admin: {
-        condition: (_, { type } = {}) => type === 'mediumImpact',
+        condition: (_, { type } = {}) => ['lowImpact', 'mediumImpact'].includes(type),
         description: 'Small label above the title, e.g. an area of expertise.',
       },
     },
@@ -49,7 +49,7 @@ export const hero: Field = {
       name: 'title',
       type: 'text',
       admin: {
-        condition: (_, { type } = {}) => ['highImpact', 'mediumImpact'].includes(type),
+        condition: (_, { type } = {}) => ['highImpact', 'lowImpact', 'mediumImpact'].includes(type),
       },
     },
     {

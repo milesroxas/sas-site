@@ -47,6 +47,15 @@ export const Overlay: Story = {
   render: renderInColumn,
 }
 
+export const Backdrop: Story = {
+  args: { variant: 'backdrop', showCategories: false },
+  render: (args) => (
+    <div className="w-[36rem] max-w-full">
+      <Card {...args} />
+    </div>
+  ),
+}
+
 export const Split: Story = {
   args: { variant: 'split' },
   render: (args) => (

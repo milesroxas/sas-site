@@ -32,6 +32,7 @@ import { newsletterPublicEndpoints } from './endpoints/newsletter'
 import { Footer } from './Footer/config'
 import { askEmbeddingsTable } from './features/ask/schema'
 import { Header } from './Header/config'
+import { InsightsIndex, WorksIndex } from './CollectionIndexes/config'
 import { Home } from './Home/config'
 import { newsletterSendTask } from './jobs/newsletterSend'
 import { plugins } from './plugins'
@@ -164,7 +165,7 @@ export default buildConfig({
       },
     }),
   ],
-  globals: [Home, Header, Footer],
+  globals: [Home, InsightsIndex, WorksIndex, Header, Footer],
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {
