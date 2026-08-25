@@ -8,7 +8,9 @@ import type {
   Media,
   Page,
   Post,
+  InsightsIndex,
   WorkPage,
+  WorksIndex,
 } from '../payload-types'
 import { getServerSideURL } from './getURL'
 import { mergeOpenGraph } from './mergeOpenGraph'
@@ -35,6 +37,8 @@ export const generateMeta = async (args: {
     | Partial<ExpertisePage>
     | Partial<AudiencePage>
     | Partial<Home>
+    | Partial<InsightsIndex>
+    | Partial<WorksIndex>
     | null
   /** Site-relative path of the page, e.g. '/posts/my-post'. Drives the canonical URL. */
   pathname?: string

@@ -156,12 +156,16 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     home: Home;
+    'insights-index': InsightsIndex;
+    'works-index': WorksIndex;
     header: Header;
     footer: Footer;
     'site-info': SiteInfo;
   };
   globalsSelect: {
     home: HomeSelect<false> | HomeSelect<true>;
+    'insights-index': InsightsIndexSelect<false> | InsightsIndexSelect<true>;
+    'works-index': WorksIndexSelect<false> | WorksIndexSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-info': SiteInfoSelect<false> | SiteInfoSelect<true>;
@@ -3080,7 +3084,7 @@ export interface ArchiveBlock {
   /**
    * How each post card renders in this archive.
    */
-  cardVariant?: ('contained' | 'open' | 'overlay' | 'split') | null;
+  cardVariant?: ('contained' | 'open' | 'overlay' | 'split' | 'backdrop') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'archive';
@@ -7011,6 +7015,198 @@ export interface HomeFeaturedWorkBlock {
   blockType: 'homeFeaturedWork';
 }
 /**
+ * The insights hub published at /insights (also opens the /posts archive). Hero and SEO only — the lists are automatic.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "insights-index".
+ */
+export interface InsightsIndex {
+  id: number;
+  title: string;
+  hero: {
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    /**
+     * Small label above the title, e.g. an area of expertise.
+     */
+    eyebrow?: string | null;
+    title?: string | null;
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Short supporting paragraph anchored to the bottom of the hero.
+     */
+    description?: string | null;
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null);
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+  };
+  meta?: {
+    /**
+     * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
+     */
+    title?: string | null;
+    /**
+     * Default image for search and social previews. Landscape, at least 1200×630px. Also used for share cards unless an Open Graph image is set below.
+     */
+    image?: (number | null) | Media;
+    /**
+     * The short summary under the title in Google results. Aim for 100–150 characters — front-load the most important message.
+     */
+    description?: string | null;
+    /**
+     * Controls how this page looks when shared on LinkedIn, Facebook, Slack, iMessage, etc. Every field is optional — anything left blank falls back to the SEO fields above.
+     */
+    og?: {
+      /**
+       * Headline on the share card. Can be punchier than the SEO title — no need to include "| Suits & Sandals". Blank = SEO title.
+       */
+      title?: string | null;
+      /**
+       * One or two sentences under the share-card headline. Keep it under ~200 characters; platforms truncate longer text. Blank = SEO description.
+       */
+      description?: string | null;
+      /**
+       * Share-card image. Landscape 1200×630px (1.91:1) — square or portrait images get cropped by most platforms. Blank = SEO image.
+       */
+      image?: (number | null) | Media;
+    };
+  };
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * The works index published at /works. Hero and SEO only — the list is automatic.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "works-index".
+ */
+export interface WorksIndex {
+  id: number;
+  title: string;
+  hero: {
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    /**
+     * Small label above the title, e.g. an area of expertise.
+     */
+    eyebrow?: string | null;
+    title?: string | null;
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Short supporting paragraph anchored to the bottom of the hero.
+     */
+    description?: string | null;
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null);
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+  };
+  meta?: {
+    /**
+     * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
+     */
+    title?: string | null;
+    /**
+     * Default image for search and social previews. Landscape, at least 1200×630px. Also used for share cards unless an Open Graph image is set below.
+     */
+    image?: (number | null) | Media;
+    /**
+     * The short summary under the title in Google results. Aim for 100–150 characters — front-load the most important message.
+     */
+    description?: string | null;
+    /**
+     * Controls how this page looks when shared on LinkedIn, Facebook, Slack, iMessage, etc. Every field is optional — anything left blank falls back to the SEO fields above.
+     */
+    og?: {
+      /**
+       * Headline on the share card. Can be punchier than the SEO title — no need to include "| Suits & Sandals". Blank = SEO title.
+       */
+      title?: string | null;
+      /**
+       * One or two sentences under the share-card headline. Keep it under ~200 characters; platforms truncate longer text. Blank = SEO description.
+       */
+      description?: string | null;
+      /**
+       * Share-card image. Landscape 1200×630px (1.91:1) — square or portrait images get cropped by most platforms. Blank = SEO image.
+       */
+      image?: (number | null) | Media;
+    };
+  };
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header".
  */
@@ -7202,6 +7398,106 @@ export interface HomeFeaturedWorkBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "insights-index_select".
+ */
+export interface InsightsIndexSelect<T extends boolean = true> {
+  title?: T;
+  hero?:
+    | T
+    | {
+        type?: T;
+        eyebrow?: T;
+        title?: T;
+        richText?: T;
+        description?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                    appearance?: T;
+                  };
+              id?: T;
+            };
+        media?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+        og?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+      };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "works-index_select".
+ */
+export interface WorksIndexSelect<T extends boolean = true> {
+  title?: T;
+  hero?:
+    | T
+    | {
+        type?: T;
+        eyebrow?: T;
+        title?: T;
+        richText?: T;
+        description?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                    appearance?: T;
+                  };
+              id?: T;
+            };
+        media?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+        og?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+      };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -7350,7 +7646,7 @@ export interface TaskSchedulePublish {
           relationTo: 'testimonials';
           value: number | Testimonial;
         } | null);
-    global?: 'home' | null;
+    global?: ('home' | 'insights-index' | 'works-index') | null;
     user?: (number | null) | User;
   };
   output?: unknown;

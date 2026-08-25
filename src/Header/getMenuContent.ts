@@ -17,13 +17,6 @@ export type MenuContent = {
   pageMedia: Record<string, MenuMedia>
 }
 
-export const EMPTY_MENU_CONTENT: MenuContent = {
-  expertise: [],
-  audiences: [],
-  works: [],
-  pageMedia: {},
-}
-
 /** Industry eyebrow via work page → case study → project → first industry. */
 function workEyebrow(doc: WorkPage): string | null {
   const caseStudy = doc.caseStudy

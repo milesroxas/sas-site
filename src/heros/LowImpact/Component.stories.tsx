@@ -1,20 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { heading, paragraph, richText, text } from '@/blocks/fixtures'
+import { paragraph, richText, text } from '@/blocks/fixtures'
 import { LowImpactHero } from './index'
 
 const meta = {
   title: 'Heroes/LowImpact',
   component: LowImpactHero,
   parameters: {
-    layout: 'padded',
+    layout: 'fullscreen',
   },
   args: {
     type: 'lowImpact',
+    eyebrow: 'Insights',
+    title: 'News & Insights',
     richText: richText(
-      heading('h1', text('A quieter page opening')),
       paragraph(
         text(
-          'Low-impact heroes lead with rich text instead of media — used on simpler interior pages.',
+          'Plain-page hero: a single narrow reading column driven by rich text. Used for utility and legal pages where the content is the hero.',
         ),
       ),
     ),
