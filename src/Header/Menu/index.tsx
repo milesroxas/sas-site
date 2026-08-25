@@ -603,6 +603,11 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                     borderRadius,
                     boxShadow,
                     duration: FRAME_DURATION,
+                    // No immediateRender: painting the from-values at build time
+                    // stamps an identity transform on the frame, which makes it
+                    // the containing block for every fixed descendant (demo
+                    // shell sidebar) while the menu is still closed.
+                    immediateRender: false,
                   },
                   0,
                 )
@@ -612,6 +617,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                   {
                     clipPath: motion.clipPath,
                     duration: FRAME_DURATION,
+                    immediateRender: false,
                   },
                   CLIP_LAG,
                 )

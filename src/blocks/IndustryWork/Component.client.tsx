@@ -11,6 +11,13 @@ import {
 } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
+import { cursorTarget, useCursorProximitySource } from '@/features/cursor'
+import {
+  INDUSTRY_WORK_MEDIA,
+  RefractionMedia,
+  type RefractionMediaProps,
+  useWebglMediaLayer,
+} from '@/features/immersive'
 import {
   sequenceWorkImageMorph,
   WORK_OPEN,
@@ -23,6 +30,7 @@ import {
   useRevealSwap,
 } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
+import { webglMediaSrc } from '@/utilities/webglMediaSrc'
 
 export type IndustryWorkPanel = {
   id: string
@@ -39,6 +47,69 @@ export type IndustryWorkPanel = {
  * heading → title column → media → details.
  */
 const INDUSTRY_WORK_MEDIA_OFFSET = 0.2
+
+/**
+ * Main media with the shipped hover effect: the DOM `Media` paints first and
+ * stays mounted as the fallback (reduced motion, absent GPUs, lost contexts),
+ * then a WebGL canvas loads the same URL and cross-fades in on top with the
+ * `INDUSTRY_WORK_MEDIA` refraction lens + cursor Y tilt. The DOM layer (and
+ * the `bg-muted` loading placeholder, which lives on it rather than the panel
+ * box) fades out underneath — the tilt's perspective inset must reveal the
+ * section background, not a gray box or a static copy of the same media.
+ */
+const IndustryWorkMedia = ({
+  media,
+  proximity,
+}: {
+  media: WorkEntry['media']
+  /** Cursor-target proximity source; pre-activates the effects on approach. */
+  proximity?: RefractionMediaProps['subscribeProximity']
+}) => {
+  const src = media ? webglMediaSrc(media) || undefined : undefined
+  const isVideo = Boolean(media?.mimeType?.includes('video'))
+  const { enabled, ready, handleReady } = useWebglMediaLayer(src)
+
+  if (!media) return null
+
+  return (
+    <>
+      <div
+        className={cn(
+          'absolute inset-0 bg-muted transition-opacity duration-500',
+          ready && 'opacity-0',
+        )}
+      >
+        <Media
+          fill
+          htmlElement={null}
+          imgClassName="object-cover"
+          resource={media}
+          // Matches the layout: full width below lg, ~half the 96rem
+          // container (cols 4–10) above. The work-open morph doesn't need a
+          // bigger source — view-transition snapshots rasterize at painted
+          // size, and the fullscreen hold is painted by the case-study
+          // hero's own 100vw image on the destination page.
+          size="(max-width: 1024px) 100vw, 50vw"
+        />
+      </div>
+      {enabled && src ? (
+        <div
+          aria-hidden
+          className={cn('absolute inset-0 transition-opacity duration-500', !ready && 'opacity-0')}
+        >
+          <RefractionMedia
+            className="size-full"
+            onReady={handleReady}
+            src={src}
+            subscribeProximity={proximity}
+            video={isVideo}
+            {...INDUSTRY_WORK_MEDIA}
+          />
+        </div>
+      ) : null}
+    </>
+  )
+}
 
 const MetaGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-2">
@@ -71,6 +142,11 @@ export const IndustryWorkClient = ({
   const rootRef = useRef<HTMLDivElement>(null)
   const selectIndustry = useRevealSwap({ rootRef, active, onSwap: setActive })
 
+  // The media link is the cursor target; its proximity (0–1, shared with the
+  // ring overlay) pre-activates the WebGL hover effects on approach.
+  const mediaLinkRef = useRef<HTMLAnchorElement>(null)
+  const mediaProximity = useCursorProximitySource(mediaLinkRef)
+
   const current = panels[active] ?? panels[0]
   const { work } = current
 
@@ -101,16 +177,23 @@ export const IndustryWorkClient = ({
 
         <div className="grid grid-cols-1 gap-8 md:gap-10 lg:grid-cols-12 lg:gap-x-8 lg:gap-y-0">
           {/* Title column overlaps the media's left edge; the top padding is
-              the design's hanging offset from the media's top. */}
+              the design's hanging offset from the media's top. At lg its
+              transparent empty area sits above the media link, which would
+              swallow its clicks and release the custom cursor (the provider
+              hit-tests targets for cover) — so the column itself passes
+              pointer events through and only its content takes them. */}
           <div
-            className="relative z-10 flex flex-col items-start gap-6 lg:col-start-1 lg:col-end-6 lg:row-start-1 lg:gap-10 lg:pt-20"
+            className="relative z-10 flex flex-col items-start gap-6 lg:pointer-events-none lg:col-start-1 lg:col-end-6 lg:row-start-1 lg:gap-10 lg:pt-20"
             data-reveal
           >
-            <h3 className="text-heading-3 font-light text-foreground" data-swap="text">
+            <h3
+              className="text-heading-3 font-light text-foreground lg:pointer-events-auto"
+              data-swap="text"
+            >
               {work.title}
             </h3>
             <Link
-              className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
+              className="text-sm font-medium text-foreground underline-offset-4 hover:underline lg:pointer-events-auto"
               data-swap="text"
               href={work.href}
               // Tags the navigation `work-open`: the root fades, the media
@@ -140,23 +223,33 @@ export const IndustryWorkClient = ({
             }
             share="morph-hero"
           >
+            {/* No bg on the box itself: the loading placeholder rides the DOM
+                media layer inside, so the WebGL tilt's perspective inset shows
+                the section background instead of a muted box. No
+                overflow-hidden either — the WebGL canvas bleeds past the box
+                (the preset's `bleed`) so the warp can melt the media's edges
+                outward; the reveal's clip-path handles entrance masking and is
+                cleared on completion. */}
             <div
-              className="relative -order-1 aspect-8/5 w-full overflow-hidden bg-muted lg:order-0 lg:col-start-4 lg:col-end-10 lg:row-start-1"
+              className="relative -order-1 aspect-8/5 w-full lg:order-0 lg:col-start-4 lg:col-end-10 lg:row-start-1"
               data-reveal="media"
             >
-              <div className="absolute inset-0" data-swap="media">
-                {work.media ? (
-                  <Media
-                    fill
-                    htmlElement={null}
-                    imgClassName="object-cover"
-                    resource={work.media}
-                    // Full-width source on purpose: the work-open transition
-                    // scales this exact raster to full screen and holds it.
-                    size="100vw"
-                  />
-                ) : null}
-              </div>
+              {/* The whole panel is the click surface into the work entry —
+                  same navigation (and work-open morph) as the text link. The
+                  `view` cursor ring materializes on approach, and the media
+                  effects pre-activate off the same proximity signal. */}
+              <Link
+                aria-label={`View case study: ${work.title}`}
+                className="absolute inset-0 block"
+                href={work.href}
+                ref={mediaLinkRef}
+                transitionTypes={[...workOpenTransitionTypes]}
+                {...cursorTarget({ variant: 'view' })}
+              >
+                <div className="absolute inset-0" data-swap="media">
+                  <IndustryWorkMedia media={work.media} proximity={mediaProximity} />
+                </div>
+              </Link>
             </div>
           </ViewTransition>
 

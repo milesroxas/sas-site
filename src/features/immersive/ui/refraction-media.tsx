@@ -42,6 +42,16 @@ import {
  * the glass mesh's refraction eases to zero so every fragment reproduces the
  * backdrop exactly — no fade or opacity pass.
  *
+ * Optionally the whole media plane tilts on Y toward the damped cursor
+ * (`tilt`, degrees at the horizontal edges) — off by default, riding the same
+ * hover ease so the plane settles back flat on leave.
+ *
+ * With `bleed` the canvas extends past the container and the media renders
+ * inset within it; the warp then displaces the media's *silhouette* — alpha
+ * coverage is computed after displacement, and `melt` adds a dedicated
+ * noise band along the boundary — so the effect escapes the bounding box
+ * instead of clipping at it.
+ *
  * Renders in its own small classic-renderer canvas rather than the global one
  * (GlobalCanvas prefers WebGPU, where raw GLSL ShaderMaterial is unsupported)
  * and uses frameloop="demand": zero GPU work while idle — frames are only
@@ -67,6 +77,12 @@ uniform float uNoiseScale;
 uniform float uNoiseSpeed;
 uniform float uSmear;
 uniform float uHighlight;
+uniform float uInset;
+uniform float uMelt;
+uniform float uMeltScale;
+uniform float uMeltSpeed;
+uniform float uMeltBand;
+uniform float uMeltFeather;
 varying vec2 vUv;
 
 // Simplex 3D noise (Ashima Arts / Stefan Gustavson, MIT).
@@ -140,10 +156,29 @@ vec2 coverUv(vec2 uv) {
   return (uv - 0.5) * uCover + 0.5;
 }
 
+// Anti-aliased coverage of the media rect for a (possibly displaced) media-
+// local coordinate. Constant-width smoothstep instead of fwidth(): the call
+// sits behind a per-pixel mask branch, where derivatives are undefined. With
+// no bleed the rect fills the canvas exactly — short-circuit to opaque so the
+// legacy full-bleed layout can never grow a translucent seam at its border.
+float coverage(vec2 q) {
+  if (uInset <= 0.0) return 1.0;
+  vec2 soft = vec2(uMeltFeather + 0.0015);
+  vec2 c = smoothstep(vec2(0.0), soft, q) * (vec2(1.0) - smoothstep(vec2(1.0) - soft, vec2(1.0), q));
+  return c.x * c.y;
+}
+
 void main() {
+  // Media-local UV: 0–1 spans the media rect inset from the canvas by the
+  // bleed margin. With no bleed uInset is 0 and this is exactly vUv, so every
+  // parameter keeps its original panel-relative meaning.
+  float span = 1.0 - 2.0 * uInset;
+  vec2 mediaUv = (vUv - vec2(uInset)) / span;
+  vec2 mouse = (uMouse - vec2(uInset)) / span;
+
   // Distances measured in aspect-corrected space so the lens stays circular.
   vec2 aspect = vec2(uAspect, 1.0);
-  float dist = length((vUv - uMouse) * aspect);
+  float dist = length((mediaUv - mouse) * aspect);
 
   // Two falloff shapes: a ringed smoothstep lens with a discernible boundary,
   // and a gaussian that fades to nothing with no boundary at all. uEdge blends
@@ -153,39 +188,59 @@ void main() {
   float gauss = exp(-3.0 * dist * dist / (uRadius * uRadius));
   float mask = mix(gauss, ring, uEdge) * uHover;
 
-  // Every term below scales by mask, so outside the lens the result is just the
-  // untouched texture. Taking that path early skips two simplex evaluations and
-  // two texture fetches — on a full-bleed surface most of the screen, and all
-  // of it while idle. The mask is spatially coherent, so warps branch uniformly.
+  // Every term below scales by mask, so outside the lens the result is just
+  // the untouched texture clipped to the media rect. Taking that path early
+  // skips the simplex evaluations and extra texture fetches — on a full-bleed
+  // surface most of the screen, and all of it while idle. The mask is
+  // spatially coherent, so warps branch uniformly.
   if (mask < 0.002) {
-    gl_FragColor = vec4(texture2D(uMap, coverUv(vUv)).rgb, 1.0);
+    float cov = coverage(mediaUv);
+    if (cov <= 0.0) { gl_FragColor = vec4(0.0); return; }
+    gl_FragColor = vec4(texture2D(uMap, coverUv(mediaUv)).rgb, cov);
     return;
   }
 
   // Refraction: pull space toward the cursor. Zero at the mask edge, so the
   // lens blends seamlessly into the undistorted image.
-  vec2 displacement = (uMouse - vUv) * uRefraction * mask;
+  vec2 displacement = (mouse - mediaUv) * uRefraction * mask;
 
   // Animated noise wobble inside the lens.
-  vec3 noiseUv = vec3(vUv * aspect * uNoiseScale, uTime * uNoiseSpeed);
+  vec3 noiseUv = vec3(mediaUv * aspect * uNoiseScale, uTime * uNoiseSpeed);
   displacement += vec2(snoise(noiseUv), snoise(noiseUv + 17.31)) * uDistortion * mask;
 
   // Directional smear trailing the pointer's velocity.
   displacement -= uVelocity * uSmear * mask;
 
+  // Edge melt: dedicated noise displacement in a band hugging the media
+  // rect's silhouette, riding the same cursor mask. Coverage is computed
+  // *after* displacement, so the boundary itself deforms — the image spills
+  // out into the bleed margin and caves back in near the cursor, instead of
+  // warping strictly inside a hard rectangle.
+  if (uInset > 0.0 && uMelt > 0.0) {
+    vec2 edgeD = min(mediaUv, 1.0 - mediaUv) * aspect;
+    float sd = min(edgeD.x, edgeD.y); // signed: negative out in the bleed
+    float band = exp(-(sd * sd) / (uMeltBand * uMeltBand));
+    vec3 meltUv = vec3(mediaUv * aspect * uMeltScale, uTime * uMeltSpeed + 43.7);
+    displacement += vec2(snoise(meltUv), snoise(meltUv + 31.7)) * uMelt * band * mask;
+  }
+
+  vec2 q = mediaUv + displacement;
+  float cov = coverage(q);
+  if (cov <= 0.0) { gl_FragColor = vec4(0.0); return; }
+
   // Chroma: disperse the total displacement per channel, like wavelength-
   // dependent refraction in real glass. No displacement = no fringing.
   vec3 color = vec3(
-    texture2D(uMap, coverUv(vUv + displacement * (1.0 + uChroma))).r,
-    texture2D(uMap, coverUv(vUv + displacement)).g,
-    texture2D(uMap, coverUv(vUv + displacement * (1.0 - uChroma))).b
+    texture2D(uMap, coverUv(mediaUv + displacement * (1.0 + uChroma))).r,
+    texture2D(uMap, coverUv(q)).g,
+    texture2D(uMap, coverUv(mediaUv + displacement * (1.0 - uChroma))).b
   );
 
   // Faint rim light peaking mid-falloff. Tied to the ring shape and scaled by
   // uEdge: an edgeless lens draws no rim.
   color += ring * (1.0 - ring) * 4.0 * uHighlight * uEdge * uHover;
 
-  gl_FragColor = vec4(color, 1.0);
+  gl_FragColor = vec4(color, cov);
 }
 `
 
@@ -210,6 +265,15 @@ export type RefractionMediaProps = {
   source?: GlassMediaSource | null
   /** Fired once the first texture is on the GPU — use it to reveal the canvas. */
   onReady?: () => void
+  /**
+   * External 0–1 activation source (1 = true hover) — e.g. the cursor
+   * provider's proximity via `useCursorProximitySource` from
+   * `@/features/cursor`, bound to a cursor target wrapping this panel. The
+   * hover effects (warp, tilt, glass) pre-activate at that strength as the
+   * pointer approaches, instead of waiting for it to enter the panel. The
+   * subscribe function must return its unsubscribe.
+   */
+  subscribeProximity?: (listener: (t: number) => void) => () => void
 
   // --- Screen-space warp (the original hover effect) ---
   /** Warp radius (spread) in plane UV units; 1 spans the panel's height. */
@@ -237,6 +301,32 @@ export type RefractionMediaProps = {
   /** Rim-light strength at the warp edge. */
   highlight?: number
 
+  // --- Edge bleed & melt (the effect escaping the media box) ---
+  /**
+   * Fraction of the container the canvas extends past it on every side
+   * (0 disables). The media itself keeps the container's rect; the margin is
+   * transparent room the warp and melt displace the media's *silhouette*
+   * into, so the effect isn't clipped at the bounding box. The parent chain
+   * must not clip (no overflow-hidden / residual clip-path) for the bleed to
+   * show. The glass lens mesh reads transparent bleed texels as black — keep
+   * `lensVisibility: 0` when bleeding.
+   */
+  bleed?: number
+  /**
+   * Amplitude of the edge-melt displacement in UV space (0–0.12 is
+   * sensible). Deforms the media's boundary itself near the cursor — spilling
+   * into the bleed and caving back in. Needs `bleed > 0`.
+   */
+  melt?: number
+  /** Spatial frequency of the edge-melt noise. */
+  meltScale?: number
+  /** Time scale of the edge-melt noise. */
+  meltSpeed?: number
+  /** Width of the band around the media's edge that melts, in UV space. */
+  meltBand?: number
+  /** Softness of the melted silhouette's alpha edge, in UV space. */
+  meltFeather?: number
+
   // --- Glass lens mesh (the dispersion technique) ---
   /** 0–1: how visible the glass mesh is (0 disables its refraction entirely). */
   lensVisibility?: number
@@ -259,6 +349,13 @@ export type RefractionMediaProps = {
   iorP?: number
 
   // --- Motion ---
+  /**
+   * Max Y tilt of the media plane in degrees, reached at the panel's
+   * horizontal edges. The plane presses away under the cursor and eases in
+   * and out with hover; the perspective inset reveals the container behind
+   * the transparent canvas, so give the panel a background. 0 disables.
+   */
+  tilt?: number
   /** Damping for the trailing cursor (higher = tighter follow). */
   follow?: number
   /** Damping for the hover fade in/out (higher = snappier). */
@@ -282,6 +379,12 @@ export const REFRACTION_MEDIA_DEFAULTS = {
   noiseSpeed: 0.4,
   smear: 0.02,
   highlight: 0.08,
+  bleed: 0,
+  melt: 0.05,
+  meltScale: 6,
+  meltSpeed: 0.4,
+  meltBand: 0.1,
+  meltFeather: 0.01,
   lensVisibility: 1,
   lensSpread: 0.22,
   lensDepth: 0.55,
@@ -294,6 +397,7 @@ export const REFRACTION_MEDIA_DEFAULTS = {
   iorC: 1.22,
   iorB: 1.22,
   iorP: 1.22,
+  tilt: 0,
   follow: 8,
   ease: 6,
 } as const satisfies Partial<RefractionMediaProps>
@@ -305,6 +409,7 @@ function RefractionScene({
   video = false,
   source,
   onReady,
+  subscribeProximity,
   spread = REFRACTION_MEDIA_DEFAULTS.spread,
   feather = REFRACTION_MEDIA_DEFAULTS.feather,
   edge = REFRACTION_MEDIA_DEFAULTS.edge,
@@ -315,6 +420,12 @@ function RefractionScene({
   noiseSpeed = REFRACTION_MEDIA_DEFAULTS.noiseSpeed,
   smear = REFRACTION_MEDIA_DEFAULTS.smear,
   highlight = REFRACTION_MEDIA_DEFAULTS.highlight,
+  bleed = REFRACTION_MEDIA_DEFAULTS.bleed,
+  melt = REFRACTION_MEDIA_DEFAULTS.melt,
+  meltScale = REFRACTION_MEDIA_DEFAULTS.meltScale,
+  meltSpeed = REFRACTION_MEDIA_DEFAULTS.meltSpeed,
+  meltBand = REFRACTION_MEDIA_DEFAULTS.meltBand,
+  meltFeather = REFRACTION_MEDIA_DEFAULTS.meltFeather,
   lensVisibility = REFRACTION_MEDIA_DEFAULTS.lensVisibility,
   lensSpread = REFRACTION_MEDIA_DEFAULTS.lensSpread,
   lensDepth = REFRACTION_MEDIA_DEFAULTS.lensDepth,
@@ -327,6 +438,7 @@ function RefractionScene({
   iorC = REFRACTION_MEDIA_DEFAULTS.iorC,
   iorB = REFRACTION_MEDIA_DEFAULTS.iorB,
   iorP = REFRACTION_MEDIA_DEFAULTS.iorP,
+  tilt = REFRACTION_MEDIA_DEFAULTS.tilt,
   follow = REFRACTION_MEDIA_DEFAULTS.follow,
   ease = REFRACTION_MEDIA_DEFAULTS.ease,
 }: SceneProps) {
@@ -335,11 +447,29 @@ function RefractionScene({
   const invalidate = useThree((state) => state.invalidate)
 
   const meshRef = useRef<Mesh>(null)
+  const backdropRef = useRef<Mesh>(null)
   const warpMaterialRef = useRef<ShaderMaterial>(null)
   const lensMaterialRef = useRef<ShaderMaterial>(null)
 
   const onScreen = useOnScreen()
   const pointer = usePointerTracking(onScreen)
+
+  // External activation (cursor-provider proximity): a ref fed by the
+  // subscription, read in useFrame — never React state. Each change requests
+  // a frame so the demand loop follows the approach.
+  const externalHover = useRef(0)
+  useEffect(() => {
+    if (!subscribeProximity) return
+    const unsubscribe = subscribeProximity((t) => {
+      if (externalHover.current === t) return
+      externalHover.current = t
+      invalidate()
+    })
+    return () => {
+      unsubscribe()
+      externalHover.current = 0
+    }
+  }, [subscribeProximity, invalidate])
 
   // Velocity state lives in refs and feeds uniforms via useFrame — never React
   // state (perf-never-set-state-in-useframe).
@@ -371,6 +501,12 @@ function RefractionScene({
       uNoiseSpeed: { value: 0.4 },
       uSmear: { value: 0.02 },
       uHighlight: { value: 0.08 },
+      uInset: { value: 0 },
+      uMelt: { value: 0 },
+      uMeltScale: { value: 6 },
+      uMeltSpeed: { value: 0.4 },
+      uMeltBand: { value: 0.1 },
+      uMeltFeather: { value: 0.01 },
     }),
     [],
   )
@@ -407,6 +543,14 @@ function RefractionScene({
     u.uNoiseSpeed.value = noiseSpeed
     u.uSmear.value = smear
     u.uHighlight.value = highlight
+    // Bleed margin in canvas UV: the wrapper grows by `bleed` per side, so a
+    // panel-relative fraction b maps to b / (1 + 2b) of the enlarged canvas.
+    u.uInset.value = bleed > 0 ? bleed / (1 + 2 * bleed) : 0
+    u.uMelt.value = melt
+    u.uMeltScale.value = meltScale
+    u.uMeltSpeed.value = meltSpeed
+    u.uMeltBand.value = meltBand
+    u.uMeltFeather.value = meltFeather
     invalidate()
   }, [
     spread,
@@ -419,8 +563,19 @@ function RefractionScene({
     noiseSpeed,
     smear,
     highlight,
+    bleed,
+    melt,
+    meltScale,
+    meltSpeed,
+    meltBand,
+    meltFeather,
     invalidate,
   ])
+
+  // Tilt applies to the mesh in useFrame; on the demand frameloop a prop
+  // change still needs to request the frame that picks it up.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tilt changes must request a frame without being read here
+  useEffect(() => invalidate(), [tilt, invalidate])
 
   useEffect(() => {
     const u = lensMaterialRef.current?.uniforms
@@ -458,9 +613,20 @@ function RefractionScene({
     velocity.x = MathUtils.damp(velocity.x, velocityTarget.current.x, follow, dt)
     velocity.y = MathUtils.damp(velocity.y, velocityTarget.current.y, follow, dt)
 
-    const hoverTarget = pointer.inside.current ? 1 : 0
+    // True hover wins; otherwise an external proximity source drives a
+    // partial activation while the pointer approaches the panel.
+    const hoverTarget = pointer.inside.current ? 1 : externalHover.current
     u.uHover.value = MathUtils.damp(u.uHover.value, hoverTarget, ease, dt)
     u.uTime.value += dt
+
+    // Y tilt toward the cursor: the edge under the pointer presses away, at
+    // full `tilt` degrees when the cursor reaches a horizontal edge. Driven by
+    // the damped mouse (trails, never snaps) and scaled by the hover ease, so
+    // it enters and settles back flat together with the warp.
+    const backdrop = backdropRef.current
+    if (backdrop) {
+      backdrop.rotation.y = (mouse.x - 0.5) * 2 * MathUtils.degToRad(tilt) * u.uHover.value
+    }
 
     // The glass rides the same damped pointer as the warp's center, and its
     // refraction shares the hover ease, scaled by how visible it should be.
@@ -494,10 +660,19 @@ function RefractionScene({
 
   return (
     <>
-      <mesh scale-x={viewport.width} scale-y={viewport.height} raycast={() => null}>
+      <mesh
+        ref={backdropRef}
+        scale-x={viewport.width}
+        scale-y={viewport.height}
+        raycast={() => null}
+      >
         <planeGeometry />
+        {/* Transparent only when bleeding: the melted silhouette needs alpha
+            blending there, while the legacy full-bleed path must stay opaque
+            (alpha 1 everywhere) so the page never shows through the media. */}
         <shaderMaterial
           ref={warpMaterialRef}
+          transparent={bleed > 0}
           uniforms={warpUniforms}
           vertexShader={BACKDROP_VERTEX}
           fragmentShader={WARP_FRAGMENT}
@@ -530,18 +705,25 @@ function RefractionScene({
  * utility); the media cover-fits inside.
  */
 export function RefractionMedia({ className, ...scene }: RefractionMediaProps) {
+  const bleed = scene.bleed ?? REFRACTION_MEDIA_DEFAULTS.bleed
   return (
     <div className={cn('relative', className)}>
-      <Canvas
-        dpr={GLASS_DPR}
-        flat
-        linear
-        frameloop="demand"
-        camera={GLASS_CAMERA}
-        gl={GLASS_GL_OPTIONS}
-      >
-        <RefractionScene {...scene} />
-      </Canvas>
+      {/* Bleed host: the canvas hangs past the container by `bleed` per side
+          (CSS inset % resolves against the matching axis, mirroring the
+          shader's per-axis margin), giving the silhouette transparent room to
+          melt into. Ancestors must not clip for the overhang to paint. */}
+      <div className="absolute" style={{ inset: `${(-bleed * 100).toFixed(3)}%` }}>
+        <Canvas
+          dpr={GLASS_DPR}
+          flat
+          linear
+          frameloop="demand"
+          camera={GLASS_CAMERA}
+          gl={GLASS_GL_OPTIONS}
+        >
+          <RefractionScene {...scene} />
+        </Canvas>
+      </div>
     </div>
   )
 }

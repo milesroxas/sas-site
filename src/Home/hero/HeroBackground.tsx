@@ -1,37 +1,11 @@
 'use client'
 
 import type React from 'react'
-import { useCallback, useEffect, useState } from 'react'
 import { Media } from '@/components/Media'
-import { HERO_LENS, RefractionMedia } from '@/features/immersive'
-import { useDeviceDetection } from '@/hooks/use-device-detection'
+import { HERO_LENS, RefractionMedia, useWebglMediaLayer } from '@/features/immersive'
 import type { Media as MediaType } from '@/payload-types'
-import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { cn } from '@/utilities/ui'
-
-const mediaSrc = (media: MediaType): string => {
-  // Absolute fixture/CDN urls win — don't rewrite them or a missing object
-  // key (Storybook fixtures) 404s and the lens never becomes ready. The DOM
-  // layer fetches the same URL without CORS, browsers key their HTTP cache by
-  // URL alone, and R2 sends no `Vary: Origin` — so that no-CORS response
-  // would be replayed for this crossOrigin texture fetch and fail it. The
-  // marker param gives the WebGL copy its own cache entry.
-  if (media.url && /^https?:\/\//i.test(media.url)) {
-    const url = getMediaUrl(media.url, media.updatedAt)
-    return `${url}${url.includes('?') ? '&' : '?'}webgl=1`
-  }
-  // Same-origin Payload proxy, never the R2 custom domain: the CDN sends no
-  // CORS headers, so the crossOrigin texture fetch fails and the canvas never
-  // becomes ready.
-  if (media.filename) {
-    const path = media.filename
-      .split('/')
-      .map((segment) => encodeURIComponent(segment))
-      .join('/')
-    return getMediaUrl(`/api/media/file/${path}`, media.updatedAt)
-  }
-  return getMediaUrl(media.url, media.updatedAt)
-}
+import { webglMediaSrc } from '@/utilities/webglMediaSrc'
 
 /**
  * Hero backdrop: the ordinary `Media` element paints first (keeping the
@@ -46,18 +20,9 @@ const mediaSrc = (media: MediaType): string => {
  * Storybook/dev; URL-based loading keeps the lens effect without that race.
  */
 export const HeroBackground: React.FC<{ media: MediaType }> = ({ media }) => {
-  const { hasGPU } = useDeviceDetection()
-  const [ready, setReady] = useState(false)
-
   const isVideo = Boolean(media.mimeType?.includes('video'))
-  const src = mediaSrc(media) || undefined
-  const enabled = hasGPU && Boolean(src)
-
-  useEffect(() => {
-    if (!enabled) setReady(false)
-  }, [enabled])
-
-  const handleReady = useCallback(() => setReady(true), [])
+  const src = webglMediaSrc(media) || undefined
+  const { enabled, ready, handleReady } = useWebglMediaLayer(src)
 
   return (
     <div

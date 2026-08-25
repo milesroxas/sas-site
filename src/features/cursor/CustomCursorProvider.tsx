@@ -12,6 +12,7 @@ import {
   SCRAMBLE_TEXT_DEFAULTS,
   type ScrambleTweenOptions,
 } from '@/shared/ui/scramble-text'
+import { publishCursorProximity } from './proximity'
 import {
   CURSOR_ACTIVE_ATTR,
   CURSOR_DEFAULTS,
@@ -236,12 +237,17 @@ const CursorOverlay: React.FC = () => {
           el.style.removeProperty(CURSOR_PROXIMITY_VAR)
           hot.delete(el)
         }
+        // Same signal for imperative consumers (WebGL scenes) that can't
+        // watch the CSS var — behind the dedupe, so subscribers only hear
+        // actual changes.
+        publishCursorProximity(el, q)
       }
 
       const clearProximity = () => {
         for (const el of hot) {
           prevT.set(el, 0)
           el.style.removeProperty(CURSOR_PROXIMITY_VAR)
+          publishCursorProximity(el, 0)
         }
         hot.clear()
       }
@@ -558,10 +564,11 @@ const CursorOverlay: React.FC = () => {
     <div aria-hidden className="pointer-events-none" ref={rootRef}>
       <style>{`
         html[${CURSOR_NATIVE_HIDDEN_ATTR}], html[${CURSOR_NATIVE_HIDDEN_ATTR}] * { cursor: none !important; }
-        /* Drag is a viewfinder: one white hairline + tracked mono, inverted
-           through mix-blend-difference. No knockout — a black stroke is what
-           made the caption vanish on dark surfaces. */
-        [data-cursor-variant="drag"] [data-cursor-part="label"] {
+        /* Drag and view are viewfinders: one white hairline + tracked mono,
+           inverted through mix-blend-difference. No knockout — a black stroke
+           is what made the caption vanish on dark surfaces. */
+        [data-cursor-variant="drag"] [data-cursor-part="label"],
+        [data-cursor-variant="view"] [data-cursor-part="label"] {
           font-size: 11px;
           font-weight: 500;
           letter-spacing: 0.22em;

@@ -16,6 +16,10 @@
  * shadow, etc. from `var(--cursor-proximity, 0)` (the `, 0` fallback keeps
  * touch/reduced-motion sessions at the base state). No JS or client boundary
  * at the call site; see `FeaturedCard` for the reference usage.
+ *
+ * Imperative consumers (WebGL scenes on a demand frameloop) subscribe to the
+ * same signal in JS via `subscribeCursorProximity` / `useCursorProximitySource`
+ * (see proximity.ts); the IndustryWork media panel is the reference usage.
  */
 
 export type CursorVariantTuning = {
@@ -99,6 +103,25 @@ export const CURSOR_VARIANTS = {
   emphasize: {
     // Tighter ring→label gap so the label reads as part of the cursor.
     labelOffset: 8,
+  },
+  /**
+   * Clickable media panels that open into an entry (work, case study). The
+   * wide radius doubles as the activation zone for call-site effects driven
+   * off the same proximity signal (`useCursorProximitySource`), so the ring
+   * and the panel's WebGL response materialize together on approach.
+   */
+  view: {
+    label: 'VIEW',
+    proximityRadius: 180,
+    labelActivation: 'proximity',
+    labelPlacement: 'center',
+    // Ring stays at the default outerSize: a media panel wants the site's
+    // base cursor scale, not drag's oversized carousel viewfinder.
+    // Native cursor is replaced while approaching, so the custom cursor
+    // must stay fully opaque — the default tease (0.3) would vanish.
+    proximityMaxOpacity: 1,
+    showInnerRing: false,
+    hideNativeCursor: true,
   },
   /** Automatically discovered carousel affordance; no call-site cursor styling. */
   drag: {

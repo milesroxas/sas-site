@@ -1,9 +1,11 @@
 /**
- * Storybook-only fixtures for block stories. Builders produce the minimal
- * serialized Lexical shapes RichText needs; document fixtures satisfy the
- * generated payload-types so stories type-check against real block props.
+ * Fixtures for block stories and the /demo playgrounds. Builders produce the
+ * minimal serialized Lexical shapes RichText needs; document fixtures satisfy
+ * the generated payload-types so stories type-check against real block props.
  */
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
+import type { IndustryWorkPanel } from '@/blocks/IndustryWork/Component.client'
+import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import type { Media, Post, Testimonial } from '@/payload-types'
 
 type SerializedNode = Record<string, unknown>
@@ -101,6 +103,50 @@ export const heroImageFixture: Media = {
   id: 3,
   caption: null,
 }
+
+const workEntryFixture = (
+  id: number,
+  title: string,
+  client: string,
+  media: Media = mediaFixture,
+): WorkEntry => {
+  const slug = title.toLowerCase().replace(/\s+/g, '-')
+  return {
+    id,
+    slug,
+    href: `/works/${slug}`,
+    title,
+    client,
+    industry: null,
+    capabilities: ['Brand strategy', 'Web design'],
+    media,
+  }
+}
+
+/** Shared by the IndustryWork story and the /demo/immersive playground. */
+export const industryWorkPanelsFixture: IndustryWorkPanel[] = [
+  {
+    id: 'fintech',
+    industry: 'fintech',
+    subheading: 'we help platforms explain themselves',
+    secondLine: 'so buyers stop needing a sales call.',
+    work: workEntryFixture(1, 'Clarity for a payments platform', 'Interchecks'),
+  },
+  {
+    id: 'healthcare',
+    industry: 'healthcare',
+    subheading: 'we make complex care legible',
+    secondLine: null,
+    work: workEntryFixture(2, 'A calmer story for a care network', 'Blindcut', videoFixture),
+  },
+  {
+    id: 'logistics',
+    industry: 'logistics',
+    subheading: 'we turn operations into narrative',
+    secondLine: 'from the warehouse to the boardroom.',
+    work: workEntryFixture(3, 'Repositioning a freight marketplace', 'Northbeam'),
+  },
+]
 
 const postFixture = (id: number, title: string, slug: string): Post => ({
   id,

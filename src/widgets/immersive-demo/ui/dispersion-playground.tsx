@@ -1,18 +1,11 @@
 'use client'
 
-import { button } from 'leva'
 import {
   DISPERSION_MEDIA_DEFAULTS as DEFAULTS,
   DispersionMedia,
   type DispersionShape,
 } from '@/features/immersive'
-import {
-  DEMO_IMAGE_SRC,
-  DEMO_VIDEO_SRC,
-  useDemoControls,
-  useDemoSnippet,
-  useVideoUpload,
-} from '@/shared/ui/demo-kit'
+import { useDemoControls, useDemoMediaSource, useDemoSnippet } from '@/shared/ui/demo-kit'
 
 /**
  * Demo content: DispersionMedia with every shader parameter wired to the
@@ -20,23 +13,7 @@ import {
  * Demo-only — not shipped UI.
  */
 export function DispersionPlayground() {
-  const pickVideo = useVideoUpload({ urlPath: 'Media.videoUrl', mediaPath: 'Media.media' })
-  const { media, image, videoUrl } = useDemoControls('Media', {
-    media: { value: 'video', options: ['video', 'image'] },
-    image: {
-      image: undefined,
-      label: 'upload',
-      render: (get) => get('Media.media') === 'image',
-    },
-    videoUrl: {
-      value: DEMO_VIDEO_SRC,
-      label: 'video url',
-      render: (get) => get('Media.media') === 'video',
-    },
-    // leva buttons ignore `render`, so this stays visible in image mode too;
-    // picking a file flips the media select to video.
-    'upload video (≤10 MB)': button(pickVideo),
-  })
+  const { src, isVideo } = useDemoMediaSource('video')
 
   // leva select values widen to string; the options list is the source of truth.
   const { shape, scale, speed, follow } = useDemoControls('Mesh', {
@@ -63,9 +40,6 @@ export function DispersionPlayground() {
     iorB: { value: DEFAULTS.iorB, min: 1, max: 2.33, step: 0.01, label: 'blue' },
     iorP: { value: DEFAULTS.iorP, min: 1, max: 2.33, step: 0.01, label: 'purple' },
   })
-
-  const isVideo = media === 'video' && Boolean(videoUrl)
-  const src = isVideo ? videoUrl : (image ?? DEMO_IMAGE_SRC)
 
   // Media stays out: the consumer binds its own source.
   useDemoSnippet({

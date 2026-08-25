@@ -5,10 +5,10 @@ import type {
   Config,
   ExpertisePage,
   Home,
+  InsightsIndex,
   Media,
   Page,
   Post,
-  InsightsIndex,
   WorkPage,
   WorksIndex,
 } from '../payload-types'

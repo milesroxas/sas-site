@@ -476,7 +476,12 @@ export function usePointerTracking(onScreen: RefObject<boolean>): PointerTrackin
       // UV origin is bottom-left; client coordinates run top-down.
       const y = 1 - (event.clientY - rect.top) / rect.height
       const within = x >= 0 && x <= 1 && y >= 0 && y <= 1
-      if (within) uv.current.set(x, y)
+      // Clamped even when outside: proximity-activated scenes (see
+      // `subscribeProximity`) run their effects while the pointer approaches,
+      // and the lens should ride the panel edge nearest the cursor rather
+      // than freeze at the last inside position. Hover-only scenes are
+      // unaffected — their effects are invisible while `inside` is false.
+      uv.current.set(Math.min(Math.max(x, 0), 1), Math.min(Math.max(y, 0), 1))
       inside.current = within
       invalidate()
     }

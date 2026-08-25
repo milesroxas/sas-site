@@ -7,6 +7,7 @@ import {
   CURSOR_NATIVE_HIDDEN_ATTR,
   CURSOR_PROXIMITY_VAR,
   cursorTarget,
+  subscribeCursorProximity,
 } from './index'
 import { resolveCursorTargetVariant, resolveCursorVariant } from './variants'
 
@@ -261,6 +262,20 @@ describe('CustomCursorProvider', () => {
     pointerMove(150, 250)
     expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('0.5')
     badge.remove()
+  })
+
+  it('fans proximity out to JS subscribers alongside the CSS var', () => {
+    const { target } = renderWithTarget()
+    const seen: number[] = []
+    const unsubscribe = subscribeCursorProximity(target, (t) => seen.push(t))
+    // 50px below the rect's bottom edge with a 100px radius -> t = 0.5.
+    pointerMove(150, 250)
+    pointerMove(150, 150)
+    pointerMove(150, 400)
+    expect(seen).toEqual([0.5, 1, 0])
+    unsubscribe()
+    pointerMove(150, 150)
+    expect(seen).toEqual([0.5, 1, 0])
   })
 
   it('automatically tracks carousels without cursor props at the call site', () => {
