@@ -69,6 +69,10 @@ Before committing schema work:
 - If a field landed after `migrate:create` ran, the migration is stale — regenerate it (ask first) or add the missing columns to the pending migration if it is not yet applied (`pnpm migrate:status` shows the prod ledger).
 - Symptom signature: Vercel deploy fails, `pnpm migrate:status` shows the migration **applied** → build-stage failure; reproduce with `set -a && source .env.production.pulled && set +a && pnpm build`.
 
+## Parallel workspaces (Conductor) — snapshot rule
+
+Each Conductor workspace has its own push-synced DB (`payload_<workspace-dir>`), so branches never conflict at the DB level. `migrate:create` diffs the config against the newest `src/migrations/*.json` snapshot **file**, not a DB. If `main` gained a migration after yours was generated, the newest snapshot no longer includes your branch's changes (or vice versa) and the next `migrate:create` re-emits statements CI already applied (`already exists`). Rule: rebase; if main has newer migration files, delete your `.ts` + `.json` and regenerate (ask first). `pnpm check:migrations:drift` verifies — no DB connection, no files written; the pre-push hook runs it. See `docs/conductor.md`.
+
 ## Required: create / rename prompt answers (every schema-impacting task)
 
 When `pnpm migrate:create` runs, Drizzle may interactively ask whether each new table/column is a **create** or a **rename** from an old name. Wrong answers can drop data.

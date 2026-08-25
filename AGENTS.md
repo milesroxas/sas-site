@@ -32,6 +32,7 @@ Keep this file short. Deep Payload reference lives in skills and `.cursor/rules/
 6. After generating/editing a migration, run `pnpm check:migrations`. **Never ship** `ALTER TYPE ... ADD VALUE 'x'` plus use of `'x'` (e.g. `SET DEFAULT`) in the same `up()` — Payload runs migrations in a transaction and Postgres rejects that (`unsafe use of new value`). Recreate the enum in one migration, or split ADD VALUE and use across two migrations. Details: `.cursor/rules/database-migrations.mdc`.
 7. **Converting `text` → `select` (enum):** the generated `USING col::enum` cast fails in CI on any production value outside the enum — including `''`. Check real production values first (sas-cms MCP `find*` tools), then add normalizing `UPDATE`s before the cast (lower/trim; NULL anything not in the enum). `pnpm check:migrations` enforces this.
 8. **Migration must cover every schema change in the branch.** Adding a field after a migration was generated leaves prod missing the column — local build passes (dev push syncs it), prod prerender dies with `column does not exist`. Before commit, diff the migration's columns against the fields you added; if a field came later, regenerate the migration (ask first).
+9. **Parallel workspaces (Conductor):** each workspace has its own push-synced DB — no DB-level conflicts. But `migrate:create` diffs against the newest snapshot **file**, not a DB: if `main` gained a migration after yours was generated, rebase, delete your `.ts` + `.json`, regenerate (ask first). `pnpm check:migrations:drift` verifies; the pre-push hook runs it. See [docs/conductor.md](docs/conductor.md).
 
 ### Required: create / rename prompt answers
 
@@ -89,6 +90,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | CMS admin naming (tabs, groups, overrides, blocks) | [docs/cms-naming.md](docs/cms-naming.md) |
 | Cursor topic rules (security, fields, hooks, …) | `.cursor/rules/` |
 | Human DB docs | [README.md](README.md#database--migrations) |
+| Conductor — parallel workspaces, per-workspace DBs, schema changes across branches | [docs/conductor.md](docs/conductor.md) |
 | Architecture | [docs/architecture.md](docs/architecture.md) |
 | MCP authoring | [docs/mcp.md](docs/mcp.md) |
 

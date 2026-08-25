@@ -254,7 +254,9 @@ pnpm migrate:status     # read-only — reports the PRODUCTION ledger (see note 
 
 `pnpm migrate:status` always targets **production** (via `.env.production.pulled`), because the local push DB has no meaningful ledger. "No" = a committed migration not yet deployed; "Yes" = applied by CI. Use it before a deploy (expect your new migration "No") and after (expect "Yes"). Needs the Vercel-pulled prod env — run the dev TUI's "Pull Vercel production env" first if it is missing.
 
-**Flow:** change config → `pnpm dev` (push syncs local) → `pnpm migrate:create` → review SQL → `pnpm check:migrations` → commit `.ts` + `.json` together → CI applies on deploy.
+**Flow:** change config → `pnpm dev` (push syncs local) → `pnpm migrate:create` → review SQL → `pnpm check:migrations` → `pnpm check:migrations:drift` → commit `.ts` + `.json` together → CI applies on deploy.
+
+**Parallel workspaces (Conductor):** each workspace has its own push-synced DB, so branches never fight at the database level. `migrate:create` diffs the config against the newest snapshot *file*, not a DB — so the last migration to merge must be generated on top of the others, and `pnpm check:migrations:drift` verifies the newest snapshot still matches the config. Details and the per-workspace DB lifecycle: [docs/conductor.md](docs/conductor.md).
 
 #### Postgres enum `ADD VALUE`
 
@@ -271,7 +273,7 @@ ALTER TABLE ... ALTER COLUMN ... SET DEFAULT 'split';  -- fails in the same tran
 
 #### Pre-push guard
 
-`.githooks/pre-push` (wired up by `pnpm install`) rejects a push when it touches schema-defining files without adding a migration — the failure mode where drizzle push masks a new column locally and the Vercel build then crashes querying it. It also runs the enum-safety check on changed migrations. Bypass with `SKIP_MIGRATION_GUARD=1 git push` only when you are certain no migration is needed.
+`.githooks/pre-push` (wired up by `pnpm install`) rejects a push when it touches schema-defining files without adding a migration — the failure mode where drizzle push masks a new column locally and the Vercel build then crashes querying it. It also runs the enum-safety check on changed migrations and, whenever schema source or migrations changed, the drift check (`pnpm check:migrations:drift` — newest snapshot vs current config). Bypass with `SKIP_MIGRATION_GUARD=1 git push` only when you are certain no migration is needed.
 
 **Agents / LLMs (Cursor, Claude Code, Codex):** root [`AGENTS.md`](AGENTS.md) is the shared always-on contract (Claude loads it via [`CLAUDE.md`](CLAUDE.md); Cursor also mirrors hard rules in `.cursor/rules/`). Do **not** run `pnpm migrate:create` unless the user explicitly asks. Never run `payload migrate` locally. After schema-impacting work, prescribe **create vs rename** answers. Deep Payload how-to lives in `.agents/skills/payload`, not in `AGENTS.md`.
 
@@ -286,7 +288,7 @@ pnpm db:reset   # destroy the volume, start a fresh container (initdb creates pg
 pnpm dev        # Drizzle push rebuilds the full current schema
 ```
 
-Irreversible — deletes all local pages/posts/media records. **Local only; production is untouched.** Reseed sample content from `/admin` → **Seed the database** afterward. The pgvector extension is recreated automatically on fresh init via `docker/initdb/01-extensions.sql`, so no manual `CREATE EXTENSION` is needed.
+Irreversible — deletes all local pages/posts/media records. **Local only; production is untouched.** Reseed sample content from `/admin` → **Seed the database** afterward. The pgvector extension is recreated automatically on fresh init via the inline `initdb-extensions` config in `docker-compose.yml`, so no manual `CREATE EXTENSION` is needed.
 
 ### Seed
 

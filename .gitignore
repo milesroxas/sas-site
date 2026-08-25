@@ -52,3 +52,6 @@ storybook-static/
 .ds-sync/
 ds-bundle/
 .design-sync/*.log
+
+# Conductor — personal overrides (https://www.conductor.build/docs/reference/settings)
+.conductor/settings.local.toml

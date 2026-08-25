@@ -8,6 +8,17 @@
 # name, and `docker compose exec` in a workspace can't see the running container.
 name: sas-site
 
+configs:
+  # Runs only on fresh-volume init: CREATE EXTENSION vector, so a clean reset
+  # (down -v) leaves the DB ready for push without a manual step. Inline
+  # content rather than a bind-mounted directory: a bind mount's absolute host
+  # path is part of the service config hash, so `docker compose up` from a
+  # different checkout (Conductor workspace vs main repo) saw a "changed"
+  # config and re-created the running container, dropping every connection.
+  initdb-extensions:
+    content: |
+      CREATE EXTENSION IF NOT EXISTS vector;
+
 services:
   postgres:
     # pgvector build of Postgres 18 — the Ask RAG embeddings need CREATE EXTENSION vector.
@@ -19,13 +30,13 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: payload
       POSTGRES_HOST_AUTH_METHOD: trust
+    configs:
+      - source: initdb-extensions
+        target: /docker-entrypoint-initdb.d/01-extensions.sql
     volumes:
       # PG 18 images moved PGDATA under /var/lib/postgresql/18/… — mount the
       # parent, not the pre-18 /var/lib/postgresql/data, or nothing persists.
       - postgres_data:/var/lib/postgresql
-      # Runs only on fresh-volume init: CREATE EXTENSION vector, so a clean
-      # reset (down -v) leaves the DB ready for push without a manual step.
-      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s

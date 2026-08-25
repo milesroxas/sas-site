@@ -9,6 +9,12 @@
 #    the Vercel `ci` build crashes querying a column that does not exist.
 # 2) Runs scripts/check-migration-enum-safety.ts on changed migration .ts files so
 #    ALTER TYPE ... ADD VALUE + use of that label in the same up() never reaches CI.
+# 3) Runs scripts/check-migration-drift.ts whenever schema source or migrations
+#    changed: `migrate:create` diffs the config against the newest snapshot file,
+#    so a field added after the migration was generated, or a migration generated
+#    in a parallel workspace before main gained another one, leaves the newest
+#    snapshot out of step with the config — and the next migrate:create re-emits
+#    statements CI already applied. See docs/conductor.md.
 #
 # Matching is an allowlist of files that define Drizzle/Payload schema (fields,
 # collections, globals, block configs, plugin field overrides) — not whole
@@ -55,6 +61,7 @@ MIGRATION_TS_RE='^src/migrations/[0-9].*\.ts$'
 
 zero='0000000000000000000000000000000000000000'
 fail=0
+need_drift_check=0
 
 is_schema_path() {
   local f="$1"
@@ -92,6 +99,10 @@ check_range() {
     fi
   done <<<"$changed"
 
+  if [[ -n "$schema_hits" || "$has_migration" == 1 ]]; then
+    need_drift_check=1
+  fi
+
   if [[ -n "$schema_hits" && "$has_migration" == 0 ]]; then
     echo "✖ pre-push migration guard: schema-defining files changed but no migration was added." >&2
     echo "" >&2
@@ -119,9 +130,22 @@ check_range() {
   done <<<"$changed"
 
   if ((${#migration_ts[@]} > 0)); then
+    need_drift_check=1
     if ! pnpm exec tsx scripts/check-migration-enum-safety.ts "${migration_ts[@]}" >&2; then
       fail=1
     fi
+  fi
+}
+
+# Newest snapshot vs current config — no DB connection, but Payload needs the
+# env (PAYLOAD_SECRET) to build its config, so this needs a local .env.
+run_drift_check() {
+  if [[ ! -f .env ]]; then
+    echo "pre-push: no .env — skipping migration drift check (run pnpm check:migrations:drift where one exists)" >&2
+    return 0
+  fi
+  if ! pnpm exec tsx --env-file=.env scripts/check-migration-drift.ts </dev/null >&2; then
+    fail=1
   fi
 }
 
@@ -141,5 +165,9 @@ while read -r _local_ref local_sha _remote_ref remote_sha; do
 
   check_range "$local_base" "$local_sha"
 done
+
+if [[ "$need_drift_check" == 1 ]]; then
+  run_drift_check
+fi
 
 exit "$fail"
