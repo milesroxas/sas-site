@@ -6,7 +6,7 @@
 # Docker is down there is nothing to clean up that should block it.
 # Orphans (e.g. Docker was down) are reclaimed later by `bash .conductor/prune-dbs.sh`.
 set -uo pipefail
-source "$(dirname "$0")/lib.sh" 2>/dev/null || exit 0
+CONDUCTOR_ARCHIVING=1 source "$(dirname "$0")/lib.sh" 2>/dev/null || exit 0
 
 assert_workspace_db_name "$DB_NAME" || exit 0
 

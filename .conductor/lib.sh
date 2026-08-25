@@ -80,6 +80,33 @@ db_name_from_env_file() {
 
 DB_NAME="$(db_name_from_env_file "$WS_PATH/.env" || sanitize_db_name "$(workspace_dir_name)")"
 
+# Next.js loads .env.local (and .env.development.local) OVER .env, so a
+# `vercel env pull` run inside a workspace silently re-points POSTGRES_URL at
+# Neon production — dev push would then prompt to drop production tables.
+# Refuse to continue while any override file names a DB other than this
+# workspace's. (Unset keys in those files are fine.)
+assert_no_db_override() {
+  local f url key
+  for f in "$WS_PATH/.env.local" "$WS_PATH/.env.development.local"; do
+    [ -f "$f" ] || continue
+    for key in POSTGRES_URL DATABASE_URL POSTGRES_URL_NON_POOLING DATABASE_URL_UNPOOLED; do
+      url="$(read_env_key "$f" "$key" 2>/dev/null || true)"
+      [ -n "$url" ] || continue
+      case "$url" in
+      *"$DB_HOST/$DB_NAME"|*"$DB_HOST/$DB_NAME?"*) ;;
+      *)
+        printf 'conductor: %s sets %s to a database other than %s (%s).\n' \
+          "$f" "$key" "$DB_NAME" "$(printf '%s' "$url" | sed -E 's#://[^@]*@#://***@#')" >&2
+        printf 'conductor: Next.js reads that file over .env. Remove it: mv %s %s.neon-bak\n' "$f" "$f" >&2
+        exit 1
+        ;;
+      esac
+    done
+  done
+}
+# archive.sh sources lib.sh only to drop the DB; a stale .env.local must not block archiving.
+[ "${CONDUCTOR_ARCHIVING:-0}" = 1 ] || assert_no_db_override
+
 # ---------------------------------------------------------------------------
 # Postgres (one shared container, one DB per workspace)
 # ---------------------------------------------------------------------------

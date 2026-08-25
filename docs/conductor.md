@@ -12,6 +12,8 @@
 | Database | `payload_<city>` in the one shared `sas-site-postgres` container, cloned from the main dev DB `payload` |
 | Media / R2, Resend, Sentry, … | Shared with your main checkout — same keys, same buckets |
 
+Never create `.env.local` in a workspace. Next.js loads it **over** `.env`, and `vercel env pull` writes it by default with `POSTGRES_URL` = Neon production — dev push would then offer to drop production tables. `lib.sh` refuses to run setup/dev/storybook while `.env.local` or `.env.development.local` names any DB other than the workspace one (`mv .env.local .env.local.neon-bak`). Pull production env only from the main checkout via the dev TUI, which writes `.env.production.pulled`.
+
 `run_mode = "concurrent"`: because port and DB are per-workspace, any number of workspaces can run at once.
 
 ## Scripts
@@ -83,6 +85,7 @@ A hand-made worktree (`git worktree add …`) that copies the main `.env` shares
 |---------|-------------|
 | Run: `no .env in this workspace` | Setup never ran — Conductor → Run setup script, or `bash .conductor/setup.sh` |
 | `Docker is not running` | Start Docker Desktop; Run re-ensures the container |
+| `.env.local sets POSTGRES_URL to a database other than …` | `vercel env pull` ran in the workspace. `mv .env.local .env.local.neon-bak`, restart |
 | `$CONDUCTOR_ROOT_PATH/.env not found` | Copy your main checkout's `.env` to `~/conductor/repos/sas-site/.env` |
 | Setup slow (~30 s) on "creating database" | Something is connected to `payload` (main dev server), so `TEMPLATE` was refused and it fell back to dump/restore. Normal |
 | Dev server exits right after a schema change | Drizzle push asked to confirm data loss and got no TTY. Run `pnpm dev` once in the workspace terminal and answer, or `setup.sh --reseed` |
