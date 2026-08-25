@@ -29,9 +29,15 @@ type AskWidgetProps = {
   transport?: ChatTransport<UIMessage>
   /** Seed the transcript, e.g. for stories or resuming a conversation. */
   initialMessages?: UIMessage[]
+  /** Composer placeholder override, e.g. the footer closing band's shorter prompt. */
+  placeholder?: string
 }
 
-export function AskWidget({ transport, initialMessages }: AskWidgetProps) {
+export function AskWidget({
+  transport,
+  initialMessages,
+  placeholder = 'Ask something about our work, services, or insights…',
+}: AskWidgetProps) {
   const { question, setQuestion, messages, status, error, busy, canSend, submit } = useAskChat({
     transport,
     initialMessages,
@@ -77,7 +83,7 @@ export function AskWidget({ transport, initialMessages }: AskWidgetProps) {
                 event.currentTarget.form?.requestSubmit()
               }
             }}
-            placeholder="Ask something about our work, services, or insights…"
+            placeholder={placeholder}
             maxLength={500}
             rows={2}
             required
