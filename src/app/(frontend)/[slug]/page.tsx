@@ -6,6 +6,7 @@ import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
+import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import { cn } from '@/utilities/ui'
@@ -57,16 +58,19 @@ export default async function Page({ params: paramsPromise }: Args) {
     // The high-impact hero pulls itself under the fixed header
     // (-mt-(--header-height)), so top padding would leave a bare strip
     // behind the header; padded starts are for the in-flow hero types.
-    <article className={cn('pb-24', hero?.type !== 'highImpact' && 'pt-16')}>
-      <PageClient />
-      {/* Allows redirects for valid pages too */}
-      <PayloadRedirects disableNotFound url={url} />
+    <>
+      <article className={cn('pb-24', hero?.type !== 'highImpact' && 'pt-16')}>
+        <PageClient />
+        {/* Allows redirects for valid pages too */}
+        <PayloadRedirects disableNotFound url={url} />
 
-      {draft && <LivePreviewListener />}
+        {draft && <LivePreviewListener />}
 
-      <RenderHero {...hero} />
-      <RenderBlocks blocks={layout} />
-    </article>
+        <RenderHero {...hero} />
+        <RenderBlocks blocks={layout} />
+      </article>
+      <FooterClosingSection />
+    </>
   )
 }
 

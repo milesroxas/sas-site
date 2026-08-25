@@ -6,6 +6,7 @@ import { insightsIndexHeroFallback, queryInsightsIndex } from '@/CollectionIndex
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PageRange } from '@/components/PageRange'
 import { Pagination } from '@/components/Pagination'
+import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { RenderHero } from '@/heros/RenderHero'
 import { CollectionArchive } from '@/sections/CollectionArchive'
 import { RevealSection } from '@/shared/ui/reveal-section'
@@ -35,30 +36,34 @@ export default async function Page() {
   })
 
   return (
-    <div className="pb-24">
-      <PageClient />
-      {draft && <LivePreviewListener />}
-      <RevealSection delayMs={0}>
-        <RenderHero {...hero} />
-      </RevealSection>
-
-      <RevealSection className="container mb-8" delayMs={60}>
-        <PageRange
-          collection="posts"
-          currentPage={posts.page}
-          limit={12}
-          totalDocs={posts.totalDocs}
-        />
-      </RevealSection>
-
-      <CollectionArchive posts={posts.docs} />
-
-      {posts.totalPages > 1 && posts.page ? (
-        <RevealSection className="container" delayMs={120}>
-          <Pagination page={posts.page} totalPages={posts.totalPages} />
+    <>
+      <div className="pb-24">
+        <PageClient />
+        {draft && <LivePreviewListener />}
+        <RevealSection delayMs={0}>
+          <RenderHero {...hero} />
         </RevealSection>
-      ) : null}
-    </div>
+
+        <RevealSection className="container mb-8" delayMs={60}>
+          <PageRange
+            collection="posts"
+            currentPage={posts.page}
+            limit={12}
+            totalDocs={posts.totalDocs}
+          />
+        </RevealSection>
+
+        <CollectionArchive posts={posts.docs} />
+
+        {posts.totalPages > 1 && posts.page ? (
+          <RevealSection className="container" delayMs={120}>
+            <Pagination page={posts.page} totalPages={posts.totalPages} />
+          </RevealSection>
+        ) : null}
+      </div>
+
+      <FooterClosingSection />
+    </>
   )
 }
 

@@ -7263,6 +7263,63 @@ export interface Footer {
     url?: string | null;
     label: string;
   };
+  /**
+   * Full-screen media band above the footer bar on Home, Pages and the Posts index.
+   */
+  closing?: {
+    /**
+     * Short kicker above the heading, e.g. “Ready to start?”
+     */
+    eyebrow?: string | null;
+    /**
+     * Closing statement over the background media.
+     */
+    heading?: string | null;
+    /**
+     * Call-to-action buttons under the heading, up to two.
+     */
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null);
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Intro copy above the “Ask anything” composer in the right-hand panel.
+     */
+    ask?: {
+      /**
+       * Panel lead-in, e.g. “A homepage can only tell you so much…”
+       */
+      title?: string | null;
+      /**
+       * Supporting copy between the lead-in and the composer.
+       */
+      body?: string | null;
+    };
+    /**
+     * Background image or video. Optional — without one the band renders on the plain dark surface.
+     */
+    media?: (number | null) | Media;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -7533,6 +7590,34 @@ export interface FooterSelect<T extends boolean = true> {
         reference?: T;
         url?: T;
         label?: T;
+      };
+  closing?:
+    | T
+    | {
+        eyebrow?: T;
+        heading?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                    appearance?: T;
+                  };
+              id?: T;
+            };
+        ask?:
+          | T
+          | {
+              title?: T;
+              body?: T;
+            };
+        media?: T;
       };
   updatedAt?: T;
   createdAt?: T;

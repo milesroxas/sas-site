@@ -48,6 +48,7 @@ import * as migration_20260821_031536_carousel_block from './20260821_031536_car
 import * as migration_20260823_163739_seo_og_fields from './20260823_163739_seo_og_fields';
 import * as migration_20260824_175955_audience_tabs_description from './20260824_175955_audience_tabs_description';
 import * as migration_20260825_163340_insights_browse from './20260825_163340_insights_browse';
+import * as migration_20260825_195015_footer_closing from './20260825_195015_footer_closing';
 
 export const migrations = [
   {
@@ -298,6 +299,11 @@ export const migrations = [
   {
     up: migration_20260825_163340_insights_browse.up,
     down: migration_20260825_163340_insights_browse.down,
-    name: '20260825_163340_insights_browse'
+    name: '20260825_163340_insights_browse',
+  },
+  {
+    up: migration_20260825_195015_footer_closing.up,
+    down: migration_20260825_195015_footer_closing.down,
+    name: '20260825_195015_footer_closing'
   },
 ];

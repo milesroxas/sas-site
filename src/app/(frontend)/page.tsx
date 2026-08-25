@@ -6,6 +6,7 @@ import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { homeStatic } from '@/endpoints/seed/home-static'
+import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { RenderHomeHero } from '@/Home/hero'
 import { HomeStatement } from '@/Home/statement'
 import { generateMeta } from '@/utilities/generateMeta'
@@ -18,13 +19,16 @@ export default async function HomePage() {
   const { hero, layout, statement } = home
 
   return (
-    <article className="pb-24">
-      <PageClient />
-      {draft && <LivePreviewListener />}
-      <RenderHomeHero {...hero} />
-      {statement && !statement.hidden ? <HomeStatement {...statement} /> : null}
-      <RenderBlocks blocks={layout} />
-    </article>
+    <>
+      <article className="pb-24">
+        <PageClient />
+        {draft && <LivePreviewListener />}
+        <RenderHomeHero {...hero} />
+        {statement && !statement.hidden ? <HomeStatement {...statement} /> : null}
+        <RenderBlocks blocks={layout} />
+      </article>
+      <FooterClosingSection />
+    </>
   )
 }
 
