@@ -161,7 +161,7 @@ export const HeadingDropdown = ({
     // Inline flow (not flex): the chip and continuation sit in the same text
     // run as the heading, so the sentence wraps word by word instead of
     // dropping whole segments to a new line.
-    <h2 className="max-w-4xl text-heading-2/normal text-foreground" data-reveal>
+    <h2 className="max-w-4xl text-3xl leading-normal font-light text-foreground/80" data-reveal>
       {heading}{' '}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger
@@ -172,7 +172,7 @@ export const HeadingDropdown = ({
             // otherwise paint light type on `bg-muted`).
             // leading-none keeps the chip shorter than the line box so it
             // rides the text baseline without stretching wrapped lines.
-            'bg-muted align-baseline text-heading-2 leading-none font-mono text-popover-foreground',
+            'bg-muted align-baseline text-3xl leading-none font-mono text-popover-foreground',
             'outline-none transition-colors hover:bg-accent hover:text-accent-foreground',
             'focus:outline-none focus:ring-0',
             'focus-visible:ring-2 focus-visible:ring-ring/30',
