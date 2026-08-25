@@ -1,10 +1,18 @@
 'use client'
 
-import { IconAbc, IconCards, IconDiamond, IconInfoCircle, IconPrism } from '@tabler/icons-react'
+import {
+  IconAbc,
+  IconBuildingFactory2,
+  IconCards,
+  IconDiamond,
+  IconInfoCircle,
+  IconPrism,
+} from '@tabler/icons-react'
 import { ImmersiveShell } from '@/features/immersive'
 import { DemoShell, type DemoShellSection } from '@/shared/ui/demo-kit'
 import { DispersionPlayground } from './dispersion-playground'
 import { FloatingCardsPlayground } from './floating-cards-playground'
+import { IndustryWorkPlayground } from './industry-work-playground'
 import { ImmersiveOverview } from './overview'
 import { RefractionPlayground } from './refraction-playground'
 import { ScramblePlayground } from './scramble-playground'
@@ -64,6 +72,21 @@ const SECTIONS: DemoShellSection[] = [
       note: 'Mesh, dispersion and IOR settings. The media source stays at the call site.',
     },
     content: DispersionPlayground,
+  },
+  {
+    id: 'industry-work',
+    label: 'Industry work',
+    title: 'Industry work media',
+    description:
+      "The IndustryWork block's main-media hover effect on a standalone stage: a soft refraction lens trails the cursor, the plane tilts on Y toward it, and the media's edges melt past its bounding box into the surrounding bleed. Media and title are configurable here; tune, then copy the values into the preset the block reads.",
+    icon: IconBuildingFactory2,
+    paste: {
+      file: 'src/features/immersive/presets.ts',
+      symbol: 'INDUSTRY_WORK_MEDIA',
+      format: 'object',
+      note: 'The IndustryWork block media reads this preset. Panels and media stay CMS-driven.',
+    },
+    content: IndustryWorkPlayground,
   },
   {
     id: 'floating-cards',

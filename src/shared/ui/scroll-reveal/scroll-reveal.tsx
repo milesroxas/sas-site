@@ -236,7 +236,15 @@ export function ScrollReveal({
       const tl = gsap.timeline({
         paused: true,
         onStart: () => gsap.set(targets, { transition: 'none' }),
-        onComplete: () => gsap.set(targets, { clearProps: 'transition' }),
+        onComplete: () => {
+          gsap.set(targets, { clearProps: 'transition' })
+          // The wipe's final inset(0) still clips at the border box, which
+          // would pin media that intentionally overflows its frame (WebGL
+          // edge bleed) inside it — drop the mask once the entrance is done.
+          // Guarded: gsap.set([]) logs a "target not found" warning on
+          // text-only shells.
+          if (mediaTargets.length) gsap.set(mediaTargets, { clearProps: 'clipPath' })
+        },
       })
       textTargets.forEach((target, index) => {
         tl.fromTo(

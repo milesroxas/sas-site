@@ -4,7 +4,7 @@
  */
 export { ImmersiveShell, type ImmersiveShellProps } from '@/lib/interactions/immersive-shell'
 export { WebGLTunnel } from '@/lib/webgl/components/tunnel'
-export { HERO_LENS } from './presets'
+export { HERO_LENS, INDUSTRY_WORK_MEDIA } from './presets'
 export {
   CHROMA_SPLIT_TEXT_DEFAULTS,
   ChromaSplitText,
@@ -37,3 +37,4 @@ export {
   type TextLoadInRaymarchedProps,
 } from './ui/text-load-in-raymarched'
 export { WebGlBackdropScene } from './ui/webgl-backdrop-scene'
+export { useWebglMediaLayer } from './use-webgl-media-layer'

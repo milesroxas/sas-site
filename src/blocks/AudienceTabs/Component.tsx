@@ -92,11 +92,7 @@ export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, t
                 {current.intro}
               </p>
               {current.description ? (
-                <p
-                  className="text-sm text-muted-foreground"
-                  data-entrance="item"
-                  data-swap="text"
-                >
+                <p className="text-sm text-muted-foreground" data-entrance="item" data-swap="text">
                   {current.description}
                 </p>
               ) : null}

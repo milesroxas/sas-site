@@ -1,4 +1,5 @@
 export { CustomCursorProvider } from './CustomCursorProvider'
+export { subscribeCursorProximity, useCursorProximitySource } from './proximity'
 export {
   CURSOR_ACTIVE_ATTR,
   CURSOR_DEFAULTS,

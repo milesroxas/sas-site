@@ -1,18 +1,14 @@
 'use client'
 
-import { button } from 'leva'
 import {
   REFRACTION_MEDIA_DEFAULTS as DEFAULTS,
   HERO_LENS,
   RefractionMedia,
+  type RefractionMediaProps,
 } from '@/features/immersive'
-import {
-  DEMO_IMAGE_SRC,
-  DEMO_VIDEO_SRC,
-  useDemoControls,
-  useDemoSnippet,
-  useVideoUpload,
-} from '@/shared/ui/demo-kit'
+import { useDemoControls, useDemoMediaSource, useDemoSnippet } from '@/shared/ui/demo-kit'
+import { cn } from '@/utilities/ui'
+import { useRefractionEdgeControls } from './use-refraction-edge-controls'
 
 /**
  * Demo content: RefractionMedia with every shader parameter wired to the
@@ -20,23 +16,7 @@ import {
  * not shipped UI.
  */
 export function RefractionPlayground() {
-  const pickVideo = useVideoUpload({ urlPath: 'Media.videoUrl', mediaPath: 'Media.media' })
-  const { media, image, videoUrl } = useDemoControls('Media', {
-    media: { value: 'image', options: ['image', 'video'] },
-    image: {
-      image: undefined,
-      label: 'upload',
-      render: (get) => get('Media.media') === 'image',
-    },
-    videoUrl: {
-      value: DEMO_VIDEO_SRC,
-      label: 'video url',
-      render: (get) => get('Media.media') === 'video',
-    },
-    // leva buttons ignore `render`, so this stays visible in image mode too;
-    // picking a file flips the media select to video.
-    'upload video (≤10 MB)': button(pickVideo),
-  })
+  const { src, isVideo } = useDemoMediaSource()
 
   // Initial values mirror the shipped home-hero look (HERO_LENS); lens-mesh
   // controls fall back to the component defaults the preset leaves untouched.
@@ -62,6 +42,13 @@ export function RefractionPlayground() {
     noiseScale: { value: HERO_LENS.noiseScale, min: 1, max: 20, step: 0.5, label: 'scale' },
     noiseSpeed: { value: HERO_LENS.noiseSpeed, min: 0, max: 2, step: 0.05, label: 'speed' },
   })
+
+  // Edge melt: the canvas bleeds past its box and the warp deforms the
+  // media's silhouette into that margin (HERO_LENS ships without it, so
+  // everything initializes from the component defaults with bleed off).
+  const { bleed, melt, meltScale, meltSpeed, meltBand, meltFeather } = useRefractionEdgeControls(
+    DEFAULTS.bleed,
+  )
 
   const {
     lensEnabled,
@@ -175,7 +162,9 @@ export function RefractionPlayground() {
     },
   })
 
-  const { smear, highlight, follow, ease } = useDemoControls('Motion', {
+  const { tilt, smear, highlight, follow, ease } = useDemoControls('Motion', {
+    // HERO_LENS leaves tilt at the component default (0, off).
+    tilt: { value: DEFAULTS.tilt, min: -15, max: 15, step: 0.5 },
     smear: { value: HERO_LENS.smear * 100, min: 0, max: 10, step: 0.5 },
     highlight: {
       value: HERO_LENS.highlight,
@@ -188,11 +177,10 @@ export function RefractionPlayground() {
     ease: { value: HERO_LENS.ease, min: 1, max: 20, step: 0.5 },
   })
 
-  const isVideo = media === 'video' && Boolean(videoUrl)
-
-  // Media stays out: the hero binds its own source. Units match the shipped
-  // `HERO_LENS` preset, so the snippet drops straight in.
-  useDemoSnippet({
+  // One object drives both the rendered effect and copied snippet so the
+  // playground cannot display one tuning while exporting another. Media stays
+  // out because the hero binds its own source.
+  const effectProps = {
     spread,
     edge,
     feather,
@@ -201,6 +189,12 @@ export function RefractionPlayground() {
     distortion: distortion / 1000,
     noiseScale,
     noiseSpeed,
+    bleed,
+    melt: melt / 1000,
+    meltScale,
+    meltSpeed,
+    meltBand,
+    meltFeather,
     smear: smear / 100,
     highlight,
     lensVisibility: lensEnabled ? lensVisibility : 0,
@@ -215,39 +209,20 @@ export function RefractionPlayground() {
     iorC,
     iorB,
     iorP,
+    tilt,
     follow,
     ease,
-  })
+  } satisfies Omit<RefractionMediaProps, 'className' | 'src' | 'video'>
+
+  useDemoSnippet(effectProps)
 
   return (
     <RefractionMedia
-      src={isVideo ? videoUrl : (image ?? DEMO_IMAGE_SRC)}
+      src={src}
       video={isVideo}
-      spread={spread}
-      feather={feather}
-      edge={edge}
-      refraction={refraction}
-      chroma={chroma}
-      distortion={distortion / 1000}
-      noiseScale={noiseScale}
-      noiseSpeed={noiseSpeed}
-      smear={smear / 100}
-      highlight={highlight}
-      lensVisibility={lensEnabled ? lensVisibility : 0}
-      lensSpread={lensSpread}
-      lensDepth={lensDepth}
-      lensRefraction={lensRefraction}
-      lensChroma={lensChroma}
-      lensSaturation={lensSaturation}
-      iorR={iorR}
-      iorY={iorY}
-      iorG={iorG}
-      iorC={iorC}
-      iorB={iorB}
-      iorP={iorP}
-      follow={follow}
-      ease={ease}
-      className="aspect-video overflow-hidden rounded-md bg-zinc-950"
+      {...effectProps}
+      // Clipping would swallow the bleed overhang — only round/clip without it.
+      className={cn('aspect-video bg-zinc-950', bleed === 0 && 'overflow-hidden rounded-md')}
     />
   )
 }

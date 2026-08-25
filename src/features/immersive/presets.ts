@@ -32,3 +32,27 @@ export const HERO_LENS = {
   follow: 4,
   ease: 3,
 } as const satisfies Partial<RefractionMediaProps>
+
+/**
+ * IndustryWork main-media hover, dialed in on /demo/immersive. A deliberately
+ * quiet edgeless warp — softer refraction, chroma and wobble than the
+ * component defaults — plus a gentle Y tilt of the whole plane toward the
+ * cursor, and a bleed margin so the warp melts the media's silhouette past
+ * its bounding box (melt tuning stays at the component defaults).
+ * `lensVisibility: 0` keeps the glass mesh optically absent, so its
+ * parameters stay at the component defaults.
+ */
+export const INDUSTRY_WORK_MEDIA = {
+  tilt: 4,
+  bleed: 0.12,
+  spread: 0.3,
+  refraction: 0.06,
+  chroma: 0.2,
+  distortion: 0.004,
+  noiseScale: 4,
+  noiseSpeed: 0.25,
+  smear: 0.01,
+  lensVisibility: 0,
+  follow: 6,
+  ease: 4,
+} as const satisfies Partial<RefractionMediaProps>

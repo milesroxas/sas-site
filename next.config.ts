@@ -37,6 +37,12 @@ const nextConfig: NextConfig = {
         hostname: 'raw.githubusercontent.com',
         protocol: 'https',
       },
+      // Production media bucket — block fixtures (src/blocks/fixtures.ts) use
+      // absolute URLs so the /demo playgrounds can render them via next/image.
+      {
+        hostname: 'media.suits-sandals.com',
+        protocol: 'https',
+      },
       ...[deployUrl].map((item) => {
         const url = new URL(item)
 
