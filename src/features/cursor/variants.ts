@@ -86,6 +86,8 @@ export const CURSOR_DEFAULTS = {
   outerGrowLag: 0.3,
   /** Seconds for the hover lock-on pop (net ring scale → `hoverOuterScale`). */
   hoverPopDuration: 0.35,
+  /** Outer-ring opacity ceiling (hover and approach both scale into this). */
+  outerOpacity: 0.3,
   /** Overlay stacking level — always above page content (it remains pointer-events none). */
   zIndex: 2147483647,
   proximityRadius: 100,
@@ -99,10 +101,11 @@ export const CURSOR_DEFAULTS = {
 
 /** Delta-only variant overrides on top of `CURSOR_DEFAULTS`. */
 export const CURSOR_VARIANTS = {
-  /** For elements worth drawing the eye to (e.g. the home hero card). */
+  /** For elements worth drawing the eye to (e.g. the home hero card, menu). */
   emphasize: {
     // Tighter ring→label gap so the label reads as part of the cursor.
     labelOffset: 8,
+    outerSize: 40,
   },
   /**
    * Clickable media panels that open into an entry (work, case study). The
@@ -128,7 +131,7 @@ export const CURSOR_VARIANTS = {
     label: 'DRAG',
     labelActivation: 'proximity',
     labelPlacement: 'center',
-    outerSize: 96,
+    outerSize: 40,
     // Native cursor is replaced while approaching, so the custom cursor
     // must stay fully opaque — the default tease (0.3) would vanish.
     proximityMaxOpacity: 1,

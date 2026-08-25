@@ -43,16 +43,26 @@ export function useRevealSwap({
   rootRef,
   active,
   onSwap,
+  onSwapStart,
+  onSettled,
 }: {
   rootRef: RefObject<HTMLElement | null>
   /** Currently rendered panel index; the entrance half keys on its change. */
   active: number
   /** State setter invoked once the exit half finishes. */
   onSwap: (index: number) => void
+  /** Fires as the exit half begins — unmount work that must not composite during the scale. */
+  onSwapStart?: () => void
+  /** Fires once the entrance half has settled (or immediately under reduced motion). */
+  onSettled?: () => void
 }) {
   const swapTlRef = useRef<gsap.core.Timeline | null>(null)
   const swappingRef = useRef(false)
   const targetIndexRef = useRef(active)
+  const onSwapStartRef = useRef(onSwapStart)
+  onSwapStartRef.current = onSwapStart
+  const onSettledRef = useRef(onSettled)
+  onSettledRef.current = onSettled
   const prefersReducedMotion = usePrefersReducedMotion()
 
   const { contextSafe } = useGSAP(
@@ -66,7 +76,7 @@ export function useRevealSwap({
 
       const texts = root.querySelectorAll<HTMLElement>(SWAP_TEXT)
       const media = root.querySelector<HTMLElement>(SWAP_MEDIA)
-      const tl = gsap.timeline()
+      const tl = gsap.timeline({ onComplete: () => onSettledRef.current?.() })
       if (texts.length) {
         tl.fromTo(
           texts,
@@ -98,9 +108,11 @@ export function useRevealSwap({
   return contextSafe((index: number) => {
     if (index === targetIndexRef.current) return
     targetIndexRef.current = index
+    onSwapStartRef.current?.()
     const root = rootRef.current
     if (!root || prefersReducedMotion) {
       onSwap(index)
+      onSettledRef.current?.()
       return
     }
 

@@ -1,5 +1,6 @@
 import type { Field, GroupField } from 'payload'
 
+import { SITE_PAGE_OPTIONS } from '@/fields/sitePages'
 import deepMerge from '@/utilities/deepMerge'
 
 export type LinkAppearances = 'default' | 'outline'
@@ -46,6 +47,10 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
                 value: 'reference',
               },
               {
+                label: 'Site page',
+                value: 'site',
+              },
+              {
                 label: 'Custom URL',
                 value: 'custom',
               },
@@ -76,6 +81,17 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
       },
       label: 'Document to link to',
       relationTo: ['pages', 'posts'],
+      required: true,
+    },
+    {
+      name: 'sitePage',
+      type: 'select',
+      admin: {
+        condition: (_, siblingData) => siblingData?.type === 'site',
+        description: 'Home (/), Works Index (/works), or Insights Index (/insights).',
+      },
+      label: 'Site page',
+      options: [...SITE_PAGE_OPTIONS],
       required: true,
     },
     {

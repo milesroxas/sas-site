@@ -49,6 +49,7 @@ import * as migration_20260823_163739_seo_og_fields from './20260823_163739_seo_
 import * as migration_20260824_175955_audience_tabs_description from './20260824_175955_audience_tabs_description';
 import * as migration_20260825_163340_insights_browse from './20260825_163340_insights_browse';
 import * as migration_20260825_195015_footer_closing from './20260825_195015_footer_closing';
+import * as migration_20260825_210837_link_site_pages from './20260825_210837_link_site_pages';
 
 export const migrations = [
   {
@@ -304,6 +305,11 @@ export const migrations = [
   {
     up: migration_20260825_195015_footer_closing.up,
     down: migration_20260825_195015_footer_closing.down,
-    name: '20260825_195015_footer_closing'
+    name: '20260825_195015_footer_closing',
+  },
+  {
+    up: migration_20260825_210837_link_site_pages.up,
+    down: migration_20260825_210837_link_site_pages.down,
+    name: '20260825_210837_link_site_pages'
   },
 ];

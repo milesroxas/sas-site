@@ -93,7 +93,7 @@ describe('resolveCursorVariant', () => {
       label: 'DRAG',
       labelActivation: 'proximity',
       labelPlacement: 'center',
-      outerSize: 96,
+      outerSize: 40,
       proximityMaxOpacity: 1,
       showInnerRing: false,
       hideNativeCursor: true,
@@ -253,15 +253,38 @@ describe('CustomCursorProvider', () => {
     const { target } = renderWithTarget()
     const badge = document.createElement('div')
     document.body.appendChild(badge)
-    // Nearest edge point hits the overlapping badge; the center is the target.
-    document.elementFromPoint = vi
-      .fn<Document['elementFromPoint']>()
-      .mockReturnValueOnce(badge)
-      .mockReturnValueOnce(target)
+    // Pointer sits in empty space below the target. Nearest-edge hit-testing
+    // can land on the overlapping badge; the center is still the target.
+    document.elementFromPoint = vi.fn<Document['elementFromPoint']>((_x, y) => {
+      if (y > TARGET_RECT.bottom) return document.body
+      if (y === TARGET_RECT.bottom) return badge
+      return target
+    })
     // 50px below the rect's bottom edge with a 100px radius -> t = 0.5.
     pointerMove(150, 250)
     expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('0.5')
     badge.remove()
+  })
+
+  it('does not pull proximity while the pointer is over a dropdown', () => {
+    const view = render(
+      <CustomCursorProvider>
+        <a href="/work" {...cursorTarget({ variant: 'view' })}>
+          media
+        </a>
+        <button type="button" data-slot="dropdown-menu-trigger">
+          industries
+        </button>
+      </CustomCursorProvider>,
+    )
+    const target = view.getByRole('link', { name: 'media' })
+    const trigger = view.getByRole('button', { name: 'industries' })
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(TARGET_RECT)
+    document.elementFromPoint = () => trigger
+    // 50px below the rect — inside the view variant's 180px radius.
+    pointerMove(150, 250)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
   })
 
   it('fans proximity out to JS subscribers alongside the CSS var', () => {

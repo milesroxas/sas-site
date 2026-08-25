@@ -2,6 +2,7 @@ import type { VariantProps } from 'class-variance-authority'
 import Link from 'next/link'
 import type React from 'react'
 import { Button, type buttonVariants } from '@/components/ui/button'
+import type { SitePage } from '@/fields/sitePages'
 import type { Page, Post } from '@/payload-types'
 import {
   backNavTransitionTypes,
@@ -30,9 +31,10 @@ type CMSLinkType = {
     value: Page | Post | string | number
   } | null
   size?: ButtonVariants['size'] | null
+  sitePage?: SitePage | null
   /** Spatial relationship of the destination. CMS links default to a lateral fade. */
   transitionDirection?: 'forward' | 'back' | 'lateral'
-  type?: 'custom' | 'reference' | null
+  type?: 'custom' | 'reference' | 'site' | null
   url?: string | null
 }
 
@@ -46,11 +48,12 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     newTab,
     reference,
     size: sizeFromProps,
+    sitePage,
     transitionDirection = 'lateral',
     url,
   } = props
 
-  const href = resolveCmsLinkHref({ type, reference, url })
+  const href = resolveCmsLinkHref({ type, reference, sitePage, url })
 
   if (!href) return null
 

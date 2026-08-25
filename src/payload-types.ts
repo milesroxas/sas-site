@@ -259,7 +259,7 @@ export interface Page {
     links?:
       | {
           link: {
-            type?: ('reference' | 'custom') | null;
+            type?: ('reference' | 'site' | 'custom') | null;
             newTab?: boolean | null;
             reference?:
               | ({
@@ -270,6 +270,10 @@ export interface Page {
                   relationTo: 'posts';
                   value: number | Post;
                 } | null);
+            /**
+             * Home (/), Works Index (/works), or Insights Index (/insights).
+             */
+            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
             url?: string | null;
             label: string;
             /**
@@ -2149,7 +2153,7 @@ export interface FeatureStatementLinksBlock {
   links?:
     | {
         link: {
-          type?: ('reference' | 'custom') | null;
+          type?: ('reference' | 'site' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -2160,6 +2164,10 @@ export interface FeatureStatementLinksBlock {
                 relationTo: 'posts';
                 value: number | Post;
               } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
           url?: string | null;
           label: string;
         };
@@ -2575,7 +2583,7 @@ export interface ContentBlock {
         } | null;
         enableLink?: boolean | null;
         link?: {
-          type?: ('reference' | 'custom') | null;
+          type?: ('reference' | 'site' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -2586,6 +2594,10 @@ export interface ContentBlock {
                 relationTo: 'posts';
                 value: number | Post;
               } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
           url?: string | null;
           label: string;
           /**
@@ -2993,7 +3005,7 @@ export interface TestimonialsMarqueeBlock {
   links?:
     | {
         link: {
-          type?: ('reference' | 'custom') | null;
+          type?: ('reference' | 'site' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -3004,6 +3016,10 @@ export interface TestimonialsMarqueeBlock {
                 relationTo: 'posts';
                 value: number | Post;
               } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
           url?: string | null;
           label: string;
           /**
@@ -3112,7 +3128,7 @@ export interface CallToActionBlock {
   links?:
     | {
         link: {
-          type?: ('reference' | 'custom') | null;
+          type?: ('reference' | 'site' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -3123,6 +3139,10 @@ export interface CallToActionBlock {
                 relationTo: 'posts';
                 value: number | Post;
               } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
           url?: string | null;
           label: string;
           /**
@@ -3840,7 +3860,7 @@ export interface ExpertisePage {
     links?:
       | {
           link: {
-            type?: ('reference' | 'custom') | null;
+            type?: ('reference' | 'site' | 'custom') | null;
             newTab?: boolean | null;
             reference?:
               | ({
@@ -3851,6 +3871,10 @@ export interface ExpertisePage {
                   relationTo: 'posts';
                   value: number | Post;
                 } | null);
+            /**
+             * Home (/), Works Index (/works), or Insights Index (/insights).
+             */
+            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
             url?: string | null;
             label: string;
             /**
@@ -3964,7 +3988,7 @@ export interface AudiencePage {
     links?:
       | {
           link: {
-            type?: ('reference' | 'custom') | null;
+            type?: ('reference' | 'site' | 'custom') | null;
             newTab?: boolean | null;
             reference?:
               | ({
@@ -3975,6 +3999,10 @@ export interface AudiencePage {
                   relationTo: 'posts';
                   value: number | Post;
                 } | null);
+            /**
+             * Home (/), Works Index (/works), or Insights Index (/insights).
+             */
+            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
             url?: string | null;
             label: string;
             /**
@@ -4777,6 +4805,7 @@ export interface PagesSelect<T extends boolean = true> {
                     type?: T;
                     newTab?: T;
                     reference?: T;
+                    sitePage?: T;
                     url?: T;
                     label?: T;
                     appearance?: T;
@@ -4845,6 +4874,7 @@ export interface ContentBlockSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              sitePage?: T;
               url?: T;
               label?: T;
               appearance?: T;
@@ -4934,6 +4964,7 @@ export interface FeatureStatementLinksBlockSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              sitePage?: T;
               url?: T;
               label?: T;
             };
@@ -5082,6 +5113,7 @@ export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              sitePage?: T;
               url?: T;
               label?: T;
               appearance?: T;
@@ -5140,6 +5172,7 @@ export interface CallToActionBlockSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              sitePage?: T;
               url?: T;
               label?: T;
               appearance?: T;
@@ -5687,6 +5720,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
                     type?: T;
                     newTab?: T;
                     reference?: T;
+                    sitePage?: T;
                     url?: T;
                     label?: T;
                     appearance?: T;
@@ -5757,6 +5791,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
                     type?: T;
                     newTab?: T;
                     reference?: T;
+                    sitePage?: T;
                     url?: T;
                     label?: T;
                     appearance?: T;
@@ -7052,7 +7087,7 @@ export interface InsightsIndex {
     links?:
       | {
           link: {
-            type?: ('reference' | 'custom') | null;
+            type?: ('reference' | 'site' | 'custom') | null;
             newTab?: boolean | null;
             reference?:
               | ({
@@ -7063,6 +7098,10 @@ export interface InsightsIndex {
                   relationTo: 'posts';
                   value: number | Post;
                 } | null);
+            /**
+             * Home (/), Works Index (/works), or Insights Index (/insights).
+             */
+            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
             url?: string | null;
             label: string;
             /**
@@ -7148,7 +7187,7 @@ export interface WorksIndex {
     links?:
       | {
           link: {
-            type?: ('reference' | 'custom') | null;
+            type?: ('reference' | 'site' | 'custom') | null;
             newTab?: boolean | null;
             reference?:
               | ({
@@ -7159,6 +7198,10 @@ export interface WorksIndex {
                   relationTo: 'posts';
                   value: number | Post;
                 } | null);
+            /**
+             * Home (/), Works Index (/works), or Insights Index (/insights).
+             */
+            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
             url?: string | null;
             label: string;
             /**
@@ -7215,7 +7258,7 @@ export interface Header {
   navItems?:
     | {
         link: {
-          type?: ('reference' | 'custom') | null;
+          type?: ('reference' | 'site' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -7226,6 +7269,10 @@ export interface Header {
                 relationTo: 'posts';
                 value: number | Post;
               } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
           url?: string | null;
           label: string;
         };
@@ -7249,7 +7296,7 @@ export interface Footer {
    * Centered call-to-action in the site footer.
    */
   getInTouch: {
-    type?: ('reference' | 'custom') | null;
+    type?: ('reference' | 'site' | 'custom') | null;
     newTab?: boolean | null;
     reference?:
       | ({
@@ -7260,6 +7307,10 @@ export interface Footer {
           relationTo: 'posts';
           value: number | Post;
         } | null);
+    /**
+     * Home (/), Works Index (/works), or Insights Index (/insights).
+     */
+    sitePage?: ('home' | 'works-index' | 'insights-index') | null;
     url?: string | null;
     label: string;
   };
@@ -7281,7 +7332,7 @@ export interface Footer {
     links?:
       | {
           link: {
-            type?: ('reference' | 'custom') | null;
+            type?: ('reference' | 'site' | 'custom') | null;
             newTab?: boolean | null;
             reference?:
               | ({
@@ -7292,6 +7343,10 @@ export interface Footer {
                   relationTo: 'posts';
                   value: number | Post;
                 } | null);
+            /**
+             * Home (/), Works Index (/works), or Insights Index (/insights).
+             */
+            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
             url?: string | null;
             label: string;
             /**
@@ -7476,6 +7531,7 @@ export interface InsightsIndexSelect<T extends boolean = true> {
                     type?: T;
                     newTab?: T;
                     reference?: T;
+                    sitePage?: T;
                     url?: T;
                     label?: T;
                     appearance?: T;
@@ -7526,6 +7582,7 @@ export interface WorksIndexSelect<T extends boolean = true> {
                     type?: T;
                     newTab?: T;
                     reference?: T;
+                    sitePage?: T;
                     url?: T;
                     label?: T;
                     appearance?: T;
@@ -7567,6 +7624,7 @@ export interface HeaderSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              sitePage?: T;
               url?: T;
               label?: T;
             };
@@ -7588,6 +7646,7 @@ export interface FooterSelect<T extends boolean = true> {
         type?: T;
         newTab?: T;
         reference?: T;
+        sitePage?: T;
         url?: T;
         label?: T;
       };
@@ -7605,6 +7664,7 @@ export interface FooterSelect<T extends boolean = true> {
                     type?: T;
                     newTab?: T;
                     reference?: T;
+                    sitePage?: T;
                     url?: T;
                     label?: T;
                     appearance?: T;

@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import type React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CMSLink } from '@/components/Link'
+import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 import { Button } from '@/components/ui/button'
 import { Clock } from '@/Footer/Clock'
 import { MenuAsk } from '@/features/ask/MenuAsk'
@@ -277,14 +278,7 @@ const showHoverMedia = (media: MenuMedia | null) => {
 type NavItemLink = NonNullable<HeaderType['navItems']>[number]['link']
 
 /** Mirror of CMSLink's href resolution — hover-preview lookup only. */
-const navItemHref = (link: NavItemLink): string | null => {
-  if (link.type === 'reference' && typeof link.reference?.value === 'object') {
-    const { relationTo } = link.reference
-    const slug = link.reference.value.slug
-    if (slug) return `${relationTo !== 'pages' ? `/${relationTo}` : ''}/${slug}`
-  }
-  return link.url ?? null
-}
+const navItemHref = (link: NavItemLink): string | null => resolveCmsLinkHref(link)
 
 type TakeoverMenuProps = {
   data: HeaderType

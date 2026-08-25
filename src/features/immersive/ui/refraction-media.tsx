@@ -573,9 +573,10 @@ function RefractionScene({
   ])
 
   // Tilt applies to the mesh in useFrame; on the demand frameloop a prop
-  // change still needs to request the frame that picks it up.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: tilt changes must request a frame without being read here
-  useEffect(() => invalidate(), [tilt, invalidate])
+  // change still needs to request the frame that picks it up. Same for
+  // lensVisibility, which mounts or unmounts the glass mesh.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: prop changes must request a frame without being read here
+  useEffect(() => invalidate(), [tilt, lensVisibility, invalidate])
 
   useEffect(() => {
     const u = lensMaterialRef.current?.uniforms
@@ -596,7 +597,7 @@ function RefractionScene({
     const mesh = meshRef.current
     const warp = warpMaterialRef.current
     const lens = lensMaterialRef.current
-    if (!mesh || !warp || !lens) return
+    if (!warp) return
     const u = warp.uniforms
     // Clamp tab-switch deltas so damping never overshoots.
     const dt = Math.min(delta, 1 / 30)
@@ -630,22 +631,30 @@ function RefractionScene({
 
     // The glass rides the same damped pointer as the warp's center, and its
     // refraction shares the hover ease, scaled by how visible it should be.
-    const plane = glassPlaneSize(state.size.width / state.size.height)
-    mesh.position.x = (mouse.x - 0.5) * plane.width
-    mesh.position.y = (mouse.y - 0.5) * plane.height
-    lens.uniforms.uHover.value = u.uHover.value * lensVisibility
+    const glassHover = u.uHover.value * lensVisibility
+    if (mesh && lens) {
+      const plane = glassPlaneSize(state.size.width / state.size.height)
+      mesh.position.x = (mouse.x - 0.5) * plane.width
+      mesh.position.y = (mouse.y - 0.5) * plane.height
+      lens.uniforms.uHover.value = glassHover
+    }
 
-    // Capture pass: hide the glass, snapshot the warped backdrop into the
-    // FBO, then let R3F's default pass render glass + backdrop to the screen.
-    // An optically absent glass (uHover ~0 would reproduce the backdrop
-    // exactly) stays hidden, skipping its fragment work entirely.
-    const { gl, scene, camera } = state
-    mesh.visible = false
-    gl.setRenderTarget(backdropFBO)
-    gl.render(scene, camera)
-    mesh.visible = lens.uniforms.uHover.value > 0.002
-    gl.setRenderTarget(null)
-    lens.uniforms.uTexture.value = backdropFBO.texture
+    // Capture pass only while the glass is optically present. An absent
+    // lens (lensVisibility 0, or hover still easing out) would reproduce
+    // the backdrop exactly — skip the extra scene render rather than pay
+    // it on every demand frame. IndustryWork and the hero both ship with
+    // the glass off, so hover is warp + tilt only.
+    if (mesh && lens && glassHover > 0.002) {
+      const { gl, scene, camera } = state
+      mesh.visible = false
+      gl.setRenderTarget(backdropFBO)
+      gl.render(scene, camera)
+      mesh.visible = true
+      gl.setRenderTarget(null)
+      lens.uniforms.uTexture.value = backdropFBO.texture
+    } else if (mesh) {
+      mesh.visible = false
+    }
 
     // Keep requesting frames only while the lens is visible or still moving;
     // once everything settles the canvas goes fully idle. A playing video
@@ -679,20 +688,22 @@ function RefractionScene({
         />
       </mesh>
 
-      <mesh
-        ref={meshRef}
-        position-z={GLASS_MESH_Z}
-        scale={[lensScale, lensScale, lensScale * lensDepth]}
-        raycast={() => null}
-      >
-        <sphereGeometry args={[1, 64, 64]} />
-        <shaderMaterial
-          ref={lensMaterialRef}
-          uniforms={lensUniforms}
-          vertexShader={DISPERSION_VERTEX}
-          fragmentShader={DISPERSION_FRAGMENT}
-        />
-      </mesh>
+      {lensVisibility > 0 ? (
+        <mesh
+          ref={meshRef}
+          position-z={GLASS_MESH_Z}
+          scale={[lensScale, lensScale, lensScale * lensDepth]}
+          raycast={() => null}
+        >
+          <sphereGeometry args={[1, 64, 64]} />
+          <shaderMaterial
+            ref={lensMaterialRef}
+            uniforms={lensUniforms}
+            vertexShader={DISPERSION_VERTEX}
+            fragmentShader={DISPERSION_FRAGMENT}
+          />
+        </mesh>
+      ) : null}
     </>
   )
 }
@@ -707,7 +718,7 @@ function RefractionScene({
 export function RefractionMedia({ className, ...scene }: RefractionMediaProps) {
   const bleed = scene.bleed ?? REFRACTION_MEDIA_DEFAULTS.bleed
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('pointer-events-none relative', className)}>
       {/* Bleed host: the canvas hangs past the container by `bleed` per side
           (CSS inset % resolves against the matching axis, mirroring the
           shader's per-axis margin), giving the silhouette transparent room to

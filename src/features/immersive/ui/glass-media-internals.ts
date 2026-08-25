@@ -261,12 +261,17 @@ export function useBackdropTexture({
       material.uniforms.uMap.value = texture
       previous?.dispose()
       if (width > 0 && height > 0) setSourceAspect(width / height)
-      // Demand frameloop: paint now and once more after layout/ready opacity.
+      // Demand frameloop: paint the textured frame while the canvas is still
+      // opacity-0, then announce ready so the consumer can fade it in. Calling
+      // onReady synchronously here reveals a clear/unpainted buffer — a flash.
       invalidate()
       requestAnimationFrame(() => {
-        if (!cancelled) invalidate()
+        if (cancelled) return
+        invalidate()
+        requestAnimationFrame(() => {
+          if (!cancelled) onReadyRef.current?.()
+        })
       })
-      onReadyRef.current?.()
     }
 
     const bindVideo = (material: ShaderMaterial, videoEl: HTMLVideoElement) => {
@@ -297,7 +302,9 @@ export function useBackdropTexture({
           if (existing?.image === image && existing.source !== null) {
             existing.needsUpdate = true
             invalidate()
-            onReadyRef.current?.()
+            requestAnimationFrame(() => {
+              if (!cancelled) onReadyRef.current?.()
+            })
             return
           }
           const texture = new Texture(image)
@@ -482,8 +489,24 @@ export function usePointerTracking(onScreen: RefObject<boolean>): PointerTrackin
       // than freeze at the last inside position. Hover-only scenes are
       // unaffected — their effects are invisible while `inside` is false.
       uv.current.set(Math.min(Math.max(x, 0), 1), Math.min(Math.max(y, 0), 1))
-      inside.current = within
-      invalidate()
+      // A dropdown sitting in the canvas bleed (or just above the panel) must
+      // not count as hovering the media — keep in sync with the cursor
+      // provider's `[data-slot^="dropdown-menu"]` occluder.
+      const onDropdown =
+        typeof document.elementFromPoint === 'function' &&
+        Boolean(
+          document
+            .elementFromPoint(event.clientX, event.clientY)
+            ?.closest('[data-slot^="dropdown-menu"]'),
+        )
+      const nextInside = within && !onDropdown
+      const wasInside = inside.current
+      inside.current = nextInside
+      // Demand frameloop: idle pointer motion across the page must not
+      // request frames. Approaching scenes invalidate from their proximity
+      // subscription; hover-only scenes only need a frame on enter/leave
+      // or while the pointer is actually over the canvas.
+      if (nextInside || wasInside) invalidate()
     }
 
     const handleLeave = () => {

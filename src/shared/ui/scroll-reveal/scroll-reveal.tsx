@@ -63,6 +63,12 @@ export type ScrollRevealProps = ScrollRevealTuning & {
    * still win over the variant's values.
    */
   variant?: ScrollRevealVariant
+  /**
+   * Fires once the entrance has settled (or immediately under reduced
+   * motion). Use it to mount work that must not composite during the wipe
+   * or scale — a WebGL canvas inside a `clip-path` / `scale` tween.
+   */
+  onComplete?: () => void
 }
 
 /**
@@ -194,9 +200,12 @@ export function ScrollReveal({
   children,
   replayKey = 0,
   variant,
+  onComplete,
   ...tuning
 }: ScrollRevealProps) {
   const rootRef = useRef<HTMLDivElement>(null)
+  const onCompleteRef = useRef(onComplete)
+  onCompleteRef.current = onComplete
   const prefersReducedMotion = usePrefersReducedMotion()
   const {
     textY,
@@ -220,6 +229,7 @@ export function ScrollReveal({
 
       if (prefersReducedMotion) {
         gsap.set(targets, { clearProps: 'all' })
+        onCompleteRef.current?.()
         return
       }
 
@@ -244,6 +254,7 @@ export function ScrollReveal({
           // Guarded: gsap.set([]) logs a "target not found" warning on
           // text-only shells.
           if (mediaTargets.length) gsap.set(mediaTargets, { clearProps: 'clipPath' })
+          onCompleteRef.current?.()
         },
       })
       textTargets.forEach((target, index) => {

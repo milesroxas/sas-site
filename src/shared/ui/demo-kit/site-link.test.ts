@@ -28,6 +28,16 @@ describe('toSiteLink', () => {
     expect(toSiteLink(link)?.href).toBe('/posts/hello')
   })
 
+  it('resolves site pages to their singleton paths', () => {
+    expect(toSiteLink({ type: 'site', label: 'Home', sitePage: 'home' })?.href).toBe('/')
+    expect(toSiteLink({ type: 'site', label: 'Work', sitePage: 'works-index' })?.href).toBe(
+      '/works',
+    )
+    expect(toSiteLink({ type: 'site', label: 'Insights', sitePage: 'insights-index' })?.href).toBe(
+      '/insights',
+    )
+  })
+
   it('falls back to the raw url for custom links and unpopulated references', () => {
     expect(toSiteLink({ type: 'custom', label: 'Contact', url: '/contact', newTab: true })).toEqual(
       { label: 'Contact', href: '/contact', newTab: true },

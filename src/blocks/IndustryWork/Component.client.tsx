@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, useState, ViewTransition } from 'react'
+import { useEffect, useRef, useState, ViewTransition } from 'react'
 import { HeadingDropdown } from '@/blocks/shared/heading-dropdown'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import {
@@ -18,6 +18,7 @@ import {
   type RefractionMediaProps,
   useWebglMediaLayer,
 } from '@/features/immersive'
+import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import {
   sequenceWorkImageMorph,
   WORK_OPEN,
@@ -50,52 +51,100 @@ const INDUSTRY_WORK_MEDIA_OFFSET = 0.2
 
 /**
  * Main media with the shipped hover effect: the DOM `Media` paints first and
- * stays mounted as the fallback (reduced motion, absent GPUs, lost contexts),
- * then a WebGL canvas loads the same URL and cross-fades in on top with the
- * `INDUSTRY_WORK_MEDIA` refraction lens + cursor Y tilt. The DOM layer (and
- * the `bg-muted` loading placeholder, which lives on it rather than the panel
- * box) fades out underneath — the tilt's perspective inset must reveal the
- * section background, not a gray box or a static copy of the same media.
+ * stays mounted as the fallback (reduced motion, absent GPUs, lost contexts)
+ * and as the only layer during the shell's clip-path / scale entrance. A
+ * WebGL canvas then loads the same URL and cross-fades in on top with the
+ * `INDUSTRY_WORK_MEDIA` refraction lens + cursor Y tilt — but only after that
+ * motion has settled, so shader compile never shares a frame with the wipe.
+ * The DOM layer (and the `bg-muted` loading placeholder, which lives on it
+ * rather than the panel box) stays fully visible until the canvas has faded
+ * in over it, then hides so the tilt's perspective inset reveals the section
+ * background, not a gray box or a static copy of the same media.
  */
+const SHADER_FADE_MS = 500
+
 const IndustryWorkMedia = ({
   media,
   proximity,
+  canvasMounted,
+  canvasHot,
 }: {
   media: WorkEntry['media']
   /** Cursor-target proximity source; pre-activates the effects on approach. */
   proximity?: RefractionMediaProps['subscribeProximity']
+  /** Mount the canvas once — never during a clip-path / scale tween. */
+  canvasMounted: boolean
+  /**
+   * Visible hover layer. False during swap so the DOM track owns the scale;
+   * the canvas stays mounted (no shader recompile) and sits outside `data-swap`.
+   */
+  canvasHot: boolean
 }) => {
   const src = media ? webglMediaSrc(media) || undefined : undefined
   const isVideo = Boolean(media?.mimeType?.includes('video'))
-  const { enabled, ready, handleReady } = useWebglMediaLayer(src)
+  const { enabled, ready, handleReady } = useWebglMediaLayer(src, canvasMounted)
+  const prefersReducedMotion = usePrefersReducedMotion()
+  const showShader = ready && canvasHot
+  const [fadeStarted, setFadeStarted] = useState(false)
+  const [fadeDone, setFadeDone] = useState(false)
+
+  useEffect(() => {
+    if (!showShader) {
+      setFadeStarted(false)
+      setFadeDone(false)
+      return
+    }
+    if (prefersReducedMotion) {
+      setFadeStarted(true)
+      setFadeDone(true)
+      return
+    }
+    // One painted frame at opacity-0 with the enter duration applied, then
+    // lift it — otherwise adding the transition in the same commit as opacity
+    // 1 skips the fade and the shader pops on.
+    const start = requestAnimationFrame(() => setFadeStarted(true))
+    const done = window.setTimeout(() => setFadeDone(true), SHADER_FADE_MS)
+    return () => {
+      cancelAnimationFrame(start)
+      window.clearTimeout(done)
+    }
+  }, [showShader, prefersReducedMotion])
 
   if (!media) return null
 
+  const shaderVisible = showShader && fadeStarted
+  // Keep the DOM image up until the canvas has faded in over it. A simultaneous
+  // crossfade stacks two copies of the same pixels (a brightness flash) and,
+  // with a still-clear WebGL buffer, punches through to the section background.
+  const hideDom = showShader && fadeDone
+
   return (
     <>
-      <div
-        className={cn(
-          'absolute inset-0 bg-muted transition-opacity duration-500',
-          ready && 'opacity-0',
-        )}
-      >
-        <Media
-          fill
-          htmlElement={null}
-          imgClassName="object-cover"
-          resource={media}
-          // Matches the layout: full width below lg, ~half the 96rem
-          // container (cols 4–10) above. The work-open morph doesn't need a
-          // bigger source — view-transition snapshots rasterize at painted
-          // size, and the fullscreen hold is painted by the case-study
-          // hero's own 100vw image on the destination page.
-          size="(max-width: 1024px) 100vw, 50vw"
-        />
+      {/* Swap scale/fade targets this wrapper only — never the canvas. */}
+      <div className="absolute inset-0" data-swap="media">
+        <div className={cn('absolute inset-0 bg-muted', hideDom && 'opacity-0')}>
+          <Media
+            fill
+            htmlElement={null}
+            imgClassName="object-cover"
+            resource={media}
+            // Matches the layout: full width below lg, ~half the 96rem
+            // container (cols 4–10) above. The work-open morph doesn't need a
+            // bigger source — view-transition snapshots rasterize at painted
+            // size, and the fullscreen hold is painted by the case-study
+            // hero's own 100vw image on the destination page.
+            size="(max-width: 1024px) 100vw, 50vw"
+          />
+        </div>
       </div>
       {enabled && src ? (
         <div
           aria-hidden
-          className={cn('absolute inset-0 transition-opacity duration-500', !ready && 'opacity-0')}
+          className={cn(
+            'pointer-events-none absolute inset-0 transition-opacity ease-out',
+            !shaderVisible && 'opacity-0',
+          )}
+          style={{ transitionDuration: showShader ? `${SHADER_FADE_MS}ms` : '0ms' }}
         >
           <RefractionMedia
             className="size-full"
@@ -139,8 +188,32 @@ export const IndustryWorkClient = ({
   theme?: string | null
 }) => {
   const [active, setActive] = useState(0)
+  // Canvas stays unmounted until the first entrance has cleared its clip-path
+  // / scale. After that it stays mounted across industry swaps (no shader
+  // recompile) and is only hidden while the DOM track owns the swap motion.
+  const [canvasMounted, setCanvasMounted] = useState(false)
+  const [canvasHot, setCanvasHot] = useState(false)
+  const swapLockRef = useRef(false)
+  const armCanvas = () => {
+    if (swapLockRef.current) return
+    setCanvasMounted(true)
+    setCanvasHot(true)
+  }
   const rootRef = useRef<HTMLDivElement>(null)
-  const selectIndustry = useRevealSwap({ rootRef, active, onSwap: setActive })
+  const selectIndustry = useRevealSwap({
+    rootRef,
+    active,
+    onSwapStart: () => {
+      swapLockRef.current = true
+      setCanvasHot(false)
+    },
+    onSwap: setActive,
+    onSettled: () => {
+      swapLockRef.current = false
+      setCanvasMounted(true)
+      setCanvasHot(true)
+    },
+  })
 
   // The media link is the cursor target; its proximity (0–1, shared with the
   // ring overlay) pre-activates the WebGL hover effects on approach.
@@ -155,6 +228,7 @@ export const IndustryWorkClient = ({
       enterThreshold={SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD}
       mediaOffset={INDUSTRY_WORK_MEDIA_OFFSET}
       variant="underMedia"
+      onComplete={armCanvas}
       className={cn(
         fullViewportSectionClassName,
         themeClasses[(theme as SectionTheme | null) || 'dark'],
@@ -228,8 +302,8 @@ export const IndustryWorkClient = ({
                 the section background instead of a muted box. No
                 overflow-hidden either — the WebGL canvas bleeds past the box
                 (the preset's `bleed`) so the warp can melt the media's edges
-                outward; the reveal's clip-path handles entrance masking and is
-                cleared on completion. */}
+                outward. The canvas mounts only after the reveal's clip-path
+                is cleared, so the wipe never composites a live shader. */}
             <div
               className="relative -order-1 aspect-8/5 w-full lg:order-0 lg:col-start-4 lg:col-end-10 lg:row-start-1"
               data-reveal="media"
@@ -246,8 +320,13 @@ export const IndustryWorkClient = ({
                 transitionTypes={[...workOpenTransitionTypes]}
                 {...cursorTarget({ variant: 'view' })}
               >
-                <div className="absolute inset-0" data-swap="media">
-                  <IndustryWorkMedia media={work.media} proximity={mediaProximity} />
+                <div className="absolute inset-0">
+                  <IndustryWorkMedia
+                    canvasHot={canvasHot}
+                    canvasMounted={canvasMounted}
+                    media={work.media}
+                    proximity={mediaProximity}
+                  />
                 </div>
               </Link>
             </div>

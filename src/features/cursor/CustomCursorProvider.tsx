@@ -98,6 +98,7 @@ const {
   labelTeaseOpacity,
   outerGrowLag,
   outerLag,
+  outerOpacity,
   outerScaleMax,
   outerScaleMin,
   outerSize,
@@ -119,6 +120,7 @@ const CursorOverlay: React.FC = () => {
   const innerWrapRef = useRef<HTMLDivElement>(null)
   const outerRingRef = useRef<HTMLDivElement>(null)
   const innerRingRef = useRef<HTMLDivElement>(null)
+  const labelWrapRef = useRef<HTMLDivElement>(null)
   const labelRef = useRef<HTMLSpanElement>(null)
 
   const getEls = () => {
@@ -127,22 +129,27 @@ const CursorOverlay: React.FC = () => {
     const innerWrap = innerWrapRef.current
     const outerRing = outerRingRef.current
     const innerRing = innerRingRef.current
+    const labelWrap = labelWrapRef.current
     const label = labelRef.current
-    if (!outerWrap || !outerScale || !innerWrap || !outerRing || !innerRing || !label) return null
-    return { outerWrap, outerScale, innerWrap, outerRing, innerRing, label }
+    if (!outerWrap || !outerScale || !innerWrap || !outerRing || !innerRing || !labelWrap || !label)
+      return null
+    return { outerWrap, outerScale, innerWrap, outerRing, innerRing, labelWrap, label }
   }
 
   useGSAP(
     () => {
       const els = getEls()
       if (!els) return
-      const { outerWrap, outerScale, innerWrap, outerRing, innerRing, label } = els
+      const { outerWrap, outerScale, innerWrap, outerRing, innerRing, labelWrap, label } = els
 
       gsap.set(label, { xPercent: -50, y: 6, opacity: 0, scale: 0.92 })
       gsap.set(outerScale, { scale: outerScaleMin })
 
       const xOuter = gsap.quickTo(outerWrap, 'x', { duration: outerLag, ease: 'power3.out' })
       const yOuter = gsap.quickTo(outerWrap, 'y', { duration: outerLag, ease: 'power3.out' })
+      // Label lag matches the outer ring's so the chip stays glued to it.
+      const xLabel = gsap.quickTo(labelWrap, 'x', { duration: outerLag, ease: 'power3.out' })
+      const yLabel = gsap.quickTo(labelWrap, 'y', { duration: outerLag, ease: 'power3.out' })
       const xInner = gsap.quickTo(innerWrap, 'x', { duration: innerLag, ease: 'power3.out' })
       const yInner = gsap.quickTo(innerWrap, 'y', { duration: innerLag, ease: 'power3.out' })
       // Opacity lives on the ring leaves: an ancestor with opacity < 1 would
@@ -156,7 +163,7 @@ const CursorOverlay: React.FC = () => {
         ease: 'power2.out',
       })
       const fadeRings = (opacity: number, showInnerRing = true) => {
-        fadeOuterRing(opacity)
+        fadeOuterRing(opacity * outerOpacity)
         fadeInnerRing(showInnerRing ? opacity : 0)
       }
       // Two scale layers so continuous growth and the discrete hover pop never
@@ -195,6 +202,9 @@ const CursorOverlay: React.FC = () => {
         presentationKey = key
         const root = rootRef.current
         if (root) {
+          // Placement is what the label's presentation keys off (see the plate
+          // rules below), so it publishes even for the unnamed default variant.
+          root.setAttribute('data-cursor-label-placement', variant.labelPlacement)
           if (variantName) root.setAttribute('data-cursor-variant', variantName)
           else root.removeAttribute('data-cursor-variant')
         }
@@ -416,6 +426,14 @@ const CursorOverlay: React.FC = () => {
             if (!live.has(el)) writeProximity(el, 0)
           }
         }
+        // Hit-test the pointer itself (not the target's nearest edge): a
+        // nearby media panel's 180px view radius must not steal the cursor
+        // or pre-activate its shader while the pointer is on a dropdown.
+        const pointerHit =
+          typeof document.elementFromPoint === 'function'
+            ? document.elementFromPoint(lastX, lastY)
+            : null
+        const pointerOnDropdown = pointerHit?.closest('[data-slot^="dropdown-menu"]')
         let bestT = 0
         let bestEl: HTMLElement | null = null
         let bestVariantName: string | undefined
@@ -425,6 +443,14 @@ const CursorOverlay: React.FC = () => {
           // open takeover menu) or hidden ones can't be interacted with. They
           // must neither pull the rings nor keep a stale proximity var.
           if (el.closest('[inert]') || !isVisible(el)) {
+            writeProximity(el, 0)
+            continue
+          }
+          if (
+            pointerOnDropdown &&
+            !el.contains(pointerOnDropdown) &&
+            !pointerOnDropdown.contains(el)
+          ) {
             writeProximity(el, 0)
             continue
           }
@@ -499,10 +525,12 @@ const CursorOverlay: React.FC = () => {
         lastY = event.clientY
         if (!hasPosition) {
           hasPosition = true
-          gsap.set([outerWrap, innerWrap], { x: lastX, y: lastY })
+          gsap.set([outerWrap, innerWrap, labelWrap], { x: lastX, y: lastY })
         }
         xOuter(lastX)
         yOuter(lastY)
+        xLabel(lastX)
+        yLabel(lastY)
         xInner(lastX)
         yInner(lastY)
         window.clearTimeout(idleTimer)
@@ -563,28 +591,70 @@ const CursorOverlay: React.FC = () => {
   return createPortal(
     <div aria-hidden className="pointer-events-none" ref={rootRef}>
       <style>{`
+        /* ── Cursor overlay: color + size map ─────────────────────────────
+           Rings (every variant)
+             color → ring divs below: className border-white
+                     (wraps use mix-blend-difference; stroke inverts vs the page)
+             size  → CURSOR_DEFAULTS.outerSize / innerSize / strokeWidth
+                     per-variant outerSize in CURSOR_VARIANTS:
+                       default + view = 64 · emphasize + drag = 40
+
+           Label — default + emphasize  (data-cursor-label-placement="below")
+             color → this block, "below": type --background, plate --foreground
+             size  → span className text-xs; padding in the "below" rule
+
+           Label — drag + view  (data-cursor-label-placement="center")
+             color → span className text-white; halo in the "center" rule
+             size  → this block, "drag + view": font-size / tracking
+           ──────────────────────────────────────────────────────────────── */
+
         html[${CURSOR_NATIVE_HIDDEN_ATTR}], html[${CURSOR_NATIVE_HIDDEN_ATTR}] * { cursor: none !important; }
-        /* Drag and view are viewfinders: one white hairline + tracked mono,
-           inverted through mix-blend-difference. No knockout — a black stroke
-           is what made the caption vanish on dark surfaces. */
+
+        /* SIZE — drag + view label. Default/emphasize keep text-xs. */
         [data-cursor-variant="drag"] [data-cursor-part="label"],
         [data-cursor-variant="view"] [data-cursor-part="label"] {
-          font-size: 11px;
-          font-weight: 500;
+          font-size: 10px;
+          font-weight: 400;
           letter-spacing: 0.22em;
           padding-left: 0.22em;
         }
+
+        /* COLOR — center label (drag, view). Type is text-white on the span.
+           Halo is occlusion (keep dark in both themes), not a fill — a plate
+           here would bisect the ring. */
+        [data-cursor-label-placement="center"] [data-cursor-part="label"] {
+          filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.2)) drop-shadow(0 0 3px rgb(0 0 0 / 0.3));
+        }
+
+        /* COLOR + SIZE — below label (default, emphasize). Inverse of the
+           site theme: plate --foreground, type --background. */
+        [data-cursor-label-placement="below"] [data-cursor-part="label"] {
+          padding: 0.25rem 0.5rem;
+          color: var(--background);
+          background-color: color-mix(in oklab, var(--foreground) 20%, transparent);
+          box-shadow: 0 1px 3px color-mix(in oklab, var(--background) 5%, transparent);
+        }
+        /* Stronger glass plate when backdrop-filter is available. */
+        @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+          [data-cursor-label-placement="below"] [data-cursor-part="label"] {
+            background-color: color-mix(in oklab, var(--foreground) 40%, transparent);
+            -webkit-backdrop-filter: blur(10px) saturate(1.5);
+            backdrop-filter: blur(10px) saturate(1.5);
+          }
+        }
       `}</style>
-      {/* mix-blend lives on these wraps — not a full-viewport overlay — so
-          difference composites against the page rather than an isolated layer.
-          Opacity stays on the ring/label leaves so it cannot isolate blending. */}
+      {/* RING COLOR: mix-blend-difference on the wrap + border-white on the leaf.
+          RING SIZE: inline width/height from CURSOR_DEFAULTS; variants tween outerSize.
+          Blend stays on the wrap (not a full-viewport overlay) so difference
+          composites against the page. Opacity stays on the leaf so it cannot
+          isolate blending. */}
       <div
         className="fixed top-0 left-0 mix-blend-difference will-change-transform"
         ref={outerWrapRef}
         style={{ zIndex: CURSOR_DEFAULTS.zIndex }}
       >
-        {/* Zero-size wrapper: its transform-origin is the pointer point, so
-            proximity scaling grows the ring around the cursor. */}
+        {/* Zero-size wrapper: transform-origin is the pointer, so proximity
+            scaling grows the ring around the cursor. */}
         <div className="absolute top-0 left-0" ref={outerScaleRef}>
           <div
             className="absolute rounded-full border-white opacity-0"
@@ -599,13 +669,23 @@ const CursorOverlay: React.FC = () => {
             }}
           />
         </div>
+      </div>
+      {/* LABEL sits outside the blend group so the color knobs in <style> stay
+          literal (a glass plate and a dark halo would both invert under
+          difference). Default: text-white + text-xs; placement rules override. */}
+      <div
+        className="fixed top-0 left-0 will-change-transform"
+        ref={labelWrapRef}
+        style={{ zIndex: CURSOR_DEFAULTS.zIndex }}
+      >
         <span
-          className="absolute left-0 font-mono text-sm leading-none font-normal whitespace-nowrap text-white uppercase opacity-0 select-none"
+          className="absolute left-0 rounded-full font-mono text-xs leading-none font-normal whitespace-nowrap text-white uppercase opacity-0 select-none"
           data-cursor-part="label"
           ref={labelRef}
           style={{ top: outerSize / 2 + labelOffset }}
         />
       </div>
+      {/* Inner ring: same color as outer (border-white). Size: CURSOR_DEFAULTS.innerSize. */}
       <div
         className="fixed top-0 left-0 mix-blend-difference will-change-transform"
         ref={innerWrapRef}
