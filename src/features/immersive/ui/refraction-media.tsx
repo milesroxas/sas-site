@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { MathUtils, type Mesh, type ShaderMaterial, type Texture, Vector2 } from 'three'
 
 import {
+  applyGlassIorUniforms,
   BACKDROP_VERTEX,
   createDispersionUniforms,
   DISPERSION_FRAGMENT,
@@ -14,7 +15,9 @@ import {
   GLASS_CAMERA,
   GLASS_DPR,
   GLASS_GL_OPTIONS,
+  GLASS_IOR_DEFAULTS,
   GLASS_MESH_Z,
+  type GlassIorProps,
   type GlassMediaSource,
   glassPlaneSize,
   useBackdropTexture,
@@ -80,6 +83,7 @@ uniform float uHighlight;
 uniform float uInset;
 uniform float uMelt;
 uniform float uMeltScale;
+uniform float uMeltDetail;
 uniform float uMeltSpeed;
 uniform float uMeltBand;
 uniform float uMeltFeather;
@@ -156,6 +160,24 @@ vec2 coverUv(vec2 uv) {
   return (uv - 0.5) * uCover + 0.5;
 }
 
+/**
+ * Edge-melt displacement field. A single simplex octave reads as one
+ * wavelength marching along the edge, so a second, finer octave is sampled
+ * through a position the coarse one warps — lobes then vary in size and curl
+ * as they drift. The 2.7x frequency step is deliberately non-integer so the
+ * two octaves never line up into a repeating beat. Amplitude is normalized by
+ * the mix, so uMeltDetail changes the character of the edge without changing
+ * how far it spills into the bleed.
+ */
+vec2 meltFlow(vec2 p, float t) {
+  vec2 coarse = vec2(snoise(vec3(p, t)), snoise(vec3(p + 31.7, t)));
+  if (uMeltDetail <= 0.0) return coarse;
+  vec2 warped = p * 2.7 + coarse * 0.6;
+  float fineT = t * 1.7 + 11.3;
+  vec2 fine = vec2(snoise(vec3(warped, fineT)), snoise(vec3(warped + 53.1, fineT)));
+  return (coarse + fine * uMeltDetail * 0.5) / (1.0 + uMeltDetail * 0.5);
+}
+
 // Anti-aliased coverage of the media rect for a (possibly displaced) media-
 // local coordinate. Constant-width smoothstep instead of fwidth(): the call
 // sits behind a per-pixel mask branch, where derivatives are undefined. With
@@ -220,8 +242,8 @@ void main() {
     vec2 edgeD = min(mediaUv, 1.0 - mediaUv) * aspect;
     float sd = min(edgeD.x, edgeD.y); // signed: negative out in the bleed
     float band = exp(-(sd * sd) / (uMeltBand * uMeltBand));
-    vec3 meltUv = vec3(mediaUv * aspect * uMeltScale, uTime * uMeltSpeed + 43.7);
-    displacement += vec2(snoise(meltUv), snoise(meltUv + 31.7)) * uMelt * band * mask;
+    vec2 meltP = mediaUv * aspect * uMeltScale;
+    displacement += meltFlow(meltP, uTime * uMeltSpeed + 43.7) * uMelt * band * mask;
   }
 
   vec2 q = mediaUv + displacement;
@@ -318,8 +340,15 @@ export type RefractionMediaProps = {
    * into the bleed and caving back in. Needs `bleed > 0`.
    */
   melt?: number
-  /** Spatial frequency of the edge-melt noise. */
+  /** Spatial frequency of the edge-melt noise — lower is broader and more fluid. */
   meltScale?: number
+  /**
+   * 0–1: how much of a second, warped octave joins the melt. 0 is a single
+   * frequency (evenly sized lobes marching along the edge); higher mixes in
+   * finer curling detail for an organic silhouette. Normalized, so it changes
+   * the character of the edge, not how far it spills.
+   */
+  meltDetail?: number
   /** Time scale of the edge-melt noise. */
   meltSpeed?: number
   /** Width of the band around the media's edge that melts, in UV space. */
@@ -340,13 +369,6 @@ export type RefractionMediaProps = {
   lensChroma?: number
   /** ≥1; re-saturates the pastel tint the dispersion loop introduces. */
   lensSaturation?: number
-  /** Index of refraction per spectral band. */
-  iorR?: number
-  iorY?: number
-  iorG?: number
-  iorC?: number
-  iorB?: number
-  iorP?: number
 
   // --- Motion ---
   /**
@@ -361,7 +383,7 @@ export type RefractionMediaProps = {
   /** Damping for the hover fade in/out (higher = snappier). */
   ease?: number
   className?: string
-}
+} & GlassIorProps
 
 /**
  * Single source of truth for this effect's tunable defaults. The playground
@@ -381,7 +403,8 @@ export const REFRACTION_MEDIA_DEFAULTS = {
   highlight: 0.08,
   bleed: 0,
   melt: 0.05,
-  meltScale: 6,
+  meltScale: 2.5,
+  meltDetail: 0.65,
   meltSpeed: 0.4,
   meltBand: 0.1,
   meltFeather: 0.01,
@@ -391,12 +414,7 @@ export const REFRACTION_MEDIA_DEFAULTS = {
   lensRefraction: 0.15,
   lensChroma: 0.5,
   lensSaturation: 1.04,
-  iorR: 1.15,
-  iorY: 1.16,
-  iorG: 1.18,
-  iorC: 1.22,
-  iorB: 1.22,
-  iorP: 1.22,
+  ...GLASS_IOR_DEFAULTS,
   tilt: 0,
   follow: 8,
   ease: 6,
@@ -423,6 +441,7 @@ function RefractionScene({
   bleed = REFRACTION_MEDIA_DEFAULTS.bleed,
   melt = REFRACTION_MEDIA_DEFAULTS.melt,
   meltScale = REFRACTION_MEDIA_DEFAULTS.meltScale,
+  meltDetail = REFRACTION_MEDIA_DEFAULTS.meltDetail,
   meltSpeed = REFRACTION_MEDIA_DEFAULTS.meltSpeed,
   meltBand = REFRACTION_MEDIA_DEFAULTS.meltBand,
   meltFeather = REFRACTION_MEDIA_DEFAULTS.meltFeather,
@@ -453,6 +472,13 @@ function RefractionScene({
 
   const onScreen = useOnScreen()
   const pointer = usePointerTracking(onScreen)
+
+  // The glass mesh only exists while it is optically present, so its material
+  // ref is null on every render before that. Both uniform syncs below key off
+  // this so they re-run when the mesh appears — otherwise a lens switched on
+  // after mount (the playground's glass-lens control) keeps its seed
+  // resolution and stale dispersion values, and paints a black disc.
+  const lensMounted = lensVisibility > 0
 
   // External activation (cursor-provider proximity): a ref fed by the
   // subscription, read in useFrame — never React state. Each change requests
@@ -503,7 +529,8 @@ function RefractionScene({
       uHighlight: { value: 0.08 },
       uInset: { value: 0 },
       uMelt: { value: 0 },
-      uMeltScale: { value: 6 },
+      uMeltScale: { value: 2.5 },
+      uMeltDetail: { value: 0.65 },
       uMeltSpeed: { value: 0.4 },
       uMeltBand: { value: 0.1 },
       uMeltFeather: { value: 0.01 },
@@ -526,7 +553,7 @@ function RefractionScene({
     onScreen,
   })
   useCoverFit(warpMaterialRef, sourceAspect)
-  useWinResolution(lensMaterialRef)
+  useWinResolution(lensMaterialRef, lensMounted)
 
   // Shader parameters sync on prop change (not in useFrame: with a demand
   // frameloop no frames run while idle, so GUI tweaks would go stale).
@@ -548,6 +575,7 @@ function RefractionScene({
     u.uInset.value = bleed > 0 ? bleed / (1 + 2 * bleed) : 0
     u.uMelt.value = melt
     u.uMeltScale.value = meltScale
+    u.uMeltDetail.value = meltDetail
     u.uMeltSpeed.value = meltSpeed
     u.uMeltBand.value = meltBand
     u.uMeltFeather.value = meltFeather
@@ -566,6 +594,7 @@ function RefractionScene({
     bleed,
     melt,
     meltScale,
+    meltDetail,
     meltSpeed,
     meltBand,
     meltFeather,
@@ -580,18 +609,25 @@ function RefractionScene({
 
   useEffect(() => {
     const u = lensMaterialRef.current?.uniforms
-    if (!u) return
+    if (!lensMounted || !u) return
     u.uRefractPower.value = lensRefraction
     u.uChromaticAberration.value = lensChroma
     u.uSaturation.value = lensSaturation
-    u.uIorR.value = iorR
-    u.uIorY.value = iorY
-    u.uIorG.value = iorG
-    u.uIorC.value = iorC
-    u.uIorB.value = iorB
-    u.uIorP.value = iorP
+    applyGlassIorUniforms(u, { iorR, iorY, iorG, iorC, iorB, iorP })
     invalidate()
-  }, [lensRefraction, lensChroma, lensSaturation, iorR, iorY, iorG, iorC, iorB, iorP, invalidate])
+  }, [
+    lensMounted,
+    lensRefraction,
+    lensChroma,
+    lensSaturation,
+    iorR,
+    iorY,
+    iorG,
+    iorC,
+    iorB,
+    iorP,
+    invalidate,
+  ])
 
   useFrame((state, delta) => {
     const mesh = meshRef.current
@@ -688,7 +724,7 @@ function RefractionScene({
         />
       </mesh>
 
-      {lensVisibility > 0 ? (
+      {lensMounted ? (
         <mesh
           ref={meshRef}
           position-z={GLASS_MESH_Z}

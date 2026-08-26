@@ -47,14 +47,14 @@
         "reason": "Vendored shadcn primitives (ejected) — kept byte-close to upstream for future diffs, not restructured to satisfy CRAP; sidebar.tsx is the largest upstream primitive"
       },
       {
-        "files": ["src/shared/ui/demo-kit/**"],
+        "files": ["src/shared/ui/demo-kit/**", "src/widgets/immersive-demo/**"],
         "maxCrap": 75,
-        "reason": "Interactive demo tooling (leva playground shells) — exercised manually on the /demo routes, intentionally untested"
+        "reason": "Interactive demo tooling (leva playground shells) — exercised manually on the /demo routes, intentionally untested. The immersive-demo widget is playground shells end to end, including the shared edge-melt control hook whose branch count is the preset-then-default fallback chain the effects SSOT contract requires"
       },
       {
-        "files": ["src/Header/Menu/index.tsx"],
+        "files": ["src/Header/Menu/index.tsx", "src/Footer/Closing/ClosingMedia.tsx"],
         "maxCrap": 40,
-        "reason": "GSAP open/close orchestration — branch count is DOM/ref precondition gating, covered by jsdom integration tests; pure decision logic lives extracted and unit-tested in motion.ts"
+        "reason": "GSAP orchestration — branch count is DOM/ref precondition gating, not decision logic. ClosingMedia's callback is the house guard idiom (`!ref || … || prefersReducedMotion`, same shape as ScrambleText / FeaturedWorkList / heading-dropdown) at cognitive 3; its CRAP is the untested-presentational floor rather than complexity"
       }
     ]
   },

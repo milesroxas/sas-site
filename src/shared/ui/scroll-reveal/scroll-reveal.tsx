@@ -9,8 +9,9 @@ gsap.registerPlugin(useGSAP)
 
 /**
  * Every tunable the reveal timeline reads. Targets run on two tracks — text
- * (`data-reveal`) and media (`data-reveal="media"`) — each staggered in
- * document order; `mediaOffset` shifts the media track against the text track.
+ * (`data-reveal`, plus `data-reveal="panel"` for opacity + y without blur)
+ * and media (`data-reveal="media"`) — each staggered in document order;
+ * `mediaOffset` shifts the media track against the text track.
  */
 export type ScrollRevealTuning = {
   /** Drop distance text targets settle down from (px). */
@@ -201,11 +202,13 @@ function resolveTuning(
 /**
  * The site's scroll-entrance motion language, owned in one place: descendants
  * marked `data-reveal` drop into place with a blur settle when the shell
- * enters the viewport, and `data-reveal="media"` targets mask-wipe open from
- * the top. The entrance plays once — scrolling back past a revealed shell
- * never reverses or replays it. Text and media run as separate tracks so
- * `mediaOffset` can sync or sequence them. Server-rendered children stay
- * visible without JavaScript; reduced motion renders the final state.
+ * enters the viewport, `data-reveal="panel"` is the same track without blur
+ * (opacity + y only — so glass surfaces keep `backdrop-filter`), and
+ * `data-reveal="media"` targets mask-wipe open from the top. The entrance
+ * plays once — scrolling back past a revealed shell never reverses or
+ * replays it. Text and media run as separate tracks so `mediaOffset` can
+ * sync or sequence them. Server-rendered children stay visible without
+ * JavaScript; reduced motion renders the final state.
  */
 export function ScrollReveal({
   as: Tag = 'section',
@@ -271,10 +274,23 @@ export function ScrollReveal({
         },
       })
       textTargets.forEach((target, index) => {
+        // Glass / functional panels can't take `filter` — it kills
+        // `backdrop-filter` on the same node. Same beat, opacity + y only.
+        const panel = target.dataset.reveal === 'panel'
         tl.fromTo(
           target,
-          { autoAlpha: 0, y: -textY, filter: `blur(${textBlurPx}px)` },
-          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: textDuration, ease: textEase },
+          {
+            autoAlpha: 0,
+            y: -textY,
+            ...(panel ? {} : { filter: `blur(${textBlurPx}px)` }),
+          },
+          {
+            autoAlpha: 1,
+            y: 0,
+            ...(panel ? {} : { filter: 'blur(0px)' }),
+            duration: textDuration,
+            ease: textEase,
+          },
           textStart + index * stagger,
         )
       })

@@ -34,25 +34,32 @@ export const HERO_LENS = {
 } as const satisfies Partial<RefractionMediaProps>
 
 /**
- * IndustryWork main-media hover, dialed in on /demo/immersive. A deliberately
- * quiet edgeless warp — softer refraction, chroma and wobble than the
- * component defaults — plus a gentle Y tilt of the whole plane toward the
- * cursor, and a bleed margin so the warp melts the media's silhouette past
- * its bounding box (melt tuning stays at the component defaults).
- * `lensVisibility: 0` keeps the glass mesh optically absent, so its
- * parameters stay at the component defaults.
+ * IndustryWork main-media hover, dialed in on /demo/immersive. A wide,
+ * strongly refracting edgeless warp with full chromatic dispersion, a coarse
+ * low-frequency wobble and a pronounced Y tilt of the whole plane toward the
+ * cursor. The melt runs at a wavelength wider than the panel (`meltScale`
+ * below 1) with almost no fine octave, so the silhouette pours slowly through
+ * the narrow bleed margin instead of rippling. A small glass mesh stays
+ * partly visible on top; its dispersion parameters remain at the component
+ * defaults.
  */
 export const INDUSTRY_WORK_MEDIA = {
-  tilt: 4,
-  bleed: 0.12,
-  spread: 0.3,
-  refraction: 0.06,
-  chroma: 0.2,
-  distortion: 0.004,
-  noiseScale: 4,
-  noiseSpeed: 0.25,
-  smear: 0.01,
-  lensVisibility: 0,
+  tilt: 14.5,
+  bleed: 0.04,
+  melt: 0.111,
+  meltScale: 0.25,
+  meltDetail: 0.05,
+  meltSpeed: 0.25,
+  meltBand: 0.07,
+  spread: 0.6,
+  refraction: 0.29,
+  chroma: 1,
+  distortion: 0.026,
+  noiseScale: 2.5,
+  noiseSpeed: 0.55,
+  smear: 0.1,
+  lensVisibility: 0.7,
+  lensSpread: 0.14,
   follow: 6,
-  ease: 4,
+  ease: 18.5,
 } as const satisfies Partial<RefractionMediaProps>

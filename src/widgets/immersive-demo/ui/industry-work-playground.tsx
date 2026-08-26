@@ -38,23 +38,31 @@ export function IndustryWorkPlayground() {
 
   // Edge melt: the canvas bleeds past the panel and the warp deforms the
   // media's silhouette into that margin. Amount rides the same ×1000 display
-  // scaling as distortion; the preset only sets bleed — melt tuning falls
-  // through to the component defaults.
-  const { bleed, melt, meltScale, meltSpeed, meltBand, meltFeather } = useRefractionEdgeControls(
-    PRESET.bleed,
-  )
+  // scaling as distortion; soften is the one knob the preset leaves at the
+  // component default.
+  const { bleed, melt, meltScale, meltDetail, meltSpeed, meltBand, meltFeather } =
+    useRefractionEdgeControls(PRESET)
 
-  const { smear, follow, ease, lensVisibility } = useDemoControls('Motion', {
+  const { smear, follow, ease, lensVisibility, lensSpread } = useDemoControls('Motion', {
     smear: { value: PRESET.smear * 100, min: 0, max: 10, step: 0.5 },
     follow: { value: PRESET.follow, min: 1, max: 20, step: 0.5 },
     ease: { value: PRESET.ease, min: 1, max: 20, step: 0.5 },
-    // The preset ships with the glass mesh optically absent.
     lensVisibility: {
       value: PRESET.lensVisibility,
       min: 0,
       max: 1,
       step: 0.05,
       label: 'glass lens',
+    },
+    // Glass mesh diameter as a fraction of the panel height; only meaningful
+    // once the mesh above is visible, so it hides with it.
+    lensSpread: {
+      value: PRESET.lensSpread,
+      min: 0.05,
+      max: 0.6,
+      step: 0.01,
+      label: 'lens diameter',
+      render: (get) => get('Motion.lensVisibility') > 0,
     },
   })
 
@@ -65,6 +73,7 @@ export function IndustryWorkPlayground() {
     bleed,
     melt: melt / 1000,
     meltScale,
+    meltDetail,
     meltSpeed,
     meltBand,
     meltFeather,
@@ -76,6 +85,7 @@ export function IndustryWorkPlayground() {
     noiseSpeed,
     smear: smear / 100,
     lensVisibility,
+    lensSpread,
     follow,
     ease,
   })
@@ -99,6 +109,7 @@ export function IndustryWorkPlayground() {
             bleed={bleed}
             melt={melt / 1000}
             meltScale={meltScale}
+            meltDetail={meltDetail}
             meltSpeed={meltSpeed}
             meltBand={meltBand}
             meltFeather={meltFeather}
@@ -110,6 +121,7 @@ export function IndustryWorkPlayground() {
             noiseSpeed={noiseSpeed}
             smear={smear / 100}
             lensVisibility={lensVisibility}
+            lensSpread={lensSpread}
             follow={follow}
             ease={ease}
           />

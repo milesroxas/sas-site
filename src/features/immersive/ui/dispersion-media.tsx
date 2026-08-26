@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { MathUtils, type Mesh, type ShaderMaterial } from 'three'
 
 import {
+  applyGlassIorUniforms,
   BACKDROP_FRAGMENT,
   BACKDROP_VERTEX,
   createBackdropUniforms,
@@ -16,7 +17,9 @@ import {
   GLASS_CAMERA,
   GLASS_DPR,
   GLASS_GL_OPTIONS,
+  GLASS_IOR_DEFAULTS,
   GLASS_MESH_Z,
+  type GlassIorProps,
   type GlassMediaSource,
   glassPlaneSize,
   useBackdropTexture,
@@ -79,15 +82,8 @@ export type DispersionMediaProps = {
   chromaticAberration?: number
   /** ≥1; re-saturates the pastel tint the dispersion loop introduces. */
   saturation?: number
-  /** Index of refraction per spectral band. */
-  iorR?: number
-  iorY?: number
-  iorG?: number
-  iorC?: number
-  iorB?: number
-  iorP?: number
   className?: string
-}
+} & GlassIorProps
 
 /**
  * Single source of truth for this effect's tunable defaults. The playground
@@ -102,12 +98,7 @@ export const DISPERSION_MEDIA_DEFAULTS = {
   refraction: 0.4,
   chromaticAberration: 0.6,
   saturation: 1.08,
-  iorR: 1.15,
-  iorY: 1.16,
-  iorG: 1.18,
-  iorC: 1.22,
-  iorB: 1.22,
-  iorP: 1.22,
+  ...GLASS_IOR_DEFAULTS,
 } as const satisfies Partial<DispersionMediaProps>
 
 type SceneProps = Omit<DispersionMediaProps, 'className'>
@@ -169,12 +160,7 @@ function DispersionScene({
     u.uRefractPower.value = refraction
     u.uChromaticAberration.value = chromaticAberration
     u.uSaturation.value = saturation
-    u.uIorR.value = iorR
-    u.uIorY.value = iorY
-    u.uIorG.value = iorG
-    u.uIorC.value = iorC
-    u.uIorB.value = iorB
-    u.uIorP.value = iorP
+    applyGlassIorUniforms(u, { iorR, iorY, iorG, iorC, iorB, iorP })
     invalidate()
   }, [refraction, chromaticAberration, saturation, iorR, iorY, iorG, iorC, iorB, iorP, invalidate])
 

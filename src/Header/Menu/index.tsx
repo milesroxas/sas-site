@@ -23,6 +23,12 @@ import { createMenuMediaElement, type HeroHandoff, startHeroHandoff } from './he
 import {
   CARD_RADIUS_DESKTOP,
   CARD_RADIUS_MOBILE,
+  CHAT_COVER_FULL,
+  CHAT_COVER_HIDDEN,
+  CHAT_UNWIPE_DURATION,
+  CHAT_UNWIPE_EASE,
+  CHAT_WIPE_DURATION,
+  CHAT_WIPE_EASE,
   canStartHeroHandoff,
   DESKTOP_CARD_SHADOW,
   DISSOLVE_DURATION,
@@ -90,18 +96,7 @@ const HERO_DISSOLVE_EASE = 'power1.inOut'
  *  adjacent links without flashing the resting state. */
 const HOVER_CLEAR_DELAY_MS = 80
 
-/** Chat swap: the transcript panel lives in the overlay (z-40) and can never
- *  paint above the docked frame (FRAME_Z 45), so the mask runs *inside* the
- *  frame instead — an opaque cover (popover-colored, cropped by the dock's own
- *  clip mask) wipes down over the window's media, then the frame hides in a
- *  same-color switch to the panel waiting fully drawn beneath. MenuAsk stages
- *  its content reveal to land at this wipe's end (340ms transition delay). */
-const CHAT_WIPE_DURATION = 0.34
-const CHAT_WIPE_EASE = 'power3.out'
-/** Exit: the frame returns instantly (still fully covered — same color, no
- *  visible change), then the cover retracts upward, unmasking the media. */
-const CHAT_UNWIPE_DURATION = 0.2
-const CHAT_UNWIPE_EASE = 'power1.in'
+/** Chat swap — see the CHAT_* block in ./motion for the mask's full contract. */
 const CHAT_COVER_SELECTOR = '[data-menu-chat-cover]'
 
 const getPageFrame = () => document.querySelector<HTMLElement>(PAGE_FRAME_SELECTOR)
@@ -191,6 +186,21 @@ const mountHeroMedia = (frame: HTMLElement, scrollTop: number) => {
 }
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+/**
+ * Fit the chat cover to the docked window's visible box, in the frame's own
+ * unscaled coordinates (the hero layer is already offset to that box, so these
+ * are layer-local). Without a measured dock — detached render, unusable slot —
+ * fall back to filling the layer.
+ */
+const setCoverBox = (cover: HTMLElement, motion: ReturnType<typeof getCardMotion> | null) => {
+  if (!motion) {
+    gsap.set(cover, { top: 0, left: 0, width: '100%', height: '100%' })
+    return
+  }
+  const { insetT, insetL, clipW, clipH } = motion.crop
+  gsap.set(cover, { top: insetT, left: insetL, width: clipW, height: clipH })
+}
 
 /**
  * Base open timeline for the non-animating paths (reduced motion, detached
@@ -310,6 +320,8 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   const exitChatViewRef = useRef<(() => void) | null>(null)
   const tlRef = useRef<gsap.core.Timeline | null>(null)
   const rebuildTimelineRef = useRef<(() => gsap.core.Timeline) | null>(null)
+  /** Last measured dock geometry — the chat cover sizes itself to its crop. */
+  const cardMotionRef = useRef<ReturnType<typeof getCardMotion> | null>(null)
   const scrollYRef = useRef(0)
   const openRef = useRef(open)
   const navItems = data?.navItems || []
@@ -526,11 +538,13 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             const slotRect = slotEl?.getBoundingClientRect()
             if (!slotRect || slotRect.width === 0 || slotRect.height === 0) {
               // No usable slot (e.g. detached render) — content-only fallback.
+              cardMotionRef.current = null
               const tl = overlayFadeTimeline(overlay)
               tlRef.current = tl
               return tl
             }
             const motion = getCardMotion(slotRect, borderRadius)
+            cardMotionRef.current = motion
 
             // Dissolve layer — injected into the frame by mountHeroMedia at
             // open time (so the animating mask crops it). The open dissolve
@@ -703,6 +717,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               frame.scrollTop = scrollYRef.current
               const heroLayer = frame.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
               if (heroLayer) gsap.set(heroLayer, { top: frame.scrollTop })
+              // The cover is absolutely sized now, so it must be re-fitted to
+              // the rebuilt dock's crop (buildTimeline above refreshed it).
+              const cover = heroLayer?.querySelector<HTMLElement>(CHAT_COVER_SELECTOR)
+              if (cover) setCoverBox(cover, cardMotionRef.current)
               next.progress(1)
             }, 80)
           }
@@ -834,10 +852,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   // space to the transcript (nav + CTA fade out, slot grows to fill).
   const [chatView, setChatView] = useState(false)
 
-  // The media→chat mask (see CHAT_WIPE_* above). Outside the GSAP context on
-  // purpose — the frame outlives this component's scope, and close/unmount
-  // always restores it via clearFrameProps (the cover lives inside the hero
-  // layer, which clearFrameProps removes).
+  // The media→chat mask (see the CHAT_* block in ./motion). Outside the GSAP
+  // context on purpose — the frame outlives this component's scope, and
+  // close/unmount always restores it via clearFrameProps (the cover lives
+  // inside the hero layer, which clearFrameProps removes).
   const handleChatViewChange = useCallback((next: boolean) => {
     chatViewRef.current = next
     setChatView(next)
@@ -854,7 +872,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       // visible, and the still-full cover makes the switch invisible.
       gsap.set(frame, { autoAlpha: 1 })
       gsap.to(existing, {
-        clipPath: 'inset(0% 0% 100% 0%)',
+        clipPath: CHAT_COVER_HIDDEN,
         duration: prefersReducedMotion() ? 0 : CHAT_UNWIPE_DURATION,
         ease: CHAT_UNWIPE_EASE,
         overwrite: 'auto',
@@ -870,17 +888,17 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       cover.setAttribute('aria-hidden', 'true')
       gsap.set(cover, {
         position: 'absolute',
-        inset: 0,
         // Above any hover-preview items stacked in the layer.
         zIndex: 10,
         pointerEvents: 'none',
         backgroundColor: 'var(--color-popover)',
-        clipPath: 'inset(0% 0% 100% 0%)',
+        clipPath: CHAT_COVER_HIDDEN,
       })
       layer.appendChild(cover)
     }
+    setCoverBox(cover, cardMotionRef.current)
     gsap.to(cover, {
-      clipPath: 'inset(0% 0% 0% 0%)',
+      clipPath: CHAT_COVER_FULL,
       duration: prefersReducedMotion() ? 0 : CHAT_WIPE_DURATION,
       ease: CHAT_WIPE_EASE,
       overwrite: 'auto',
@@ -898,6 +916,8 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
    * `display` at the fade's end); the return path snaps back under the menu's
    * own close fade, where it's invisible. Desktop keeps its three columns.
    */
+  // Fade duration matches CHAT_STAGE_DELAY_MS (Menu/motion.ts): the space this
+  // releases is the space the transcript panel starts growing into.
   const chatHideable = (extra?: string) =>
     cn(
       'max-md:transition-[opacity,display] max-md:transition-discrete max-md:duration-200 max-md:ease-out',

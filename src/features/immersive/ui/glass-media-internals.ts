@@ -162,6 +162,43 @@ void main() {
 }
 `
 
+/** The six per-band refraction indices every glass surface exposes. */
+export type GlassIorProps = {
+  iorR?: number
+  iorY?: number
+  iorG?: number
+  iorC?: number
+  iorB?: number
+  iorP?: number
+}
+
+/**
+ * The dispersion spread, owned once. Both glass surfaces refract the same six
+ * spectral bands, so the shader's initial uniforms and each component's
+ * `*_DEFAULTS` read these values rather than restating them.
+ */
+export const GLASS_IOR_DEFAULTS = {
+  iorR: 1.15,
+  iorY: 1.16,
+  iorG: 1.18,
+  iorC: 1.22,
+  iorB: 1.22,
+  iorP: 1.22,
+} as const satisfies Required<GlassIorProps>
+
+/** Pushes the six band indices into a live dispersion material. */
+export function applyGlassIorUniforms(
+  uniforms: ShaderMaterial['uniforms'],
+  ior: Required<GlassIorProps>,
+) {
+  uniforms.uIorR.value = ior.iorR
+  uniforms.uIorY.value = ior.iorY
+  uniforms.uIorG.value = ior.iorG
+  uniforms.uIorC.value = ior.iorC
+  uniforms.uIorB.value = ior.iorB
+  uniforms.uIorP.value = ior.iorP
+}
+
 /**
  * Initial dispersion uniform values. Called once per material — R3F may copy
  * the object into the material, so runtime updates go through the material
@@ -174,12 +211,12 @@ export const createDispersionUniforms = () => ({
   uChromaticAberration: { value: 0.6 },
   uSaturation: { value: 1.08 },
   uHover: { value: 1 },
-  uIorR: { value: 1.15 },
-  uIorY: { value: 1.16 },
-  uIorG: { value: 1.18 },
-  uIorC: { value: 1.22 },
-  uIorB: { value: 1.22 },
-  uIorP: { value: 1.22 },
+  uIorR: { value: GLASS_IOR_DEFAULTS.iorR },
+  uIorY: { value: GLASS_IOR_DEFAULTS.iorY },
+  uIorG: { value: GLASS_IOR_DEFAULTS.iorG },
+  uIorC: { value: GLASS_IOR_DEFAULTS.iorC },
+  uIorB: { value: GLASS_IOR_DEFAULTS.iorB },
+  uIorP: { value: GLASS_IOR_DEFAULTS.iorP },
 })
 
 export const createBackdropUniforms = () => ({
@@ -440,18 +477,28 @@ export function useCoverFit(
   }, [viewport.aspect, sourceAspect, invalidate, materialRef])
 }
 
-/** gl_FragCoord is in device pixels; so is the (auto-resizing) FBO. */
-export function useWinResolution(materialRef: RefObject<ShaderMaterial | null>): void {
+/**
+ * gl_FragCoord is in device pixels; so is the (auto-resizing) FBO. Pass
+ * `mounted` for a material whose mesh renders conditionally: its ref is null
+ * until the mesh appears, and nothing about the canvas size changes at that
+ * moment, so without it the resolution would stay at its (0, 0) seed and the
+ * shader would divide by zero.
+ */
+export function useWinResolution(
+  materialRef: RefObject<ShaderMaterial | null>,
+  mounted = true,
+): void {
   const size = useThree((state) => state.size)
   const viewport = useThree((state) => state.viewport)
   const invalidate = useThree((state) => state.invalidate)
 
   useEffect(() => {
+    if (!mounted) return
     const u = materialRef.current?.uniforms
     if (!u) return
     u.winResolution.value.set(size.width * viewport.dpr, size.height * viewport.dpr)
     invalidate()
-  }, [size.width, size.height, viewport.dpr, invalidate, materialRef])
+  }, [mounted, size.width, size.height, viewport.dpr, invalidate, materialRef])
 }
 
 export type PointerTracking = {

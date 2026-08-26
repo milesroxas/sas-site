@@ -46,9 +46,8 @@ export function RefractionPlayground() {
   // Edge melt: the canvas bleeds past its box and the warp deforms the
   // media's silhouette into that margin (HERO_LENS ships without it, so
   // everything initializes from the component defaults with bleed off).
-  const { bleed, melt, meltScale, meltSpeed, meltBand, meltFeather } = useRefractionEdgeControls(
-    DEFAULTS.bleed,
-  )
+  const { bleed, melt, meltScale, meltDetail, meltSpeed, meltBand, meltFeather } =
+    useRefractionEdgeControls()
 
   const {
     lensEnabled,
@@ -192,6 +191,7 @@ export function RefractionPlayground() {
     bleed,
     melt: melt / 1000,
     meltScale,
+    meltDetail,
     meltSpeed,
     meltBand,
     meltFeather,
