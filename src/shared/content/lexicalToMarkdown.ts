@@ -101,6 +101,19 @@ const blockToMarkdown = (node: LexicalNode): string | null => {
     return lexicalToMarkdownString(content)
   }
 
+  // Carousel (and similar) slides: emit captions so they reach llms.txt / RAG.
+  const slides = fields.slides
+  if (Array.isArray(slides)) {
+    const captions = slides
+      .map((slide) =>
+        slide && typeof slide === 'object' && 'caption' in slide
+          ? String((slide as { caption?: unknown }).caption ?? '')
+          : '',
+      )
+      .filter((caption) => caption.trim())
+    if (captions.length) return captions.join('\n\n')
+  }
+
   return null
 }
 

@@ -5,6 +5,9 @@ import { relationshipId, relationshipIds } from '@/utilities/relationshipId'
 
 const blockMedia = (layout: LabPage['layout']) =>
   (layout || []).flatMap((block) => {
+    if ('slides' in block && Array.isArray(block.slides)) {
+      return block.slides.flatMap((slide) => (slide.media ? [slide.media] : []))
+    }
     if (!('media' in block) || !block.media) return []
     return Array.isArray(block.media) ? block.media : [block.media]
   })

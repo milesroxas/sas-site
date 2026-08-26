@@ -3,7 +3,6 @@ import type { CaseStudy } from '@/payload-types'
 import {
   CASE_STUDY_STORY_SECTION_DEFINITIONS,
   getCaseStudyStorySection,
-  hasCaseStudyStorySection,
   storyBeatReferences,
 } from '../story'
 
@@ -38,10 +37,6 @@ export const validateCaseStudy: CollectionBeforeValidateHook<CaseStudy> = async 
   if (!merged.summaries?.oneLine && !merged.summaries?.short && !merged.summaries?.medium) {
     throw new APIError('At least one summary is required before publishing.', 400)
   }
-  if (!hasCaseStudyStorySection(merged, 'challenge'))
-    throw new APIError('Challenge is required before publishing.', 400)
-  if (!hasCaseStudyStorySection(merged, 'outcome-summary'))
-    throw new APIError('Outcome summary is required before publishing.', 400)
 
   if (merged.id) {
     const [latestPages, publishedPages] = await Promise.all([

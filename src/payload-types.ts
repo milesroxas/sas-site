@@ -1025,7 +1025,7 @@ export interface CaseStudy {
    */
   challenge?: {
     /**
-     * The problem being solved. Required to publish. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
+     * The problem being solved. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
      */
     body?: {
       root: {
@@ -1208,7 +1208,7 @@ export interface CaseStudy {
    */
   outcomeSummary?: {
     /**
-     * The overall result of the engagement. Required to publish. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
+     * The overall result of the engagement. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
      */
     body?: {
       root: {
@@ -1621,6 +1621,7 @@ export interface WorkPage {
         | WorkFeatureTabsBlock
         | AudienceTabsBlock
         | IndustryWorkBlock
+        | CarouselBlock
         | CaseStudyKeyDecisionsBlock
         | CaseStudyMetricsBlock
         | CaseStudyRelatedWorkBlock
@@ -1845,13 +1846,21 @@ export interface WorkFullMediaBlock {
     [k: string]: unknown;
   } | null;
   /**
-   * Cropped to 21:9 (16:9 on small screens).
+   * Full width crops to 16:9 on small screens and 21:9 from md up. Contained uses the aspect ratio below.
    */
   media: number | Media;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
   browseAllMedia?: boolean | null;
+  /**
+   * Contained keeps the media in the page column. Full width bleeds edge to edge.
+   */
+  width?: ('contained' | 'full-width') | null;
+  /**
+   * Crop for contained media.
+   */
+  aspectRatio?: ('16-9' | '3-2' | '21-9') | null;
   /**
    * Arrange the content row on the left or the right below the media (desktop only; smaller screens always sit left).
    */
@@ -2430,6 +2439,35 @@ export interface IndustryWorkBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselBlock".
+ */
+export interface CarouselBlock {
+  slides: {
+    media: number | Media;
+    /**
+     * Optional. Renders below the slide.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Full width runs edge to edge of the browser window.
+   */
+  width?: ('contained' | 'full-width') | null;
+  /**
+   * Previous/next buttons. Contained places them beside the slides; full width overlays them on the slides.
+   */
+  showArrows?: boolean | null;
+  /**
+   * Slides visible at once on desktop; mobile always shows one.
+   */
+  slideSize?: ('full' | 'half' | 'third') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'carousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyKeyDecisionsBlock".
  */
 export interface CaseStudyKeyDecisionsBlock {
@@ -2677,13 +2715,21 @@ export interface FullMediaBlock {
     [k: string]: unknown;
   } | null;
   /**
-   * Cropped to 21:9 (16:9 on small screens).
+   * Full width crops to 16:9 on small screens and 21:9 from md up. Contained uses the aspect ratio below.
    */
   media: number | Media;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
   browseAllMedia?: boolean | null;
+  /**
+   * Contained keeps the media in the page column. Full width bleeds edge to edge.
+   */
+  width?: ('contained' | 'full-width') | null;
+  /**
+   * Crop for contained media.
+   */
+  aspectRatio?: ('16-9' | '3-2' | '21-9') | null;
   /**
    * Arrange the content row on the left or the right below the media (desktop only; smaller screens always sit left).
    */
@@ -3037,35 +3083,6 @@ export interface TestimonialsMarqueeBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'testimonialsMarquee';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CarouselBlock".
- */
-export interface CarouselBlock {
-  slides: {
-    media: number | Media;
-    /**
-     * Optional. Renders below the slide.
-     */
-    caption?: string | null;
-    id?: string | null;
-  }[];
-  /**
-   * Full width runs edge to edge of the browser window.
-   */
-  width?: ('contained' | 'full-width') | null;
-  /**
-   * Previous/next buttons. Contained places them beside the slides; full width overlays them on the slides.
-   */
-  showArrows?: boolean | null;
-  /**
-   * Slides visible at once on desktop; mobile always shows one.
-   */
-  slideSize?: ('full' | 'half' | 'third') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'carousel';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3435,6 +3452,7 @@ export interface LabPage {
         | LabStorySectionBlock
         | LabTransitionBlock
         | LabMediaShowcaseBlock
+        | CarouselBlock
         | SplitContentNarrowBlock
         | LabFactsBlock
         | LabRelatedProjectsBlock
@@ -3896,6 +3914,7 @@ export interface ExpertisePage {
     | FeatureImageStatementBlock
     | FeatureTabsBlock
     | AudienceTabsBlock
+    | CarouselBlock
     | ArchiveBlock
     | CallToActionBlock
     | FormBlock
@@ -4024,6 +4043,7 @@ export interface AudiencePage {
     | FeatureImageStatementBlock
     | FeatureTabsBlock
     | AudienceTabsBlock
+    | CarouselBlock
     | ArchiveBlock
     | CallToActionBlock
     | FormBlock
@@ -4906,6 +4926,8 @@ export interface FullMediaBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   browseAllMedia?: T;
+  width?: T;
+  aspectRatio?: T;
   contentPosition?: T;
   theme?: T;
   id?: T;
@@ -5285,6 +5307,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
         caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
         caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
@@ -5370,6 +5393,8 @@ export interface WorkFullMediaBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   browseAllMedia?: T;
+  width?: T;
+  aspectRatio?: T;
   contentPosition?: T;
   theme?: T;
   id?: T;
@@ -5598,6 +5623,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         labStorySection?: T | LabStorySectionBlockSelect<T>;
         labTransition?: T | LabTransitionBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         labFacts?: T | LabFactsBlockSelect<T>;
         labRelatedProjects?: T | LabRelatedProjectsBlockSelect<T>;
@@ -5740,6 +5766,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
@@ -5811,6 +5838,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;

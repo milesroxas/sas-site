@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { AudienceTabs } from '@/blocks/AudienceTabs/config'
+import { Carousel } from '@/blocks/Carousel/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
@@ -235,6 +236,7 @@ export const caseStudyBlocks = [
   WorkFeatureTabs,
   AudienceTabs,
   IndustryWork,
+  Carousel,
   // Lists & grids
   CaseStudyKeyDecisions,
   CaseStudyMetrics,

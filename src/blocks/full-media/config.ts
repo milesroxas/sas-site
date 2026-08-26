@@ -4,8 +4,9 @@ import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 
 /**
- * Full-width media over a two-column content row (eyebrow + heading beside the
- * body). The media runs 21:9 from `md` up and 16:9 below; `contentPosition`
+ * Media over a two-column content row (eyebrow + heading beside the body).
+ * `width` is full-bleed by default (16:9 below `md`, 21:9 from `md` up) or
+ * contained in the page column at an editor-chosen aspect ratio. `contentPosition`
  * arranges the content row on the left or right from `lg`, and below that the
  * row always sits left with a trailing half-column offset.
  *
@@ -56,10 +57,40 @@ export const FullMedia: Block = {
       type: 'upload',
       relationTo: 'media',
       required: true,
-      admin: { description: 'Cropped to 21:9 (16:9 on small screens).' },
+      admin: {
+        description:
+          'Full width crops to 16:9 on small screens and 21:9 from md up. Contained uses the aspect ratio below.',
+      },
       filterOptions: caseStudyScopedMediaFilter,
     },
     browseAllMediaField(),
+    {
+      name: 'width',
+      type: 'select',
+      defaultValue: 'full-width',
+      options: [
+        { label: 'Contained', value: 'contained' },
+        { label: 'Full width', value: 'full-width' },
+      ],
+      admin: {
+        description:
+          'Contained keeps the media in the page column. Full width bleeds edge to edge.',
+      },
+    },
+    {
+      name: 'aspectRatio',
+      type: 'select',
+      defaultValue: '16-9',
+      options: [
+        { label: '16:9', value: '16-9' },
+        { label: '3:2', value: '3-2' },
+        { label: '21:9', value: '21-9' },
+      ],
+      admin: {
+        condition: (_, siblingData) => siblingData?.width === 'contained',
+        description: 'Crop for contained media.',
+      },
+    },
     {
       name: 'contentPosition',
       type: 'select',

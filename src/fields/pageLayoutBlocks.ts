@@ -54,7 +54,7 @@ export const pageLayoutBlocks: Block[] = [
 /**
  * Layout blocks shared by the segment pages (Audience, Expertise). A narrower
  * set than `pageLayoutBlocks`: these pages are argument-and-proof surfaces, so
- * the marketing-only blocks (carousel, marquee, newsletter) are left out.
+ * the marketing-only blocks (marquee, newsletter) are left out.
  */
 export const segmentPageBlocks: Block[] = [
   // Text
@@ -70,6 +70,7 @@ export const segmentPageBlocks: Block[] = [
   // Interactive
   FeatureTabs,
   AudienceTabs,
+  Carousel,
   // Lists & grids
   Archive,
   // Forms & CTAs

@@ -39,7 +39,7 @@ export const CASE_STUDY_STORY_SECTION_DEFINITIONS = [
     source: 'challenge',
     field: 'challenge',
     label: 'Challenge',
-    bodyDescription: 'The problem being solved. Required to publish.',
+    bodyDescription: 'The problem being solved.',
   },
   {
     source: 'strategy',
@@ -57,7 +57,7 @@ export const CASE_STUDY_STORY_SECTION_DEFINITIONS = [
     source: 'outcome-summary',
     field: 'outcomeSummary',
     label: 'Outcomes',
-    bodyDescription: 'The overall result of the engagement. Required to publish.',
+    bodyDescription: 'The overall result of the engagement.',
   },
   {
     source: 'learnings',
@@ -184,9 +184,6 @@ export const resolveCaseStudyStoryBody = (
 
   return composeStoryBodies([section.body, ...(section.storyBeats || []).map((beat) => beat.body)])
 }
-
-export const hasCaseStudyStorySection = (study: CaseStudy, section: CaseStudyStorySection) =>
-  Boolean(resolveCaseStudyStoryBody(study, section))
 
 export type StoryBeatReference = {
   key: string

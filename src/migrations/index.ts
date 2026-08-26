@@ -50,6 +50,7 @@ import * as migration_20260824_175955_audience_tabs_description from './20260824
 import * as migration_20260825_163340_insights_browse from './20260825_163340_insights_browse';
 import * as migration_20260825_195015_footer_closing from './20260825_195015_footer_closing';
 import * as migration_20260825_210837_link_site_pages from './20260825_210837_link_site_pages';
+import * as migration_20260826_213455_full_media_width from './20260826_213455_full_media_width';
 
 export const migrations = [
   {
@@ -310,6 +311,11 @@ export const migrations = [
   {
     up: migration_20260825_210837_link_site_pages.up,
     down: migration_20260825_210837_link_site_pages.down,
-    name: '20260825_210837_link_site_pages'
+    name: '20260825_210837_link_site_pages',
+  },
+  {
+    up: migration_20260826_213455_full_media_width.up,
+    down: migration_20260826_213455_full_media_width.down,
+    name: '20260826_213455_full_media_width'
   },
 ];

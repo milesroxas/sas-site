@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { blockRevealVariants } from '@/blocks/shared/reveal-variants'
@@ -240,7 +241,8 @@ const RelatedProjects = async ({
 /**
  * Lab blocks enter like generic page blocks: the CSS block reveal wraps each
  * section, except `splitContentNarrow`, whose `data-reveal` markers play the
- * shared GSAP reveal — the same motion it has on every other surface.
+ * shared GSAP reveal — the same motion it has on every other surface — and
+ * `carousel`, which matches Pages/Home (`my-16` CSS reveal, no GSAP shell).
  */
 export const RenderLabBlocks = async ({
   blocks,
@@ -258,6 +260,13 @@ export const RenderLabBlocks = async ({
           <ScrollReveal as="div" key={block.id} variant={blockRevealVariants.splitContentNarrow}>
             <SplitContentNarrowBlock {...block} />
           </ScrollReveal>
+        )
+      }
+      if (block.blockType === 'carousel') {
+        return (
+          <RevealSection className="my-16" key={block.id}>
+            <CarouselBlock {...block} disableInnerContainer />
+          </RevealSection>
         )
       }
       const content = (() => {

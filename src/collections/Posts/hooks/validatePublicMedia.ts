@@ -29,7 +29,8 @@ const addRef = (ref: unknown, path: string, sources: Map<MediaId, Set<string>>):
 }
 
 // Deep walk over serialized data (lexical states included, however nested):
-// collects media referenced by upload nodes and mediaBlock instances.
+// collects media referenced by upload nodes and any `media` field (mediaBlock,
+// carousel slides, …).
 const collectMediaRefs = (
   value: unknown,
   path: string,
@@ -42,7 +43,7 @@ const collectMediaRefs = (
   }
   const node = value as Record<string, unknown>
   if (node.type === 'upload' && node.relationTo === 'media') addRef(node.value, path, sources)
-  if (node.blockType === 'mediaBlock') addRef(node.media, path, sources)
+  if ('media' in node) addRef(node.media, path, sources)
   for (const child of Object.values(node)) collectMediaRefs(child, path, sources)
 }
 

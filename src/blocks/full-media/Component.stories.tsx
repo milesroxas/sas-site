@@ -26,6 +26,7 @@ const meta = {
     heading: 'Make the relationships visible',
     media: mediaFixture,
     body,
+    width: 'full-width',
     contentPosition: 'left',
     theme: 'light',
   },
@@ -47,4 +48,16 @@ export const Video: Story = {
 
 export const Dark: Story = {
   args: { theme: 'dark' },
+}
+
+export const Contained: Story = {
+  args: { width: 'contained', aspectRatio: '16-9' },
+}
+
+export const Contained3x2: Story = {
+  args: { width: 'contained', aspectRatio: '3-2' },
+}
+
+export const Contained21x9: Story = {
+  args: { width: 'contained', aspectRatio: '21-9' },
 }

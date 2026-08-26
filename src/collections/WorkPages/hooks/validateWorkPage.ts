@@ -8,12 +8,14 @@ import { relationshipId, relationshipIds } from '@/utilities/relationshipId'
 // largeMedia, …); non-upload matches like browseAllMedia are booleans and fall
 // out of the later relationshipId() pass.
 const blockMedia = (layout: WorkPage['layout']) =>
-  (layout || []).flatMap((block) =>
-    Object.entries(block).flatMap(([key, value]) => {
+  (layout || []).flatMap((block) => {
+    const fromFields = Object.entries(block).flatMap(([key, value]) => {
       if (!/media$/i.test(key) || !value) return []
       return Array.isArray(value) ? value : [value]
-    }),
-  )
+    })
+    if (!('slides' in block) || !Array.isArray(block.slides)) return fromFields
+    return [...fromFields, ...block.slides.flatMap((slide) => (slide.media ? [slide.media] : []))]
+  })
 
 export const validateWorkPage: CollectionBeforeValidateHook<WorkPage> = async ({
   data,

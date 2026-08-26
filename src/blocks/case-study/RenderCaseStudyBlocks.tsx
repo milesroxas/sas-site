@@ -1,4 +1,5 @@
 import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
+import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/feature/ImageStatement/Component'
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
@@ -40,6 +41,7 @@ import type {
   WorkSplitContentNarrowBlock,
   WorkSplitImageOffsetBlock,
 } from '@/payload-types'
+import { RevealSection as CssRevealSection } from '@/shared/ui/reveal-section'
 import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
 import { cn } from '@/utilities/ui'
 import { blockRevealVariants } from '../shared/reveal-variants'
@@ -580,6 +582,14 @@ export const RenderCaseStudyBlocks = async ({
           return <AudienceTabsBlock key={block.id} {...block} />
         case 'featureTabs':
           return <FeatureTabsSection block={block} key={block.id} study={study} />
+        case 'carousel':
+          // Same CSS entrance as Pages/Home — no data-reveal markers, and the
+          // full-viewport GSAP shell would put transform on an ancestor of embla.
+          return (
+            <CssRevealSection className="my-16" key={block.id}>
+              <CarouselBlock {...block} disableInnerContainer />
+            </CssRevealSection>
+          )
         default:
           return null
       }

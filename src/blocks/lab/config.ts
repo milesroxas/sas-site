@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { Carousel } from '@/blocks/Carousel/config'
 import {
   relatedSelectionFields,
   storySectionCopyFields,
@@ -123,6 +124,8 @@ export const labBlocks = [
   LabTransition,
   // Media
   LabMediaShowcase,
+  // Interactive
+  Carousel,
   // Split layouts
   SplitContentNarrow,
   // Lists & grids

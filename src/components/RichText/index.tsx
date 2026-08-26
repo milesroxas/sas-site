@@ -11,11 +11,13 @@ import {
 } from '@payloadcms/richtext-lexical/react'
 import { BannerBlock } from '@/blocks/Banner/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
+import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { CodeBlock, type CodeBlockProps } from '@/blocks/Code/Component'
 import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import type {
   BannerBlock as BannerBlockProps,
+  CarouselBlock as CarouselBlockProps,
   CallToActionBlock as CTABlockProps,
   FeatureStatementLinksBlock as FeatureStatementLinksBlockProps,
   MediaBlock as MediaBlockProps,
@@ -28,6 +30,7 @@ type NodeTypes =
       | CTABlockProps
       | MediaBlockProps
       | BannerBlockProps
+      | CarouselBlockProps
       | CodeBlockProps
       | FeatureStatementLinksBlockProps
     >
@@ -50,6 +53,14 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
   ...LinkJSXConverter({ internalDocToHref }),
   blocks: {
     banner: ({ node }) => <BannerBlock className="col-start-2 mb-4" {...node.fields} />,
+    carousel: ({ node }) => (
+      <CarouselBlock
+        className="col-start-1 col-span-3"
+        {...node.fields}
+        disableInnerContainer
+        enableGutter={false}
+      />
+    ),
     mediaBlock: ({ node }) => (
       <MediaBlock
         className="col-start-1 col-span-3"

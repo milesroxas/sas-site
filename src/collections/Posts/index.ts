@@ -12,6 +12,7 @@ import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Banner } from '../../blocks/Banner/config'
+import { Carousel } from '../../blocks/Carousel/config'
 import { Code } from '../../blocks/Code/config'
 import { FeatureStatementLinks } from '../../blocks/feature/StatementLinks/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
@@ -95,7 +96,9 @@ export const Posts: CollectionConfig<'posts'> = {
                   return [
                     ...rootFeatures,
                     HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                    BlocksFeature({ blocks: [Banner, Code, FeatureStatementLinks, MediaBlock] }),
+                    BlocksFeature({
+                      blocks: [Banner, Carousel, Code, FeatureStatementLinks, MediaBlock],
+                    }),
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),
                     HorizontalRuleFeature(),
