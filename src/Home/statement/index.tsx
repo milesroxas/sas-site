@@ -3,7 +3,7 @@ import { fullViewportSectionClassName, themeClasses } from '@/blocks/shared/sect
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import type { HomeStatement as HomeStatementData } from '@/payload-types'
-import { SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD, ScrollReveal } from '@/shared/ui/scroll-reveal'
+import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
 export const HomeStatement: React.FC<HomeStatementData> = ({ body }) => {
@@ -12,7 +12,6 @@ export const HomeStatement: React.FC<HomeStatementData> = ({ body }) => {
   return (
     <ScrollReveal
       className={cn(fullViewportSectionClassName, themeClasses.light, 'items-center')}
-      enterThreshold={SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD}
       variant="intro"
     >
       <Container width="narrow">

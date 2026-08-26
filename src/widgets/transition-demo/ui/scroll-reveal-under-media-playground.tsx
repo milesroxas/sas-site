@@ -10,14 +10,11 @@ import {
   useDemoSnippet,
   useVideoUpload,
 } from '@/shared/ui/demo-kit'
-import {
-  ScrollReveal,
-  SCROLL_REVEAL_TRIGGER_DEFAULTS as TRIGGER,
-  SCROLL_REVEAL_UNDER_MEDIA as UNDER_MEDIA,
-} from '@/shared/ui/scroll-reveal'
+import { ScrollReveal, SCROLL_REVEAL_UNDER_MEDIA as UNDER_MEDIA } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 import { revealTrackBars, TrackDiagram } from './reveal-track-diagram'
 import { useEaseControl } from './use-ease-control'
+import { useTriggerControl } from './use-trigger-control'
 
 /** Diagram labels mirror the preview markup so it plots the real target list. */
 const TEXT_LABELS = ['heading', 'body', 'caption']
@@ -25,17 +22,12 @@ const TEXT_LABELS = ['heading', 'body', 'caption']
 const LAYOUTS = ['stacked', 'image-left', 'image-right']
 
 /**
- * Demo content: the complete under-media reveal — the entrance for copy paired
- * with an image or video — with every one of its values wired to the
- * surrounding DemoSection's GUI: its own text tuning, the windowed mask wipe
- * (content settles down from a zoom behind the clipped frame), and the offset
- * that syncs or sequences the two tracks. The preview swaps between stacked
- * and side-by-side layouts and takes any image or video, like the immersive
- * demos. Copy replaces the whole const. Demo-only.
+ * The Preview folder: how the block is laid out and what plays inside the
+ * frame, resolved into the `src` / `isVideo` pair the markup takes — the shape
+ * `useDemoMediaSource` gives the immersive playgrounds, kept local under its
+ * own folder because `Media` here is the reveal's media track, not the source.
  */
-export function ScrollRevealUnderMediaPlayground() {
-  const [replayKey, setReplayKey] = useState(0)
-
+function usePreviewControls() {
   const pickVideo = useVideoUpload({ urlPath: 'Preview.videoUrl', mediaPath: 'Preview.media' })
   const { layout, media, image, videoUrl } = useDemoControls('Preview', {
     layout: { value: 'stacked', options: LAYOUTS },
@@ -55,6 +47,12 @@ export function ScrollRevealUnderMediaPlayground() {
     'upload video (≤10 MB)': button(pickVideo),
   })
 
+  const isVideo = media === 'video' && Boolean(videoUrl)
+  return { layout, src: isVideo ? videoUrl : (image ?? DEMO_IMAGE_SRC), isVideo }
+}
+
+/** The Text folder: the copy track's tuning, its ease picker included. */
+function useTextControls() {
   const { textY, textBlurPx, textDuration, stagger } = useDemoControls('Text', {
     textY: { value: UNDER_MEDIA.textY, min: 0, max: 120, step: 1, label: 'drop (px)' },
     textBlurPx: { value: UNDER_MEDIA.textBlurPx, min: 0, max: 24, step: 1, label: 'blur (px)' },
@@ -68,7 +66,11 @@ export function ScrollRevealUnderMediaPlayground() {
     stagger: { value: UNDER_MEDIA.stagger, min: 0, max: 0.5, step: 0.01, label: 'stagger (s)' },
   })
   const textEase = useEaseControl('Text', UNDER_MEDIA.textEase)
+  return { textY, textBlurPx, textDuration, stagger, textEase }
+}
 
+/** The Media folder: the windowed mask wipe's tuning, its ease picker included. */
+function useMediaControls() {
   const { mediaDuration, mediaScaleFrom } = useDemoControls('Media', {
     mediaDuration: {
       value: UNDER_MEDIA.mediaDuration,
@@ -86,6 +88,24 @@ export function ScrollRevealUnderMediaPlayground() {
     },
   })
   const mediaEase = useEaseControl('Media', UNDER_MEDIA.mediaEase)
+  return { mediaDuration, mediaScaleFrom, mediaEase }
+}
+
+/**
+ * Demo content: the complete under-media reveal — the entrance for copy paired
+ * with an image or video — with every one of its values wired to the
+ * surrounding DemoSection's GUI: its own text tuning, the windowed mask wipe
+ * (content settles down from a zoom behind the clipped frame), and the offset
+ * that syncs or sequences the two tracks. The preview swaps between stacked
+ * and side-by-side layouts and takes any image or video, like the immersive
+ * demos. Copy replaces the whole const. Demo-only.
+ */
+export function ScrollRevealUnderMediaPlayground() {
+  const [replayKey, setReplayKey] = useState(0)
+
+  const { layout, src, isVideo } = usePreviewControls()
+  const { textY, textBlurPx, textDuration, stagger, textEase } = useTextControls()
+  const { mediaDuration, mediaScaleFrom, mediaEase } = useMediaControls()
 
   const { mediaOffset } = useDemoControls('Sync', {
     mediaOffset: {
@@ -97,15 +117,7 @@ export function ScrollRevealUnderMediaPlayground() {
     },
   })
 
-  const { enterThreshold } = useDemoControls('Trigger', {
-    enterThreshold: {
-      value: TRIGGER.enterThreshold,
-      min: 0,
-      max: 1,
-      step: 0.05,
-      label: 'visible fraction',
-    },
-  })
+  const enterOffset = useTriggerControl()
 
   useDemoAction('replay', () => setReplayKey((n) => n + 1))
 
@@ -124,8 +136,6 @@ export function ScrollRevealUnderMediaPlayground() {
     mediaOffset,
   })
 
-  const isVideo = media === 'video' && Boolean(videoUrl)
-  const src = isVideo ? videoUrl : (image ?? DEMO_IMAGE_SRC)
   const sideBySide = layout !== 'stacked'
 
   // The wrapper is the reveal's window: the timeline wipes its clip mask while
@@ -153,7 +163,7 @@ export function ScrollRevealUnderMediaPlayground() {
       <ScrollReveal
         as="div"
         className="relative overflow-hidden rounded-md bg-background px-5 py-12 sm:px-8 sm:py-16 md:px-14"
-        enterThreshold={enterThreshold}
+        enterOffset={enterOffset}
         key={layout}
         mediaDuration={mediaDuration}
         mediaEase={mediaEase}

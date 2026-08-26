@@ -6,6 +6,7 @@ import { Checkbox as CheckboxUi } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
 
 import { FieldError } from '../Error'
+import { RequiredMark } from '../FieldShell'
 import { Width } from '../Width'
 
 export const Checkbox: React.FC<
@@ -31,11 +32,7 @@ export const Checkbox: React.FC<
           }}
         />
         <FieldLabel htmlFor={name}>
-          {required && (
-            <span className="text-destructive">
-              * <span className="sr-only">(required)</span>
-            </span>
-          )}
+          {required && <RequiredMark />}
           {label}
         </FieldLabel>
       </Field>

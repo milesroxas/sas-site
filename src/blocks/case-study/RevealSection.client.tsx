@@ -6,11 +6,7 @@ import {
   type SectionTheme,
   themeClasses,
 } from '@/blocks/shared/section'
-import {
-  SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD,
-  ScrollReveal,
-  type ScrollRevealVariant,
-} from '@/shared/ui/scroll-reveal'
+import { ScrollReveal, type ScrollRevealVariant } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
 /**
@@ -40,7 +36,6 @@ export function RevealSection({
   return (
     <ScrollReveal
       as={as}
-      enterThreshold={SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD}
       variant={variant}
       className={cn(fullViewportSectionClassName, themeClasses[theme || 'light'], className)}
     >

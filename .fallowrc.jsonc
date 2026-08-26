@@ -39,24 +39,35 @@
   ],
   // Webpack-style tilde import inside Payload admin SCSS, resolved by Payload's bundler
   "ignoreUnresolvedImports": ["**/~@payloadcms/ui/scss"],
+  "duplicates": {
+    // Tailwind v4 `@utility` blocks must be self-contained — there is no mixin
+    // in this pipeline — so the scroll-fade family's directional variants
+    // (t/b, l/r, s/e, x/y) necessarily restate the same mask plumbing and
+    // scroll-timeline @supports pair. `@apply`-ing a sibling is not an escape
+    // hatch either: the `scroll-fade-*` functional utility matches those names,
+    // so Tailwind rejects it as a circular dependency at build time.
+    "ignore": ["src/app/(frontend)/globals.css"]
+  },
   "health": {
-    "thresholdOverrides": [
-      {
-        "files": ["src/components/ui/**"],
-        "maxCrap": 75,
-        "reason": "Vendored shadcn primitives (ejected) — kept byte-close to upstream for future diffs, not restructured to satisfy CRAP; sidebar.tsx is the largest upstream primitive"
-      },
-      {
-        "files": ["src/shared/ui/demo-kit/**", "src/widgets/immersive-demo/**"],
-        "maxCrap": 75,
-        "reason": "Interactive demo tooling (leva playground shells) — exercised manually on the /demo routes, intentionally untested. The immersive-demo widget is playground shells end to end, including the shared edge-melt control hook whose branch count is the preset-then-default fallback chain the effects SSOT contract requires"
-      },
-      {
-        "files": ["src/Header/Menu/index.tsx", "src/Footer/Closing/ClosingMedia.tsx"],
-        "maxCrap": 40,
-        "reason": "GSAP orchestration — branch count is DOM/ref precondition gating, not decision logic. ClosingMedia's callback is the house guard idiom (`!ref || … || prefersReducedMotion`, same shape as ScrambleText / FeaturedWorkList / heading-dropdown) at cognitive 3; its CRAP is the untested-presentational floor rather than complexity"
-      }
-    ]
+    // CRAP = cc^2 * (1 - coverage)^3 + cc, and no coverage report is wired
+    // here — fallow reports `coverage_source: "estimated"` and assumes 0% — so
+    // it collapses to cc^2 + cc. At the default 30 that reads "no function may
+    // exceed cyclomatic 4", a bar no conditional JSX can meet; it fired on ~a
+    // third of the codebase, presentational components included. 110 is the
+    // same statement at cyclomatic 9, which still catches the genuinely branchy
+    // untested functions. Complexity itself is gated separately, at the
+    // defaults: maxCyclomatic 20, maxCognitive 15, maxUnitSize 60.
+    //
+    // Point `coverage` at an Istanbul lcov and CRAP starts measuring risk
+    // instead of assuming the worst — bring this back toward 30 when it does.
+    //
+    // This replaces the per-glob maxCrap exemptions this key used to carry
+    // (vendored shadcn primitives under `src/components/ui/**`, kept byte-close
+    // to upstream; the leva playground shells under demo-kit / immersive-demo;
+    // the GSAP ref-guard idiom in Header/Menu and Footer/Closing). Every one of
+    // them sat below 110, so keeping them would have made those paths stricter
+    // than the rest of the repo rather than more lenient.
+    "maxCrap": 110
   },
   "ignoreExports": [
     // Vendored shadcn primitives (ejected) — keep the full upstream export surface for future diffs
@@ -66,6 +77,10 @@
     // Shared UI primitives export their Props types as public API
     { "file": "src/shared/ui/reveal-section/index.ts", "exports": ["RevealSectionProps"] },
     { "file": "src/shared/ui/scramble-text/index.ts", "exports": ["ScrambleTextProps"] },
+    {
+      "file": "src/shared/ui/demo-kit/index.ts",
+      "exports": ["DemoBrowserFrameProps", "DemoScrollerProps"]
+    },
     {
       "file": "src/shared/ui/scroll-reveal/index.ts",
       "exports": ["ScrollRevealProps", "ScrollRevealTuning"]
@@ -93,12 +108,19 @@
         "DispersionSource",
         "FloatingCardDef",
         "FloatingCardsProps",
+        // Named alternate look, banked for a second call site (rule of two)
+        "LIGHT_LEAK_AMBER",
+        // Hover contract for the light leak; consumers spread leakExcite() instead
+        "LIGHT_LEAK_EXCITE_ATTR",
+        "LightLeakProps",
         "RefractionMediaProps",
         "RefractionSource",
         "TextLoadInProps",
         "TextLoadInRaymarchedProps"
       ]
     },
+    // Source of the barrel re-export above
+    { "file": "src/features/immersive/presets.ts", "exports": ["LIGHT_LEAK_AMBER"] },
     // Public-API aliases of the internal GlassMediaSource, consumed only via the barrel re-export
     { "file": "src/features/immersive/ui/dispersion-media.tsx", "exports": ["DispersionSource"] },
     { "file": "src/features/immersive/ui/refraction-media.tsx", "exports": ["RefractionSource"] },

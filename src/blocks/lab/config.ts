@@ -1,5 +1,10 @@
 import type { Block } from 'payload'
-import { themeField } from '@/blocks/shared/fields'
+import {
+  relatedSelectionFields,
+  storySectionCopyFields,
+  themeField,
+  transitionFields,
+} from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 
@@ -18,18 +23,7 @@ export const LabStorySection: Block = {
       options: ['context', 'approach', 'outcome', 'learnings', 'custom'],
       admin: { description: 'Uses canonical story content unless a website override is supplied.' },
     },
-    { name: 'eyebrow', type: 'text' },
-    { name: 'headingOverride', type: 'text' },
-    {
-      name: 'bodyOverride',
-      type: 'richText',
-      admin: { description: 'Website-only override; canonical content is unchanged.' },
-    },
-    {
-      name: 'customBody',
-      type: 'richText',
-      admin: { condition: (_, siblingData) => siblingData?.source === 'custom' },
-    },
+    ...storySectionCopyFields(),
     {
       name: 'media',
       type: 'upload',
@@ -107,18 +101,7 @@ export const LabTransition: Block = {
   dbName: 'lp_transition',
   interfaceName: 'LabTransitionBlock',
   labels: { singular: 'Rich transition', plural: 'Rich transitions' },
-  fields: [
-    { name: 'eyebrow', type: 'text' },
-    { name: 'heading', type: 'text', required: true },
-    { name: 'body', type: 'richText' },
-    {
-      name: 'layout',
-      type: 'select',
-      defaultValue: 'centered',
-      options: ['left', 'centered', 'split', 'statement'],
-    },
-    themeField(),
-  ],
+  fields: [...transitionFields()],
 }
 
 export const LabRelatedProjects: Block = {
@@ -129,14 +112,7 @@ export const LabRelatedProjects: Block = {
   labels: { singular: 'Related lab projects', plural: 'Related lab projects' },
   fields: [
     { name: 'heading', type: 'text', defaultValue: 'More from the lab' },
-    {
-      name: 'selectionMode',
-      type: 'select',
-      defaultValue: 'document-settings',
-      options: ['document-settings', 'automatic-capability-match'],
-    },
-    { name: 'limit', type: 'number', min: 1, max: 12, defaultValue: 3 },
-    { name: 'layout', type: 'select', defaultValue: 'grid', options: ['grid', 'list', 'feature'] },
+    ...relatedSelectionFields(),
   ],
 }
 

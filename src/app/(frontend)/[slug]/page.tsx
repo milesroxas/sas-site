@@ -59,7 +59,11 @@ export default async function Page({ params: paramsPromise }: Args) {
     // (-mt-(--header-height)), so top padding would leave a bare strip
     // behind the header; padded starts are for the in-flow hero types.
     <>
-      <article className={cn('pb-24', hero?.type !== 'highImpact' && 'pt-16')}>
+      {/* Opaque and above the closing band: the band is a sticky curtain the
+          page uncovers by scrolling this off it (src/Footer/Closing/curtain). */}
+      <article
+        className={cn('relative z-10 bg-background pb-24', hero?.type !== 'highImpact' && 'pt-16')}
+      >
         <PageClient />
         {/* Allows redirects for valid pages too */}
         <PayloadRedirects disableNotFound url={url} />

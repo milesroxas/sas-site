@@ -3,7 +3,6 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import {
-  LinearFilter,
   MathUtils,
   type Mesh,
   type ShaderMaterial,
@@ -11,7 +10,9 @@ import {
   TextureLoader,
   Vector2,
 } from 'three'
+import { swapMapTexture } from '@/lib/webgl/utils/swap-map-texture'
 import { cn } from '@/utilities/ui'
+import { resolveTuning } from '../resolve-tuning'
 
 /**
  * Floating "screenshot" cards: textured rounded-corner planes tilted on Y,
@@ -137,7 +138,16 @@ export const FLOATING_CARDS_DEFAULTS = {
   cornerRadius: 0.05,
 } as const satisfies Partial<FloatingCardsProps>
 
-type SceneProps = Omit<FloatingCardsProps, 'className'>
+/**
+ * Every knob with its default filled in — what the scene actually reads, once
+ * `resolveTuning` has folded the caller's deltas into the table above.
+ */
+type FloatingCardsTuning = Required<Pick<FloatingCardsProps, keyof typeof FLOATING_CARDS_DEFAULTS>>
+
+type SceneProps = Pick<FloatingCardsProps, 'cards' | 'visible' | 'contentKey'> & {
+  /** Caller deltas already resolved against `FLOATING_CARDS_DEFAULTS`. */
+  tuning: FloatingCardsTuning
+}
 
 type CardHandle = {
   mesh: Mesh
@@ -193,16 +203,7 @@ function FloatingCardMesh({
     if (!material) return
     let cancelled = false
     new TextureLoader().load(def.src, (texture) => {
-      if (cancelled) {
-        texture.dispose()
-        return
-      }
-      texture.minFilter = LinearFilter
-      texture.magFilter = LinearFilter
-      texture.generateMipmaps = false
-      const previous = material.uniforms.uMap?.value as Texture | null
-      material.uniforms.uMap.value = texture
-      previous?.dispose()
+      if (!swapMapTexture(material, texture, { cancelled })) return
 
       // Cover-fit the image into the card's aspect.
       const image = texture.image as { width: number; height: number }
@@ -251,22 +252,20 @@ function FloatingCardMesh({
   )
 }
 
-function FloatingCardsScene({
-  cards,
-  visible,
-  contentKey,
-  tilt = FLOATING_CARDS_DEFAULTS.tilt,
-  floatSpeed = FLOATING_CARDS_DEFAULTS.floatSpeed,
-  floatIntensity = FLOATING_CARDS_DEFAULTS.floatIntensity,
-  wobble = FLOATING_CARDS_DEFAULTS.wobble,
-  enterDuration = FLOATING_CARDS_DEFAULTS.enterDuration,
-  exitDuration = FLOATING_CARDS_DEFAULTS.exitDuration,
-  stagger = FLOATING_CARDS_DEFAULTS.stagger,
-  depth = FLOATING_CARDS_DEFAULTS.depth,
-  rise = FLOATING_CARDS_DEFAULTS.rise,
-  ease = FLOATING_CARDS_DEFAULTS.ease,
-  cornerRadius = FLOATING_CARDS_DEFAULTS.cornerRadius,
-}: SceneProps) {
+function FloatingCardsScene({ cards, visible, contentKey, tuning }: SceneProps) {
+  const {
+    tilt,
+    floatSpeed,
+    floatIntensity,
+    wobble,
+    enterDuration,
+    exitDuration,
+    stagger,
+    depth,
+    rise,
+    ease,
+    cornerRadius,
+  } = tuning
   // Select only what's needed; `useThree()` re-renders on any R3F state change.
   const viewport = useThree((state) => state.viewport)
   const invalidate = useThree((state) => state.invalidate)
@@ -361,11 +360,23 @@ function FloatingCardsScene({
  * element, so it needs an explicit height or absolute inset); the
  * composition scales to fit inside.
  */
-export function FloatingCards({ className, ...scene }: FloatingCardsProps) {
+export function FloatingCards({
+  className,
+  cards,
+  visible,
+  contentKey,
+  ...deltas
+}: FloatingCardsProps) {
+  const tuning = resolveTuning<FloatingCardsTuning>(FLOATING_CARDS_DEFAULTS, deltas)
   return (
     <div className={cn('relative', className)}>
       <Canvas dpr={DPR} flat linear frameloop="demand" camera={CAMERA} gl={GL_OPTIONS}>
-        <FloatingCardsScene {...scene} />
+        <FloatingCardsScene
+          cards={cards}
+          contentKey={contentKey}
+          tuning={tuning}
+          visible={visible}
+        />
       </Canvas>
     </div>
   )

@@ -1,4 +1,5 @@
 import type { CaseStudy, Media as MediaDoc, Organization, Project, WorkPage } from '@/payload-types'
+import { populatedDoc } from '@/utilities/relationshipId'
 
 export type WorkEntry = {
   id: number
@@ -25,16 +26,13 @@ export const termNames = (terms?: (number | { name: string })[] | null): string[
 export function resolveWorkEntry(page: WorkPage): WorkEntry | null {
   if (!page.slug) return null
 
-  const study = typeof page.caseStudy === 'object' ? (page.caseStudy as CaseStudy) : null
-  const project = study && typeof study.project === 'object' ? (study.project as Project) : null
-  const organization =
-    project && typeof project.organization === 'object'
-      ? (project.organization as Organization)
-      : null
+  const study = populatedDoc<CaseStudy>(page.caseStudy)
+  const project = populatedDoc<Project>(study?.project)
+  const organization = populatedDoc<Organization>(project?.organization)
 
-  const cover = typeof page.coverAsset === 'object' ? page.coverAsset : null
-  const heroMedia = page.hero?.media && typeof page.hero.media === 'object' ? page.hero.media : null
-  const media = (cover || heroMedia) as MediaDoc | null
+  const cover = populatedDoc<MediaDoc>(page.coverAsset)
+  const heroMedia = populatedDoc<MediaDoc>(page.hero?.media)
+  const media = cover || heroMedia
 
   const industries = termNames(project?.industries)
   const featured = termNames(study?.featuredCapabilities)

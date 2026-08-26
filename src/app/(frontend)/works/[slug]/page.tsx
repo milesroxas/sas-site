@@ -1,8 +1,4 @@
-import configPromise from '@payload-config'
-import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
-import { getPayload } from 'payload'
-import { cache } from 'react'
 import { RenderCaseStudyBlocks } from '@/blocks/case-study/RenderCaseStudyBlocks'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
@@ -10,33 +6,67 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { CaseStudyHero } from '@/heros/CaseStudyHero'
 import type { CaseStudy } from '@/payload-types'
 import { WorkIntro } from '@/sections/WorkIntro'
-import { generateMeta } from '@/utilities/generateMeta'
+import { populatedDoc } from '@/utilities/relationshipId'
 import { breadcrumbSchema, creativeWorkSchema } from '@/utilities/schema'
+import {
+  createSlugQuery,
+  type SlugRouteArgs,
+  slugMetadata,
+  slugStaticParams,
+} from '@/utilities/slugRoute'
 import PageClient from './page.client'
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'work-pages',
-    draft: false,
-    limit: 1000,
-    overrideAccess: false,
-    pagination: false,
-    select: { slug: true },
-  })
-  return result.docs.map(({ slug }) => ({ slug }))
+const queryWorkPageBySlug = createSlugQuery('work-pages', {
+  depth: 4,
+  populate: {
+    'case-studies': {
+      title: true,
+      project: true,
+      thesis: true,
+      summaries: true,
+      primaryAudience: true,
+      featuredCapabilities: true,
+      context: true,
+      challenge: true,
+      objectives: true,
+      strategy: true,
+      approach: true,
+      keyDecisions: true,
+      learnings: true,
+      outcomeSummary: true,
+      qualitativeOutcomes: true,
+      metrics: true,
+      testimonials: true,
+      assetLibraries: true,
+      reviewDate: true,
+      publishedAt: true,
+      key: true,
+      _status: true,
+    },
+  },
+})
+
+export const generateStaticParams = slugStaticParams('work-pages')
+export const generateMetadata = slugMetadata('/works', queryWorkPageBySlug)
+
+/**
+ * The fullest summary the Content Hub holds for a study: the intro band has
+ * room for the medium copy, so the shorter summaries only stand in when an
+ * editor left it blank.
+ */
+const introSummary = (summaries: CaseStudy['summaries']) => {
+  const { medium, short, oneLine } = summaries ?? {}
+  return medium || short || oneLine
 }
 
-type Args = { params: Promise<{ slug: string }> }
-
-export default async function WorkPageRoute({ params }: Args) {
+export default async function WorkPageRoute({ params }: SlugRouteArgs) {
   const { isEnabled: draft } = await draftMode()
   const { slug } = await params
   const decodedSlug = decodeURIComponent(slug)
   const url = `/works/${decodedSlug}`
   const page = await queryWorkPageBySlug(decodedSlug)
-  if (!page || typeof page.caseStudy !== 'object') return <PayloadRedirects url={url} />
-  const study = page.caseStudy as CaseStudy
+  const study = populatedDoc<CaseStudy>(page?.caseStudy)
+  if (!page || !study) return <PayloadRedirects url={url} />
   return (
     <article>
       <PageClient />
@@ -56,7 +86,7 @@ export default async function WorkPageRoute({ params }: Args) {
         <WorkIntro
           body={page.intro.bodyOverride}
           eyebrow={page.intro.eyebrow}
-          summary={study.summaries?.medium || study.summaries?.short || study.summaries?.oneLine}
+          summary={introSummary(study.summaries)}
           title={page.intro.title}
         />
       ) : null}
@@ -66,53 +96,3 @@ export default async function WorkPageRoute({ params }: Args) {
     </article>
   )
 }
-
-export async function generateMetadata({ params }: Args): Promise<Metadata> {
-  const { slug } = await params
-  const decodedSlug = decodeURIComponent(slug)
-  return generateMeta({
-    doc: await queryWorkPageBySlug(decodedSlug),
-    pathname: `/works/${decodedSlug}`,
-  })
-}
-
-const queryWorkPageBySlug = cache(async (slug: string) => {
-  const { isEnabled: draft } = await draftMode()
-  const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'work-pages',
-    draft,
-    depth: 4,
-    limit: 1,
-    pagination: false,
-    populate: {
-      'case-studies': {
-        title: true,
-        project: true,
-        thesis: true,
-        summaries: true,
-        primaryAudience: true,
-        featuredCapabilities: true,
-        context: true,
-        challenge: true,
-        objectives: true,
-        strategy: true,
-        approach: true,
-        keyDecisions: true,
-        learnings: true,
-        outcomeSummary: true,
-        qualitativeOutcomes: true,
-        metrics: true,
-        testimonials: true,
-        assetLibraries: true,
-        reviewDate: true,
-        publishedAt: true,
-        key: true,
-        _status: true,
-      },
-    },
-    overrideAccess: draft,
-    where: { slug: { equals: slug } },
-  })
-  return result.docs[0] || null
-})

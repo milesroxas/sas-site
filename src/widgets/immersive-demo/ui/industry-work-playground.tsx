@@ -1,6 +1,10 @@
 'use client'
 
-import { INDUSTRY_WORK_MEDIA as PRESET, RefractionMedia } from '@/features/immersive'
+import {
+  REFRACTION_MEDIA_DEFAULTS as DEFAULTS,
+  INDUSTRY_WORK_MEDIA as PRESET,
+  RefractionMedia,
+} from '@/features/immersive'
 import { useDemoControls, useDemoMediaSource, useDemoSnippet } from '@/shared/ui/demo-kit'
 import { useRefractionEdgeControls } from './use-refraction-edge-controls'
 
@@ -43,7 +47,7 @@ export function IndustryWorkPlayground() {
   const { bleed, melt, meltScale, meltDetail, meltSpeed, meltBand, meltFeather } =
     useRefractionEdgeControls(PRESET)
 
-  const { smear, follow, ease, lensVisibility, lensSpread } = useDemoControls('Motion', {
+  const { smear, follow, ease, lensVisibility, lensSpread, lensFade } = useDemoControls('Motion', {
     smear: { value: PRESET.smear * 100, min: 0, max: 10, step: 0.5 },
     follow: { value: PRESET.follow, min: 1, max: 20, step: 0.5 },
     ease: { value: PRESET.ease, min: 1, max: 20, step: 0.5 },
@@ -61,7 +65,17 @@ export function IndustryWorkPlayground() {
       min: 0.05,
       max: 0.6,
       step: 0.01,
-      label: 'lens diameter',
+      label: 'lens radius',
+      render: (get) => get('Motion.lensVisibility') > 0,
+    },
+    // How far inside the panel the mesh has retired by the time its rim would
+    // reach the edge — the knob that keeps the lens inset instead of clipping.
+    lensFade: {
+      value: PRESET.lensFade ?? DEFAULTS.lensFade,
+      min: 0,
+      max: 0.4,
+      step: 0.01,
+      label: 'lens fade',
       render: (get) => get('Motion.lensVisibility') > 0,
     },
   })
@@ -86,6 +100,7 @@ export function IndustryWorkPlayground() {
     smear: smear / 100,
     lensVisibility,
     lensSpread,
+    lensFade,
     follow,
     ease,
   })
@@ -122,6 +137,7 @@ export function IndustryWorkPlayground() {
             smear={smear / 100}
             lensVisibility={lensVisibility}
             lensSpread={lensSpread}
+            lensFade={lensFade}
             follow={follow}
             ease={ease}
           />

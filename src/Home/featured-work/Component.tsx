@@ -1,10 +1,9 @@
-import configPromise from '@payload-config'
-import { draftMode } from 'next/headers'
-import { getPayload } from 'payload'
 import type React from 'react'
+import { findWorkPagesById } from '@/blocks/shared/find-work-pages'
 import { resolveWorkEntry, type WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Section, type SectionTheme } from '@/blocks/shared/section'
 import type { HomeFeaturedWorkBlock as HomeFeaturedWorkBlockProps, WorkPage } from '@/payload-types'
+import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
 
 export const HomeFeaturedWorkBlock: React.FC<
@@ -15,25 +14,9 @@ export const HomeFeaturedWorkBlock: React.FC<
   const selected = entries ?? []
   if (selected.length === 0) return null
 
-  const { isEnabled: draft } = await draftMode()
-  const payload = await getPayload({ config: configPromise })
+  const ids = relationshipIds(selected)
 
-  const ids = selected.map((entry) => (typeof entry === 'object' ? entry.id : entry))
-
-  const { docs } = await payload.find({
-    collection: 'work-pages',
-    depth: 3,
-    draft,
-    limit: ids.length,
-    overrideAccess: draft,
-    pagination: false,
-    where: {
-      id: { in: ids },
-      ...(draft ? {} : { _status: { equals: 'published' } }),
-    },
-  })
-
-  const byId = new Map(docs.map((doc) => [doc.id, doc]))
+  const byId = await findWorkPagesById(ids)
 
   const resolved: WorkEntry[] = ids
     .map((entryId) => {
@@ -41,7 +24,7 @@ export const HomeFeaturedWorkBlock: React.FC<
       if (fromQuery) return resolveWorkEntry(fromQuery)
 
       const fromSelection = selected.find(
-        (entry): entry is WorkPage => typeof entry === 'object' && entry.id === entryId,
+        (entry): entry is WorkPage => populatedDoc<WorkPage>(entry)?.id === entryId,
       )
       return fromSelection ? resolveWorkEntry(fromSelection) : null
     })

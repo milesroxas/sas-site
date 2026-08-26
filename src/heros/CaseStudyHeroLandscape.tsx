@@ -1,7 +1,8 @@
-import { termNames } from '@/blocks/shared/resolve-work-entry'
 import { Media } from '@/components/Media'
-import type { CaseStudy, Organization, Project, WorkPage } from '@/payload-types'
+import type { CaseStudy, WorkPage } from '@/payload-types'
 import { WorkImageTransition } from '@/shared/lib/view-transition'
+import { pluralLabel } from '@/utilities/pluralLabel'
+import { caseStudyHeroFacts } from './caseStudyHeroFacts'
 
 const DetailGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-4">
@@ -18,22 +19,34 @@ const DetailGroup = ({ label, values }: { label: string; values: string[] }) => 
   </div>
 )
 
+const HeroDetails = ({
+  capabilities,
+  client,
+  industries,
+}: {
+  capabilities: string[]
+  client?: string | null
+  industries: string[]
+}) => (
+  <dl className="flex flex-col gap-8 md:flex-row md:gap-20 lg:gap-12 lg:self-end xl:gap-20">
+    {client && <DetailGroup label="Client" values={[client]} />}
+    {industries.length > 0 && (
+      <DetailGroup
+        label={pluralLabel(industries.length, 'Industry', 'Industries')}
+        values={industries}
+      />
+    )}
+    {capabilities.length > 0 && <DetailGroup label="Capabilities" values={capabilities} />}
+  </dl>
+)
+
 /**
  * `landscape` hero layout: title on its own row, then detail columns (client,
  * industry, capabilities) right-aligned on the next — guttered top band, then
  * an edge-to-edge landscape media strip (21:9 lg / 5:4 below). No summary.
  */
 export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study: CaseStudy }) => {
-  const project = typeof study.project === 'object' ? (study.project as Project) : null
-  const organization =
-    project && typeof project.organization === 'object'
-      ? (project.organization as Organization)
-      : null
-  const media =
-    page.hero?.media && typeof page.hero.media === 'object' ? page.hero.media : page.coverAsset
-  const featured = termNames(study.featuredCapabilities)
-  const capabilities = featured.length ? featured : termNames(project?.capabilities)
-  const industries = termNames(project?.industries)
+  const { capabilities, industries, media, organization } = caseStudyHeroFacts(page, study)
   const client = organization?.name || organization?.shortName
 
   return (
@@ -42,18 +55,9 @@ export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study:
         <h1 className="max-w-xl text-heading-1 text-foreground">
           {page.hero?.titleOverride || study.title}
         </h1>
-        <dl className="flex flex-col gap-8 md:flex-row md:gap-20 lg:gap-12 lg:self-end xl:gap-20">
-          {client && <DetailGroup label="Client" values={[client]} />}
-          {industries.length > 0 && (
-            <DetailGroup
-              label={industries.length > 1 ? 'Industries' : 'Industry'}
-              values={industries}
-            />
-          )}
-          {capabilities.length > 0 && <DetailGroup label="Capabilities" values={capabilities} />}
-        </dl>
+        <HeroDetails capabilities={capabilities} client={client} industries={industries} />
       </div>
-      {media && typeof media === 'object' && (
+      {media && (
         // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
         <div data-hero-media className="contents">
           {/* VT name lands on Media's own wrapper (the `contents` div above can't snapshot). */}

@@ -1,3 +1,9 @@
+export {
+  DemoBrowserFrame,
+  type DemoBrowserFrameProps,
+  DemoScroller,
+  type DemoScrollerProps,
+} from './demo-browser'
 export { useDemoAction, useDemoControls } from './demo-controls'
 export { DEMO_IMAGE_SRC, DEMO_VIDEO_SRC } from './demo-media'
 export { DemoShell, type DemoShellSection } from './demo-shell'

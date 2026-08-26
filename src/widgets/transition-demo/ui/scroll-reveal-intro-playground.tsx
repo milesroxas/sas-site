@@ -2,13 +2,10 @@
 
 import { useState } from 'react'
 import { useDemoAction, useDemoControls, useDemoSnippet } from '@/shared/ui/demo-kit'
-import {
-  SCROLL_REVEAL_INTRO as INTRO,
-  ScrollReveal,
-  SCROLL_REVEAL_TRIGGER_DEFAULTS as TRIGGER,
-} from '@/shared/ui/scroll-reveal'
+import { SCROLL_REVEAL_INTRO as INTRO, ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { revealTrackBars, TrackDiagram } from './reveal-track-diagram'
 import { useEaseControl } from './use-ease-control'
+import { useTriggerControl } from './use-trigger-control'
 
 /** Diagram labels mirror the preview markup so it plots the real target list. */
 const TEXT_LABELS = ['eyebrow', 'heading', 'body', 'footnote']
@@ -38,15 +35,7 @@ export function ScrollRevealIntroPlayground() {
   })
   const textEase = useEaseControl('Motion', INTRO.textEase)
 
-  const { enterThreshold } = useDemoControls('Trigger', {
-    enterThreshold: {
-      value: TRIGGER.enterThreshold,
-      min: 0,
-      max: 1,
-      step: 0.05,
-      label: 'visible fraction',
-    },
-  })
+  const enterOffset = useTriggerControl()
 
   useDemoAction('replay', () => setReplayKey((n) => n + 1))
 
@@ -60,7 +49,7 @@ export function ScrollRevealIntroPlayground() {
       <ScrollReveal
         as="div"
         className="relative flex min-h-96 items-center overflow-hidden rounded-md bg-background px-5 py-12 sm:px-8 sm:py-16 md:px-14"
-        enterThreshold={enterThreshold}
+        enterOffset={enterOffset}
         replayKey={replayKey}
         stagger={stagger}
         textBlurPx={textBlurPx}

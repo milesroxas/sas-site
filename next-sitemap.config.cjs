@@ -1,17 +1,8 @@
-function getSiteUrl() {
-  if (process.env.NEXT_PUBLIC_SERVER_URL) {
-    return process.env.NEXT_PUBLIC_SERVER_URL
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`
-  }
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  }
-  return 'https://example.com'
-}
+const { resolveServerSideURL } = require('./site-url.cjs')
 
-const SITE_URL = getSiteUrl()
+// Same resolution the app uses; the last-resort fallback differs because a
+// sitemap has to emit absolute URLs even on a build with no origin configured.
+const SITE_URL = resolveServerSideURL('https://example.com')
 
 /**
  * AI crawlers explicitly welcomed for answer-engine visibility. Search/index

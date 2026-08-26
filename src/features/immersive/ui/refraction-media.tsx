@@ -1,14 +1,23 @@
 'use client'
 
 import { useFBO } from '@react-three/drei'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas, type RootState, useFrame, useThree } from '@react-three/fiber'
 import cn from 'clsx'
 import { useEffect, useMemo, useRef } from 'react'
-import { MathUtils, type Mesh, type ShaderMaterial, type Texture, Vector2 } from 'three'
-
+import {
+  MathUtils,
+  type Mesh,
+  type ShaderMaterial,
+  type Texture,
+  Vector2,
+  type WebGLRenderTarget,
+} from 'three'
+import { resolveTuning } from '../resolve-tuning'
 import {
   applyGlassIorUniforms,
   BACKDROP_VERTEX,
+  bleedToInset,
+  canvasOverscan,
   createDispersionUniforms,
   DISPERSION_FRAGMENT,
   DISPERSION_VERTEX,
@@ -20,6 +29,7 @@ import {
   type GlassIorProps,
   type GlassMediaSource,
   glassPlaneSize,
+  glassSilhouetteRadius,
   useBackdropTexture,
   useCoverFit,
   useOnScreen,
@@ -53,7 +63,15 @@ import {
  * inset within it; the warp then displaces the media's *silhouette* — alpha
  * coverage is computed after displacement, and `melt` adds a dedicated
  * noise band along the boundary — so the effect escapes the bounding box
- * instead of clipping at it.
+ * instead of clipping at it. A visible glass mesh grows that overscan to at
+ * least its radius, so a lens sitting on the silhouette isn't clipped by
+ * the framebuffer.
+ *
+ * `lensFade` keeps the glass mesh contained within the media: it fades out as
+ * its own rim approaches the media's edge and dissolves per-pixel over the
+ * same margin, so it never hangs off the silhouette or stamps an opaque disc
+ * over the transparent bleed. Only the mesh is affected — the screen-space
+ * warp and the edge melt keep working right up to the boundary.
  *
  * Renders in its own small classic-renderer canvas rather than the global one
  * (GlobalCanvas prefers WebGPU, where raw GLSL ShaderMaterial is unsupported)
@@ -266,6 +284,16 @@ void main() {
 }
 `
 
+/**
+ * Signed distance from a media-local point to the media rect's edge, in the
+ * same aspect-corrected units as `lensSpread` (1 = the media's height);
+ * negative once the point sits outside the media. Drives the glass mesh's
+ * containment fade from its center; the dispersion shader measures the same
+ * distance per fragment for the dissolve.
+ */
+const boundaryDistance = (x: number, y: number, aspect: number): number =>
+  Math.min(Math.min(x, 1 - x) * aspect, Math.min(y, 1 - y))
+
 /** A DOM element already painting the media, reused as the texture source. */
 export type RefractionSource = GlassMediaSource
 
@@ -328,10 +356,13 @@ export type RefractionMediaProps = {
    * Fraction of the container the canvas extends past it on every side
    * (0 disables). The media itself keeps the container's rect; the margin is
    * transparent room the warp and melt displace the media's *silhouette*
-   * into, so the effect isn't clipped at the bounding box. The parent chain
-   * must not clip (no overflow-hidden / residual clip-path) for the bleed to
-   * show. The glass lens mesh reads transparent bleed texels as black — keep
-   * `lensVisibility: 0` when bleeding.
+   * into, so the effect isn't clipped at the bounding box. A visible glass
+   * mesh also grows this overscan to at least `lensSpread`, so the sphere
+   * can hang off the silhouette without hitting the framebuffer edge. The
+   * parent chain must not clip (no overflow-hidden / residual clip-path)
+   * for the overhang to show. The glass mesh clamps FBO samples that land
+   * in that transparent margin back onto the media, so a visible lens can
+   * hang over the edge without filling with the FBO's clear black.
    */
   bleed?: number
   /**
@@ -361,6 +392,18 @@ export type RefractionMediaProps = {
   lensVisibility?: number
   /** Glass mesh radius as a fraction of the panel's height. */
   lensSpread?: number
+  /**
+   * Keeps the glass mesh contained within the media. It fades out as its own
+   * rim approaches the media's edge — full strength only while the whole
+   * sphere sits inside, gone by the time the rim would cross — and dissolves
+   * per-pixel across the same margin, so it can never hang off the silhouette
+   * or stamp an opaque disc over the transparent bleed. This is the width of
+   * that fade, in the same units as `lensSpread` (1 = the media's height).
+   * Only the mesh is affected: the screen-space warp (refraction, chroma,
+   * noise, smear) and the edge melt keep running right up to the boundary.
+   * 0 disables.
+   */
+  lensFade?: number
   /** Glass thickness: z-scale relative to its radius (1 = full sphere). */
   lensDepth?: number
   /** Refraction offset strength per sample inside the glass. */
@@ -410,6 +453,7 @@ export const REFRACTION_MEDIA_DEFAULTS = {
   meltFeather: 0.01,
   lensVisibility: 1,
   lensSpread: 0.22,
+  lensFade: 0,
   lensDepth: 0.55,
   lensRefraction: 0.15,
   lensChroma: 0.5,
@@ -420,70 +464,29 @@ export const REFRACTION_MEDIA_DEFAULTS = {
   ease: 6,
 } as const satisfies Partial<RefractionMediaProps>
 
-type SceneProps = Omit<RefractionMediaProps, 'className'>
+type RefractionMediaTuning = Required<
+  Pick<RefractionMediaProps, keyof typeof REFRACTION_MEDIA_DEFAULTS>
+>
 
-function RefractionScene({
-  src,
-  video = false,
-  source,
-  onReady,
-  subscribeProximity,
-  spread = REFRACTION_MEDIA_DEFAULTS.spread,
-  feather = REFRACTION_MEDIA_DEFAULTS.feather,
-  edge = REFRACTION_MEDIA_DEFAULTS.edge,
-  refraction = REFRACTION_MEDIA_DEFAULTS.refraction,
-  chroma = REFRACTION_MEDIA_DEFAULTS.chroma,
-  distortion = REFRACTION_MEDIA_DEFAULTS.distortion,
-  noiseScale = REFRACTION_MEDIA_DEFAULTS.noiseScale,
-  noiseSpeed = REFRACTION_MEDIA_DEFAULTS.noiseSpeed,
-  smear = REFRACTION_MEDIA_DEFAULTS.smear,
-  highlight = REFRACTION_MEDIA_DEFAULTS.highlight,
-  bleed = REFRACTION_MEDIA_DEFAULTS.bleed,
-  melt = REFRACTION_MEDIA_DEFAULTS.melt,
-  meltScale = REFRACTION_MEDIA_DEFAULTS.meltScale,
-  meltDetail = REFRACTION_MEDIA_DEFAULTS.meltDetail,
-  meltSpeed = REFRACTION_MEDIA_DEFAULTS.meltSpeed,
-  meltBand = REFRACTION_MEDIA_DEFAULTS.meltBand,
-  meltFeather = REFRACTION_MEDIA_DEFAULTS.meltFeather,
-  lensVisibility = REFRACTION_MEDIA_DEFAULTS.lensVisibility,
-  lensSpread = REFRACTION_MEDIA_DEFAULTS.lensSpread,
-  lensDepth = REFRACTION_MEDIA_DEFAULTS.lensDepth,
-  lensRefraction = REFRACTION_MEDIA_DEFAULTS.lensRefraction,
-  lensChroma = REFRACTION_MEDIA_DEFAULTS.lensChroma,
-  lensSaturation = REFRACTION_MEDIA_DEFAULTS.lensSaturation,
-  iorR = REFRACTION_MEDIA_DEFAULTS.iorR,
-  iorY = REFRACTION_MEDIA_DEFAULTS.iorY,
-  iorG = REFRACTION_MEDIA_DEFAULTS.iorG,
-  iorC = REFRACTION_MEDIA_DEFAULTS.iorC,
-  iorB = REFRACTION_MEDIA_DEFAULTS.iorB,
-  iorP = REFRACTION_MEDIA_DEFAULTS.iorP,
-  tilt = REFRACTION_MEDIA_DEFAULTS.tilt,
-  follow = REFRACTION_MEDIA_DEFAULTS.follow,
-  ease = REFRACTION_MEDIA_DEFAULTS.ease,
-}: SceneProps) {
-  // Select only what's needed; `useThree()` re-renders on any R3F state change.
-  const viewport = useThree((state) => state.viewport)
-  const invalidate = useThree((state) => state.invalidate)
+type SceneProps = Pick<
+  RefractionMediaProps,
+  'src' | 'video' | 'source' | 'onReady' | 'subscribeProximity'
+> & {
+  /** Caller deltas already resolved against `REFRACTION_MEDIA_DEFAULTS`. */
+  tuning: RefractionMediaTuning
+}
 
-  const meshRef = useRef<Mesh>(null)
-  const backdropRef = useRef<Mesh>(null)
-  const warpMaterialRef = useRef<ShaderMaterial>(null)
-  const lensMaterialRef = useRef<ShaderMaterial>(null)
-
-  const onScreen = useOnScreen()
-  const pointer = usePointerTracking(onScreen)
-
-  // The glass mesh only exists while it is optically present, so its material
-  // ref is null on every render before that. Both uniform syncs below key off
-  // this so they re-run when the mesh appears — otherwise a lens switched on
-  // after mount (the playground's glass-lens control) keeps its seed
-  // resolution and stale dispersion values, and paints a black disc.
-  const lensMounted = lensVisibility > 0
-
-  // External activation (cursor-provider proximity): a ref fed by the
-  // subscription, read in useFrame — never React state. Each change requests
-  // a frame so the demand loop follows the approach.
+/**
+ * External activation (cursor-provider proximity): a ref fed by the
+ * subscription, read in useFrame — never React state. Each change requests
+ * a frame so the demand loop follows the approach.
+ */
+function useProximityHover(
+  subscribeProximity: SceneProps['subscribeProximity'],
+  invalidate: () => void,
+) {
   const externalHover = useRef(0)
+
   useEffect(() => {
     if (!subscribeProximity) return
     const unsubscribe = subscribeProximity((t) => {
@@ -497,18 +500,32 @@ function RefractionScene({
     }
   }, [subscribeProximity, invalidate])
 
-  // Velocity state lives in refs and feeds uniforms via useFrame — never React
-  // state (perf-never-set-state-in-useframe).
-  const velocityTarget = useRef(new Vector2())
-  const previousMouse = useRef(new Vector2(0.5, 0.5))
+  return externalHover
+}
 
-  // Scene snapshot with the mesh hidden — the glass samples the *warped*
-  // backdrop, so both effects compose.
-  const backdropFBO = useFBO()
+/**
+ * The screen-space warp layer — the original hover effect: the material that
+ * paints the media, the texture pipeline feeding it, and the parameter sync
+ * that keeps the shader in step.
+ */
+function useWarpLayer({
+  invalidate,
+  onReady,
+  onScreen,
+  overscan,
+  source,
+  src,
+  tuning,
+  video,
+}: Pick<SceneProps, 'src' | 'video' | 'source' | 'onReady'> & {
+  invalidate: () => void
+  onScreen: ReturnType<typeof useOnScreen>
+  overscan: number
+  tuning: RefractionMediaTuning
+}) {
+  const materialRef = useRef<ShaderMaterial>(null)
 
-  // Initial values only — R3F may copy these objects into the materials, so
-  // runtime updates go through the material refs, never these objects.
-  const warpUniforms = useMemo(
+  const uniforms = useMemo(
     () => ({
       uMap: { value: null as Texture | null },
       uCover: { value: new Vector2(1, 1) },
@@ -537,28 +554,40 @@ function RefractionScene({
     }),
     [],
   )
-  const lensUniforms = useMemo(() => {
-    const uniforms = createDispersionUniforms()
-    // The glass starts optically invisible and eases in on hover.
-    uniforms.uHover.value = 0
-    return uniforms
-  }, [])
 
   const sourceAspect = useBackdropTexture({
     src,
     video,
     source,
     onReady,
-    materialRef: warpMaterialRef,
+    materialRef,
     onScreen,
   })
-  useCoverFit(warpMaterialRef, sourceAspect)
-  useWinResolution(lensMaterialRef, lensMounted)
+  useCoverFit(materialRef, sourceAspect)
+
+  const {
+    spread,
+    feather,
+    edge,
+    refraction,
+    chroma,
+    distortion,
+    noiseScale,
+    noiseSpeed,
+    smear,
+    highlight,
+    melt,
+    meltScale,
+    meltDetail,
+    meltSpeed,
+    meltBand,
+    meltFeather,
+  } = tuning
 
   // Shader parameters sync on prop change (not in useFrame: with a demand
   // frameloop no frames run while idle, so GUI tweaks would go stale).
   useEffect(() => {
-    const u = warpMaterialRef.current?.uniforms
+    const u = materialRef.current?.uniforms
     if (!u) return
     u.uRadius.value = spread
     u.uFeather.value = feather
@@ -570,9 +599,10 @@ function RefractionScene({
     u.uNoiseSpeed.value = noiseSpeed
     u.uSmear.value = smear
     u.uHighlight.value = highlight
-    // Bleed margin in canvas UV: the wrapper grows by `bleed` per side, so a
-    // panel-relative fraction b maps to b / (1 + 2b) of the enlarged canvas.
-    u.uInset.value = bleed > 0 ? bleed / (1 + 2 * bleed) : 0
+    // Canvas-UV inset of the media: the wrapper grows by `overscan` per side
+    // (bleed, or the glass radius if that's larger), so a panel-relative
+    // fraction b maps to b / (1 + 2b) of the enlarged canvas.
+    u.uInset.value = bleedToInset(overscan)
     u.uMelt.value = melt
     u.uMeltScale.value = meltScale
     u.uMeltDetail.value = meltDetail
@@ -591,7 +621,7 @@ function RefractionScene({
     noiseSpeed,
     smear,
     highlight,
-    bleed,
+    overscan,
     melt,
     meltScale,
     meltDetail,
@@ -601,25 +631,71 @@ function RefractionScene({
     invalidate,
   ])
 
-  // Tilt applies to the mesh in useFrame; on the demand frameloop a prop
-  // change still needs to request the frame that picks it up. Same for
-  // lensVisibility, which mounts or unmounts the glass mesh.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: prop changes must request a frame without being read here
-  useEffect(() => invalidate(), [tilt, lensVisibility, invalidate])
+  return { materialRef, uniforms }
+}
 
-  useEffect(() => {
-    const u = lensMaterialRef.current?.uniforms
-    if (!lensMounted || !u) return
-    u.uRefractPower.value = lensRefraction
-    u.uChromaticAberration.value = lensChroma
-    u.uSaturation.value = lensSaturation
-    applyGlassIorUniforms(u, { iorR, iorY, iorG, iorC, iorB, iorP })
-    invalidate()
-  }, [
-    lensMounted,
+/**
+ * The glass lens layer: a real refracting mesh over the warped backdrop. It
+ * only exists while it is optically present, so its material ref is null on
+ * every render before that — `mounted` keys both syncs so they re-run when
+ * the mesh appears. Otherwise a lens switched on after mount (the
+ * playground's glass-lens control) keeps its seed resolution and stale
+ * dispersion values, and paints a black disc.
+ */
+function useLensLayer({
+  invalidate,
+  mounted,
+  overscan,
+  tuning,
+}: {
+  invalidate: () => void
+  mounted: boolean
+  overscan: number
+  tuning: RefractionMediaTuning
+}) {
+  const materialRef = useRef<ShaderMaterial>(null)
+
+  const uniforms = useMemo(() => {
+    const uniforms = createDispersionUniforms()
+    // The glass starts optically invisible and eases in on hover.
+    uniforms.uHover.value = 0
+    return uniforms
+  }, [])
+
+  useWinResolution(materialRef, mounted)
+
+  const {
     lensRefraction,
     lensChroma,
     lensSaturation,
+    lensFade,
+    iorR,
+    iorY,
+    iorG,
+    iorC,
+    iorB,
+    iorP,
+  } = tuning
+
+  useEffect(() => {
+    const u = materialRef.current?.uniforms
+    if (!mounted || !u) return
+    u.uRefractPower.value = lensRefraction
+    u.uChromaticAberration.value = lensChroma
+    u.uSaturation.value = lensSaturation
+    u.uInset.value = bleedToInset(overscan)
+    // The shader measures in canvas UV, the prop in media UV — rescale by the
+    // media's share of the canvas so the dissolve spans the intended band.
+    u.uEdgeFade.value = lensFade * (1 - 2 * bleedToInset(overscan))
+    applyGlassIorUniforms(u, { iorR, iorY, iorG, iorC, iorB, iorP })
+    invalidate()
+  }, [
+    mounted,
+    lensRefraction,
+    lensChroma,
+    lensSaturation,
+    overscan,
+    lensFade,
     iorR,
     iorY,
     iorG,
@@ -628,6 +704,126 @@ function RefractionScene({
     iorP,
     invalidate,
   ])
+
+  return { materialRef, uniforms }
+}
+
+/**
+ * Containment gate for the glass mesh alone: how much room its rim still has
+ * inside the media, faded over lensFade. 0 once the sphere would cross the
+ * media's edge — including a pointer parked out in the bleed while proximity
+ * pre-activates the panel — so the mesh stays a lens *on* the media instead of
+ * hanging off it. The warp and melt read uHover directly and are untouched by
+ * this.
+ */
+function lensContainmentGate({
+  aspect,
+  inset,
+  lensFade,
+  lensSpread,
+  mouse,
+}: {
+  aspect: number
+  inset: number
+  lensFade: number
+  lensSpread: number
+  mouse: Vector2
+}) {
+  if (lensFade <= 0) return 1
+  const span = 1 - 2 * inset
+  return MathUtils.smoothstep(
+    boundaryDistance((mouse.x - inset) / span, (mouse.y - inset) / span, aspect) -
+      glassSilhouetteRadius(lensSpread),
+    0,
+    lensFade,
+  )
+}
+
+/**
+ * Snapshot of the scene with the mesh hidden, for the glass to refract. Runs
+ * only while the glass is optically present: an absent lens (lensVisibility 0,
+ * or hover still easing out) would reproduce the backdrop exactly — skip the
+ * extra scene render rather than pay it on every demand frame. The hero ships
+ * with the glass off; IndustryWork keeps a small mesh on top of the warp.
+ */
+function captureBackdrop(
+  state: RootState,
+  mesh: Mesh,
+  lens: ShaderMaterial,
+  target: WebGLRenderTarget,
+  glassHover: number,
+) {
+  if (glassHover <= 0.002) {
+    mesh.visible = false
+    return
+  }
+  const { gl, scene, camera } = state
+  mesh.visible = false
+  gl.setRenderTarget(target)
+  gl.render(scene, camera)
+  mesh.visible = true
+  gl.setRenderTarget(null)
+  lens.uniforms.uTexture.value = target.texture
+}
+
+function RefractionScene({
+  src,
+  video = false,
+  source,
+  onReady,
+  subscribeProximity,
+  tuning,
+}: SceneProps) {
+  const { bleed, ease, follow, lensDepth, lensFade, lensSpread, lensVisibility, tilt } = tuning
+  const overscan = canvasOverscan(bleed, lensVisibility, lensSpread)
+
+  // Select only what's needed; `useThree()` re-renders on any R3F state change.
+  const viewport = useThree((state) => state.viewport)
+  const invalidate = useThree((state) => state.invalidate)
+
+  const meshRef = useRef<Mesh>(null)
+  const backdropRef = useRef<Mesh>(null)
+
+  const onScreen = useOnScreen()
+  const pointer = usePointerTracking(onScreen)
+
+  // The glass mesh only exists while it is optically present, so its material
+  // ref is null on every render before that.
+  const lensMounted = lensVisibility > 0
+
+  const externalHover = useProximityHover(subscribeProximity, invalidate)
+
+  // Velocity state lives in refs and feeds uniforms via useFrame — never React
+  // state (perf-never-set-state-in-useframe).
+  const velocityTarget = useRef(new Vector2())
+  const previousMouse = useRef(new Vector2(0.5, 0.5))
+
+  // Scene snapshot with the mesh hidden — the glass samples the *warped*
+  // backdrop, so both effects compose.
+  const backdropFBO = useFBO()
+
+  const { materialRef: warpMaterialRef, uniforms: warpUniforms } = useWarpLayer({
+    invalidate,
+    onReady,
+    onScreen,
+    overscan,
+    source,
+    src,
+    tuning,
+    video,
+  })
+  const { materialRef: lensMaterialRef, uniforms: lensUniforms } = useLensLayer({
+    invalidate,
+    mounted: lensMounted,
+    overscan,
+    tuning,
+  })
+
+  // Tilt applies to the mesh in useFrame; on the demand frameloop a prop
+  // change still needs to request the frame that picks it up. Same for
+  // lensVisibility, which mounts or unmounts the glass mesh.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: prop changes must request a frame without being read here
+  useEffect(() => invalidate(), [tilt, lensVisibility, invalidate])
 
   useFrame((state, delta) => {
     const mesh = meshRef.current
@@ -656,6 +852,14 @@ function RefractionScene({
     u.uHover.value = MathUtils.damp(u.uHover.value, hoverTarget, ease, dt)
     u.uTime.value += dt
 
+    const gate = lensContainmentGate({
+      aspect: u.uAspect.value as number,
+      inset: u.uInset.value as number,
+      lensFade,
+      lensSpread,
+      mouse,
+    })
+
     // Y tilt toward the cursor: the edge under the pointer presses away, at
     // full `tilt` degrees when the cursor reaches a horizontal edge. Driven by
     // the damped mouse (trails, never snaps) and scaled by the hover ease, so
@@ -666,28 +870,16 @@ function RefractionScene({
     }
 
     // The glass rides the same damped pointer as the warp's center, and its
-    // refraction shares the hover ease, scaled by how visible it should be.
-    const glassHover = u.uHover.value * lensVisibility
+    // refraction shares the hover ease, scaled by how visible it should be and
+    // by the containment gate — a mesh whose rim would cross the media's edge
+    // retires instead of hanging off it.
+    const glassHover = u.uHover.value * lensVisibility * gate
     if (mesh && lens) {
       const plane = glassPlaneSize(state.size.width / state.size.height)
       mesh.position.x = (mouse.x - 0.5) * plane.width
       mesh.position.y = (mouse.y - 0.5) * plane.height
       lens.uniforms.uHover.value = glassHover
-    }
-
-    // Capture pass only while the glass is optically present. An absent
-    // lens (lensVisibility 0, or hover still easing out) would reproduce
-    // the backdrop exactly — skip the extra scene render rather than pay
-    // it on every demand frame. IndustryWork and the hero both ship with
-    // the glass off, so hover is warp + tilt only.
-    if (mesh && lens && glassHover > 0.002) {
-      const { gl, scene, camera } = state
-      mesh.visible = false
-      gl.setRenderTarget(backdropFBO)
-      gl.render(scene, camera)
-      mesh.visible = true
-      gl.setRenderTarget(null)
-      lens.uniforms.uTexture.value = backdropFBO.texture
+      captureBackdrop(state, mesh, lens, backdropFBO, glassHover)
     } else if (mesh) {
       mesh.visible = false
     }
@@ -699,9 +891,12 @@ function RefractionScene({
     if (!settled && onScreen.current) invalidate()
   })
 
-  // Sphere radius is 1, so the world radius equals lensSpread × panel height
-  // at the glass's depth; the z-scale flattens the sphere into a lens.
-  const lensScale = lensSpread * glassPlaneSize(1).height
+  // Overscan grows the framebuffer past the media so a lens sitting on the
+  // silhouette isn't clipped; keep `lensSpread` as a fraction of the *panel*
+  // (the media rect), not the enlarged canvas, so bumping overscan doesn't
+  // silently enlarge the sphere.
+  const mediaSpan = 1 - 2 * bleedToInset(overscan)
+  const lensScale = lensSpread * glassPlaneSize(1).height * mediaSpan
 
   return (
     <>
@@ -712,12 +907,12 @@ function RefractionScene({
         raycast={() => null}
       >
         <planeGeometry />
-        {/* Transparent only when bleeding: the melted silhouette needs alpha
-            blending there, while the legacy full-bleed path must stay opaque
-            (alpha 1 everywhere) so the page never shows through the media. */}
+        {/* Transparent whenever the canvas hangs past the media: melt and the
+            glass silhouette need alpha blending there. The legacy full-bleed
+            path (no overscan) stays opaque so the page never shows through. */}
         <shaderMaterial
           ref={warpMaterialRef}
-          transparent={bleed > 0}
+          transparent={overscan > 0}
           uniforms={warpUniforms}
           vertexShader={BACKDROP_VERTEX}
           fragmentShader={WARP_FRAGMENT}
@@ -732,8 +927,12 @@ function RefractionScene({
           raycast={() => null}
         >
           <sphereGeometry args={[1, 64, 64]} />
+          {/* Transparent alongside the backdrop whenever the canvas hangs past
+              the media: the boundary fade dissolves the mesh's own alpha there
+              instead of stamping an opaque disc over the bleed. */}
           <shaderMaterial
             ref={lensMaterialRef}
+            transparent={overscan > 0}
             uniforms={lensUniforms}
             vertexShader={DISPERSION_VERTEX}
             fragmentShader={DISPERSION_FRAGMENT}
@@ -751,15 +950,24 @@ function RefractionScene({
  * hover. Give it a sized container via className (e.g. an aspect-ratio
  * utility); the media cover-fits inside.
  */
-export function RefractionMedia({ className, ...scene }: RefractionMediaProps) {
-  const bleed = scene.bleed ?? REFRACTION_MEDIA_DEFAULTS.bleed
+export function RefractionMedia({
+  className,
+  src,
+  video,
+  source,
+  onReady,
+  subscribeProximity,
+  ...deltas
+}: RefractionMediaProps) {
+  const tuning = resolveTuning<RefractionMediaTuning>(REFRACTION_MEDIA_DEFAULTS, deltas)
+  const overscan = canvasOverscan(tuning.bleed, tuning.lensVisibility, tuning.lensSpread)
   return (
     <div className={cn('pointer-events-none relative', className)}>
-      {/* Bleed host: the canvas hangs past the container by `bleed` per side
-          (CSS inset % resolves against the matching axis, mirroring the
-          shader's per-axis margin), giving the silhouette transparent room to
-          melt into. Ancestors must not clip for the overhang to paint. */}
-      <div className="absolute" style={{ inset: `${(-bleed * 100).toFixed(3)}%` }}>
+      {/* Overscan host: the canvas hangs past the container so melt and a
+          glass mesh on the silhouette have transparent room. CSS inset %
+          resolves against the matching axis, matching the shader's per-axis
+          margin. Ancestors must not clip for the overhang to paint. */}
+      <div className="absolute" style={{ inset: `${(-overscan * 100).toFixed(3)}%` }}>
         <Canvas
           dpr={GLASS_DPR}
           flat
@@ -768,7 +976,14 @@ export function RefractionMedia({ className, ...scene }: RefractionMediaProps) {
           camera={GLASS_CAMERA}
           gl={GLASS_GL_OPTIONS}
         >
-          <RefractionScene {...scene} />
+          <RefractionScene
+            onReady={onReady}
+            source={source}
+            src={src}
+            subscribeProximity={subscribeProximity}
+            tuning={tuning}
+            video={video}
+          />
         </Canvas>
       </div>
     </div>

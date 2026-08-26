@@ -6,15 +6,16 @@ import { type ReactNode, useRef } from 'react'
 import { fullViewportSectionClassName, themeClasses } from '@/blocks/shared/section'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import {
-  SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD,
+  observeRevealGate,
   SCROLL_REVEAL_INTRO,
+  SCROLL_REVEAL_TRIGGER_DEFAULTS,
 } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
 gsap.registerPlugin(useGSAP)
 
-/** Full-viewport shell: fullscreen enter gate. */
-const ENTER_THRESHOLD = SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD
+/** Bespoke choreography, shared gate. */
+const { enterOffset: ENTER_OFFSET } = SCROLL_REVEAL_TRIGGER_DEFAULTS
 
 /**
  * The choreography here is bespoke (title leads, eyebrow and body follow on
@@ -45,6 +46,50 @@ const WORK_INTRO = {
 } as const
 
 /**
+ * The entrance itself, built paused so the viewport gate owns playback. Each
+ * part keeps its own place on the timeline, so an intro that renders only some
+ * of them still plays the beats it has.
+ */
+const buildIntroTimeline = (
+  title: HTMLElement | null,
+  eyebrow: HTMLElement | null,
+  paragraphs: NodeListOf<HTMLElement>,
+) => {
+  const tl = gsap.timeline({ paused: true, defaults: { ease: EASE } })
+  if (title) {
+    tl.fromTo(
+      title,
+      { autoAlpha: 0, y: -WORK_INTRO.titleY, filter: `blur(${WORK_INTRO.titleBlurPx}px)` },
+      { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: TITLE_DURATION },
+      0,
+    )
+  }
+  if (eyebrow) {
+    tl.fromTo(
+      eyebrow,
+      { autoAlpha: 0, y: -WORK_INTRO.eyebrowY },
+      { autoAlpha: 1, y: 0, duration: WORK_INTRO.eyebrowDuration },
+      WORK_INTRO.eyebrowAt,
+    )
+  }
+  if (paragraphs.length) {
+    tl.fromTo(
+      paragraphs,
+      { autoAlpha: 0, y: -WORK_INTRO.bodyY, filter: `blur(${BODY_BLUR_PX}px)` },
+      {
+        autoAlpha: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: WORK_INTRO.bodyDuration,
+        stagger: BODY_STAGGER,
+      },
+      WORK_INTRO.bodyAt,
+    )
+  }
+  return tl
+}
+
+/**
  * Full-screen shell for the work intro. Copy drops into place once, when the
  * band first enters the viewport — scrolling back past it never reverses or
  * replays the entrance. Server-rendered children stay visible without
@@ -71,51 +116,10 @@ export function WorkIntroSection({ children }: { children: ReactNode }) {
         return
       }
 
-      const tl = gsap.timeline({ paused: true, defaults: { ease: EASE } })
-      if (title) {
-        tl.fromTo(
-          title,
-          { autoAlpha: 0, y: -WORK_INTRO.titleY, filter: `blur(${WORK_INTRO.titleBlurPx}px)` },
-          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: TITLE_DURATION },
-          0,
-        )
-      }
-      if (eyebrow) {
-        tl.fromTo(
-          eyebrow,
-          { autoAlpha: 0, y: -WORK_INTRO.eyebrowY },
-          { autoAlpha: 1, y: 0, duration: WORK_INTRO.eyebrowDuration },
-          WORK_INTRO.eyebrowAt,
-        )
-      }
-      if (paragraphs.length) {
-        tl.fromTo(
-          paragraphs,
-          { autoAlpha: 0, y: -WORK_INTRO.bodyY, filter: `blur(${BODY_BLUR_PX}px)` },
-          {
-            autoAlpha: 1,
-            y: 0,
-            filter: 'blur(0px)',
-            duration: WORK_INTRO.bodyDuration,
-            stagger: BODY_STAGGER,
-          },
-          WORK_INTRO.bodyAt,
-        )
-      }
+      const tl = buildIntroTimeline(title, eyebrow, paragraphs)
 
-      // Play-once: start the entrance at the gate, then disconnect.
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry) return
-          if (entry.intersectionRatio >= ENTER_THRESHOLD) {
-            tl.play()
-            observer.disconnect()
-          }
-        },
-        { threshold: [0, ENTER_THRESHOLD] },
-      )
-      observer.observe(root)
-      return () => observer.disconnect()
+      // The title leads the choreography, so its position is the gate.
+      return observeRevealGate(targets[0] ?? root, ENTER_OFFSET, () => tl.play())
     },
     { scope: rootRef, dependencies: [prefersReducedMotion], revertOnUpdate: true },
   )

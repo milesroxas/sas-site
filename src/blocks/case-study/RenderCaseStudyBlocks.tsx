@@ -1,5 +1,3 @@
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
 import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/feature/ImageStatement/Component'
@@ -9,6 +7,8 @@ import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component
 import { FullMedia } from '@/blocks/full-media/FullMedia'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
+import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
+import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
 import {
@@ -27,14 +27,20 @@ import type {
   CaseStudyRelatedWorkBlock,
   CaseStudyTestimonialBlock,
   CaseStudyTransitionBlock,
+  Media as MediaDoc,
   Testimonial,
   WorkCaseStudyStorySectionBlock,
+  WorkFeatureHeadingOffsetBlock,
+  WorkFeatureImageStatementBlock,
+  WorkFeatureStatementGridBlock,
+  WorkFeatureTabsBlock,
   WorkFullMediaBlock,
   WorkImagePairBlock,
   WorkPage,
   WorkSplitContentNarrowBlock,
   WorkSplitImageOffsetBlock,
 } from '@/payload-types'
+import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
 import { cn } from '@/utilities/ui'
 import { blockRevealVariants } from '../shared/reveal-variants'
 import { RevealSection } from './RevealSection.client'
@@ -85,6 +91,47 @@ const defaultHeading = (source: CaseStudyStorySource) =>
     custom: '',
   })[source]
 
+/**
+ * The block with its heading filled in from the story beat. Media blocks let
+ * the beat speak for itself: an empty heading on the block is not a missing
+ * heading, it is a request for the one the beat already carries.
+ */
+const withStoryBeatHeading = <
+  T extends Pick<WorkSplitContentNarrowBlock, 'heading' | 'source' | 'storyBeatKey'>,
+>(
+  block: T,
+  study: CaseStudy,
+) => ({
+  ...block,
+  heading: block.heading || storyBeatHeading(study, block.source, block.storyBeatKey),
+})
+
+/**
+ * The story section splits its copy across two fields: `custom` renders the
+ * block's own body, any other source renders the canonical story unless the
+ * editor wrote a website-only override.
+ */
+const resolveStorySectionBody = (block: WorkCaseStudyStorySectionBlock, study: CaseStudy) =>
+  block.source === 'custom'
+    ? block.customBody
+    : block.bodyOverride || resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey)
+
+/**
+ * Heading precedence for a story section: the editor's override, then the
+ * heading the story beat already carries, then the name of the canonical
+ * section it came from.
+ */
+const storySectionHeading = (block: WorkCaseStudyStorySectionBlock, study: CaseStudy) =>
+  block.headingOverride ||
+  storyBeatHeading(study, block.source, block.storyBeatKey) ||
+  defaultHeading(block.source)
+
+const storySectionWidths: Record<NonNullable<WorkCaseStudyStorySectionBlock['width']>, string> = {
+  narrow: 'max-w-3xl',
+  standard: 'max-w-5xl',
+  wide: 'max-w-7xl',
+}
+
 const StorySection = ({
   block,
   study,
@@ -92,20 +139,15 @@ const StorySection = ({
   block: WorkCaseStudyStorySectionBlock
   study: CaseStudy
 }) => {
-  const content =
-    block.source === 'custom'
-      ? block.customBody
-      : block.bodyOverride || resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey)
+  const content = resolveStorySectionBody(block, study)
   if (!content) return null
-  const width =
-    block.width === 'narrow' ? 'max-w-3xl' : block.width === 'wide' ? 'max-w-7xl' : 'max-w-5xl'
-  const hasMedia = Boolean(block.media && typeof block.media === 'object')
+  const media = populatedDoc<MediaDoc>(block.media)
   return (
-    <RevealSection theme={block.theme} variant={hasMedia ? 'underMedia' : 'intro'}>
+    <RevealSection theme={block.theme} variant={media ? 'underMedia' : 'intro'}>
       <div
         className={cn(
           'container mx-auto grid gap-10',
-          width,
+          storySectionWidths[block.width ?? 'standard'],
           block.media && block.layout !== 'text-only' && 'md:grid-cols-2',
         )}
       >
@@ -116,22 +158,39 @@ const StorySection = ({
             </p>
           )}
           <h2 className="mb-6 text-heading-2" data-reveal>
-            {block.headingOverride ||
-              storyBeatHeading(study, block.source, block.storyBeatKey) ||
-              defaultHeading(block.source)}
+            {storySectionHeading(block, study)}
           </h2>
           <div data-reveal>
             <RichText data={content} enableGutter={false} />
           </div>
         </div>
-        {block.media && typeof block.media === 'object' && (
+        {media && (
           <div data-reveal="media">
-            <Media resource={block.media} imgClassName="h-auto w-full" />
+            <Media resource={media} imgClassName="h-auto w-full" />
           </div>
         )}
       </div>
     </RevealSection>
   )
+}
+
+/**
+ * What a story-driven media block needs before it can render: the resolved
+ * body, its single media document, and the block with the story beat's
+ * heading filled in where the editor left the override empty. Null when the
+ * block has no populated media, which is nothing to show.
+ */
+const storyMediaProps = <T extends WorkFullMediaBlock | WorkSplitContentNarrowBlock>(
+  block: T,
+  study: CaseStudy,
+) => {
+  const media = populatedDoc<MediaDoc>(block.media)
+  if (!media) return null
+  return {
+    block: withStoryBeatHeading(block, study),
+    content: resolveStoryBody(block, study),
+    media,
+  }
 }
 
 const SplitNarrow = ({
@@ -141,52 +200,38 @@ const SplitNarrow = ({
   block: WorkSplitContentNarrowBlock
   study: CaseStudy
 }) => {
-  const content = resolveStoryBody(block, study)
-  const media = block.media
-  if (typeof media !== 'object' || !media) return null
-  const presentationBlock = {
-    ...block,
-    heading: block.heading || storyBeatHeading(study, block.source, block.storyBeatKey),
-  }
+  const props = storyMediaProps(block, study)
+  if (!props) return null
   return (
     <RevealSection theme={block.theme} variant={blockRevealVariants.splitContentNarrow}>
-      <SplitContentNarrow bare block={presentationBlock} content={content} media={media} />
+      <SplitContentNarrow bare {...props} />
     </RevealSection>
   )
 }
 
 const FullMediaSection = ({ block, study }: { block: WorkFullMediaBlock; study: CaseStudy }) => {
-  const content = resolveStoryBody(block, study)
-  const media = block.media
-  if (typeof media !== 'object' || !media) return null
-  const presentationBlock = {
-    ...block,
-    heading: block.heading || storyBeatHeading(study, block.source, block.storyBeatKey),
-  }
+  const props = storyMediaProps(block, study)
+  if (!props) return null
   return (
     <RevealSection theme={block.theme} variant={blockRevealVariants.fullMedia}>
-      <FullMedia bare block={presentationBlock} content={content} media={media} />
+      <FullMedia bare {...props} />
     </RevealSection>
   )
 }
 
 const ImagePairSection = ({ block, study }: { block: WorkImagePairBlock; study: CaseStudy }) => {
   const content = resolveStoryBody(block, study)
-  const { landscapeMedia, portraitMedia } = block
-  if (typeof portraitMedia !== 'object' || !portraitMedia) return null
-  if (typeof landscapeMedia !== 'object' || !landscapeMedia) return null
-  const presentationBlock = {
-    ...block,
-    heading: block.heading || storyBeatHeading(study, block.source, block.storyBeatKey),
-  }
+  const portrait = populatedDoc<MediaDoc>(block.portraitMedia)
+  const landscape = populatedDoc<MediaDoc>(block.landscapeMedia)
+  if (!portrait || !landscape) return null
   return (
     <RevealSection theme={block.theme} variant="underMedia">
       <ImagePair
         bare
-        block={presentationBlock}
+        block={withStoryBeatHeading(block, study)}
         content={content}
-        landscape={landscapeMedia}
-        portrait={portraitMedia}
+        landscape={landscape}
+        portrait={portrait}
       />
     </RevealSection>
   )
@@ -200,31 +245,24 @@ const SplitImageOffsetSection = ({
   study: CaseStudy
 }) => {
   const content = resolveStoryBody(block, study)
-  const { largeMedia, smallMedia } = block
-  if (typeof largeMedia !== 'object' || !largeMedia) return null
-  if (typeof smallMedia !== 'object' || !smallMedia) return null
-  const presentationBlock = {
-    ...block,
-    heading: block.heading || storyBeatHeading(study, block.source, block.storyBeatKey),
-  }
+  const large = populatedDoc<MediaDoc>(block.largeMedia)
+  const small = populatedDoc<MediaDoc>(block.smallMedia)
+  if (!large || !small) return null
   return (
     <RevealSection theme={block.theme} variant="underMedia">
       <SplitImageOffset
         bare
-        block={presentationBlock}
+        block={withStoryBeatHeading(block, study)}
         content={content}
-        large={largeMedia}
-        small={smallMedia}
+        large={large}
+        small={small}
       />
     </RevealSection>
   )
 }
 
 const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
-  const media =
-    block.media?.filter(
-      (item) => typeof item === 'object' && item.usageStatus === 'public-approved',
-    ) || []
+  const media = publicApprovedMedia(block.media)
   if (!media.length) return null
   return (
     <RevealSection theme={block.theme} variant="underMedia">
@@ -239,35 +277,13 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
             <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
           </div>
         )}
-        <div
-          className={cn(
-            'grid gap-6',
-            block.layout === 'grid' && 'md:grid-cols-2',
-            block.layout === 'horizontal' && 'grid-flow-col auto-cols-[85%] overflow-x-auto snap-x',
-          )}
-        >
-          {media.map(
-            (item) =>
-              typeof item === 'object' && (
-                <figure className="snap-start" data-reveal="media" key={item.id}>
-                  <Media resource={item} imgClassName="h-auto w-full" />
-                  {block.showCaptions && item.caption && (
-                    <RichText
-                      className="mt-3 text-sm"
-                      data={item.caption}
-                      enableGutter={false}
-                      enableProse={false}
-                    />
-                  )}
-                  {block.showCredits && item.credit && (
-                    <figcaption className="mt-2 text-xs opacity-70">
-                      Credit: {item.credit}
-                    </figcaption>
-                  )}
-                </figure>
-              ),
-          )}
-        </div>
+        <MediaShowcaseGrid
+          layout={block.layout}
+          media={media}
+          reveal
+          showCaptions={block.showCaptions}
+          showCredits={block.showCredits}
+        />
       </div>
     </RevealSection>
   )
@@ -342,23 +358,24 @@ const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseSt
   )
 }
 
+/**
+ * A quote may only appear once it is published and the speaker has approved it
+ * for public use — a draft or an internal-only testimonial never reaches the
+ * site.
+ */
+const isPublicTestimonial = (testimonial: Testimonial | null): testimonial is Testimonial =>
+  testimonial?._status === 'published' && testimonial.approvalStatus === 'approved-public'
+
 const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
-  const testimonial =
-    typeof block.testimonial === 'object' ? (block.testimonial as Testimonial) : null
-  if (testimonial?._status !== 'published' || testimonial.approvalStatus !== 'approved-public')
-    return null
-  const hasPortrait = Boolean(
-    block.showPortrait && testimonial.portrait && typeof testimonial.portrait === 'object',
-  )
+  const testimonial = populatedDoc<Testimonial>(block.testimonial)
+  if (!isPublicTestimonial(testimonial)) return null
+  const portrait = block.showPortrait ? populatedDoc<MediaDoc>(testimonial.portrait) : null
   return (
-    <RevealSection theme={block.theme} variant={hasPortrait ? 'underMedia' : 'intro'}>
+    <RevealSection theme={block.theme} variant={portrait ? 'underMedia' : 'intro'}>
       <figure className="container mx-auto max-w-4xl text-center">
-        {block.showPortrait && testimonial.portrait && typeof testimonial.portrait === 'object' && (
+        {portrait && (
           <div data-reveal="media">
-            <Media
-              className="mx-auto mb-6 w-24 overflow-hidden rounded-full"
-              resource={testimonial.portrait}
-            />
+            <Media className="mx-auto mb-6 w-24 overflow-hidden rounded-full" resource={portrait} />
           </div>
         )}
         <blockquote data-reveal>
@@ -399,6 +416,19 @@ const Transition = ({ block }: { block: CaseStudyTransitionBlock }) => (
   </RevealSection>
 )
 
+const RelatedWorkCard = ({ page }: { page: WorkPage }) => {
+  const cover = populatedDoc<MediaDoc>(page.coverAsset)
+  const caseStudy = populatedDoc<CaseStudy>(page.caseStudy)
+  return (
+    <a className="group pressable pressable-subtle block" data-reveal href={`/works/${page.slug}`}>
+      {cover && <Media resource={cover} imgClassName="h-auto w-full" />}
+      <h3 className="mt-4 text-heading-3 group-hover:underline">
+        {caseStudy ? caseStudy.title : page.title}
+      </h3>
+    </a>
+  )
+}
+
 const RelatedWork = async ({
   block,
   page,
@@ -408,32 +438,17 @@ const RelatedWork = async ({
   page: WorkPage
   study: CaseStudy
 }) => {
-  let pages = (page.relatedWorkPages || []).filter(
-    (item): item is WorkPage => typeof item === 'object',
-  )
-  if (block.selectionMode === 'automatic-capability-match') {
-    const capabilityIds = (study.featuredCapabilities || []).map((item) =>
-      typeof item === 'object' ? item.id : item,
-    )
-    if (capabilityIds.length) {
-      const payload = await getPayload({ config: configPromise })
-      const result = await payload.find({
-        collection: 'work-pages',
-        overrideAccess: false,
-        draft: false,
-        depth: 2,
-        limit: block.limit || 3,
-        where: {
-          and: [
-            { id: { not_equals: page.id } },
-            { 'caseStudy.featuredCapabilities': { in: capabilityIds } },
-          ],
-        },
-      })
-      pages = result.docs
-    }
-  }
-  pages = pages.slice(0, block.limit || 3)
+  const pages = await resolveRelatedPages<WorkPage>({
+    automatic: block.selectionMode === 'automatic-capability-match',
+    capabilityIds: relationshipIds(study.featuredCapabilities || []),
+    capabilityPath: 'caseStudy.featuredCapabilities',
+    collection: 'work-pages',
+    currentId: page.id,
+    limit: block.limit || 3,
+    manual: (page.relatedWorkPages || []).filter(
+      (item): item is WorkPage => typeof item === 'object',
+    ),
+  })
   if (!pages.length) return null
   return (
     <RevealSection variant="intro">
@@ -443,25 +458,76 @@ const RelatedWork = async ({
         </h2>
         <div className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
           {pages.map((item) => (
-            <a
-              className="group pressable pressable-subtle block"
-              data-reveal
-              href={`/works/${item.slug}`}
-              key={item.id}
-            >
-              {item.coverAsset && typeof item.coverAsset === 'object' && (
-                <Media resource={item.coverAsset} imgClassName="h-auto w-full" />
-              )}
-              <h3 className="mt-4 text-heading-3 group-hover:underline">
-                {typeof item.caseStudy === 'object' ? item.caseStudy.title : item.title}
-              </h3>
-            </a>
+            <RelatedWorkCard key={item.id} page={item} />
           ))}
         </div>
       </div>
     </RevealSection>
   )
 }
+
+const FeatureHeadingOffsetSection = ({
+  block,
+  study,
+}: {
+  block: WorkFeatureHeadingOffsetBlock
+  study: CaseStudy
+}) => (
+  <RevealSection as="div" variant={blockRevealVariants.featureHeadingOffset}>
+    <FeatureHeadingOffset
+      {...block}
+      body={resolveFeatureBody(block.body, block.source, block.storyBeatKey, study)}
+    />
+  </RevealSection>
+)
+
+const FeatureStatementGridSection = ({
+  block,
+  study,
+}: {
+  block: WorkFeatureStatementGridBlock
+  study: CaseStudy
+}) => (
+  <RevealSection as="div" variant={blockRevealVariants.featureStatementGrid}>
+    <FeatureStatementGrid
+      {...block}
+      statement={resolveFeatureBody(block.statement, block.source, block.storyBeatKey, study)}
+    />
+  </RevealSection>
+)
+
+const FeatureImageStatementSection = ({
+  block,
+  study,
+}: {
+  block: WorkFeatureImageStatementBlock
+  study: CaseStudy
+}) => (
+  <RevealSection as="div" variant={blockRevealVariants.featureImageStatement}>
+    <FeatureImageStatement
+      {...block}
+      caption={resolveFeatureBody(block.caption, block.source, block.storyBeatKey, study)}
+    />
+  </RevealSection>
+)
+
+const FeatureTabsSection = ({
+  block,
+  study,
+}: {
+  block: WorkFeatureTabsBlock
+  study: CaseStudy
+}) => (
+  <RevealSection as="div" variant={blockRevealVariants.featureTabs}>
+    <FeatureTabs
+      {...block}
+      tabs={(block.tabs || []).map((tab) => ({
+        ...tab,
+        description: resolveFeatureBody(tab.description, tab.source, tab.storyBeatKey, study),
+      }))}
+    />
+  </RevealSection>
+)
 
 export const RenderCaseStudyBlocks = async ({
   blocks,
@@ -498,36 +564,9 @@ export const RenderCaseStudyBlocks = async ({
         case 'caseStudyRelatedWork':
           return <RelatedWork block={block} key={block.id} page={page} study={study} />
         case 'featureHeadingOffset':
-          return (
-            <RevealSection
-              as="div"
-              key={block.id}
-              variant={blockRevealVariants.featureHeadingOffset}
-            >
-              <FeatureHeadingOffset
-                {...block}
-                body={resolveFeatureBody(block.body, block.source, block.storyBeatKey, study)}
-              />
-            </RevealSection>
-          )
+          return <FeatureHeadingOffsetSection block={block} key={block.id} study={study} />
         case 'featureStatementGrid':
-          return (
-            <RevealSection
-              as="div"
-              key={block.id}
-              variant={blockRevealVariants.featureStatementGrid}
-            >
-              <FeatureStatementGrid
-                {...block}
-                statement={resolveFeatureBody(
-                  block.statement,
-                  block.source,
-                  block.storyBeatKey,
-                  study,
-                )}
-              />
-            </RevealSection>
-          )
+          return <FeatureStatementGridSection block={block} key={block.id} study={study} />
         case 'featureStatementLinks':
           // Owns its own GSAP intro `ScrollReveal` shell — do not wrap again.
           return <FeatureStatementLinks key={block.id} {...block} />
@@ -535,38 +574,12 @@ export const RenderCaseStudyBlocks = async ({
           // Owns its own full-viewport `ScrollReveal` shell — do not wrap again.
           return <IndustryWorkBlock key={block.id} {...block} />
         case 'featureImageStatement':
-          return (
-            <RevealSection
-              as="div"
-              key={block.id}
-              variant={blockRevealVariants.featureImageStatement}
-            >
-              <FeatureImageStatement
-                {...block}
-                caption={resolveFeatureBody(block.caption, block.source, block.storyBeatKey, study)}
-              />
-            </RevealSection>
-          )
+          return <FeatureImageStatementSection block={block} key={block.id} study={study} />
         case 'audienceTabs':
           // Owns its own GSAP entrance + swap shell — do not wrap again.
           return <AudienceTabsBlock key={block.id} {...block} />
         case 'featureTabs':
-          return (
-            <RevealSection as="div" key={block.id} variant={blockRevealVariants.featureTabs}>
-              <FeatureTabs
-                {...block}
-                tabs={(block.tabs || []).map((tab) => ({
-                  ...tab,
-                  description: resolveFeatureBody(
-                    tab.description,
-                    tab.source,
-                    tab.storyBeatKey,
-                    study,
-                  ),
-                }))}
-              />
-            </RevealSection>
-          )
+          return <FeatureTabsSection block={block} key={block.id} study={study} />
         default:
           return null
       }

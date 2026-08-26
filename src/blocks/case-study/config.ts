@@ -8,7 +8,12 @@ import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
-import { themeField } from '@/blocks/shared/fields'
+import {
+  relatedSelectionFields,
+  storySectionCopyFields,
+  themeField,
+  transitionFields,
+} from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
@@ -38,18 +43,7 @@ export const CaseStudyStorySection: Block = {
       ],
       admin: { description: 'Uses canonical story content unless a website override is supplied.' },
     },
-    { name: 'eyebrow', type: 'text' },
-    { name: 'headingOverride', type: 'text' },
-    {
-      name: 'bodyOverride',
-      type: 'richText',
-      admin: { description: 'Website-only override; canonical content is unchanged.' },
-    },
-    {
-      name: 'customBody',
-      type: 'richText',
-      admin: { condition: (_, siblingData) => siblingData?.source === 'custom' },
-    },
+    ...storySectionCopyFields(),
     {
       name: 'media',
       type: 'upload',
@@ -179,18 +173,7 @@ export const CaseStudyTransition: Block = {
   dbName: 'wp_transition',
   interfaceName: 'CaseStudyTransitionBlock',
   labels: { singular: 'Rich transition', plural: 'Rich transitions' },
-  fields: [
-    { name: 'eyebrow', type: 'text' },
-    { name: 'heading', type: 'text', required: true },
-    { name: 'body', type: 'richText' },
-    {
-      name: 'layout',
-      type: 'select',
-      defaultValue: 'centered',
-      options: ['left', 'centered', 'split', 'statement'],
-    },
-    themeField(),
-  ],
+  fields: [...transitionFields()],
 }
 
 export const CaseStudyRelatedWork: Block = {
@@ -201,14 +184,7 @@ export const CaseStudyRelatedWork: Block = {
   labels: { singular: 'Related work', plural: 'Related work' },
   fields: [
     { name: 'heading', type: 'text', defaultValue: 'Related work' },
-    {
-      name: 'selectionMode',
-      type: 'select',
-      defaultValue: 'document-settings',
-      options: ['document-settings', 'automatic-capability-match'],
-    },
-    { name: 'limit', type: 'number', min: 1, max: 12, defaultValue: 3 },
-    { name: 'layout', type: 'select', defaultValue: 'grid', options: ['grid', 'list', 'feature'] },
+    ...relatedSelectionFields(),
   ],
 }
 

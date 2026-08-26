@@ -2,14 +2,8 @@
 
 import { useThree } from '@react-three/fiber'
 import { type RefObject, useEffect, useRef, useState } from 'react'
-import {
-  LinearFilter,
-  type ShaderMaterial,
-  Texture,
-  TextureLoader,
-  Vector2,
-  VideoTexture,
-} from 'three'
+import { type ShaderMaterial, Texture, TextureLoader, Vector2, VideoTexture } from 'three'
+import { swapMapTexture } from '@/lib/webgl/utils/swap-map-texture'
 
 /**
  * Shared internals for the glass media surfaces (DispersionMedia and
@@ -25,7 +19,9 @@ export const GLASS_CAMERA = { position: [0, 0, 7] as [number, number, number], f
 export const GLASS_MESH_Z = 1.5
 export const GLASS_DPR: [number, number] = [1, 2]
 // 3D mesh over a textured quad: depth for the mesh, MSAA for its silhouette.
-export const GLASS_GL_OPTIONS = { antialias: true, stencil: false }
+// `alpha` so overscan around the media composites over the page instead of a
+// solid clear-color rectangle that would clip the glass at the canvas edge.
+export const GLASS_GL_OPTIONS = { antialias: true, alpha: true, stencil: false }
 
 /** World-space viewport dimensions at the glass mesh's depth. */
 export const glassPlaneSize = (aspect: number): { width: number; height: number } => {
@@ -33,6 +29,26 @@ export const glassPlaneSize = (aspect: number): { width: number; height: number 
   const height = 2 * distance * Math.tan((GLASS_CAMERA.fov / 2) * (Math.PI / 180))
   return { width: height * aspect, height }
 }
+
+/** Canvas-UV margin of the media rect when the canvas hangs past it by `bleed`. */
+export const bleedToInset = (bleed: number): number => (bleed > 0 ? bleed / (1 + 2 * bleed) : 0)
+
+/**
+ * On-screen radius of the glass mesh, as a fraction of the media's height —
+ * `lensSpread` plus a little for the closer hemisphere's silhouette growing
+ * under perspective. Both the framebuffer's overscan and the mesh's own
+ * containment fade measure against it, so the margin is defined once.
+ */
+export const glassSilhouetteRadius = (lensSpread: number): number => lensSpread * 1.1
+
+/**
+ * Extra canvas around the media, as a fraction of the container. Melt needs
+ * `bleed`; a glass mesh parked on the silhouette needs room equal to its
+ * on-screen radius. The media stays the container's rect — this only grows the
+ * framebuffer so the sphere isn't clipped by it.
+ */
+export const canvasOverscan = (bleed: number, lensVisibility: number, lensSpread: number): number =>
+  Math.max(bleed, lensVisibility > 0 ? glassSilhouetteRadius(lensSpread) : 0)
 
 /** Plain cover-fit blit for the backdrop media plane. */
 export const BACKDROP_VERTEX = /* glsl */ `
@@ -80,6 +96,13 @@ void main() {
  * uHover scales every refraction offset and lerps saturation back to identity,
  * so at 0 each fragment samples its own screen UV — the mesh reproduces the
  * backdrop exactly and disappears without a fade-to-black or opacity pass.
+ *
+ * uEdgeFade extends that retirement to the media's silhouette: within a margin
+ * that wide (canvas-height units, measured inward from the media rect uInset
+ * describes) the mesh both flattens toward the backdrop and fades its own
+ * alpha out, so a lens riding the edge dissolves instead of painting an opaque
+ * disc of clamped edge samples out over the transparent bleed. 0 disables it —
+ * the legacy full-bleed surfaces, where the media *is* the canvas.
  */
 export const DISPERSION_FRAGMENT = /* glsl */ `
 uniform float uIorR;
@@ -93,6 +116,8 @@ uniform float uSaturation;
 uniform float uChromaticAberration;
 uniform float uRefractPower;
 uniform float uHover;
+uniform float uInset;
+uniform float uEdgeFade;
 uniform vec2 winResolution;
 uniform sampler2D uTexture;
 
@@ -105,14 +130,50 @@ vec3 sat(vec3 rgb, float adjustment) {
   return mix(intensity, rgb, adjustment);
 }
 
+/**
+ * Sample the backdrop FBO without falling into the clear-color black of
+ * transparent bleed (or refraction offsets that walk off the media). Prefer
+ * the live UV so melt overflow into the margin still refracts; only when that
+ * texel is empty do we snap to the media rect and, if melt carved that edge
+ * too, step toward the panel center.
+ *
+ * Coverage is blended into the FBO, so RGB arrives premultiplied — restore it
+ * or the melt feather would read as a dark rim inside the lens.
+ */
+vec4 sampleScene(vec2 sampleUv) {
+  vec4 s = texture2D(uTexture, sampleUv);
+  if (s.a < 0.01) {
+    float pad = uInset + 0.02;
+    vec2 clamped = clamp(sampleUv, vec2(pad), vec2(1.0 - pad));
+    s = texture2D(uTexture, clamped);
+    if (s.a < 0.01) s = texture2D(uTexture, mix(clamped, vec2(0.5), 0.25));
+  }
+  if (s.a > 0.001 && s.a < 0.999) s.rgb /= s.a;
+  return s;
+}
+
 const int LOOP = 16;
 
 void main() {
   vec2 uv = gl_FragCoord.xy / winResolution.xy;
+
+  // Coverage of the media rect, softened over uEdgeFade. x is scaled by the
+  // canvas aspect so the margin is the same physical width on both axes (the
+  // media rect is inset by the same fraction per axis, so it shares the
+  // canvas's aspect).
+  float edge = 1.0;
+  if (uEdgeFade > 0.0) {
+    vec2 d = min(uv - vec2(uInset), vec2(1.0 - uInset) - uv);
+    float sd = min(d.x * (winResolution.x / winResolution.y), d.y);
+    edge = smoothstep(0.0, uEdgeFade, sd);
+    if (edge <= 0.0) discard;
+  }
+
   vec3 normal = worldNormal;
   vec3 color = vec3(0.0);
-  float aberration = uChromaticAberration * uHover;
-  float saturation = mix(1.0, uSaturation, uHover);
+  float hover = uHover * edge;
+  float aberration = uChromaticAberration * hover;
+  float saturation = mix(1.0, uSaturation, hover);
 
   for (int i = 0; i < LOOP; i++) {
     float slide = float(i) / float(LOOP) * 0.1;
@@ -124,23 +185,23 @@ void main() {
     vec3 refractVecB = refract(eyeVector, normal, (1.0 / uIorB));
     vec3 refractVecP = refract(eyeVector, normal, (1.0 / uIorP));
 
-    float r = texture2D(uTexture, uv + refractVecR.xy * (uRefractPower + slide * 1.0) * aberration).x * 0.5;
+    float r = sampleScene(uv + refractVecR.xy * (uRefractPower + slide * 1.0) * aberration).x * 0.5;
 
-    float y = (texture2D(uTexture, uv + refractVecY.xy * (uRefractPower + slide * 1.0) * aberration).x * 2.0 +
-               texture2D(uTexture, uv + refractVecY.xy * (uRefractPower + slide * 1.0) * aberration).y * 2.0 -
-               texture2D(uTexture, uv + refractVecY.xy * (uRefractPower + slide * 1.0) * aberration).z) / 6.0;
+    float y = (sampleScene(uv + refractVecY.xy * (uRefractPower + slide * 1.0) * aberration).x * 2.0 +
+               sampleScene(uv + refractVecY.xy * (uRefractPower + slide * 1.0) * aberration).y * 2.0 -
+               sampleScene(uv + refractVecY.xy * (uRefractPower + slide * 1.0) * aberration).z) / 6.0;
 
-    float g = texture2D(uTexture, uv + refractVecG.xy * (uRefractPower + slide * 2.0) * aberration).y * 0.5;
+    float g = sampleScene(uv + refractVecG.xy * (uRefractPower + slide * 2.0) * aberration).y * 0.5;
 
-    float c = (texture2D(uTexture, uv + refractVecC.xy * (uRefractPower + slide * 2.5) * aberration).y * 2.0 +
-               texture2D(uTexture, uv + refractVecC.xy * (uRefractPower + slide * 2.5) * aberration).z * 2.0 -
-               texture2D(uTexture, uv + refractVecC.xy * (uRefractPower + slide * 2.5) * aberration).x) / 6.0;
+    float c = (sampleScene(uv + refractVecC.xy * (uRefractPower + slide * 2.5) * aberration).y * 2.0 +
+               sampleScene(uv + refractVecC.xy * (uRefractPower + slide * 2.5) * aberration).z * 2.0 -
+               sampleScene(uv + refractVecC.xy * (uRefractPower + slide * 2.5) * aberration).x) / 6.0;
 
-    float b = texture2D(uTexture, uv + refractVecB.xy * (uRefractPower + slide * 3.0) * aberration).z * 0.5;
+    float b = sampleScene(uv + refractVecB.xy * (uRefractPower + slide * 3.0) * aberration).z * 0.5;
 
-    float p = (texture2D(uTexture, uv + refractVecP.xy * (uRefractPower + slide * 1.0) * aberration).z * 2.0 +
-               texture2D(uTexture, uv + refractVecP.xy * (uRefractPower + slide * 1.0) * aberration).x * 2.0 -
-               texture2D(uTexture, uv + refractVecP.xy * (uRefractPower + slide * 1.0) * aberration).y) / 6.0;
+    float p = (sampleScene(uv + refractVecP.xy * (uRefractPower + slide * 1.0) * aberration).z * 2.0 +
+               sampleScene(uv + refractVecP.xy * (uRefractPower + slide * 1.0) * aberration).x * 2.0 -
+               sampleScene(uv + refractVecP.xy * (uRefractPower + slide * 1.0) * aberration).y) / 6.0;
 
     float R = r + (2.0 * p + 2.0 * y - c) / 3.0;
     float G = g + (2.0 * y + 2.0 * c - p) / 3.0;
@@ -156,7 +217,7 @@ void main() {
   // Divide by the number of layers to normalize colors (rgb values can be worth up to the value of LOOP).
   color /= float(LOOP);
 
-  gl_FragColor = vec4(color, 1.0);
+  gl_FragColor = vec4(color, edge);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }
@@ -211,6 +272,8 @@ export const createDispersionUniforms = () => ({
   uChromaticAberration: { value: 0.6 },
   uSaturation: { value: 1.08 },
   uHover: { value: 1 },
+  uInset: { value: 0 },
+  uEdgeFade: { value: 0 },
   uIorR: { value: GLASS_IOR_DEFAULTS.iorR },
   uIorY: { value: GLASS_IOR_DEFAULTS.iorY },
   uIorG: { value: GLASS_IOR_DEFAULTS.iorG },
@@ -278,16 +341,7 @@ export function useBackdropTexture({
     let raf = 0
 
     const apply = (material: ShaderMaterial, texture: Texture, width: number, height: number) => {
-      if (cancelled) {
-        texture.dispose()
-        return
-      }
-      texture.minFilter = LinearFilter
-      texture.magFilter = LinearFilter
-      texture.generateMipmaps = false
-      const previous = material.uniforms.uMap?.value as Texture | null
-      material.uniforms.uMap.value = texture
-      previous?.dispose()
+      if (!swapMapTexture(material, texture, { cancelled })) return
       if (width > 0 && height > 0) setSourceAspect(width / height)
       // Demand frameloop: paint the textured frame while the canvas is still
       // opacity-0, then announce ready so the consumer can fade it in. Calling
@@ -515,6 +569,33 @@ export type PointerTracking = {
  * lives in refs and feeds uniforms via useFrame — never React state
  * (perf-never-set-state-in-useframe).
  */
+const clampUnit = (value: number) => Math.min(Math.max(value, 0), 1)
+
+const isWithinUnit = (value: number) => value >= 0 && value <= 1
+
+/**
+ * A dropdown sitting in the canvas bleed (or just above the panel) must not
+ * count as hovering the media — keep in sync with the cursor provider's
+ * `[data-slot^="dropdown-menu"]` occluder.
+ */
+const isOccludedByDropdown = (clientX: number, clientY: number) =>
+  typeof document.elementFromPoint === 'function' &&
+  Boolean(document.elementFromPoint(clientX, clientY)?.closest('[data-slot^="dropdown-menu"]'))
+
+/**
+ * Where the pointer sits on the canvas in UV, and whether that counts as
+ * hovering the media. Null while the canvas has no layout box to measure.
+ */
+function readCanvasPointer(canvas: HTMLCanvasElement, event: PointerEvent) {
+  const rect = canvas.getBoundingClientRect()
+  if (rect.width === 0 || rect.height === 0) return null
+  const x = (event.clientX - rect.left) / rect.width
+  // UV origin is bottom-left; client coordinates run top-down.
+  const y = 1 - (event.clientY - rect.top) / rect.height
+  const within = isWithinUnit(x) && isWithinUnit(y)
+  return { x, y, inside: within && !isOccludedByDropdown(event.clientX, event.clientY) }
+}
+
 export function usePointerTracking(onScreen: RefObject<boolean>): PointerTracking {
   const invalidate = useThree((state) => state.invalidate)
   const canvas = useThree((state) => state.gl.domElement)
@@ -530,36 +611,21 @@ export function usePointerTracking(onScreen: RefObject<boolean>): PointerTrackin
         }
         return
       }
-      const rect = canvas.getBoundingClientRect()
-      if (rect.width === 0 || rect.height === 0) return
-      const x = (event.clientX - rect.left) / rect.width
-      // UV origin is bottom-left; client coordinates run top-down.
-      const y = 1 - (event.clientY - rect.top) / rect.height
-      const within = x >= 0 && x <= 1 && y >= 0 && y <= 1
+      const reading = readCanvasPointer(canvas, event)
+      if (!reading) return
       // Clamped even when outside: proximity-activated scenes (see
       // `subscribeProximity`) run their effects while the pointer approaches,
       // and the lens should ride the panel edge nearest the cursor rather
       // than freeze at the last inside position. Hover-only scenes are
       // unaffected — their effects are invisible while `inside` is false.
-      uv.current.set(Math.min(Math.max(x, 0), 1), Math.min(Math.max(y, 0), 1))
-      // A dropdown sitting in the canvas bleed (or just above the panel) must
-      // not count as hovering the media — keep in sync with the cursor
-      // provider's `[data-slot^="dropdown-menu"]` occluder.
-      const onDropdown =
-        typeof document.elementFromPoint === 'function' &&
-        Boolean(
-          document
-            .elementFromPoint(event.clientX, event.clientY)
-            ?.closest('[data-slot^="dropdown-menu"]'),
-        )
-      const nextInside = within && !onDropdown
+      uv.current.set(clampUnit(reading.x), clampUnit(reading.y))
       const wasInside = inside.current
-      inside.current = nextInside
+      inside.current = reading.inside
       // Demand frameloop: idle pointer motion across the page must not
       // request frames. Approaching scenes invalidate from their proximity
       // subscription; hover-only scenes only need a frame on enter/leave
       // or while the pointer is actually over the canvas.
-      if (nextInside || wasInside) invalidate()
+      if (reading.inside || wasInside) invalidate()
     }
 
     const handleLeave = () => {

@@ -6,6 +6,7 @@ import { type RefObject, useRef } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import {
   SCROLL_REVEAL_EXIT_TIME_SCALE as EXIT_TIME_SCALE,
+  observeRevealGate,
   SCROLL_REVEAL_INTRO,
   SCROLL_REVEAL_TRIGGER_DEFAULTS,
   SCROLL_REVEAL_UNDER_MEDIA,
@@ -36,7 +37,7 @@ const {
   mediaEase: MEDIA_EASE,
   mediaScaleFrom: MEDIA_SCALE_FROM,
 } = SCROLL_REVEAL_UNDER_MEDIA
-const { enterThreshold: ENTER_THRESHOLD } = SCROLL_REVEAL_TRIGGER_DEFAULTS
+const { enterOffset: ENTER_OFFSET } = SCROLL_REVEAL_TRIGGER_DEFAULTS
 
 /**
  * What only this choreography owns: the phase offsets and per-phase staggers
@@ -75,6 +76,100 @@ const SWAP_MEDIA = '[data-swap="media"]'
  */
 const itemBlurFrom = (index: number, _target: unknown, targets: unknown[]) =>
   `blur(${(((index + 1) / targets.length) * TEXT_BLUR_PX).toFixed(2)}px)`
+
+const addHeadingDrop = (tl: gsap.core.Timeline, heading: HTMLElement, at: number) => {
+  tl.fromTo(
+    heading,
+    { autoAlpha: 0, y: -HEADING_Y, filter: `blur(${HEADING_BLUR_PX}px)` },
+    {
+      autoAlpha: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      duration: HEADING_DURATION,
+      ease: HEADING_EASE,
+    },
+    at,
+  )
+}
+
+const addTabsCascade = (tl: gsap.core.Timeline, tabs: NodeListOf<HTMLElement>, at: number) => {
+  tl.fromTo(
+    tabs,
+    { autoAlpha: 0, y: -TEXT_Y, filter: `blur(${TEXT_BLUR_PX}px)` },
+    {
+      autoAlpha: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      duration: TEXT_DURATION,
+      ease: TEXT_EASE,
+      stagger: AUDIENCE_TABS_MOTION.tabStagger,
+    },
+    at,
+  )
+}
+
+const addIntroDrop = (tl: gsap.core.Timeline, intro: HTMLElement, at: number) => {
+  // Intro copy opens the column sharp — drop and fade only, no blur.
+  tl.fromTo(
+    intro,
+    { autoAlpha: 0, y: -TEXT_Y },
+    { autoAlpha: 1, y: 0, duration: TEXT_DURATION, ease: TEXT_EASE },
+    at,
+  )
+}
+
+/**
+ * The list's staggered drop, shared by the entrance and the tab swap: the two
+ * differ only in when the cascade starts and how tightly it stacks, so one
+ * adder keeps a change to the motion from landing in just one of them.
+ */
+const addItemCascade = (
+  tl: gsap.core.Timeline,
+  items: NodeListOf<HTMLElement>,
+  at: number,
+  stagger: number,
+) => {
+  tl.fromTo(
+    items,
+    { autoAlpha: 0, y: -TEXT_Y, filter: itemBlurFrom },
+    {
+      autoAlpha: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      duration: TEXT_DURATION,
+      ease: TEXT_EASE,
+      stagger,
+    },
+    at,
+  )
+}
+
+/**
+ * The top-origin mask wipe and the zoom settle of the content behind it — one
+ * beat over two layers, shared by the entrance and the tab swap so the wipe a
+ * click plays can never drift from the one scrolling into view plays.
+ */
+const addMediaWipe = (
+  tl: gsap.core.Timeline,
+  mask: HTMLElement,
+  content: Element | null,
+  at: number,
+) => {
+  tl.fromTo(
+    mask,
+    { clipPath: 'inset(0% 0% 100% 0%)' },
+    { clipPath: 'inset(0% 0% 0% 0%)', duration: MEDIA_DURATION, ease: MEDIA_EASE },
+    at,
+  )
+  if (content) {
+    tl.fromTo(
+      content,
+      { scale: MEDIA_SCALE_FROM },
+      { scale: 1, duration: MEDIA_DURATION, ease: MEDIA_EASE },
+      at,
+    )
+  }
+}
 
 /**
  * Entrance + tab-swap choreography for the audience-tabs block.
@@ -149,58 +244,16 @@ export function useAudienceTabsMotion({
         const mediaContent = root.querySelector<HTMLElement>(SWAP_MEDIA)
 
         const tl = gsap.timeline({ paused: true })
-        if (heading) {
-          tl.fromTo(
-            heading,
-            { autoAlpha: 0, y: -HEADING_Y, filter: `blur(${HEADING_BLUR_PX}px)` },
-            {
-              autoAlpha: 1,
-              y: 0,
-              filter: 'blur(0px)',
-              duration: HEADING_DURATION,
-              ease: HEADING_EASE,
-            },
-            0,
-          )
-        }
-        if (tabs.length) {
-          tl.fromTo(
-            tabs,
-            { autoAlpha: 0, y: -TEXT_Y, filter: `blur(${TEXT_BLUR_PX}px)` },
-            {
-              autoAlpha: 1,
-              y: 0,
-              filter: 'blur(0px)',
-              duration: TEXT_DURATION,
-              ease: TEXT_EASE,
-              stagger: AUDIENCE_TABS_MOTION.tabStagger,
-            },
-            AUDIENCE_TABS_MOTION.tabsAt,
-          )
-        }
-        if (intro) {
-          // Intro copy opens the column sharp — drop and fade only, no blur.
-          tl.fromTo(
-            intro,
-            { autoAlpha: 0, y: -TEXT_Y },
-            { autoAlpha: 1, y: 0, duration: TEXT_DURATION, ease: TEXT_EASE },
-            AUDIENCE_TABS_MOTION.itemsAt,
-          )
-        }
+        if (heading) addHeadingDrop(tl, heading, 0)
+        if (tabs.length) addTabsCascade(tl, tabs, AUDIENCE_TABS_MOTION.tabsAt)
+        if (intro) addIntroDrop(tl, intro, AUDIENCE_TABS_MOTION.itemsAt)
         if (items.length) {
-          tl.fromTo(
+          addItemCascade(
+            tl,
             items,
-            { autoAlpha: 0, y: -TEXT_Y, filter: itemBlurFrom },
-            {
-              autoAlpha: 1,
-              y: 0,
-              filter: 'blur(0px)',
-              duration: TEXT_DURATION,
-              ease: TEXT_EASE,
-              stagger: AUDIENCE_TABS_MOTION.itemStagger,
-            },
             // Items take the beat after the intro when one leads the column.
             AUDIENCE_TABS_MOTION.itemsAt + (intro ? AUDIENCE_TABS_MOTION.itemStagger : 0),
+            AUDIENCE_TABS_MOTION.itemStagger,
           )
         }
         if (media) {
@@ -214,20 +267,7 @@ export function useAudienceTabsMotion({
               AUDIENCE_TABS_MOTION.mediaLag,
             AUDIENCE_TABS_MOTION.mediaAtMax,
           )
-          tl.fromTo(
-            media,
-            { clipPath: 'inset(0% 0% 100% 0%)' },
-            { clipPath: 'inset(0% 0% 0% 0%)', duration: MEDIA_DURATION, ease: MEDIA_EASE },
-            mediaAt,
-          )
-          if (mediaContent) {
-            tl.fromTo(
-              mediaContent,
-              { scale: MEDIA_SCALE_FROM },
-              { scale: 1, duration: MEDIA_DURATION, ease: MEDIA_EASE },
-              mediaAt,
-            )
-          }
+          addMediaWipe(tl, media, mediaContent, mediaAt)
         }
         return tl
       }
@@ -235,27 +275,12 @@ export function useAudienceTabsMotion({
       const entrance = build()
       entranceTlRef.current = entrance
 
-      // A shell taller than the viewport can never expose a large fraction of
-      // itself, so the gate caps at the ratio its box can actually reach.
-      const reachableRatio =
-        root.offsetHeight > 0 ? Math.min(1, (window.innerHeight / root.offsetHeight) * 0.85) : 1
-      const gate = Math.min(ENTER_THRESHOLD, reachableRatio)
-
-      // Play-once: start the entrance at the gate, then disconnect — no exit
-      // reverse, no replay, and later swaps own the nodes from there.
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry) return
-          if (entry.intersectionRatio >= gate) {
-            entrance.play()
-            observer.disconnect()
-          }
-        },
-        { threshold: [0, gate] },
-      )
-      observer.observe(root)
+      // Play-once, on the shared gate: the heading leads the entrance, so its
+      // position is what the gate measures. Later swaps own the nodes from there.
+      const gate = root.querySelector<HTMLElement>(ENTRANCE_HEADING) ?? root
+      const stopGate = observeRevealGate(gate, ENTER_OFFSET, () => entrance.play())
       return () => {
-        observer.disconnect()
+        stopGate()
         entranceTlRef.current = null
       }
     },
@@ -280,20 +305,7 @@ export function useAudienceTabsMotion({
       // top-origin mask and zoom settle as every media entrance, no reverse
       // motion, and the container background never shows.
       const tl = gsap.timeline({ onComplete: onSettled })
-      tl.fromTo(
-        mediaLayer,
-        { clipPath: 'inset(0% 0% 100% 0%)' },
-        { clipPath: 'inset(0% 0% 0% 0%)', duration: MEDIA_DURATION, ease: MEDIA_EASE },
-        0,
-      )
-      if (mediaContent) {
-        tl.fromTo(
-          mediaContent,
-          { scale: MEDIA_SCALE_FROM },
-          { scale: 1, duration: MEDIA_DURATION, ease: MEDIA_EASE },
-          0,
-        )
-      }
+      addMediaWipe(tl, mediaLayer, mediaContent, 0)
       mediaTlRef.current = tl
     },
     { scope: rootRef, dependencies: [active, prefersReducedMotion] },
@@ -318,29 +330,8 @@ export function useAudienceTabsMotion({
       // exit half: click-driven motion runs faster than the scroll entrance
       // it borrows its values from.
       const tl = gsap.timeline().timeScale(EXIT_TIME_SCALE)
-      if (intro) {
-        tl.fromTo(
-          intro,
-          { autoAlpha: 0, y: -TEXT_Y },
-          { autoAlpha: 1, y: 0, duration: TEXT_DURATION, ease: TEXT_EASE },
-          0,
-        )
-      }
-      if (texts.length) {
-        tl.fromTo(
-          texts,
-          { autoAlpha: 0, y: -TEXT_Y, filter: itemBlurFrom },
-          {
-            autoAlpha: 1,
-            y: 0,
-            filter: 'blur(0px)',
-            duration: TEXT_DURATION,
-            ease: TEXT_EASE,
-            stagger: TEXT_STAGGER,
-          },
-          intro ? TEXT_STAGGER : 0,
-        )
-      }
+      if (intro) addIntroDrop(tl, intro, 0)
+      if (texts.length) addItemCascade(tl, texts, intro ? TEXT_STAGGER : 0, TEXT_STAGGER)
       textTlRef.current = tl
     },
     { scope: rootRef, dependencies: [textIndex, prefersReducedMotion] },

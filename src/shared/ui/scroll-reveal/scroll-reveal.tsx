@@ -48,8 +48,12 @@ export type ScrollRevealTuning = {
    * content.
    */
   mediaOffset?: number
-  /** Fraction of the shell that must be visible before the entrance plays. */
-  enterThreshold?: number
+  /**
+   * How far the shell's reveal content must rise past the fold before the
+   * entrance plays, as a fraction of the viewport height (0.15 = a sixth of
+   * the screen). Position, not visible fraction — see `observeRevealGate`.
+   */
+  enterOffset?: number
 }
 
 export type ScrollRevealProps = ScrollRevealTuning & {
@@ -64,6 +68,14 @@ export type ScrollRevealProps = ScrollRevealTuning & {
    * still win over the variant's values.
    */
   variant?: ScrollRevealVariant
+  /**
+   * Selector for an in-flow element whose position gates the entrance,
+   * for shells that cannot report their own scroll position — a sticky or
+   * fixed band is on screen from the first paint, so its own box would fire
+   * the gate immediately. Resolved document-wide; falls back to the shell's
+   * first text target when it matches nothing.
+   */
+  gateSelector?: string
   /**
    * Fires once the entrance has settled (or immediately under reduced
    * motion). Use it to mount work that must not composite during the wipe
@@ -109,15 +121,15 @@ export const SCROLL_REVEAL_UNDER_MEDIA = {
 } as const satisfies ScrollRevealTuning
 
 /**
- * Shared viewport gate: one observer per shell drives both reveals alike.
- * Entrances hold until half the shell is on screen, so content is near
- * mid-viewport before it plays; shells taller than twice the viewport clamp
- * to what their box can actually reach (see the observer setup). Each
+ * Shared viewport gate: one observer per shell drives every reveal alike.
+ * Entrances hold until the shell's own copy has risen this fraction of the
+ * viewport past the fold — the site's best-practice distance: far enough in
+ * that the settle happens on screen, early enough that nothing pops. Each
  * entrance plays once — scrolling back past a revealed section never
  * reverses or replays it.
  */
 export const SCROLL_REVEAL_TRIGGER_DEFAULTS = {
-  enterThreshold: 0.5,
+  enterOffset: 0.15,
 } as const satisfies ScrollRevealTuning
 
 /**
@@ -141,12 +153,43 @@ export const SCROLL_REVEAL_SWAP = {
 export const SCROLL_REVEAL_EXIT_TIME_SCALE = 1.6
 
 /**
- * Enter gate for full-viewport shells (`fullViewportSectionClassName`
- * surfaces): a band that holds the whole screen waits for half visibility so
- * the entrance lands while the section owns the view. Kept as its own export
- * so the two gates can diverge again without touching call sites.
+ * Enter gate for a curtain band — a closing screen the page unmasks by
+ * scrolling off it. Its gate element is the flow line where the band starts,
+ * so the offset reads directly as unmask progress: the copy starts settling
+ * once a fifth of the band has cleared the fold, rather than waiting for the
+ * whole screen to open and then playing to an audience that has already
+ * arrived.
  */
-export const SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD = 0.5
+export const SCROLL_REVEAL_CURTAIN_ENTER_OFFSET = 0.2
+
+/**
+ * Play-once viewport gate shared by every reveal shell, bespoke ones
+ * included: fires when `gate`'s top edge has risen `enterOffset` of the
+ * viewport height past the fold, then disconnects — no exit reverse, no
+ * replay.
+ *
+ * Position, not visible fraction. A shell several screens tall can never
+ * expose a useful ratio of itself, and one whose copy sits at its bottom edge
+ * exposes its ratio from the wrong end — either way a ratio gate fires while
+ * the copy is still below the fold and the settle is over before anyone sees
+ * it. Measuring the content's own distance past the fold is the same trigger
+ * at every block height.
+ */
+export function observeRevealGate(gate: Element, enterOffset: number, onEnter: () => void) {
+  // A -100% bottom margin collapses the root box to a zero-height line that
+  // nothing can intersect, which would strand the entrance paused forever.
+  const offset = Math.round(Math.min(Math.max(enterOffset, 0), 0.9) * 100)
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (!entry?.isIntersecting) return
+      onEnter()
+      observer.disconnect()
+    },
+    { rootMargin: `0px 0px -${offset}% 0px`, threshold: 0 },
+  )
+  observer.observe(gate)
+  return () => observer.disconnect()
+}
 
 /** The two block shapes; each variant is a complete, independently tuned reveal. */
 const SCROLL_REVEAL_VARIANTS = {
@@ -216,6 +259,7 @@ export function ScrollReveal({
   children,
   replayKey = 0,
   variant,
+  gateSelector,
   onComplete,
   ...tuning
 }: ScrollRevealProps) {
@@ -233,7 +277,7 @@ export function ScrollReveal({
     mediaEase,
     mediaScaleFrom,
     mediaOffset,
-    enterThreshold,
+    enterOffset,
   } = resolveTuning(variant, tuning)
 
   useGSAP(
@@ -315,27 +359,16 @@ export function ScrollReveal({
         }
       })
 
-      // A shell taller than the viewport can never expose a large fraction of
-      // itself, so the gate caps at the ratio its box can actually reach —
-      // with headroom for rounding — or tall content would never play.
-      const reachableRatio =
-        root.offsetHeight > 0 ? Math.min(1, (window.innerHeight / root.offsetHeight) * 0.85) : 1
-      const gate = Math.min(enterThreshold, reachableRatio)
-
-      // Play-once: the observer's only job is to start the entrance, so it
-      // disconnects the moment the gate is met — no exit reverse, no replay.
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry) return
-          if (entry.intersectionRatio >= gate) {
-            tl.play()
-            observer.disconnect()
-          }
-        },
-        { threshold: [0, gate] },
-      )
-      observer.observe(root)
-      return () => observer.disconnect()
+      // The copy is what the gate is for, so it is what the gate measures:
+      // the first text target, or the shell itself when a reveal is media
+      // only. `gateSelector` overrides both for shells that sit still on
+      // screen (see the prop).
+      const gate =
+        (gateSelector ? document.querySelector(gateSelector) : null) ??
+        textTargets[0] ??
+        targets[0] ??
+        root
+      return observeRevealGate(gate, enterOffset, () => tl.play())
     },
     {
       scope: rootRef,
@@ -351,7 +384,8 @@ export function ScrollReveal({
         mediaEase,
         mediaScaleFrom,
         mediaOffset,
-        enterThreshold,
+        enterOffset,
+        gateSelector,
       ],
       revertOnUpdate: true,
     },

@@ -1,4 +1,5 @@
 import type { Endpoint, PayloadRequest } from 'payload'
+import type { Newsletter, User } from '@/payload-types'
 import { renderEmail } from '@/shared/email/lib/render'
 import { buildNewsletterEmail } from '@/shared/email/newsletter/build'
 import { newsletterFromAddress } from '@/shared/email/newsletter/from'
@@ -10,6 +11,28 @@ const json = (body: unknown, status = 200) => Response.json(body, { status })
 function requireIdParam(req: PayloadRequest): string | null {
   const id = req.routeParams?.id
   return typeof id === 'string' && id.length > 0 ? id : null
+}
+
+/**
+ * Shared entry check for the `:id` newsletter endpoints: admin humans only
+ * (`req.user` is also set for MCP API keys, which have no inbox and no
+ * business queuing a send), a usable id, and a newsletter that exists.
+ * Returns the error response to hand back, or the document and the admin.
+ */
+async function loadNewsletterForAdmin(
+  req: PayloadRequest,
+  find: { depth: number; draft?: boolean },
+): Promise<{ error: Response } | { id: string; newsletter: Newsletter; user: User }> {
+  if (req.user?.collection !== 'users') return { error: json({ error: 'Unauthorized' }, 401) }
+  const id = requireIdParam(req)
+  if (!id) return { error: json({ error: 'Missing newsletter id' }, 400) }
+
+  const newsletter = await req.payload
+    .findByID({ collection: 'newsletters', id, ...find })
+    .catch(() => null)
+  if (!newsletter) return { error: json({ error: 'Newsletter not found' }, 404) }
+
+  return { id, newsletter, user: req.user }
 }
 
 /**
@@ -40,15 +63,10 @@ const sendTest: Endpoint = {
   path: '/:id/send-test',
   method: 'post',
   handler: async (req) => {
-    // Admin humans only — an MCP API key has no inbox to send the test to.
-    if (req.user?.collection !== 'users') return json({ error: 'Unauthorized' }, 401)
-    const id = requireIdParam(req)
-    if (!id) return json({ error: 'Missing newsletter id' }, 400)
-
-    const newsletter = await req.payload
-      .findByID({ collection: 'newsletters', id, draft: true, depth: 2 })
-      .catch(() => null)
-    if (!newsletter) return json({ error: 'Newsletter not found' }, 404)
+    // The draft, not the published version, so the team can iterate before publishing.
+    const loaded = await loadNewsletterForAdmin(req, { depth: 2, draft: true })
+    if ('error' in loaded) return loaded.error
+    const { newsletter, user } = loaded
 
     const baseUrl = getServerSideURL()
     const { html, text } = await renderEmail(
@@ -57,13 +75,13 @@ const sendTest: Endpoint = {
 
     await req.payload.sendEmail({
       from: newsletterFromAddress(),
-      to: req.user.email,
+      to: user.email,
       subject: `[Test] ${newsletter.subject}`,
       html,
       text,
     })
 
-    return json({ message: `Test sent to ${req.user.email}` })
+    return json({ message: `Test sent to ${user.email}` })
   },
 }
 
@@ -79,15 +97,9 @@ const send: Endpoint = {
   path: '/:id/send',
   method: 'post',
   handler: async (req) => {
-    // Admin humans only — MCP API keys must not queue sends.
-    if (req.user?.collection !== 'users') return json({ error: 'Unauthorized' }, 401)
-    const id = requireIdParam(req)
-    if (!id) return json({ error: 'Missing newsletter id' }, 400)
-
-    const current = await req.payload
-      .findByID({ collection: 'newsletters', id, depth: 0 })
-      .catch(() => null)
-    if (!current) return json({ error: 'Newsletter not found' }, 404)
+    const loaded = await loadNewsletterForAdmin(req, { depth: 0 })
+    if ('error' in loaded) return loaded.error
+    const { id, newsletter: current } = loaded
 
     if (current._status !== 'published') {
       return json({ error: 'Publish the newsletter before sending.' }, 400)

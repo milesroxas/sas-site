@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
+import { projectLinksField } from '@/fields/pageFields'
 
 export const Projects: CollectionConfig<'projects'> = {
   slug: 'projects',
@@ -149,22 +150,7 @@ export const Projects: CollectionConfig<'projects'> = {
               type: 'richText',
               admin: { description: 'Known limits: timeline, tech, brand, or legal.' },
             },
-            {
-              name: 'projectLinks',
-              type: 'array',
-              admin: { description: 'Related URLs. Set visibility per link.' },
-              fields: [
-                { name: 'label', type: 'text', required: true },
-                { name: 'url', type: 'text', required: true },
-                {
-                  name: 'visibility',
-                  type: 'select',
-                  defaultValue: 'public',
-                  options: ['public', 'internal'],
-                  admin: { description: 'Internal links never appear in the public API.' },
-                },
-              ],
-            },
+            projectLinksField(),
             {
               name: 'internalNotes',
               type: 'textarea',

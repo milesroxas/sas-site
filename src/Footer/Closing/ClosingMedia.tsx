@@ -7,6 +7,7 @@ import { useRef } from 'react'
 import { Media } from '@/components/Media'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import type { Media as MediaDoc } from '@/payload-types'
+import { FOOTER_CLOSING_GATE_SELECTOR } from './curtain'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger)
 
@@ -21,9 +22,21 @@ const FOOTER_CLOSING_PARALLAX = {
 } as const
 
 /**
- * Full-bleed background for the closing band: the outer node is the shared
- * media-wipe window; an oversized inner layer scrubs against scroll so the
- * photo sits on a deeper plane than the copy.
+ * Which element the parallax scrubs against: the band's flow marker, since a
+ * pinned band's own rect never moves. Falls back to the section around it.
+ */
+const resolveScrubTrigger = (root: HTMLElement): HTMLElement =>
+  document.querySelector<HTMLElement>(FOOTER_CLOSING_GATE_SELECTOR) ??
+  root.closest('section') ??
+  root
+
+/**
+ * Full-bleed background for the closing band: an oversized layer scrubs
+ * against scroll so the photo sits on a deeper plane than the copy while the
+ * curtain uncovers the band. The scrub runs against the band's flow marker
+ * (`./curtain`), not the band itself — pinned, the band's own rect never
+ * moves — from the moment the band starts to uncover to the moment it is
+ * fully open.
  */
 export function ClosingMedia({ media }: { media: MediaDoc }) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -36,8 +49,6 @@ export function ClosingMedia({ media }: { media: MediaDoc }) {
       const layer = layerRef.current
       if (!root || !layer || prefersReducedMotion) return
 
-      const trigger = root.closest('section') ?? root
-
       gsap.fromTo(
         layer,
         { yPercent: FOOTER_CLOSING_PARALLAX.yPercentFrom },
@@ -45,9 +56,9 @@ export function ClosingMedia({ media }: { media: MediaDoc }) {
           yPercent: FOOTER_CLOSING_PARALLAX.yPercentTo,
           ease: 'none',
           scrollTrigger: {
-            trigger,
+            trigger: resolveScrubTrigger(root),
             start: 'top bottom',
-            end: 'bottom bottom',
+            end: 'top top',
             scrub: true,
           },
         },
@@ -61,20 +72,9 @@ export function ClosingMedia({ media }: { media: MediaDoc }) {
       ref={rootRef}
       aria-hidden
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden select-none"
-      data-reveal="media"
     >
-      {/* First child owns the window so the wipe's zoom has a containing
-          block (see ScrollReveal `mediaScaleFrom`). */}
-      <div className="absolute inset-0">
-        <div ref={layerRef} className="absolute inset-x-0 top-[-20%] h-[140%]">
-          <Media
-            fill
-            htmlElement={null}
-            imgClassName="object-cover"
-            resource={media}
-            size="100vw"
-          />
-        </div>
+      <div ref={layerRef} className="absolute inset-x-0 top-[-20%] h-[140%]">
+        <Media fill htmlElement={null} imgClassName="object-cover" resource={media} size="100vw" />
       </div>
       {/* Vignette stays put while the photo drifts — the frame of the band,
           not another parallax layer. Sibling of the scaled layer so the

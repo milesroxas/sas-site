@@ -2,48 +2,21 @@
 
 import { useGSAP } from '@gsap/react'
 import cn from 'clsx'
-import gsap from 'gsap'
-import { useEffect, useRef, useState } from 'react'
-import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
-import {
-  CHAR_PRESETS,
-  createScrambleTween,
-  type ScrambleOrder,
-  type ScrambleTweenOptions,
-} from '@/shared/ui/scramble-text'
+import { resolveTuning } from '../resolve-tuning'
 import { RAYMARCHED_SDF_HEADING_DEFAULTS, RaymarchedSdfHeading } from './raymarched-sdf-heading'
+import {
+  buildTextLoadInTimeline,
+  TEXT_LOAD_IN_SHARED_DEFAULTS,
+  TextLoadInEyebrow,
+  type TextLoadInSharedProps,
+  useTextLoadInStage,
+} from './text-load-in-internals'
 
-gsap.registerPlugin(useGSAP)
-
-export type TextLoadInRaymarchedProps = {
-  /** Mono label that decodes into place after the static dot marker. */
-  eyebrow: string
-  /** Headline revealed through the raymarched SDF goo sweep. */
-  heading: string
-  /** Supporting copy that follows the headline. */
-  body: string
-  /** Bump to replay the sequence (e.g. from a GUI button). */
-  replayKey?: number
-  /** Replay every time the block re-enters the viewport, not just the first. */
-  retriggerOnEnter?: boolean
-  /** Fraction of the block that must be visible to trigger (0–1). */
-  threshold?: number
-  /** Seconds the eyebrow spends decoding. */
-  scrambleDuration?: number
-  /** CHAR_PRESETS key ("upperCase" etc.) or a custom glyph string. */
-  scrambleChars?: string
-  /** How frequently scrambled glyphs refresh (0.05–2, higher = faster). */
-  scrambleSpeed?: number
-  /** Order in which eyebrow characters lock in. */
-  scrambleOrder?: ScrambleOrder
+export type TextLoadInRaymarchedProps = TextLoadInSharedProps & {
   /** Seconds before the whole sequence starts. */
   offset?: number
   /** Seconds between element starts: eyebrow, then heading, then body. */
   stagger?: number
-  /** Seconds the heading takes to fully resolve. */
-  headingDuration?: number
-  /** GSAP ease shaping the heading reveal progress. */
-  ease?: string
   /** Ray-march step budget (16–96). */
   marchSteps?: number
   /** smooth-min blend radius in px melting droplets into glyphs. */
@@ -64,13 +37,6 @@ export type TextLoadInRaymarchedProps = {
   wobblePx?: number
   /** Key light direction in degrees around the text plane. */
   lightAngle?: number
-  /** Seconds the body takes to sharpen. */
-  bodyDuration?: number
-  /** Starting blur in px for the body. */
-  bodyBlur?: number
-  /** Starting downward offset in px for the body. */
-  bodyRise?: number
-  className?: string
 }
 
 /**
@@ -79,12 +45,7 @@ export type TextLoadInRaymarchedProps = {
  * named preset (see `../presets.ts`).
  */
 export const TEXT_LOAD_IN_RAYMARCHED_DEFAULTS = {
-  retriggerOnEnter: false,
-  threshold: 0.4,
-  scrambleDuration: 1.1,
-  scrambleChars: 'upperCase',
-  scrambleSpeed: 0.5,
-  scrambleOrder: 'leftToRight',
+  ...TEXT_LOAD_IN_SHARED_DEFAULTS,
   offset: 0,
   stagger: 1.1,
   headingDuration: 3.4,
@@ -99,13 +60,18 @@ export const TEXT_LOAD_IN_RAYMARCHED_DEFAULTS = {
   dropletScatter: RAYMARCHED_SDF_HEADING_DEFAULTS.dropletScatter,
   wobblePx: RAYMARCHED_SDF_HEADING_DEFAULTS.wobblePx,
   lightAngle: RAYMARCHED_SDF_HEADING_DEFAULTS.lightAngle,
-  bodyDuration: 1.1,
-  bodyBlur: 14,
-  bodyRise: 14,
 } as const satisfies Partial<TextLoadInRaymarchedProps>
 
-/** Seconds over which the GL heading crossfades to the crisp DOM heading. */
-const SWAP_DURATION = 0.18
+/**
+ * Every knob with its default filled in — what the timeline actually reads,
+ * once `resolveTuning` has folded the caller's deltas into the table above.
+ */
+type TextLoadInRaymarchedTuning = Required<
+  Pick<TextLoadInRaymarchedProps, keyof typeof TEXT_LOAD_IN_RAYMARCHED_DEFAULTS>
+>
+
+/** The body always eases out, whatever ease shapes the heading sweep. */
+const BODY_EASE = 'power2.out'
 
 /**
  * Improved take on TextLoadIn built on genuine raymarching (see
@@ -123,122 +89,63 @@ export function TextLoadInRaymarched({
   heading,
   body,
   replayKey = 0,
-  retriggerOnEnter = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.retriggerOnEnter,
-  threshold = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.threshold,
-  scrambleDuration = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.scrambleDuration,
-  scrambleChars = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.scrambleChars,
-  scrambleSpeed = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.scrambleSpeed,
-  scrambleOrder = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.scrambleOrder,
-  offset = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.offset,
-  stagger = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.stagger,
-  headingDuration = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.headingDuration,
-  ease = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.ease,
-  marchSteps = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.marchSteps,
-  gooeyPx = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.gooeyPx,
-  edgePx = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.edgePx,
-  sweepAngle = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.sweepAngle,
-  dropletPx = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.dropletPx,
-  dropletCount = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.dropletCount,
-  dropletStretch = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.dropletStretch,
-  dropletScatter = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.dropletScatter,
-  wobblePx = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.wobblePx,
-  lightAngle = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.lightAngle,
-  bodyDuration = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.bodyDuration,
-  bodyBlur = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.bodyBlur,
-  bodyRise = TEXT_LOAD_IN_RAYMARCHED_DEFAULTS.bodyRise,
   className,
+  ...deltas
 }: TextLoadInRaymarchedProps) {
-  const rootRef = useRef<HTMLDivElement>(null)
-  const eyebrowRef = useRef<HTMLSpanElement>(null)
-  const notifyRef = useRef<((scrambling: boolean) => void) | undefined>(undefined)
-  const glProgress = useRef({ value: 0 })
-  const prefersReducedMotion = usePrefersReducedMotion()
-
-  const [entered, setEntered] = useState(0)
-  const enteredOnce = useRef(false)
-
-  useEffect(() => {
-    const el = rootRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return
-        if (!retriggerOnEnter && enteredOnce.current) return
-        enteredOnce.current = true
-        setEntered((n) => n + 1)
-      },
-      { threshold },
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [retriggerOnEnter, threshold])
-
-  const play = entered + replayKey
+  const {
+    retriggerOnEnter,
+    threshold,
+    scrambleDuration,
+    scrambleChars,
+    scrambleSpeed,
+    scrambleOrder,
+    offset,
+    stagger,
+    headingDuration,
+    ease,
+    marchSteps,
+    gooeyPx,
+    edgePx,
+    sweepAngle,
+    dropletPx,
+    dropletCount,
+    dropletStretch,
+    dropletScatter,
+    wobblePx,
+    lightAngle,
+    bodyDuration,
+    bodyBlur,
+    bodyRise,
+  } = resolveTuning<TextLoadInRaymarchedTuning>(TEXT_LOAD_IN_RAYMARCHED_DEFAULTS, deltas)
+  const stage = useTextLoadInStage({ replayKey, retriggerOnEnter, threshold })
 
   useGSAP(
     () => {
-      const eyebrowEl = eyebrowRef.current
-      if (!eyebrowEl) return
-
-      if (prefersReducedMotion) {
-        eyebrowEl.textContent = eyebrow
-        glProgress.current.value = 0
-        gsap.set('[data-heading-final]', { autoAlpha: 1 })
-        gsap.set('[data-heading-gl]', { autoAlpha: 0 })
-        gsap.set('[data-body]', { opacity: 1, y: 0, filter: 'blur(0px)' })
-        return
-      }
-
-      if (play === 0) {
-        eyebrowEl.textContent = ''
-        glProgress.current.value = 0
-        gsap.set('[data-heading-final]', { autoAlpha: 0 })
-        gsap.set('[data-heading-gl]', { autoAlpha: 0 })
-        gsap.set('[data-body]', { opacity: 0 })
-        return
-      }
-
-      const scrambleOptions: ScrambleTweenOptions = {
-        duration: scrambleDuration,
-        ease: 'none',
-        charPool: CHAR_PRESETS[scrambleChars] ?? scrambleChars,
-        speed: scrambleSpeed,
-        revealDelay: 0,
-        tweenLength: false,
-        order: scrambleOrder,
-        notify: notifyRef,
-      }
-
-      // The raymarched overlay carries the whole reveal, then hands off to
-      // the crisp DOM heading once fully resolved.
-      glProgress.current.value = 0
-      gsap.set('[data-heading-final]', { autoAlpha: 0 })
-      gsap.set('[data-heading-gl]', { autoAlpha: 1 })
-
-      // One global rhythm: each element starts one `stagger` after the last.
-      const headingStart = offset + stagger
-      const bodyStart = offset + stagger * 2
-
-      const tl = gsap.timeline()
-      tl.add(createScrambleTween(eyebrowEl, '', eyebrow, scrambleOptions), offset)
-      tl.to(glProgress.current, { value: 1, duration: headingDuration, ease }, headingStart)
-      tl.to(
-        '[data-heading-final]',
-        { autoAlpha: 1, duration: SWAP_DURATION, ease: 'none' },
-        headingStart + headingDuration,
-      )
-      tl.to('[data-heading-gl]', { autoAlpha: 0, duration: SWAP_DURATION, ease: 'none' }, '<')
-      tl.fromTo(
-        '[data-body]',
-        { opacity: 0, y: bodyRise, filter: `blur(${bodyBlur}px)` },
-        { opacity: 1, y: 0, filter: 'blur(0px)', duration: bodyDuration, ease: 'power2.out' },
-        bodyStart,
-      )
+      buildTextLoadInTimeline({
+        // One global rhythm: each element starts one `stagger` after the last.
+        beats: {
+          eyebrowStart: offset,
+          headingStart: offset + stagger,
+          bodyStart: offset + stagger * 2,
+        },
+        bodyBlur,
+        bodyDuration,
+        bodyEase: BODY_EASE,
+        bodyRise,
+        ease,
+        eyebrow,
+        headingDuration,
+        scrambleChars,
+        scrambleDuration,
+        scrambleOrder,
+        scrambleSpeed,
+        stage,
+      })
     },
     {
-      scope: rootRef,
+      scope: stage.rootRef,
       dependencies: [
-        play,
+        stage.play,
         eyebrow,
         heading,
         body,
@@ -253,25 +160,23 @@ export function TextLoadInRaymarched({
         bodyDuration,
         bodyBlur,
         bodyRise,
-        prefersReducedMotion,
+        stage.prefersReducedMotion,
       ],
       revertOnUpdate: true,
     },
   )
 
   return (
-    <div ref={rootRef} className={cn('space-y-5', className)}>
-      <p className="flex items-baseline gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-        <span aria-hidden className="text-[7px] leading-none">
-          ●
-        </span>
-        <span ref={eyebrowRef} aria-hidden className="inline-block min-h-[1em] whitespace-pre" />
-        <span className="sr-only">{eyebrow}</span>
-      </p>
+    <div ref={stage.rootRef} className={cn('space-y-5', className)}>
+      <TextLoadInEyebrow
+        className="flex items-baseline gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
+        eyebrow={eyebrow}
+        eyebrowRef={stage.eyebrowRef}
+      />
       <div className="space-y-1">
         <RaymarchedSdfHeading
           text={heading}
-          progressRef={glProgress}
+          progressRef={stage.glProgress}
           steps={marchSteps}
           gooeyPx={gooeyPx}
           edgePx={edgePx}

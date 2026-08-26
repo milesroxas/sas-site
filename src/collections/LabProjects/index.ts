@@ -3,6 +3,7 @@ import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
+import { projectLinksField } from '@/fields/pageFields'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import {
   preventDeletingUsedLabProject,
@@ -184,22 +185,7 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
                   'Approved source assets for every presentation surface. Internal work attaches media directly rather than through client Asset Libraries.',
               },
             },
-            {
-              name: 'projectLinks',
-              type: 'array',
-              admin: { description: 'Related URLs. Set visibility per link.' },
-              fields: [
-                { name: 'label', type: 'text', required: true },
-                { name: 'url', type: 'text', required: true },
-                {
-                  name: 'visibility',
-                  type: 'select',
-                  defaultValue: 'public',
-                  options: ['public', 'internal'],
-                  admin: { description: 'Internal links never appear in the public API.' },
-                },
-              ],
-            },
+            projectLinksField(),
             {
               name: 'presentations',
               type: 'join',

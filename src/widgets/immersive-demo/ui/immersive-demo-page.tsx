@@ -7,12 +7,14 @@ import {
   IconDiamond,
   IconInfoCircle,
   IconPrism,
+  IconSunHigh,
 } from '@tabler/icons-react'
 import { ImmersiveShell } from '@/features/immersive'
 import { DemoShell, type DemoShellSection } from '@/shared/ui/demo-kit'
 import { DispersionPlayground } from './dispersion-playground'
 import { FloatingCardsPlayground } from './floating-cards-playground'
 import { IndustryWorkPlayground } from './industry-work-playground'
+import { LightLeakPlayground } from './light-leak-playground'
 import { ImmersiveOverview } from './overview'
 import { RefractionPlayground } from './refraction-playground'
 import { ScramblePlayground } from './scramble-playground'
@@ -87,6 +89,21 @@ const SECTIONS: DemoShellSection[] = [
       note: 'The IndustryWork block media reads this preset. Panels and media stay CMS-driven.',
     },
     content: IndustryWorkPlayground,
+  },
+  {
+    id: 'light-leak',
+    label: 'Light leak',
+    title: 'Film light leak',
+    description:
+      'A full-surface film light leak composited over a scrollable page: spectral dispersion sampled in six wavelengths, warped by fbm noise into soft blooms, a seam streak and slatted blinds. Scroll the window to agitate it — velocity drives brightness, spectral split and a morph warp, and slides the field along. Hover a card to gather light under the cursor. The controls cover how scrolling drives the effect; Lenis\u2019s own feel is site-wide and set elsewhere.',
+    icon: IconSunHigh,
+    paste: {
+      file: 'src/features/immersive/ui/light-leak.tsx',
+      symbol: 'LightLeak',
+      format: 'props',
+      note: 'Look and scroll-response settings. Placement and the scroll source stay at the call site.',
+    },
+    content: LightLeakPlayground,
   },
   {
     id: 'floating-cards',

@@ -1,8 +1,4 @@
-import configPromise from '@payload-config'
-import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
-import { getPayload } from 'payload'
-import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { getWorkPageCardsByCapabilities } from '@/collections/WorkPages/queries'
 import { JsonLd } from '@/components/JsonLd'
@@ -12,26 +8,21 @@ import type { WorkPageCardData } from '@/components/WorkPageCard'
 import { RenderHero } from '@/heros/RenderHero'
 import type { ExpertisePage, WorkPage } from '@/payload-types'
 import { RelatedWorkSection } from '@/sections/RelatedWork'
-import { generateMeta } from '@/utilities/generateMeta'
 import { breadcrumbSchema, serviceSchema } from '@/utilities/schema'
+import {
+  createSlugQuery,
+  type SlugRouteArgs,
+  slugMetadata,
+  slugStaticParams,
+} from '@/utilities/slugRoute'
 import PageClient from './page.client'
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'expertise-pages',
-    draft: false,
-    limit: 1000,
-    overrideAccess: false,
-    pagination: false,
-    select: { slug: true },
-  })
-  return result.docs.map(({ slug }) => ({ slug }))
-}
+const queryExpertisePageBySlug = createSlugQuery('expertise-pages', { depth: 3 })
 
-type Args = { params: Promise<{ slug: string }> }
+export const generateStaticParams = slugStaticParams('expertise-pages')
+export const generateMetadata = slugMetadata('/expertise', queryExpertisePageBySlug)
 
-export default async function ExpertisePageRoute({ params }: Args) {
+export default async function ExpertisePageRoute({ params }: SlugRouteArgs) {
   const { isEnabled: draft } = await draftMode()
   const { slug } = await params
   const decodedSlug = decodeURIComponent(slug)
@@ -60,15 +51,6 @@ export default async function ExpertisePageRoute({ params }: Args) {
   )
 }
 
-export async function generateMetadata({ params }: Args): Promise<Metadata> {
-  const { slug } = await params
-  const decodedSlug = decodeURIComponent(slug)
-  return generateMeta({
-    doc: await queryExpertisePageBySlug(decodedSlug),
-    pathname: `/expertise/${decodedSlug}`,
-  })
-}
-
 const resolveRelatedWork = async (page: ExpertisePage): Promise<WorkPageCardData[]> => {
   const manual = (page.relatedWorkPages ?? []).filter(
     (doc): doc is WorkPage => typeof doc === 'object',
@@ -79,18 +61,3 @@ const resolveRelatedWork = async (page: ExpertisePage): Promise<WorkPageCardData
   )
   return getWorkPageCardsByCapabilities(capabilityIds)
 }
-
-const queryExpertisePageBySlug = cache(async (slug: string) => {
-  const { isEnabled: draft } = await draftMode()
-  const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'expertise-pages',
-    draft,
-    depth: 3,
-    limit: 1,
-    pagination: false,
-    overrideAccess: draft,
-    where: { slug: { equals: slug } },
-  })
-  return result.docs[0] || null
-})

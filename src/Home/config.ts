@@ -2,7 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { pageLayoutBlocks } from '@/fields/pageLayoutBlocks'
-import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
+import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { generateHomePreviewPath } from '@/utilities/generatePreviewPath'
 import { HomeFeaturedWork } from './featured-work/config'
 import { homeHero } from './hero/config'
@@ -55,11 +55,7 @@ export const Home: GlobalConfig = {
           ],
           label: 'Composition',
         },
-        {
-          name: 'meta',
-          label: 'SEO',
-          fields: seoMetaTabFields,
-        },
+        seoMetaTab(),
       ],
     },
     {

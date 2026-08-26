@@ -5,15 +5,7 @@ import {
   type PayloadRequest,
 } from 'payload'
 import type { AssetLibrary, FolderInterface, Media } from '@/payload-types'
-
-const relationId = (value: unknown): number | undefined => {
-  if (typeof value === 'number') return value
-  if (typeof value === 'object' && value !== null && 'id' in value) {
-    const { id } = value as { id?: unknown }
-    return typeof id === 'number' ? id : undefined
-  }
-  return undefined
-}
+import { numericRelationshipId as relationId } from '@/utilities/relationshipId'
 
 const resolvedRelation = (incoming: unknown, fallback: unknown): number | undefined =>
   relationId(incoming !== undefined ? incoming : fallback)

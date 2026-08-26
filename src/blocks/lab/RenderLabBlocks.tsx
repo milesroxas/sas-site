@@ -1,5 +1,6 @@
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
+import type { ReactNode } from 'react'
+import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
+import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { blockRevealVariants } from '@/blocks/shared/reveal-variants'
 import { Section } from '@/blocks/shared/section'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
@@ -13,9 +14,11 @@ import type {
   LabRelatedProjectsBlock,
   LabStorySectionBlock,
   LabTransitionBlock,
+  Media as MediaDoc,
 } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
+import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
 import { cn } from '@/utilities/ui'
 
 const richTextSource = (project: LabProject, source: LabStorySectionBlock['source']) => {
@@ -32,14 +35,27 @@ const defaultHeading = (source: LabStorySectionBlock['source']) =>
     custom: '',
   })[source]
 
+const storyWidths: Record<NonNullable<LabStorySectionBlock['width']>, string> = {
+  narrow: 'max-w-3xl',
+  standard: 'max-w-5xl',
+  wide: 'max-w-7xl',
+}
+
+/**
+ * The story section splits its copy across two fields: `custom` renders the
+ * block's own body, any other source renders the project's canonical section
+ * unless the editor wrote a website-only override.
+ */
+const resolveStorySectionBody = (block: LabStorySectionBlock, project: LabProject) =>
+  block.source === 'custom'
+    ? block.customBody
+    : block.bodyOverride || richTextSource(project, block.source)
+
 const StorySection = ({ block, project }: { block: LabStorySectionBlock; project: LabProject }) => {
-  const content =
-    block.source === 'custom'
-      ? block.customBody
-      : block.bodyOverride || richTextSource(project, block.source)
+  const content = resolveStorySectionBody(block, project)
   if (!content) return null
-  const width =
-    block.width === 'narrow' ? 'max-w-3xl' : block.width === 'wide' ? 'max-w-7xl' : 'max-w-5xl'
+  const media = populatedDoc<MediaDoc>(block.media)
+  const width = storyWidths[block.width ?? 'standard']
   return (
     <Section theme={block.theme}>
       <div
@@ -58,19 +74,14 @@ const StorySection = ({ block, project }: { block: LabStorySectionBlock; project
           </h2>
           <RichText data={content} enableGutter={false} />
         </div>
-        {block.media && typeof block.media === 'object' && (
-          <Media resource={block.media} imgClassName="h-auto w-full" />
-        )}
+        {media && <Media resource={media} imgClassName="h-auto w-full" />}
       </div>
     </Section>
   )
 }
 
 const MediaShowcase = ({ block }: { block: LabMediaShowcaseBlock }) => {
-  const media =
-    block.media?.filter(
-      (item) => typeof item === 'object' && item.usageStatus === 'public-approved',
-    ) || []
+  const media = publicApprovedMedia(block.media)
   if (!media.length) return null
   return (
     <Section theme={block.theme}>
@@ -79,35 +90,12 @@ const MediaShowcase = ({ block }: { block: LabMediaShowcaseBlock }) => {
         {block.introduction && (
           <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
         )}
-        <div
-          className={cn(
-            'grid gap-6',
-            block.layout === 'grid' && 'md:grid-cols-2',
-            block.layout === 'horizontal' && 'grid-flow-col auto-cols-[85%] overflow-x-auto snap-x',
-          )}
-        >
-          {media.map(
-            (item) =>
-              typeof item === 'object' && (
-                <figure className="snap-start" key={item.id}>
-                  <Media resource={item} imgClassName="h-auto w-full" />
-                  {block.showCaptions && item.caption && (
-                    <RichText
-                      className="mt-3 text-sm"
-                      data={item.caption}
-                      enableGutter={false}
-                      enableProse={false}
-                    />
-                  )}
-                  {block.showCredits && item.credit && (
-                    <figcaption className="mt-2 text-xs opacity-70">
-                      Credit: {item.credit}
-                    </figcaption>
-                  )}
-                </figure>
-              ),
-          )}
-        </div>
+        <MediaShowcaseGrid
+          layout={block.layout}
+          media={media}
+          showCaptions={block.showCaptions}
+          showCredits={block.showCredits}
+        />
       </div>
     </Section>
   )
@@ -120,11 +108,38 @@ const statusLabels: Record<NonNullable<LabProject['status']>, string> = {
   archived: 'Archived',
 }
 
-const Facts = ({ block, project }: { block: LabFactsBlock; project: LabProject }) => {
-  const technologies = block.showTechnologies ? project.technologies || [] : []
-  const links = block.showLinks
+/**
+ * Every fact column shares the same term shell; only the label and the way its
+ * body lays out differ, so the body classes stay with the caller.
+ */
+const FactColumn = ({
+  bodyClassName,
+  children,
+  label,
+}: {
+  bodyClassName: string
+  children: ReactNode
+  label: string
+}) => (
+  <div>
+    <dt className="text-sm uppercase tracking-[0.2em] opacity-70">{label}</dt>
+    <dd className={bodyClassName}>{children}</dd>
+  </div>
+)
+
+/** The project's tech list, when the block is set to show it. */
+const factTechnologies = (block: LabFactsBlock, project: LabProject) =>
+  block.showTechnologies ? project.technologies || [] : []
+
+/** The project's public links, when the block is set to show them. */
+const factLinks = (block: LabFactsBlock, project: LabProject) =>
+  block.showLinks
     ? (project.projectLinks || []).filter((link) => link.visibility !== 'internal')
     : []
+
+const Facts = ({ block, project }: { block: LabFactsBlock; project: LabProject }) => {
+  const technologies = factTechnologies(block, project)
+  const links = factLinks(block, project)
   const showStatus = Boolean(block.showStatus)
   if (!technologies.length && !links.length && !showStatus) return null
   return (
@@ -133,37 +148,30 @@ const Facts = ({ block, project }: { block: LabFactsBlock; project: LabProject }
         {block.heading && <h2 className="mb-8 text-heading-2">{block.heading}</h2>}
         <dl className="grid gap-8 md:grid-cols-3">
           {showStatus && (
-            <div>
-              <dt className="text-sm uppercase tracking-[0.2em] opacity-70">Status</dt>
-              <dd className="mt-3 text-lg">{statusLabels[project.status]}</dd>
-            </div>
+            <FactColumn bodyClassName="mt-3 text-lg" label="Status">
+              {statusLabels[project.status]}
+            </FactColumn>
           )}
           {technologies.length > 0 && (
-            <div>
-              <dt className="text-sm uppercase tracking-[0.2em] opacity-70">Built with</dt>
-              <dd className="mt-3 flex flex-wrap gap-2">
-                {technologies.map((technology) => (
-                  <span
-                    className="border-current/20 border px-3 py-1 text-sm"
-                    key={technology.id || technology.name}
-                  >
-                    {technology.name}
-                  </span>
-                ))}
-              </dd>
-            </div>
+            <FactColumn bodyClassName="mt-3 flex flex-wrap gap-2" label="Built with">
+              {technologies.map((technology) => (
+                <span
+                  className="border-current/20 border px-3 py-1 text-sm"
+                  key={technology.id || technology.name}
+                >
+                  {technology.name}
+                </span>
+              ))}
+            </FactColumn>
           )}
           {links.length > 0 && (
-            <div>
-              <dt className="text-sm uppercase tracking-[0.2em] opacity-70">Links</dt>
-              <dd className="mt-3 flex flex-col gap-2">
-                {links.map((link) => (
-                  <a className="underline" href={link.url} key={link.id || link.url}>
-                    {link.label}
-                  </a>
-                ))}
-              </dd>
-            </div>
+            <FactColumn bodyClassName="mt-3 flex flex-col gap-2" label="Links">
+              {links.map((link) => (
+                <a className="underline" href={link.url} key={link.id || link.url}>
+                  {link.label}
+                </a>
+              ))}
+            </FactColumn>
           )}
         </dl>
       </div>
@@ -181,6 +189,19 @@ const Transition = ({ block }: { block: LabTransitionBlock }) => (
   </Section>
 )
 
+const RelatedProjectCard = ({ item }: { item: LabPage }) => {
+  const coverAsset = populatedDoc<MediaDoc>(item.coverAsset)
+  const labProject = populatedDoc<LabProject>(item.labProject)
+  return (
+    <a className="group pressable pressable-subtle block" href={`/lab/${item.slug}`}>
+      {coverAsset && <Media resource={coverAsset} imgClassName="h-auto w-full" />}
+      <h3 className="mt-4 text-heading-3 group-hover:underline">
+        {labProject ? labProject.title : item.title}
+      </h3>
+    </a>
+  )
+}
+
 const RelatedProjects = async ({
   block,
   page,
@@ -190,32 +211,17 @@ const RelatedProjects = async ({
   page: LabPage
   project: LabProject
 }) => {
-  let pages = (page.relatedLabPages || []).filter(
-    (item): item is LabPage => typeof item === 'object',
-  )
-  if (block.selectionMode === 'automatic-capability-match') {
-    const capabilityIds = (project.capabilities || []).map((item) =>
-      typeof item === 'object' ? item.id : item,
-    )
-    if (capabilityIds.length) {
-      const payload = await getPayload({ config: configPromise })
-      const result = await payload.find({
-        collection: 'lab-pages',
-        overrideAccess: false,
-        draft: false,
-        depth: 2,
-        limit: block.limit || 3,
-        where: {
-          and: [
-            { id: { not_equals: page.id } },
-            { 'labProject.capabilities': { in: capabilityIds } },
-          ],
-        },
-      })
-      pages = result.docs
-    }
-  }
-  pages = pages.slice(0, block.limit || 3)
+  const pages = await resolveRelatedPages<LabPage>({
+    automatic: block.selectionMode === 'automatic-capability-match',
+    capabilityIds: relationshipIds(project.capabilities || []),
+    capabilityPath: 'labProject.capabilities',
+    collection: 'lab-pages',
+    currentId: page.id,
+    limit: block.limit || 3,
+    manual: (page.relatedLabPages || []).filter(
+      (item): item is LabPage => typeof item === 'object',
+    ),
+  })
   if (!pages.length) return null
   return (
     <section className="py-16 md:py-24">
@@ -223,18 +229,7 @@ const RelatedProjects = async ({
         <h2 className="mb-8 text-heading-2">{block.heading || 'More from the lab'}</h2>
         <div className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
           {pages.map((item) => (
-            <a
-              className="group pressable pressable-subtle block"
-              href={`/lab/${item.slug}`}
-              key={item.id}
-            >
-              {item.coverAsset && typeof item.coverAsset === 'object' && (
-                <Media resource={item.coverAsset} imgClassName="h-auto w-full" />
-              )}
-              <h3 className="mt-4 text-heading-3 group-hover:underline">
-                {typeof item.labProject === 'object' ? item.labProject.title : item.title}
-              </h3>
-            </a>
+            <RelatedProjectCard item={item} key={item.id} />
           ))}
         </div>
       </div>

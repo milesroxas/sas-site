@@ -1,6 +1,6 @@
 'use client'
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import type { RefObject } from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 import {
@@ -11,6 +11,7 @@ import {
   type ShaderMaterial,
   Vector2,
 } from 'three'
+import { GlHeading, type GlHeadingStage } from './gl-heading-internals'
 
 /**
  * Renders in its own small WebGL canvas (classic renderer), like
@@ -168,10 +169,8 @@ export const RAY_MARCHED_HEADING_DEFAULTS = {
 type SceneProps = Pick<
   RayMarchedHeadingProps,
   'progressRef' | 'stagger' | 'smearPx' | 'steps' | 'angle' | 'gooey' | 'fade'
-> & {
-  headingRef: RefObject<HTMLHeadingElement | null>
-  dirtyRef: RefObject<boolean>
-}
+> &
+  GlHeadingStage
 
 /**
  * Draw the heading's characters into the 2D canvas at their DOM-measured
@@ -324,58 +323,14 @@ function SmearScene({
  * settled text is crisp and selectable.
  */
 export function RayMarchedHeading({ text, className, ...scene }: RayMarchedHeadingProps) {
-  const headingRef = useRef<HTMLHeadingElement>(null)
-  const dirtyRef = useRef(true)
-
-  const chars = useMemo(() => Array.from(text), [text])
-
-  useEffect(() => {
-    void text
-    dirtyRef.current = true
-  }, [text])
-
-  useEffect(() => {
-    const el = headingRef.current
-    if (!el) return
-    const observer = new ResizeObserver(() => {
-      dirtyRef.current = true
-    })
-    observer.observe(el)
-    let cancelled = false
-    document.fonts?.ready.then(() => {
-      if (!cancelled) dirtyRef.current = true
-    })
-    return () => {
-      cancelled = true
-      observer.disconnect()
-    }
-  }, [])
-
   return (
-    // w-fit: the GL overlay is sized off this box via inset, so it must
-    // shrink-wrap the heading exactly or the texture stretches to fill.
-    <div className="relative w-fit">
-      <h3 ref={headingRef} data-heading-final className={className}>
-        {chars.map((ch, i) =>
-          ch === ' ' ? (
-            ' '
-          ) : (
-            <span key={i} data-char className="inline-block">
-              {ch}
-            </span>
-          ),
-        )}
-      </h3>
-      <div
-        data-heading-gl
-        aria-hidden
-        className="pointer-events-none absolute"
-        style={{ inset: `${-PAD_Y}px ${-PAD_X}px` }}
-      >
-        <Canvas dpr={DPR} flat linear>
-          <SmearScene headingRef={headingRef} dirtyRef={dirtyRef} {...scene} />
-        </Canvas>
-      </div>
-    </div>
+    <GlHeading
+      className={className}
+      dpr={DPR}
+      padX={PAD_X}
+      padY={PAD_Y}
+      scene={(stage) => <SmearScene {...stage} {...scene} />}
+      text={text}
+    />
   )
 }

@@ -17,6 +17,15 @@ import {
 export type SyncResult = { ok: true; messages: string[] } | { ok: false; messages: string[] }
 
 /**
+ * Readable reason from a failed `execa` call: its captured stderr where there
+ * is any, then its own summaries, then the raw value.
+ */
+const failureReason = (e: unknown): string => {
+  const err = e as { stderr?: string; shortMessage?: string; message?: string }
+  return err.stderr || err.shortMessage || err.message || String(e)
+}
+
+/**
  * Dump production, replace local `payload` database (Docker on 54320).
  * Uses Docker for pg_dump/psql so client versions match servers (avoids Homebrew pg_dump mismatch).
  */
@@ -40,12 +49,11 @@ export async function syncProductionToLocal(productionUrl: string): Promise<Sync
     await pgDumpRemoteDockerToFile(productionUrl, snapshotPath)
     messages.push(`Production dump: ${path.relative(PROJECT_ROOT, snapshotPath)}`)
   } catch (e) {
-    const err = e as { stderr?: string; shortMessage?: string; message?: string }
     return {
       ok: false,
       messages: [
         ...messages,
-        `pg_dump (production) failed: ${err.stderr || err.shortMessage || err.message || String(e)}`,
+        `pg_dump (production) failed: ${failureReason(e)}`,
         `First run may pull Docker image ${POSTGRES_DOCKER_IMAGE}; ensure Docker can reach the internet.`,
       ],
     }
@@ -55,12 +63,11 @@ export async function syncProductionToLocal(productionUrl: string): Promise<Sync
     await localDropAndCreatePayloadDb()
     await localRestorePayloadFromSqlFile(snapshotPath)
   } catch (e) {
-    const err = e as { stderr?: string; shortMessage?: string; message?: string }
     return {
       ok: false,
       messages: [
         ...messages,
-        `Restore to local failed: ${err.stderr || err.shortMessage || err.message || String(e)}`,
+        `Restore to local failed: ${failureReason(e)}`,
         'Try: pnpm db:up — then pnpm dev to let Drizzle push rebuild the schema if the DB is empty.',
       ],
     }

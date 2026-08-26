@@ -1,9 +1,12 @@
-import configPromise from '@payload-config'
-import { draftMode } from 'next/headers'
-import { getPayload } from 'payload'
 import type React from 'react'
+import { findWorkPagesById } from '@/blocks/shared/find-work-pages'
 import { resolveWorkEntry } from '@/blocks/shared/resolve-work-entry'
-import type { IndustryWorkBlock as IndustryWorkBlockProps, WorkPage } from '@/payload-types'
+import type {
+  Industry,
+  IndustryWorkBlock as IndustryWorkBlockProps,
+  WorkPage,
+} from '@/payload-types'
+import { populatedDoc, relationshipId, relationshipIds } from '@/utilities/relationshipId'
 import { IndustryWorkClient, type IndustryWorkPanel } from './Component.client'
 
 export const IndustryWorkBlock: React.FC<IndustryWorkBlockProps> = async ({
@@ -14,40 +17,23 @@ export const IndustryWorkBlock: React.FC<IndustryWorkBlockProps> = async ({
   const rows = industries ?? []
   if (rows.length === 0) return null
 
-  const { isEnabled: draft } = await draftMode()
-  const payload = await getPayload({ config: configPromise })
+  const ids = relationshipIds(rows.map((row) => row.work))
 
-  const ids = rows.map((row) => (typeof row.work === 'object' ? row.work.id : row.work))
-
-  const { docs } = await payload.find({
-    collection: 'work-pages',
-    depth: 3,
-    draft,
-    limit: ids.length,
-    overrideAccess: draft,
-    pagination: false,
-    where: {
-      id: { in: ids },
-      ...(draft ? {} : { _status: { equals: 'published' } }),
-    },
-  })
-
-  const byId = new Map(docs.map((doc) => [doc.id, doc]))
+  const byId = await findWorkPagesById(ids)
 
   const panels = rows
     .map((row, index): IndustryWorkPanel | null => {
-      const industryName = typeof row.industry === 'object' ? row.industry.name : null
-      if (!industryName) return null
+      const industry = populatedDoc<Industry>(row.industry)?.name
+      const workId = relationshipId(row.work)
+      if (!industry || workId === null) return null
 
-      const workId = typeof row.work === 'object' ? row.work.id : row.work
-      const page =
-        byId.get(workId) ?? (typeof row.work === 'object' ? (row.work as WorkPage) : null)
+      const page = byId.get(workId) ?? populatedDoc<WorkPage>(row.work)
       const work = page ? resolveWorkEntry(page) : null
       if (!work) return null
 
       return {
         id: row.id ?? String(index),
-        industry: industryName,
+        industry,
         subheading: row.subheading,
         secondLine: row.secondLine ?? null,
         work,

@@ -27,12 +27,8 @@ import {
   workImageVtName,
   workOpenTransitionTypes,
 } from '@/shared/lib/view-transition'
-import {
-  SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD,
-  SCROLL_REVEAL_SWAP,
-  ScrollReveal,
-  useRevealSwap,
-} from '@/shared/ui/scroll-reveal'
+import { SCROLL_REVEAL_SWAP, ScrollReveal, useRevealSwap } from '@/shared/ui/scroll-reveal'
+import { pluralLabel } from '@/utilities/pluralLabel'
 import { cn } from '@/utilities/ui'
 import { webglMediaSrc } from '@/utilities/webglMediaSrc'
 
@@ -74,28 +70,13 @@ const SHADER_SWAP_MS = SCROLL_REVEAL_SWAP.mediaDuration * 1000
 const MEDIA_IN = '[data-media-swap]'
 const MEDIA_SIZE = '(max-width: 1024px) 100vw, 50vw'
 
-const IndustryWorkMedia = ({
-  media,
-  proximity,
-  canvasMounted,
-  canvasHot,
-}: {
-  media: WorkEntry['media']
-  /** Cursor-target proximity source; pre-activates the effects on approach. */
-  proximity?: RefractionMediaProps['subscribeProximity']
-  /** Mount the canvas once — never during a clip-path / scale tween. */
-  canvasMounted: boolean
-  /**
-   * Visible hover layer. False during swap so the DOM track owns the fade;
-   * the canvas stays mounted (no shader recompile).
-   */
-  canvasHot: boolean
-}) => {
-  const src = media ? webglMediaSrc(media) || undefined : undefined
-  const isVideo = Boolean(media?.mimeType?.includes('video'))
-  const { enabled, ready, handleReady } = useWebglMediaLayer(src, canvasMounted)
+/**
+ * Which media layer is painted while the shader cross-fades in, and how long
+ * that fade runs: the entrance fade the first time the canvas appears, the
+ * swap duration on every industry swap after it.
+ */
+const useShaderCrossfade = (showShader: boolean) => {
   const prefersReducedMotion = usePrefersReducedMotion()
-  const showShader = ready && canvasHot
   const [fadeStarted, setFadeStarted] = useState(false)
   const [fadeDone, setFadeDone] = useState(false)
   const hasShownShader = useRef(false)
@@ -126,13 +107,39 @@ const IndustryWorkMedia = ({
     }
   }, [showShader, prefersReducedMotion])
 
-  if (!media) return null
-
   const shaderVisible = showShader && fadeStarted
   // Keep the DOM image up until the canvas has faded in over it. A simultaneous
   // crossfade stacks two copies of the same pixels (a brightness flash) and,
   // with a still-clear WebGL buffer, punches through to the section background.
   const hideDom = showShader && fadeDone
+
+  return { fadeMs, hideDom, shaderVisible }
+}
+
+const IndustryWorkMedia = ({
+  media,
+  proximity,
+  canvasMounted,
+  canvasHot,
+}: {
+  media: WorkEntry['media']
+  /** Cursor-target proximity source; pre-activates the effects on approach. */
+  proximity?: RefractionMediaProps['subscribeProximity']
+  /** Mount the canvas once — never during a clip-path / scale tween. */
+  canvasMounted: boolean
+  /**
+   * Visible hover layer. False during swap so the DOM track owns the fade;
+   * the canvas stays mounted (no shader recompile).
+   */
+  canvasHot: boolean
+}) => {
+  const src = media ? webglMediaSrc(media) || undefined : undefined
+  const isVideo = Boolean(media?.mimeType?.includes('video'))
+  const { enabled, ready, handleReady } = useWebglMediaLayer(src, canvasMounted)
+  const showShader = ready && canvasHot
+  const { fadeMs, hideDom, shaderVisible } = useShaderCrossfade(showShader)
+
+  if (!media) return null
 
   return (
     <>
@@ -188,22 +195,12 @@ const MetaGroup = ({ label, values }: { label: string; values: string[] }) => (
 )
 
 /**
- * Full-viewport spotlight: the case-study title column overlaps the media's
- * left edge and hangs from its top offset, while the CMS-sourced details
- * (client, capabilities) sit right of the media, centered on it. Entrance is
- * the shared under-media reveal in a self-owned full-screen shell; the
- * industry swap fades copy in place and crossfades media over the outgoing
- * frame so the section never empties.
+ * The industry swap: which panel each track shows, and when the WebGL canvas
+ * may run. `active` drives the media and the dropdown immediately; `textIndex`
+ * trails it by the swap's exit half, so the copy fading out is still the
+ * outgoing panel's.
  */
-export const IndustryWorkClient = ({
-  heading,
-  panels,
-  theme,
-}: {
-  heading: string
-  panels: IndustryWorkPanel[]
-  theme?: string | null
-}) => {
+const useIndustrySwap = (panels: IndustryWorkPanel[]) => {
   const [active, setActive] = useState(0)
   const [textIndex, setTextIndex] = useState(0)
   const [prevMedia, setPrevMedia] = useState<WorkEntry['media']>(null)
@@ -276,6 +273,29 @@ export const IndustryWorkClient = ({
     selectIndustry(index)
   }
 
+  return { active, armCanvas, canvasHot, canvasMounted, onSelect, prevMedia, rootRef, textIndex }
+}
+
+/**
+ * Full-viewport spotlight: the case-study title column overlaps the media's
+ * left edge and hangs from its top offset, while the CMS-sourced details
+ * (client, capabilities) sit right of the media, centered on it. Entrance is
+ * the shared under-media reveal in a self-owned full-screen shell; the
+ * industry swap fades copy in place and crossfades media over the outgoing
+ * frame so the section never empties.
+ */
+export const IndustryWorkClient = ({
+  heading,
+  panels,
+  theme,
+}: {
+  heading: string
+  panels: IndustryWorkPanel[]
+  theme?: string | null
+}) => {
+  const { active, armCanvas, canvasHot, canvasMounted, onSelect, prevMedia, rootRef, textIndex } =
+    useIndustrySwap(panels)
+
   // The media link is the cursor target; its proximity (0–1, shared with the
   // ring overlay) pre-activates the WebGL hover effects on approach.
   const mediaLinkRef = useRef<HTMLAnchorElement>(null)
@@ -289,7 +309,6 @@ export const IndustryWorkClient = ({
 
   return (
     <ScrollReveal
-      enterThreshold={SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD}
       mediaOffset={INDUSTRY_WORK_MEDIA_OFFSET}
       variant="underMedia"
       onComplete={armCanvas}
@@ -422,7 +441,7 @@ export const IndustryWorkClient = ({
               {work.client ? <MetaGroup label="Client" values={[work.client]} /> : null}
               {work.capabilities.length > 0 && (
                 <MetaGroup
-                  label={work.capabilities.length > 1 ? 'Capabilities' : 'Capability'}
+                  label={pluralLabel(work.capabilities.length, 'Capability', 'Capabilities')}
                   values={work.capabilities}
                 />
               )}

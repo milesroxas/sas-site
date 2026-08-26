@@ -1,17 +1,12 @@
 import { APIError, type CollectionBeforeValidateHook } from 'payload'
 import { getCaseStudyStorySection, storyBeatReferences } from '@/collections/CaseStudies/story'
+import { findUnpublishableMedia } from '@/hooks/findUnpublishableMedia'
 import type { CaseStudy, WorkPage } from '@/payload-types'
-
-const idOf = (value: unknown): number | string | null => {
-  if (typeof value === 'number' || typeof value === 'string') return value
-  if (value && typeof value === 'object' && 'id' in value)
-    return (value as { id: number | string }).id
-  return null
-}
+import { relationshipId, relationshipIds } from '@/utilities/relationshipId'
 
 // Every upload field on a layout block ends in "media" (media, portraitMedia,
 // largeMedia, …); non-upload matches like browseAllMedia are booleans and fall
-// out of the later idOf() pass.
+// out of the later relationshipId() pass.
 const blockMedia = (layout: WorkPage['layout']) =>
   (layout || []).flatMap((block) =>
     Object.entries(block).flatMap(([key, value]) => {
@@ -30,7 +25,7 @@ export const validateWorkPage: CollectionBeforeValidateHook<WorkPage> = async ({
   if (!merged.layout?.length)
     throw new APIError('Website layout is required before publishing.', 400)
 
-  const caseStudyID = idOf(merged.caseStudy)
+  const caseStudyID = relationshipId(merged.caseStudy)
   if (!caseStudyID) throw new APIError('Case Study Content is required before publishing.', 400)
 
   const caseStudy = (await req.payload.findByID({
@@ -57,7 +52,7 @@ export const validateWorkPage: CollectionBeforeValidateHook<WorkPage> = async ({
     )
   }
 
-  const libraryIDs = (caseStudy.assetLibraries || []).map(idOf).filter(Boolean)
+  const libraryIDs = (caseStudy.assetLibraries || []).map(relationshipId).filter(Boolean)
   if (!libraryIDs.length) {
     throw new APIError(
       'The related Case Study Content needs at least one Asset Library before its Work Page can publish.',
@@ -65,34 +60,25 @@ export const validateWorkPage: CollectionBeforeValidateHook<WorkPage> = async ({
     )
   }
 
-  const mediaIDs = [
+  const mediaIDs = relationshipIds([
     merged.coverAsset,
     merged.hero?.media,
     ...(merged.downloadableAssets || []),
     ...blockMedia(merged.layout),
-  ]
-    .map(idOf)
-    .filter((id): id is number | string => id !== null)
+  ])
 
-  if (mediaIDs.length) {
-    const media = await req.payload.find({
-      collection: 'media',
-      depth: 0,
-      limit: mediaIDs.length,
-      pagination: false,
-      where: { id: { in: mediaIDs } },
-      req,
-    })
-    const invalid = media.docs.find(
-      (asset) =>
-        asset.usageStatus !== 'public-approved' || !libraryIDs.includes(idOf(asset.assetLibrary)),
+  const invalid = await findUnpublishableMedia({
+    ids: mediaIDs,
+    isPublishable: (asset) =>
+      asset.usageStatus === 'public-approved' &&
+      libraryIDs.includes(relationshipId(asset.assetLibrary)),
+    req,
+  })
+  if (invalid) {
+    throw new APIError(
+      `Asset ${invalid.filename || invalid.id} must be public-approved and belong to one of the Case Study's Asset Libraries.`,
+      400,
     )
-    if (invalid) {
-      throw new APIError(
-        `Asset ${invalid.filename || invalid.id} must be public-approved and belong to one of the Case Study's Asset Libraries.`,
-        400,
-      )
-    }
   }
 
   return data

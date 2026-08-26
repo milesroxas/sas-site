@@ -1,6 +1,6 @@
 'use client'
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import type { RefObject } from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 import {
@@ -13,6 +13,7 @@ import {
   Vector2,
   Vector3,
 } from 'three'
+import { GlHeading, type GlHeadingStage } from './gl-heading-internals'
 
 /**
  * True raymarching take on the heading reveal, built from the techniques in
@@ -272,10 +273,8 @@ type SceneProps = Pick<
   | 'dropletScatter'
   | 'wobblePx'
   | 'lightAngle'
-> & {
-  headingRef: RefObject<HTMLHeadingElement | null>
-  dirtyRef: RefObject<boolean>
-}
+> &
+  GlHeadingStage
 
 const INF = 1e20
 
@@ -338,6 +337,86 @@ type SdfBuild = {
 }
 
 /**
+ * Paint each character span into the raster at its DOM-measured position.
+ *
+ * CSS puts each char span's baseline at half-leading + ascent below the
+ * span's top; using the raw font ascent alone leaves the raster offset from
+ * the DOM glyphs, which reads as a snap when the overlay hands off.
+ */
+function rasterizeHeading(
+  ctx: CanvasRenderingContext2D,
+  heading: HTMLHeadingElement,
+  box: DOMRect,
+  style: CSSStyleDeclaration,
+) {
+  const metrics = ctx.measureText('Hg')
+  const fontExtent = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
+  const lineHeight = parseFloat(style.lineHeight)
+  const halfLeading = Number.isFinite(lineHeight) ? (lineHeight - fontExtent) / 2 : 0
+  const baseline = (halfLeading + metrics.fontBoundingBoxAscent) * SDF_SCALE
+
+  for (const span of heading.querySelectorAll<HTMLElement>('[data-char]')) {
+    const ch = span.textContent
+    if (!ch) continue
+    const rect = span.getBoundingClientRect()
+    ctx.fillText(
+      ch,
+      (rect.left - box.left + PAD_X) * SDF_SCALE,
+      (rect.top - box.top + PAD_Y) * SDF_SCALE + baseline,
+    )
+  }
+}
+
+/**
+ * Seed the inside/outside distance grids from the raster's coverage. Fully
+ * covered and fully empty pixels are exact; partial coverage carries the
+ * squared sub-pixel offset from the edge, which is what buys the field
+ * sub-pixel accuracy (tiny-sdf style).
+ */
+function seedCoverageGrids(alpha: Uint8ClampedArray, n: number) {
+  const gridOuter = new Float32Array(n)
+  const gridInner = new Float32Array(n)
+  for (let i = 0; i < n; i++) {
+    const a = alpha[i * 4 + 3] / 255
+    if (a === 1) {
+      gridOuter[i] = 0
+      gridInner[i] = INF
+    } else if (a === 0) {
+      gridOuter[i] = INF
+      gridInner[i] = 0
+    } else {
+      gridOuter[i] = Math.max(0, 0.5 - a) ** 2
+      gridInner[i] = Math.max(0, a - 0.5) ** 2
+    }
+  }
+  return { gridInner, gridOuter }
+}
+
+/**
+ * Pack the two transformed grids into the signed byte field the shader
+ * samples: 0.5 at the glyph edge, >0.5 inside, <0.5 outside.
+ */
+function packSignedDistance(
+  gridOuter: Float32Array,
+  gridInner: Float32Array,
+  width: number,
+  height: number,
+) {
+  const spread = SPREAD_PX * SDF_SCALE
+  const data = new Uint8Array(width * height)
+  for (let y = 0; y < height; y++) {
+    // Flip rows so uv v=0 is the bottom (GL convention; DataTexture no flipY).
+    const src = (height - 1 - y) * width
+    for (let x = 0; x < width; x++) {
+      const i = src + x
+      const d = Math.sqrt(gridOuter[i]) - Math.sqrt(gridInner[i])
+      data[y * width + x] = Math.max(0, Math.min(255, Math.round(255 * (0.5 - (0.5 * d) / spread))))
+    }
+  }
+  return data
+}
+
+/**
  * Rasterize the heading's characters at their DOM-measured positions, then
  * run an exact Euclidean distance transform (seeded from coverage for
  * sub-pixel edges, tiny-sdf style) to produce a signed distance texture:
@@ -370,35 +449,10 @@ function buildSdfField(heading: HTMLHeadingElement): SdfBuild | null {
   ctx.textBaseline = 'alphabetic'
   ctx.fillStyle = '#fff'
 
-  // CSS puts each char span's baseline at half-leading + ascent below the
-  // span's top; using the raw font ascent alone leaves the raster offset from
-  // the DOM glyphs, which reads as a snap when the overlay hands off.
-  const metrics = ctx.measureText('Hg')
-  const fontExtent = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
-  const lineHeight = parseFloat(style.lineHeight)
-  const halfLeading = Number.isFinite(lineHeight) ? (lineHeight - fontExtent) / 2 : 0
-  const baseline = (halfLeading + metrics.fontBoundingBoxAscent) * SDF_SCALE
-
-  for (const span of heading.querySelectorAll<HTMLElement>('[data-char]')) {
-    const ch = span.textContent
-    if (!ch) continue
-    const rect = span.getBoundingClientRect()
-    ctx.fillText(
-      ch,
-      (rect.left - box.left + PAD_X) * SDF_SCALE,
-      (rect.top - box.top + PAD_Y) * SDF_SCALE + baseline,
-    )
-  }
+  rasterizeHeading(ctx, heading, box, style)
 
   const img = ctx.getImageData(0, 0, width, height)
-  const n = width * height
-  const gridOuter = new Float32Array(n)
-  const gridInner = new Float32Array(n)
-  for (let i = 0; i < n; i++) {
-    const a = img.data[i * 4 + 3] / 255
-    gridOuter[i] = a === 1 ? 0 : a === 0 ? INF : Math.max(0, 0.5 - a) ** 2
-    gridInner[i] = a === 1 ? INF : a === 0 ? 0 : Math.max(0, a - 0.5) ** 2
-  }
+  const { gridInner, gridOuter } = seedCoverageGrids(img.data, width * height)
 
   const size = Math.max(width, height)
   const f = new Float32Array(size)
@@ -407,17 +461,7 @@ function buildSdfField(heading: HTMLHeadingElement): SdfBuild | null {
   edt(gridOuter, width, height, f, v, z)
   edt(gridInner, width, height, f, v, z)
 
-  const spread = SPREAD_PX * SDF_SCALE
-  const data = new Uint8Array(n)
-  for (let y = 0; y < height; y++) {
-    // Flip rows so uv v=0 is the bottom (GL convention; DataTexture no flipY).
-    const src = (height - 1 - y) * width
-    for (let x = 0; x < width; x++) {
-      const i = src + x
-      const d = Math.sqrt(gridOuter[i]) - Math.sqrt(gridInner[i])
-      data[y * width + x] = Math.max(0, Math.min(255, Math.round(255 * (0.5 - (0.5 * d) / spread))))
-    }
-  }
+  const data = packSignedDistance(gridOuter, gridInner, width, height)
 
   return { data, width, height, cssWidth, cssHeight, color }
 }
@@ -548,68 +592,15 @@ function RaymarchScene({
  * the end so the settled text is crisp and selectable.
  */
 export function RaymarchedSdfHeading({ text, className, ...scene }: RaymarchedSdfHeadingProps) {
-  const headingRef = useRef<HTMLHeadingElement>(null)
-  const dirtyRef = useRef(true)
-
-  const chars = useMemo(() => Array.from(text), [text])
-
-  useEffect(() => {
-    void text
-    dirtyRef.current = true
-  }, [text])
-
-  useEffect(() => {
-    const el = headingRef.current
-    if (!el) return
-    const observer = new ResizeObserver(() => {
-      dirtyRef.current = true
-    })
-    observer.observe(el)
-    // Theme toggles flip [data-theme] on <html>; rebuild so the shader picks
-    // up the heading's new computed color.
-    const themeObserver = new MutationObserver(() => {
-      dirtyRef.current = true
-    })
-    themeObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    })
-    let cancelled = false
-    document.fonts?.ready.then(() => {
-      if (!cancelled) dirtyRef.current = true
-    })
-    return () => {
-      cancelled = true
-      observer.disconnect()
-      themeObserver.disconnect()
-    }
-  }, [])
-
   return (
-    // w-fit: the GL overlay is sized off this box via inset, so it must
-    // shrink-wrap the heading exactly or the texture stretches to fill.
-    <div className="relative w-fit">
-      <h3 ref={headingRef} data-heading-final className={className}>
-        {chars.map((ch, i) =>
-          ch === ' ' ? (
-            ' '
-          ) : (
-            <span key={i} data-char className="inline-block">
-              {ch}
-            </span>
-          ),
-        )}
-      </h3>
-      <div
-        data-heading-gl
-        aria-hidden
-        className="pointer-events-none absolute"
-        style={{ inset: `${-PAD_Y}px ${-PAD_X}px` }}
-      >
-        <Canvas dpr={DPR} flat linear>
-          <RaymarchScene headingRef={headingRef} dirtyRef={dirtyRef} {...scene} />
-        </Canvas>
-      </div>
-    </div>
+    <GlHeading
+      className={className}
+      dpr={DPR}
+      padX={PAD_X}
+      padY={PAD_Y}
+      scene={(stage) => <RaymarchScene {...stage} {...scene} />}
+      text={text}
+      watchTheme
+    />
   )
 }

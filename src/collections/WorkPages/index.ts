@@ -1,14 +1,15 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
-import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { caseStudyBlocks } from '@/blocks/case-study/config'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { overridesVisible, showOverridesField } from '@/fields/overrides'
-import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
+import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/fields/pageFields'
+import { heroContentCollapsible, heroPresentationFields } from '@/fields/pageHero'
+import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
-import { generatePreviewPath } from '@/utilities/generatePreviewPath'
+import { collectionPreview } from '@/utilities/generatePreviewPath'
 import { revalidateWorkPage, revalidateWorkPageDelete } from './hooks/revalidateWorkPage'
 import { validateWorkPage } from './hooks/validateWorkPage'
 
@@ -29,12 +30,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
     defaultColumns: ['title', 'caseStudy', 'slug', 'featured', '_status', 'updatedAt'],
     description:
       'Website-specific case-study presentation, composition, SEO, preview, and publishing.',
-    livePreview: {
-      url: ({ data, req }) =>
-        generatePreviewPath({ slug: data?.slug, collection: 'work-pages', req }),
-    },
-    preview: (data, { req }) =>
-      generatePreviewPath({ slug: data?.slug as string, collection: 'work-pages', req }),
+    ...collectionPreview('work-pages'),
   },
   defaultPopulate: { title: true, slug: true, caseStudy: true, coverAsset: true, featured: true },
   fields: [
@@ -73,30 +69,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
               name: 'hero',
               type: 'group',
               fields: [
-                {
-                  type: 'collapsible',
-                  label: 'Content',
-                  fields: [
-                    { name: 'eyebrow', type: 'text' },
-                    showOverridesField(),
-                    {
-                      name: 'titleOverride',
-                      type: 'text',
-                      admin: {
-                        description: 'Website-only. Leave empty to use the canonical title.',
-                        condition: overridesVisible,
-                      },
-                    },
-                    {
-                      name: 'summaryOverride',
-                      type: 'textarea',
-                      admin: {
-                        description: 'Website-only. Leave empty to use the canonical summary.',
-                        condition: overridesVisible,
-                      },
-                    },
-                  ],
-                },
+                heroContentCollapsible(),
                 {
                   type: 'collapsible',
                   label: 'Media & layout',
@@ -114,22 +87,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
                       defaultValue: 'centered-media',
                       options: ['centered-media', 'landscape'],
                     },
-                    {
-                      name: 'theme',
-                      type: 'select',
-                      defaultValue: 'light',
-                      options: ['light', 'dark', 'neutral', 'brand'],
-                      admin: {
-                        description:
-                          'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
-                      },
-                    },
-                    {
-                      name: 'mediaTreatment',
-                      type: 'select',
-                      defaultValue: 'contained',
-                      options: ['contained', 'full-bleed', 'floating', 'background'],
-                    },
+                    ...heroPresentationFields(),
                   ],
                 },
               ],
@@ -207,33 +165,12 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
         },
         {
           label: 'Related Work',
-          fields: [
-            {
-              name: 'relatedWorkPages',
-              type: 'relationship',
-              relationTo: 'work-pages',
-              hasMany: true,
-              filterOptions: ({ id }) => ({ id: { not_in: id ? [id] : [] } }),
-            },
-            {
-              name: 'editorialNotes',
-              type: 'textarea',
-              access: {
-                read: authenticatedField,
-                update: authenticatedField,
-              },
-            },
-          ],
+          fields: [relatedPagesField('relatedWorkPages', 'work-pages'), editorialNotesField()],
         },
-        {
-          name: 'meta',
-          label: 'SEO',
-          fields: seoMetaTabFields,
-        },
+        seoMetaTab(),
       ],
     },
-    { name: 'featured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
-    { name: 'publishedAt', type: 'date', admin: { position: 'sidebar' } },
+    ...pagePublishingFields(),
     slugField({ fieldToUse: 'title' }),
   ],
   hooks: {

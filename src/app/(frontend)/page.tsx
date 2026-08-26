@@ -5,9 +5,9 @@ import { getPayload } from 'payload'
 import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { homeStatic } from '@/endpoints/seed/home-static'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { RenderHomeHero } from '@/Home/hero'
+import { homeStatic } from '@/Home/home-static'
 import { HomeStatement } from '@/Home/statement'
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './[slug]/page.client'
@@ -20,7 +20,9 @@ export default async function HomePage() {
 
   return (
     <>
-      <article className="pb-24">
+      {/* Opaque and above the closing band: the band is a sticky curtain the
+          page uncovers by scrolling this off it (src/Footer/Closing/curtain). */}
+      <article className="relative z-10 bg-background pb-24">
         <PageClient />
         {draft && <LivePreviewListener />}
         <RenderHomeHero {...hero} />

@@ -2,20 +2,21 @@
 
 import { useConfig, useField } from '@payloadcms/ui'
 import { useEffect, useRef } from 'react'
-
-const relationId = (value: unknown): number | undefined => {
-  if (typeof value === 'number') return value
-  if (typeof value === 'object' && value !== null && 'id' in value) {
-    const { id } = value as { id?: unknown }
-    return typeof id === 'number' ? id : undefined
-  }
-  return undefined
-}
+import { numericRelationshipId as relationId } from '@/utilities/relationshipId'
 
 type LibraryDoc = {
   organization?: unknown
   project?: unknown
   rootFolder?: unknown
+}
+
+/** Fill a header field from the library, leaving an editor's own choice alone. */
+const assignIfEmpty = (
+  next: number | undefined,
+  current: number | undefined,
+  set: (value: number) => void,
+) => {
+  if (next && !current) set(next)
 }
 
 /**
@@ -50,17 +51,12 @@ export function AssignLibraryFolder() {
       })
       if (!response.ok || cancelled) return
       const doc = (await response.json()) as LibraryDoc
-      const rootId = relationId(doc.rootFolder)
       if (cancelled) return
 
       assignedFor.current = libraryId
-      if (rootId && !folderId) setFolder(rootId)
-
-      const nextOrganization = relationId(doc.organization)
-      if (nextOrganization && !organizationId) setOrganization(nextOrganization)
-
-      const nextProject = relationId(doc.project)
-      if (nextProject && !projectId) setProject(nextProject)
+      assignIfEmpty(relationId(doc.rootFolder), folderId, setFolder)
+      assignIfEmpty(relationId(doc.organization), organizationId, setOrganization)
+      assignIfEmpty(relationId(doc.project), projectId, setProject)
     }
 
     void run()

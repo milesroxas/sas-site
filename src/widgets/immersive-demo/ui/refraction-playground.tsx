@@ -53,6 +53,7 @@ export function RefractionPlayground() {
     lensEnabled,
     lensVisibility,
     lensSpread,
+    lensFade,
     lensDepth,
     lensRefraction,
     lensChroma,
@@ -74,6 +75,17 @@ export function RefractionPlayground() {
       max: 0.6,
       step: 0.01,
       label: 'size',
+      render: (get) => get('Glass lens.lensEnabled'),
+    },
+    // Keeps the mesh inset within the media: it fades as its rim nears the
+    // edge instead of hanging off the silhouette. HERO_LENS ships without one
+    // (its mesh is optically absent anyway).
+    lensFade: {
+      value: DEFAULTS.lensFade,
+      min: 0,
+      max: 0.4,
+      step: 0.01,
+      label: 'edge fade',
       render: (get) => get('Glass lens.lensEnabled'),
     },
     lensDepth: {
@@ -199,6 +211,7 @@ export function RefractionPlayground() {
     highlight,
     lensVisibility: lensEnabled ? lensVisibility : 0,
     lensSpread,
+    lensFade,
     lensDepth,
     lensRefraction,
     lensChroma,

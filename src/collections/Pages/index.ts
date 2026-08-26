@@ -1,10 +1,10 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
+import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { hero } from '@/heros/config'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { pageLayoutBlocks } from '../../fields/pageLayoutBlocks'
-import { seoMetaTabFields } from '../../fields/seoMetaTabFields'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
@@ -71,11 +71,7 @@ export const Pages: CollectionConfig<'pages'> = {
           ],
           label: 'Composition',
         },
-        {
-          name: 'meta',
-          label: 'SEO',
-          fields: seoMetaTabFields,
-        },
+        seoMetaTab(),
       ],
     },
     {

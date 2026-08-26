@@ -54,3 +54,16 @@ export const generateHomePreviewPath = (_args: { req: PayloadRequest }) => {
 
   return `/next/preview?${encodedParams.toString()}`
 }
+
+/**
+ * The `livePreview` / `preview` pair every slug-addressed page collection
+ * declares in its `admin` config; spread it in rather than restating both.
+ */
+export const collectionPreview = (collection: keyof typeof collectionPrefixMap) => ({
+  livePreview: {
+    url: ({ data, req }: { data: Record<string, unknown>; req: PayloadRequest }) =>
+      generatePreviewPath({ slug: data?.slug as string, collection, req }),
+  },
+  preview: (data: Record<string, unknown>, { req }: { req: PayloadRequest }) =>
+    generatePreviewPath({ slug: data?.slug as string, collection, req }),
+})

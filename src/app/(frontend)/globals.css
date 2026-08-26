@@ -214,6 +214,12 @@
   }
 }
 
+/*
+ * Unsuffixed alias of the both-edges vertical fade — the common case. Spelled
+ * out rather than `@apply scroll-fade-y`: the `scroll-fade-*` functional
+ * utility below also matches `scroll-fade-y`, so applying it here is a
+ * circular dependency Tailwind rejects at build time.
+ */
 @utility scroll-fade {
   --_scroll-fade-size-t: var(
     --scroll-fade-t-size,
@@ -682,6 +688,11 @@
 @custom-variant md (@media (width >= theme(--breakpoint-md)));
 @custom-variant lg (@media (width >= theme(--breakpoint-lg)));
 @custom-variant xl (@media (width >= theme(--breakpoint-xl)));
+
+/* Height breakpoint for surfaces that trade scrolling for a pinned screen —
+   the footer closing curtain. Below it the band stays in normal flow so a
+   stack taller than the viewport can still be scrolled through. */
+@custom-variant tall (@media (height >= 44rem));
 
 @layer base {
   h1,

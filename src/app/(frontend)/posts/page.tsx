@@ -37,7 +37,9 @@ export default async function Page() {
 
   return (
     <>
-      <div className="pb-24">
+      {/* Opaque and above the closing band: the band is a sticky curtain the
+          page uncovers by scrolling this off it (src/Footer/Closing/curtain). */}
+      <div className="relative z-10 bg-background pb-24">
         <PageClient />
         {draft && <LivePreviewListener />}
         <RevealSection delayMs={0}>

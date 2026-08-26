@@ -4,7 +4,7 @@
  */
 export { ImmersiveShell, type ImmersiveShellProps } from '@/lib/interactions/immersive-shell'
 export { WebGLTunnel } from '@/lib/webgl/components/tunnel'
-export { HERO_LENS, INDUSTRY_WORK_MEDIA } from './presets'
+export { HERO_LENS, INDUSTRY_WORK_MEDIA, LIGHT_LEAK_AMBER } from './presets'
 export {
   CHROMA_SPLIT_TEXT_DEFAULTS,
   ChromaSplitText,
@@ -24,6 +24,17 @@ export {
   type FloatingCardsEase,
   type FloatingCardsProps,
 } from './ui/floating-cards'
+export {
+  LIGHT_LEAK_DEFAULTS,
+  LightLeak,
+  type LightLeakBlendMode,
+  type LightLeakProps,
+  type LightLeakTint,
+} from './ui/light-leak'
+export {
+  LIGHT_LEAK_EXCITE_ATTR,
+  leakExcite,
+} from './ui/light-leak-excite'
 export {
   REFRACTION_MEDIA_DEFAULTS,
   RefractionMedia,

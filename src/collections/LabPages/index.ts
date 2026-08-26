@@ -1,13 +1,13 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
-import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { labBlocks } from '@/blocks/lab/config'
-import { overridesVisible, showOverridesField } from '@/fields/overrides'
-import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
+import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/fields/pageFields'
+import { heroContentCollapsible, heroPresentationFields } from '@/fields/pageHero'
+import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
-import { generatePreviewPath } from '@/utilities/generatePreviewPath'
+import { collectionPreview } from '@/utilities/generatePreviewPath'
 import { revalidateLabPage, revalidateLabPageDelete } from './hooks/revalidateLabPage'
 import { validateLabPage } from './hooks/validateLabPage'
 
@@ -26,12 +26,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
     defaultColumns: ['title', 'labProject', 'slug', 'featured', '_status', 'updatedAt'],
     description:
       'Website-specific lab-project presentation, composition, SEO, preview, and publishing.',
-    livePreview: {
-      url: ({ data, req }) =>
-        generatePreviewPath({ slug: data?.slug, collection: 'lab-pages', req }),
-    },
-    preview: (data, { req }) =>
-      generatePreviewPath({ slug: data?.slug as string, collection: 'lab-pages', req }),
+    ...collectionPreview('lab-pages'),
   },
   defaultPopulate: {
     title: true,
@@ -78,30 +73,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
               name: 'hero',
               type: 'group',
               fields: [
-                {
-                  type: 'collapsible',
-                  label: 'Content',
-                  fields: [
-                    { name: 'eyebrow', type: 'text' },
-                    showOverridesField(),
-                    {
-                      name: 'titleOverride',
-                      type: 'text',
-                      admin: {
-                        description: 'Website-only. Leave empty to use the canonical title.',
-                        condition: overridesVisible,
-                      },
-                    },
-                    {
-                      name: 'summaryOverride',
-                      type: 'textarea',
-                      admin: {
-                        description: 'Website-only. Leave empty to use the canonical summary.',
-                        condition: overridesVisible,
-                      },
-                    },
-                  ],
-                },
+                heroContentCollapsible(),
                 {
                   type: 'collapsible',
                   label: 'Media & layout',
@@ -118,22 +90,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
                       defaultValue: 'editorial-split',
                       options: ['editorial-split', 'centered', 'immersive', 'media-led'],
                     },
-                    {
-                      name: 'theme',
-                      type: 'select',
-                      defaultValue: 'light',
-                      options: ['light', 'dark', 'neutral', 'brand'],
-                      admin: {
-                        description:
-                          'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
-                      },
-                    },
-                    {
-                      name: 'mediaTreatment',
-                      type: 'select',
-                      defaultValue: 'contained',
-                      options: ['contained', 'full-bleed', 'floating', 'background'],
-                    },
+                    ...heroPresentationFields(),
                   ],
                 },
               ],
@@ -170,33 +127,12 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
         },
         {
           label: 'Related Work',
-          fields: [
-            {
-              name: 'relatedLabPages',
-              type: 'relationship',
-              relationTo: 'lab-pages',
-              hasMany: true,
-              filterOptions: ({ id }) => ({ id: { not_in: id ? [id] : [] } }),
-            },
-            {
-              name: 'editorialNotes',
-              type: 'textarea',
-              access: {
-                read: authenticatedField,
-                update: authenticatedField,
-              },
-            },
-          ],
+          fields: [relatedPagesField('relatedLabPages', 'lab-pages'), editorialNotesField()],
         },
-        {
-          name: 'meta',
-          label: 'SEO',
-          fields: seoMetaTabFields,
-        },
+        seoMetaTab(),
       ],
     },
-    { name: 'featured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
-    { name: 'publishedAt', type: 'date', admin: { position: 'sidebar' } },
+    ...pagePublishingFields(),
     slugField({ useAsSlug: 'title' }),
   ],
   hooks: {

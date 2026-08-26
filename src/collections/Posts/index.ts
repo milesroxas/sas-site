@@ -8,13 +8,13 @@ import {
 } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
+import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Banner } from '../../blocks/Banner/config'
 import { Code } from '../../blocks/Code/config'
 import { FeatureStatementLinks } from '../../blocks/feature/StatementLinks/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
-import { seoMetaTabFields } from '../../fields/seoMetaTabFields'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { populateAuthors } from './hooks/populateAuthors'
 import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
@@ -138,11 +138,7 @@ export const Posts: CollectionConfig<'posts'> = {
           ],
           label: 'Related & Categories',
         },
-        {
-          name: 'meta',
-          label: 'SEO',
-          fields: seoMetaTabFields,
-        },
+        seoMetaTab(),
       ],
     },
     {

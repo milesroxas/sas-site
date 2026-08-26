@@ -1,15 +1,11 @@
 'use client'
 
-import { IconArrowLeft, IconWorld } from '@tabler/icons-react'
-import Lenis from 'lenis'
+import { IconArrowLeft } from '@tabler/icons-react'
 import type React from 'react'
-import { createContext, useContext, useEffect, useRef, ViewTransition } from 'react'
-import { useTempus } from 'tempus/react'
+import { createContext, useContext, useEffect, ViewTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Spinner } from '@/components/ui/spinner'
-import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { DirectionalTransition, postImageVtName } from '@/shared/lib/view-transition'
+import { DemoBrowserFrame, DemoScroller } from '@/shared/ui/demo-kit'
 import { cn } from '@/utilities/ui'
 import type { SimDirection, SimPhase } from './use-sim-navigation'
 import './transition-demo.css'
@@ -148,54 +144,13 @@ type MockViewportProps = {
 }
 
 /**
- * The window's scroller: a shadcn ScrollArea whose viewport is driven by its
- * own Lenis instance, tuned like the site's root scroll. It mounts inside the
- * keyed transition boundary, so every navigation gets a fresh scroller at the
- * top — the production stale-`targetScroll` hazard (see SmoothScrollProvider)
- * structurally cannot happen here.
+ * The window's scroller. It mounts inside the keyed transition boundary, so
+ * every navigation gets a fresh scroller at the top — the production
+ * stale-`targetScroll` hazard (see SmoothScrollProvider) structurally cannot
+ * happen here.
  */
 function MockScroller({ children }: { children: React.ReactNode }) {
-  const viewportRef = useRef<HTMLDivElement>(null)
-  const lenisRef = useRef<Lenis | null>(null)
-  const reducedMotion = usePrefersReducedMotion()
-
-  useEffect(() => {
-    // Mirror SmoothScrollProvider: reduced motion gets native scrolling.
-    if (reducedMotion) return
-    const wrapper = viewportRef.current
-    if (!wrapper) return
-    const lenis = new Lenis({
-      wrapper,
-      // Radix wraps children in a single content div — Lenis measures it.
-      content: (wrapper.firstElementChild as HTMLElement | null) ?? wrapper,
-      lerp: 0.09,
-      wheelMultiplier: 1,
-      touchMultiplier: 1.15,
-      syncTouch: true,
-      smoothWheel: true,
-      autoRaf: false,
-    })
-    lenisRef.current = lenis
-    return () => {
-      lenisRef.current = null
-      lenis.destroy()
-    }
-  }, [reducedMotion])
-
-  // Same clock as the site's root Lenis (see lib/interactions/smooth-scroll).
-  useTempus(({ time }: { time: number }) => {
-    lenisRef.current?.raf(time)
-  })
-
-  return (
-    <ScrollArea
-      className="h-[80vh]"
-      viewportRef={viewportRef}
-      viewportClassName="overscroll-contain"
-    >
-      {children}
-    </ScrollArea>
-  )
+  return <DemoScroller className="h-[80vh]">{children}</DemoScroller>
 }
 
 /** Browser-frame chrome around the mock site: back button, address bar, phase readout. */
@@ -217,11 +172,10 @@ export function MockViewport({
 
   return (
     <SimNavContext.Provider value={{ navigate }}>
-      <div
-        data-lenis-prevent
-        className="overflow-hidden rounded-lg border border-border bg-background"
-      >
-        <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-3 py-2">
+      <DemoBrowserFrame
+        path={routePath(route)}
+        loading={loading}
+        leading={
           <Button
             variant="ghost"
             size="icon-sm"
@@ -232,14 +186,8 @@ export function MockViewport({
           >
             <IconArrowLeft aria-hidden />
           </Button>
-          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-xs text-muted-foreground">
-            {loading ? (
-              <Spinner className="size-3.5 shrink-0" />
-            ) : (
-              <IconWorld className="size-3.5 shrink-0" aria-hidden />
-            )}
-            <span className="truncate">suits-sandals.com{routePath(route)}</span>
-          </div>
+        }
+        trailing={
           <span
             className={cn(
               'hidden shrink-0 font-mono text-xs sm:inline',
@@ -249,8 +197,8 @@ export function MockViewport({
           >
             {PHASE_LABEL[phase]}
           </span>
-        </div>
-
+        }
+      >
         {/* Like the production layout: the header lives outside the animated
             boundary (it persists through swaps), overlaying the scroller the
             way the fixed site header overlays the page frame. */}
@@ -292,7 +240,7 @@ export function MockViewport({
             </MockScroller>
           </DirectionalTransition>
         </div>
-      </div>
+      </DemoBrowserFrame>
     </SimNavContext.Provider>
   )
 }

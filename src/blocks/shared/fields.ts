@@ -1,4 +1,4 @@
-import type { SelectField } from 'payload'
+import type { Field, SelectField } from 'payload'
 
 /**
  * Block surface select shared by every block family. Values map to
@@ -14,3 +14,56 @@ export const themeField = (name = 'theme'): SelectField => ({
       'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
   },
 })
+
+/**
+ * Copy fields of a story-section block: an eyebrow plus website-only
+ * overrides of the canonical heading and body, and the freeform body used
+ * when the section's `source` is `custom`.
+ */
+export const storySectionCopyFields = (): Field[] => [
+  { name: 'eyebrow', type: 'text' },
+  { name: 'headingOverride', type: 'text' },
+  {
+    name: 'bodyOverride',
+    type: 'richText',
+    admin: { description: 'Website-only override; canonical content is unchanged.' },
+  },
+  {
+    name: 'customBody',
+    type: 'richText',
+    admin: { condition: (_, siblingData) => siblingData?.source === 'custom' },
+  },
+]
+
+/**
+ * Fields of a rich-transition block: a short band of copy between story
+ * sections, laid out one of four ways on a themed surface.
+ */
+export const transitionFields = (): Field[] => [
+  { name: 'eyebrow', type: 'text' },
+  { name: 'heading', type: 'text', required: true },
+  { name: 'body', type: 'richText' },
+  {
+    name: 'layout',
+    type: 'select',
+    defaultValue: 'centered',
+    options: ['left', 'centered', 'split', 'statement'],
+  },
+  themeField(),
+]
+
+/**
+ * Selection fields of a "related items" block: where the list comes from, how
+ * long it is, and how it is laid out. The heading differs per family, so each
+ * block declares its own.
+ */
+export const relatedSelectionFields = (): Field[] => [
+  {
+    name: 'selectionMode',
+    type: 'select',
+    defaultValue: 'document-settings',
+    options: ['document-settings', 'automatic-capability-match'],
+  },
+  { name: 'limit', type: 'number', min: 1, max: 12, defaultValue: 3 },
+  { name: 'layout', type: 'select', defaultValue: 'grid', options: ['grid', 'list', 'feature'] },
+]

@@ -1,12 +1,14 @@
 import { Checkbox } from './Checkbox'
 import { Country } from './Country'
-import { Email } from './Email'
 import { Message } from './Message'
-import { NumberField } from './Number'
 import { Select } from './Select'
 import { State } from './State'
-import { Text } from './Text'
 import { Textarea } from './Textarea'
+import { createTextInput } from './TextInput'
+
+const Text = createTextInput('text')
+const Email = createTextInput('text', /^\S[^\s@]*@\S+$/)
+const NumberField = createTextInput('number')
 
 export const fields = {
   checkbox: Checkbox,

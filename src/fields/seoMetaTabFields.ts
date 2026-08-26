@@ -5,7 +5,7 @@ import {
   OverviewField,
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
-import type { Field } from 'payload'
+import type { Field, NamedTab } from 'payload'
 
 /** SEO tab fields shared by website page surfaces (Pages, Home, Posts, etc.). */
 export const seoMetaTabFields: Field[] = [
@@ -85,3 +85,10 @@ export const seoMetaTabFields: Field[] = [
     descriptionPath: 'meta.description',
   }),
 ]
+
+/** The SEO tab itself, as every website page surface declares it. */
+export const seoMetaTab = (): NamedTab => ({
+  name: 'meta',
+  label: 'SEO',
+  fields: seoMetaTabFields,
+})
