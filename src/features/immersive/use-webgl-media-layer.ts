@@ -11,14 +11,12 @@ import { useDeviceDetection } from '@/hooks/use-device-detection'
  * the GPU. `enabled` gates the canvas on GPU support, a usable source, and
  * an optional `active` flag (defer the canvas while a clip/scale reveal is
  * still compositing); `ready` flips via `handleReady` (wire it to the
- * canvas's `onReady`) and resets whenever the canvas is disabled, so the DOM
- * layer is the one showing whenever WebGL can't be.
+ * canvas's `onReady`) and is true only for the `src` that last announced,
+ * so a source swap (or a disabled canvas) never reveals an empty WebGL
+ * buffer — sampling an unbound `uMap` paints opaque black.
  *
- * `ready` deliberately survives source swaps: the texture hooks keep the
- * previous frame on screen until the next media is on the GPU, so dropping
- * back to the DOM layer mid-swap would only flash. It does reset when
- * `active` goes false — unmounting the canvas mid-motion must not remount
- * it at full opacity before the next texture is on the GPU.
+ * `ready` resets when `active` goes false: unmounting the canvas mid-motion
+ * must not remount it at full opacity before the next texture is on the GPU.
  */
 export function useWebglMediaLayer(
   src: string | undefined,
@@ -29,14 +27,17 @@ export function useWebglMediaLayer(
   handleReady: () => void
 } {
   const { hasGPU } = useDeviceDetection()
-  const [ready, setReady] = useState(false)
+  const [readySrc, setReadySrc] = useState<string | undefined>(undefined)
   const enabled = active && hasGPU && Boolean(src)
+  const ready = enabled && readySrc === src
 
   useEffect(() => {
-    if (!enabled) setReady(false)
+    if (!enabled) setReadySrc(undefined)
   }, [enabled])
 
-  const handleReady = useCallback(() => setReady(true), [])
+  const handleReady = useCallback(() => {
+    if (src) setReadySrc(src)
+  }, [src])
 
   return { enabled, ready, handleReady }
 }

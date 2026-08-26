@@ -6,37 +6,36 @@ import { type RefObject, useRef } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import {
   SCROLL_REVEAL_EXIT_TIME_SCALE as EXIT_TIME_SCALE,
+  SCROLL_REVEAL_SWAP,
   SCROLL_REVEAL_UNDER_MEDIA,
 } from './scroll-reveal'
 
 gsap.registerPlugin(useGSAP)
 
 /**
- * Panel-swap choreography for dropdown-driven blocks, speaking the under-media
- * reveal's language — text drops with a blur settle, media settles from the
- * same zoom — so every value is imported from the reveal that owns it, never
- * restated. Swap targets (`data-swap`) are distinct nodes from a shell's
- * `data-reveal` targets, so the entrance timeline and the swap tweens never
- * write to the same element.
+ * Panel-swap choreography for dropdown-driven blocks. Opacity only, with
+ * timings from `SCROLL_REVEAL_SWAP` — not the under-media entrance (blur,
+ * lift, 600ms), which is first-seen language and reads as a replay when a
+ * dropdown fires it. Media can still take the entrance zoom when the
+ * consumer asks (`scaleMedia`); the zoom value is imported from the reveal
+ * that owns it, never restated.
  */
 const {
-  textY: TEXT_Y,
-  textBlurPx: TEXT_BLUR_PX,
   textDuration: TEXT_DURATION,
   textEase: TEXT_EASE,
   stagger: STAGGER,
   mediaDuration: MEDIA_DURATION,
   mediaEase: MEDIA_EASE,
-  mediaScaleFrom: MEDIA_SCALE_FROM,
-} = SCROLL_REVEAL_UNDER_MEDIA
+} = SCROLL_REVEAL_SWAP
+const { mediaScaleFrom: MEDIA_SCALE_FROM } = SCROLL_REVEAL_UNDER_MEDIA
 
 const SWAP_TEXT = '[data-swap="text"]'
 const SWAP_MEDIA = '[data-swap="media"]'
 
 /**
- * Two-half swap: the current panel's `data-swap` targets lift out (sped up
+ * Two-half swap: the current panel's `data-swap` targets fade out (sped up
  * like every swap exit), `onSwap` re-renders the next panel, and the
- * entrance half plays over the fresh nodes. Reduced motion swaps state
+ * incoming half fades in over the fresh nodes. Reduced motion swaps state
  * directly. Returns the context-safe select function.
  */
 export function useRevealSwap({
@@ -45,6 +44,7 @@ export function useRevealSwap({
   onSwap,
   onSwapStart,
   onSettled,
+  scaleMedia = true,
 }: {
   rootRef: RefObject<HTMLElement | null>
   /** Currently rendered panel index; the entrance half keys on its change. */
@@ -55,6 +55,12 @@ export function useRevealSwap({
   onSwapStart?: () => void
   /** Fires once the entrance half has settled (or immediately under reduced motion). */
   onSettled?: () => void
+  /**
+   * Media zoom on swap, matching the under-media entrance. False fades only —
+   * IndustryWork hides the WebGL layer during swap, so a zoom on the DOM
+   * track would read as a scale that isn't on the resting canvas.
+   */
+  scaleMedia?: boolean
 }) {
   const swapTlRef = useRef<gsap.core.Timeline | null>(null)
   const swappingRef = useRef(false)
@@ -63,6 +69,8 @@ export function useRevealSwap({
   onSwapStartRef.current = onSwapStart
   const onSettledRef = useRef(onSettled)
   onSettledRef.current = onSettled
+  const scaleMediaRef = useRef(scaleMedia)
+  scaleMediaRef.current = scaleMedia
   const prefersReducedMotion = usePrefersReducedMotion()
 
   const { contextSafe } = useGSAP(
@@ -80,11 +88,9 @@ export function useRevealSwap({
       if (texts.length) {
         tl.fromTo(
           texts,
-          { autoAlpha: 0, y: -TEXT_Y, filter: `blur(${TEXT_BLUR_PX}px)` },
+          { autoAlpha: 0 },
           {
             autoAlpha: 1,
-            y: 0,
-            filter: 'blur(0px)',
             duration: TEXT_DURATION,
             ease: TEXT_EASE,
             stagger: STAGGER,
@@ -95,14 +101,16 @@ export function useRevealSwap({
       if (media) {
         tl.fromTo(
           media,
-          { autoAlpha: 0, scale: MEDIA_SCALE_FROM },
-          { autoAlpha: 1, scale: 1, duration: MEDIA_DURATION, ease: MEDIA_EASE },
+          scaleMedia ? { autoAlpha: 0, scale: MEDIA_SCALE_FROM } : { autoAlpha: 0 },
+          scaleMedia
+            ? { autoAlpha: 1, scale: 1, duration: MEDIA_DURATION, ease: MEDIA_EASE }
+            : { autoAlpha: 1, duration: MEDIA_DURATION, ease: MEDIA_EASE },
           0,
         )
       }
       swapTlRef.current = tl
     },
-    { scope: rootRef, dependencies: [active, prefersReducedMotion] },
+    { scope: rootRef, dependencies: [active, prefersReducedMotion, scaleMedia] },
   )
 
   return contextSafe((index: number) => {
@@ -116,7 +124,7 @@ export function useRevealSwap({
       return
     }
 
-    // Exit half: current content lifts out, then the state swap re-renders
+    // Exit half: current copy fades out, then the state swap re-renders
     // and the entrance effect above plays.
     swapTlRef.current?.kill()
     swappingRef.current = true
@@ -128,8 +136,6 @@ export function useRevealSwap({
         texts,
         {
           autoAlpha: 0,
-          y: -TEXT_Y,
-          filter: `blur(${TEXT_BLUR_PX}px)`,
           duration: TEXT_DURATION,
           ease: TEXT_EASE,
           stagger: STAGGER,
@@ -140,7 +146,9 @@ export function useRevealSwap({
     if (media) {
       tl.to(
         media,
-        { autoAlpha: 0, scale: MEDIA_SCALE_FROM, duration: MEDIA_DURATION, ease: MEDIA_EASE },
+        scaleMediaRef.current
+          ? { autoAlpha: 0, scale: MEDIA_SCALE_FROM, duration: MEDIA_DURATION, ease: MEDIA_EASE }
+          : { autoAlpha: 0, duration: MEDIA_DURATION, ease: MEDIA_EASE },
         0,
       )
     }

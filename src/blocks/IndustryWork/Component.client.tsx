@@ -1,5 +1,7 @@
 'use client'
 
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
 import Link from 'next/link'
 import { useEffect, useRef, useState, ViewTransition } from 'react'
 import { HeadingDropdown } from '@/blocks/shared/heading-dropdown'
@@ -27,11 +29,14 @@ import {
 } from '@/shared/lib/view-transition'
 import {
   SCROLL_REVEAL_FULLSCREEN_ENTER_THRESHOLD,
+  SCROLL_REVEAL_SWAP,
   ScrollReveal,
   useRevealSwap,
 } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 import { webglMediaSrc } from '@/utilities/webglMediaSrc'
+
+gsap.registerPlugin(useGSAP)
 
 export type IndustryWorkPanel = {
   id: string
@@ -49,6 +54,8 @@ export type IndustryWorkPanel = {
  */
 const INDUSTRY_WORK_MEDIA_OFFSET = 0.2
 
+const { mediaDuration: MEDIA_SWAP_DURATION, mediaEase: MEDIA_SWAP_EASE } = SCROLL_REVEAL_SWAP
+
 /**
  * Main media with the shipped hover effect: the DOM `Media` paints first and
  * stays mounted as the fallback (reduced motion, absent GPUs, lost contexts)
@@ -62,6 +69,10 @@ const INDUSTRY_WORK_MEDIA_OFFSET = 0.2
  * background, not a gray box or a static copy of the same media.
  */
 const SHADER_FADE_MS = 500
+const SHADER_SWAP_MS = SCROLL_REVEAL_SWAP.mediaDuration * 1000
+
+const MEDIA_IN = '[data-media-swap]'
+const MEDIA_SIZE = '(max-width: 1024px) 100vw, 50vw'
 
 const IndustryWorkMedia = ({
   media,
@@ -75,8 +86,8 @@ const IndustryWorkMedia = ({
   /** Mount the canvas once — never during a clip-path / scale tween. */
   canvasMounted: boolean
   /**
-   * Visible hover layer. False during swap so the DOM track owns the scale;
-   * the canvas stays mounted (no shader recompile) and sits outside `data-swap`.
+   * Visible hover layer. False during swap so the DOM track owns the fade;
+   * the canvas stays mounted (no shader recompile).
    */
   canvasHot: boolean
 }) => {
@@ -87,6 +98,8 @@ const IndustryWorkMedia = ({
   const showShader = ready && canvasHot
   const [fadeStarted, setFadeStarted] = useState(false)
   const [fadeDone, setFadeDone] = useState(false)
+  const hasShownShader = useRef(false)
+  const fadeMs = hasShownShader.current ? SHADER_SWAP_MS : SHADER_FADE_MS
 
   useEffect(() => {
     if (!showShader) {
@@ -95,15 +108,18 @@ const IndustryWorkMedia = ({
       return
     }
     if (prefersReducedMotion) {
+      hasShownShader.current = true
       setFadeStarted(true)
       setFadeDone(true)
       return
     }
+    const ms = hasShownShader.current ? SHADER_SWAP_MS : SHADER_FADE_MS
+    hasShownShader.current = true
     // One painted frame at opacity-0 with the enter duration applied, then
     // lift it — otherwise adding the transition in the same commit as opacity
     // 1 skips the fade and the shader pops on.
     const start = requestAnimationFrame(() => setFadeStarted(true))
-    const done = window.setTimeout(() => setFadeDone(true), SHADER_FADE_MS)
+    const done = window.setTimeout(() => setFadeDone(true), ms)
     return () => {
       cancelAnimationFrame(start)
       window.clearTimeout(done)
@@ -120,8 +136,8 @@ const IndustryWorkMedia = ({
 
   return (
     <>
-      {/* Swap scale/fade targets this wrapper only — never the canvas. */}
-      <div className="absolute inset-0" data-swap="media">
+      {/* DOM fallback — the incoming-layer wipe lives on `data-media-swap`. */}
+      <div className="absolute inset-0">
         <div className={cn('absolute inset-0 bg-muted', hideDom && 'opacity-0')}>
           <Media
             fill
@@ -133,7 +149,7 @@ const IndustryWorkMedia = ({
             // bigger source — view-transition snapshots rasterize at painted
             // size, and the fullscreen hold is painted by the case-study
             // hero's own 100vw image on the destination page.
-            size="(max-width: 1024px) 100vw, 50vw"
+            size={MEDIA_SIZE}
           />
         </div>
       </div>
@@ -141,16 +157,16 @@ const IndustryWorkMedia = ({
         <div
           aria-hidden
           className={cn(
-            'pointer-events-none absolute inset-0 transition-opacity ease-out',
+            'pointer-events-none absolute inset-0 transition-opacity ease-[cubic-bezier(0.23,1,0.32,1)]',
             !shaderVisible && 'opacity-0',
           )}
-          style={{ transitionDuration: showShader ? `${SHADER_FADE_MS}ms` : '0ms' }}
+          style={{ transitionDuration: showShader ? `${fadeMs}ms` : '0ms' }}
         >
           <RefractionMedia
             className="size-full"
             onReady={handleReady}
             src={src}
-            subscribeProximity={proximity}
+            subscribeProximity={hideDom ? proximity : undefined}
             video={isVideo}
             {...INDUSTRY_WORK_MEDIA}
           />
@@ -176,7 +192,8 @@ const MetaGroup = ({ label, values }: { label: string; values: string[] }) => (
  * left edge and hangs from its top offset, while the CMS-sourced details
  * (client, capabilities) sit right of the media, centered on it. Entrance is
  * the shared under-media reveal in a self-owned full-screen shell; the
- * industry swap replays it through `useRevealSwap`.
+ * industry swap fades copy in place and crossfades media over the outgoing
+ * frame so the section never empties.
  */
 export const IndustryWorkClient = ({
   heading,
@@ -188,40 +205,87 @@ export const IndustryWorkClient = ({
   theme?: string | null
 }) => {
   const [active, setActive] = useState(0)
+  const [textIndex, setTextIndex] = useState(0)
+  const [prevMedia, setPrevMedia] = useState<WorkEntry['media']>(null)
   // Canvas stays unmounted until the first entrance has cleared its clip-path
   // / scale. After that it stays mounted across industry swaps (no shader
   // recompile) and is only hidden while the DOM track owns the swap motion.
   const [canvasMounted, setCanvasMounted] = useState(false)
   const [canvasHot, setCanvasHot] = useState(false)
   const swapLockRef = useRef(false)
+  const swappingMediaRef = useRef(false)
+  const mediaTlRef = useRef<gsap.core.Tween | null>(null)
   const armCanvas = () => {
     if (swapLockRef.current) return
     setCanvasMounted(true)
     setCanvasHot(true)
   }
   const rootRef = useRef<HTMLDivElement>(null)
+  const prefersReducedMotion = usePrefersReducedMotion()
   const selectIndustry = useRevealSwap({
     rootRef,
-    active,
+    active: textIndex,
+    scaleMedia: false,
     onSwapStart: () => {
       swapLockRef.current = true
       setCanvasHot(false)
     },
-    onSwap: setActive,
+    onSwap: setTextIndex,
     onSettled: () => {
       swapLockRef.current = false
       setCanvasMounted(true)
       setCanvasHot(true)
+      setPrevMedia(null)
     },
   })
+
+  useGSAP(
+    () => {
+      if (!swappingMediaRef.current) return
+      swappingMediaRef.current = false
+      const root = rootRef.current
+      if (!root || prefersReducedMotion) return
+      const incoming = root.querySelector<HTMLElement>(MEDIA_IN)
+      if (!incoming) return
+      mediaTlRef.current?.kill()
+      // Set hidden, then tween to open — never fromTo. After the first wipe
+      // the layer is already visible, so fromTo(hidden → visible) inverts and
+      // plays backward (up) on every other click.
+      const clipped = `inset(0px 0px ${incoming.offsetHeight}px 0px)`
+      gsap.set(incoming, { clipPath: clipped })
+      mediaTlRef.current = gsap.to(incoming, {
+        clipPath: 'inset(0px 0px 0px 0px)',
+        duration: MEDIA_SWAP_DURATION,
+        ease: MEDIA_SWAP_EASE,
+        overwrite: true,
+        onComplete: () => {
+          gsap.set(incoming, { clearProps: 'clipPath' })
+          setCanvasMounted(true)
+          setCanvasHot(true)
+        },
+      })
+    },
+    { scope: rootRef, dependencies: [active, prefersReducedMotion] },
+  )
+
+  const onSelect = (index: number) => {
+    if (index === active) return
+    swappingMediaRef.current = true
+    setPrevMedia(panels[active]?.work.media ?? null)
+    setActive(index)
+    selectIndustry(index)
+  }
 
   // The media link is the cursor target; its proximity (0–1, shared with the
   // ring overlay) pre-activates the WebGL hover effects on approach.
   const mediaLinkRef = useRef<HTMLAnchorElement>(null)
   const mediaProximity = useCursorProximitySource(mediaLinkRef)
 
-  const current = panels[active] ?? panels[0]
-  const { work } = current
+  const textPanel = panels[textIndex] ?? panels[0]
+  const mediaPanel = panels[active] ?? panels[0]
+  if (!textPanel || !mediaPanel) return null
+  const { work } = textPanel
+  const mediaWork = mediaPanel.work
 
   return (
     <ScrollReveal
@@ -240,13 +304,13 @@ export const IndustryWorkClient = ({
       <Container width="default" className="flex flex-col gap-12 md:gap-16 lg:gap-32" ref={rootRef}>
         <HeadingDropdown
           activeIndex={active}
-          continuationFor={(index) => panels[index] ?? current}
+          continuationFor={(index) => panels[index] ?? mediaPanel}
           heading={heading}
           lowercase
-          onSelect={selectIndustry}
+          onSelect={onSelect}
           options={panels.map((panel) => panel.industry)}
-          secondLine={current.secondLine}
-          subheading={current.subheading}
+          secondLine={mediaPanel.secondLine}
+          subheading={mediaPanel.subheading}
         />
 
         <div className="grid grid-cols-1 gap-8 md:gap-10 lg:grid-cols-12 lg:gap-x-8 lg:gap-y-0">
@@ -289,10 +353,10 @@ export const IndustryWorkClient = ({
               the unmounting, side). Matching `name` in `CaseStudyHero*`. */}
           <ViewTransition
             default="none"
-            name={workImageVtName(work.slug)}
+            name={workImageVtName(mediaWork.slug)}
             onShare={(_instance, types) =>
               types.includes(WORK_OPEN)
-                ? sequenceWorkImageMorph(workImageVtName(work.slug))
+                ? sequenceWorkImageMorph(workImageVtName(mediaWork.slug))
                 : undefined
             }
             share="morph-hero"
@@ -305,7 +369,12 @@ export const IndustryWorkClient = ({
                 outward. The canvas mounts only after the reveal's clip-path
                 is cleared, so the wipe never composites a live shader. */}
             <div
-              className="relative -order-1 aspect-8/5 w-full lg:order-0 lg:col-start-4 lg:col-end-10 lg:row-start-1"
+              className={cn(
+                'relative -order-1 aspect-8/5 w-full lg:order-0 lg:col-start-4 lg:col-end-10 lg:row-start-1',
+                // Clip only while the underlay is up — the resting canvas
+                // bleeds past this box and must not be masked.
+                prevMedia && 'overflow-hidden',
+              )}
               data-reveal="media"
             >
               {/* The whole panel is the click surface into the work entry —
@@ -313,20 +382,33 @@ export const IndustryWorkClient = ({
                   `view` cursor ring materializes on approach, and the media
                   effects pre-activate off the same proximity signal. */}
               <Link
-                aria-label={`View case study: ${work.title}`}
+                aria-label={`View case study: ${mediaWork.title}`}
                 className="absolute inset-0 block"
-                href={work.href}
+                href={mediaWork.href}
                 ref={mediaLinkRef}
                 transitionTypes={[...workOpenTransitionTypes]}
                 {...cursorTarget({ variant: 'view' })}
               >
                 <div className="absolute inset-0">
-                  <IndustryWorkMedia
-                    canvasHot={canvasHot}
-                    canvasMounted={canvasMounted}
-                    media={work.media}
-                    proximity={mediaProximity}
-                  />
+                  {prevMedia ? (
+                    <div aria-hidden className="absolute inset-0">
+                      <Media
+                        fill
+                        htmlElement={null}
+                        imgClassName="object-cover"
+                        resource={prevMedia}
+                        size={MEDIA_SIZE}
+                      />
+                    </div>
+                  ) : null}
+                  <div className="absolute inset-0" data-media-swap>
+                    <IndustryWorkMedia
+                      canvasHot={canvasHot}
+                      canvasMounted={canvasMounted}
+                      media={mediaWork.media}
+                      proximity={mediaProximity}
+                    />
+                  </div>
                 </div>
               </Link>
             </div>

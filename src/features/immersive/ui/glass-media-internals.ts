@@ -240,15 +240,6 @@ export function useBackdropTexture({
     let detachSource: (() => void) | undefined
     let raf = 0
 
-    const disposeMap = (material: ShaderMaterial) => {
-      const current = material.uniforms.uMap?.value as Texture | null
-      if (!current) return
-      // Null first so a Strict Mode remount cannot revive a disposed texture
-      // via the `existing?.image === image` short-circuit.
-      material.uniforms.uMap.value = null
-      current.dispose()
-    }
-
     const apply = (material: ShaderMaterial, texture: Texture, width: number, height: number) => {
       if (cancelled) {
         texture.dispose()
@@ -362,10 +353,25 @@ export function useBackdropTexture({
       ownedVideo?.pause()
       ownedVideo?.removeAttribute('src')
       ownedVideo?.load()
-      const material = materialRef.current
-      if (material) disposeMap(material)
+      // Leave uMap in place on src change so the last frame holds until
+      // apply() swaps in the new texture. Disposing here paints an unbound
+      // sampler (opaque black) if the canvas is still visible.
     }
   }, [src, video, source, invalidate, materialRef])
+
+  // Unmount only — src-change cleanup above must not dispose the live map.
+  useEffect(() => {
+    return () => {
+      const material = materialRef.current
+      if (!material) return
+      const current = material.uniforms.uMap?.value as Texture | null
+      if (!current) return
+      // Null first so a Strict Mode remount cannot revive a disposed texture
+      // via the `existing?.image === image` short-circuit.
+      material.uniforms.uMap.value = null
+      current.dispose()
+    }
+  }, [materialRef])
 
   // A video source only produces work when it produces a frame, so drive the
   // demand loop off the decoder rather than the display refresh rate.

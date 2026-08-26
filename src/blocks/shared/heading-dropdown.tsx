@@ -12,16 +12,16 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { CHAR_PRESETS, createScrambleTween, scrambleTweenDefaults } from '@/shared/ui/scramble-text'
-import { SCROLL_REVEAL_UNDER_MEDIA } from '@/shared/ui/scroll-reveal'
+import { SCROLL_REVEAL_SWAP } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
 gsap.registerPlugin(useGSAP)
 
 /* Deltas from SCRAMBLE_TEXT_DEFAULTS for the inline headline swap: the
-   sentence must settle before the block's own swap entrance does, so the
-   duration rides the under-media text timing at a fraction of it, and the
-   churn refreshes faster to read as a quick flicker rather than a cycle. */
-const SCRAMBLE_DURATION_S = SCROLL_REVEAL_UNDER_MEDIA.textDuration * 0.75
+   sentence must settle with the block's swap, so the duration rides the
+   swap text timing (not the scroll entrance), and the churn refreshes
+   faster to read as a quick flicker rather than a cycle. */
+const SCRAMBLE_DURATION_S = SCROLL_REVEAL_SWAP.textDuration * 1.4
 const SCRAMBLE_SPEED = 0.8
 
 /* Continuation dim while the scramble churns — drops early, recovers over the
@@ -38,7 +38,7 @@ const composeContinuation = (subheading: string, secondLine?: string | null) =>
  * active option in the chip, then the continuation in one wrapping text run.
  * The whole line carries `data-reveal` for the shell's entrance; on panel
  * change the continuation scrambles to the incoming sentence itself (dimmed,
- * height-tweened) instead of joining the `useRevealSwap` blur choreography.
+ * height-tweened) instead of joining the `useRevealSwap` fade.
  */
 export const HeadingDropdown = ({
   heading,
@@ -187,7 +187,7 @@ export const HeadingDropdown = ({
           }}
         >
           {current}
-          <IconChevronDown className="size-6 shrink-0 transition-transform group-data-[state=open]:rotate-180" />
+          <IconChevronDown className="size-6 shrink-0 transition-transform duration-200 ease-out group-data-[state=open]:rotate-180" />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"

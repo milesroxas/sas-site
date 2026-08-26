@@ -120,9 +120,22 @@ export const SCROLL_REVEAL_TRIGGER_DEFAULTS = {
 } as const satisfies ScrollRevealTuning
 
 /**
- * Click-driven swap exits (panel/tab swaps) lift the outgoing content out
- * faster than the entrance settles it in. Scroll exits don't animate at all —
- * entrances are play-once.
+ * Click-driven panel swaps (dropdown industry / audience). Distinct from the
+ * scroll entrance: opacity only — no blur, no lift. Those are first-seen
+ * language; a switch the user will fire while browsing must feel like a
+ * response, not a replay of the section reveal. Durations stay under 250ms.
+ */
+export const SCROLL_REVEAL_SWAP = {
+  textDuration: 0.2,
+  textEase: 'power2.out',
+  stagger: 0.03,
+  mediaDuration: 0.22,
+  mediaEase: 'power2.out',
+} as const
+
+/**
+ * Click-driven swap exits (panel/tab swaps) finish faster than the incoming
+ * half settles. Scroll exits don't animate at all — entrances are play-once.
  */
 export const SCROLL_REVEAL_EXIT_TIME_SCALE = 1.6
 
