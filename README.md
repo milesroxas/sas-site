@@ -312,8 +312,6 @@ pnpm test:e2e    # Playwright — admin panel, frontend rendering, content-hub w
 pnpm test        # both
 ```
 
-Visual regression runs in CI: `.github/workflows/chromatic.yml` publishes Storybook on every push and uses TurboSnap so only stories affected by the diff are snapshotted.
-
 ## License
 
 MIT
