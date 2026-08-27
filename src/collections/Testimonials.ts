@@ -86,7 +86,7 @@ export const Testimonials: CollectionConfig<'testimonials'> = {
       name: 'approvalStatus',
       type: 'select',
       required: true,
-      defaultValue: 'unverified',
+      defaultValue: 'approved-public',
       options: ['unverified', 'client-review', 'approved-public', 'internal-only'],
       admin: {
         description:
