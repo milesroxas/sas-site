@@ -8,6 +8,7 @@ import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component
 import { FullMedia } from '@/blocks/full-media/FullMedia'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
+import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
@@ -400,21 +401,7 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
 
 const Transition = ({ block }: { block: CaseStudyTransitionBlock }) => (
   <RevealSection theme={block.theme} variant="intro">
-    <div className="container mx-auto max-w-5xl text-center">
-      {block.eyebrow && (
-        <p className="mb-3 text-sm uppercase tracking-[0.2em]" data-reveal>
-          {block.eyebrow}
-        </p>
-      )}
-      <h2 className="text-display" data-reveal>
-        {block.heading}
-      </h2>
-      {block.body && (
-        <div data-reveal>
-          <RichText className="mt-8" data={block.body} enableGutter={false} />
-        </div>
-      )}
-    </div>
+    <RichTransition bare {...block} />
   </RevealSection>
 )
 

@@ -1785,6 +1785,14 @@ export interface WorkCaseStudyStorySectionBlock {
 export interface CaseStudyTransitionBlock {
   eyebrow?: string | null;
   heading: string;
+  /**
+   * How the copy sits on the band.
+   */
+  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   body?: {
     root: {
       type: string;
@@ -1800,11 +1808,6 @@ export interface CaseStudyTransitionBlock {
     };
     [k: string]: unknown;
   } | null;
-  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'caseStudyTransition';
@@ -3750,6 +3753,14 @@ export interface LabStorySectionBlock {
 export interface LabTransitionBlock {
   eyebrow?: string | null;
   heading: string;
+  /**
+   * How the copy sits on the band.
+   */
+  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   body?: {
     root: {
       type: string;
@@ -3765,11 +3776,6 @@ export interface LabTransitionBlock {
     };
     [k: string]: unknown;
   } | null;
-  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'labTransition';
@@ -5375,9 +5381,9 @@ export interface WorkCaseStudyStorySectionBlockSelect<T extends boolean = true> 
 export interface CaseStudyTransitionBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
-  body?: T;
   layout?: T;
   theme?: T;
+  body?: T;
   id?: T;
   blockName?: T;
 }
@@ -5677,9 +5683,9 @@ export interface LabStorySectionBlockSelect<T extends boolean = true> {
 export interface LabTransitionBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
-  body?: T;
   layout?: T;
   theme?: T;
+  body?: T;
   id?: T;
   blockName?: T;
 }

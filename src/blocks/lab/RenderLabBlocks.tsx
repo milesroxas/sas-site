@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
+import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { blockRevealVariants } from '@/blocks/shared/reveal-variants'
@@ -180,15 +181,7 @@ const Facts = ({ block, project }: { block: LabFactsBlock; project: LabProject }
   )
 }
 
-const Transition = ({ block }: { block: LabTransitionBlock }) => (
-  <Section theme={block.theme}>
-    <div className="container mx-auto max-w-5xl text-center">
-      {block.eyebrow && <p className="mb-3 text-sm uppercase tracking-[0.2em]">{block.eyebrow}</p>}
-      <h2 className="text-display">{block.heading}</h2>
-      {block.body && <RichText className="mt-8" data={block.body} enableGutter={false} />}
-    </div>
-  </Section>
-)
+const Transition = ({ block }: { block: LabTransitionBlock }) => <RichTransition {...block} />
 
 const RelatedProjectCard = ({ item }: { item: LabPage }) => {
   const coverAsset = populatedDoc<MediaDoc>(item.coverAsset)

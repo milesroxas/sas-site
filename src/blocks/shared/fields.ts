@@ -37,19 +37,40 @@ export const storySectionCopyFields = (): Field[] => [
 
 /**
  * Fields of a rich-transition block: a short band of copy between story
- * sections, laid out one of four ways on a themed surface.
+ * sections, laid out one of four ways on a themed surface. Layout and theme
+ * sit above the body so they stay reachable without scrolling past the editor.
  */
 export const transitionFields = (): Field[] => [
   { name: 'eyebrow', type: 'text' },
   { name: 'heading', type: 'text', required: true },
-  { name: 'body', type: 'richText' },
   {
-    name: 'layout',
-    type: 'select',
-    defaultValue: 'centered',
-    options: ['left', 'centered', 'split', 'statement'],
+    type: 'row',
+    fields: [
+      {
+        name: 'layout',
+        type: 'select',
+        defaultValue: 'centered',
+        options: [
+          { label: 'Left', value: 'left' },
+          { label: 'Centered', value: 'centered' },
+          { label: 'Split', value: 'split' },
+          { label: 'Statement', value: 'statement' },
+        ],
+        admin: {
+          width: '50%',
+          description: 'How the copy sits on the band.',
+        },
+      },
+      {
+        ...themeField(),
+        admin: {
+          ...themeField().admin,
+          width: '50%',
+        },
+      },
+    ],
   },
-  themeField(),
+  { name: 'body', type: 'richText' },
 ]
 
 /**
