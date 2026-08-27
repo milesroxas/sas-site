@@ -22,6 +22,7 @@ import {
 } from '@/collections/CaseStudies/story'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
+import { HomeFeaturedWorkBlock } from '@/Home/featured-work/Component'
 import type {
   CaseStudy,
   CaseStudyKeyDecisionsBlock,
@@ -571,6 +572,9 @@ export const RenderCaseStudyBlocks = async ({
         case 'industryWork':
           // Owns its own full-viewport `ScrollReveal` shell — do not wrap again.
           return <IndustryWorkBlock key={block.id} {...block} />
+        case 'homeFeaturedWork':
+          // Owns its own pinned shell and section band — do not wrap again.
+          return <HomeFeaturedWorkBlock key={block.id} {...block} />
         case 'featureImageStatement':
           return <FeatureImageStatementSection block={block} key={block.id} study={study} />
         case 'audienceTabs':

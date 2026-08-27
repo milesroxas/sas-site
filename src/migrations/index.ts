@@ -52,6 +52,7 @@ import * as migration_20260825_195015_footer_closing from './20260825_195015_foo
 import * as migration_20260825_210837_link_site_pages from './20260825_210837_link_site_pages';
 import * as migration_20260826_213455_full_media_width from './20260826_213455_full_media_width';
 import * as migration_20260827_150351_testimonials_approval_default from './20260827_150351_testimonials_approval_default';
+import * as migration_20260827_165716_work_pages_featured_work from './20260827_165716_work_pages_featured_work';
 
 export const migrations = [
   {
@@ -322,6 +323,11 @@ export const migrations = [
   {
     up: migration_20260827_150351_testimonials_approval_default.up,
     down: migration_20260827_150351_testimonials_approval_default.down,
-    name: '20260827_150351_testimonials_approval_default'
+    name: '20260827_150351_testimonials_approval_default',
+  },
+  {
+    up: migration_20260827_165716_work_pages_featured_work.up,
+    down: migration_20260827_165716_work_pages_featured_work.down,
+    name: '20260827_165716_work_pages_featured_work'
   },
 ];

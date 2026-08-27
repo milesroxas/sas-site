@@ -20,6 +20,7 @@ import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { withStoryBeatSource } from '@/fields/storyBeatSource'
+import { HomeFeaturedWork } from '@/Home/featured-work/config'
 
 export const CaseStudyStorySection: Block = {
   slug: 'caseStudyStorySection',
@@ -240,5 +241,6 @@ export const caseStudyBlocks = [
   // Lists & grids
   CaseStudyKeyDecisions,
   CaseStudyMetrics,
+  HomeFeaturedWork,
   CaseStudyRelatedWork,
 ]

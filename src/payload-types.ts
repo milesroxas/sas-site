@@ -1624,6 +1624,7 @@ export interface WorkPage {
         | CarouselBlock
         | CaseStudyKeyDecisionsBlock
         | CaseStudyMetricsBlock
+        | HomeFeaturedWorkBlock
         | CaseStudyRelatedWorkBlock
       )[]
     | null;
@@ -2530,6 +2531,27 @@ export interface CaseStudyMetricsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'caseStudyMetrics';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeFeaturedWorkBlock".
+ */
+export interface HomeFeaturedWorkBlock {
+  /**
+   * Small label above the list. Leave empty to hide.
+   */
+  eyebrow?: string | null;
+  /**
+   * Work pages shown in order. Hover reveals client, industry, and featured media (cover, else hero media).
+   */
+  entries: (number | WorkPage)[];
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeFeaturedWork';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5316,6 +5338,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         carousel?: T | CarouselBlockSelect<T>;
         caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
         caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
+        homeFeaturedWork?: T | HomeFeaturedWorkBlockSelect<T>;
         caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
       };
   coverAsset?: T;
@@ -5588,6 +5611,17 @@ export interface CaseStudyMetricsBlockSelect<T extends boolean = true> {
   introduction?: T;
   source?: T;
   layout?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeFeaturedWorkBlock_select".
+ */
+export interface HomeFeaturedWorkBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  entries?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -7063,27 +7097,6 @@ export interface HomeStatement {
   } | null;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "HomeFeaturedWorkBlock".
- */
-export interface HomeFeaturedWorkBlock {
-  /**
-   * Small label above the list. Leave empty to hide.
-   */
-  eyebrow?: string | null;
-  /**
-   * Work pages shown in order. Hover reveals client, industry, and featured media (cover, else hero media).
-   */
-  entries: (number | WorkPage)[];
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'homeFeaturedWork';
-}
-/**
  * The insights hub published at /insights (also opens the /posts archive). Hero and SEO only — the lists are automatic.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7530,17 +7543,6 @@ export interface HomeSelect<T extends boolean = true> {
 export interface HomeStatementSelect<T extends boolean = true> {
   hidden?: T;
   body?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "HomeFeaturedWorkBlock_select".
- */
-export interface HomeFeaturedWorkBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  entries?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

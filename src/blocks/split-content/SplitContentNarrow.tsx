@@ -12,7 +12,7 @@ import { mediaSectionYClassName, Section } from '../shared/section'
  *
  * Stacked below `md` (media always first regardless of `imagePosition`, with
  * the eyebrow moving between heading and body); side-by-side from `md` with a
- * fixed narrow text column; from `lg` the body pins to the media's bottom edge.
+ * fixed narrow text column, with heading and body packed to the top.
  *
  * `bare` skips the `Section` wrapper for callers that supply their own shell
  * (the work-page renderer wraps blocks in a full-viewport reveal section).
@@ -54,7 +54,7 @@ export const SplitContentNarrow = ({
             size="(max-width: 768px) 100vw, 72vw"
           />
         </div>
-        <div className="flex flex-col gap-8 md:gap-16 lg:justify-between">
+        <div className="flex flex-col gap-8 md:gap-16">
           <div className="flex flex-col gap-3" data-reveal>
             {block.eyebrow && (
               <p className="hidden font-mono text-xs/none font-medium md:block">{block.eyebrow}</p>

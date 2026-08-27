@@ -6,11 +6,12 @@ import type { HomeFeaturedWorkBlock as HomeFeaturedWorkBlockProps, WorkPage } fr
 import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
 
-export const HomeFeaturedWorkBlock: React.FC<
-  HomeFeaturedWorkBlockProps & {
-    id?: string
-  }
-> = async ({ eyebrow, entries, theme, id }) => {
+export const HomeFeaturedWorkBlock: React.FC<HomeFeaturedWorkBlockProps> = async ({
+  eyebrow,
+  entries,
+  theme,
+  id,
+}) => {
   const selected = entries ?? []
   if (selected.length === 0) return null
 
