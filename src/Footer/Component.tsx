@@ -12,7 +12,7 @@ export async function Footer() {
       // Viewport-fixed like the header (mounted outside [data-page-frame] so
       // menu transforms never steal its containing block). Hidden while the
       // takeover menu is open. Bar is full-bleed; items sit in the page column.
-      className="fixed inset-x-0 bottom-0 z-30 h-(--footer-bar-height) bg-background shadow-[0_-8px_28px_-6px_color-mix(in_oklab,var(--foreground)_7%,transparent)] transition-[height] duration-300 motion-reduce:transition-none"
+      className="fixed inset-x-0 bottom-0 z-30 h-(--footer-bar-height) bg-background transition-[height] duration-300 motion-reduce:transition-none"
       // Keep the footer static during page transitions.
       style={{ viewTransitionName: 'site-footer' }}
     >
