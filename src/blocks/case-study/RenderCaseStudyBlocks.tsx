@@ -11,6 +11,7 @@ import { ImagePair } from '@/blocks/image-pair/ImagePair'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
+import { mediaSectionYClassName } from '@/blocks/shared/section'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
 import {
@@ -146,7 +147,11 @@ const StorySection = ({
   if (!content) return null
   const media = populatedDoc<MediaDoc>(block.media)
   return (
-    <RevealSection theme={block.theme} variant={media ? 'underMedia' : 'intro'}>
+    <RevealSection
+      media={Boolean(media && block.layout !== 'text-only')}
+      theme={block.theme}
+      variant={media ? 'underMedia' : 'intro'}
+    >
       <div
         className={cn(
           'container mx-auto grid gap-10',
@@ -206,7 +211,7 @@ const SplitNarrow = ({
   const props = storyMediaProps(block, study)
   if (!props) return null
   return (
-    <RevealSection theme={block.theme} variant={blockRevealVariants.splitContentNarrow}>
+    <RevealSection media theme={block.theme} variant={blockRevealVariants.splitContentNarrow}>
       <SplitContentNarrow bare {...props} />
     </RevealSection>
   )
@@ -216,7 +221,7 @@ const FullMediaSection = ({ block, study }: { block: WorkFullMediaBlock; study: 
   const props = storyMediaProps(block, study)
   if (!props) return null
   return (
-    <RevealSection theme={block.theme} variant={blockRevealVariants.fullMedia}>
+    <RevealSection media theme={block.theme} variant={blockRevealVariants.fullMedia}>
       <FullMedia bare {...props} />
     </RevealSection>
   )
@@ -228,7 +233,7 @@ const ImagePairSection = ({ block, study }: { block: WorkImagePairBlock; study: 
   const landscape = populatedDoc<MediaDoc>(block.landscapeMedia)
   if (!portrait || !landscape) return null
   return (
-    <RevealSection theme={block.theme} variant="underMedia">
+    <RevealSection media theme={block.theme} variant="underMedia">
       <ImagePair
         bare
         block={withStoryBeatHeading(block, study)}
@@ -252,7 +257,7 @@ const SplitImageOffsetSection = ({
   const small = populatedDoc<MediaDoc>(block.smallMedia)
   if (!large || !small) return null
   return (
-    <RevealSection theme={block.theme} variant="underMedia">
+    <RevealSection media theme={block.theme} variant="underMedia">
       <SplitImageOffset
         bare
         block={withStoryBeatHeading(block, study)}
@@ -268,7 +273,7 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
   const media = publicApprovedMedia(block.media)
   if (!media.length) return null
   return (
-    <RevealSection theme={block.theme} variant="underMedia">
+    <RevealSection media theme={block.theme} variant="underMedia">
       <div className="container mx-auto">
         {block.heading && (
           <h2 className="mb-6 text-heading-2" data-reveal>
@@ -374,7 +379,11 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
   if (!isPublicTestimonial(testimonial)) return null
   const portrait = block.showPortrait ? populatedDoc<MediaDoc>(testimonial.portrait) : null
   return (
-    <RevealSection theme={block.theme} variant={portrait ? 'underMedia' : 'intro'}>
+    <RevealSection
+      media={Boolean(portrait)}
+      theme={block.theme}
+      variant={portrait ? 'underMedia' : 'intro'}
+    >
       <figure className="container mx-auto max-w-4xl text-center">
         {portrait && (
           <div data-reveal="media">
@@ -440,7 +449,7 @@ const RelatedWork = async ({
   })
   if (!pages.length) return null
   return (
-    <RevealSection variant="intro">
+    <RevealSection media variant="intro">
       <div className="container mx-auto">
         <h2 className="mb-8 text-heading-2" data-reveal>
           {block.heading || 'Related work'}
@@ -477,7 +486,7 @@ const FeatureStatementGridSection = ({
   block: WorkFeatureStatementGridBlock
   study: CaseStudy
 }) => (
-  <RevealSection as="div" variant={blockRevealVariants.featureStatementGrid}>
+  <RevealSection as="div" media variant={blockRevealVariants.featureStatementGrid}>
     <FeatureStatementGrid
       {...block}
       statement={resolveFeatureBody(block.statement, block.source, block.storyBeatKey, study)}
@@ -492,7 +501,7 @@ const FeatureImageStatementSection = ({
   block: WorkFeatureImageStatementBlock
   study: CaseStudy
 }) => (
-  <RevealSection as="div" variant={blockRevealVariants.featureImageStatement}>
+  <RevealSection as="div" media variant={blockRevealVariants.featureImageStatement}>
     <FeatureImageStatement
       {...block}
       caption={resolveFeatureBody(block.caption, block.source, block.storyBeatKey, study)}
@@ -507,7 +516,7 @@ const FeatureTabsSection = ({
   block: WorkFeatureTabsBlock
   study: CaseStudy
 }) => (
-  <RevealSection as="div" variant={blockRevealVariants.featureTabs}>
+  <RevealSection as="div" media variant={blockRevealVariants.featureTabs}>
     <FeatureTabs
       {...block}
       tabs={(block.tabs || []).map((tab) => ({
@@ -573,7 +582,7 @@ export const RenderCaseStudyBlocks = async ({
           // Same CSS entrance as Pages/Home — no data-reveal markers, and the
           // full-viewport GSAP shell would put transform on an ancestor of embla.
           return (
-            <CssRevealSection className="my-16" key={block.id}>
+            <CssRevealSection className={mediaSectionYClassName} key={block.id}>
               <CarouselBlock {...block} disableInnerContainer />
             </CssRevealSection>
           )

@@ -8,6 +8,7 @@ import { HeadingDropdown } from '@/blocks/shared/heading-dropdown'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import {
   fullViewportSectionClassName,
+  mediaSectionYClassName,
   type SectionTheme,
   themeClasses,
 } from '@/blocks/shared/section'
@@ -314,10 +315,8 @@ export const IndustryWorkClient = ({
       onComplete={armCanvas}
       className={cn(
         fullViewportSectionClassName,
+        mediaSectionYClassName,
         themeClasses[(theme as SectionTheme | null) || 'dark'],
-        // Deeper vertical rhythm than the shared full-viewport band: extra
-        // breathing room so neighboring sections don't crowd the spotlight.
-        'py-32 md:py-48',
       )}
     >
       <Container width="default" className="flex flex-col gap-12 md:gap-16 lg:gap-32" ref={rootRef}>

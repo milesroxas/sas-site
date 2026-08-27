@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import {
   fullViewportSectionClassName,
+  mediaSectionYClassName,
   type SectionTheme,
   themeClasses,
 } from '@/blocks/shared/section'
@@ -17,6 +18,9 @@ import { cn } from '@/utilities/ui'
  * `variant` (`intro` for text-only shapes, `underMedia` when copy sits with a
  * media reveal).
  *
+ * `media` uses the looser Y rhythm (`mediaSectionYClassName`) so neighboring
+ * images don't crowd. Text-only blocks keep the shared band padding.
+ *
  * `as="div"` is for blocks that render their own `<section>` root; the shell
  * then only supplies the surface, viewport height, and entrance.
  */
@@ -24,12 +28,14 @@ export function RevealSection({
   as = 'section',
   theme = 'light',
   variant,
+  media = false,
   className,
   children,
 }: {
   as?: 'section' | 'div'
   theme?: SectionTheme | null
   variant?: ScrollRevealVariant
+  media?: boolean
   className?: string
   children: ReactNode
 }) {
@@ -37,7 +43,12 @@ export function RevealSection({
     <ScrollReveal
       as={as}
       variant={variant}
-      className={cn(fullViewportSectionClassName, themeClasses[theme || 'light'], className)}
+      className={cn(
+        fullViewportSectionClassName,
+        media && mediaSectionYClassName,
+        themeClasses[theme || 'light'],
+        className,
+      )}
     >
       {children}
     </ScrollReveal>

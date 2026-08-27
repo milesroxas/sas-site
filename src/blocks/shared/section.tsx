@@ -28,6 +28,17 @@ export const themeClasses = {
 export type SectionTheme = keyof typeof themeClasses
 
 /**
+ * Vertical padding of a composition band. Adjacent shells add, so the
+ * space between two blocks' content is 2× this.
+ *
+ * Text-only bands keep the default. Media-forward blocks use the looser
+ * rhythm so neighboring images don't crowd — never restate these at a call
+ * site.
+ */
+export const sectionYClassName = 'py-16 md:py-24'
+export const mediaSectionYClassName = 'py-36 md:py-52'
+
+/**
  * Full-viewport band used by composition blocks that center one section of
  * content. Owned here so GSAP `ScrollReveal` shells and plain sections share
  * the same height/padding — never restate these classes at a call site.
@@ -45,7 +56,7 @@ export const Section = ({
   theme?: SectionTheme | null
   className?: string
 }) => (
-  <section className={cn('py-16 md:py-24', themeClasses[theme || 'light'], className)}>
+  <section className={cn(sectionYClassName, themeClasses[theme || 'light'], className)}>
     {children}
   </section>
 )

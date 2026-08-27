@@ -3,7 +3,7 @@ import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { Media as MediaDoc, WorkImagePairBlock } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { Section } from '../shared/section'
+import { mediaSectionYClassName, Section } from '../shared/section'
 
 export const ImagePair = ({
   bare = false,
@@ -90,5 +90,9 @@ export const ImagePair = ({
     </div>
   )
   if (bare) return inner
-  return <Section theme={block.theme}>{inner}</Section>
+  return (
+    <Section className={mediaSectionYClassName} theme={block.theme}>
+      {inner}
+    </Section>
+  )
 }

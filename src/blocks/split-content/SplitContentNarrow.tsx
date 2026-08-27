@@ -3,7 +3,7 @@ import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { Media as MediaDoc, SplitContentNarrowBlock } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { Section } from '../shared/section'
+import { mediaSectionYClassName, Section } from '../shared/section'
 
 /**
  * Presentational split layout: narrow text column beside a large image.
@@ -77,5 +77,9 @@ export const SplitContentNarrow = ({
     </div>
   )
   if (bare) return inner
-  return <Section theme={block.theme}>{inner}</Section>
+  return (
+    <Section className={mediaSectionYClassName} theme={block.theme}>
+      {inner}
+    </Section>
+  )
 }

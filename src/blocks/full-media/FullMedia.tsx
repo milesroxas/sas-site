@@ -4,7 +4,7 @@ import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { FullMediaBlock, Media as MediaDoc } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { Section } from '../shared/section'
+import { mediaSectionYClassName, Section } from '../shared/section'
 
 /**
  * Presentational full-media layout: media above a two-column content row.
@@ -90,5 +90,9 @@ export const FullMedia = ({
     </div>
   )
   if (bare) return inner
-  return <Section theme={block.theme}>{inner}</Section>
+  return (
+    <Section className={mediaSectionYClassName} theme={block.theme}>
+      {inner}
+    </Section>
+  )
 }

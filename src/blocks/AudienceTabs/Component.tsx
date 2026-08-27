@@ -8,7 +8,7 @@ import type {
   Media as MediaDoc,
 } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { Section, type SectionTheme } from '../shared/section'
+import { mediaSectionYClassName, Section, type SectionTheme } from '../shared/section'
 import { useAudienceTabsMotion } from './use-audience-tabs-motion'
 
 const MEDIA_SIZES = '(max-width: 1024px) 100vw, 58vw'
@@ -43,7 +43,7 @@ export const AudienceTabsBlock: React.FC<AudienceTabsBlockProps> = ({ heading, t
   const media = typeof activeMedia === 'object' ? (activeMedia as MediaDoc) : null
 
   return (
-    <Section className="my-16" theme={(theme as SectionTheme | null) ?? 'dark'}>
+    <Section className={mediaSectionYClassName} theme={(theme as SectionTheme | null) ?? 'dark'}>
       <Container
         width="default"
         className="flex flex-col items-center gap-10 md:gap-16"
