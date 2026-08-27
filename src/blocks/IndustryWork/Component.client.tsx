@@ -153,10 +153,10 @@ const IndustryWorkMedia = ({
             imgClassName="object-cover"
             resource={media}
             // Matches the layout: full width below lg, ~half the 96rem
-            // container (cols 4–10) above. The work-open morph doesn't need a
-            // bigger source — view-transition snapshots rasterize at painted
-            // size, and the fullscreen hold is painted by the case-study
-            // hero's own 100vw image on the destination page.
+            // container (cols 4–10) above. View-transition snapshots
+            // rasterize at painted size, so the work-open takeover upscales
+            // this one while it holds the screen; the case-study hero's own
+            // 100vw raster takes over at the landing's dissolve.
             size={MEDIA_SIZE}
           />
         </div>
@@ -353,9 +353,9 @@ export const IndustryWorkClient = ({
               data-swap="text"
               href={work.href}
               // Tags the navigation `work-open`: the root fades, the media
-              // below centers vertically, expands to full screen, and holds alone,
-              // then the new route fades in as the media travels to the
-              // case-study hero and, last, shrinks into it
+              // below centers vertically and expands to full screen, then
+              // lands on the case-study hero the way every takeover does —
+              // hold, clip mask closing one axis at a time, dissolve
               // (see `view-transition.css` `.morph-hero`).
               transitionTypes={[...workOpenTransitionTypes]}
             >
@@ -364,11 +364,12 @@ export const IndustryWorkClient = ({
           </div>
 
           {/* Shared element: on "View case study" this box centers
-              vertically, expands to full screen, holds there alone through
-              the route swap, then travels to the case-study hero media's
-              rect and shrinks into it as the final beat
-              (`sequenceWorkImageMorph`; React fires `onShare` on this,
-              the unmounting, side). Matching `name` in `CaseStudyHero*`. */}
+              vertically and expands to full screen, then plays the shared
+              hero landing onto the case-study hero media's rect — hold, clip
+              collapse, dissolve (`sequenceWorkImageMorph` +
+              `@/shared/ui/hero-landing`, the same landing the takeover
+              menu's handoff plays; React fires `onShare` on this, the
+              unmounting, side). Matching `name` in `CaseStudyHero*`. */}
           <ViewTransition
             default="none"
             name={workImageVtName(mediaWork.slug)}

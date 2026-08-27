@@ -6,6 +6,8 @@
  * exactly once (docs/animations.md contract).
  */
 
+import { clipPathInset } from '@/shared/ui/hero-landing'
+
 /** Fast ease-in-out shared by the window dock, its clip mask, and the handoff expansion. */
 export const MENU_EASE = 'power2.inOut'
 
@@ -124,14 +126,6 @@ export const getViewportCrop = (vw: number, vh: number, targetAspect: number) =>
   const insetY = (vh - clipH) / 2
   return { clipW, clipH, insetT: insetY, insetR: 0, insetB: insetY, insetL: 0 }
 }
-
-export const clipPathInset = (
-  insetT: number,
-  insetR: number,
-  insetB: number,
-  insetL: number,
-  radius: number,
-) => `inset(${insetT}px ${insetR}px ${insetB}px ${insetL}px round ${radius}px)`
 
 /**
  * Transform + clip-path values that land a full-viewport, top-left-origin

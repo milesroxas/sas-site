@@ -1,9 +1,14 @@
 import gsap from 'gsap'
+import {
+  clipPathInset,
+  type HeroLandingPlan,
+  planHeroLanding,
+  runHeroLanding,
+} from '@/shared/ui/hero-landing'
 import type { MenuMedia } from '../getMenuContent'
 import {
   CARD_RADIUS_DESKTOP,
   CARD_RADIUS_MOBILE,
-  clipPathInset,
   DISSOLVE_DURATION,
   DISSOLVE_EASE,
   getCardMotion,
@@ -35,14 +40,14 @@ import {
  *      pathname effect): the frozen page frame is restored behind the
  *      still-opaque overlay, and the destination's hero media is polled for.
  *   3. At full screen the overlay is fully covered (hidden with a cut, no
- *      fade needed). After a short hold, the traveler collapses onto the
- *      measured hero rect with CLIP-PATH ONLY — the transform stays at
- *      identity and each step closes ONE axis (horizontal, then vertical),
- *      so the move can never travel diagonally. The shrinking mask reveals
- *      the new page around it.
+ *      fade needed), and the shared hero landing takes over: hold, then a
+ *      clip-only collapse onto the measured hero rect, one axis per step
+ *      (`@/shared/ui/hero-landing` — the same landing the work-open view
+ *      transition plays).
  *   4. Once the destination's own media has painted, the traveler dissolves
- *      away over it (this dissolve also masks the crop delta the clip-only
- *      landing leaves vs the hero's own cover render).
+ *      away over it on the landing's settle timing (this dissolve also masks
+ *      the crop delta the clip-only landing leaves vs the hero's own cover
+ *      render).
  */
 
 /* Handoff motion — every tunable lives here (docs/animations.md contract). */
@@ -52,16 +57,7 @@ const MENU_OUT_EASE = 'power2.in'
 const MENU_OUT_STAGGER = 0.015
 /** Slot-to-fullscreen expansion; same ease as the dock so open and handoff rhyme. */
 const FULLSCREEN_DURATION = 0.6
-/** Beat at full screen before the collapse, so the takeover registers. */
-const FULLSCREEN_HOLD = 0.15
-/** Fullscreen-to-hero collapse, per clip axis (horizontal, then vertical). */
-const COLLAPSE_AXIS_DURATION = 0.45
-/** Below this travel an axis is already home — skip its step entirely. */
-const COLLAPSE_MIN_TRAVEL = 1
 const FALLBACK_EASE = 'power1.out'
-/** Final dissolve into the page's real hero media (masks rendition/treatment deltas). */
-const SETTLE_FADE = 0.35
-const SETTLE_EASE = 'power1.inOut'
 /** How long the destination's media gets to paint before dissolving anyway. */
 const SETTLE_MEDIA_TIMEOUT_MS = 1500
 /** Abandon the handoff if the route never commits (offline, error page). */
@@ -211,7 +207,9 @@ export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {
     )
   }
 
-  const settle = () => {
+  /** The landing's settle, gated on the destination's media actually having
+   *  painted — the traveler is what covers for it until then. */
+  const settle = (plan: HeroLandingPlan) => {
     if (finished || !heroTarget) return
     let settled = false
     const dissolve = () => {
@@ -220,8 +218,8 @@ export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {
       track(
         gsap.to(traveler, {
           autoAlpha: 0,
-          duration: SETTLE_FADE,
-          ease: SETTLE_EASE,
+          duration: plan.settle.duration,
+          ease: plan.settle.ease,
           onComplete: finish,
         }),
       )
@@ -231,51 +229,27 @@ export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {
   }
 
   /**
-   * Fullscreen → hero rect, clip-path only. The transform never moves again:
-   * only the mask closes, one axis per step (horizontal, then vertical), so
-   * the collapse cannot travel diagonally. An axis with no travel (full-bleed
-   * hero) skips its step; a hero larger than the viewport clamps to fullscreen
-   * on that axis and lets the settle dissolve take over.
+   * Fullscreen → hero rect: the shared hero landing, played on the traveler.
+   * The transform never moves again — only the mask closes, one axis per step
+   * — and the plan handles the degenerate cases (a full-bleed hero skips an
+   * axis, a hero larger than the viewport clamps to fullscreen on it and lets
+   * the settle dissolve take over).
    */
   const collapse = () => {
     if (finished || collapseStarted || !heroTarget) return
     collapseStarted = true
-    const rect = heroTarget.getBoundingClientRect()
-    // The destination's own corner treatment is the single source of truth.
-    const radius = Number.parseFloat(getComputedStyle(heroTarget).borderTopLeftRadius) || 0
     const vw = getViewportWidth()
     const vh = window.innerHeight
-    const insetT = Math.max(0, rect.top)
-    const insetR = Math.max(0, vw - rect.right)
-    const insetB = Math.max(0, vh - rect.bottom)
-    const insetL = Math.max(0, rect.left)
-    const tl = track(gsap.timeline({ onComplete: settle }))
-    let at = FULLSCREEN_HOLD
-    if (insetL >= COLLAPSE_MIN_TRAVEL || insetR >= COLLAPSE_MIN_TRAVEL) {
-      tl.to(
-        traveler,
-        {
-          clipPath: clipPathInset(0, insetR, 0, insetL, radius),
-          duration: COLLAPSE_AXIS_DURATION,
-          ease: MENU_EASE,
-        },
-        at,
-      )
-      at += COLLAPSE_AXIS_DURATION
-    }
-    if (insetT >= COLLAPSE_MIN_TRAVEL || insetB >= COLLAPSE_MIN_TRAVEL) {
-      tl.to(
-        traveler,
-        {
-          clipPath: clipPathInset(insetT, insetR, insetB, insetL, radius),
-          duration: COLLAPSE_AXIS_DURATION,
-          ease: MENU_EASE,
-        },
-        at,
-      )
-    }
-    // Both axes home (fullscreen hero): the empty timeline completes straight
-    // into the settle dissolve.
+    const plan = planHeroLanding({
+      // The traveler is a fixed, full-bleed box, so its own coordinates and
+      // the viewport's are the same and the mask starts uncropped.
+      box: { left: 0, top: 0, width: vw, height: vh },
+      viewport: { width: vw, height: vh },
+      target: heroTarget.getBoundingClientRect(),
+      // The destination's own corner treatment is the single source of truth.
+      radius: Number.parseFloat(getComputedStyle(heroTarget).borderTopLeftRadius) || 0,
+    })
+    track(runHeroLanding(traveler, plan, () => settle(plan)))
   }
 
   /** Collapse needs both gates: traveler at full screen + hero measurable. */

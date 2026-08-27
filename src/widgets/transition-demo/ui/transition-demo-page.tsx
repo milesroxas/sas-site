@@ -2,6 +2,7 @@
 
 import {
   IconAppWindow,
+  IconArrowsMinimize,
   IconBox,
   IconEye,
   IconInfoCircle,
@@ -9,6 +10,7 @@ import {
   IconTypography,
 } from '@tabler/icons-react'
 import { DemoShell, type DemoShellSection } from '@/shared/ui/demo-kit'
+import { HeroLandingPlayground } from './hero-landing-playground'
 import { TransitionsOverview } from './overview'
 import { ScrollRevealIntroPlayground } from './scroll-reveal-intro-playground'
 import { ScrollRevealUnderMediaPlayground } from './scroll-reveal-under-media-playground'
@@ -41,6 +43,21 @@ const SECTIONS: DemoShellSection[] = [
       note: 'Site-wide transition timing. Every tagged navigation reads these variables.',
     },
     content: TransitionSimulator,
+  },
+  {
+    id: 'hero-landing',
+    label: 'Hero landing',
+    title: 'Hero landing — the end of a takeover',
+    description:
+      "How every full-screen media takeover ends, owned once: the media is holding the whole screen, then the mask closes one axis at a time (horizontal, then vertical — never diagonally) onto the destination's own media, uncovering the page around it, and the destination's copy dissolves in over the crop delta. The takeover menu's hero handoff and the work-open transition out of Industry work both play this, so tuning here moves both. Pick a destination shape to watch an axis with no travel drop out of the plan.",
+    icon: IconArrowsMinimize,
+    paste: {
+      file: 'src/shared/ui/hero-landing/hero-landing.ts',
+      symbol: 'HERO_LANDING',
+      format: 'object',
+      note: 'The whole landing. Every takeover that lands on a destination reads these.',
+    },
+    content: HeroLandingPlayground,
   },
   {
     id: 'text-load-in',

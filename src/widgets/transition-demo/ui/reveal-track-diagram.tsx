@@ -55,9 +55,16 @@ function timingSummary(bars: TrackBar[]) {
 /**
  * Where every target sits on the shared timeline, to scale — the stagger and
  * offset sliders move these bars exactly as they move the entrance above.
- * Demo-only.
+ * `summary` overrides the reveal-shaped sentence for timelines that are not
+ * two reveal tracks (the hero landing's axis steps). Demo-only.
  */
-export function TrackDiagram({ bars }: { bars: TrackBar[] }) {
+export function TrackDiagram({
+  bars,
+  summary = timingSummary(bars),
+}: {
+  bars: TrackBar[]
+  summary?: string
+}) {
   const total = Math.max(...bars.map((bar) => bar.start + bar.duration))
   const axisEnd = Math.max(0.5, Math.ceil(total * 2) / 2)
   const ticks = Array.from({ length: Math.round(axisEnd * 2) + 1 }, (_, i) => i / 2)
@@ -67,7 +74,7 @@ export function TrackDiagram({ bars }: { bars: TrackBar[] }) {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
           timeline
         </p>
-        <p className="font-mono text-xs text-muted-foreground">{timingSummary(bars)}</p>
+        <p className="font-mono text-xs text-muted-foreground">{summary}</p>
       </div>
       <div className="space-y-1.5">
         {bars.map((bar) => (

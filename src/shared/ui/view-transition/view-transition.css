@@ -17,19 +17,16 @@
   --vt-duration-move: 400ms;
   /* Hero recede runs longer than the page swap so it overlaps the incoming page. */
   --vt-duration-hero: 560ms;
-  /* Work-media takeover beats — glide vertically to the viewport center,
-     expand about its own center to full screen, hold there alone, glide at
-     full size until centered on the hero rect, then — last of all — shrink
-     in place into it. Each beat is position-only or size-only, never both;
-     the only size change after the expand is that final shrink. Sequenced in work-image-morph.ts
-     (WAAPI); CSS uses their sum for the fallback glide and center + expand +
-     hold for the incoming page's fade delay. */
+  /* Work-media takeover approach — glide vertically to the viewport center,
+     then expand about its own center to full screen. Each beat is
+     position-only or size-only, never both, and nothing moves or resizes
+     after the expand: what follows is the shared hero landing, whose hold,
+     clip collapse and settle are tuned in `@/shared/ui/hero-landing`
+     (HERO_LANDING) because the takeover menu's handoff plays the same one.
+     Sequenced in work-image-morph.ts (WAAPI); CSS uses these two for the
+     fallback glide and for the incoming page's fade delay. */
   --vt-duration-hero-center: 320ms;
   --vt-duration-hero-expand: 420ms;
-  --vt-duration-hero-hold: 500ms;
-  --vt-duration-hero-move: 360ms;
-  /* Final shrink (size only) — the last beat of the whole sequence. */
-  --vt-duration-hero-grow: 360ms;
   --vt-ease-hero: cubic-bezier(0.22, 1, 0.36, 1);
   /* Movement beats (center/travel) accelerate from rest and brake to a stop;
      the size beats keep the snappy ease-out above. */
@@ -119,12 +116,13 @@
     /*
      * Work-open root swap, bracketing the `morph-hero` beats (below): the old
      * page fades out and *stays* out (`both` — the plain `.fade-out` has no
-     * fill, so its snapshot would pop back mid-glide), the media centers in
-     * the viewport, expands to full screen, and holds there alone — no page
-     * text or content anywhere during the hold — then the new page fades in
-     * only as the media begins traveling toward the hero, never layered
-     * under the full-screen moment. The enter fade therefore delays by
-     * exit + center + expand + hold.
+     * fill, so its snapshot would pop back mid-glide), and the new page fades
+     * in the moment the media reaches full screen — under it, invisible,
+     * covered by the full-bleed media for the landing's hold. By the time the
+     * landing's mask starts uncovering the page it is fully painted, exactly
+     * as it is behind the menu handoff's traveler; it is never layered under
+     * the full-screen moment. The enter fade therefore delays by
+     * exit + center + expand.
      */
     ::view-transition-old(.work-exit) {
       animation: var(--vt-duration-exit) ease-in both vt-fade reverse;
@@ -134,8 +132,7 @@
         calc(
           var(--vt-duration-exit) +
           var(--vt-duration-hero-center) +
-          var(--vt-duration-hero-expand) +
-          var(--vt-duration-hero-hold)
+          var(--vt-duration-hero-expand)
         )
         both vt-fade;
     }
@@ -183,38 +180,33 @@
      * `--vt-duration-exit`, fill-held at the spotlight's rect during the
      * delay — the media glides straight up/down at the spotlight's size until
      * it is vertically centered in the viewport, x untouched
-     * (`--vt-duration-hero-center`), expands about its own center until it
-     * covers the viewport (`--vt-duration-hero-expand`), holds there alone
-     * for `--vt-duration-hero-hold` (the incoming page is still invisible —
-     * see `.work-enter` above), glides at full size until it is centered on
-     * the hero rect (`--vt-duration-hero-move`) while the page fades in
-     * beneath, then — the final beat and the only size change since the
-     * expand — shrinks in place into the hero's rect
-     * (`--vt-duration-hero-grow`). The beat split is imperative
-     * (`sequenceWorkImageMorph`, attached via `onShare` on the IndustryWork
-     * side, replaces the browser's one-rect group tween with four WAAPI
-     * beats); the group timing below is the fallback single glide when that
-     * bails. There is no visible media swap: both sides render the same
-     * asset, so the spotlight snapshot (`old`) stays fully opaque for the
-     * whole flight and its `cover` crop simply re-flows as the box resizes.
-     * The hero snapshot (`new`) fades in *over* it only during the shrink
-     * beat — pixel-identical where the crops match (8/5 -> 8/5, or
-     * 8/5 -> 21/9, same-axis crops), so nothing is seen; where the hero crop
-     * differs (5/4 below `lg`) or the hero raster is sharper, the ramp hides
-     * the delta inside the size change instead of popping when the live
-     * element takes over. Setting our own `animation-name` on both layers
-     * also drops the UA's fade + `plus-lighter` blend. Snapshot geometry is
-     * pinned to `cover` so the 8/5 spotlight frame and the 8/5 / 21/9 hero
-     * frames never letterbox mid-flight.
+     * (`--vt-duration-hero-center`), and expands about its own center until it
+     * covers the viewport (`--vt-duration-hero-expand`). Nothing moves or
+     * resizes after that: the shared hero landing takes it from full screen —
+     * a hold, then the group's clip-path closing one axis at a time onto the
+     * hero's rect (uncovering the page around it), then the hero snapshot
+     * dissolving in. Its timing lives in `@/shared/ui/hero-landing`, because
+     * the takeover menu's hero handoff lands exactly the same way.
+     *
+     * The beat split is imperative (`sequenceWorkImageMorph`, attached via
+     * `onShare` on the IndustryWork side, replaces the browser's one-rect
+     * group tween with the WAAPI beats); the group timing below is the
+     * fallback single glide when that bails. There is no visible media swap:
+     * both sides render the same asset, so the spotlight snapshot (`old`)
+     * stays fully opaque for the whole flight and the hero snapshot (`new`)
+     * only fades in over it at the end — pixel-identical where the crops
+     * match (8/5 -> 8/5, or 8/5 -> 21/9, same-axis crops), so nothing is
+     * seen; where the hero crop differs (5/4 below `lg`) or the hero raster
+     * is sharper, the dissolve hides the delta instead of popping when the
+     * live element takes over. Setting our own `animation-name` on both
+     * layers also drops the UA's fade + `plus-lighter` blend. Snapshot
+     * geometry is pinned to `cover` so the 8/5 spotlight frame and the
+     * 8/5 / 21/9 hero frames never letterbox mid-flight — the sequenced
+     * landing overrides the `new` layer's box to the hero's own rect, since
+     * that snapshot is what the live page replaces frame for frame.
      */
     ::view-transition-group(.morph-hero) {
-      animation-duration: calc(
-        var(--vt-duration-hero-center) +
-        var(--vt-duration-hero-expand) +
-        var(--vt-duration-hero-hold) +
-        var(--vt-duration-hero-move) +
-        var(--vt-duration-hero-grow)
-      );
+      animation-duration: calc(var(--vt-duration-hero-center) + var(--vt-duration-hero-expand));
       animation-delay: var(--vt-duration-exit);
       animation-fill-mode: both;
       animation-timing-function: var(--vt-ease-hero);
@@ -233,16 +225,12 @@
     ::view-transition-old(.morph-hero) {
       animation: none;
     }
+    /* Fallback only: a crossfade across the single glide. The sequenced
+       landing animates this layer itself (script animations outrank CSS
+       ones), holding it hidden until the mask is home. */
     ::view-transition-new(.morph-hero) {
-      animation: var(--vt-duration-hero-grow) var(--vt-ease-hero)
-        calc(
-          var(--vt-duration-exit) +
-          var(--vt-duration-hero-center) +
-          var(--vt-duration-hero-expand) +
-          var(--vt-duration-hero-hold) +
-          var(--vt-duration-hero-move)
-        )
-        both vt-opacity-in;
+      animation: calc(var(--vt-duration-hero-center) + var(--vt-duration-hero-expand))
+        var(--vt-ease-hero) var(--vt-duration-exit) both vt-opacity-in;
     }
 
     /*

@@ -1,12 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import {
-  canStartHeroHandoff,
-  clipPathInset,
-  getCardMotion,
-  getViewportCrop,
-  isInAppNavClick,
-} from './motion'
+import { clipPathInset } from '@/shared/ui/hero-landing'
+import { canStartHeroHandoff, getCardMotion, getViewportCrop, isInAppNavClick } from './motion'
 
 const setViewport = (width: number, height: number) => {
   Object.defineProperty(document.documentElement, 'clientWidth', {
