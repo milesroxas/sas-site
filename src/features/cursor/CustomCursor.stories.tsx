@@ -72,6 +72,11 @@ export const RingsOnly: Story = {
   ),
 }
 
+/**
+ * Carousels opt in automatically via `data-slot="carousel"` — no call-site
+ * cursor props. Hold the pointer down on either one: the ring contracts to
+ * read as a grab, and releases a touch softer than it pressed.
+ */
 export const CarouselDrag: Story = {
   args: { children: null },
   render: () => (

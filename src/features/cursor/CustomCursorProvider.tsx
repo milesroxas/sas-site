@@ -102,6 +102,8 @@ const {
   outerScaleMax,
   outerScaleMin,
   outerSize,
+  pressDuration,
+  pressReleaseDuration,
   strokeWidth,
 } = CURSOR_DEFAULTS
 
@@ -293,15 +295,31 @@ const CursorOverlay: React.FC = () => {
       }
       let labelScramble: gsap.core.Tween | null = null
 
-      // Lock-on: wrapper sits at outerScaleMax while hovering, so the ring's
-      // own scale makes up the difference to the variant's net hoverOuterScale.
-      const popRing = (locked: boolean, netHoverScale: number) => {
+      // Lock-on + press: the wrapper sits at outerScaleMax while hovering, so
+      // the ring's own scale makes up the difference to the variant's net
+      // target. Hover pop and press share this one tween on `outerRing.scale`
+      // — two tweens on the same property would overwrite each other, and a
+      // third scale layer would just move the fight up a level.
+      let hoverScale: number = CURSOR_DEFAULTS.hoverOuterScale
+      let pressScale: number = CURSOR_DEFAULTS.pressScale
+      let pressed = false
+
+      const writeRingScale = (duration: number) => {
         gsap.to(outerRing, {
-          scale: locked ? netHoverScale / outerScaleMax : 1,
-          duration: locked ? hoverPopDuration : 0.3,
+          scale: activeEl ? (hoverScale * (pressed ? pressScale : 1)) / outerScaleMax : 1,
+          duration,
           ease: 'power3.out',
           overwrite: 'auto',
         })
+      }
+
+      // Press reads as grabbing the target, so it only bites while locked on.
+      // The flag is tracked even off-target: pressing on empty page and then
+      // dragging onto a carousel arrives already grabbed.
+      const setPressed = (next: boolean) => {
+        if (next === pressed) return
+        pressed = next
+        if (activeEl) writeRingScale(next ? pressDuration : pressReleaseDuration)
       }
 
       const killScramble = () => {
@@ -351,10 +369,17 @@ const CursorOverlay: React.FC = () => {
       const setActive = (
         el: HTMLElement | null,
         netHoverScale: number = CURSOR_DEFAULTS.hoverOuterScale,
+        netPressScale: number = CURSOR_DEFAULTS.pressScale,
       ) => {
-        if (el === activeEl) return
+        // Off-target the variant scales are meaningless; normalize so a
+        // variant swap under a resting ring can't retrigger the tween.
+        const nextHover = el ? netHoverScale : CURSOR_DEFAULTS.hoverOuterScale
+        const nextPress = el ? netPressScale : CURSOR_DEFAULTS.pressScale
+        if (el === activeEl && nextHover === hoverScale && nextPress === pressScale) return
         activeEl = el
-        popRing(el !== null, netHoverScale)
+        hoverScale = nextHover
+        pressScale = nextPress
+        writeRingScale(el ? hoverPopDuration : 0.3)
       }
 
       const setLabelTarget = (el: HTMLElement | null, text: string, settled: boolean) => {
@@ -498,7 +523,7 @@ const CursorOverlay: React.FC = () => {
         const { bestT, bestEl, bestVariantName, bestVariant } = scanTargets()
         const hovering = bestT >= 1
         setPresentation(bestT > 0 ? bestVariantName : undefined, bestVariant)
-        setActive(hovering ? bestEl : null, bestVariant.hoverOuterScale)
+        setActive(hovering ? bestEl : null, bestVariant.hoverOuterScale, bestVariant.pressScale)
         setActiveTarget(hovering ? bestEl : null)
         updateTease(hovering, bestT)
         const showApproachLabel =
@@ -549,8 +574,16 @@ const CursorOverlay: React.FC = () => {
 
       const onScroll = () => update()
 
+      // Primary button only: a right-click opens a context menu rather than
+      // dragging, so the ring must not read as grabbed.
+      const onPointerDown = (event: PointerEvent) => {
+        if (event.button === 0) setPressed(true)
+      }
+      const onPointerRelease = () => setPressed(false)
+
       const hide = () => {
         fadeRings(0)
+        setPressed(false)
         setActive(null)
         setLabelTarget(null, '', false)
         setNativeCursorHidden(false)
@@ -565,11 +598,19 @@ const CursorOverlay: React.FC = () => {
       }
 
       window.addEventListener('pointermove', onMove, { passive: true })
+      window.addEventListener('pointerdown', onPointerDown, { passive: true })
+      // `pointerup` misses a release outside the window and a drag the browser
+      // takes over (scroll chaining, back-swipe); cancel and blur close both.
+      window.addEventListener('pointerup', onPointerRelease, { passive: true })
+      window.addEventListener('pointercancel', onPointerRelease, { passive: true })
       window.addEventListener('scroll', onScroll, { passive: true, capture: true })
       window.addEventListener('pointerout', onPointerOut)
       window.addEventListener('blur', hide)
       return () => {
         window.removeEventListener('pointermove', onMove)
+        window.removeEventListener('pointerdown', onPointerDown)
+        window.removeEventListener('pointerup', onPointerRelease)
+        window.removeEventListener('pointercancel', onPointerRelease)
         window.removeEventListener('scroll', onScroll, { capture: true })
         window.removeEventListener('pointerout', onPointerOut)
         window.removeEventListener('blur', hide)
@@ -597,7 +638,9 @@ const CursorOverlay: React.FC = () => {
                      (wraps use mix-blend-difference; stroke inverts vs the page)
              size  → CURSOR_DEFAULTS.outerSize / innerSize / strokeWidth
                      per-variant outerSize in CURSOR_VARIANTS:
-                       default + view = 64 · emphasize + drag = 40
+                       default + view = 64 · emphasize = 40 · drag = 50
+             press → CURSOR_DEFAULTS.pressScale, per-variant in CURSOR_VARIANTS
+                     (drag only); a transform, nothing to style here
 
            Label — default + emphasize  (data-cursor-label-placement="below")
              color → this block, "below": type --background, plate --foreground

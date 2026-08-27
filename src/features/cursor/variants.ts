@@ -29,6 +29,8 @@ export type CursorVariantTuning = {
   proximityMaxOpacity: number
   /** Outer-ring scale multiplier while truly hovering the target. */
   hoverOuterScale: number
+  /** Outer-ring scale multiplier while the pointer is held on the target; 1 opts out. */
+  pressScale: number
 }
 
 export type CursorLabelActivation = 'hover' | 'proximity'
@@ -55,7 +57,7 @@ export type CursorVariantDefinition = CursorVariantTuning & {
 
 export const CURSOR_DEFAULTS = {
   /** Outer ring diameter, px. */
-  outerSize: 64,
+  outerSize: 52,
   /** Inner ring diameter, px. */
   innerSize: 10,
   /** Ring stroke width, px. */
@@ -86,6 +88,10 @@ export const CURSOR_DEFAULTS = {
   outerGrowLag: 0.3,
   /** Seconds for the hover lock-on pop (net ring scale → `hoverOuterScale`). */
   hoverPopDuration: 0.35,
+  /** Seconds for the press contraction — feedback has to land while the button goes down. */
+  pressDuration: 0.12,
+  /** Seconds for the release — softer than the press so the ring settles rather than snaps. */
+  pressReleaseDuration: 0.22,
   /** Outer-ring opacity ceiling (hover and approach both scale into this). */
   outerOpacity: 0.3,
   /** Overlay stacking level — always above page content (it remains pointer-events none). */
@@ -93,6 +99,8 @@ export const CURSOR_DEFAULTS = {
   proximityRadius: 100,
   proximityMaxOpacity: 0.3,
   hoverOuterScale: 1.15,
+  /** No press response by default; variants whose target is grabbable opt in. */
+  pressScale: 1,
   labelActivation: 'hover',
   labelPlacement: 'below',
   showInnerRing: true,
@@ -131,7 +139,7 @@ export const CURSOR_VARIANTS = {
     label: 'DRAG',
     labelActivation: 'proximity',
     labelPlacement: 'center',
-    outerSize: 40,
+    outerSize: 50,
     // Native cursor is replaced while approaching, so the custom cursor
     // must stay fully opaque — the default tease (0.3) would vanish.
     proximityMaxOpacity: 1,
@@ -159,6 +167,7 @@ export function resolveCursorVariant(name: string | undefined): CursorVariantDef
     proximityRadius: CURSOR_DEFAULTS.proximityRadius,
     proximityMaxOpacity: CURSOR_DEFAULTS.proximityMaxOpacity,
     hoverOuterScale: CURSOR_DEFAULTS.hoverOuterScale,
+    pressScale: CURSOR_DEFAULTS.pressScale,
     labelActivation: CURSOR_DEFAULTS.labelActivation,
     labelPlacement: CURSOR_DEFAULTS.labelPlacement,
     labelOffset: CURSOR_DEFAULTS.labelOffset,

@@ -74,6 +74,7 @@ describe('resolveCursorVariant', () => {
         proximityRadius: CURSOR_DEFAULTS.proximityRadius,
         proximityMaxOpacity: CURSOR_DEFAULTS.proximityMaxOpacity,
         hoverOuterScale: CURSOR_DEFAULTS.hoverOuterScale,
+        pressScale: CURSOR_DEFAULTS.pressScale,
         labelActivation: CURSOR_DEFAULTS.labelActivation,
         labelPlacement: CURSOR_DEFAULTS.labelPlacement,
         labelOffset: CURSOR_DEFAULTS.labelOffset,
@@ -81,6 +82,12 @@ describe('resolveCursorVariant', () => {
         showInnerRing: CURSOR_DEFAULTS.showInnerRing,
         hideNativeCursor: CURSOR_DEFAULTS.hideNativeCursor,
       })
+    }
+  })
+
+  it('leaves every non-drag variant without a press response', () => {
+    for (const name of [undefined, 'emphasize', 'view']) {
+      expect(resolveCursorVariant(name).pressScale).toBe(1)
     }
   })
 
@@ -93,7 +100,8 @@ describe('resolveCursorVariant', () => {
       label: 'DRAG',
       labelActivation: 'proximity',
       labelPlacement: 'center',
-      outerSize: 40,
+      outerSize: 50,
+      pressScale: 0.82,
       proximityMaxOpacity: 1,
       showInnerRing: false,
       hideNativeCursor: true,

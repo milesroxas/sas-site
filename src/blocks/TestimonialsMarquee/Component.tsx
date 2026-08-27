@@ -21,7 +21,7 @@ const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => (
         variant="emphasis"
       />
     </blockquote>
-    <figcaption className="mt-auto text-sm font-medium text-foreground">
+    <figcaption className="mt-auto text-xs font-medium text-foreground">
       {testimonial.speakerOrganization || testimonial.speakerName}
     </figcaption>
   </figure>
