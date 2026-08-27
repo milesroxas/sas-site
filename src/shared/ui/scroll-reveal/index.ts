@@ -11,5 +11,6 @@ export {
   type ScrollRevealTuning,
   type ScrollRevealVariant,
   scrollRevealTrackStarts,
+  uppermostRevealTarget,
 } from './scroll-reveal'
 export { useRevealSwap } from './use-reveal-swap'

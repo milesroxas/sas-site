@@ -10,8 +10,8 @@ gsap.registerPlugin(useGSAP)
 /**
  * Every tunable the reveal timeline reads. Targets run on two tracks — text
  * (`data-reveal`, plus `data-reveal="panel"` for opacity + y without blur)
- * and media (`data-reveal="media"`) — each staggered in document order;
- * `mediaOffset` shifts the media track against the text track.
+ * and media (`data-reveal="media"`) — each staggered in document order and
+ * gated on its own target; `mediaOffset` delays one track after its gate.
  */
 export type ScrollRevealTuning = {
   /** Drop distance text targets settle down from (px). */
@@ -41,16 +41,17 @@ export type ScrollRevealTuning = {
    */
   mediaScaleFrom?: number
   /**
-   * Media-track start relative to the text track (s): negative = media leads
-   * and text settles in while the wipe finishes, 0 = both tracks start
-   * together, positive = media trails the text. Ignored when the shell has no
-   * media targets, so a reveal carrying an offset stays safe on text-only
-   * content.
+   * Track delay after that track's own gate (s): negative = media leads
+   * (text waits `-mediaOffset` after the copy is in view), 0 = a track
+   * plays as soon as it has entered, positive = media waits after the
+   * media gate. Ignored when the shell has no media targets, so a reveal
+   * carrying an offset stays safe on text-only content. Side-by-side
+   * layouts still read as one beat because both gates fire together.
    */
   mediaOffset?: number
   /**
-   * How far the shell's reveal content must rise past the fold before the
-   * entrance plays, as a fraction of the viewport height (0.15 = a sixth of
+   * How far a track's own target must rise past the fold before that
+   * track plays, as a fraction of the viewport height (0.15 = a sixth of
    * the screen). Position, not visible fraction — see `observeRevealGate`.
    */
   enterOffset?: number
@@ -69,11 +70,11 @@ export type ScrollRevealProps = ScrollRevealTuning & {
    */
   variant?: ScrollRevealVariant
   /**
-   * Selector for an in-flow element whose position gates the entrance,
-   * for shells that cannot report their own scroll position — a sticky or
-   * fixed band is on screen from the first paint, so its own box would fire
-   * the gate immediately. Resolved document-wide; falls back to the shell's
-   * first text target when it matches nothing.
+   * Selector for an in-flow element whose position gates every track
+   * together, for shells that cannot report their own scroll position — a
+   * sticky or fixed band is on screen from the first paint, so its own box
+   * would fire immediately. Resolved document-wide. Without this, each
+   * track gates on its own uppermost target.
    */
   gateSelector?: string
   /**
@@ -121,12 +122,11 @@ export const SCROLL_REVEAL_UNDER_MEDIA = {
 } as const satisfies ScrollRevealTuning
 
 /**
- * Shared viewport gate: one observer per shell drives every reveal alike.
- * Entrances hold until the shell's own copy has risen this fraction of the
- * viewport past the fold — the site's best-practice distance: far enough in
- * that the settle happens on screen, early enough that nothing pops. Each
- * entrance plays once — scrolling back past a revealed section never
- * reverses or replays it.
+ * Shared viewport gate: one observer per track drives every reveal alike.
+ * Each track holds until its own target has risen this fraction of the
+ * viewport past the fold — media wipes when the image is on screen, copy
+ * drops in when the copy is on screen. Each track plays once — scrolling
+ * back past a revealed section never reverses or replays it.
  */
 export const SCROLL_REVEAL_TRIGGER_DEFAULTS = {
   enterOffset: 0.15,
@@ -172,8 +172,9 @@ export const SCROLL_REVEAL_CURTAIN_ENTER_OFFSET = 0.2
  * expose a useful ratio of itself, and one whose copy sits at its bottom edge
  * exposes its ratio from the wrong end — either way a ratio gate fires while
  * the copy is still below the fold and the settle is over before anyone sees
- * it. Measuring the content's own distance past the fold is the same trigger
- * at every block height.
+ * it. Measuring each track's own distance past the fold is the same trigger
+ * at every block height: media-first layouts wipe when the image arrives,
+ * and the copy still has an entrance once it reaches the same line.
  */
 export function observeRevealGate(gate: Element, enterOffset: number, onEnter: () => void) {
   // A -100% bottom margin collapses the root box to a zero-height line that
@@ -189,6 +190,18 @@ export function observeRevealGate(gate: Element, enterOffset: number, onEnter: (
   )
   observer.observe(gate)
   return () => observer.disconnect()
+}
+
+/**
+ * The reveal target whose top edge is highest in the viewport. Each track
+ * gates on its own uppermost node so a media-first layout wipes as soon as
+ * the image has entered, and the copy still waits until it has entered too.
+ */
+export function uppermostRevealTarget(targets: readonly HTMLElement[]): HTMLElement | undefined {
+  if (targets.length === 0) return undefined
+  return targets.reduce((highest, target) =>
+    target.getBoundingClientRect().top < highest.getBoundingClientRect().top ? target : highest,
+  )
 }
 
 /** The two block shapes; each variant is a complete, independently tuned reveal. */
@@ -215,9 +228,9 @@ const BASE = {
 } as const satisfies Required<ScrollRevealTuning>
 
 /**
- * Track start times for a shell: the signed `mediaOffset` splits into two
- * non-negative timeline positions. Exported so the demo's timing diagram plots
- * exactly what the timeline builds.
+ * Track start times after that track's own gate: the signed `mediaOffset`
+ * splits into two non-negative delays. Exported so the demo's timing diagram
+ * plots exactly what each timeline builds.
  */
 export function scrollRevealTrackStarts(mediaOffset: number, hasMediaTargets: boolean) {
   return {
@@ -244,14 +257,15 @@ function resolveTuning(
 
 /**
  * The site's scroll-entrance motion language, owned in one place: descendants
- * marked `data-reveal` drop into place with a blur settle when the shell
+ * marked `data-reveal` drop into place with a blur settle when that copy
  * enters the viewport, `data-reveal="panel"` is the same track without blur
  * (opacity + y only — so glass surfaces keep `backdrop-filter`), and
- * `data-reveal="media"` targets mask-wipe open from the top. The entrance
- * plays once — scrolling back past a revealed shell never reverses or
- * replays it. Text and media run as separate tracks so `mediaOffset` can
- * sync or sequence them. Server-rendered children stay visible without
- * JavaScript; reduced motion renders the final state.
+ * `data-reveal="media"` targets mask-wipe open from the top when the media
+ * itself has entered. Each track plays once — scrolling back past a revealed
+ * shell never reverses or replays it. `mediaOffset` delays one track after
+ * its own gate so a wipe can still lead the copy when both are on screen
+ * together. Server-rendered children stay visible without JavaScript;
+ * reduced motion renders the final state.
  */
 export function ScrollReveal({
   as: Tag = 'section',
@@ -303,10 +317,14 @@ export function ScrollReveal({
       // Reveal targets may also be `pressable`, whose CSS transition covers
       // opacity — left on, it would re-transition every per-frame GSAP write
       // and smear the entrance. Suspend transitions for the tween, restore after.
-      const tl = gsap.timeline({
-        paused: true,
-        onStart: () => gsap.set(targets, { transition: 'none' }),
-        onComplete: () => {
+      const suspendTransitions = () => gsap.set(targets, { transition: 'none' })
+      let remaining = 0
+      const arm = (tl: gsap.core.Timeline) => {
+        remaining += 1
+        tl.eventCallback('onStart', suspendTransitions)
+        tl.eventCallback('onComplete', () => {
+          remaining -= 1
+          if (remaining !== 0) return
           gsap.set(targets, { clearProps: 'transition' })
           // The wipe's final inset(0) still clips at the border box, which
           // would pin media that intentionally overflows its frame (WebGL
@@ -315,60 +333,87 @@ export function ScrollReveal({
           // text-only shells.
           if (mediaTargets.length) gsap.set(mediaTargets, { clearProps: 'clipPath' })
           onCompleteRef.current?.()
-        },
-      })
-      textTargets.forEach((target, index) => {
-        // Glass / functional panels can't take `filter` — it kills
-        // `backdrop-filter` on the same node. Same beat, opacity + y only.
-        const panel = target.dataset.reveal === 'panel'
-        tl.fromTo(
-          target,
-          {
-            autoAlpha: 0,
-            y: -textY,
-            ...(panel ? {} : { filter: `blur(${textBlurPx}px)` }),
-          },
-          {
-            autoAlpha: 1,
-            y: 0,
-            ...(panel ? {} : { filter: 'blur(0px)' }),
-            duration: textDuration,
-            ease: textEase,
-          },
-          textStart + index * stagger,
-        )
-      })
-      mediaTargets.forEach((target, index) => {
-        const at = mediaStart + index * stagger
-        tl.fromTo(
-          target,
-          { clipPath: 'inset(0% 0% 100% 0%)' },
-          { clipPath: 'inset(0% 0% 0% 0%)', duration: mediaDuration, ease: mediaEase },
-          at,
-        )
-        // The container is the window: its clip mask holds the frame while the
-        // content inside settles down from a slight zoom on the same beat.
-        const content = target.firstElementChild
-        if (content && mediaScaleFrom !== 1) {
+        })
+      }
+
+      const addTextTweens = (tl: gsap.core.Timeline, start: number) => {
+        textTargets.forEach((target, index) => {
+          // Glass / functional panels can't take `filter` — it kills
+          // `backdrop-filter` on the same node. Same beat, opacity + y only.
+          const panel = target.dataset.reveal === 'panel'
           tl.fromTo(
-            content,
-            { scale: mediaScaleFrom },
-            { scale: 1, duration: mediaDuration, ease: mediaEase },
+            target,
+            {
+              autoAlpha: 0,
+              y: -textY,
+              ...(panel ? {} : { filter: `blur(${textBlurPx}px)` }),
+            },
+            {
+              autoAlpha: 1,
+              y: 0,
+              ...(panel ? {} : { filter: 'blur(0px)' }),
+              duration: textDuration,
+              ease: textEase,
+            },
+            start + index * stagger,
+          )
+        })
+      }
+
+      const addMediaTweens = (tl: gsap.core.Timeline, start: number) => {
+        mediaTargets.forEach((target, index) => {
+          const at = start + index * stagger
+          tl.fromTo(
+            target,
+            { clipPath: 'inset(0% 0% 100% 0%)' },
+            { clipPath: 'inset(0% 0% 0% 0%)', duration: mediaDuration, ease: mediaEase },
             at,
           )
-        }
-      })
+          // The container is the window: its clip mask holds the frame while the
+          // content inside settles down from a slight zoom on the same beat.
+          const content = target.firstElementChild
+          if (content && mediaScaleFrom !== 1) {
+            tl.fromTo(
+              content,
+              { scale: mediaScaleFrom },
+              { scale: 1, duration: mediaDuration, ease: mediaEase },
+              at,
+            )
+          }
+        })
+      }
 
-      // The copy is what the gate is for, so it is what the gate measures:
-      // the first text target, or the shell itself when a reveal is media
-      // only. `gateSelector` overrides both for shells that sit still on
-      // screen (see the prop).
-      const gate =
-        (gateSelector ? document.querySelector(gateSelector) : null) ??
-        textTargets[0] ??
-        targets[0] ??
-        root
-      return observeRevealGate(gate, enterOffset, () => tl.play())
+      // A sticky/fixed shell cannot report its own scroll position — one
+      // in-flow marker gates every track together. Otherwise each track
+      // waits on its own target so a media-first layout wipes when the
+      // image arrives, and the copy still drops in once it has entered.
+      const overrideGate = gateSelector ? document.querySelector(gateSelector) : null
+      if (overrideGate) {
+        const tl = gsap.timeline({ paused: true })
+        addTextTweens(tl, textStart)
+        addMediaTweens(tl, mediaStart)
+        arm(tl)
+        return observeRevealGate(overrideGate, enterOffset, () => tl.play())
+      }
+
+      const stops: Array<() => void> = []
+      if (textTargets.length) {
+        const textTl = gsap.timeline({ paused: true })
+        addTextTweens(textTl, textStart)
+        arm(textTl)
+        const textGate = uppermostRevealTarget(textTargets) ?? root
+        stops.push(observeRevealGate(textGate, enterOffset, () => textTl.play()))
+      }
+      if (mediaTargets.length) {
+        const mediaTl = gsap.timeline({ paused: true })
+        addMediaTweens(mediaTl, mediaStart)
+        arm(mediaTl)
+        const mediaGate = uppermostRevealTarget(mediaTargets) ?? root
+        stops.push(observeRevealGate(mediaGate, enterOffset, () => mediaTl.play()))
+      }
+      return () => {
+        for (const stop of stops) stop()
+      }
     },
     {
       scope: rootRef,

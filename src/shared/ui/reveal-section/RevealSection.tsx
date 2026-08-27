@@ -23,7 +23,7 @@ export function RevealSection({
   className,
   style,
   delayMs = 0,
-  rootMargin = '0px 0px -12% 0px',
+  rootMargin = '0px 0px -5% 0px',
   once = true,
   ...rest
 }: RevealSectionProps) {
@@ -51,7 +51,7 @@ export function RevealSection({
           setVisible(false)
         }
       },
-      { rootMargin, threshold: [0, 0.08, 0.15] },
+      { rootMargin, threshold: 0 },
     )
 
     observer.observe(el)

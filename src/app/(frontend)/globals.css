@@ -1016,10 +1016,10 @@ html {
 /* Scroll-reveal sections (see shared/ui/reveal-section/RevealSection.tsx) */
 .reveal-section {
   opacity: 0;
-  transform: translate3d(0, 1.75rem, 0);
+  transform: translate3d(0, 0.75rem, 0);
   transition:
-    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 250ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--reveal-delay, 0ms);
 }
 
@@ -1043,8 +1043,8 @@ html {
 }
 
 .reveal-section[data-visible="true"] .reveal-stagger-item {
-  animation: reveal-stagger-fade 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--stagger, 0) * 55ms);
+  animation: reveal-stagger-fade 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--stagger, 0) * 40ms);
 }
 
 @keyframes reveal-stagger-fade {

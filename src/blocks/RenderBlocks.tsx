@@ -94,7 +94,7 @@ export const RenderBlocks: React.FC<{
               }
 
               return (
-                <RevealSection className="my-16" delayMs={Math.min(index * 72, 420)} key={index}>
+                <RevealSection className="my-16" key={index}>
                   {/* @ts-expect-error there may be some mismatch between the expected types here */}
                   <Block {...block} disableInnerContainer />
                 </RevealSection>
