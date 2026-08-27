@@ -12,6 +12,7 @@ import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
+import { FeaturedWork } from '@/blocks/featured-work/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
@@ -20,7 +21,7 @@ import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { TestimonialsMarquee } from '@/blocks/TestimonialsMarquee/config'
 
 /**
- * Layout blocks shared by Pages and the Home global.
+ * Layout blocks offered by Pages.
  * Ordered by `admin.group` — the blocks drawer renders groups in first-appearance order.
  */
 export const pageLayoutBlocks: Block[] = [
@@ -45,11 +46,18 @@ export const pageLayoutBlocks: Block[] = [
   Carousel,
   // Lists & grids
   Archive,
+  FeaturedWork,
   // Forms & CTAs
   CallToAction,
   FormBlock,
   NewsletterSignup,
 ]
+
+/**
+ * Home composition: everything Pages offers except the curated work list — the
+ * homepage tells that story through its own hero and industry blocks.
+ */
+export const homeLayoutBlocks: Block[] = pageLayoutBlocks.filter((block) => block !== FeaturedWork)
 
 /**
  * Layout blocks shared by the segment pages (Audience, Expertise). A narrower
@@ -73,6 +81,7 @@ export const segmentPageBlocks: Block[] = [
   Carousel,
   // Lists & grids
   Archive,
+  FeaturedWork,
   // Forms & CTAs
   CallToAction,
   FormBlock,

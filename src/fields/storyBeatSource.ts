@@ -4,12 +4,20 @@ import { CASE_STUDY_STORY_SECTIONS } from '@/collections/CaseStudies/story'
 const optionValue = (option: SelectField['options'][number]) =>
   typeof option === 'string' ? option : option.value
 
-const storyBeatKeyField = (): TextField => ({
+type FieldCondition = NonNullable<SelectField['admin']>['condition']
+
+/**
+ * The beat selector shadows its `source` field: it only shows for a canonical
+ * story section, and never when the block hides `source` behind its own
+ * condition (e.g. Full media's "Show content" toggle).
+ */
+const storyBeatKeyField = (sourceCondition: FieldCondition): TextField => ({
   name: 'storyBeatKey',
   type: 'text',
   label: 'Story beat (optional)',
   admin: {
-    condition: (_, siblingData) =>
+    condition: (data, siblingData, ctx) =>
+      (!sourceCondition || Boolean(sourceCondition(data, siblingData, ctx))) &&
       CASE_STUDY_STORY_SECTIONS.some((source) => source === siblingData?.source),
     description:
       'Leave empty to use the complete section, or choose one reusable beat from that section.',
@@ -49,7 +57,7 @@ const withStoryBeatFields = (fields: Field[]): Field[] =>
       },
     }
 
-    return [source, storyBeatKeyField()]
+    return [source, storyBeatKeyField(next.admin?.condition)]
   })
 
 /**

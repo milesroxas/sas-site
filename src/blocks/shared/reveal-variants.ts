@@ -25,7 +25,7 @@ export const blockRevealVariants = {
   // Pinned ScrollTrigger shell (sticky viewport + scrubbed list) — a CSS
   // reveal wrapper would put transform/opacity on its ancestor and break the
   // pin measurement.
-  homeFeaturedWork: 'self',
+  featuredWork: 'self',
   // Full-viewport shell owning its fullscreen enter threshold.
   industryWork: 'self',
 } as const satisfies Record<string, ScrollRevealVariant | 'self'>

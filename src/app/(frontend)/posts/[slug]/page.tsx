@@ -4,6 +4,7 @@ import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 import { RelatedPosts } from '@/blocks/RelatedPosts/Component'
+import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
@@ -97,6 +98,11 @@ export default async function Post({ params: paramsPromise }: Args) {
             />
           )}
         </div>
+        {post.layout && post.layout.length > 0 && (
+          <div className="w-full">
+            <RenderBlocks blocks={post.layout} />
+          </div>
+        )}
         {post.relatedPosts && post.relatedPosts.length > 0 && (
           <RevealSection className="container w-full mt-12">
             <RelatedPosts

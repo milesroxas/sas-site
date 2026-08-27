@@ -6,6 +6,7 @@ import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
+import { FeaturedWork } from '@/blocks/featured-work/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
@@ -20,7 +21,6 @@ import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { withStoryBeatSource } from '@/fields/storyBeatSource'
-import { HomeFeaturedWork } from '@/Home/featured-work/config'
 
 export const CaseStudyStorySection: Block = {
   slug: 'caseStudyStorySection',
@@ -241,6 +241,6 @@ export const caseStudyBlocks = [
   // Lists & grids
   CaseStudyKeyDecisions,
   CaseStudyMetrics,
-  HomeFeaturedWork,
+  FeaturedWork,
   CaseStudyRelatedWork,
 ]

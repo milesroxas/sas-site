@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { LightLeak } from '@/features/immersive'
+import { LIGHT_LEAK_PAPER, LightLeak } from '@/features/immersive'
+import { useSiteTheme } from '@/hooks/use-site-theme'
 import { FOOTER_CLOSING_GATE_SELECTOR } from './curtain'
 
 /**
@@ -15,11 +16,21 @@ import { FOOTER_CLOSING_GATE_SELECTOR } from './curtain'
  * screen past that, which covers the rest of the page. Scroll a screen back up
  * and the canvas goes away again.
  *
- * No visual surface of its own — the leak's look is `LightLeak`'s defaults, and
- * the band's story (`Features/FooterClosing`) renders it in place.
+ * The band follows the visitor's site theme, so the leak has to follow it too.
+ * `LightLeak`'s defaults are an *emissive* frame — light added to the ground —
+ * which is invisible on the light theme's white surface. Light mode therefore
+ * swaps in `LIGHT_LEAK_PAPER`, the absorptive cut of the same effect: the leak
+ * prints onto the page rather than glowing over it. Toggling themes changes
+ * uniforms and one CSS blend mode, so the canvas is never torn down and the
+ * program is never relinked.
+ *
+ * No visual surface of its own — the two looks are `LightLeak`'s defaults and
+ * one preset, and the band's story (`Features/FooterClosing`) renders it in
+ * place.
  */
 export function ClosingLightLeak() {
   const [open, setOpen] = useState(false)
+  const theme = useSiteTheme()
 
   useEffect(() => {
     const marker = document.querySelector(FOOTER_CLOSING_GATE_SELECTOR)
@@ -36,5 +47,5 @@ export function ClosingLightLeak() {
     return () => observer.disconnect()
   }, [])
 
-  return open ? <LightLeak /> : null
+  return open ? <LightLeak {...(theme === 'light' ? LIGHT_LEAK_PAPER : {})} /> : null
 }

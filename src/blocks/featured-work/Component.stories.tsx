@@ -26,7 +26,7 @@ const entries: WorkEntry[] = [
 ]
 
 const meta = {
-  title: 'Sections/HomeFeaturedWork',
+  title: 'Sections/FeaturedWork',
   component: FeaturedWorkList,
   parameters: {
     layout: 'fullscreen',

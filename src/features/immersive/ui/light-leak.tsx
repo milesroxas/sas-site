@@ -16,8 +16,21 @@ import { createFragmentShader, VERTEX_SHADER } from './light-leak-shader'
  * unsupported (WebGPURenderer only accepts TSL node materials).
  */
 
-/** Screen-like blends only: the shader writes an opaque frame whose blacks must drop out. */
-export type LightLeakBlendMode = 'screen' | 'plus-lighter' | 'lighten'
+/**
+ * The blend mode *is* the polarity, so the two can never disagree.
+ *
+ * Screen-like modes composite an emissive frame whose blacks drop out — the
+ * leak as light striking the sensor, which only reads over a dark ground.
+ * Multiply-like modes composite an absorptive frame whose *whites* drop out —
+ * the leak as dye on paper, which is what reads over a pale ground. The shader
+ * switches its final composite to match (see `uAbsorb`).
+ */
+export type LightLeakBlendMode = 'screen' | 'plus-lighter' | 'lighten' | 'multiply' | 'darken'
+
+/** Multiply-like modes take the absorptive tail; everything else stays emissive. */
+function isAbsorptive(mode: LightLeakBlendMode): boolean {
+  return mode === 'multiply' || mode === 'darken'
+}
 
 /** A 0–2 RGB multiplier, not a colour — values above 1 push the channel hot. */
 export type LightLeakTint = readonly [number, number, number]
@@ -113,6 +126,18 @@ export type LightLeakProps = {
   grainLuminance?: number
   /** Darkens the corners of the overlay. */
   vignette?: number
+  /**
+   * Absorptive blends only (`multiply` / `darken`). How hard the stain takes
+   * the leak's own hue: 0 prints a neutral gray shadow, high values print
+   * saturated dye. Ignored on screen-like blends.
+   */
+  inkChroma?: number
+  /**
+   * Absorptive blends only. Neutral darkening under the leak — the stain's
+   * weight on the page, independent of its colour. Keep it low: this is what
+   * eats the contrast of copy sitting under the overlay.
+   */
+  inkDensity?: number
   /** Tint on dim leak — the teal / shadow side. */
   coolTint?: LightLeakTint
   /** Tint on bright leak — the rose / highlight side. */
@@ -188,6 +213,8 @@ export const LIGHT_LEAK_DEFAULTS = {
   grain: 0.03,
   grainLuminance: 0.039,
   vignette: 2,
+  inkChroma: 1.25,
+  inkDensity: 0.32,
   coolTint: [0.21, 0.31, 1.1],
   warmTint: [1.85, 1, 0.68],
   amber: [0.01, 0.32, 0.32],
@@ -321,6 +348,7 @@ type LeakSceneProps = {
 function LeakScene({ rootRef, inputRef, scrollSource, tuning }: LeakSceneProps) {
   const {
     samples,
+    blendMode,
     timeScale,
     warpAmount,
     warpScale,
@@ -341,6 +369,8 @@ function LeakScene({ rootRef, inputRef, scrollSource, tuning }: LeakSceneProps) 
     grain,
     grainLuminance,
     vignette,
+    inkChroma,
+    inkDensity,
     coolTint,
     warmTint,
     amber,
@@ -390,6 +420,9 @@ function LeakScene({ rootRef, inputRef, scrollSource, tuning }: LeakSceneProps) 
       uGrain: { value: 0 },
       uGrainLum: { value: 0 },
       uVignette: { value: 0 },
+      uAbsorb: { value: 0 },
+      uInkChroma: { value: 1 },
+      uInkDensity: { value: 0 },
       uCoolTint: { value: new Vector3(1, 1, 1) },
       uWarmTint: { value: new Vector3(1, 1, 1) },
       uAmber: { value: new Vector3(0, 0, 0) },
@@ -461,6 +494,12 @@ function LeakScene({ rootRef, inputRef, scrollSource, tuning }: LeakSceneProps) 
     u.uGrain.value = grain
     u.uGrainLum.value = grainLuminance
     u.uVignette.value = vignette
+    // Polarity is a uniform rather than a #define on purpose: a theme toggle
+    // must not relink the program mid-session (a new material, a compile stall
+    // and a dropped frame) when a coherent branch costs nothing.
+    u.uAbsorb.value = isAbsorptive(blendMode) ? 1 : 0
+    u.uInkChroma.value = inkChroma
+    u.uInkDensity.value = inkDensity
     u.uCoolTint.value.fromArray(coolTint)
     u.uWarmTint.value.fromArray(warmTint)
     u.uAmber.value.fromArray(amber)
@@ -505,6 +544,12 @@ function LeakScene({ rootRef, inputRef, scrollSource, tuning }: LeakSceneProps) 
  * Scrolling agitates it — velocity drives brightness, spectral split and a
  * domain-warp morph, and slides the field along. Hovering any element marked
  * `data-leak-excite` gathers light under the pointer.
+ *
+ * The ground decides the polarity. Over a dark surface the default screen-like
+ * blend reads as light striking the film; over a pale one that same frame is
+ * invisible, so an absorptive blend (`multiply` / `darken`) prints the leak as
+ * dye on paper instead — see `LIGHT_LEAK_PAPER` in `../presets.ts` for the
+ * shipped light-theme look, and `blendMode` for how the two stay in step.
  *
  * Placement is the caller's: it fills the nearest positioned ancestor by
  * default, so a section overlay is `<section className="relative isolate">`

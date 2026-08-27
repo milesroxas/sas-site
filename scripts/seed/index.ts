@@ -770,7 +770,28 @@ async function run() {
       ),
     )
   }
-  log(`${workPageIds.length} work pages`)
+  // Featured work lists the other work pages, so it can only be appended once
+  // every work page exists.
+  const [firstWorkPageId, ...otherWorkPageIds] = workPageIds
+  await payload.update({
+    collection: 'work-pages',
+    id: firstWorkPageId,
+    data: {
+      layout: [
+        ...workLayouts[0],
+        {
+          blockType: 'featuredWork',
+          eyebrow: 'Featured Work',
+          entries: otherWorkPageIds,
+          theme: 'dark',
+        },
+      ],
+    },
+    depth: 0,
+    draft: false,
+    context: ctx,
+  })
+  log(`${workPageIds.length} work pages (featured work on ${WORK_ITEMS[0].slug})`)
 
   console.log('Seeding posts…')
   const users = await payload.find({ collection: 'users', limit: 1, depth: 0 })
@@ -1619,18 +1640,12 @@ async function run() {
           ],
           theme: 'light',
         },
-        {
-          blockType: 'homeFeaturedWork',
-          eyebrow: 'Featured Work',
-          entries: workPageIds,
-          theme: 'dark',
-        },
         audienceTabsBlock,
       ],
       _status: 'published',
     },
   })
-  log('home hero, statement, featureStatementLinks, homeFeaturedWork (6 entries), audienceTabs')
+  log('home hero, statement, featureStatementLinks, audienceTabs')
 
   console.log('\nSeed complete.')
   console.log('Review routes: / · /block-review · /hero-high-impact · /hero-low-impact · /contact')

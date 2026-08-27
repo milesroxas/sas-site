@@ -7,9 +7,12 @@ import { cn } from '@/utilities/ui'
 import { mediaSectionYClassName, Section } from '../shared/section'
 
 /**
- * Presentational full-media layout: media above a two-column content row.
- * Collection-agnostic — the caller resolves `content` from whichever source
+ * Presentational full-media layout: media above an optional two-column content
+ * row. Collection-agnostic — the caller resolves `content` from whichever source
  * applies (inline body or canonical story content) and passes it in.
+ *
+ * Media is the only requirement: with `showContent` off, or with no eyebrow,
+ * heading or body authored, the block renders the media on its own.
  *
  * Full-width media is 16:9 below `md` and 21:9 from `md` up, edge to edge.
  * Contained media sits in the page column at the editor-chosen aspect ratio.
@@ -36,12 +39,13 @@ export const FullMedia = ({
   bare?: boolean
   block: Pick<
     FullMediaBlock,
-    'aspectRatio' | 'contentPosition' | 'eyebrow' | 'heading' | 'theme' | 'width'
+    'aspectRatio' | 'contentPosition' | 'eyebrow' | 'heading' | 'showContent' | 'theme' | 'width'
   >
   content: DefaultTypedEditorState | null | undefined
   media: MediaDoc
 }) => {
-  if (!content) return null
+  const showContent =
+    block.showContent !== false && Boolean(block.eyebrow || block.heading || content)
   const contentRight = block.contentPosition === 'right'
   const contained = block.width === 'contained'
   const aspectClass = contained
@@ -55,7 +59,7 @@ export const FullMedia = ({
       <Media fill htmlElement={null} imgClassName="object-cover" resource={media} size="100vw" />
     </div>
   )
-  const contentRow = (
+  const contentRow = showContent ? (
     <div
       className={cn(
         'grid grid-cols-[1fr_1fr_0.5fr] gap-8 lg:max-w-3xl lg:grid-cols-2',
@@ -66,16 +70,18 @@ export const FullMedia = ({
         {block.eyebrow && <p className="font-mono text-xs/none font-medium">{block.eyebrow}</p>}
         {block.heading && <h2 className="text-heading-3 text-balance">{block.heading}</h2>}
       </div>
-      <div data-reveal>
-        <RichText
-          className="text-base/6 lg:text-lg/7"
-          data={content}
-          enableGutter={false}
-          enableProse={false}
-        />
-      </div>
+      {content && (
+        <div data-reveal>
+          <RichText
+            className="text-base/6 lg:text-lg/7"
+            data={content}
+            enableGutter={false}
+            enableProse={false}
+          />
+        </div>
+      )}
     </div>
-  )
+  ) : null
   const inner = contained ? (
     <Container>
       <div className="flex flex-col gap-8">
@@ -86,7 +92,7 @@ export const FullMedia = ({
   ) : (
     <div className="flex flex-col gap-8">
       {mediaFrame}
-      <Container>{contentRow}</Container>
+      {contentRow && <Container>{contentRow}</Container>}
     </div>
   )
   if (bare) return inner

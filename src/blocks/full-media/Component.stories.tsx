@@ -22,6 +22,7 @@ const meta = {
   args: {
     blockType: 'fullMedia',
     source: 'custom',
+    showContent: true,
     eyebrow: 'Eyebrow',
     heading: 'Make the relationships visible',
     media: mediaFixture,
@@ -60,4 +61,14 @@ export const Contained3x2: Story = {
 
 export const Contained21x9: Story = {
   args: { width: 'contained', aspectRatio: '21-9' },
+}
+
+/** Toggle off: media renders on its own, authored copy stays in the CMS. */
+export const MediaOnly: Story = {
+  args: { showContent: false, width: 'contained', aspectRatio: '16-9' },
+}
+
+/** Media is the only requirement — nothing authored still renders. */
+export const NoContentAuthored: Story = {
+  args: { eyebrow: undefined, heading: undefined, body: undefined },
 }

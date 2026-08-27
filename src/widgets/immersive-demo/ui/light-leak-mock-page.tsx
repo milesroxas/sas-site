@@ -89,12 +89,20 @@ const EXPOSURES = [
   { f: 'f/16', t: '1/2000', note: 'Diffraction takes over.' },
 ]
 
-export function LightLeakMockPage() {
+type LightLeakMockPageProps = {
+  /**
+   * Which ground to judge the leak against. The effect has two composites —
+   * emissive over a dense surface, absorptive over a pale one — and each is
+   * only tunable over the ground it ships on, so the GUI drives this.
+   */
+  surface?: 'dark' | 'light'
+}
+
+export function LightLeakMockPage({ surface = 'dark' }: LightLeakMockPageProps) {
   return (
-    // Forced dark: the overlay composites with a screen-like blend, which only
-    // reads against a dense ground — the same reason the site's heroes pin
-    // themselves to the dark theme.
-    <div data-theme="dark" className="bg-neutral-950 text-neutral-100">
+    // Every surface below is a semantic token, so the whole page follows this
+    // attribute rather than pinning one palette.
+    <div data-theme={surface} className="bg-background text-foreground">
       {/* 1 — Hero */}
       <section className="flex min-h-[78vh] flex-col justify-center gap-5 px-8 py-20">
         <Badge variant="secondary" className="w-fit font-mono text-[0.625rem] tracking-widest">
@@ -103,7 +111,7 @@ export function LightLeakMockPage() {
         <h2 className="max-w-2xl text-balance text-heading-2">
           Every leak is the camera failing beautifully.
         </h2>
-        <p className="max-w-prose text-pretty text-sm/relaxed text-neutral-400">
+        <p className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">
           Scroll this window to agitate the emulsion — velocity drives brightness, spectral split
           and a domain-warp morph, and slides the field along with you. Hover anything that
           highlights to flash it. The overlay is one GLSL pass composited over this page.
@@ -116,21 +124,21 @@ export function LightLeakMockPage() {
             Technical notes
           </Button>
         </div>
-        <p className="pt-6 font-mono text-[0.625rem] uppercase tracking-[0.3em] text-neutral-600">
+        <p className="pt-6 font-mono text-[0.625rem] uppercase tracking-[0.3em] text-muted-foreground/70">
           ↓ keep scrolling — the response needs room to build
         </p>
       </section>
 
-      <Separator className="bg-neutral-800" />
+      <Separator className="bg-border" />
 
       {/* 2 — Readings */}
-      <section className="grid grid-cols-2 gap-px bg-neutral-800 sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-px bg-border sm:grid-cols-4">
         {READINGS.map((reading) => (
-          <div key={reading.label} className="bg-neutral-950 px-6 py-8">
-            <p className="font-mono text-[0.625rem] uppercase tracking-widest text-neutral-500">
+          <div key={reading.label} className="bg-background px-6 py-8">
+            <p className="font-mono text-[0.625rem] uppercase tracking-widest text-muted-foreground">
               {reading.label}
             </p>
-            <p className="mt-2 font-mono text-lg text-neutral-200">{reading.value}</p>
+            <p className="mt-2 font-mono text-lg text-foreground">{reading.value}</p>
           </div>
         ))}
       </section>
@@ -143,17 +151,17 @@ export function LightLeakMockPage() {
             <Card
               key={frame.id}
               {...leakExcite()}
-              className="border-neutral-800 bg-neutral-900/60 transition-colors duration-500 hover:border-neutral-700 hover:bg-neutral-900"
+              className="border-border bg-card/60 transition-colors duration-500 hover:border-foreground/25 hover:bg-card"
             >
               <CardHeader>
-                <p className="font-mono text-[0.625rem] tracking-widest text-neutral-500">
+                <p className="font-mono text-[0.625rem] tracking-widest text-muted-foreground">
                   {frame.id} · {frame.stock}
                 </p>
                 <CardTitle className="text-lg font-normal">{frame.title}</CardTitle>
-                <CardDescription className="text-neutral-400">{frame.note}</CardDescription>
+                <CardDescription className="text-muted-foreground">{frame.note}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-28 rounded-md bg-linear-to-br from-neutral-800 via-neutral-900 to-neutral-950" />
+                <div className="h-28 rounded-md bg-linear-to-br from-muted via-card to-background" />
               </CardContent>
             </Card>
           ))}
@@ -163,9 +171,9 @@ export function LightLeakMockPage() {
       {/* 4 — Plate: a wide, near-empty ground where the wash reads cleanly */}
       <section
         {...leakExcite()}
-        className="flex min-h-[70vh] items-center justify-center border-y border-neutral-800 bg-linear-to-b from-neutral-900 via-neutral-950 to-black px-8 py-24 transition-colors duration-700 hover:from-neutral-800"
+        className="flex min-h-[70vh] items-center justify-center border-y border-border bg-linear-to-b from-muted via-background to-secondary px-8 py-24 transition-colors duration-700 hover:from-accent"
       >
-        <blockquote className="max-w-xl text-balance text-center text-heading-3 font-normal text-neutral-300">
+        <blockquote className="max-w-xl text-balance text-center text-heading-3 font-normal text-foreground/80">
           “The last frame on the roll always catches the leak.”
         </blockquote>
       </section>
@@ -173,18 +181,18 @@ export function LightLeakMockPage() {
       {/* 5 — Index: dense rows, so the fringing has hard edges to sit against */}
       <section className="space-y-6 px-8 py-20">
         <SectionHeading>What the field is made of</SectionHeading>
-        <div className="divide-y divide-neutral-800 border-y border-neutral-800">
+        <div className="divide-y divide-border border-y border-border">
           {INDEX_ROWS.map((row) => (
             <div
               key={row.n}
               {...leakExcite()}
-              className="flex items-baseline gap-4 py-4 transition-colors duration-300 hover:bg-neutral-900/70"
+              className="flex items-baseline gap-4 py-4 transition-colors duration-300 hover:bg-card/70"
             >
-              <span className="font-mono text-[0.625rem] tracking-widest text-neutral-600">
+              <span className="font-mono text-[0.625rem] tracking-widest text-muted-foreground/70">
                 {row.n}
               </span>
-              <span className="flex-1 text-sm text-neutral-200">{row.title}</span>
-              <span className="font-mono text-[0.625rem] uppercase tracking-widest text-neutral-500">
+              <span className="flex-1 text-sm text-foreground">{row.title}</span>
+              <span className="font-mono text-[0.625rem] uppercase tracking-widest text-muted-foreground">
                 {row.meta}
               </span>
             </div>
@@ -196,18 +204,18 @@ export function LightLeakMockPage() {
       <section className="grid gap-10 px-8 py-20 sm:grid-cols-2">
         <div className="space-y-4">
           <SectionHeading>What scrolling drives</SectionHeading>
-          <ul className="list-disc space-y-2 pl-5 text-pretty text-sm/relaxed text-neutral-400">
+          <ul className="list-disc space-y-2 pl-5 text-pretty text-sm/relaxed text-muted-foreground">
             <li>
-              <strong className="font-medium text-neutral-200">Energy</strong> — smoothed
-              |velocity|, feeding brightness, spectral split and the morph warp.
+              <strong className="font-medium text-foreground">Energy</strong> — smoothed |velocity|,
+              feeding brightness, spectral split and the morph warp.
             </li>
             <li>
-              <strong className="font-medium text-neutral-200">Phase</strong> — the signed integral
+              <strong className="font-medium text-foreground">Phase</strong> — the signed integral
               of velocity, so the field physically slides in the direction you scroll and never
               returns to exactly where it was.
             </li>
             <li>
-              <strong className="font-medium text-neutral-200">Morph</strong> — a second, tighter
+              <strong className="font-medium text-foreground">Morph</strong> — a second, tighter
               warp octave that exists only while there is energy, relaxing back to the resting shape
               when you stop.
             </li>
@@ -215,19 +223,19 @@ export function LightLeakMockPage() {
         </div>
         <div className="space-y-4">
           <SectionHeading>Reading the controls</SectionHeading>
-          <p className="text-pretty text-sm/relaxed text-neutral-400">
+          <p className="text-pretty text-sm/relaxed text-muted-foreground">
             Speed sets the px/s that counts as a full-strength flick; curve shapes everything below
             it. Decay is how fast velocity dies once you stop, smooth is how lazily the leak eases
             toward that reading. Drift is the only one that accumulates — it never unwinds.
           </p>
-          <p className="text-pretty text-sm/relaxed text-neutral-400">
+          <p className="text-pretty text-sm/relaxed text-muted-foreground">
             Lenis&apos;s own feel — how quickly the page catches up to the wheel — is site-wide and
             set in the smooth-scroll provider, so it is deliberately not tunable here.
           </p>
         </div>
       </section>
 
-      <Separator className="bg-neutral-800" />
+      <Separator className="bg-border" />
 
       {/* 7 — Exposures: a tighter grid, more edges per screen */}
       <section className="space-y-6 px-8 py-20">
@@ -237,22 +245,22 @@ export function LightLeakMockPage() {
             <div
               key={exposure.f}
               {...leakExcite()}
-              className="rounded-md border border-neutral-800 bg-neutral-900/40 p-5 transition-colors duration-500 hover:border-neutral-700 hover:bg-neutral-900"
+              className="rounded-md border border-border bg-card/40 p-5 transition-colors duration-500 hover:border-foreground/25 hover:bg-card"
             >
-              <p className="font-mono text-sm text-neutral-200">
+              <p className="font-mono text-sm text-foreground">
                 {exposure.f} · {exposure.t}
               </p>
-              <p className="mt-2 text-xs/relaxed text-neutral-500">{exposure.note}</p>
+              <p className="mt-2 text-xs/relaxed text-muted-foreground">{exposure.note}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* 8 — Closing */}
-      <footer className="border-t border-neutral-800 px-8 py-28 text-center">
+      <footer className="border-t border-border px-8 py-28 text-center">
         <span
           {...leakExcite()}
-          className="inline-block px-8 py-4 font-mono text-[0.625rem] uppercase tracking-[0.3em] text-neutral-500 transition-colors duration-500 hover:text-neutral-300"
+          className="inline-block px-8 py-4 font-mono text-[0.625rem] uppercase tracking-[0.3em] text-muted-foreground transition-colors duration-500 hover:text-foreground"
         >
           — end of roll —
         </span>
@@ -263,6 +271,8 @@ export function LightLeakMockPage() {
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-sm font-medium uppercase tracking-widest text-neutral-500">{children}</h3>
+    <h3 className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
+      {children}
+    </h3>
   )
 }

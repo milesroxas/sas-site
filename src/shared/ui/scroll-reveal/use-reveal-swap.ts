@@ -17,8 +17,9 @@ gsap.registerPlugin(useGSAP)
  * timings from `SCROLL_REVEAL_SWAP` — not the under-media entrance (blur,
  * lift, 600ms), which is first-seen language and reads as a replay when a
  * dropdown fires it. Media can still take the entrance zoom when the
- * consumer asks (`scaleMedia`); the zoom value is imported from the reveal
- * that owns it, never restated.
+ * consumer asks (`scaleMedia`) and the entrance still carries one; the zoom
+ * value is imported from the reveal that owns it, never restated, so a mask-
+ * only entrance (`mediaScaleFrom` 1) leaves the swap fading alone too.
  */
 const {
   textDuration: TEXT_DURATION,
@@ -28,6 +29,7 @@ const {
   mediaEase: MEDIA_EASE,
 } = SCROLL_REVEAL_SWAP
 const { mediaScaleFrom: MEDIA_SCALE_FROM } = SCROLL_REVEAL_UNDER_MEDIA
+const SCALES_MEDIA = MEDIA_SCALE_FROM !== 1
 
 const SWAP_TEXT = '[data-swap="text"]'
 const SWAP_MEDIA = '[data-swap="media"]'
@@ -101,8 +103,8 @@ export function useRevealSwap({
       if (media) {
         tl.fromTo(
           media,
-          scaleMedia ? { autoAlpha: 0, scale: MEDIA_SCALE_FROM } : { autoAlpha: 0 },
-          scaleMedia
+          scaleMedia && SCALES_MEDIA ? { autoAlpha: 0, scale: MEDIA_SCALE_FROM } : { autoAlpha: 0 },
+          scaleMedia && SCALES_MEDIA
             ? { autoAlpha: 1, scale: 1, duration: MEDIA_DURATION, ease: MEDIA_EASE }
             : { autoAlpha: 1, duration: MEDIA_DURATION, ease: MEDIA_EASE },
           0,
@@ -146,7 +148,7 @@ export function useRevealSwap({
     if (media) {
       tl.to(
         media,
-        scaleMediaRef.current
+        scaleMediaRef.current && SCALES_MEDIA
           ? { autoAlpha: 0, scale: MEDIA_SCALE_FROM, duration: MEDIA_DURATION, ease: MEDIA_EASE }
           : { autoAlpha: 0, duration: MEDIA_DURATION, ease: MEDIA_EASE },
         0,

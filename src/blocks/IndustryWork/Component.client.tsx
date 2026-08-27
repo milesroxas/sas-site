@@ -44,9 +44,11 @@ export type IndustryWorkPanel = {
 }
 
 /**
- * Media-track start against the text track (s). The under-media reveal leads
- * with the wipe (`mediaOffset: -0.5`); here the headline sits above the media,
- * so the wipe trails the text instead and the entrance reads top to bottom:
+ * Media-track start against the text track (s). This shell pins, so every
+ * target is on screen at once and the scroll gates cannot sequence them the
+ * way they do in a scroll-gated block (where the under-media reveal leaves
+ * `mediaOffset` at 0 for exactly that reason). The headline sits above the
+ * media, so the wipe trails the text and the entrance reads top to bottom:
  * heading → title column → media → details.
  */
 const INDUSTRY_WORK_MEDIA_OFFSET = 0.2

@@ -2,11 +2,11 @@ import type React from 'react'
 import { findWorkPagesById } from '@/blocks/shared/find-work-pages'
 import { resolveWorkEntry, type WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Section, type SectionTheme } from '@/blocks/shared/section'
-import type { HomeFeaturedWorkBlock as HomeFeaturedWorkBlockProps, WorkPage } from '@/payload-types'
+import type { FeaturedWorkBlock as FeaturedWorkBlockProps, WorkPage } from '@/payload-types'
 import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
 
-export const HomeFeaturedWorkBlock: React.FC<HomeFeaturedWorkBlockProps> = async ({
+export const FeaturedWorkBlock: React.FC<FeaturedWorkBlockProps> = async ({
   eyebrow,
   entries,
   theme,

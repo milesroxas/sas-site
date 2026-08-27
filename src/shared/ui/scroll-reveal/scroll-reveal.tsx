@@ -45,8 +45,12 @@ export type ScrollRevealTuning = {
    * (text waits `-mediaOffset` after the copy is in view), 0 = a track
    * plays as soon as it has entered, positive = media waits after the
    * media gate. Ignored when the shell has no media targets, so a reveal
-   * carrying an offset stays safe on text-only content. Side-by-side
-   * layouts still read as one beat because both gates fire together.
+   * carrying an offset stays safe on text-only content.
+   *
+   * Leave it 0 for scroll-gated blocks: the gates already sequence a stack
+   * by geometry and fire together side by side. It earns its keep only in
+   * shells whose targets all enter at once — a pin, or a shared
+   * `gateSelector` — where nothing else can order the tracks.
    */
   mediaOffset?: number
   /**
@@ -101,13 +105,25 @@ export const SCROLL_REVEAL_INTRO = {
 } as const satisfies ScrollRevealTuning
 
 /**
- * The complete reveal for copy paired with media: its own text tuning, the
- * top-origin mask wipe with the content settling down from a slight zoom
- * behind the clipped frame (no fade, no blur — expensive to composite on
- * large media), and the offset that lets the wipe lead while the text settles
- * in beneath it. Owned in full here, independently of the intro reveal. Tune
- * on /demo/transitions ("Reveal — media + text"), paste back; every block
- * tagged `variant="underMedia"` reads exactly these values.
+ * The complete reveal for copy paired with media: its own text tuning and a
+ * clean top-origin mask wipe — the frame opens downward and nothing else
+ * moves (`mediaScaleFrom` 1: no zoom, no fade, no blur — all expensive to
+ * composite on large media). Owned in full here, independently of the intro
+ * reveal. Tune on /demo/transitions ("Reveal — media + text"), paste back;
+ * every block tagged `variant="underMedia"` reads exactly these values.
+ *
+ * `mediaOffset` is 0 on purpose — the layout already sequences these tracks,
+ * and better than a fixed delay can. Each track gates on its own target, so a
+ * media-over-copy stack wipes when the image arrives and drops the copy in
+ * when the copy arrives: a real scroll-linked beat, and the text entrance is
+ * guaranteed to play on screen where it can be seen. A lead here would add a
+ * fixed wait on top of that gate, so on a quick scroll the copy would start
+ * animating after the reader had already reached it.
+ *
+ * Side by side, both gates fire at the same scroll position, so 0 is also what
+ * makes a heading and the image it aligns with land on one beat. Bespoke
+ * pinned shells that put every target on screen at once have no geometry to
+ * sequence them and own an explicit offset instead (INDUSTRY_WORK_MEDIA_OFFSET).
  */
 export const SCROLL_REVEAL_UNDER_MEDIA = {
   textY: 20,
@@ -115,10 +131,10 @@ export const SCROLL_REVEAL_UNDER_MEDIA = {
   textDuration: 0.6,
   textEase: 'power3.out',
   stagger: 0.04,
-  mediaDuration: 0.6,
+  mediaDuration: 0.8,
   mediaEase: 'power3.out',
-  mediaScaleFrom: 1.15,
-  mediaOffset: -0.5,
+  mediaScaleFrom: 1,
+  mediaOffset: 0,
 } as const satisfies ScrollRevealTuning
 
 /**
@@ -129,7 +145,7 @@ export const SCROLL_REVEAL_UNDER_MEDIA = {
  * back past a revealed section never reverses or replays it.
  */
 export const SCROLL_REVEAL_TRIGGER_DEFAULTS = {
-  enterOffset: 0.15,
+  enterOffset: 0.25,
 } as const satisfies ScrollRevealTuning
 
 /**

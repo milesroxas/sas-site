@@ -15,6 +15,7 @@ import { Banner } from '../../blocks/Banner/config'
 import { Carousel } from '../../blocks/Carousel/config'
 import { Code } from '../../blocks/Code/config'
 import { FeatureStatementLinks } from '../../blocks/feature/StatementLinks/config'
+import { FeaturedWork } from '../../blocks/featured-work/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { populateAuthors } from './hooks/populateAuthors'
@@ -110,6 +111,22 @@ export const Posts: CollectionConfig<'posts'> = {
             },
           ],
           label: 'Content',
+        },
+        {
+          fields: [
+            {
+              name: 'layout',
+              type: 'blocks',
+              label: 'Composition',
+              blocks: [FeaturedWork],
+              admin: {
+                initCollapsed: true,
+                description:
+                  'Optional full-width sections rendered after the article body. The article itself stays in the Content tab.',
+              },
+            },
+          ],
+          label: 'Composition',
         },
         {
           fields: [

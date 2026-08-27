@@ -302,6 +302,7 @@ export interface Page {
     | TestimonialsMarqueeBlock
     | CarouselBlock
     | ArchiveBlock
+    | FeaturedWorkBlock
     | CallToActionBlock
     | FormBlock
     | NewsletterSignupBlock
@@ -374,6 +375,10 @@ export interface Post {
     };
     [k: string]: unknown;
   };
+  /**
+   * Optional full-width sections rendered after the article body. The article itself stays in the Content tab.
+   */
+  layout?: FeaturedWorkBlock[] | null;
   relatedPosts?: (number | Post)[] | null;
   categories?: (number | Category)[] | null;
   meta?: {
@@ -1624,7 +1629,7 @@ export interface WorkPage {
         | CarouselBlock
         | CaseStudyKeyDecisionsBlock
         | CaseStudyMetricsBlock
-        | HomeFeaturedWorkBlock
+        | FeaturedWorkBlock
         | CaseStudyRelatedWorkBlock
       )[]
     | null;
@@ -1819,9 +1824,13 @@ export interface CaseStudyTransitionBlock {
  */
 export interface WorkFullMediaBlock {
   /**
+   * Off renders the media on its own, with no copy beneath it.
+   */
+  showContent?: boolean | null;
+  /**
    * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
    */
-  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
   /**
    * Leave empty to use the complete section, or choose one reusable beat from that section.
    */
@@ -1850,7 +1859,7 @@ export interface WorkFullMediaBlock {
     [k: string]: unknown;
   } | null;
   /**
-   * Full width crops to 16:9 on small screens and 21:9 from md up. Contained uses the aspect ratio below.
+   * Contained uses the aspect ratio below. Full width crops to 16:9 on small screens and 21:9 from md up.
    */
   media: number | Media;
   /**
@@ -2534,9 +2543,9 @@ export interface CaseStudyMetricsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "HomeFeaturedWorkBlock".
+ * via the `definition` "FeaturedWorkBlock".
  */
-export interface HomeFeaturedWorkBlock {
+export interface FeaturedWorkBlock {
   /**
    * Small label above the list. Leave empty to hide.
    */
@@ -2551,7 +2560,7 @@ export interface HomeFeaturedWorkBlock {
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'homeFeaturedWork';
+  blockType: 'featuredWork';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2713,9 +2722,13 @@ export interface MediaBlock {
  */
 export interface FullMediaBlock {
   /**
+   * Off renders the media on its own, with no copy beneath it.
+   */
+  showContent?: boolean | null;
+  /**
    * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
    */
-  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
   /**
    * Short kicker above the heading.
    */
@@ -2740,7 +2753,7 @@ export interface FullMediaBlock {
     [k: string]: unknown;
   } | null;
   /**
-   * Full width crops to 16:9 on small screens and 21:9 from md up. Contained uses the aspect ratio below.
+   * Contained uses the aspect ratio below. Full width crops to 16:9 on small screens and 21:9 from md up.
    */
   media: number | Media;
   /**
@@ -3944,6 +3957,7 @@ export interface ExpertisePage {
     | AudienceTabsBlock
     | CarouselBlock
     | ArchiveBlock
+    | FeaturedWorkBlock
     | CallToActionBlock
     | FormBlock
   )[];
@@ -4073,6 +4087,7 @@ export interface AudiencePage {
     | AudienceTabsBlock
     | CarouselBlock
     | ArchiveBlock
+    | FeaturedWorkBlock
     | CallToActionBlock
     | FormBlock
   )[];
@@ -4880,6 +4895,7 @@ export interface PagesSelect<T extends boolean = true> {
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
+        featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
@@ -4948,6 +4964,7 @@ export interface MediaBlockSelect<T extends boolean = true> {
  * via the `definition` "FullMediaBlock_select".
  */
 export interface FullMediaBlockSelect<T extends boolean = true> {
+  showContent?: T;
   source?: T;
   eyebrow?: T;
   heading?: T;
@@ -5209,6 +5226,17 @@ export interface ArchiveBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeaturedWorkBlock_select".
+ */
+export interface FeaturedWorkBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  entries?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CallToActionBlock_select".
  */
 export interface CallToActionBlockSelect<T extends boolean = true> {
@@ -5265,6 +5293,11 @@ export interface PostsSelect<T extends boolean = true> {
   heroStyle?: T;
   heroImage?: T;
   content?: T;
+  layout?:
+    | T
+    | {
+        featuredWork?: T | FeaturedWorkBlockSelect<T>;
+      };
   relatedPosts?: T;
   categories?: T;
   meta?:
@@ -5338,7 +5371,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         carousel?: T | CarouselBlockSelect<T>;
         caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
         caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
-        homeFeaturedWork?: T | HomeFeaturedWorkBlockSelect<T>;
+        featuredWork?: T | FeaturedWorkBlockSelect<T>;
         caseStudyRelatedWork?: T | CaseStudyRelatedWorkBlockSelect<T>;
       };
   coverAsset?: T;
@@ -5415,6 +5448,7 @@ export interface CaseStudyTransitionBlockSelect<T extends boolean = true> {
  * via the `definition` "WorkFullMediaBlock_select".
  */
 export interface WorkFullMediaBlockSelect<T extends boolean = true> {
+  showContent?: T;
   source?: T;
   storyBeatKey?: T;
   eyebrow?: T;
@@ -5617,17 +5651,6 @@ export interface CaseStudyMetricsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "HomeFeaturedWorkBlock_select".
- */
-export interface HomeFeaturedWorkBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  entries?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyRelatedWorkBlock_select".
  */
 export interface CaseStudyRelatedWorkBlockSelect<T extends boolean = true> {
@@ -5808,6 +5831,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
+        featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
       };
@@ -5880,6 +5904,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
+        featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
       };
@@ -7028,7 +7053,6 @@ export interface Home {
     | CallToActionBlock
     | FormBlock
     | NewsletterSignupBlock
-    | HomeFeaturedWorkBlock
   )[];
   meta?: {
     /**
@@ -7514,7 +7538,6 @@ export interface HomeSelect<T extends boolean = true> {
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
-        homeFeaturedWork?: T | HomeFeaturedWorkBlockSelect<T>;
       };
   meta?:
     | T

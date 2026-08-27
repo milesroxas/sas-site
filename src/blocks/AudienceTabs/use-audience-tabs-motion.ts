@@ -145,9 +145,12 @@ const addItemCascade = (
 }
 
 /**
- * The top-origin mask wipe and the zoom settle of the content behind it — one
- * beat over two layers, shared by the entrance and the tab swap so the wipe a
- * click plays can never drift from the one scrolling into view plays.
+ * The top-origin mask wipe, shared by the entrance and the tab swap so the
+ * wipe a click plays can never drift from the one scrolling into view plays.
+ * The content behind the mask only moves when the shared reveal asks for a
+ * zoom (`mediaScaleFrom` 1 = mask alone) — a scale of 1 is not a free no-op:
+ * the transform would still make the layer a containing block for its
+ * absolutely-positioned media.
  */
 const addMediaWipe = (
   tl: gsap.core.Timeline,
@@ -161,7 +164,7 @@ const addMediaWipe = (
     { clipPath: 'inset(0% 0% 0% 0%)', duration: MEDIA_DURATION, ease: MEDIA_EASE },
     at,
   )
-  if (content) {
+  if (content && MEDIA_SCALE_FROM !== 1) {
     tl.fromTo(
       content,
       { scale: MEDIA_SCALE_FROM },

@@ -33,6 +33,28 @@ export function useDemoControls<S extends Schema>(folderName: string, schema: S)
 }
 
 /**
+ * `useDemoControls` that also hands back leva's setter, for demos that write
+ * values *into* the panel — loading a preset, say. The panel, what's on screen
+ * and the emitted snippet then stay one truth, instead of the demo applying a
+ * look behind the GUI's back.
+ *
+ * leva only returns a setter when the schema arrives as a function, and it
+ * reads that function exactly once, so the schema is static here just as it is
+ * in the plain form. The setter takes plain schema keys — leva maps them onto
+ * the folder's paths itself.
+ */
+export function useSettableDemoControls<S extends Schema>(folderName: string, schema: S) {
+  const store = useStoreContext()
+  const schemaRef = useRef(schema)
+  return useControls<S, string, () => S>(
+    folderName,
+    () => schemaRef.current,
+    { collapsed: true },
+    { store },
+  )
+}
+
+/**
  * The demo's play/replay trigger, pinned at the top of the panel: a
  * root-level input with a negative order sorts above every folder (default 0)
  * and can never be collapsed away.

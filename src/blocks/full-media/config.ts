@@ -4,9 +4,12 @@ import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 
 /**
- * Media over a two-column content row (eyebrow + heading beside the body).
- * `width` is full-bleed by default (16:9 below `md`, 21:9 from `md` up) or
- * contained in the page column at an editor-chosen aspect ratio. `contentPosition`
+ * Media, optionally over a two-column content row (eyebrow + heading beside the
+ * body). Media is the only requirement — with `showContent` off (or its fields
+ * left empty) the block renders the media alone.
+ *
+ * `width` is contained in the page column at an editor-chosen aspect ratio by
+ * default, or full-bleed (16:9 below `md`, 21:9 from `md` up). `contentPosition`
  * arranges the content row on the left or right from `lg`, and below that the
  * row always sits left with a trailing half-column offset.
  *
@@ -24,6 +27,15 @@ export const FullMedia: Block = {
   labels: { singular: 'Full media', plural: 'Full media' },
   fields: [
     {
+      name: 'showContent',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Show content',
+      admin: {
+        description: 'Off renders the media on its own, with no copy beneath it.',
+      },
+    },
+    {
       name: 'source',
       type: 'select',
       required: true,
@@ -38,16 +50,29 @@ export const FullMedia: Block = {
         'learnings',
       ],
       admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.showContent),
         description:
           'Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).',
       },
     },
-    { name: 'eyebrow', type: 'text', admin: { description: 'Short kicker above the heading.' } },
-    { name: 'heading', type: 'text' },
+    {
+      name: 'eyebrow',
+      type: 'text',
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.showContent),
+        description: 'Short kicker above the heading.',
+      },
+    },
+    {
+      name: 'heading',
+      type: 'text',
+      admin: { condition: (_, siblingData) => Boolean(siblingData?.showContent) },
+    },
     {
       name: 'body',
       type: 'richText',
       admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.showContent),
         description:
           'Shown when source is "Custom", or as a Work Page override for canonical content.',
       },
@@ -59,7 +84,7 @@ export const FullMedia: Block = {
       required: true,
       admin: {
         description:
-          'Full width crops to 16:9 on small screens and 21:9 from md up. Contained uses the aspect ratio below.',
+          'Contained uses the aspect ratio below. Full width crops to 16:9 on small screens and 21:9 from md up.',
       },
       filterOptions: caseStudyScopedMediaFilter,
     },
@@ -67,7 +92,7 @@ export const FullMedia: Block = {
     {
       name: 'width',
       type: 'select',
-      defaultValue: 'full-width',
+      defaultValue: 'contained',
       options: [
         { label: 'Contained', value: 'contained' },
         { label: 'Full width', value: 'full-width' },
@@ -97,6 +122,7 @@ export const FullMedia: Block = {
       defaultValue: 'left',
       options: ['left', 'right'],
       admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.showContent),
         description:
           'Arrange the content row on the left or the right below the media (desktop only; smaller screens always sit left).',
       },

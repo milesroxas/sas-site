@@ -831,6 +831,28 @@
   padding-inline: 0;
 }
 
+/* Optical text-box trimming. A line box carries half-leading plus the font's
+   ascender gap above the cap height and its descender below the baseline —
+   with Geist that is 0.295em per edge at the heading tokens' 1.3 leading. So
+   two boxes that start at the same y do not read as aligned, and a gap set
+   between a heading and its body is always larger than the number says.
+
+   Trimming collapses those edges to cap height and baseline, which makes a
+   spacing value mean what it reads as. That matters most against the fluid
+   type scale: untrimmed, the same gap drifts as the clamp resizes the heading.
+
+   Trims both edges in one declaration on purpose: `text-box-trim` is a single
+   property, so separate top and bottom utilities cannot compose — whichever
+   lands last silently wins and the other edge stays untrimmed.
+
+   Progressive enhancement — browsers without `text-box-trim` keep the
+   untrimmed box. Apply to text that has to meet a measured edge or gap, not to
+   every heading. */
+@utility text-trim {
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+}
+
 /* Vertical rhythm for bare (non-prose) Payload rich text — paragraph spacing
    scales with the block's type size, so statement, body and caption blocks all
    keep proportional rhythm without restating it. Call sites may tighten with a

@@ -3,15 +3,17 @@ import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 
 /**
- * Curated list of work entries, used by the Home global and Work Pages. Hover
- * (or focus) expands a row to reveal client/industry and the entry's featured
- * media. The slug and table name stay `home*` for the rows already stored.
+ * Curated list of work entries. Hover (or focus) expands a row to reveal
+ * client/industry and the entry's featured media. Collection-agnostic: any
+ * composition field can offer it.
  */
-export const HomeFeaturedWork: Block = {
-  slug: 'homeFeaturedWork',
+export const FeaturedWork: Block = {
+  slug: 'featuredWork',
   admin: { group: BLOCK_GROUPS.lists },
-  dbName: 'home_feat_work',
-  interfaceName: 'HomeFeaturedWorkBlock',
+  // Per-parent table name: a static dbName would collapse every collection that
+  // uses this block into one table whose FK points at the first parent only.
+  dbName: ({ tableName }) => `${tableName}_feat_work`,
+  interfaceName: 'FeaturedWorkBlock',
   labels: { singular: 'Featured work', plural: 'Featured work' },
   fields: [
     {

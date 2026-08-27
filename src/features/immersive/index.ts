@@ -4,7 +4,7 @@
  */
 export { ImmersiveShell, type ImmersiveShellProps } from '@/lib/interactions/immersive-shell'
 export { WebGLTunnel } from '@/lib/webgl/components/tunnel'
-export { HERO_LENS, INDUSTRY_WORK_MEDIA, LIGHT_LEAK_AMBER } from './presets'
+export { HERO_LENS, INDUSTRY_WORK_MEDIA, LIGHT_LEAK_AMBER, LIGHT_LEAK_PAPER } from './presets'
 export {
   CHROMA_SPLIT_TEXT_DEFAULTS,
   ChromaSplitText,

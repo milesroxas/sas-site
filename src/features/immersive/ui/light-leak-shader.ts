@@ -59,6 +59,9 @@ uniform float uSatTotal;   // saturation + excite, resolved on the CPU
 uniform float uGrain;
 uniform float uGrainLum;
 uniform float uVignette;
+uniform float uAbsorb;     // 0 = emissive (screen-like blend), 1 = absorptive (multiply)
+uniform float uInkChroma;  // absorptive only: how hard the stain takes the leak's hue
+uniform float uInkDensity; // absorptive only: neutral darkening under the leak
 uniform vec3  uCoolTint;
 uniform vec3  uWarmTint;
 uniform vec3  uAmber;
@@ -330,11 +333,37 @@ void main() {
   vec2 q = vUv - 0.5;
   color *= 1.0 - dot(q, q) * uVignette;
 
+  color = max(color, 0.0);
+
+  // -------------------------------------------------------------------------
+  // Composite polarity. Over a dark ground the frame is *emissive*: the canvas
+  // screen-blends, so black drops out and only the lit field survives. Over a
+  // pale ground that same frame is invisible — light added to white is still
+  // white — so the leak flips to *absorptive* and the canvas multiplies. The
+  // frame becomes a dye layer: 1.0 wherever no light struck (multiply's
+  // identity, so the paper is untouched) and a transmission below it wherever
+  // the field is lit.
+  //
+  // Beer–Lambert, split in two so the stain keeps the leak's own hue instead
+  // of printing its complement. The chroma term absorbs only the channels the
+  // leak is *missing* — a gold field eats blue, so it stains gold — and the
+  // density term is a neutral filter that darkens with the field's peak. Both
+  // live in the exponent, so the paper approaches the tint asymptotically and
+  // never reaches black: copy under the leak keeps its contrast.
+  //
+  // Uniform-driven branch: coherent across the draw, so the ground the leak is
+  // *not* running on costs nothing.
+  if (uAbsorb > 0.5) {
+    float peak = max(color.r, max(color.g, color.b));
+    color = exp(-(vec3(peak) - color) * uInkChroma - peak * uInkDensity);
+  }
+
   // 1-LSB dither: hides 8-bit gradient banding, stays below visible static.
   color += (ign(gl_FragCoord.xy) - 0.5) / 255.0;
 
-  // The canvas composites with a screen-like blend mode, so black is
-  // effectively transparent — no alpha juggling needed.
+  // Emissive frames composite with a screen-like blend, where black is
+  // effectively transparent; absorptive frames multiply, where white is. Either
+  // way the shader writes an opaque frame — no alpha juggling needed.
   gl_FragColor = vec4(max(color, 0.0), 1.0);
 }
 `

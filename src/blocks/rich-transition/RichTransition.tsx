@@ -46,15 +46,16 @@ const Left = ({ body, eyebrow, heading }: RichTransitionFields) => (
             {heading}
           </h2>
         </div>
-        {body ? <Body className="max-w-[30rem] text-lg" data={body} /> : null}
+        {body ? <Body className="max-w-120 text-lg" data={body} /> : null}
       </div>
     </div>
   </Container>
 )
 
 /**
- * Centered: heading and a 640px reading column, stacked and centered on the
- * band. Matches the Paper centered frame (1024px cluster, body at `w-narrow`).
+ * Centered: heading on a 768px measure over a 640px reading column, stacked
+ * and centered on the band. Matches the Paper centered frame (1024px cluster,
+ * body at `w-narrow`).
  */
 const Centered = ({ body, eyebrow, heading }: RichTransitionFields) => (
   <Container>
@@ -64,7 +65,7 @@ const Centered = ({ body, eyebrow, heading }: RichTransitionFields) => (
           {eyebrow}
         </p>
       ) : null}
-      <h2 className={cn('text-heading-1', eyebrow && 'pt-3')} data-reveal>
+      <h2 className={cn('text-heading-1 max-w-3xl', eyebrow && 'pt-3')} data-reveal>
         {heading}
       </h2>
       {body ? <Body className="max-w-[40rem] pt-8 text-base/7" data={body} /> : null}

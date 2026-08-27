@@ -12,13 +12,13 @@ import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Comp
 import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
 import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
 import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
+import { FeaturedWorkBlock } from '@/blocks/featured-work/Component'
 import { FullMediaBlock } from '@/blocks/full-media/Component'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
 import { TestimonialsMarqueeBlock } from '@/blocks/TestimonialsMarquee/Component'
-import { HomeFeaturedWorkBlock } from '@/Home/featured-work/Component'
 import type { Home, Page } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
@@ -36,9 +36,9 @@ const blockComponents = {
   featureStatementGrid: FeatureStatementGridBlock,
   featureStatementLinks: FeatureStatementLinksBlock,
   featureTabs: FeatureTabsBlock,
+  featuredWork: FeaturedWorkBlock,
   formBlock: FormBlock,
   fullMedia: FullMediaBlock,
-  homeFeaturedWork: HomeFeaturedWorkBlock,
   industryWork: IndustryWorkBlock,
   mediaBlock: MediaBlock,
   newsletterSignup: NewsletterSignupBlock,

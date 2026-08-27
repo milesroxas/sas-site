@@ -1,10 +1,9 @@
 import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
-import { pageLayoutBlocks } from '@/fields/pageLayoutBlocks'
+import { homeLayoutBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { generateHomePreviewPath } from '@/utilities/generatePreviewPath'
-import { HomeFeaturedWork } from './featured-work/config'
 import { homeHero } from './hero/config'
 import { revalidateHome } from './hooks/revalidateHome'
 import { homeStatement } from './statement/config'
@@ -46,7 +45,7 @@ export const Home: GlobalConfig = {
               name: 'layout',
               type: 'blocks',
               label: 'Composition',
-              blocks: [...pageLayoutBlocks, HomeFeaturedWork],
+              blocks: homeLayoutBlocks,
               required: true,
               admin: {
                 initCollapsed: true,

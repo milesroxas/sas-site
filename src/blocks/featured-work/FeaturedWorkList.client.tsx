@@ -102,6 +102,14 @@ const {
   mediaScaleFrom: MEDIA_SCALE_FROM,
 } = SCROLL_REVEAL_UNDER_MEDIA
 
+/**
+ * Whether the shared media reveal still asks for a zoom behind its mask. At
+ * `mediaScaleFrom` 1 the wipe is the whole reveal, and the tween is skipped
+ * rather than run flat: a scale transform makes the layer a containing block
+ * for the absolutely-positioned frames inside it even at 1.
+ */
+const SCALES_MEDIA = MEDIA_SCALE_FROM !== 1
+
 const padIndex = (index: number) => String(index + 1).padStart(2, '0')
 
 /**
@@ -247,10 +255,13 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
             if (content) {
               gsap.fromTo(
                 content,
-                { scale: MEDIA_SCALE_FROM, yPercent: direction * -parallaxPct },
                 {
-                  scale: 1,
+                  yPercent: direction * -parallaxPct,
+                  ...(SCALES_MEDIA ? { scale: MEDIA_SCALE_FROM } : {}),
+                },
+                {
                   yPercent: 0,
+                  ...(SCALES_MEDIA ? { scale: 1 } : {}),
                   duration: immediate ? 0 : MEDIA_DURATION,
                   ease: MEDIA_EASE,
                   overwrite: 'auto',
@@ -335,8 +346,9 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
           mediaStart,
         )
         // First child owns the shell's full box — the whole frame stack
-        // settles down from the zoom behind the mask, matching the site wipe.
-        const stack = mediaShell.firstElementChild
+        // settles down from the zoom behind the mask when the site wipe
+        // carries one.
+        const stack = SCALES_MEDIA ? mediaShell.firstElementChild : null
         if (stack) {
           entrance.fromTo(
             stack,

@@ -92,7 +92,7 @@ export type DemoBrowserFrameProps = {
   loading?: boolean
   /** Chrome left of the address bar — a back button, say. */
   leading?: ReactNode
-  /** Chrome right of the address bar — a status readout, say. Hidden on small screens. */
+  /** Chrome right of the address bar — a status readout or a window control, say. */
   trailing?: ReactNode
   className?: string
 }

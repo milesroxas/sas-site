@@ -96,3 +96,69 @@ export const LIGHT_LEAK_AMBER = {
   slatFrequency: 24,
   slatFrequencyExcite: 2,
 } as const satisfies Partial<LightLeakProps>
+
+/**
+ * The light leak over a pale ground — the shipped look for the site's light
+ * theme, against `LIGHT_LEAK_DEFAULTS`' dark-ground look. Re-tune it on
+ * /demo/immersive with the window's own light/dark button set to light.
+ *
+ * `blendMode: 'multiply'` is the load-bearing delta: the default screen-like
+ * blend adds light, and light added to white is still white, so the effect is
+ * simply absent on a light page. Multiplying flips the shader's composite to
+ * its absorptive tail, where the frame reads as shade on paper rather than
+ * light on film — everything below is the art direction that follows.
+ *
+ * The brief for that art direction is a **warm shadow, not coloured beams**.
+ * Two things make an absorptive frame read as colour rather than shade, and
+ * both come down here. Dispersion is the first: it fringes every edge into six
+ * wavelengths, which over a dark ground is spectral bloom and over paper is a
+ * rainbow smear, so it drops to a quarter of the default. The cool/warm tint
+ * pair is the second: the shader keeps the field's own hue through the stain,
+ * so the default's blue lows printed as a violet cast across the sheet. Both
+ * tints are pulled to the warm side of neutral — the "cool" end is now only
+ * *less* warm — which leaves the whole sheet in one warm grey and the hot core
+ * in tan. Saturation and `LIGHT_LEAK_DEFAULTS`' `inkChroma` carry what warmth
+ * is left; the shadow's weight is `inkDensity` and gain.
+ *
+ * The blobs come up and the slat fan stays soft (its sharpness is the default)
+ * so the composition is a broad cast with rays in it, rather than a row of
+ * bars. Gain still runs above the default to compensate the field being read
+ * through `exp()` instead of added straight, but only part way: on paper gain
+ * is the stain's weight, so the same value that reads as a lit frame on film
+ * reads as a heavy smudge here. The excite response is damped too —
+ * `gainEnergy`, `saturationExcite` and `hoverBloom` all below their defaults —
+ * because a hard scroll or a hover *darkens* the page, and an undamped one
+ * turned the shadow into a blot.
+ *
+ * Grain runs at roughly three times its default amplitude, for a structural
+ * reason rather than a stylistic one. The stain's chroma term reads only the
+ * *differences* between channels, and film grain is added to all three
+ * equally, so that term is blind to it — only `inkDensity` carries grain into
+ * an absorptive frame, and it is 0.32. Scaled back up, the speckle measures
+ * the same on paper as it does on film.
+ *
+ * Copy sits under this overlay and multiply can only darken, so legibility is
+ * the constraint the tuning is bounded by: the lowered gain leaves more
+ * headroom than the ~12.6:1 near-black contrast the heavier cut measured at
+ * rest, and the damping is what keeps a scroll flick and a hover stacked on
+ * top of it close to that.
+ */
+export const LIGHT_LEAK_PAPER = {
+  blendMode: 'multiply',
+  dispersion: 0.01,
+  dispersionEnergy: 0.018,
+  gain: 0.4,
+  gainEnergy: 0.7,
+  saturation: 0.5,
+  saturationExcite: 0.1,
+  hoverBloom: 0.1,
+  grain: 0.1,
+  grainLuminance: 0.13,
+  coolTint: [1.08, 0.82, 0.58],
+  warmTint: [1.45, 0.98, 0.6],
+  amber: [0.26, 0.09, 0],
+  blobWarm: 0.6,
+  streak: 0.25,
+  blobCool: 0.4,
+  slats: 0.34,
+} as const satisfies Partial<LightLeakProps>

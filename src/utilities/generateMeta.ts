@@ -6,6 +6,7 @@ import type {
   ExpertisePage,
   Home,
   InsightsIndex,
+  LabPage,
   Media,
   Page,
   Post,
@@ -36,6 +37,7 @@ export const generateMeta = async (args: {
     | Partial<WorkPage>
     | Partial<ExpertisePage>
     | Partial<AudiencePage>
+    | Partial<LabPage>
     | Partial<Home>
     | Partial<InsightsIndex>
     | Partial<WorksIndex>

@@ -14,6 +14,14 @@ import { mediaSectionYClassName, Section } from '../shared/section'
  * the eyebrow moving between heading and body); side-by-side from `md` with a
  * fixed narrow text column, with heading and body packed to the top.
  *
+ * Every line in the heading group is text-box trimmed, so each box runs cap
+ * height to baseline: the heading's cap meets the media's top edge, and the
+ * gaps around it are the space the eye reads rather than the gap plus the
+ * font's descender slack. That keeps the vertical rhythm ascending — line
+ * height 28px, paragraph 38px (the shared `p + p` 1.25em rule), heading 56px —
+ * instead of the heading sitting tighter to its body than the paragraphs sit
+ * to each other.
+ *
  * `bare` skips the `Section` wrapper for callers that supply their own shell
  * (the work-page renderer wraps blocks in a full-viewport reveal section).
  * The `data-reveal` markers are inert unless such a shell animates them.
@@ -54,14 +62,14 @@ export const SplitContentNarrow = ({
             size="(max-width: 768px) 100vw, 72vw"
           />
         </div>
-        <div className="flex flex-col gap-8 md:gap-16">
-          <div className="flex flex-col gap-3" data-reveal>
+        <div className="flex flex-col gap-12">
+          <div className="flex flex-col gap-5 *:text-trim" data-reveal>
             {block.eyebrow && (
               <p className="hidden font-mono text-xs/none font-medium md:block">{block.eyebrow}</p>
             )}
             {block.heading && <h2 className="text-heading-3 text-balance">{block.heading}</h2>}
           </div>
-          <div className="flex flex-col gap-8 pt-20 md:pt-0" data-reveal>
+          <div className="flex flex-col gap-4" data-reveal>
             {block.eyebrow && (
               <p className="text-base/none font-normal md:hidden">{block.eyebrow}</p>
             )}

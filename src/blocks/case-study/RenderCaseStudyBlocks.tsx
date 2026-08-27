@@ -5,6 +5,7 @@ import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/fe
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
 import { FeatureStatementLinksBlock as FeatureStatementLinks } from '@/blocks/feature/StatementLinks/Component'
 import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component'
+import { FeaturedWorkBlock } from '@/blocks/featured-work/Component'
 import { FullMedia } from '@/blocks/full-media/FullMedia'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
@@ -22,7 +23,6 @@ import {
 } from '@/collections/CaseStudies/story'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import { HomeFeaturedWorkBlock } from '@/Home/featured-work/Component'
 import type {
   CaseStudy,
   CaseStudyKeyDecisionsBlock,
@@ -63,12 +63,21 @@ const resolveFeatureBody = (
 ) => body || resolveCaseStudyStoryBody(study, source, storyBeatKey)
 
 /**
+ * The story copy every media block shares. `source` is nullable: a block that
+ * hides it behind a toggle (Full media's "Show content") generates it as
+ * optional, and no source resolves the same as `custom`.
+ */
+type StoryCopyFields = Pick<WorkSplitContentNarrowBlock, 'body' | 'heading' | 'storyBeatKey'> & {
+  source?: WorkSplitContentNarrowBlock['source'] | null
+}
+
+/**
  * Media blocks (split narrow, full media, image pair, split offset) share one
  * body field: `custom` renders the body as-is, any other source falls back to
  * the canonical story content when the body is empty.
  */
 const resolveStoryBody = (
-  block: Pick<WorkSplitContentNarrowBlock, 'source' | 'storyBeatKey' | 'body'>,
+  block: Pick<StoryCopyFields, 'source' | 'storyBeatKey' | 'body'>,
   study: CaseStudy,
 ) =>
   block.source === 'custom'
@@ -102,7 +111,7 @@ const defaultHeading = (source: CaseStudyStorySource) =>
  * heading, it is a request for the one the beat already carries.
  */
 const withStoryBeatHeading = <
-  T extends Pick<WorkSplitContentNarrowBlock, 'heading' | 'source' | 'storyBeatKey'>,
+  T extends Pick<StoryCopyFields, 'heading' | 'source' | 'storyBeatKey'>,
 >(
   block: T,
   study: CaseStudy,
@@ -572,9 +581,9 @@ export const RenderCaseStudyBlocks = async ({
         case 'industryWork':
           // Owns its own full-viewport `ScrollReveal` shell — do not wrap again.
           return <IndustryWorkBlock key={block.id} {...block} />
-        case 'homeFeaturedWork':
+        case 'featuredWork':
           // Owns its own pinned shell and section band — do not wrap again.
-          return <HomeFeaturedWorkBlock key={block.id} {...block} />
+          return <FeaturedWorkBlock key={block.id} {...block} />
         case 'featureImageStatement':
           return <FeatureImageStatementSection block={block} key={block.id} study={study} />
         case 'audienceTabs':
