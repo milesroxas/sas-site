@@ -1,4 +1,5 @@
 import type React from 'react'
+import { ThemeBand } from '@/blocks/shared/section'
 import { CMSLink } from '@/components/Link'
 import RichText from '@/components/RichText'
 import type {
@@ -31,6 +32,7 @@ export const TestimonialsMarqueeBlock: React.FC<TestimonialsMarqueeBlockProps> =
   links,
   richText,
   testimonials,
+  theme,
 }) => {
   // Same public gate as the Work Pages testimonial block.
   const approved = (testimonials || []).filter(
@@ -49,29 +51,31 @@ export const TestimonialsMarqueeBlock: React.FC<TestimonialsMarqueeBlockProps> =
   )
 
   return (
-    <div className="container">
-      {/* Narrower than the site container by design — the marquee reads as a framed panel. */}
-      <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
-        <div className="max-w-xl">
-          {richText && (
-            <RichText
-              className="text-heading-3 leading-snug [&_p+p]:mt-4"
-              data={richText}
-              enableGutter={false}
-              enableProse={false}
-              variant="emphasis"
-            />
-          )}
-          {(links || []).length > 0 && (
-            <div className="mt-8 flex flex-wrap gap-4">
-              {(links || []).map(({ link, id }) => (
-                <CMSLink key={id} {...link} />
-              ))}
-            </div>
-          )}
+    <ThemeBand theme={theme}>
+      <div className="container">
+        {/* Narrower than the site container by design — the marquee reads as a framed panel. */}
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <div className="max-w-xl">
+            {richText && (
+              <RichText
+                className="text-heading-3 leading-snug [&_p+p]:mt-4"
+                data={richText}
+                enableGutter={false}
+                enableProse={false}
+                variant="emphasis"
+              />
+            )}
+            {(links || []).length > 0 && (
+              <div className="mt-8 flex flex-wrap gap-4">
+                {(links || []).map(({ link, id }) => (
+                  <CMSLink key={id} {...link} />
+                ))}
+              </div>
+            )}
+          </div>
+          <TestimonialsMarquee className="h-[420px] md:h-[540px]" columns={columns} />
         </div>
-        <TestimonialsMarquee className="h-[420px] md:h-[540px]" columns={columns} />
       </div>
-    </div>
+    </ThemeBand>
   )
 }

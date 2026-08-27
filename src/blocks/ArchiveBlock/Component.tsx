@@ -17,6 +17,7 @@ export const ArchiveBlock: React.FC<
     limit: limitFromProps,
     populateBy,
     selectedDocs,
+    theme,
   } = props
 
   const limit = limitFromProps || 3
@@ -56,6 +57,12 @@ export const ArchiveBlock: React.FC<
   }
 
   return (
-    <ArchiveLayout cardVariant={cardVariant} id={id} introContent={introContent} posts={posts} />
+    <ArchiveLayout
+      cardVariant={cardVariant}
+      id={id}
+      introContent={introContent}
+      posts={posts}
+      theme={theme}
+    />
   )
 }

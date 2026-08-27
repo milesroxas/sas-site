@@ -34,3 +34,11 @@ export const Default: Story = {}
 export const WithoutIntro: Story = {
   args: { introContent: undefined },
 }
+
+export const Dark: Story = {
+  args: { theme: 'dark' },
+}
+
+export const Brand: Story = {
+  args: { theme: 'brand' },
+}

@@ -1,4 +1,5 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
+import { ASPECT_RATIO_CLASS } from '@/blocks/shared/aspect-ratio'
 import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
@@ -24,12 +25,6 @@ import { mediaSectionYClassName, Section } from '../shared/section'
  * (the work-page renderer wraps blocks in a full-viewport reveal section).
  * The `data-reveal` markers are inert unless such a shell animates them.
  */
-const containedAspectClass = {
-  '16-9': 'aspect-16/9',
-  '3-2': 'aspect-3/2',
-  '21-9': 'aspect-21/9',
-} as const
-
 export const FullMedia = ({
   bare = false,
   block,
@@ -49,7 +44,7 @@ export const FullMedia = ({
   const contentRight = block.contentPosition === 'right'
   const contained = block.width === 'contained'
   const aspectClass = contained
-    ? containedAspectClass[block.aspectRatio ?? '16-9']
+    ? ASPECT_RATIO_CLASS[block.aspectRatio ?? '16-9']
     : 'aspect-16/9 md:aspect-21/9'
   const mediaFrame = (
     <div

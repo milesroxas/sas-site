@@ -9,7 +9,11 @@ import {
   cursorTarget,
   subscribeCursorProximity,
 } from './index'
-import { resolveCursorTargetVariant, resolveCursorVariant } from './variants'
+import {
+  resolveCursorPressScale,
+  resolveCursorTargetVariant,
+  resolveCursorVariant,
+} from './variants'
 
 /** jsdom has no matchMedia; report a fine pointer and no reduced-motion preference. */
 function stubMatchMedia(finePointer: boolean) {
@@ -27,6 +31,14 @@ function stubMatchMedia(finePointer: boolean) {
 
 function pointerMove(clientX: number, clientY: number) {
   window.dispatchEvent(new MouseEvent('pointermove', { clientX, clientY }))
+}
+
+function pointerDown(button = 0) {
+  window.dispatchEvent(new MouseEvent('pointerdown', { button }))
+}
+
+function pointerUp() {
+  window.dispatchEvent(new MouseEvent('pointerup'))
 }
 
 const TARGET_RECT = {
@@ -75,6 +87,7 @@ describe('resolveCursorVariant', () => {
         proximityMaxOpacity: CURSOR_DEFAULTS.proximityMaxOpacity,
         hoverOuterScale: CURSOR_DEFAULTS.hoverOuterScale,
         pressScale: CURSOR_DEFAULTS.pressScale,
+        grabbable: CURSOR_DEFAULTS.grabbable,
         labelActivation: CURSOR_DEFAULTS.labelActivation,
         labelPlacement: CURSOR_DEFAULTS.labelPlacement,
         labelOffset: CURSOR_DEFAULTS.labelOffset,
@@ -85,9 +98,10 @@ describe('resolveCursorVariant', () => {
     }
   })
 
-  it('leaves every non-drag variant without a press response', () => {
+  it('gives every non-drag variant the shared press amplitude, ungrabbable', () => {
     for (const name of [undefined, 'emphasize', 'view']) {
-      expect(resolveCursorVariant(name).pressScale).toBe(1)
+      expect(resolveCursorVariant(name).pressScale).toBe(CURSOR_DEFAULTS.pressScale)
+      expect(resolveCursorVariant(name).grabbable).toBe(false)
     }
   })
 
@@ -102,11 +116,64 @@ describe('resolveCursorVariant', () => {
       labelPlacement: 'center',
       outerSize: 50,
       pressScale: 0.82,
+      grabbable: true,
       proximityMaxOpacity: 1,
       showInnerRing: false,
       hideNativeCursor: true,
       selector: '[data-slot="carousel"]',
     })
+  })
+})
+
+describe('resolveCursorPressScale', () => {
+  const variant = resolveCursorVariant('emphasize')
+
+  function element(html: string): Element {
+    const host = document.createElement('div')
+    host.innerHTML = html
+    document.body.appendChild(host)
+    const target = host.firstElementChild
+    if (!target) throw new Error('no element')
+    return target
+  }
+
+  afterEach(() => {
+    document.body.replaceChildren()
+  })
+
+  it('presses on clickable targets', () => {
+    for (const html of [
+      '<a href="/work">work</a>',
+      '<button type="button">go</button>',
+      '<div role="button" tabindex="0">go</div>',
+    ]) {
+      expect(resolveCursorPressScale(element(html), variant)).toBe(variant.pressScale)
+    }
+  })
+
+  it('presses on a target nested inside a clickable ancestor', () => {
+    const link = element('<a href="/work"><span>work</span></a>')
+    const inner = link.firstElementChild
+    if (!inner) throw new Error('no child')
+    expect(resolveCursorPressScale(inner, variant)).toBe(variant.pressScale)
+  })
+
+  it('stays inert on targets a pointer cannot press', () => {
+    for (const html of [
+      '<div>decorative</div>',
+      '<a>no href</a>',
+      '<button type="button" disabled>go</button>',
+      '<div role="button" aria-disabled="true">go</div>',
+    ]) {
+      expect(resolveCursorPressScale(element(html), variant)).toBe(1)
+    }
+  })
+
+  it('presses a grabbable target whether or not it is clickable', () => {
+    const drag = resolveCursorVariant('drag')
+    expect(resolveCursorPressScale(element('<div data-slot="carousel"></div>'), drag)).toBe(
+      drag.pressScale,
+    )
   })
 })
 
@@ -328,5 +395,54 @@ describe('CustomCursorProvider', () => {
 
     pointerMove(150, 400)
     expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(false)
+  })
+
+  /** Carousel that the drag variant picks up automatically, rect-stubbed. */
+  function renderCarousel() {
+    const view = render(
+      <CustomCursorProvider>
+        <div data-slot="carousel">carousel</div>
+      </CustomCursorProvider>,
+    )
+    const carousel = view.getByText('carousel')
+    vi.spyOn(carousel, 'getBoundingClientRect').mockReturnValue(TARGET_RECT)
+    return carousel
+  }
+
+  it('holds the grab while a drag leaves the carousel, and lets go on release', () => {
+    const carousel = renderCarousel()
+    pointerMove(150, 150)
+    pointerDown()
+    // Well past the drag variant's radius: the carousel keeps scrolling via
+    // pointer capture, so the cursor must stay locked on rather than reset.
+    pointerMove(150, 900)
+    expect(carousel.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
+    expect(carousel.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(true)
+    expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(true)
+
+    // Release without a following move — the drag ends where it ends.
+    pointerUp()
+    expect(carousel.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(carousel.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+    expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(false)
+  })
+
+  it('does not grab on a secondary-button press (context menu, not a drag)', () => {
+    const carousel = renderCarousel()
+    pointerMove(150, 150)
+    pointerDown(2)
+    pointerMove(150, 900)
+    expect(carousel.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(carousel.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+  })
+
+  it('does not latch variants without a press response', () => {
+    const { target } = renderWithTarget()
+    pointerMove(150, 150)
+    pointerDown()
+    pointerMove(150, 900)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+    pointerUp()
   })
 })

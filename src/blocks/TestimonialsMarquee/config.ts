@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { linkGroup } from '@/fields/linkGroup'
@@ -35,5 +36,6 @@ export const TestimonialsMarquee: Block = {
           'Cards loop through these in order. Only published, publicly approved testimonials render.',
       },
     },
+    themeField(),
   ],
 }

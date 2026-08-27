@@ -418,8 +418,9 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
   )
 }
 
+/** Transition band: no bottom padding, so it runs into the next block. */
 const Transition = ({ block }: { block: CaseStudyTransitionBlock }) => (
-  <RevealSection theme={block.theme} variant="intro">
+  <RevealSection className="pb-0" theme={block.theme} variant="intro">
     <RichTransition bare {...block} />
   </RevealSection>
 )
@@ -481,8 +482,9 @@ const FeatureHeadingOffsetSection = ({
   block: WorkFeatureHeadingOffsetBlock
   study: CaseStudy
 }) => (
-  <RevealSection as="div" variant={blockRevealVariants.featureHeadingOffset}>
+  <RevealSection as="div" theme={block.theme} variant={blockRevealVariants.featureHeadingOffset}>
     <FeatureHeadingOffset
+      bare
       {...block}
       body={resolveFeatureBody(block.body, block.source, block.storyBeatKey, study)}
     />
@@ -496,8 +498,14 @@ const FeatureStatementGridSection = ({
   block: WorkFeatureStatementGridBlock
   study: CaseStudy
 }) => (
-  <RevealSection as="div" media variant={blockRevealVariants.featureStatementGrid}>
+  <RevealSection
+    as="div"
+    media
+    theme={block.theme}
+    variant={blockRevealVariants.featureStatementGrid}
+  >
     <FeatureStatementGrid
+      bare
       {...block}
       statement={resolveFeatureBody(block.statement, block.source, block.storyBeatKey, study)}
     />
@@ -511,8 +519,14 @@ const FeatureImageStatementSection = ({
   block: WorkFeatureImageStatementBlock
   study: CaseStudy
 }) => (
-  <RevealSection as="div" media variant={blockRevealVariants.featureImageStatement}>
+  <RevealSection
+    as="div"
+    media
+    theme={block.theme}
+    variant={blockRevealVariants.featureImageStatement}
+  >
     <FeatureImageStatement
+      bare
       {...block}
       caption={resolveFeatureBody(block.caption, block.source, block.storyBeatKey, study)}
     />
@@ -526,8 +540,9 @@ const FeatureTabsSection = ({
   block: WorkFeatureTabsBlock
   study: CaseStudy
 }) => (
-  <RevealSection as="div" media variant={blockRevealVariants.featureTabs}>
+  <RevealSection as="div" media theme={block.theme} variant={blockRevealVariants.featureTabs}>
     <FeatureTabs
+      bare
       {...block}
       tabs={(block.tabs || []).map((tab) => ({
         ...tab,

@@ -7,6 +7,7 @@ import type React from 'react'
 import type { ComponentType } from 'react'
 import { useCallback, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+import { type SectionTheme, ThemeBand } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import { Alert, AlertTitle } from '@/components/ui/alert'
@@ -23,6 +24,7 @@ export type FormBlockType = {
   enableIntro: boolean
   form: FormType
   introContent?: DefaultTypedEditorState
+  theme?: SectionTheme | null
 }
 
 /** Props passed to each form field component (field config + react-hook-form + form meta). */
@@ -38,6 +40,7 @@ export const FormBlock: React.FC<
     form: formFromProps,
     form: { id: formID, confirmationMessage, confirmationType, redirect, submitButtonLabel } = {},
     introContent,
+    theme,
   } = props
 
   const formMethods = useForm({
@@ -123,60 +126,62 @@ export const FormBlock: React.FC<
   )
 
   return (
-    <Container width="narrow">
-      {enableIntro && introContent && !hasSubmitted && (
-        <RichText className="mb-8 lg:mb-12" data={introContent} enableGutter={false} />
-      )}
-      <Card>
-        <CardContent className="flex flex-col gap-6">
-          <FormProvider {...formMethods}>
-            {!isLoading && hasSubmitted && confirmationType === 'message' && (
-              <RichText data={confirmationMessage} />
-            )}
-            {isLoading && !hasSubmitted && (
-              <div className="flex items-center gap-2">
-                <Spinner />
-                <p>Loading, please wait...</p>
-              </div>
-            )}
-            {error && (
-              <Alert variant="destructive">
-                <IconExclamationCircle />
-                <AlertTitle>{`${error.status || '500'}: ${error.message || ''}`}</AlertTitle>
-              </Alert>
-            )}
-            {!hasSubmitted && (
-              <form className="flex flex-col gap-6" id={formID} onSubmit={handleSubmit(onSubmit)}>
-                <FieldGroup>
-                  {formFromProps?.fields?.map((field, index) => {
-                    const Field = fields?.[field.blockType as keyof typeof fields] as
-                      | ComponentType<FormFieldRendererProps>
-                      | undefined
-                    if (Field) {
-                      return (
-                        <Field
-                          key={index}
-                          form={formFromProps}
-                          {...field}
-                          {...formMethods}
-                          control={control}
-                          errors={errors}
-                          register={register}
-                        />
-                      )
-                    }
-                    return null
-                  })}
-                </FieldGroup>
+    <ThemeBand theme={theme}>
+      <Container width="narrow">
+        {enableIntro && introContent && !hasSubmitted && (
+          <RichText className="mb-8 lg:mb-12" data={introContent} enableGutter={false} />
+        )}
+        <Card>
+          <CardContent className="flex flex-col gap-6">
+            <FormProvider {...formMethods}>
+              {!isLoading && hasSubmitted && confirmationType === 'message' && (
+                <RichText data={confirmationMessage} />
+              )}
+              {isLoading && !hasSubmitted && (
+                <div className="flex items-center gap-2">
+                  <Spinner />
+                  <p>Loading, please wait...</p>
+                </div>
+              )}
+              {error && (
+                <Alert variant="destructive">
+                  <IconExclamationCircle />
+                  <AlertTitle>{`${error.status || '500'}: ${error.message || ''}`}</AlertTitle>
+                </Alert>
+              )}
+              {!hasSubmitted && (
+                <form className="flex flex-col gap-6" id={formID} onSubmit={handleSubmit(onSubmit)}>
+                  <FieldGroup>
+                    {formFromProps?.fields?.map((field, index) => {
+                      const Field = fields?.[field.blockType as keyof typeof fields] as
+                        | ComponentType<FormFieldRendererProps>
+                        | undefined
+                      if (Field) {
+                        return (
+                          <Field
+                            key={index}
+                            form={formFromProps}
+                            {...field}
+                            {...formMethods}
+                            control={control}
+                            errors={errors}
+                            register={register}
+                          />
+                        )
+                      }
+                      return null
+                    })}
+                  </FieldGroup>
 
-                <Button className="self-start" form={formID} type="submit">
-                  {submitButtonLabel}
-                </Button>
-              </form>
-            )}
-          </FormProvider>
-        </CardContent>
-      </Card>
-    </Container>
+                  <Button className="self-start" form={formID} type="submit">
+                    {submitButtonLabel}
+                  </Button>
+                </form>
+              )}
+            </FormProvider>
+          </CardContent>
+        </Card>
+      </Container>
+    </ThemeBand>
   )
 }

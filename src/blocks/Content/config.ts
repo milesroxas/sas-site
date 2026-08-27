@@ -5,6 +5,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { Block, Field } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { link } from '@/fields/link'
@@ -76,5 +77,6 @@ export const Content: Block = {
       },
       fields: columnFields,
     },
+    themeField(),
   ],
 }

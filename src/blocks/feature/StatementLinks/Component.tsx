@@ -1,9 +1,5 @@
 import type React from 'react'
-import {
-  fullViewportSectionClassName,
-  type SectionTheme,
-  themeClasses,
-} from '@/blocks/shared/section'
+import { fullViewportSectionClassName, sectionThemeClass } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { CMSLink } from '@/components/Link'
 // Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
@@ -27,10 +23,7 @@ export const FeatureStatementLinksBlock: React.FC<FeatureStatementLinksBlockProp
   return (
     <ScrollReveal
       variant="intro"
-      className={cn(
-        fullViewportSectionClassName,
-        themeClasses[(theme as SectionTheme | null) || 'light'],
-      )}
+      className={cn(fullViewportSectionClassName, sectionThemeClass(theme))}
     >
       <Container width="default">
         <div className="flex flex-col gap-12 md:flex-row md:items-start md:justify-between">

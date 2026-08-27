@@ -1,5 +1,6 @@
 import type { StaticImageData } from 'next/image'
 import type React from 'react'
+import { ThemeBand } from '@/blocks/shared/section'
 // Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
 // fallow-ignore-next-line circular-dependency
 import RichText from '@/components/RichText'
@@ -43,6 +44,7 @@ export const MediaBlock: React.FC<Props> = (props) => {
     media,
     size,
     staticImage,
+    theme,
     disableInnerContainer,
   } = props
 
@@ -62,38 +64,40 @@ export const MediaBlock: React.FC<Props> = (props) => {
   )
 
   return (
-    <div
-      className={cn(
-        '',
-        {
-          container: enableGutter,
-        },
-        className,
-      )}
-    >
-      <div className={sizeClasses[size ?? 'full']}>
-        {hasRenderableMedia && (
-          <Media
-            imgClassName={cn('rounded-lg border border-border', imgClassName)}
-            resource={mediaDoc}
-            src={staticImage}
-            videoClassName={cn('rounded-lg border border-border', imgClassName)}
-          />
+    <ThemeBand theme={theme}>
+      <div
+        className={cn(
+          '',
+          {
+            container: enableGutter,
+          },
+          className,
         )}
-        {caption && (
-          <div
-            className={cn(
-              'mt-6',
-              {
-                container: !disableInnerContainer,
-              },
-              captionClassName,
-            )}
-          >
-            <RichText data={caption} enableGutter={false} />
-          </div>
-        )}
+      >
+        <div className={sizeClasses[size ?? 'full']}>
+          {hasRenderableMedia && (
+            <Media
+              imgClassName={cn('rounded-lg border border-border', imgClassName)}
+              resource={mediaDoc}
+              src={staticImage}
+              videoClassName={cn('rounded-lg border border-border', imgClassName)}
+            />
+          )}
+          {caption && (
+            <div
+              className={cn(
+                'mt-6',
+                {
+                  container: !disableInnerContainer,
+                },
+                captionClassName,
+              )}
+            >
+              <RichText data={caption} enableGutter={false} />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </ThemeBand>
   )
 }

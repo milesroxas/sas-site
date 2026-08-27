@@ -55,6 +55,7 @@ import * as migration_20260827_150351_testimonials_approval_default from './2026
 import * as migration_20260827_165716_work_pages_featured_work from './20260827_165716_work_pages_featured_work';
 import * as migration_20260827_175157_featured_work_reusable from './20260827_175157_featured_work_reusable';
 import * as migration_20260827_191137_full_media_show_content from './20260827_191137_full_media_show_content';
+import * as migration_20260827_214234_block_theme_and_aspect_ratio from './20260827_214234_block_theme_and_aspect_ratio';
 
 export const migrations = [
   {
@@ -340,6 +341,11 @@ export const migrations = [
   {
     up: migration_20260827_191137_full_media_show_content.up,
     down: migration_20260827_191137_full_media_show_content.down,
-    name: '20260827_191137_full_media_show_content'
+    name: '20260827_191137_full_media_show_content',
+  },
+  {
+    up: migration_20260827_214234_block_theme_and_aspect_ratio.up,
+    down: migration_20260827_214234_block_theme_and_aspect_ratio.down,
+    name: '20260827_214234_block_theme_and_aspect_ratio'
   },
 ];

@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { featureHeaderFields, featureSourceField } from '../shared'
@@ -18,5 +19,6 @@ export const FeatureHeadingOffset: Block = {
         description: 'Supporting copy in the offset right column. Leave empty to pull the source.',
       },
     },
+    themeField(),
   ],
 }

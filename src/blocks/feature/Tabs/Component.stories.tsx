@@ -85,3 +85,11 @@ export const TwoTabs: Story = {
     tabs: meta.args.tabs.slice(0, 2),
   },
 }
+
+export const Dark: Story = {
+  args: { theme: 'dark' },
+}
+
+export const Brand: Story = {
+  args: { theme: 'brand' },
+}

@@ -220,6 +220,28 @@ export function uppermostRevealTarget(targets: readonly HTMLElement[]): HTMLElem
   )
 }
 
+/**
+ * What a track hands the compositor for the length of its entrance: exactly
+ * the properties that track animates, and only while it animates them.
+ *
+ * Both tracks animate paint-bound properties — a text blur, a media clip mask
+ * — and on an unpromoted element the browser re-rasterizes the target on the
+ * main thread every frame. Under smooth scroll that reads as stutter and
+ * jumps rather than as a slow animation: the scroll is time-based, so a long
+ * frame doesn't slow it, it teleports it.
+ *
+ * Every hint spans the exact window in which the same property is already
+ * applied by the tween, so the stacking context / containing block it creates
+ * is one the entrance had anyway. `panel` targets stay off `filter` for the
+ * same reason their tween does: a filter surface on the node kills its
+ * `backdrop-filter`.
+ */
+function revealWillChange(target: HTMLElement) {
+  if (target.dataset.reveal === 'media') return 'clip-path'
+  if (target.dataset.reveal === 'panel') return 'opacity, transform'
+  return 'filter, opacity, transform'
+}
+
 /** The two block shapes; each variant is a complete, independently tuned reveal. */
 const SCROLL_REVEAL_VARIANTS = {
   intro: SCROLL_REVEAL_INTRO,
@@ -332,13 +354,23 @@ export function ScrollReveal({
 
       // Reveal targets may also be `pressable`, whose CSS transition covers
       // opacity — left on, it would re-transition every per-frame GSAP write
-      // and smear the entrance. Suspend transitions for the tween, restore after.
-      const suspendTransitions = () => gsap.set(targets, { transition: 'none' })
+      // and smear the entrance. Suspend transitions for the tween, restore
+      // after, and promote the track for the length of its entrance
+      // (`revealWillChange`) so the blur and the wipe composite instead of
+      // repainting every frame.
+      const prepare = (track: HTMLElement[]) => () => {
+        for (const target of track) {
+          gsap.set(target, { transition: 'none', willChange: revealWillChange(target) })
+        }
+      }
       let remaining = 0
-      const arm = (tl: gsap.core.Timeline) => {
+      const arm = (tl: gsap.core.Timeline, track: HTMLElement[]) => {
         remaining += 1
-        tl.eventCallback('onStart', suspendTransitions)
+        tl.eventCallback('onStart', prepare(track))
         tl.eventCallback('onComplete', () => {
+          // Release the layer the moment this track lands: a will-change left
+          // on is a promoted layer held for the life of the page.
+          gsap.set(track, { clearProps: 'willChange' })
           remaining -= 1
           if (remaining !== 0) return
           gsap.set(targets, { clearProps: 'transition' })
@@ -408,7 +440,7 @@ export function ScrollReveal({
         const tl = gsap.timeline({ paused: true })
         addTextTweens(tl, textStart)
         addMediaTweens(tl, mediaStart)
-        arm(tl)
+        arm(tl, targets)
         return observeRevealGate(overrideGate, enterOffset, () => tl.play())
       }
 
@@ -416,14 +448,14 @@ export function ScrollReveal({
       if (textTargets.length) {
         const textTl = gsap.timeline({ paused: true })
         addTextTweens(textTl, textStart)
-        arm(textTl)
+        arm(textTl, textTargets)
         const textGate = uppermostRevealTarget(textTargets) ?? root
         stops.push(observeRevealGate(textGate, enterOffset, () => textTl.play()))
       }
       if (mediaTargets.length) {
         const mediaTl = gsap.timeline({ paused: true })
         addMediaTweens(mediaTl, mediaStart)
-        arm(mediaTl)
+        arm(mediaTl, mediaTargets)
         const mediaGate = uppermostRevealTarget(mediaTargets) ?? root
         stops.push(observeRevealGate(mediaGate, enterOffset, () => mediaTl.play()))
       }

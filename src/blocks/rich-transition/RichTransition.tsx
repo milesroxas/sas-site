@@ -125,6 +125,9 @@ const layouts: Record<Layout, (props: RichTransitionFields) => ReactNode> = {
  * themed band, arranged by `layout`. Collection-agnostic — case-study and lab
  * blocks share this shape.
  *
+ * The band drops its bottom padding so the block runs straight into whatever
+ * follows; only the top of the band carries rhythm.
+ *
  * `bare` skips the `Section` wrapper for callers that supply their own shell
  * (the work-page renderer wraps blocks in a full-viewport reveal section).
  * The `data-reveal` markers are inert unless such a shell animates them.
@@ -136,5 +139,9 @@ export const RichTransition = ({
   const Layout = layouts[block.layout ?? 'centered']
   const inner = <Layout {...block} />
   if (bare) return inner
-  return <Section theme={block.theme}>{inner}</Section>
+  return (
+    <Section className="pb-0" theme={block.theme}>
+      {inner}
+    </Section>
+  )
 }

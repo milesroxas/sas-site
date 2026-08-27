@@ -2142,6 +2142,10 @@ export interface WorkFeatureStatementGridBlock {
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
   browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureStatementGrid';
@@ -2240,6 +2244,10 @@ export interface WorkFeatureHeadingOffsetBlock {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureHeadingOffset';
@@ -2292,6 +2300,14 @@ export interface WorkFeatureImageStatementBlock {
    * Contained keeps the image in the site container; full bleeds edge to edge.
    */
   imageWidth?: ('contained' | 'full') | null;
+  /**
+   * Crop for the image, at both widths. Responsive keeps the taller small-screen crop that widens to 21:9 from md up.
+   */
+  aspectRatio?: ('responsive' | '16-9' | '3-2' | '21-9') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureImageStatement';
@@ -2367,6 +2383,10 @@ export interface WorkFeatureTabsBlock {
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
   browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureTabs';
@@ -2475,6 +2495,10 @@ export interface CarouselBlock {
    * Slides visible at once on desktop; mobile always shows one.
    */
   slideSize?: ('full' | 'half' | 'third') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'carousel';
@@ -2680,6 +2704,10 @@ export interface ContentBlock {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'content';
@@ -2712,6 +2740,10 @@ export interface MediaBlock {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
@@ -2875,6 +2907,10 @@ export interface FeatureStatementGridBlock {
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
   browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureStatementGrid';
@@ -2911,6 +2947,10 @@ export interface FeatureHeadingOffsetBlock {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureHeadingOffset';
@@ -2959,6 +2999,14 @@ export interface FeatureImageStatementBlock {
    * Contained keeps the image in the site container; full bleeds edge to edge.
    */
   imageWidth?: ('contained' | 'full') | null;
+  /**
+   * Crop for the image, at both widths. Responsive keeps the taller small-screen crop that widens to 21:9 from md up.
+   */
+  aspectRatio?: ('responsive' | '16-9' | '3-2' | '21-9') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureImageStatement';
@@ -3014,6 +3062,10 @@ export interface FeatureTabsBlock {
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
   browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureTabs';
@@ -3118,6 +3170,10 @@ export interface TestimonialsMarqueeBlock {
    * Cards loop through these in order. Only published, publicly approved testimonials render.
    */
   testimonials: (number | Testimonial)[];
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'testimonialsMarquee';
@@ -3156,6 +3212,10 @@ export interface ArchiveBlock {
    * How each post card renders in this archive.
    */
   cardVariant?: ('contained' | 'open' | 'overlay' | 'split' | 'backdrop') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'archive';
@@ -3208,6 +3268,10 @@ export interface CallToActionBlock {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'cta';
@@ -3234,6 +3298,10 @@ export interface FormBlock {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'formBlock';
@@ -3416,6 +3484,10 @@ export interface NewsletterSignupBlock {
    * Signups join this audience (after confirming their email). Only audiences with "Allow public signup" enabled appear here.
    */
   audience: number | Audience;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'newsletterSignup';
@@ -4945,6 +5017,7 @@ export interface ContentBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -4956,6 +5029,7 @@ export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
   size?: T;
   captionOverride?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5013,6 +5087,7 @@ export interface FeatureStatementGridBlockSelect<T extends boolean = true> {
         id?: T;
       };
   browseAllMedia?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5050,6 +5125,7 @@ export interface FeatureHeadingOffsetBlockSelect<T extends boolean = true> {
   heading?: T;
   source?: T;
   body?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5065,6 +5141,8 @@ export interface FeatureImageStatementBlockSelect<T extends boolean = true> {
   textPosition?: T;
   textSize?: T;
   imageWidth?: T;
+  aspectRatio?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5092,6 +5170,7 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
         id?: T;
       };
   browseAllMedia?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5188,6 +5267,7 @@ export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
         id?: T;
       };
   testimonials?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5206,6 +5286,7 @@ export interface CarouselBlockSelect<T extends boolean = true> {
   width?: T;
   showArrows?: T;
   slideSize?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5221,6 +5302,7 @@ export interface ArchiveBlockSelect<T extends boolean = true> {
   limit?: T;
   selectedDocs?: T;
   cardVariant?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5257,6 +5339,7 @@ export interface CallToActionBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5268,6 +5351,7 @@ export interface FormBlockSelect<T extends boolean = true> {
   form?: T;
   enableIntro?: T;
   introContent?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5281,6 +5365,7 @@ export interface NewsletterSignupBlockSelect<T extends boolean = true> {
   body?: T;
   buttonLabel?: T;
   audience?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5551,6 +5636,7 @@ export interface WorkFeatureStatementGridBlockSelect<T extends boolean = true> {
         id?: T;
       };
   browseAllMedia?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5564,6 +5650,7 @@ export interface WorkFeatureHeadingOffsetBlockSelect<T extends boolean = true> {
   source?: T;
   storyBeatKey?: T;
   body?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5580,6 +5667,8 @@ export interface WorkFeatureImageStatementBlockSelect<T extends boolean = true> 
   textPosition?: T;
   textSize?: T;
   imageWidth?: T;
+  aspectRatio?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5620,6 +5709,7 @@ export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
         id?: T;
       };
   browseAllMedia?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }

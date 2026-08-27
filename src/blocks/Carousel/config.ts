@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 
@@ -65,5 +66,6 @@ export const Carousel: Block = {
         description: 'Slides visible at once on desktop; mobile always shows one.',
       },
     },
+    themeField(),
   ],
 }

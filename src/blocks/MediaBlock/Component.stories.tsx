@@ -49,3 +49,11 @@ export const Small: Story = {
     size: 'small',
   },
 }
+
+export const Dark: Story = {
+  args: { theme: 'dark' },
+}
+
+export const Brand: Story = {
+  args: { theme: 'brand' },
+}

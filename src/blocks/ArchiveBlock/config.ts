@@ -5,6 +5,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { CARD_VARIANT_LABELS, CARD_VARIANTS } from '@/components/Card/variants'
@@ -102,6 +103,7 @@ export const Archive: Block = {
         value: variant,
       })),
     },
+    themeField(),
   ],
   labels: {
     plural: 'Archives',

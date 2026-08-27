@@ -77,3 +77,11 @@ export const WithVideo: Story = {
     slides: [slides[0], { id: 'slide-video', media: videoFixture, caption: null }, slides[2]],
   },
 }
+
+export const Dark: Story = {
+  args: { theme: 'dark' },
+}
+
+export const Brand: Story = {
+  args: { theme: 'brand' },
+}

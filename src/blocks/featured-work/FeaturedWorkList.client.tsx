@@ -4,10 +4,11 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Link from 'next/link'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
+import { cursorTarget } from '@/features/cursor'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
 import {
@@ -175,6 +176,10 @@ const StaticList: React.FC<Props> = ({ eyebrow, entries }) => (
 export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
   const rootRef = useRef<HTMLDivElement>(null)
   const activateRef = useRef<((index: number) => void) | null>(null)
+  // Mirrors the roll's active item into React solely so the media frame's
+  // link points at the entry currently on screen; the choreography itself
+  // stays imperative.
+  const [activeIndex, setActiveIndex] = useState(0)
   const prefersReducedMotion = usePrefersReducedMotion()
   const count = entries.length
 
@@ -199,6 +204,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
         const direction = next > current ? 1 : -1
         const previous = current
         current = next
+        setActiveIndex(next)
         const duration = immediate ? 0 : activateDuration
 
         items.forEach((item, index) => {
@@ -440,6 +446,8 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
   if (count === 0) return null
   if (prefersReducedMotion) return <StaticList entries={entries} eyebrow={eyebrow} />
 
+  const activeEntry = entries[activeIndex] ?? entries[0]
+
   return (
     <div
       className="relative"
@@ -458,7 +466,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
           unaffected and stay on the physical viewport edges. */}
       <div className="sticky top-0 h-svh overflow-hidden pt-(--header-height) pb-(--footer-height)">
         <Container className="relative h-full" width="default">
-          <div className="grid h-full md:grid-cols-[minmax(0,32rem)_minmax(0,1fr)]">
+          <div className="grid h-full md:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] md:gap-x-12 lg:gap-x-16">
             <div className="relative h-full">
               <ul className="absolute inset-x-0 top-1/2 will-change-transform" data-work-list>
                 {entries.map((entry, index) => (
@@ -515,6 +523,19 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
                       </div>
                     ))}
                   </div>
+                  {/* The frame is the click surface into the entry the roll is
+                      currently showing — same navigation as its list row. One
+                      link over the stack rather than one per frame: the `view`
+                      cursor ring then reads a single, always-visible target,
+                      and the shell's entrance clip-path gates it (nothing is
+                      hittable until the wipe has opened). */}
+                  <Link
+                    aria-label={`View case study: ${activeEntry.title}`}
+                    className="absolute inset-0 z-10 block"
+                    href={activeEntry.href}
+                    transitionTypes={[...forwardNavTransitionTypes]}
+                    {...cursorTarget({ variant: 'view' })}
+                  />
                 </div>
               </div>
             </div>

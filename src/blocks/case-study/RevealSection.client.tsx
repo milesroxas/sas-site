@@ -5,7 +5,7 @@ import {
   fullViewportSectionClassName,
   mediaSectionYClassName,
   type SectionTheme,
-  themeClasses,
+  sectionThemeClass,
 } from '@/blocks/shared/section'
 import { ScrollReveal, type ScrollRevealVariant } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
@@ -46,7 +46,7 @@ export function RevealSection({
       className={cn(
         fullViewportSectionClassName,
         media && mediaSectionYClassName,
-        themeClasses[theme || 'light'],
+        sectionThemeClass(theme),
         className,
       )}
     >

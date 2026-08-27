@@ -5,6 +5,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 
@@ -36,6 +37,7 @@ export const CallToAction: Block = {
         maxRows: 2,
       },
     }),
+    themeField(),
   ],
   labels: {
     plural: 'Calls to Action',

@@ -12,6 +12,7 @@ import {
   SCRAMBLE_TEXT_DEFAULTS,
   type ScrambleTweenOptions,
 } from '@/shared/ui/scramble-text'
+import { readPressTuning } from './press-tuning'
 import { publishCursorProximity } from './proximity'
 import {
   CURSOR_ACTIVE_ATTR,
@@ -20,6 +21,7 @@ import {
   CURSOR_NATIVE_HIDDEN_ATTR,
   CURSOR_PROXIMITY_VAR,
   CURSOR_TARGET_SELECTOR,
+  resolveCursorPressScale,
   resolveCursorTargetVariant,
   resolveCursorVariant,
 } from './variants'
@@ -102,8 +104,6 @@ const {
   outerScaleMax,
   outerScaleMin,
   outerSize,
-  pressDuration,
-  pressReleaseDuration,
   strokeWidth,
 } = CURSOR_DEFAULTS
 
@@ -143,6 +143,9 @@ const CursorOverlay: React.FC = () => {
       const els = getEls()
       if (!els) return
       const { outerWrap, outerScale, innerWrap, outerRing, innerRing, labelWrap, label } = els
+
+      // Press cadence is the site's, read once (tokens are static per session).
+      const press = readPressTuning()
 
       gsap.set(label, { xPercent: -50, y: 6, opacity: 0, scale: 0.92 })
       gsap.set(outerScale, { scale: outerScaleMin })
@@ -303,23 +306,42 @@ const CursorOverlay: React.FC = () => {
       let hoverScale: number = CURSOR_DEFAULTS.hoverOuterScale
       let pressScale: number = CURSOR_DEFAULTS.pressScale
       let pressed = false
+      // Pointer capture for the rings: a press that lands on a grabbable
+      // target owns the cursor until release. Embla keeps dragging the
+      // carousel once the pointer leaves its bounds, so the ring, label, and
+      // hidden native cursor have to hold instead of flickering back to idle
+      // mid-drag. `pressScale` is the single opt-in — a variant with no press
+      // response never latches.
+      let grabbedEl: HTMLElement | null = null
+      let grabbedVariantName: string | undefined
+      let grabbedVariant = resolveCursorVariant(undefined)
 
-      const writeRingScale = (duration: number) => {
+      const writeRingScale = (
+        duration: number,
+        ease: string | gsap.EaseFunction = 'power3.out',
+      ) => {
         gsap.to(outerRing, {
           scale: activeEl ? (hoverScale * (pressed ? pressScale : 1)) / outerScaleMax : 1,
           duration,
-          ease: 'power3.out',
+          ease,
           overwrite: 'auto',
         })
       }
 
-      // Press reads as grabbing the target, so it only bites while locked on.
+      // Press only bites while locked on a target that can be pressed (a
+      // clickable element, or a grabbable variant — see `resolveCursorPressScale`).
       // The flag is tracked even off-target: pressing on empty page and then
       // dragging onto a carousel arrives already grabbed.
       const setPressed = (next: boolean) => {
         if (next === pressed) return
         pressed = next
-        if (activeEl) writeRingScale(next ? pressDuration : pressReleaseDuration)
+        if (!next) grabbedEl = null
+        if (activeEl) {
+          writeRingScale(
+            next ? press.duration : press.releaseDuration,
+            next ? press.ease : press.releaseEase,
+          )
+        }
       }
 
       const killScramble = () => {
@@ -442,13 +464,23 @@ const CursorOverlay: React.FC = () => {
       // would cost: target counts stay small (a handful per page).
       const scanTargets = () => {
         const targets = document.querySelectorAll<HTMLElement>(CURSOR_TARGET_SELECTOR)
+        // Reads first, writes after. `writeProximity` sets an inline custom
+        // property, so writing it between two `getBoundingClientRect` calls
+        // dirties style and forces the next read to flush layout again — a
+        // layout pass per target rather than one per scan. Scans run on every
+        // scroll frame, where a reveal tween has already dirtied the tree, so
+        // that thrash is paid at its most expensive.
+        const pending: Array<[HTMLElement, number]> = []
+        const mark = (el: HTMLElement, t: number) => {
+          pending.push([el, t])
+        }
         // A removed target is never revisited by the loop below; a stale hot
         // entry would pin the revalidation interval and retain the detached
         // element until blur or unmount.
         if (hot.size) {
           const live = new Set<HTMLElement>(targets)
           for (const el of [...hot]) {
-            if (!live.has(el)) writeProximity(el, 0)
+            if (!live.has(el)) mark(el, 0)
           }
         }
         // Hit-test the pointer itself (not the target's nearest edge): a
@@ -468,7 +500,7 @@ const CursorOverlay: React.FC = () => {
           // open takeover menu) or hidden ones can't be interacted with. They
           // must neither pull the rings nor keep a stale proximity var.
           if (el.closest('[inert]') || !isVisible(el)) {
-            writeProximity(el, 0)
+            mark(el, 0)
             continue
           }
           if (
@@ -476,7 +508,7 @@ const CursorOverlay: React.FC = () => {
             !el.contains(pointerOnDropdown) &&
             !pointerOnDropdown.contains(el)
           ) {
-            writeProximity(el, 0)
+            mark(el, 0)
             continue
           }
           const variantName = resolveCursorTargetVariant(el)
@@ -487,7 +519,7 @@ const CursorOverlay: React.FC = () => {
           const distance = Math.hypot(dx, dy)
           const raw = Math.max(0, 1 - distance / variant.proximityRadius)
           const t = raw > 0 && isHittable(el, rect, distance === 0) ? raw : 0
-          writeProximity(el, t)
+          mark(el, t)
           if (t > bestT) {
             bestT = t
             bestEl = el
@@ -495,6 +527,7 @@ const CursorOverlay: React.FC = () => {
             bestVariant = variant
           }
         }
+        for (const [el, t] of pending) writeProximity(el, t)
         return { bestT, bestEl, bestVariantName, bestVariant }
       }
 
@@ -520,10 +553,35 @@ const CursorOverlay: React.FC = () => {
 
       const update = () => {
         if (!hasPosition) return
-        const { bestT, bestEl, bestVariantName, bestVariant } = scanTargets()
+        const scan = scanTargets()
+        // Take the grab on the first frame the held pointer is locked onto a
+        // grabbable target; drop it if that target leaves the DOM under it.
+        if (pressed && !grabbedEl && scan.bestT >= 1 && scan.bestVariant.grabbable) {
+          grabbedEl = scan.bestEl
+          grabbedVariantName = scan.bestVariantName
+          grabbedVariant = scan.bestVariant
+        }
+        if (grabbedEl?.isConnected === false) grabbedEl = null
+        const { bestT, bestEl, bestVariantName, bestVariant } = grabbedEl
+          ? {
+              bestT: 1,
+              bestEl: grabbedEl,
+              bestVariantName: grabbedVariantName,
+              bestVariant: grabbedVariant,
+            }
+          : scan
+        // The scan measured the pointer's real distance; the grab overrides it
+        // so the target's own proximity response holds for the whole drag too.
+        if (grabbedEl) writeProximity(grabbedEl, 1)
         const hovering = bestT >= 1
         setPresentation(bestT > 0 ? bestVariantName : undefined, bestVariant)
-        setActive(hovering ? bestEl : null, bestVariant.hoverOuterScale, bestVariant.pressScale)
+        setActive(
+          hovering ? bestEl : null,
+          bestVariant.hoverOuterScale,
+          // Press is a property of the target, not the variant: the same
+          // `emphasize` ring frames a card link and a decorative panel.
+          bestEl ? resolveCursorPressScale(bestEl, bestVariant) : CURSOR_DEFAULTS.pressScale,
+        )
         setActiveTarget(hovering ? bestEl : null)
         updateTease(hovering, bestT)
         const showApproachLabel =
@@ -572,14 +630,33 @@ const CursorOverlay: React.FC = () => {
         update()
       }
 
-      const onScroll = () => update()
+      // Lenis dispatches a scroll event on every frame it moves the page and
+      // the scan forces layout, so running it inline puts a synchronous layout
+      // inside the scroll step of every scrolling frame. Coalesce to one scan
+      // per frame: the rings only have to be right by paint.
+      let scrollFrame = 0
+      const onScroll = () => {
+        if (scrollFrame) return
+        scrollFrame = requestAnimationFrame(() => {
+          scrollFrame = 0
+          update()
+        })
+      }
 
       // Primary button only: a right-click opens a context menu rather than
       // dragging, so the ring must not read as grabbed.
       const onPointerDown = (event: PointerEvent) => {
-        if (event.button === 0) setPressed(true)
+        if (event.button !== 0) return
+        setPressed(true)
+        // Take the grab at press time rather than on the first move of the drag.
+        update()
       }
-      const onPointerRelease = () => setPressed(false)
+      const onPointerRelease = () => {
+        setPressed(false)
+        // A release can be the gesture's last event (drag ends where it ends),
+        // so re-run rather than wait for a move the pointer may never make.
+        update()
+      }
 
       const hide = () => {
         fadeRings(0)
@@ -614,6 +691,7 @@ const CursorOverlay: React.FC = () => {
         window.removeEventListener('scroll', onScroll, { capture: true })
         window.removeEventListener('pointerout', onPointerOut)
         window.removeEventListener('blur', hide)
+        cancelAnimationFrame(scrollFrame)
         window.clearTimeout(idleTimer)
         window.clearInterval(revalidateTimer)
         setNativeCursorHidden(false)
@@ -639,8 +717,9 @@ const CursorOverlay: React.FC = () => {
              size  → CURSOR_DEFAULTS.outerSize / innerSize / strokeWidth
                      per-variant outerSize in CURSOR_VARIANTS:
                        default + view = 64 · emphasize = 40 · drag = 50
-             press → CURSOR_DEFAULTS.pressScale, per-variant in CURSOR_VARIANTS
-                     (drag only); a transform, nothing to style here
+             press → amplitude: CURSOR_DEFAULTS.pressScale (drag overrides),
+                     applied only to pressable targets; cadence: the --press-*
+                     tokens in globals.css. A transform, nothing to style here
 
            Label — default + emphasize  (data-cursor-label-placement="below")
              color → this block, "below": type --background, plate --foreground

@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
@@ -52,5 +53,21 @@ export const FeatureImageStatement: Block = {
         description: 'Contained keeps the image in the site container; full bleeds edge to edge.',
       },
     },
+    {
+      name: 'aspectRatio',
+      type: 'select',
+      defaultValue: 'responsive',
+      options: [
+        { label: 'Responsive (3:2, 21:9 from md)', value: 'responsive' },
+        { label: '16:9', value: '16-9' },
+        { label: '3:2', value: '3-2' },
+        { label: '21:9', value: '21-9' },
+      ],
+      admin: {
+        description:
+          'Crop for the image, at both widths. Responsive keeps the taller small-screen crop that widens to 21:9 from md up.',
+      },
+    },
+    themeField(),
   ],
 }

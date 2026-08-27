@@ -1,6 +1,7 @@
 'use client'
 
 import { type FormEvent, useId, useState } from 'react'
+import { ThemeBand } from '@/blocks/shared/section'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -17,6 +18,7 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockProps> = ({
   body,
   buttonLabel,
   audience,
+  theme,
 }) => {
   const emailId = useId()
   const [status, setStatus] = useState<Status>({ state: 'idle' })
@@ -56,59 +58,61 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockProps> = ({
   }
 
   return (
-    <div className="container">
-      <Card>
-        <CardContent className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
-          <div className="max-w-xl">
-            {eyebrow ? (
-              <p className="mb-2 text-xs tracking-widest text-muted-foreground uppercase">
-                {eyebrow}
-              </p>
-            ) : null}
-            <h2 className="text-heading-3">{heading}</h2>
-            {body ? <p className="mt-3 text-sm text-muted-foreground">{body}</p> : null}
-          </div>
-
-          <div className="w-full md:max-w-sm">
-            {status.state === 'success' ? (
-              <p className="text-sm" role="status">
-                {status.message}
-              </p>
-            ) : (
-              <form onSubmit={onSubmit} noValidate={false}>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <label htmlFor={emailId} className="sr-only">
-                    Email address
-                  </label>
-                  <Input
-                    id={emailId}
-                    name="email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                    placeholder="you@company.com"
-                    disabled={status.state === 'loading'}
-                  />
-                  <div aria-hidden="true" className="absolute top-auto left-[-9999px]">
-                    <input name="company" type="text" tabIndex={-1} autoComplete="off" />
-                  </div>
-                  <Button type="submit" disabled={status.state === 'loading'}>
-                    {status.state === 'loading' ? 'Subscribing…' : buttonLabel}
-                  </Button>
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Double opt-in. Unsubscribe anytime.
+    <ThemeBand theme={theme}>
+      <div className="container">
+        <Card>
+          <CardContent className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-xl">
+              {eyebrow ? (
+                <p className="mb-2 text-xs tracking-widest text-muted-foreground uppercase">
+                  {eyebrow}
                 </p>
-                {status.state === 'error' ? (
-                  <p className="mt-2 text-xs text-destructive" role="alert">
-                    {status.message}
+              ) : null}
+              <h2 className="text-heading-3">{heading}</h2>
+              {body ? <p className="mt-3 text-sm text-muted-foreground">{body}</p> : null}
+            </div>
+
+            <div className="w-full md:max-w-sm">
+              {status.state === 'success' ? (
+                <p className="text-sm" role="status">
+                  {status.message}
+                </p>
+              ) : (
+                <form onSubmit={onSubmit} noValidate={false}>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <label htmlFor={emailId} className="sr-only">
+                      Email address
+                    </label>
+                    <Input
+                      id={emailId}
+                      name="email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      placeholder="you@company.com"
+                      disabled={status.state === 'loading'}
+                    />
+                    <div aria-hidden="true" className="absolute top-auto left-[-9999px]">
+                      <input name="company" type="text" tabIndex={-1} autoComplete="off" />
+                    </div>
+                    <Button type="submit" disabled={status.state === 'loading'}>
+                      {status.state === 'loading' ? 'Subscribing…' : buttonLabel}
+                    </Button>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Double opt-in. Unsubscribe anytime.
                   </p>
-                ) : null}
-              </form>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+                  {status.state === 'error' ? (
+                    <p className="mt-2 text-xs text-destructive" role="alert">
+                      {status.message}
+                    </p>
+                  ) : null}
+                </form>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </ThemeBand>
   )
 }

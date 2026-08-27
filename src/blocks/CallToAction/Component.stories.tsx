@@ -64,3 +64,11 @@ export const TextOnly: Story = {
     links: [],
   },
 }
+
+export const Dark: Story = {
+  args: { theme: 'dark' },
+}
+
+export const Brand: Story = {
+  args: { theme: 'brand' },
+}

@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 
@@ -35,5 +36,6 @@ export const MediaBlock: Block = {
           "Optional. Replaces the media document's canonical caption for this placement only.",
       },
     },
+    themeField(),
   ],
 }

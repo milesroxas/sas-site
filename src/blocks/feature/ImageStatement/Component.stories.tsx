@@ -40,3 +40,28 @@ export const FullBleed: Story = {
   args: { imageWidth: 'full' },
   parameters: { layout: 'fullscreen' },
 }
+
+export const AspectSixteenNine: Story = {
+  args: { aspectRatio: '16-9' },
+}
+
+export const AspectThreeTwo: Story = {
+  args: { aspectRatio: '3-2' },
+}
+
+export const AspectTwentyOneNine: Story = {
+  args: { aspectRatio: '21-9' },
+}
+
+export const FullBleedSixteenNine: Story = {
+  args: { imageWidth: 'full', aspectRatio: '16-9' },
+  parameters: { layout: 'fullscreen' },
+}
+
+export const Dark: Story = {
+  args: { theme: 'dark' },
+}
+
+export const Brand: Story = {
+  args: { theme: 'brand' },
+}

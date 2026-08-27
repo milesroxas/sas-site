@@ -2,6 +2,7 @@
 
 import type React from 'react'
 import { useId, useRef, useState } from 'react'
+import { ThemeBand } from '@/blocks/shared/section'
 import { Media } from '@/components/Media'
 import {
   Carousel,
@@ -84,7 +85,7 @@ const CarouselArrows: React.FC<{ isFullWidth: boolean }> = ({ isFullWidth }) => 
 )
 
 export const CarouselBlock: React.FC<Props> = (props) => {
-  const { className, enableGutter = true, showArrows, slides, slideSize, width } = props
+  const { className, enableGutter = true, showArrows, slides, slideSize, theme, width } = props
 
   const [api, setApi] = useState<CarouselApi>()
   const filterIdBase = useId()
@@ -105,37 +106,39 @@ export const CarouselBlock: React.FC<Props> = (props) => {
   const sizeClass = slideSizeClasses[slideSize ?? 'full']
 
   return (
-    <div className={cn({ container: enableGutter && !isFullWidth }, className)}>
-      <CarouselFilters
-        caId={caId}
-        caOffsets={caOffsets}
-        dissolveId={dissolveId}
-        dissolveMap={dissolveMap}
-      />
-      {/* Contained arrows sit beside the slides, so reserve gutter room for them. */}
-      <Carousel
-        className={cn(showArrows && !isFullWidth && 'mx-12')}
-        opts={{
-          loop: true,
-          // Half-size slides center the active one, so the loop keeps a
-          // partial neighbor visible on both edges.
-          align: slideSize === 'half' ? 'center' : 'start',
-        }}
-        setApi={setApi}
-      >
-        {/* items-center: slides keep their media's natural aspect ratio, so shorter slides align to the vertical middle of the tallest. */}
-        <CarouselContent className="items-center">
-          {renderableSlides.map((slide, index) => (
-            <CarouselSlide
-              key={slide.id}
-              restSigned={restSignedDistance(index, renderableSlides.length)}
-              sizeClass={sizeClass}
-              slide={slide}
-            />
-          ))}
-        </CarouselContent>
-        {showArrows && <CarouselArrows isFullWidth={isFullWidth} />}
-      </Carousel>
-    </div>
+    <ThemeBand theme={theme}>
+      <div className={cn({ container: enableGutter && !isFullWidth }, className)}>
+        <CarouselFilters
+          caId={caId}
+          caOffsets={caOffsets}
+          dissolveId={dissolveId}
+          dissolveMap={dissolveMap}
+        />
+        {/* Contained arrows sit beside the slides, so reserve gutter room for them. */}
+        <Carousel
+          className={cn(showArrows && !isFullWidth && 'mx-12')}
+          opts={{
+            loop: true,
+            // Half-size slides center the active one, so the loop keeps a
+            // partial neighbor visible on both edges.
+            align: slideSize === 'half' ? 'center' : 'start',
+          }}
+          setApi={setApi}
+        >
+          {/* items-center: slides keep their media's natural aspect ratio, so shorter slides align to the vertical middle of the tallest. */}
+          <CarouselContent className="items-center">
+            {renderableSlides.map((slide, index) => (
+              <CarouselSlide
+                key={slide.id}
+                restSigned={restSignedDistance(index, renderableSlides.length)}
+                sizeClass={sizeClass}
+                slide={slide}
+              />
+            ))}
+          </CarouselContent>
+          {showArrows && <CarouselArrows isFullWidth={isFullWidth} />}
+        </Carousel>
+      </div>
+    </ThemeBand>
   )
 }

@@ -46,6 +46,13 @@ export const mediaSectionYClassName = 'py-36 md:py-52'
 export const fullViewportSectionClassName =
   'flex min-h-[calc(100svh-var(--footer-height))] flex-col justify-center overflow-clip py-16 md:py-24'
 
+/**
+ * Surface classes for an editor-chosen theme, stated once so every shell —
+ * `Section`, the work-page reveal shell, and blocks that own a bespoke shell —
+ * resolves a null/absent theme the same way.
+ */
+export const sectionThemeClass = (theme?: SectionTheme | null) => themeClasses[theme || 'light']
+
 /** Shared vertical-rhythm + theme wrapper used across block families. */
 export const Section = ({
   children,
@@ -56,7 +63,31 @@ export const Section = ({
   theme?: SectionTheme | null
   className?: string
 }) => (
-  <section className={cn(sectionYClassName, themeClasses[theme || 'light'], className)}>
+  <section className={cn(sectionYClassName, sectionThemeClass(theme), className)}>
     {children}
   </section>
 )
+
+/**
+ * Optional themed band around a block that already owns its own spacing.
+ *
+ * `light` is the page surface, so it renders nothing at all — no element, no
+ * padding, no ink change — and the block keeps the rhythm it had before a
+ * theme was offered. Any other value paints a full-bleed band and adds the
+ * shared band padding so content never sits against its edge.
+ *
+ * Blocks whose renderer already supplies a themed shell (the work-page reveal
+ * section) pass `bare` instead of a theme, so the band is never painted twice.
+ */
+export const ThemeBand = ({
+  children,
+  className,
+  theme,
+}: {
+  children: ReactNode
+  className?: string
+  theme?: SectionTheme | null
+}) => {
+  if (!theme || theme === 'light') return <>{children}</>
+  return <div className={cn(sectionYClassName, themeClasses[theme], className)}>{children}</div>
+}

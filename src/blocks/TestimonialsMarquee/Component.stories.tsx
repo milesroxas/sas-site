@@ -51,3 +51,11 @@ export const NoCallToAction: Story = {
     links: [],
   },
 }
+
+export const Dark: Story = {
+  args: { theme: 'dark' },
+}
+
+export const Brand: Story = {
+  args: { theme: 'brand' },
+}

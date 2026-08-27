@@ -5,6 +5,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 
@@ -42,6 +43,7 @@ export const FormBlock: Block = {
       }),
       label: 'Intro Content',
     },
+    themeField(),
   ],
   graphQL: {
     singularName: 'FormBlock',

@@ -3,6 +3,12 @@
  * `CURSOR_DEFAULTS` is the single source of truth; variants are delta-only
  * overrides. Never restate a default inside a variant.
  *
+ * One exception, deliberately: press *timing* is not a cursor value. It comes
+ * from the site's `--press-*` tokens (globals.css), the same source the
+ * `pressable` utility uses, so a ring and the surface under it compress on one
+ * cadence — see press-tuning.ts. Only the ring's press amplitude
+ * (`pressScale`) lives here.
+ *
  * ## Target styling contract (single source of truth for proximity)
  *
  * The provider computes proximity once and publishes it to every target:
@@ -29,8 +35,13 @@ export type CursorVariantTuning = {
   proximityMaxOpacity: number
   /** Outer-ring scale multiplier while truly hovering the target. */
   hoverOuterScale: number
-  /** Outer-ring scale multiplier while the pointer is held on the target; 1 opts out. */
+  /** Outer-ring scale multiplier while the pointer is held on a pressable target. */
   pressScale: number
+  /**
+   * The target is dragged rather than clicked. Press applies whether or not the
+   * element is clickable, and the grab latches for the whole gesture.
+   */
+  grabbable: boolean
 }
 
 export type CursorLabelActivation = 'hover' | 'proximity'
@@ -88,10 +99,6 @@ export const CURSOR_DEFAULTS = {
   outerGrowLag: 0.3,
   /** Seconds for the hover lock-on pop (net ring scale → `hoverOuterScale`). */
   hoverPopDuration: 0.35,
-  /** Seconds for the press contraction — feedback has to land while the button goes down. */
-  pressDuration: 0.12,
-  /** Seconds for the release — softer than the press so the ring settles rather than snaps. */
-  pressReleaseDuration: 0.22,
   /** Outer-ring opacity ceiling (hover and approach both scale into this). */
   outerOpacity: 0.3,
   /** Overlay stacking level — always above page content (it remains pointer-events none). */
@@ -99,8 +106,17 @@ export const CURSOR_DEFAULTS = {
   proximityRadius: 100,
   proximityMaxOpacity: 0.3,
   hoverOuterScale: 1.15,
-  /** No press response by default; variants whose target is grabbable opt in. */
-  pressScale: 1,
+  /**
+   * Ring compression under a held pointer. Every variant presses — the provider
+   * gates it on the target actually being pressable (see
+   * `resolveCursorPressScale`). Deeper than the surface's `--press-scale` (0.97)
+   * because a thin ~60px outline moving 3% would shift its edge under a pixel;
+   * the cadence is shared with the surface via the `--press-*` tokens
+   * (see press-tuning.ts).
+   */
+  pressScale: 0.94,
+  /** Only the carousel is dragged rather than clicked. */
+  grabbable: false,
   labelActivation: 'hover',
   labelPlacement: 'below',
   showInnerRing: true,
@@ -140,6 +156,11 @@ export const CURSOR_VARIANTS = {
     labelActivation: 'proximity',
     labelPlacement: 'center',
     outerSize: 50,
+    // The ring carries this press alone — the carousel surface has no
+    // `pressable` compression of its own — so it contracts well past the
+    // clickable default to read as taking hold of the track.
+    pressScale: 0.82,
+    grabbable: true,
     // Native cursor is replaced while approaching, so the custom cursor
     // must stay fully opaque — the default tease (0.3) would vanish.
     proximityMaxOpacity: 1,
@@ -168,6 +189,7 @@ export function resolveCursorVariant(name: string | undefined): CursorVariantDef
     proximityMaxOpacity: CURSOR_DEFAULTS.proximityMaxOpacity,
     hoverOuterScale: CURSOR_DEFAULTS.hoverOuterScale,
     pressScale: CURSOR_DEFAULTS.pressScale,
+    grabbable: CURSOR_DEFAULTS.grabbable,
     labelActivation: CURSOR_DEFAULTS.labelActivation,
     labelPlacement: CURSOR_DEFAULTS.labelPlacement,
     labelOffset: CURSOR_DEFAULTS.labelOffset,
@@ -176,6 +198,27 @@ export function resolveCursorVariant(name: string | undefined): CursorVariantDef
     hideNativeCursor: CURSOR_DEFAULTS.hideNativeCursor,
     ...overrides,
   }
+}
+
+/**
+ * What a pointer can actually press. Kept to elements that are clickable by
+ * semantics (which is what every cursor target is today) — a div with a click
+ * handler and no role reads as inert to the ring, as it does to a keyboard.
+ */
+export const CURSOR_CLICKABLE_SELECTOR =
+  'a[href],button:not([disabled]),summary,[role="button"]:not([aria-disabled="true"]),[role="link"]'
+
+/**
+ * The variant's press amplitude when the target can be pressed, `1` (no
+ * response) when it can't — a decorative target must not fake a click. Grabbable
+ * variants press regardless: a carousel is dragged, not clicked.
+ */
+export function resolveCursorPressScale(
+  element: Element,
+  variant: CursorVariantDefinition,
+): number {
+  if (variant.grabbable) return variant.pressScale
+  return element.closest(CURSOR_CLICKABLE_SELECTOR) ? variant.pressScale : 1
 }
 
 const automaticTargets = Object.entries(CURSOR_VARIANTS).flatMap(([variant, definition]) =>

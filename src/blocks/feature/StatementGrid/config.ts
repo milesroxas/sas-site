@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
@@ -45,5 +46,6 @@ export const FeatureStatementGrid: Block = {
       ],
     },
     browseAllMediaField(),
+    themeField(),
   ],
 }

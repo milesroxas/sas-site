@@ -66,3 +66,11 @@ export const TwoCards: Story = {
     cards: meta.args.cards.slice(0, 2),
   },
 }
+
+export const Dark: Story = {
+  args: { theme: 'dark' },
+}
+
+export const Brand: Story = {
+  args: { theme: 'brand' },
+}

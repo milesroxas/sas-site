@@ -4,8 +4,11 @@ import { cursorTarget } from './variants'
 
 /**
  * Move the pointer toward a card: the rings materialize with proximity,
- * lock on hover, and the mono label appears under the outer ring. The
- * effect renders only for fine pointers with no reduced-motion preference.
+ * lock on hover, and the mono label appears under the outer ring. Holding the
+ * pointer down compresses the ring on the site's shared `--press-*` cadence,
+ * but only where the target is something a pointer can actually press — a
+ * clickable element, or the grabbable carousel. The effect renders only for
+ * fine pointers with no reduced-motion preference.
  */
 const meta = {
   title: 'Features/CustomCursor',
@@ -24,6 +27,7 @@ type Story = StoryObj<typeof meta>
 const cardClassName =
   'grid w-64 gap-3 rounded-md bg-[rgb(255_255_255/calc(8%_+_4%_*_var(--cursor-proximity,0)))] p-4 shadow-[inset_0_0_0_0.5px_rgb(255_255_255/calc(16%_+_8%_*_var(--cursor-proximity,0)))] backdrop-blur-md scale-[calc(1_+_0.02_*_var(--cursor-proximity,0))]'
 
+/** Both targets are links, so both press: ring and surface compress together. */
 export const Emphasize: Story = {
   args: { children: null },
   render: () => (
@@ -32,22 +36,24 @@ export const Emphasize: Story = {
         className="flex min-h-svh flex-col items-center justify-center gap-16 bg-neutral-950 p-12 text-white"
         data-theme="dark"
       >
-        <div
+        <a
+          href="#insights"
           {...cursorTarget({ variant: 'emphasize', label: 'Read post' })}
-          className={cardClassName}
+          className={`${cardClassName} pressable`}
         >
           <span className="font-mono text-xs text-white/70">Insights</span>
           <p className="text-sm leading-relaxed">
             Beyond the logo: brand systems that scale with the work.
           </p>
-        </div>
-        <div
+        </a>
+        <a
+          href="#case-study"
           {...cursorTarget({ variant: 'emphasize', label: 'View work' })}
-          className={cardClassName}
+          className={`${cardClassName} pressable`}
         >
           <span className="font-mono text-xs text-white/70">Case study</span>
           <p className="text-sm leading-relaxed">A second target — rings hand off between them.</p>
-        </div>
+        </a>
         <p className="max-w-sm text-center text-xs text-white/50">
           Elements without <code>cursorTarget</code> props leave the cursor alone.
         </p>
@@ -56,6 +62,7 @@ export const Emphasize: Story = {
   ),
 }
 
+/** A plain div target: rings only, and no press — nothing here is clickable. */
 export const RingsOnly: Story = {
   args: { children: null },
   render: () => (
@@ -65,7 +72,8 @@ export const RingsOnly: Story = {
           {...cursorTarget({ variant: 'emphasize' })}
           className="rounded-md border border-neutral-300 bg-white p-8 text-sm text-neutral-900 scale-[calc(1_+_0.02_*_var(--cursor-proximity,0))]"
         >
-          No label passed — rings only, on a light surface (mix-blend-difference).
+          No label passed — rings only, on a light surface (mix-blend-difference). Holding the
+          pointer down leaves the ring alone: this target is not pressable.
         </div>
       </div>
     </CustomCursorProvider>
@@ -75,7 +83,9 @@ export const RingsOnly: Story = {
 /**
  * Carousels opt in automatically via `data-slot="carousel"` — no call-site
  * cursor props. Hold the pointer down on either one: the ring contracts to
- * read as a grab, and releases a touch softer than it pressed.
+ * read as a grab, and releases a touch softer than it pressed. Drag off the
+ * carousel while held — the grab holds until release, the way the carousel's
+ * own pointer capture keeps scrolling.
  */
 export const CarouselDrag: Story = {
   args: { children: null },
