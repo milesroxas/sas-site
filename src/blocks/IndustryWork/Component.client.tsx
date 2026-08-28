@@ -321,7 +321,7 @@ export const IndustryWorkClient = ({
         themeClasses[(theme as SectionTheme | null) || 'dark'],
       )}
     >
-      <Container width="default" className="flex flex-col gap-12 md:gap-16 lg:gap-32" ref={rootRef}>
+      <Container width="default" className="flex flex-col gap-8 md:gap-16 lg:gap-32" ref={rootRef}>
         <HeadingDropdown
           activeIndex={active}
           continuationFor={(index) => panels[index] ?? mediaPanel}
@@ -404,7 +404,7 @@ export const IndustryWorkClient = ({
                   effects pre-activate off the same proximity signal. */}
               <Link
                 aria-label={`View case study: ${mediaWork.title}`}
-                className="absolute inset-0 block"
+                className="pressable pressable-subtle absolute inset-0 block"
                 href={mediaWork.href}
                 ref={mediaLinkRef}
                 transitionTypes={[...workOpenTransitionTypes]}

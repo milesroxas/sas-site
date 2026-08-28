@@ -574,6 +574,65 @@
   --scroll-fade-mask: none;
 }
 
+/* snap-recede */
+@theme inline {
+  @keyframes snap-recede-enter {
+    from {
+      opacity: var(--snap-recede-opacity, 0.45);
+      transform: scale(var(--snap-recede-scale, 0.97));
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes snap-recede-exit {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: var(--snap-recede-opacity, 0.45);
+      transform: scale(var(--snap-recede-scale, 0.97));
+    }
+  }
+}
+
+/*
+ * An item in a snap scroller sits back until it is the one being read: dimmed
+ * and fractionally smaller while it is part-way into the scrollport, full and
+ * flat once it is all the way in. Companion to `scroll-fade` — that one masks
+ * the container's edges, this one weights the items inside it.
+ *
+ * The timeline is the item's own `view()`, so the gesture scrubs it: the value
+ * tracks the finger frame for frame, reverses when the finger does, and lands
+ * at exactly 1 as the item reaches its snap rest position. No listeners, no
+ * main-thread work, and it composites `opacity`/`transform` only.
+ *
+ * Two animations rather than one keyframe set across `cover`, because the rest
+ * position is `snap-start`, not centred — a symmetric curve would dim the
+ * resting item. `entry` fills `both` (an item still off-screen holds the
+ * receded state); `exit` fills `forwards` only, so it stays out of the way
+ * until the item actually starts to leave and then wins as the later rule.
+ *
+ * Tunables: `--snap-recede-opacity`, `--snap-recede-scale`.
+ */
+@utility snap-recede {
+  @supports (animation-timeline: view()) {
+    animation:
+      snap-recede-enter 1ms linear,
+      snap-recede-exit 1ms linear;
+    animation-timeline: view(inline), view(inline);
+    animation-range: entry, exit;
+    animation-fill-mode: both, forwards;
+  }
+
+  /* Reduced motion keeps the depth cue and drops the movement. */
+  @media (prefers-reduced-motion: reduce) {
+    --snap-recede-scale: 1;
+  }
+}
+
 /* shimmer */
 @property --shimmer-angle {
   syntax: "<angle>";

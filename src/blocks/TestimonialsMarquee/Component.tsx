@@ -6,13 +6,26 @@ import type {
   Testimonial,
   TestimonialsMarqueeBlock as TestimonialsMarqueeBlockProps,
 } from '@/payload-types'
+import { cn } from '@/utilities/ui'
 import { TestimonialsMarquee } from './Marquee.client'
 
 // Card surface: theme token with alpha, compositing slightly darker than the
 // page background in both themes (dark: tertiary over background; light:
-// secondary over background).
-const TestimonialCard = ({ testimonial }: { testimonial: Testimonial }) => (
-  <figure className="flex flex-col gap-10 rounded-xl border border-border bg-secondary/60 p-6 dark:bg-tertiary/50">
+// secondary over background). Width is the caller's — the rail sizes cards to
+// the swipe, the marquee lets them fill their lane.
+const TestimonialCard = ({
+  className,
+  testimonial,
+}: {
+  className?: string
+  testimonial: Testimonial
+}) => (
+  <figure
+    className={cn(
+      'flex flex-col gap-6 rounded-xl border border-border bg-secondary/60 p-5 md:p-6 lg:gap-10 dark:bg-tertiary/50',
+      className,
+    )}
+  >
     <blockquote>
       <RichText
         className="text-sm leading-relaxed"
@@ -73,7 +86,44 @@ export const TestimonialsMarqueeBlock: React.FC<TestimonialsMarqueeBlockProps> =
               </div>
             )}
           </div>
-          <TestimonialsMarquee className="h-[420px] md:h-[540px]" columns={columns} />
+          {/* Below `lg` the quotes are the block's content, not its texture, so
+              they stop moving: a swipeable rail bleeding to both screen edges,
+              one card per snap with the next peeking as the affordance. Reading
+              needs the card to hold still — an auto-scrolling row leaves every
+              quote clipped at one edge or the other.
+
+              A labelled `section`, not a div, because a scrollable region needs
+              a name. No `tabIndex` — Chrome and Firefox make overflow containers
+              keyboard-focusable on their own, and every quote is in the DOM
+              regardless of scroll position, so focus and screen readers bring
+              their own card into view.
+
+              `data-lenis-prevent-horizontal`: root Lenis runs `syncTouch`, so it
+              calls preventDefault on every touchmove and drives the page itself —
+              a sideways swipe in here would never reach the browser, and its
+              vertical component would scroll the page instead. The attribute
+              releases only the gestures Lenis reads as horizontal, so panning the
+              rail is native (momentum, rubber-band, snap) while an up/down swipe
+              started on a card still smooth-scrolls the page.
+
+              `snap-recede` on each card weights the row: the card being read is
+              full, the one peeking in sits back. It runs on the card's own view
+              timeline, so the swipe scrubs it — the peek is a card on its way in
+              rather than a clipped one. */}
+          <section
+            aria-label="Client testimonials"
+            className="no-scrollbar -mx-gutter flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-ps-gutter pe-gutter ps-gutter md:gap-6 lg:hidden"
+            data-lenis-prevent-horizontal
+          >
+            {approved.map((testimonial) => (
+              <TestimonialCard
+                className="w-4/5 shrink-0 snap-start snap-always snap-recede md:w-2/5"
+                key={testimonial.id}
+                testimonial={testimonial}
+              />
+            ))}
+          </section>
+          <TestimonialsMarquee className="hidden lg:block lg:h-[540px]" columns={columns} />
         </div>
       </div>
     </Section>

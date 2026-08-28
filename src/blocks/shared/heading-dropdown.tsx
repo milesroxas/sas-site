@@ -161,7 +161,10 @@ export const HeadingDropdown = ({
     // Inline flow (not flex): the chip and continuation sit in the same text
     // run as the heading, so the sentence wraps word by word instead of
     // dropping whole segments to a new line.
-    <h2 className="max-w-4xl text-3xl leading-normal font-light text-foreground/80" data-reveal>
+    <h2
+      className="max-w-4xl text-2xl md:text-3xl leading-normal font-light text-foreground/80"
+      data-reveal
+    >
       {heading}{' '}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger
@@ -172,7 +175,7 @@ export const HeadingDropdown = ({
             // otherwise paint light type on `bg-muted`).
             // leading-none keeps the chip shorter than the line box so it
             // rides the text baseline without stretching wrapped lines.
-            'bg-muted align-baseline text-3xl leading-none font-mono text-popover-foreground',
+            'bg-muted align-baseline text-xl md:text-3xl leading-none font-mono text-popover-foreground',
             'outline-none transition-colors hover:bg-accent hover:text-accent-foreground',
             'focus:outline-none focus:ring-0',
             'focus-visible:ring-2 focus-visible:ring-ring/30',
@@ -194,7 +197,7 @@ export const HeadingDropdown = ({
           sideOffset={4}
           className={cn(
             'w-max min-w-(--radix-dropdown-menu-trigger-width) rounded-md bg-popover p-3 pr-14',
-            'flex flex-col gap-6 text-popover-foreground',
+            'flex flex-col gap-2 md:gap-6 text-popover-foreground',
           )}
           onCloseAutoFocus={(event) => {
             if (openedWithPointerRef.current) {
@@ -209,7 +212,7 @@ export const HeadingDropdown = ({
               <DropdownMenuItem
                 key={`${index}-${option}`}
                 className={cn(
-                  'min-h-0 cursor-pointer rounded-none p-0 font-mono text-heading-3 whitespace-nowrap text-popover-foreground',
+                  'min-h-0 cursor-pointer rounded-none p-0 font-mono text-base md:text-heading-3 whitespace-nowrap text-popover-foreground',
                   'focus:bg-transparent focus:text-popover-foreground',
                   lowercase && 'lowercase',
                   selected && 'opacity-50',
