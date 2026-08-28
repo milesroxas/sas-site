@@ -40,14 +40,27 @@ function menuMedia(media: Media | number | null | undefined): MenuMedia | null {
   return { url: getMediaUrl(url, media.updatedAt), mime: media.mimeType }
 }
 
+/** Menu shows at most this many case studies (Header `featuredWork` maxRows). */
+const MENU_WORKS_LIMIT = 4
+
 /**
  * Editorial columns of the takeover menu, sourced live from the page
- * collections (no Header-global fields, so no schema change). Published docs
+ * collections. Case studies honor the Header global's `featuredWork` picks
+ * (in order) and fall back to the most recent published. Published docs
  * only — the Local API bypasses access control, so the filter is explicit.
  */
 async function getMenuContent(): Promise<MenuContent> {
   const payload = await getPayload({ config: configPromise })
   const published = { _status: { equals: 'published' as const } }
+
+  const header = await payload.findGlobal({
+    slug: 'header',
+    depth: 0,
+    select: { featuredWork: true },
+  })
+  const featuredIds = (header.featuredWork ?? [])
+    .map((work) => (typeof work === 'object' ? work.id : work))
+    .slice(0, MENU_WORKS_LIMIT)
 
   const [expertise, audiences, works, pages, home] = await Promise.all([
     payload.find({
@@ -67,8 +80,8 @@ async function getMenuContent(): Promise<MenuContent> {
     }),
     payload.find({
       collection: 'work-pages',
-      where: published,
-      limit: 4,
+      where: featuredIds.length ? { and: [published, { id: { in: featuredIds } }] } : published,
+      limit: MENU_WORKS_LIMIT,
       // Depth 3 reaches work → case study → project → industries for the eyebrow.
       depth: 3,
       select: { title: true, slug: true, caseStudy: true, hero: true, coverAsset: true },
@@ -92,6 +105,11 @@ async function getMenuContent(): Promise<MenuContent> {
   const homeMedia = menuMedia(home.hero?.media)
   if (homeMedia) pageMedia['/'] = homeMedia
 
+  // `in` queries return DB order — restore the editor's pick order.
+  const workDocs = featuredIds.length
+    ? [...works.docs].sort((a, b) => featuredIds.indexOf(a.id) - featuredIds.indexOf(b.id))
+    : works.docs
+
   return {
     expertise: expertise.docs.map((doc) => ({
       title: doc.title,
@@ -103,7 +121,7 @@ async function getMenuContent(): Promise<MenuContent> {
       href: `/who-we-help/${doc.slug}`,
       media: menuMedia(doc.hero?.media),
     })),
-    works: works.docs.map((doc) => ({
+    works: workDocs.map((doc) => ({
       title: doc.title,
       href: `/works/${doc.slug}`,
       eyebrow: workEyebrow(doc as WorkPage),

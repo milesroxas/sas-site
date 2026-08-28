@@ -326,6 +326,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   const openRef = useRef(open)
   const navItems = data?.navItems || []
   const { expertise, audiences, works, pageMedia } = menuContent
+  // CTA from the Header global; the original hardcoded button is the fallback
+  // until an editor fills the field.
+  const cta = data?.cta?.link
+  const ctaHref = (cta && resolveCmsLinkHref(cta)) || '/contact'
+  const ctaLabel = data?.cta?.label || 'Get in touch'
+  const ctaLinkProps = cta?.newTab
+    ? { rel: 'noopener noreferrer', target: '_blank' }
+    : { transitionTypes: [...lateralNavTransitionTypes] }
 
   /**
    * A close has two exits with opposite scroll contracts. Dismissal (Escape,
@@ -1013,16 +1021,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         />
         <div
           data-menu-item
-          {...itemHandlers(pageMedia['/contact'] ?? null)}
+          {...itemHandlers(pageMedia[ctaHref] ?? null)}
           className={chatHideable('self-center justify-self-center md:col-start-2 md:row-start-3')}
         >
           <Button asChild variant="default" size="pill">
-            <Link
-              href="/contact"
-              transitionTypes={[...lateralNavTransitionTypes]}
-              {...cursorTarget()}
-            >
-              <span>Get in touch</span>
+            <Link href={ctaHref} {...ctaLinkProps} {...cursorTarget()}>
+              <span>{ctaLabel}</span>
             </Link>
           </Button>
         </div>

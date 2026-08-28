@@ -103,6 +103,7 @@ const mockHeaderData: HeaderType = {
       link: { type: 'custom', label: 'Contact', url: '/contact', newTab: false },
     },
   ],
+  cta: { label: 'Get in touch', link: { type: 'custom', url: '/contact', newTab: false } },
 }
 
 const mockMenuContent: MenuContent = {

@@ -7440,6 +7440,34 @@ export interface Header {
         id?: string | null;
       }[]
     | null;
+  /**
+   * The pill button in the takeover menu (label + destination).
+   */
+  cta: {
+    label: string;
+    link?: {
+      type?: ('reference' | 'site' | 'custom') | null;
+      newTab?: boolean | null;
+      reference?:
+        | ({
+            relationTo: 'pages';
+            value: number | Page;
+          } | null)
+        | ({
+            relationTo: 'posts';
+            value: number | Post;
+          } | null);
+      /**
+       * Home (/), Works Index (/works), or Insights Index (/insights).
+       */
+      sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+      url?: string | null;
+    };
+  };
+  /**
+   * Case studies shown in the takeover menu, in this order (max 4). Unpublished picks are skipped. Leave empty to show the 4 most recent published.
+   */
+  featuredWork?: (number | WorkPage)[] | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -7779,6 +7807,21 @@ export interface HeaderSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  cta?:
+    | T
+    | {
+        label?: T;
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              sitePage?: T;
+              url?: T;
+            };
+      };
+  featuredWork?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -46,7 +46,11 @@ vi.mock('./ThemeToggle', () => ({
   ),
 }))
 
-const mockHeaderData: Header = { id: 1, navItems: [] }
+const mockHeaderData: Header = {
+  id: 1,
+  navItems: [],
+  cta: { label: 'Get in touch', link: { type: 'custom', url: '/contact', newTab: false } },
+}
 const mockMenuContent = { expertise: [], audiences: [], works: [], pageMedia: {} }
 
 describe('HeaderClient', () => {

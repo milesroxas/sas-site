@@ -6,6 +6,8 @@ export const revalidateHeader: GlobalAfterChangeHook = ({ doc, req: { payload, c
     payload.logger.info(`Revalidating header`)
 
     revalidateTag('global_header', 'max')
+    // Menu case studies + CTA are read through the takeover-menu cache.
+    revalidateTag('takeover-menu-content', 'max')
   }
 
   return doc

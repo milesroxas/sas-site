@@ -21,6 +21,7 @@ const headerData: HeaderType = {
     { id: 'n3', link: { type: 'custom', label: 'Insights', url: '/insights', newTab: false } },
     { id: 'n4', link: { type: 'custom', label: 'About Us', url: '/about', newTab: false } },
   ],
+  cta: { label: 'Get in touch', link: { type: 'custom', url: '/contact', newTab: false } },
 }
 
 /** Fixture hero gradients (not UI): distinct colors make the hover dissolve legible. */
