@@ -104,6 +104,15 @@ describe('CarouselBlock', () => {
     )
   })
 
+  it('shows more of the neighbours when a half carousel runs full-bleed', () => {
+    const { container } = render(
+      <CarouselBlock {...baseProps} slideSize="half" width="full-width" />,
+    )
+    const item = container.querySelector('[data-slot="carousel-item"]')
+    expect(item?.className).toContain('md:basis-1/2')
+    expect(item?.className).not.toContain('md:basis-2/3')
+  })
+
   it('steps a third-size carousel 1 → 2 → 3 up the breakpoints', () => {
     const { container } = render(<CarouselBlock {...baseProps} slideSize="third" />)
     const item = container.querySelector('[data-slot="carousel-item"]')

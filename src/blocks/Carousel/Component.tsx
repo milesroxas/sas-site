@@ -57,6 +57,19 @@ const slideSizeClasses: Record<NonNullable<CarouselBlockProps['slideSize']>, str
 }
 
 /**
+ * Full-bleed overrides. The window is the column here, so a `half` carousel
+ * can spend width on its neighbours and still leave a large active slide —
+ * half of 1440px is 714px of media, wider than the whole contained column at
+ * that viewport. It also closes the distance between slides: the gap is
+ * mostly the neighbour's own scale-back (see ./visual-state), which is a
+ * fraction of the slide's width, so a narrower slide sits closer.
+ */
+const fullWidthSizeClasses: Partial<Record<NonNullable<CarouselBlockProps['slideSize']>, string>> =
+  {
+    half: 'md:basis-1/2',
+  }
+
+/**
  * Slide gutter, split evenly across both edges (8px + 8px = the same 16px
  * between slides as shadcn's default `-ml-4`/`pl-4`). The default puts the
  * whole gutter on one edge, which under `align: 'center'` pushes the active
@@ -195,7 +208,7 @@ export const CarouselBlock: React.FC<Props> = (props) => {
 
   const isFullWidth = width === 'full-width'
   const size = slideSize ?? 'full'
-  const sizeClass = slideSizeClasses[size]
+  const sizeClass = (isFullWidth && fullWidthSizeClasses[size]) || slideSizeClasses[size]
   const gutter = slideGutterClasses[size]
   // A corner radius reads as a card edge, which needs room around it. A slide
   // that runs the whole window — full-width block, full-width slides — has
