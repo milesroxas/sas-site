@@ -5,6 +5,7 @@ import cn from 'clsx'
 import type { RefObject } from 'react'
 import { useEffect, useMemo, useRef } from 'react'
 import { CanvasTexture, LinearFilter, MathUtils, type ShaderMaterial } from 'three'
+import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
 
 /**
  * Renders in its own small WebGL canvas (classic renderer) rather than the
@@ -226,7 +227,7 @@ function ChromaScene({
 export function ChromaSplitText({ className, ...scene }: ChromaSplitTextProps) {
   return (
     <div className={cn('relative', className)}>
-      <Canvas dpr={DPR} flat linear>
+      <Canvas dpr={DPR} flat linear resize={CANVAS_RESIZE}>
         <ChromaScene {...scene} />
       </Canvas>
     </div>

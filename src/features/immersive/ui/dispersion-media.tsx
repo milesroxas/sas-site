@@ -5,7 +5,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import cn from 'clsx'
 import { useEffect, useMemo, useRef } from 'react'
 import { MathUtils, type Mesh, type ShaderMaterial } from 'three'
-
+import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
 import {
   applyGlassIorUniforms,
   BACKDROP_FRAGMENT,
@@ -254,6 +254,7 @@ export function DispersionMedia({ className, ...scene }: DispersionMediaProps) {
         frameloop="demand"
         camera={GLASS_CAMERA}
         gl={GLASS_GL_OPTIONS}
+        resize={CANVAS_RESIZE}
       >
         <DispersionScene {...scene} />
       </Canvas>

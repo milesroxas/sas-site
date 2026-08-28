@@ -7,15 +7,14 @@ import { cn } from '@/utilities/ui'
  * gradient). Layers compound: each blurs the already-blurred output beneath
  * it, so the strongest edge reads far softer than its own radius.
  *
- * Decorative only — it paints no color of its own. Pair with a token-driven
- * scrim (e.g. `from-card`) when text contrast matters: browsers without
- * `backdrop-filter` render just the scrim and stay legible.
+ * Size to the content it sits behind, not a fraction of the media — this is a
+ * chrome material under a label, not a wash over the image.
  *
- * Call sites own placement/size — size to overlapping content, not a
- * fraction of the media. The blur ramp tuning lives here.
+ * No color: the mask alpha is what applies the blur, so the weakest layer ramps
+ * up from fully transparent and the material has no visible top edge.
  */
 
-const DEFAULT_BLUR_LEVELS = [1, 2, 4, 8]
+const DEFAULT_BLUR_LEVELS = [2, 4, 8, 16]
 
 export function ProgressiveBlur({
   className,

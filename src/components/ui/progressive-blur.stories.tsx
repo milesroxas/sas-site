@@ -30,17 +30,14 @@ export const BottomEdge: Story = {
   ),
 }
 
-export const WithScrimAndText: Story = {
+/** The material as it ships on media cards: sized to the label, white foreground. */
+export const WithText: Story = {
   render: (args) => (
     <Frame>
       <div className="absolute inset-x-0 bottom-0 px-4 pb-4">
         <div className="relative">
-          <ProgressiveBlur {...args} className="absolute inset-x-0 -top-8 bottom-0" />
-          <div
-            aria-hidden
-            className="absolute inset-x-0 -top-8 bottom-0 bg-linear-to-t from-card/85 via-card/40 to-transparent"
-          />
-          <p className="relative text-xl/snug text-card-foreground">
+          <ProgressiveBlur {...args} className="absolute inset-x-0 -top-6 bottom-0" />
+          <p className="relative text-base/snug text-white lg:text-lg/snug">
             Legible title over a progressively blurred backdrop
           </p>
         </div>

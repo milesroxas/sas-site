@@ -4,6 +4,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import { Color, MathUtils, type Mesh, type ShaderMaterial, type Texture, Vector2 } from 'three'
 import { useDeviceDetection } from '@/hooks/use-device-detection'
+import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
 import { cn } from '@/utilities/ui'
 import { resolveTuning } from '../resolve-tuning'
 import { useBackdropTexture, useOnScreen } from './glass-media-internals'
@@ -41,7 +42,7 @@ import { useBackdropTexture, useOnScreen } from './glass-media-internals'
 const DPR_MIN = 1
 const CAMERA_FOV = 45
 const GL_OPTIONS = { antialias: true, alpha: false, stencil: false, depth: true }
-const RESIZE_OPTIONS = { debounce: 0 }
+const RESIZE_OPTIONS = { ...CANVAS_RESIZE, debounce: 0 }
 /** Clamp tab-switch deltas so the integrators never jump. */
 const MAX_DT = 1 / 30
 /** Composition width the plane sizing assumes; narrower viewports scale down. */

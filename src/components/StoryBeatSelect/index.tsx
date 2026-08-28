@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   CASE_STUDY_STORY_SECTION_DEFINITIONS,
   type CaseStudyStorySection,
+  isStoryBeatKey,
 } from '@/collections/CaseStudies/story'
 
 type StoryBeatOption = {
@@ -99,7 +100,7 @@ export const StoryBeatSelect: TextFieldClientComponent = ({ field, path, readOnl
     if (
       !loading &&
       loadedCaseStudyId === caseStudyId &&
-      value &&
+      isStoryBeatKey(value) &&
       !beats.some((beat) => beat.key === value)
     ) {
       setValue(null)
@@ -109,7 +110,7 @@ export const StoryBeatSelect: TextFieldClientComponent = ({ field, path, readOnl
   return (
     <SelectInput
       description={field.admin?.description}
-      isClearable
+      isClearable={false}
       label={field.label}
       name={field.name}
       onChange={(selected) => {
@@ -122,7 +123,7 @@ export const StoryBeatSelect: TextFieldClientComponent = ({ field, path, readOnl
         loading
           ? 'Loading Story Beats…'
           : definition
-            ? `Use entire ${definition.label} section`
+            ? `Choose a ${definition.label} Story Beat`
             : 'Choose a canonical section first'
       }
       readOnly={readOnly || !caseStudyId || !definition}

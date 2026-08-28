@@ -6,6 +6,7 @@ import type { CSSProperties, RefObject } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { MathUtils, type ShaderMaterial, Vector2, Vector3 } from 'three'
 import { useDeviceDetection } from '@/hooks/use-device-detection'
+import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
 import { resolveTuning } from '../resolve-tuning'
 import { LIGHT_LEAK_EXCITE_SELECTOR } from './light-leak-excite'
 import { createFragmentShader, VERTEX_SHADER } from './light-leak-shader'
@@ -241,7 +242,7 @@ type LightLeakTuning = Required<Pick<LightLeakProps, keyof typeof LIGHT_LEAK_DEF
 
 // Hoisted so JSX never allocates fresh objects per render (perf-avoid-inline-objects).
 const GL_CONFIG = { antialias: false, powerPreference: 'high-performance' } as const
-const RESIZE_OPTIONS = { scroll: false, debounce: 200 } as const
+const RESIZE_OPTIONS = { ...CANVAS_RESIZE, scroll: false, debounce: 200 } as const
 /**
  * R3F writes `pointer-events: auto` inline on its container, and a
  * `pointer-events: none` ancestor does NOT stop a descendant that sets `auto`

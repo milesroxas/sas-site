@@ -5,6 +5,7 @@ import { Canvas } from '@react-three/fiber'
 import cn from 'clsx'
 import dynamic from 'next/dynamic'
 import { Suspense, useMemo, useState } from 'react'
+import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
 import { useWebGLStore } from '@/lib/webgl/store'
 import { createRenderer } from '@/lib/webgl/utils/create-renderer'
 import { detectGPUCapability } from '@/lib/webgl/utils/gpu-detection'
@@ -13,6 +14,8 @@ import { RAF } from '../raf'
 import s from './global-canvas.module.css'
 
 const CAMERA_POSITION: [number, number, number] = [0, 0, 5000]
+// Hoisted so JSX never allocates a fresh object per render (perf-avoid-inline-objects).
+const RESIZE_OPTIONS = { ...CANVAS_RESIZE, scroll: false, debounce: 500 } as const
 
 // Dev-only stats overlay (drei's stats-gl). Lazy + NODE_ENV-gated so the panel is
 // tree-shaken from the production bundle. r3f-perf is avoided here: its bundled
@@ -92,7 +95,7 @@ export function GlobalCanvas({
           eventSource: document.documentElement,
         })}
         eventPrefix="client"
-        resize={{ scroll: false, debounce: 500 }}
+        resize={RESIZE_OPTIONS}
         style={{ pointerEvents: isActive ? 'all' : 'none' }}
       >
         <OrthographicCamera

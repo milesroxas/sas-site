@@ -12,6 +12,7 @@ import {
   Vector2,
   type WebGLRenderTarget,
 } from 'three'
+import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
 import { resolveTuning } from '../resolve-tuning'
 import {
   applyGlassIorUniforms,
@@ -975,6 +976,7 @@ export function RefractionMedia({
           frameloop="demand"
           camera={GLASS_CAMERA}
           gl={GLASS_GL_OPTIONS}
+          resize={CANVAS_RESIZE}
         >
           <RefractionScene
             onReady={onReady}

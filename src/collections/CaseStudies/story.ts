@@ -13,6 +13,21 @@ export const CASE_STUDY_STORY_SECTIONS = [
 export type CaseStudyStorySection = (typeof CASE_STUDY_STORY_SECTIONS)[number]
 export type CaseStudyStorySource = CaseStudyStorySection | 'custom'
 
+export const CASE_STUDY_STORY_SCOPES = ['overview', 'section', 'beat'] as const
+export type CaseStudyStoryScope = (typeof CASE_STUDY_STORY_SCOPES)[number]
+
+/** @deprecated Read-only: drafts saved before `storyScope` existed. */
+const LEGACY_SCOPE_OVERVIEW = '__overview__'
+/** @deprecated Read-only: drafts saved before `storyScope` existed. */
+const LEGACY_SCOPE_SECTION = '__section__'
+
+/** True when `storyBeatKey` addresses one reusable beat, not a legacy scope sentinel. */
+export const isStoryBeatKey = (key: unknown): key is string =>
+  typeof key === 'string' &&
+  key.length > 0 &&
+  key !== LEGACY_SCOPE_OVERVIEW &&
+  key !== LEGACY_SCOPE_SECTION
+
 type CaseStudyStoryField =
   | 'approach'
   | 'challenge'
@@ -169,20 +184,65 @@ const composeStoryBodies = (bodies: Array<CaseStudyStoryBody | null | undefined>
 }
 
 /**
- * Resolve either one stable beat or a complete canonical section. A complete
- * section is its optional body followed by its ordered beats.
+ * Which slice of a canonical section a presentation uses. `storyScope` is the
+ * source of truth; empty `storyBeatKey` with no scope still means the complete
+ * section so existing pages keep their published copy.
+ */
+export const resolveCaseStudyStoryScope = (
+  storyScope?: CaseStudyStoryScope | null,
+  storyBeatKey?: string | null,
+): CaseStudyStoryScope => {
+  if (storyScope && CASE_STUDY_STORY_SCOPES.includes(storyScope)) return storyScope
+  if (storyBeatKey === LEGACY_SCOPE_OVERVIEW) return 'overview'
+  if (storyBeatKey === LEGACY_SCOPE_SECTION) return 'section'
+  if (isStoryBeatKey(storyBeatKey)) return 'beat'
+  return 'section'
+}
+
+/**
+ * Resolve canonical story copy for a presentation block. Overview is the
+ * section summary; a beat is that beat; section is the overview followed by
+ * every beat in order.
  */
 export const resolveCaseStudyStoryBody = (
   study: CaseStudy,
   source: CaseStudyStorySource | null | undefined,
   storyBeatKey?: string | null,
+  storyScope?: CaseStudyStoryScope | null,
 ) => {
   if (!source || source === 'custom') return null
   const section = getCaseStudyStorySection(study, source)
   if (!section) return null
-  if (storyBeatKey) return section.storyBeats?.find((beat) => beat.key === storyBeatKey)?.body
+  const scope = resolveCaseStudyStoryScope(storyScope, storyBeatKey)
+  if (scope === 'overview') return section.body || null
+  if (scope === 'beat') {
+    return isStoryBeatKey(storyBeatKey)
+      ? section.storyBeats?.find((beat) => beat.key === storyBeatKey)?.body
+      : null
+  }
 
   return composeStoryBodies([section.body, ...(section.storyBeats || []).map((beat) => beat.body)])
+}
+
+/**
+ * Heading for a presentation that left its own heading empty: the beat's
+ * heading/label when a beat is selected, otherwise the canonical section name.
+ */
+export const resolveCaseStudyStoryHeading = (
+  study: CaseStudy,
+  source: CaseStudyStorySource | null | undefined,
+  storyBeatKey?: string | null,
+  storyScope?: CaseStudyStoryScope | null,
+) => {
+  if (!source || source === 'custom') return undefined
+  if (
+    resolveCaseStudyStoryScope(storyScope, storyBeatKey) === 'beat' &&
+    isStoryBeatKey(storyBeatKey)
+  ) {
+    const beat = findCaseStudyStoryBeat(study, source, storyBeatKey)
+    return beat?.heading || beat?.label
+  }
+  return definitionFor(source)?.label
 }
 
 export type StoryBeatReference = {
@@ -200,7 +260,7 @@ export const storyBeatReferences = (value: unknown): StoryBeatReference[] => {
 
   const record = value as Record<string, unknown>
   const own =
-    isCaseStudyStorySection(record.source) && typeof record.storyBeatKey === 'string'
+    isCaseStudyStorySection(record.source) && isStoryBeatKey(record.storyBeatKey)
       ? [{ section: record.source, key: record.storyBeatKey }]
       : []
 

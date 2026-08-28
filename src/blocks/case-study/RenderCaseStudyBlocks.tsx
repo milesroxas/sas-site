@@ -17,9 +17,12 @@ import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
 import {
   type CaseStudyStoryBody,
+  type CaseStudyStoryScope,
   type CaseStudyStorySource,
   findCaseStudyStoryBeat,
+  isStoryBeatKey,
   resolveCaseStudyStoryBody,
+  resolveCaseStudyStoryHeading,
 } from '@/collections/CaseStudies/story'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
@@ -60,14 +63,18 @@ const resolveFeatureBody = (
   source: CaseStudyStorySource | null | undefined,
   storyBeatKey: string | null | undefined,
   study: CaseStudy,
-) => body || resolveCaseStudyStoryBody(study, source, storyBeatKey)
+  storyScope?: CaseStudyStoryScope | null,
+) => body || resolveCaseStudyStoryBody(study, source, storyBeatKey, storyScope)
 
 /**
  * The story copy every media block shares. `source` is nullable: a block that
  * hides it behind a toggle (Full media's "Show content") generates it as
  * optional, and no source resolves the same as `custom`.
  */
-type StoryCopyFields = Pick<WorkSplitContentNarrowBlock, 'body' | 'heading' | 'storyBeatKey'> & {
+type StoryCopyFields = Pick<
+  WorkSplitContentNarrowBlock,
+  'body' | 'heading' | 'storyBeatKey' | 'storyScope'
+> & {
   source?: WorkSplitContentNarrowBlock['source'] | null
 }
 
@@ -77,19 +84,20 @@ type StoryCopyFields = Pick<WorkSplitContentNarrowBlock, 'body' | 'heading' | 's
  * the canonical story content when the body is empty.
  */
 const resolveStoryBody = (
-  block: Pick<StoryCopyFields, 'source' | 'storyBeatKey' | 'body'>,
+  block: Pick<StoryCopyFields, 'body' | 'source' | 'storyBeatKey' | 'storyScope'>,
   study: CaseStudy,
 ) =>
   block.source === 'custom'
     ? block.body
-    : block.body || resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey)
+    : block.body ||
+      resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey, block.storyScope)
 
 const storyBeatHeading = (
   study: CaseStudy,
   source: CaseStudyStorySource | null | undefined,
   storyBeatKey: string | null | undefined,
 ) => {
-  if (!source || source === 'custom' || !storyBeatKey) return undefined
+  if (!source || source === 'custom' || !isStoryBeatKey(storyBeatKey)) return undefined
   const beat = findCaseStudyStoryBeat(study, source, storyBeatKey)
   return beat?.heading || beat?.label
 }
@@ -128,7 +136,8 @@ const withStoryBeatHeading = <
 const resolveStorySectionBody = (block: WorkCaseStudyStorySectionBlock, study: CaseStudy) =>
   block.source === 'custom'
     ? block.customBody
-    : block.bodyOverride || resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey)
+    : block.bodyOverride ||
+      resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey, block.storyScope)
 
 /**
  * Heading precedence for a story section: the editor's override, then the
@@ -482,7 +491,18 @@ const FeatureHeadingOffsetSection = ({
     <FeatureHeadingOffset
       bare
       {...block}
-      body={resolveFeatureBody(block.body, block.source, block.storyBeatKey, study)}
+      body={resolveFeatureBody(
+        block.body,
+        block.source,
+        block.storyBeatKey,
+        study,
+        block.storyScope,
+      )}
+      heading={
+        block.heading ||
+        resolveCaseStudyStoryHeading(study, block.source, block.storyBeatKey, block.storyScope) ||
+        ''
+      }
     />
   </RevealSection>
 )
@@ -498,7 +518,18 @@ const FeatureStatementGridSection = ({
     <FeatureStatementGrid
       bare
       {...block}
-      statement={resolveFeatureBody(block.statement, block.source, block.storyBeatKey, study)}
+      heading={
+        block.heading ||
+        resolveCaseStudyStoryHeading(study, block.source, block.storyBeatKey, block.storyScope) ||
+        ''
+      }
+      statement={resolveFeatureBody(
+        block.statement,
+        block.source,
+        block.storyBeatKey,
+        study,
+        block.storyScope,
+      )}
     />
   </RevealSection>
 )
@@ -518,7 +549,13 @@ const FeatureImageStatementSection = ({
     <FeatureImageStatement
       bare
       {...block}
-      caption={resolveFeatureBody(block.caption, block.source, block.storyBeatKey, study)}
+      caption={resolveFeatureBody(
+        block.caption,
+        block.source,
+        block.storyBeatKey,
+        study,
+        block.storyScope,
+      )}
     />
   </RevealSection>
 )
@@ -536,7 +573,17 @@ const FeatureTabsSection = ({
       {...block}
       tabs={(block.tabs || []).map((tab) => ({
         ...tab,
-        description: resolveFeatureBody(tab.description, tab.source, tab.storyBeatKey, study),
+        description: resolveFeatureBody(
+          tab.description,
+          tab.source,
+          tab.storyBeatKey,
+          study,
+          tab.storyScope,
+        ),
+        heading:
+          tab.heading ||
+          resolveCaseStudyStoryHeading(study, tab.source, tab.storyBeatKey, tab.storyScope) ||
+          '',
       }))}
     />
   </RevealSection>

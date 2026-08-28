@@ -10,6 +10,7 @@ import {
   TextureLoader,
   Vector2,
 } from 'three'
+import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
 import { swapMapTexture } from '@/lib/webgl/utils/swap-map-texture'
 import { cn } from '@/utilities/ui'
 import { resolveTuning } from '../resolve-tuning'
@@ -370,7 +371,15 @@ export function FloatingCards({
   const tuning = resolveTuning<FloatingCardsTuning>(FLOATING_CARDS_DEFAULTS, deltas)
   return (
     <div className={cn('relative', className)}>
-      <Canvas dpr={DPR} flat linear frameloop="demand" camera={CAMERA} gl={GL_OPTIONS}>
+      <Canvas
+        dpr={DPR}
+        flat
+        linear
+        frameloop="demand"
+        camera={CAMERA}
+        gl={GL_OPTIONS}
+        resize={CANVAS_RESIZE}
+      >
         <FloatingCardsScene
           cards={cards}
           contentKey={contentKey}

@@ -3,6 +3,7 @@
 import { Canvas } from '@react-three/fiber'
 import type { ReactNode, RefObject } from 'react'
 import { useEffect, useMemo, useRef } from 'react'
+import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
 
 /**
  * Shared shell for the GL heading reveals. Both variants mirror a real DOM
@@ -109,7 +110,7 @@ export function GlHeading({
         className="pointer-events-none absolute"
         style={{ inset: `${-padY}px ${-padX}px` }}
       >
-        <Canvas dpr={dpr} flat linear>
+        <Canvas dpr={dpr} flat linear resize={CANVAS_RESIZE}>
           {scene({ headingRef, dirtyRef })}
         </Canvas>
       </div>

@@ -1,6 +1,6 @@
 import { getPayload, type Payload, type PayloadRequest } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { resolveCaseStudyStoryBody } from '@/collections/CaseStudies/story'
+import { resolveCaseStudyStoryBody, storyBeatReferences } from '@/collections/CaseStudies/story'
 import { Media } from '@/collections/Media'
 import config from '@/payload.config'
 import type { CaseStudy, User } from '@/payload-types'
@@ -414,12 +414,13 @@ describe.sequential('content hub and website surfaces', () => {
     ).rejects.toThrow('is used by a Work Page')
   })
 
-  it('resolves one Story Beat or composes an ordered canonical section', () => {
+  it('resolves overview, one Story Beat, or an ordered canonical section', () => {
+    const opening = richText('Approach opening')
     const first = richText('First beat')
     const second = richText('Second beat')
     const study = {
       approach: {
-        body: richText('Approach opening'),
+        body: opening,
         storyBeats: [
           { key: 'first', label: 'First', body: first },
           { key: 'second', label: 'Second', body: second },
@@ -427,10 +428,19 @@ describe.sequential('content hub and website surfaces', () => {
       },
     } as unknown as CaseStudy
 
-    expect(resolveCaseStudyStoryBody(study, 'approach', 'second')).toEqual(second)
-    const section = JSON.stringify(resolveCaseStudyStoryBody(study, 'approach'))
+    expect(resolveCaseStudyStoryBody(study, 'approach', null, 'overview')).toEqual(opening)
+    expect(resolveCaseStudyStoryBody(study, 'approach', 'second', 'beat')).toEqual(second)
+    const section = JSON.stringify(resolveCaseStudyStoryBody(study, 'approach', null, 'section'))
     expect(section.indexOf('Approach opening')).toBeLessThan(section.indexOf('First beat'))
     expect(section.indexOf('First beat')).toBeLessThan(section.indexOf('Second beat'))
+    expect(JSON.stringify(resolveCaseStudyStoryBody(study, 'approach'))).toBe(section)
+    expect(
+      storyBeatReferences({ source: 'approach', storyBeatKey: null, storyScope: 'overview' }),
+    ).toEqual([])
+    expect(storyBeatReferences({ source: 'approach', storyScope: 'section' })).toEqual([])
+    expect(
+      storyBeatReferences({ source: 'approach', storyBeatKey: 'first', storyScope: 'beat' }),
+    ).toEqual([{ section: 'approach', key: 'first' }])
   })
 
   it('defines Media library ownership, public filtering, and Work Page preview paths', async () => {

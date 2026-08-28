@@ -1728,13 +1728,21 @@ export interface WorkIntro {
  */
 export interface WorkCaseStudyStorySectionBlock {
   /**
-   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
   source: 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings' | 'custom';
   /**
-   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
    */
   storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
   eyebrow?: string | null;
   headingOverride?: string | null;
   /**
@@ -1829,13 +1837,21 @@ export interface WorkFullMediaBlock {
    */
   showContent?: boolean | null;
   /**
-   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
   /**
-   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
    */
   storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
   /**
    * Short kicker above the heading.
    */
@@ -1893,13 +1909,21 @@ export interface WorkFullMediaBlock {
  */
 export interface WorkImagePairBlock {
   /**
-   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
   /**
-   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
    */
   storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
   heading?: string | null;
   /**
    * Shown when source is "Custom", or as a Work Page override for canonical content.
@@ -1953,13 +1977,21 @@ export interface WorkImagePairBlock {
  */
 export interface WorkSplitImageOffsetBlock {
   /**
-   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
   /**
-   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
    */
   storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
   heading?: string | null;
   /**
    * Shown when source is "Custom", or as a Work Page override for canonical content.
@@ -2095,13 +2127,21 @@ export interface ScrollGalleryBlock {
  */
 export interface WorkSplitContentNarrowBlock {
   /**
-   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
   /**
-   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
    */
   storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
   /**
    * Short kicker above the text.
    */
@@ -2151,15 +2191,23 @@ export interface WorkFeatureStatementGridBlock {
    * Short kicker above the heading.
    */
   eyebrow?: string | null;
-  heading: string;
+  heading?: string | null;
   /**
-   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
   /**
-   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
    */
   storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
   /**
    * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
    */
@@ -2267,15 +2315,23 @@ export interface WorkFeatureHeadingOffsetBlock {
    * Short kicker above the heading.
    */
   eyebrow?: string | null;
-  heading: string;
+  heading?: string | null;
   /**
-   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
   /**
-   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
    */
   storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
   /**
    * Supporting copy in the offset right column. Leave empty to pull the source.
    */
@@ -2313,13 +2369,21 @@ export interface WorkFeatureImageStatementBlock {
    */
   browseAllMedia?: boolean | null;
   /**
-   * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
   /**
-   * Leave empty to use the complete section, or choose one reusable beat from that section.
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
    */
   storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
   /**
    * Large statement set beneath the image. Leave empty to pull the source.
    */
@@ -2388,15 +2452,23 @@ export interface WorkFeatureTabsBlock {
     /**
      * Lead statement for this tab.
      */
-    heading: string;
+    heading?: string | null;
     /**
-     * Choose custom copy or one canonical narrative section. Then optionally narrow it to a Story Beat.
+     * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
      */
     source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
     /**
-     * Leave empty to use the complete section, or choose one reusable beat from that section.
+     * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+     */
+    storyScope?: ('overview' | 'section' | 'beat') | null;
+    /**
+     * Choose one reusable beat from the selected section.
      */
     storyBeatKey?: string | null;
+    /**
+     * Reveal the website-only override fields. Saved overrides still apply while hidden.
+     */
+    showOverrides?: boolean | null;
     /**
      * Tab body copy. Leave empty to pull the source.
      */
@@ -5554,7 +5626,9 @@ export interface WorkIntroSelect<T extends boolean = true> {
  */
 export interface WorkCaseStudyStorySectionBlockSelect<T extends boolean = true> {
   source?: T;
+  storyScope?: T;
   storyBeatKey?: T;
+  showOverrides?: T;
   eyebrow?: T;
   headingOverride?: T;
   bodyOverride?: T;
@@ -5587,7 +5661,9 @@ export interface CaseStudyTransitionBlockSelect<T extends boolean = true> {
 export interface WorkFullMediaBlockSelect<T extends boolean = true> {
   showContent?: T;
   source?: T;
+  storyScope?: T;
   storyBeatKey?: T;
+  showOverrides?: T;
   eyebrow?: T;
   heading?: T;
   body?: T;
@@ -5606,7 +5682,9 @@ export interface WorkFullMediaBlockSelect<T extends boolean = true> {
  */
 export interface WorkImagePairBlockSelect<T extends boolean = true> {
   source?: T;
+  storyScope?: T;
   storyBeatKey?: T;
+  showOverrides?: T;
   heading?: T;
   body?: T;
   portraitMedia?: T;
@@ -5624,7 +5702,9 @@ export interface WorkImagePairBlockSelect<T extends boolean = true> {
  */
 export interface WorkSplitImageOffsetBlockSelect<T extends boolean = true> {
   source?: T;
+  storyScope?: T;
   storyBeatKey?: T;
+  showOverrides?: T;
   heading?: T;
   body?: T;
   largeMedia?: T;
@@ -5682,7 +5762,9 @@ export interface ScrollGalleryBlockSelect<T extends boolean = true> {
  */
 export interface WorkSplitContentNarrowBlockSelect<T extends boolean = true> {
   source?: T;
+  storyScope?: T;
   storyBeatKey?: T;
+  showOverrides?: T;
   eyebrow?: T;
   heading?: T;
   body?: T;
@@ -5701,7 +5783,9 @@ export interface WorkFeatureStatementGridBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
   source?: T;
+  storyScope?: T;
   storyBeatKey?: T;
+  showOverrides?: T;
   statement?: T;
   footnote?: T;
   cards?:
@@ -5725,7 +5809,9 @@ export interface WorkFeatureHeadingOffsetBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
   source?: T;
+  storyScope?: T;
   storyBeatKey?: T;
+  showOverrides?: T;
   body?: T;
   theme?: T;
   id?: T;
@@ -5739,7 +5825,9 @@ export interface WorkFeatureImageStatementBlockSelect<T extends boolean = true> 
   media?: T;
   browseAllMedia?: T;
   source?: T;
+  storyScope?: T;
   storyBeatKey?: T;
+  showOverrides?: T;
   caption?: T;
   textPosition?: T;
   textSize?: T;
@@ -5772,7 +5860,9 @@ export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
         title?: T;
         heading?: T;
         source?: T;
+        storyScope?: T;
         storyBeatKey?: T;
+        showOverrides?: T;
         description?: T;
         subheading?: T;
         items?:

@@ -28,7 +28,7 @@ export const FeaturedCard: React.FC<FeaturedCardProps> = ({ label = 'Insights', 
       // 300ms (the one documented delta) and its base scale is the cursor
       // proximity calc — so it merges the tokens into its own transition list.
       // Duration/easing lists match the property order: scale, background-color.
-      className="grid w-max max-w-full grid-cols-[191px_auto] items-stretch gap-3 rounded-md bg-[rgb(0_0_0/calc(35%_+_10%_*_var(--cursor-proximity,0)))] p-3 shadow-[inset_0_0_0_0.5px_rgb(255_255_255/calc(16%_+_8%_*_var(--cursor-proximity,0))),inset_0_1px_0_0_rgb(255_255_255/calc(10%_+_4%_*_var(--cursor-proximity,0)))] backdrop-blur-md transition-[scale,background-color] [transition-timing-function:var(--press-release-ease),var(--press-ease)] [transition-duration:var(--press-release-duration),300ms] active:[transition-timing-function:var(--press-ease)] active:[transition-duration:var(--press-duration),300ms] scale-[calc(1_+_0.02_*_var(--cursor-proximity,0))] active:scale-[var(--press-scale)] active:bg-[rgb(0_0_0/calc(50%_+_10%_*_var(--cursor-proximity,0)))] supports-[backdrop-filter]:bg-[rgb(255_255_255/calc(8%_+_4%_*_var(--cursor-proximity,0)))] supports-[backdrop-filter]:active:bg-[rgb(255_255_255/calc(16%_+_4%_*_var(--cursor-proximity,0)))]"
+      className="grid w-max max-w-full grid-cols-[minmax(0,191px)_auto] items-stretch gap-3 rounded-md bg-[rgb(0_0_0/calc(35%_+_10%_*_var(--cursor-proximity,0)))] p-3 shadow-[inset_0_0_0_0.5px_rgb(255_255_255/calc(16%_+_8%_*_var(--cursor-proximity,0))),inset_0_1px_0_0_rgb(255_255_255/calc(10%_+_4%_*_var(--cursor-proximity,0)))] backdrop-blur-md transition-[scale,background-color] [transition-timing-function:var(--press-release-ease),var(--press-ease)] [transition-duration:var(--press-release-duration),300ms] active:[transition-timing-function:var(--press-ease)] active:[transition-duration:var(--press-duration),300ms] scale-[calc(1_+_0.02_*_var(--cursor-proximity,0))] active:scale-[var(--press-scale)] active:bg-[rgb(0_0_0/calc(50%_+_10%_*_var(--cursor-proximity,0)))] supports-[backdrop-filter]:bg-[rgb(255_255_255/calc(8%_+_4%_*_var(--cursor-proximity,0)))] supports-[backdrop-filter]:active:bg-[rgb(255_255_255/calc(16%_+_4%_*_var(--cursor-proximity,0)))]"
       href={`/posts/${post.slug}`}
       {...cursorTarget({ variant: 'emphasize', label: 'Read post' })}
     >
@@ -39,8 +39,16 @@ export const FeaturedCard: React.FC<FeaturedCardProps> = ({ label = 'Insights', 
         </div>
         <p className="text-xs leading-relaxed text-foreground">{post.title}</p>
       </div>
+      {/* Square thumbnail, sized off the row height (stretch + aspect-square),
+          which makes its width independent of its grid track. Once the card is
+          clamped by `max-w-full` the track can end up narrower than that —
+          below ~360px viewport it shrank to 46px against an 83px image, and the
+          media painted outside the card's rounded panel. `minmax(0, 191px)`
+          lets the text column give up its width first, so the thumbnail keeps
+          its square; `max-w-full` is the floor for the widths where even that
+          is not enough (the crop tightens instead of escaping). */}
       {image && (
-        <div className="relative aspect-square h-auto min-h-0 min-w-0 overflow-clip rounded-md">
+        <div className="relative aspect-square h-auto min-h-0 w-auto min-w-0 max-w-full overflow-clip rounded-md">
           <Media fill imgClassName="object-cover select-none" resource={image} size="200px" />
         </div>
       )}

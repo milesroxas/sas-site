@@ -58,6 +58,7 @@ import * as migration_20260827_191137_full_media_show_content from './20260827_1
 import * as migration_20260827_214234_block_theme_and_aspect_ratio from './20260827_214234_block_theme_and_aspect_ratio';
 import * as migration_20260828_163650_header_cta_featured_work from './20260828_163650_header_cta_featured_work';
 import * as migration_20260828_193356_scroll_gallery_block from './20260828_193356_scroll_gallery_block';
+import * as migration_20260828_202452_work_block_story_scope from './20260828_202452_work_block_story_scope';
 
 export const migrations = [
   {
@@ -358,6 +359,11 @@ export const migrations = [
   {
     up: migration_20260828_193356_scroll_gallery_block.up,
     down: migration_20260828_193356_scroll_gallery_block.down,
-    name: '20260828_193356_scroll_gallery_block'
+    name: '20260828_193356_scroll_gallery_block',
+  },
+  {
+    up: migration_20260828_202452_work_block_story_scope.up,
+    down: migration_20260828_202452_work_block_story_scope.down,
+    name: '20260828_202452_work_block_story_scope'
   },
 ];
