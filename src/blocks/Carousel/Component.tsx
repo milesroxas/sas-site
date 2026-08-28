@@ -39,13 +39,20 @@ type PopulatedMedia = Exclude<Slide['media'], number | null | undefined>
 const MOBILE_PEEK_BASIS = 'basis-5/8'
 
 /**
- * Slide width from `md` up. `third` steps 1 → 2 → 3 rather than jumping
- * straight to three columns at 768px, where a third of the column is narrower
- * than the phone slide it replaces.
+ * Slide width from `md` up.
+ *
+ * `half` runs at two thirds rather than a literal half: the pose recesses and
+ * blurs the neighbours, so a true 50/50 split spends a third of the column on
+ * two slides nobody is reading. Two thirds puts the weight on the active
+ * slide and leaves the neighbours as what they are — a peek.
+ *
+ * `third` steps 1 → 2 → 3 rather than jumping straight to three columns at
+ * 768px, where a third of the column is narrower than the phone slide it
+ * replaces.
  */
 const slideSizeClasses: Record<NonNullable<CarouselBlockProps['slideSize']>, string> = {
   full: 'md:basis-full',
-  half: 'md:basis-1/2',
+  half: 'md:basis-2/3',
   third: 'md:basis-1/2 lg:basis-1/3',
 }
 
@@ -57,9 +64,19 @@ const slideSizeClasses: Record<NonNullable<CarouselBlockProps['slideSize']>, str
  * the left. Halving it makes the peek symmetric; the negative track margin
  * still cancels the outer padding, so the first slide stays flush with the
  * page column.
+ *
+ * `half` runs 12px instead of 16px: with one big slide carrying the frame,
+ * every pixel of gutter comes straight off the media, and the recessed
+ * neighbours already read as separate without the extra air.
  */
-const TRACK_GUTTER = '-mx-2'
-const SLIDE_GUTTER = 'px-2'
+const slideGutterClasses: Record<
+  NonNullable<CarouselBlockProps['slideSize']>,
+  { slide: string; track: string }
+> = {
+  full: { slide: 'px-2', track: '-mx-2' },
+  half: { slide: 'px-1.5', track: '-mx-1.5' },
+  third: { slide: 'px-2', track: '-mx-2' },
+}
 
 // Depth-starved queries leave uploads as ids; skip those slides up front so
 // render indexes stay aligned with embla's snap indexes.
@@ -68,14 +85,15 @@ const renderableSlidesOf = (slides: CarouselBlockProps['slides']): Slide[] =>
 
 const CarouselSlide: React.FC<{
   cornerClass: string
+  gutterClass: string
   restSigned: number
   sizeClass: string
   slide: Slide
-}> = ({ cornerClass, restSigned, sizeClass, slide }) => {
+}> = ({ cornerClass, gutterClass, restSigned, sizeClass, slide }) => {
   const media = slide.media as PopulatedMedia
   const posterDoc = media.poster && typeof media.poster === 'object' ? media.poster : null
   return (
-    <CarouselItem className={cn(SLIDE_GUTTER, MOBILE_PEEK_BASIS, sizeClass)}>
+    <CarouselItem className={cn(gutterClass, MOBILE_PEEK_BASIS, sizeClass)}>
       {/* First child is the tween target. Server-rendered rest-state styles
           match the tween's frame 0, so hydration never flickers. */}
       <div className="will-change-slide" style={slideVisualState(restSigned)}>
@@ -178,6 +196,7 @@ export const CarouselBlock: React.FC<Props> = (props) => {
   const isFullWidth = width === 'full-width'
   const size = slideSize ?? 'full'
   const sizeClass = slideSizeClasses[size]
+  const gutter = slideGutterClasses[size]
   // A corner radius reads as a card edge, which needs room around it. A slide
   // that runs the whole window — full-width block, full-width slides — has
   // none, and the curve gets cut off against the browser edge, so it squares
@@ -209,10 +228,11 @@ export const CarouselBlock: React.FC<Props> = (props) => {
           setApi={setApi}
         >
           {/* items-center: slides keep their media's natural aspect ratio, so shorter slides align to the vertical middle of the tallest. */}
-          <CarouselContent className={cn(TRACK_GUTTER, 'items-center')}>
+          <CarouselContent className={cn(gutter.track, 'items-center')}>
             {renderableSlides.map((slide, index) => (
               <CarouselSlide
                 cornerClass={cornerClass}
+                gutterClass={gutter.slide}
                 key={slide.id}
                 restSigned={restSignedDistance(index, renderableSlides.length)}
                 sizeClass={sizeClass}

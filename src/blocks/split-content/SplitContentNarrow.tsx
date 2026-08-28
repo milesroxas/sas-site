@@ -74,7 +74,7 @@ export const SplitContentNarrow = ({
           )}
           <div data-reveal>
             <RichText
-              className="text-xl/7 md:text-lg/7"
+              className="text-base"
               data={content}
               enableGutter={false}
               enableProse={false}

@@ -94,6 +94,16 @@ describe('CarouselBlock', () => {
     expect(captions.map((caption) => caption.style.opacity)).toEqual(['1', '0'])
   })
 
+  it('gives the half size a bigger slide on a tighter gutter', () => {
+    const { container } = render(<CarouselBlock {...baseProps} slideSize="half" />)
+    const item = container.querySelector('[data-slot="carousel-item"]')
+    expect(item?.className).toContain('md:basis-2/3')
+    expect(item?.className).toContain('px-1.5')
+    expect(container.querySelector('[data-slot="carousel-content"] > div')?.className).toContain(
+      '-mx-1.5',
+    )
+  })
+
   it('steps a third-size carousel 1 → 2 → 3 up the breakpoints', () => {
     const { container } = render(<CarouselBlock {...baseProps} slideSize="third" />)
     const item = container.querySelector('[data-slot="carousel-item"]')
