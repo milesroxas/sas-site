@@ -76,11 +76,17 @@ export const MediaBlock: React.FC<Props> = (props) => {
       >
         <div className={sizeClasses[size ?? 'full']}>
           {hasRenderableMedia && (
+            // No border on the media itself: `border` takes its colour from the
+            // base `* { @apply border-border }` reset, and --border is a light
+            // value in both themes (light oklch(0.922), dark white at 10%), so
+            // it drew a thin white line around every rich-text image. This is
+            // the only media call site in the app that framed the asset — the
+            // radius alone matches the rest.
             <Media
-              imgClassName={cn('rounded-lg border border-border', imgClassName)}
+              imgClassName={cn('rounded-lg', imgClassName)}
               resource={mediaDoc}
               src={staticImage}
-              videoClassName={cn('rounded-lg border border-border', imgClassName)}
+              videoClassName={cn('rounded-lg', imgClassName)}
             />
           )}
           {caption && (

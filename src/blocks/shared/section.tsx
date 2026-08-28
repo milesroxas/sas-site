@@ -13,12 +13,18 @@ import { cn } from '@/utilities/ui'
  * `dark` surfaces are low-luminance in both site themes, so rich text needs
  * `prose-invert` even when the site itself is in light mode (site-level
  * `dark:prose-invert` only applies under html[data-theme=dark]).
+ *
+ * `band-dark` (globals.css) carries the band's whole surface set — muted,
+ * card, secondary, accent, border, input — not just background/foreground.
+ * A dark band that only remapped those two left every other token on the site
+ * theme, so on a light-theme visit a `bg-muted` media plate painted a
+ * near-white sheet inside the band and its subpixel edge read as a white
+ * hairline around the image. Add new surface tokens there, never inline here.
  */
 export const themeClasses = {
   light: 'bg-background text-foreground',
   dark: [
-    'bg-tertiary text-tertiary-foreground',
-    '[--background:var(--tertiary)] [--foreground:var(--tertiary-foreground)]',
+    'band-dark bg-tertiary text-tertiary-foreground',
     '[&_.payload-richtext]:prose-invert',
   ].join(' '),
   neutral: 'bg-secondary text-secondary-foreground',

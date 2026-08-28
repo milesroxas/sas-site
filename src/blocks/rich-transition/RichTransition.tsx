@@ -36,11 +36,11 @@ const Left = ({ body, eyebrow, heading }: RichTransitionFields) => (
       <div aria-hidden className="hidden md:block" />
       <div className="text-stack w-full">
         {eyebrow ? (
-          <p className={eyebrowClassName} data-reveal>
+          <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
             {eyebrow}
           </p>
         ) : null}
-        <h2 className="text-heading-1" data-reveal>
+        <h2 className="text-heading-1" data-reveal data-reveal-group="heading">
           {heading}
         </h2>
         {body ? <Body className="max-w-120 text-lg" data={body} /> : null}
@@ -58,11 +58,11 @@ const Centered = ({ body, eyebrow, heading }: RichTransitionFields) => (
   <Container>
     <div className="text-stack mx-auto max-w-5xl text-center">
       {eyebrow ? (
-        <p className={eyebrowClassName} data-reveal>
+        <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="text-heading-1 mx-auto max-w-3xl" data-reveal>
+      <h2 className="text-heading-1 mx-auto max-w-3xl" data-reveal data-reveal-group="heading">
         {heading}
       </h2>
       {body ? <Body className="mx-auto max-w-160 text-base/7" data={body} /> : null}
@@ -76,11 +76,11 @@ const Split = ({ body, eyebrow, heading }: RichTransitionFields) => (
     <div className="grid gap-12 lg:grid-cols-12 lg:gap-24">
       <div className="text-stack lg:col-span-6">
         {eyebrow ? (
-          <p className={eyebrowClassName} data-reveal>
+          <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
             {eyebrow}
           </p>
         ) : null}
-        <h2 className="text-heading-1" data-reveal>
+        <h2 className="text-heading-1" data-reveal data-reveal-group="heading">
           {heading}
         </h2>
       </div>
@@ -98,11 +98,11 @@ const Statement = ({ body, eyebrow, heading }: RichTransitionFields) => (
   <Container>
     <div className="text-stack mx-auto max-w-5xl text-center">
       {eyebrow ? (
-        <p className={eyebrowClassName} data-reveal>
+        <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="text-display" data-reveal>
+      <h2 className="text-display" data-reveal data-reveal-group="heading">
         {heading}
       </h2>
       {body ? <Body className="mx-auto max-w-xl text-lg" data={body} /> : null}
@@ -126,8 +126,15 @@ const layouts: Record<Layout, (props: RichTransitionFields) => ReactNode> = {
  * follows; only the top of the band carries rhythm.
  *
  * `bare` skips the `Section` wrapper for callers that supply their own shell
- * (the work-page renderer wraps blocks in a full-viewport reveal section).
- * The `data-reveal` markers are inert unless such a shell animates them.
+ * (the work-page renderer wraps blocks in a reveal band). The `data-reveal`
+ * markers are inert unless such a shell animates them.
+ *
+ * Eyebrow and heading share a `data-reveal-group`, so the entrance is two
+ * beats — the cluster, then the body — not three. An interstitial is one
+ * thought arriving; staggering a kicker ahead of the heading it labels makes
+ * the smallest element the loudest motion in the block and visibly detaches it
+ * from that heading. Markers stay on the elements rather than a wrapper
+ * because `text-stack` spaces the cluster through direct-child selectors.
  */
 export const RichTransition = ({
   bare = false,

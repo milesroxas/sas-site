@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { uppermostRevealTarget } from './scroll-reveal'
+import { revealStaggerSlots, uppermostRevealTarget } from './scroll-reveal'
 
 const box = (top: number) => {
   const el = document.createElement('div')
@@ -38,5 +38,30 @@ describe('uppermostRevealTarget', () => {
     const heading = box(80)
     const media = box(360)
     expect(uppermostRevealTarget([heading, media])).toBe(heading)
+  })
+})
+
+const target = (group?: string) => {
+  const el = document.createElement('div')
+  if (group) el.dataset.revealGroup = group
+  return el
+}
+
+describe('revealStaggerSlots', () => {
+  it('gives every ungrouped target its own beat', () => {
+    expect(revealStaggerSlots([target(), target(), target()])).toEqual([0, 1, 2])
+  })
+
+  it('lands an eyebrow and its heading on one beat, body on the next', () => {
+    expect(revealStaggerSlots([target('heading'), target('heading'), target()])).toEqual([0, 0, 1])
+  })
+
+  it('only collapses neighbours, so one group name per list item stays a cascade', () => {
+    const targets = [target('item'), target(), target('item'), target()]
+    expect(revealStaggerSlots(targets)).toEqual([0, 1, 2, 3])
+  })
+
+  it('returns nothing for no targets', () => {
+    expect(revealStaggerSlots([])).toEqual([])
   })
 })

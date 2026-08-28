@@ -22,7 +22,11 @@ export type ScrollRevealTuning = {
   textDuration?: number
   /** GSAP ease for text targets. */
   textEase?: string
-  /** Document-order delay between consecutive targets on the same track (s). */
+  /**
+   * Document-order delay between consecutive beats on the same track (s).
+   * Targets sharing a `data-reveal-group` value are one beat, not two — see
+   * `revealStaggerSlots`.
+   */
   stagger?: number
   /** Media entrance duration (s). */
   mediaDuration?: number
@@ -221,6 +225,37 @@ export function uppermostRevealTarget(targets: readonly HTMLElement[]): HTMLElem
 }
 
 /**
+ * The stagger slot each text target occupies. Consecutive targets carrying the
+ * same `data-reveal-group` value share one slot, so a cluster the reader takes
+ * in as a single thought — an eyebrow and the heading it labels — lands on one
+ * beat instead of arriving as two.
+ *
+ * Without it the least important element in a cluster leads: an eyebrow drops
+ * a stagger step ahead of its heading, and because the drop distance is a
+ * fixed px it is also the largest motion relative to its own type size. The
+ * label ends up the loudest thing in the block and visibly detaches from the
+ * heading it belongs to.
+ *
+ * Grouping is positional — only neighbours in document order collapse. That is
+ * the only shape a cluster has in the DOM, and it keeps a group name repeated
+ * once per item down a list from folding the whole list onto one beat.
+ *
+ * Markers stay on the individual elements rather than a wrapper because
+ * `text-stack` owns the cluster's spacing through direct-child selectors; a
+ * grouping `<div>` would break its margin ladder.
+ */
+export function revealStaggerSlots(targets: readonly HTMLElement[]): number[] {
+  let slot = -1
+  let previous: string | undefined
+  return targets.map((target) => {
+    const group = target.dataset.revealGroup
+    if (!group || group !== previous) slot += 1
+    previous = group
+    return slot
+  })
+}
+
+/**
  * What a track hands the compositor for the length of its entrance: exactly
  * the properties that track animates, and only while it animates them.
  *
@@ -299,7 +334,9 @@ function resolveTuning(
  * enters the viewport, `data-reveal="panel"` is the same track without blur
  * (opacity + y only — so glass surfaces keep `backdrop-filter`), and
  * `data-reveal="media"` targets mask-wipe open from the top when the media
- * itself has entered. Each track plays once — scrolling back past a revealed
+ * itself has entered. Neighbouring text targets that share a
+ * `data-reveal-group` value land on one beat — an eyebrow and its heading are
+ * one thought, not two. Each track plays once — scrolling back past a revealed
  * shell never reverses or replays it. `mediaOffset` delays one track after
  * its own gate so a wipe can still lead the copy when both are on screen
  * together. Server-rendered children stay visible without JavaScript;
@@ -385,6 +422,7 @@ export function ScrollReveal({
       }
 
       const addTextTweens = (tl: gsap.core.Timeline, start: number) => {
+        const slots = revealStaggerSlots(textTargets)
         textTargets.forEach((target, index) => {
           // Glass / functional panels can't take `filter` — it kills
           // `backdrop-filter` on the same node. Same beat, opacity + y only.
@@ -403,7 +441,7 @@ export function ScrollReveal({
               duration: textDuration,
               ease: textEase,
             },
-            start + index * stagger,
+            start + (slots[index] ?? index) * stagger,
           )
         })
       }

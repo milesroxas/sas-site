@@ -401,10 +401,12 @@ export const IndustryWorkClient = ({
               {/* The whole panel is the click surface into the work entry —
                   same navigation (and work-open morph) as the text link. The
                   `view` cursor ring materializes on approach, and the media
-                  effects pre-activate off the same proximity signal. */}
+                  effects pre-activate off the same proximity signal. Coarse
+                  pointers get the shared surface press — fine pointers
+                  already have the ring. */}
               <Link
                 aria-label={`View case study: ${mediaWork.title}`}
-                className="pressable pressable-subtle absolute inset-0 block"
+                className="pointer-coarse:pressable pointer-coarse:pressable-subtle absolute inset-0 block"
                 href={mediaWork.href}
                 ref={mediaLinkRef}
                 transitionTypes={[...workOpenTransitionTypes]}

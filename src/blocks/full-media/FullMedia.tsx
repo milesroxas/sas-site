@@ -19,8 +19,9 @@ import { Section } from '../shared/section'
  * Full-width media is 16:9 below `md` and 21:9 from `md` up, edge to edge.
  * Contained media sits in the page column at the editor-chosen aspect ratio.
  * From `lg` the content row caps at `max-w-3xl` and follows `contentPosition`;
- * below `lg` it always sits left on a `1fr 1fr 0.5fr` grid, the trailing half
- * column leaving the offset from the design.
+ * from `md` to `lg` it sits left on a `1fr 1fr 0.5fr` grid, the trailing half
+ * column leaving the offset from the design. Below `md` the heading and body
+ * stack in one column.
  *
  * `bare` skips the `Section` wrapper for callers that supply their own shell
  * (the work-page renderer wraps blocks in a full-viewport reveal section).
@@ -58,7 +59,7 @@ export const FullMedia = ({
   const contentRow = showContent ? (
     <div
       className={cn(
-        'grid grid-cols-[1fr_1fr_0.5fr] gap-8 lg:max-w-3xl lg:grid-cols-2',
+        'grid grid-cols-1 gap-4 md:grid-cols-[1fr_1fr_0.5fr] md:gap-8 lg:max-w-3xl lg:grid-cols-2',
         contentRight && 'lg:ml-auto',
       )}
     >

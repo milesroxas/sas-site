@@ -1075,6 +1075,46 @@ html[data-scrolled] {
   --active: oklch(0.75 0.16 150);
 }
 
+/* Surface set for the `dark` composition band (blocks/shared/section.tsx
+   `themeClasses.dark`). The band is a low-luminance panel *inside* the active
+   site theme, so it has to restate every surface token — not just
+   background/foreground. Anything left behind keeps the site theme's value and
+   paints a light chip inside a dark band: on a light-theme visit `--muted` is
+   oklch(0.97), so every media plate (`bg-muted` behind an image) becomes a
+   near-white sheet whose subpixel edge reads as a white hairline around the
+   frame, and `--border` is oklch(0.922), a visible white line.
+
+   Derived from --tertiary rather than hard-coded per theme: both are
+   achromatic, so an oklab mix interpolates lightness only and one rule holds
+   the same lift-off-the-band in either site theme (light band 0.22 → muted
+   0.31; dark band 0.08 → muted 0.18 — the same step the site theme puts
+   between --background and --muted).
+
+   --popover and --ring stay on the site theme on purpose: Radix portals
+   popovers to <body>, outside the band, and a light focus ring is the correct
+   read on a dark surface. */
+[data-band="dark"],
+.band-dark {
+  --background: var(--tertiary);
+  --foreground: var(--tertiary-foreground);
+  --muted: color-mix(in oklab, var(--tertiary) 88%, var(--tertiary-foreground));
+  --muted-foreground: color-mix(in oklab, var(--tertiary-foreground) 62%, var(--tertiary));
+  --card: color-mix(in oklab, var(--tertiary) 92%, var(--tertiary-foreground));
+  --card-foreground: var(--tertiary-foreground);
+  --secondary: color-mix(in oklab, var(--tertiary) 85%, var(--tertiary-foreground));
+  --secondary-foreground: var(--tertiary-foreground);
+  --accent: color-mix(in oklab, var(--tertiary) 88%, var(--tertiary-foreground));
+  --accent-foreground: var(--tertiary-foreground);
+  /* Stated as literal white-alpha rather than a mix of --tertiary-foreground:
+     the build synthesises a `@supports` fallback for every color-mix, and for
+     a mix against `transparent` that fallback is the *opaque* colour — a solid
+     white rule, the exact artifact this block exists to remove. --tertiary is
+     low-luminance in both site themes, so white-alpha is right either way.
+     Matches the site dark theme's own --border/--input. */
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+}
+
 /* One rendering model for both themes: default (non-antialiased) smoothing
    dilates strokes, so a theme-scoped `antialiased` makes the other theme read
    bolder at the same weight. Softened dark ink (--foreground 0.9) already

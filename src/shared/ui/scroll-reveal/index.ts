@@ -1,5 +1,6 @@
 export {
   observeRevealGate,
+  revealStaggerSlots,
   SCROLL_REVEAL_CURTAIN_ENTER_OFFSET,
   SCROLL_REVEAL_EXIT_TIME_SCALE,
   SCROLL_REVEAL_INTRO,
