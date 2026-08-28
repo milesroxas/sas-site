@@ -1030,12 +1030,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           </Button>
         </div>
 
-        {/* Right column — recent work (desktop) + primary nav. */}
+        {/* Right column — recent work (desktop) + primary nav. Right-aligned to
+            the outer gutter so it mirrors the left column instead of hugging
+            the window (design: side columns sit at the gutters, window centered). */}
         <div
           data-menu-backdrop
           data-lenis-prevent
           className={chatHideable(
-            'no-scrollbar flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:flex-none md:justify-between',
+            'no-scrollbar flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:max-w-xs md:flex-none md:justify-self-end md:justify-between',
           )}
         >
           {works.length > 0 && (

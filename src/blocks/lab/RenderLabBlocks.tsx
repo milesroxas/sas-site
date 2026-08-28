@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
+import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { blockRevealVariants } from '@/blocks/shared/reveal-variants'
@@ -232,8 +233,9 @@ const RelatedProjects = async ({
 /**
  * Lab blocks enter like generic page blocks: the CSS block reveal wraps each
  * section, except `splitContentNarrow`, whose `data-reveal` markers play the
- * shared GSAP reveal — the same motion it has on every other surface — and
- * `carousel`, which matches Pages/Home (`my-16` CSS reveal, no GSAP shell).
+ * shared GSAP reveal — the same motion it has on every other surface —
+ * `carousel`, which matches Pages/Home (`my-16` CSS reveal, no GSAP shell), and
+ * `scrollGallery`, whose pinned shell must not sit under a transformed ancestor.
  */
 export const RenderLabBlocks = async ({
   blocks,
@@ -252,6 +254,10 @@ export const RenderLabBlocks = async ({
             <SplitContentNarrowBlock {...block} />
           </ScrollReveal>
         )
+      }
+      if (block.blockType === 'scrollGallery') {
+        // Owns its own pinned full-viewport shell and section band — do not wrap again.
+        return <ScrollGalleryBlock key={block.id} {...block} />
       }
       if (block.blockType === 'carousel') {
         return (

@@ -10,6 +10,7 @@ import { FeaturedWork } from '@/blocks/featured-work/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
+import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import {
   relatedSelectionFields,
   storySectionCopyFields,
@@ -225,6 +226,7 @@ export const caseStudyBlocks = [
   WorkImagePair,
   WorkSplitImageOffset,
   CaseStudyMediaShowcase,
+  ScrollGallery,
   // Split layouts
   WorkSplitContentNarrow,
   // Statements

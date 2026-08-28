@@ -16,7 +16,7 @@ For shader *technique* (GLSL, raymarching, dispersion, motion physics), use the 
 | Demo scaffolding | `src/shared/ui/demo-kit/` | `useDemoControls`, `useDemoSnippet`, paste guide, settings. |
 | WebGL infrastructure | `src/lib/webgl/`, `src/lib/interactions/` | Canvas, tunnel, RAF, smooth scroll, `ImmersiveShell`. |
 
-Current effects: `TextLoadIn`, `TextLoadInRaymarched`, `ChromaSplitText`, `DispersionMedia`, `RefractionMedia`, `FloatingCards`, `WebGlBackdropScene`, plus `ScrambleText` in shared UI.
+Current effects: `TextLoadIn`, `TextLoadInRaymarched`, `ChromaSplitText`, `DispersionMedia`, `RefractionMedia`, `FloatingCards`, `LightLeak`, `ScrollGallery` (shipped by the `scrollGallery` block on work and lab pages), `WebGlBackdropScene`, plus `ScrambleText` in shared UI.
 
 ## The single-source-of-truth contract
 

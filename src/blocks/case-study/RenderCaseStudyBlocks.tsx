@@ -10,6 +10,7 @@ import { FullMedia } from '@/blocks/full-media/FullMedia'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
+import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
@@ -565,6 +566,9 @@ export const RenderCaseStudyBlocks = async ({
           return <SplitImageOffsetSection block={block} key={block.id} study={study} />
         case 'caseStudyMediaShowcase':
           return <MediaShowcase block={block} key={block.id} />
+        case 'scrollGallery':
+          // Owns its own pinned full-viewport shell and section band — do not wrap again.
+          return <ScrollGalleryBlock key={block.id} {...block} />
         case 'caseStudyKeyDecisions':
           return <KeyDecisions block={block} key={block.id} study={study} />
         case 'caseStudyMetrics':

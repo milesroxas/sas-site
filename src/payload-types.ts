@@ -1617,6 +1617,7 @@ export interface WorkPage {
         | WorkImagePairBlock
         | WorkSplitImageOffsetBlock
         | CaseStudyMediaShowcaseBlock
+        | ScrollGalleryBlock
         | WorkSplitContentNarrowBlock
         | WorkFeatureStatementGridBlock
         | FeatureStatementLinksBlock
@@ -2038,6 +2039,55 @@ export interface CaseStudyMediaShowcaseBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'caseStudyMediaShowcase';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ScrollGalleryBlock".
+ */
+export interface ScrollGalleryBlock {
+  /**
+   * Small label pinned at the top of the gallery. Leave empty to hide.
+   */
+  eyebrow?: string | null;
+  /**
+   * Statement pinned under the eyebrow. Leave empty to hide.
+   */
+  heading?: string | null;
+  /**
+   * Each item is one plane in depth, in order. The caption shown while an item is in focus is the media document’s caption.
+   */
+  items: {
+    media: number | Media;
+    /**
+     * Background palette while this item is in focus.
+     */
+    mood?: {
+      /**
+       * The ground behind the planes. Hex, e.g. #1f4a40. Leave empty for the default.
+       */
+      background?: string | null;
+      /**
+       * Primary soft glow. Hex, e.g. #1f4a40. Leave empty for the default.
+       */
+      blob1?: string | null;
+      /**
+       * Secondary soft glow. Hex, e.g. #1f4a40. Leave empty for the default.
+       */
+      blob2?: string | null;
+    };
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'scrollGallery';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3562,6 +3612,7 @@ export interface LabPage {
         | LabStorySectionBlock
         | LabTransitionBlock
         | LabMediaShowcaseBlock
+        | ScrollGalleryBlock
         | CarouselBlock
         | SplitContentNarrowBlock
         | LabFactsBlock
@@ -5444,6 +5495,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         imagePair?: T | WorkImagePairBlockSelect<T>;
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
+        scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         splitContentNarrow?: T | WorkSplitContentNarrowBlockSelect<T>;
         featureStatementGrid?: T | WorkFeatureStatementGridBlockSelect<T>;
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
@@ -5596,6 +5648,31 @@ export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
   theme?: T;
   showCaptions?: T;
   showCredits?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ScrollGalleryBlock_select".
+ */
+export interface ScrollGalleryBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        media?: T;
+        mood?:
+          | T
+          | {
+              background?: T;
+              blob1?: T;
+              blob2?: T;
+            };
+        id?: T;
+      };
+  browseAllMedia?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -5776,6 +5853,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         labStorySection?: T | LabStorySectionBlockSelect<T>;
         labTransition?: T | LabTransitionBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
+        scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         labFacts?: T | LabFactsBlockSelect<T>;

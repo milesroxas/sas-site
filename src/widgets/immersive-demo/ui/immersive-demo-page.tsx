@@ -6,6 +6,7 @@ import {
   IconCards,
   IconDiamond,
   IconInfoCircle,
+  IconPerspective,
   IconPrism,
   IconSunHigh,
 } from '@tabler/icons-react'
@@ -18,6 +19,7 @@ import { LightLeakPlayground } from './light-leak-playground'
 import { ImmersiveOverview } from './overview'
 import { RefractionPlayground } from './refraction-playground'
 import { ScramblePlayground } from './scramble-playground'
+import { ScrollGalleryPlayground } from './scroll-gallery-playground'
 
 /** Single source of truth for the route: sidebar entries, stage, and controls. */
 const SECTIONS: DemoShellSection[] = [
@@ -119,6 +121,21 @@ const SECTIONS: DemoShellSection[] = [
       note: 'Tilt, drift and entrance timing. Card layout and images stay at the call site.',
     },
     content: FloatingCardsPlayground,
+  },
+  {
+    id: 'scroll-gallery',
+    label: 'Scroll gallery',
+    title: 'Scroll-reactive 3D gallery',
+    description:
+      'Media planes staggered into depth; scrolling the window dollies the camera through them while a mood background blends each item’s palette into the next. Scroll velocity drives three motion layers — pointer parallax, drift against the scroll, and a breath tilt-and-pulse — and lifts the background. Tune here, then pass the values to the ScrollGallery block’s effect.',
+    icon: IconPerspective,
+    paste: {
+      file: 'src/features/immersive/ui/scroll-gallery.tsx',
+      symbol: 'ScrollGallery',
+      format: 'props',
+      note: 'Layout, scroll response, motion and background tuning. Items, palettes and the pinned scroll track stay at the call site.',
+    },
+    content: ScrollGalleryPlayground,
   },
 ]
 

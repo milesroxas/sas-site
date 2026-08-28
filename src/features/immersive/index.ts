@@ -41,6 +41,13 @@ export {
   type RefractionMediaProps,
   type RefractionSource,
 } from './ui/refraction-media'
+export {
+  SCROLL_GALLERY_DEFAULTS,
+  ScrollGallery,
+  type ScrollGalleryItem,
+  type ScrollGalleryMood,
+  type ScrollGalleryProps,
+} from './ui/scroll-gallery'
 export { TEXT_LOAD_IN_DEFAULTS, TextLoadIn, type TextLoadInProps } from './ui/text-load-in'
 export {
   TEXT_LOAD_IN_RAYMARCHED_DEFAULTS,

@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { Carousel } from '@/blocks/Carousel/config'
+import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import {
   relatedSelectionFields,
   storySectionCopyFields,
@@ -124,6 +125,7 @@ export const labBlocks = [
   LabTransition,
   // Media
   LabMediaShowcase,
+  ScrollGallery,
   // Interactive
   Carousel,
   // Split layouts
