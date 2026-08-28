@@ -3,7 +3,7 @@ import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { Media as MediaDoc, WorkImagePairBlock } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { mediaSectionYClassName, Section } from '../shared/section'
+import { Section } from '../shared/section'
 
 export const ImagePair = ({
   bare = false,
@@ -71,7 +71,7 @@ export const ImagePair = ({
         {portraitRight ? portraitFigure : landscapeFigure}
         <div
           className={cn(
-            'flex flex-col gap-6 md:row-start-2',
+            'text-stack md:row-start-2',
             contentInLeftColumn ? 'md:col-start-1' : 'md:col-start-2',
             textUnderLandscape ? 'max-w-80 md:max-w-lg' : 'md:max-w-80',
           )}
@@ -91,7 +91,7 @@ export const ImagePair = ({
   )
   if (bare) return inner
   return (
-    <Section className={mediaSectionYClassName} theme={block.theme}>
+    <Section spacing="loose" theme={block.theme}>
       {inner}
     </Section>
   )

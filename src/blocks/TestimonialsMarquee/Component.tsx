@@ -1,5 +1,5 @@
 import type React from 'react'
-import { ThemeBand } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import { CMSLink } from '@/components/Link'
 import RichText from '@/components/RichText'
 import type {
@@ -51,7 +51,7 @@ export const TestimonialsMarqueeBlock: React.FC<TestimonialsMarqueeBlockProps> =
   )
 
   return (
-    <ThemeBand theme={theme}>
+    <Section theme={theme}>
       <div className="container">
         {/* Narrower than the site container by design — the marquee reads as a framed panel. */}
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -76,6 +76,6 @@ export const TestimonialsMarqueeBlock: React.FC<TestimonialsMarqueeBlockProps> =
           <TestimonialsMarquee className="h-[420px] md:h-[540px]" columns={columns} />
         </div>
       </div>
-    </ThemeBand>
+    </Section>
   )
 }

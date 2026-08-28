@@ -12,7 +12,6 @@ import { ImagePair } from '@/blocks/image-pair/ImagePair'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
-import { mediaSectionYClassName } from '@/blocks/shared/section'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
 import {
@@ -157,11 +156,7 @@ const StorySection = ({
   if (!content) return null
   const media = populatedDoc<MediaDoc>(block.media)
   return (
-    <RevealSection
-      media={Boolean(media && block.layout !== 'text-only')}
-      theme={block.theme}
-      variant={media ? 'underMedia' : 'intro'}
-    >
+    <RevealSection theme={block.theme} variant={media ? 'underMedia' : 'intro'}>
       <div
         className={cn(
           'container mx-auto grid gap-10',
@@ -169,13 +164,13 @@ const StorySection = ({
           block.media && block.layout !== 'text-only' && 'md:grid-cols-2',
         )}
       >
-        <div className={cn(block.layout === 'text-right' && 'md:order-2')}>
+        <div className={cn('text-stack', block.layout === 'text-right' && 'md:order-2')}>
           {block.eyebrow && (
-            <p className="mb-3 text-sm uppercase tracking-[0.2em]" data-reveal>
+            <p className="text-sm uppercase tracking-[0.2em]" data-reveal>
               {block.eyebrow}
             </p>
           )}
-          <h2 className="mb-6 text-heading-2" data-reveal>
+          <h2 className="text-heading-2" data-reveal>
             {storySectionHeading(block, study)}
           </h2>
           <div data-reveal>
@@ -221,7 +216,11 @@ const SplitNarrow = ({
   const props = storyMediaProps(block, study)
   if (!props) return null
   return (
-    <RevealSection media theme={block.theme} variant={blockRevealVariants.splitContentNarrow}>
+    <RevealSection
+      spacing="loose"
+      theme={block.theme}
+      variant={blockRevealVariants.splitContentNarrow}
+    >
       <SplitContentNarrow bare {...props} />
     </RevealSection>
   )
@@ -231,7 +230,7 @@ const FullMediaSection = ({ block, study }: { block: WorkFullMediaBlock; study: 
   const props = storyMediaProps(block, study)
   if (!props) return null
   return (
-    <RevealSection media theme={block.theme} variant={blockRevealVariants.fullMedia}>
+    <RevealSection spacing="loose" theme={block.theme} variant={blockRevealVariants.fullMedia}>
       <FullMedia bare {...props} />
     </RevealSection>
   )
@@ -243,7 +242,7 @@ const ImagePairSection = ({ block, study }: { block: WorkImagePairBlock; study: 
   const landscape = populatedDoc<MediaDoc>(block.landscapeMedia)
   if (!portrait || !landscape) return null
   return (
-    <RevealSection media theme={block.theme} variant="underMedia">
+    <RevealSection spacing="loose" theme={block.theme} variant="underMedia">
       <ImagePair
         bare
         block={withStoryBeatHeading(block, study)}
@@ -267,7 +266,7 @@ const SplitImageOffsetSection = ({
   const small = populatedDoc<MediaDoc>(block.smallMedia)
   if (!large || !small) return null
   return (
-    <RevealSection media theme={block.theme} variant="underMedia">
+    <RevealSection spacing="loose" theme={block.theme} variant="underMedia">
       <SplitImageOffset
         bare
         block={withStoryBeatHeading(block, study)}
@@ -283,7 +282,7 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
   const media = publicApprovedMedia(block.media)
   if (!media.length) return null
   return (
-    <RevealSection media theme={block.theme} variant="underMedia">
+    <RevealSection spacing="loose" theme={block.theme} variant="underMedia">
       <div className="container mx-auto">
         {block.heading && (
           <h2 className="mb-6 text-heading-2" data-reveal>
@@ -389,11 +388,7 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
   if (!isPublicTestimonial(testimonial)) return null
   const portrait = block.showPortrait ? populatedDoc<MediaDoc>(testimonial.portrait) : null
   return (
-    <RevealSection
-      media={Boolean(portrait)}
-      theme={block.theme}
-      variant={portrait ? 'underMedia' : 'intro'}
-    >
+    <RevealSection theme={block.theme} variant={portrait ? 'underMedia' : 'intro'}>
       <figure className="container mx-auto max-w-4xl text-center">
         {portrait && (
           <div data-reveal="media">
@@ -420,7 +415,7 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
 
 /** Transition band: no bottom padding, so it runs into the next block. */
 const Transition = ({ block }: { block: CaseStudyTransitionBlock }) => (
-  <RevealSection className="pb-0" theme={block.theme} variant="intro">
+  <RevealSection className="pb-0 md:pb-0" theme={block.theme} variant="intro">
     <RichTransition bare {...block} />
   </RevealSection>
 )
@@ -460,7 +455,7 @@ const RelatedWork = async ({
   })
   if (!pages.length) return null
   return (
-    <RevealSection media variant="intro">
+    <RevealSection variant="intro">
       <div className="container mx-auto">
         <h2 className="mb-8 text-heading-2" data-reveal>
           {block.heading || 'Related work'}
@@ -482,7 +477,7 @@ const FeatureHeadingOffsetSection = ({
   block: WorkFeatureHeadingOffsetBlock
   study: CaseStudy
 }) => (
-  <RevealSection as="div" theme={block.theme} variant={blockRevealVariants.featureHeadingOffset}>
+  <RevealSection theme={block.theme} variant={blockRevealVariants.featureHeadingOffset}>
     <FeatureHeadingOffset
       bare
       {...block}
@@ -498,12 +493,7 @@ const FeatureStatementGridSection = ({
   block: WorkFeatureStatementGridBlock
   study: CaseStudy
 }) => (
-  <RevealSection
-    as="div"
-    media
-    theme={block.theme}
-    variant={blockRevealVariants.featureStatementGrid}
-  >
+  <RevealSection theme={block.theme} variant={blockRevealVariants.featureStatementGrid}>
     <FeatureStatementGrid
       bare
       {...block}
@@ -520,8 +510,7 @@ const FeatureImageStatementSection = ({
   study: CaseStudy
 }) => (
   <RevealSection
-    as="div"
-    media
+    spacing="loose"
     theme={block.theme}
     variant={blockRevealVariants.featureImageStatement}
   >
@@ -540,7 +529,7 @@ const FeatureTabsSection = ({
   block: WorkFeatureTabsBlock
   study: CaseStudy
 }) => (
-  <RevealSection as="div" media theme={block.theme} variant={blockRevealVariants.featureTabs}>
+  <RevealSection theme={block.theme} variant={blockRevealVariants.featureTabs}>
     <FeatureTabs
       bare
       {...block}
@@ -608,9 +597,10 @@ export const RenderCaseStudyBlocks = async ({
           return <FeatureTabsSection block={block} key={block.id} study={study} />
         case 'carousel':
           // Same CSS entrance as Pages/Home — no data-reveal markers, and the
-          // full-viewport GSAP shell would put transform on an ancestor of embla.
+          // GSAP shell would put a transform on an ancestor of embla. The
+          // block paints its own band, so the wrapper only carries the entrance.
           return (
-            <CssRevealSection className={mediaSectionYClassName} key={block.id}>
+            <CssRevealSection key={block.id}>
               <CarouselBlock {...block} disableInnerContainer />
             </CssRevealSection>
           )

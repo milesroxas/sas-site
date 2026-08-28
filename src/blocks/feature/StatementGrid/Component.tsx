@@ -1,5 +1,5 @@
 import type React from 'react'
-import { ThemeBand } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { FeatureStatementGridBlock as FeatureStatementGridBlockData } from '@/payload-types'
@@ -23,12 +23,9 @@ export const FeatureStatementGridBlock: React.FC<FeatureStatementGridBlockProps>
   theme,
 }) => {
   return (
-    <ThemeBand theme={bare ? null : theme}>
-      <section className="container">
-        <header
-          className="mx-auto mb-12 flex max-w-2xl flex-col items-center gap-2 text-center md:mb-16"
-          data-reveal
-        >
+    <Section bare={bare} theme={theme}>
+      <div className="container">
+        <header className="text-stack mx-auto mb-12 max-w-2xl text-center md:mb-16" data-reveal>
           {eyebrow ? <p className="text-sm tracking-widest uppercase">{eyebrow}</p> : null}
           <h2 className="text-heading-3">{heading}</h2>
         </header>
@@ -70,7 +67,7 @@ export const FeatureStatementGridBlock: React.FC<FeatureStatementGridBlockProps>
             ))}
           </div>
         </div>
-      </section>
-    </ThemeBand>
+      </div>
+    </Section>
   )
 }

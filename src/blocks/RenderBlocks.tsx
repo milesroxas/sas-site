@@ -83,10 +83,11 @@ export const RenderBlocks: React.FC<{
 
               // Blocks carrying `data-reveal` markers play the shared GSAP
               // reveal here too, so the same CMS block moves identically on
-              // Pages/Home and work pages.
+              // Pages/Home and work pages. Spacing is the block's own band —
+              // the wrapper never adds margin.
               if (reveal) {
                 return (
-                  <ScrollReveal as="div" className="my-16" key={index} variant={reveal}>
+                  <ScrollReveal as="div" key={index} variant={reveal}>
                     {/* @ts-expect-error there may be some mismatch between the expected types here */}
                     <Block {...block} disableInnerContainer />
                   </ScrollReveal>
@@ -94,7 +95,7 @@ export const RenderBlocks: React.FC<{
               }
 
               return (
-                <RevealSection className="my-16" key={index}>
+                <RevealSection key={index}>
                   {/* @ts-expect-error there may be some mismatch between the expected types here */}
                   <Block {...block} disableInnerContainer />
                 </RevealSection>

@@ -1,7 +1,7 @@
 'use client'
 
 import { type FormEvent, useId, useState } from 'react'
-import { ThemeBand } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -58,18 +58,16 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockProps> = ({
   }
 
   return (
-    <ThemeBand theme={theme}>
+    <Section theme={theme}>
       <div className="container">
         <Card>
           <CardContent className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
-            <div className="max-w-xl">
+            <div className="text-stack max-w-xl">
               {eyebrow ? (
-                <p className="mb-2 text-xs tracking-widest text-muted-foreground uppercase">
-                  {eyebrow}
-                </p>
+                <p className="text-xs tracking-widest text-muted-foreground uppercase">{eyebrow}</p>
               ) : null}
               <h2 className="text-heading-3">{heading}</h2>
-              {body ? <p className="mt-3 text-sm text-muted-foreground">{body}</p> : null}
+              {body ? <p className="text-sm text-muted-foreground">{body}</p> : null}
             </div>
 
             <div className="w-full md:max-w-sm">
@@ -113,6 +111,6 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockProps> = ({
           </CardContent>
         </Card>
       </div>
-    </ThemeBand>
+    </Section>
   )
 }

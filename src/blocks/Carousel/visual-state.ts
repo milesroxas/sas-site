@@ -24,6 +24,23 @@ export const MAX_SNAP_DISTANCE = 2.5
 export const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max)
 
+/**
+ * Snaps of distance over which a caption fades. Far steeper than the pose:
+ * a caption is the one part of a slide that must not peek — a sliver of a
+ * neighbour showing two letters of its caption reads as clipped text rather
+ * than as a slide continuing off-frame — so the ink is gone a third of a snap
+ * out, while the media is still only slightly recessed.
+ */
+export const CAPTION_FADE_SNAPS = 0.35
+
+/**
+ * Caption ink at a signed snap distance, on the same scroll position every
+ * other slide value derives from. Left linear: it multiplies with the slide's
+ * own opacity ramp above, and the product is already curved.
+ */
+export const captionOpacity = (signedSnapDistance: number): number =>
+  1 - clamp(Math.abs(signedSnapDistance) / CAPTION_FADE_SNAPS, 0, 1)
+
 export type SlideVisualState = {
   transform: string
   opacity: number

@@ -1,6 +1,6 @@
 import type React from 'react'
 import { ASPECT_RATIO_CLASS } from '@/blocks/shared/aspect-ratio'
-import { ThemeBand } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { FeatureImageStatementBlock as FeatureImageStatementBlockData } from '@/payload-types'
@@ -35,8 +35,8 @@ export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProp
   const fullBleed = imageWidth === 'full'
   const aspectClass = ASPECT_RATIO_CLASS[aspectRatio ?? 'responsive']
   return (
-    <ThemeBand theme={bare ? null : theme}>
-      <section className={cn('flex flex-col gap-6', !fullBleed && 'container')}>
+    <Section bare={bare} spacing={fullBleed ? 'loose' : 'normal'} theme={theme}>
+      <div className={cn('flex flex-col gap-6', !fullBleed && 'container')}>
         <div className={cn('relative w-full bg-muted', aspectClass)} data-reveal="media">
           <Media
             fill
@@ -67,7 +67,7 @@ export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProp
             </div>
           ) : null}
         </div>
-      </section>
-    </ThemeBand>
+      </div>
+    </Section>
   )
 }

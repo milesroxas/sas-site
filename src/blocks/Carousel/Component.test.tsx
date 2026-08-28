@@ -8,8 +8,15 @@ import { CarouselBlock } from './Component'
 vi.mock('./use-carousel-effects', () => ({ useCarouselEffects: vi.fn() }))
 
 vi.mock('@/components/Media', () => ({
-  Media: ({ resource }: { resource: { id?: number | string } | number | null }) => (
+  Media: ({
+    imgClassName,
+    resource,
+  }: {
+    imgClassName?: string
+    resource: { id?: number | string } | number | null
+  }) => (
     <div
+      data-img-class={imgClassName}
       data-testid="media"
       data-resource-id={typeof resource === 'object' ? resource?.id : resource}
     />
@@ -65,6 +72,70 @@ describe('CarouselBlock', () => {
       <CarouselBlock {...baseProps} slides={[{ id: 'slide-1', media: withPoster }]} />,
     )
     expect(container.querySelectorAll('[data-carousel-poster]')).toHaveLength(1)
+  })
+
+  it('inks only the active slide caption at rest', () => {
+    const { container } = render(<CarouselBlock {...baseProps} slideSize="third" />)
+    const captions = [...container.querySelectorAll<HTMLElement>('[data-carousel-caption]')]
+    expect(captions.map((caption) => caption.style.opacity)).toEqual(['1'])
+  })
+
+  it('hides a non-active slide caption at rest', () => {
+    const { container } = render(
+      <CarouselBlock
+        {...baseProps}
+        slides={[
+          { id: 'slide-1', media: mediaFixture, caption: 'First caption' },
+          { id: 'slide-2', media: mediaFixture, caption: 'Second caption' },
+        ]}
+      />,
+    )
+    const captions = [...container.querySelectorAll<HTMLElement>('[data-carousel-caption]')]
+    expect(captions.map((caption) => caption.style.opacity)).toEqual(['1', '0'])
+  })
+
+  it('steps a third-size carousel 1 → 2 → 3 up the breakpoints', () => {
+    const { container } = render(<CarouselBlock {...baseProps} slideSize="third" />)
+    const item = container.querySelector('[data-slot="carousel-item"]')
+    expect(item?.className).toContain('basis-5/8')
+    expect(item?.className).toContain('md:basis-1/2')
+    expect(item?.className).toContain('lg:basis-1/3')
+  })
+
+  it('peeks on mobile for the full slide size too, and fills the column from md', () => {
+    const { container } = render(<CarouselBlock {...baseProps} />)
+    const item = container.querySelector('[data-slot="carousel-item"]')
+    expect(item?.className).toContain('basis-5/8')
+    expect(item?.className).toContain('md:basis-full')
+  })
+
+  it('squares the corners of a slide that runs the whole window from md', () => {
+    const { container } = render(
+      <CarouselBlock {...baseProps} width="full-width" slideSize="full" />,
+    )
+    expect(container.querySelector('[data-testid="media"]')?.getAttribute('data-img-class')).toBe(
+      'rounded-lg md:rounded-none',
+    )
+  })
+
+  it('keeps rounded corners wherever a slide is inset from the window edge', () => {
+    const contained = render(<CarouselBlock {...baseProps} />)
+    expect(
+      contained.container.querySelector('[data-testid="media"]')?.getAttribute('data-img-class'),
+    ).toBe('rounded-lg')
+    cleanup()
+    const bleedHalf = render(<CarouselBlock {...baseProps} width="full-width" slideSize="half" />)
+    expect(
+      bleedHalf.container.querySelector('[data-testid="media"]')?.getAttribute('data-img-class'),
+    ).toBe('rounded-lg')
+  })
+
+  it('overlays the arrows on mobile and only reserves gutter room from md', () => {
+    const { container } = render(<CarouselBlock {...baseProps} showArrows />)
+    expect(container.querySelector('[data-slot="carousel"]')?.className).toContain('md:mx-12')
+    const prev = container.querySelector('[data-slot="carousel-previous"]')
+    expect(prev?.className).toContain('left-4')
+    expect(prev?.className).toContain('md:-left-12')
   })
 
   it('toggles the prev/next arrows', () => {

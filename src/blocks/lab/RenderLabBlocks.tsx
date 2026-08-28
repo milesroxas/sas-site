@@ -67,11 +67,9 @@ const StorySection = ({ block, project }: { block: LabStorySectionBlock; project
           block.media && block.layout !== 'text-only' && 'md:grid-cols-2',
         )}
       >
-        <div className={cn(block.layout === 'text-right' && 'md:order-2')}>
-          {block.eyebrow && (
-            <p className="mb-3 text-sm uppercase tracking-[0.2em]">{block.eyebrow}</p>
-          )}
-          <h2 className="mb-6 text-heading-2">
+        <div className={cn('text-stack', block.layout === 'text-right' && 'md:order-2')}>
+          {block.eyebrow && <p className="text-sm uppercase tracking-[0.2em]">{block.eyebrow}</p>}
+          <h2 className="text-heading-2">
             {block.headingOverride || defaultHeading(block.source)}
           </h2>
           <RichText data={content} enableGutter={false} />
@@ -87,8 +85,8 @@ const MediaShowcase = ({ block }: { block: LabMediaShowcaseBlock }) => {
   if (!media.length) return null
   return (
     <Section theme={block.theme}>
-      <div className="container mx-auto">
-        {block.heading && <h2 className="mb-6 text-heading-2">{block.heading}</h2>}
+      <div className="text-stack container mx-auto">
+        {block.heading && <h2 className="text-heading-2">{block.heading}</h2>}
         {block.introduction && (
           <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
         )}

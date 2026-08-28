@@ -1,11 +1,12 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import { ASPECT_RATIO_CLASS } from '@/blocks/shared/aspect-ratio'
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { FullMediaBlock, Media as MediaDoc } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { mediaSectionYClassName, Section } from '../shared/section'
+import { Section } from '../shared/section'
 
 /**
  * Presentational full-media layout: media above an optional two-column content
@@ -61,8 +62,8 @@ export const FullMedia = ({
         contentRight && 'lg:ml-auto',
       )}
     >
-      <div className="flex flex-col gap-3" data-reveal>
-        {block.eyebrow && <p className="font-mono text-xs/none font-medium">{block.eyebrow}</p>}
+      <div className="text-stack" data-reveal>
+        {block.eyebrow && <p className={eyebrowClassName}>{block.eyebrow}</p>}
         {block.heading && <h2 className="text-heading-3 text-balance">{block.heading}</h2>}
       </div>
       {content && (
@@ -92,7 +93,7 @@ export const FullMedia = ({
   )
   if (bare) return inner
   return (
-    <Section className={mediaSectionYClassName} theme={block.theme}>
+    <Section spacing="loose" theme={block.theme}>
       {inner}
     </Section>
   )

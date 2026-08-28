@@ -63,7 +63,8 @@ export const Carousel: Block = {
         { label: 'One third', value: 'third' },
       ],
       admin: {
-        description: 'Slides visible at once on desktop; mobile always shows one.',
+        description:
+          'Slides visible at once from tablet up. Phones always show one slide plus a sliver of its neighbours, whichever size is picked.',
       },
     },
     themeField(),

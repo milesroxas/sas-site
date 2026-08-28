@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import type { CaseStudyTransitionBlock } from '@/payload-types'
-import { cn } from '@/utilities/ui'
 import { Section } from '../shared/section'
 
 /**
@@ -35,17 +34,15 @@ const Left = ({ body, eyebrow, heading }: RichTransitionFields) => (
   <Container>
     <div className="flex flex-col items-start gap-12 md:grid md:grid-cols-[12.9%_minmax(0,61%)_1fr]">
       <div aria-hidden className="hidden md:block" />
-      <div className="flex w-full flex-col items-start gap-12">
-        <div className="flex flex-col items-start gap-3">
-          {eyebrow ? (
-            <p className={cn(eyebrowClassName, 'leading-none')} data-reveal>
-              {eyebrow}
-            </p>
-          ) : null}
-          <h2 className="text-heading-1" data-reveal>
-            {heading}
-          </h2>
-        </div>
+      <div className="text-stack w-full">
+        {eyebrow ? (
+          <p className={eyebrowClassName} data-reveal>
+            {eyebrow}
+          </p>
+        ) : null}
+        <h2 className="text-heading-1" data-reveal>
+          {heading}
+        </h2>
         {body ? <Body className="max-w-120 text-lg" data={body} /> : null}
       </div>
     </div>
@@ -59,16 +56,16 @@ const Left = ({ body, eyebrow, heading }: RichTransitionFields) => (
  */
 const Centered = ({ body, eyebrow, heading }: RichTransitionFields) => (
   <Container>
-    <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
+    <div className="text-stack mx-auto max-w-5xl text-center">
       {eyebrow ? (
-        <p className={cn(eyebrowClassName, 'leading-5')} data-reveal>
+        <p className={eyebrowClassName} data-reveal>
           {eyebrow}
         </p>
       ) : null}
-      <h2 className={cn('text-heading-1 max-w-3xl', eyebrow && 'pt-3')} data-reveal>
+      <h2 className="text-heading-1 mx-auto max-w-3xl" data-reveal>
         {heading}
       </h2>
-      {body ? <Body className="max-w-[40rem] pt-8 text-base/7" data={body} /> : null}
+      {body ? <Body className="mx-auto max-w-160 text-base/7" data={body} /> : null}
     </div>
   </Container>
 )
@@ -77,7 +74,7 @@ const Centered = ({ body, eyebrow, heading }: RichTransitionFields) => (
 const Split = ({ body, eyebrow, heading }: RichTransitionFields) => (
   <Container>
     <div className="grid gap-12 lg:grid-cols-12 lg:gap-24">
-      <div className="flex flex-col gap-3 lg:col-span-6">
+      <div className="text-stack lg:col-span-6">
         {eyebrow ? (
           <p className={eyebrowClassName} data-reveal>
             {eyebrow}
@@ -99,16 +96,16 @@ const Split = ({ body, eyebrow, heading }: RichTransitionFields) => (
 /** Statement: display-sized heading, body as a short caption underneath. */
 const Statement = ({ body, eyebrow, heading }: RichTransitionFields) => (
   <Container>
-    <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
+    <div className="text-stack mx-auto max-w-5xl text-center">
       {eyebrow ? (
-        <p className={cn(eyebrowClassName, 'mb-3')} data-reveal>
+        <p className={eyebrowClassName} data-reveal>
           {eyebrow}
         </p>
       ) : null}
       <h2 className="text-display" data-reveal>
         {heading}
       </h2>
-      {body ? <Body className="mt-8 max-w-xl text-lg" data={body} /> : null}
+      {body ? <Body className="mx-auto max-w-xl text-lg" data={body} /> : null}
     </div>
   </Container>
 )
@@ -140,7 +137,7 @@ export const RichTransition = ({
   const inner = <Layout {...block} />
   if (bare) return inner
   return (
-    <Section className="pb-0" theme={block.theme}>
+    <Section className="pb-0 md:pb-0" theme={block.theme}>
       {inner}
     </Section>
   )

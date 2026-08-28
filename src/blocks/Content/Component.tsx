@@ -1,5 +1,5 @@
 import type React from 'react'
-import { ThemeBand } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import RichText from '@/components/RichText'
 import type { ContentBlock as ContentBlockProps } from '@/payload-types'
 import { cn } from '@/utilities/ui'
@@ -17,7 +17,7 @@ export const ContentBlock: React.FC<ContentBlockProps> = (props) => {
   }
 
   return (
-    <ThemeBand theme={theme}>
+    <Section theme={theme}>
       <div className="container my-16">
         <div className="grid grid-cols-4 lg:grid-cols-12 gap-y-8 gap-x-16">
           {columns &&
@@ -48,6 +48,6 @@ export const ContentBlock: React.FC<ContentBlockProps> = (props) => {
             })}
         </div>
       </div>
-    </ThemeBand>
+    </Section>
   )
 }

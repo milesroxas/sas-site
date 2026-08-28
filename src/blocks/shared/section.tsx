@@ -28,23 +28,42 @@ export const themeClasses = {
 export type SectionTheme = keyof typeof themeClasses
 
 /**
- * Vertical padding of a composition band. Adjacent shells add, so the
- * space between two blocks' content is 2× this.
+ * Vertical rhythm of a composition band — the one place a block's outer
+ * spacing is stated. Blocks never write their own `py-*`/`my-*`, and theme
+ * never changes spacing: a band pads the same whether it paints a surface or
+ * sits on the page.
  *
- * Text-only bands keep the default. Media-forward blocks use the looser
- * rhythm so neighboring images don't crowd — never restate these at a call
- * site.
+ * Adjacent bands add (padding, so nothing collapses), which makes the gap
+ * between two blocks' content the sum of the two steps:
+ *
+ * - normal + normal → 8rem / 12rem — every text and contained block
+ * - loose  + normal → 10rem / 14rem — full-bleed media next to copy
+ * - loose  + loose  → 12rem / 16rem — two images in a row
+ *
+ * `none` is for blocks that own a pinned or self-sized shell (featured work),
+ * where the band only supplies the surface.
  */
-export const sectionYClassName = 'py-16 md:py-24'
-export const mediaSectionYClassName = 'py-36 md:py-52'
+export const BAND_SPACING = {
+  none: 'py-0',
+  normal: 'py-16 md:py-24',
+  loose: 'py-24 md:py-32',
+} as const
+
+export type BandSpacing = keyof typeof BAND_SPACING
 
 /**
- * Full-viewport band used by composition blocks that center one section of
- * content. Owned here so GSAP `ScrollReveal` shells and plain sections share
- * the same height/padding — never restate these classes at a call site.
+ * Full-viewport band for **page-level** sections that centre one piece of
+ * content — the home statement, the work intro, the footer closing.
+ *
+ * Composition blocks do not use this: an editor stacking blocks in the
+ * Composition tab gets the shared rhythm, never a forced screenful each.
+ * A block only fills the viewport when its own design is a pinned scroll
+ * shell (featured work, industry work), and that shell owns the height.
  */
-export const fullViewportSectionClassName =
-  'flex min-h-[calc(100svh-var(--footer-height))] flex-col justify-center overflow-clip py-16 md:py-24'
+export const fullViewportSectionClassName = cn(
+  'flex min-h-[calc(100svh-var(--footer-height))] flex-col justify-center overflow-clip',
+  BAND_SPACING.normal,
+)
 
 /**
  * Surface classes for an editor-chosen theme, stated once so every shell —
@@ -53,41 +72,31 @@ export const fullViewportSectionClassName =
  */
 export const sectionThemeClass = (theme?: SectionTheme | null) => themeClasses[theme || 'light']
 
-/** Shared vertical-rhythm + theme wrapper used across block families. */
-export const Section = ({
-  children,
-  theme = 'light',
-  className,
-}: {
-  children: ReactNode
-  theme?: SectionTheme | null
-  className?: string
-}) => (
-  <section className={cn(sectionYClassName, sectionThemeClass(theme), className)}>
-    {children}
-  </section>
-)
-
 /**
- * Optional themed band around a block that already owns its own spacing.
+ * The composition band: the single shell every block renders as its root.
+ * Owns the vertical rhythm and the surface, nothing else.
  *
- * `light` is the page surface, so it renders nothing at all — no element, no
- * padding, no ink change — and the block keeps the rhythm it had before a
- * theme was offered. Any other value paints a full-bleed band and adds the
- * shared band padding so content never sits against its edge.
- *
- * Blocks whose renderer already supplies a themed shell (the work-page reveal
- * section) pass `bare` instead of a theme, so the band is never painted twice.
+ * `bare` is for a block whose renderer already supplied the band — the
+ * work-page reveal shell wraps the same components — so the band is never
+ * painted twice.
  */
-export const ThemeBand = ({
+export const Section = ({
+  bare = false,
   children,
   className,
-  theme,
+  spacing = 'normal',
+  theme = 'light',
 }: {
+  bare?: boolean
   children: ReactNode
   className?: string
+  spacing?: BandSpacing
   theme?: SectionTheme | null
 }) => {
-  if (!theme || theme === 'light') return <>{children}</>
-  return <div className={cn(sectionYClassName, themeClasses[theme], className)}>{children}</div>
+  if (bare) return <>{children}</>
+  return (
+    <section className={cn(BAND_SPACING[spacing], sectionThemeClass(theme), className)}>
+      {children}
+    </section>
+  )
 }

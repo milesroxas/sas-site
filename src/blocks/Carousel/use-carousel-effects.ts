@@ -6,7 +6,7 @@ import type { CarouselApi } from '@/components/ui/carousel'
 import type { CaOffsets, DissolveMap } from './filters'
 import { computeTweenFactor, forEachSnapDistance } from './geometry'
 import { collectSlideRefs, createPlaybackController, type SlideRefs } from './playback'
-import { clamp, slideVisualState } from './visual-state'
+import { captionOpacity, clamp, slideVisualState } from './visual-state'
 
 gsap.registerPlugin(useGSAP)
 
@@ -66,6 +66,9 @@ export const useCarouselEffects = ({ api, caId, caOffsets, dissolveId, dissolveM
         refs.node.style.transform = state.transform
         refs.node.style.opacity = String(state.opacity)
         refs.node.style.filter = state.filter
+        // Caption rides the same value on its own steeper ramp, so it is one
+        // more pure write per frame rather than a second animation.
+        if (refs.caption) refs.caption.style.opacity = String(captionOpacity(signed))
       }
 
       /** Paint every slide from the current scroll position, posing via `poseOf`. */

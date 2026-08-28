@@ -2,8 +2,8 @@
 
 import type { ReactNode } from 'react'
 import {
-  fullViewportSectionClassName,
-  mediaSectionYClassName,
+  BAND_SPACING,
+  type BandSpacing,
   type SectionTheme,
   sectionThemeClass,
 } from '@/blocks/shared/section'
@@ -11,44 +11,36 @@ import { ScrollReveal, type ScrollRevealVariant } from '@/shared/ui/scroll-revea
 import { cn } from '@/utilities/ui'
 
 /**
- * Full-viewport shell for work-page composition blocks. The entrance itself —
- * `data-reveal` text drop, `data-reveal="media"` top-down mask reveal, replay
- * on each pass — lives in `shared/ui/scroll-reveal`; this wrapper only
- * supplies the surface, viewport height, theme, and the block's reveal
- * `variant` (`intro` for text-only shapes, `underMedia` when copy sits with a
- * media reveal).
+ * Composition band for work-page blocks: the same rhythm and surface as
+ * `Section`, plus the block's scroll entrance.
  *
- * `media` uses the looser Y rhythm (`mediaSectionYClassName`) so neighboring
- * images don't crowd. Text-only blocks keep the shared band padding.
+ * The entrance itself — `data-reveal` text drop, `data-reveal="media"`
+ * top-down mask reveal, replay on each pass — lives in
+ * `shared/ui/scroll-reveal`; this wrapper only supplies the band and the
+ * block's reveal `variant` (`intro` for text-only shapes, `underMedia` when
+ * copy sits with a media reveal).
  *
- * `as="div"` is for blocks that render their own `<section>` root; the shell
- * then only supplies the surface, viewport height, and entrance.
+ * Spacing is the shared scale, so a work page and a Page stack the same block
+ * with the same gap. Bands are never forced to viewport height.
  */
 export function RevealSection({
-  as = 'section',
+  children,
+  className,
+  spacing = 'normal',
   theme = 'light',
   variant,
-  media = false,
-  className,
-  children,
 }: {
-  as?: 'section' | 'div'
+  children: ReactNode
+  className?: string
+  spacing?: BandSpacing
   theme?: SectionTheme | null
   variant?: ScrollRevealVariant
-  media?: boolean
-  className?: string
-  children: ReactNode
 }) {
   return (
     <ScrollReveal
-      as={as}
+      as="section"
       variant={variant}
-      className={cn(
-        fullViewportSectionClassName,
-        media && mediaSectionYClassName,
-        sectionThemeClass(theme),
-        className,
-      )}
+      className={cn(BAND_SPACING[spacing], sectionThemeClass(theme), 'overflow-clip', className)}
     >
       {children}
     </ScrollReveal>

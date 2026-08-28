@@ -2492,7 +2492,7 @@ export interface CarouselBlock {
    */
   showArrows?: boolean | null;
   /**
-   * Slides visible at once on desktop; mobile always shows one.
+   * Slides visible at once from tablet up. Phones always show one slide plus a sliver of its neighbours, whichever size is picked.
    */
   slideSize?: ('full' | 'half' | 'third') | null;
   /**

@@ -3,24 +3,23 @@ import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { Media as MediaDoc, SplitContentNarrowBlock } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { mediaSectionYClassName, Section } from '../shared/section'
+import { Section } from '../shared/section'
+import { eyebrowClassName } from '../shared/typography'
 
 /**
  * Presentational split layout: narrow text column beside a large image.
  * Collection-agnostic — the caller resolves `content` from whichever source
  * applies (inline body or canonical story content) and passes it in.
  *
- * Stacked below `md` (media always first regardless of `imagePosition`, with
- * the eyebrow moving between heading and body); side-by-side from `md` with a
- * fixed narrow text column, with heading and body packed to the top.
+ * Stacked below `md` (media always first regardless of `imagePosition`);
+ * side-by-side from `md` with a fixed narrow text column, with heading and body
+ * packed to the top.
  *
- * Every line in the heading group is text-box trimmed, so each box runs cap
- * height to baseline: the heading's cap meets the media's top edge, and the
- * gaps around it are the space the eye reads rather than the gap plus the
- * font's descender slack. That keeps the vertical rhythm ascending — line
- * height 28px, paragraph 38px (the shared `p + p` 1.25em rule), heading 56px —
- * instead of the heading sitting tighter to its body than the paragraphs sit
- * to each other.
+ * The copy column is a `text-stack`, so the eyebrow → heading → body rhythm and
+ * the text-box trimming behind it come from the shared utility rather than gaps
+ * set here. The eyebrow labels its heading at every breakpoint, in the one
+ * kicker treatment the media and split family shares — it used to be rendered
+ * twice, in two different styles, to sit below the heading on mobile.
  *
  * `bare` skips the `Section` wrapper for callers that supply their own shell
  * (the work-page renderer wraps blocks in a full-viewport reveal section).
@@ -62,17 +61,18 @@ export const SplitContentNarrow = ({
             size="(max-width: 768px) 100vw, 72vw"
           />
         </div>
-        <div className="flex flex-col gap-12">
-          <div className="flex flex-col gap-5 *:text-trim" data-reveal>
-            {block.eyebrow && (
-              <p className="hidden font-mono text-xs/none font-medium md:block">{block.eyebrow}</p>
-            )}
-            {block.heading && <h2 className="text-heading-3 text-balance">{block.heading}</h2>}
-          </div>
-          <div className="flex flex-col gap-4" data-reveal>
-            {block.eyebrow && (
-              <p className="text-base/none font-normal md:hidden">{block.eyebrow}</p>
-            )}
+        <div className="text-stack">
+          {block.eyebrow && (
+            <p className={eyebrowClassName} data-reveal>
+              {block.eyebrow}
+            </p>
+          )}
+          {block.heading && (
+            <h2 className="text-heading-3 text-balance" data-reveal>
+              {block.heading}
+            </h2>
+          )}
+          <div data-reveal>
             <RichText
               className="text-xl/7 md:text-lg/7"
               data={content}
@@ -86,7 +86,7 @@ export const SplitContentNarrow = ({
   )
   if (bare) return inner
   return (
-    <Section className={mediaSectionYClassName} theme={block.theme}>
+    <Section spacing="loose" theme={block.theme}>
       {inner}
     </Section>
   )

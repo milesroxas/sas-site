@@ -2,7 +2,7 @@
 
 import { Tabs as TabsPrimitive } from 'radix-ui'
 import type React from 'react'
-import { ThemeBand } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { FeatureTabsBlock as FeatureTabsBlockData } from '@/payload-types'
@@ -27,8 +27,8 @@ export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ bare, tabs, 
   const valueFor = (index: number) => panels[index]?.id ?? String(index)
 
   return (
-    <ThemeBand theme={bare ? null : theme}>
-      <section className="container">
+    <Section bare={bare} theme={theme}>
+      <div className="container">
         <TabsPrimitive.Root data-reveal defaultValue={valueFor(0)}>
           <TabsPrimitive.List
             aria-label="Feature tabs"
@@ -51,7 +51,7 @@ export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ bare, tabs, 
               className="grid gap-12 lg:grid-cols-3 lg:gap-8"
             >
               <div className="flex flex-col justify-between gap-12">
-                <div className="flex flex-col gap-6">
+                <div className="text-stack">
                   <h3 className="text-heading-3">{tab.heading}</h3>
                   {tab.description ? (
                     <RichText
@@ -63,7 +63,7 @@ export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ bare, tabs, 
                   ) : null}
                 </div>
                 {tab.items?.length ? (
-                  <div className="flex flex-col gap-3">
+                  <div className="text-stack">
                     {tab.subheading ? (
                       <h4 className="text-lg font-normal">{tab.subheading}</h4>
                     ) : null}
@@ -88,7 +88,7 @@ export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ bare, tabs, 
             </TabsPrimitive.Content>
           ))}
         </TabsPrimitive.Root>
-      </section>
-    </ThemeBand>
+      </div>
+    </Section>
   )
 }

@@ -7,8 +7,8 @@ import { useEffect, useRef, useState, ViewTransition } from 'react'
 import { HeadingDropdown } from '@/blocks/shared/heading-dropdown'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import {
+  BAND_SPACING,
   fullViewportSectionClassName,
-  mediaSectionYClassName,
   type SectionTheme,
   themeClasses,
 } from '@/blocks/shared/section'
@@ -317,7 +317,7 @@ export const IndustryWorkClient = ({
       onComplete={armCanvas}
       className={cn(
         fullViewportSectionClassName,
-        mediaSectionYClassName,
+        BAND_SPACING.loose,
         themeClasses[(theme as SectionTheme | null) || 'dark'],
       )}
     >

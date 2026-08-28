@@ -1,5 +1,5 @@
 import type React from 'react'
-import { ThemeBand } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import RichText from '@/components/RichText'
 import type { FeatureHeadingOffsetBlock as FeatureHeadingOffsetBlockData } from '@/payload-types'
 
@@ -20,10 +20,10 @@ export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps>
   theme,
 }) => {
   return (
-    <ThemeBand theme={bare ? null : theme}>
-      <section className="container">
+    <Section bare={bare} theme={theme}>
+      <div className="container">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-24">
-          <div className="flex flex-col gap-2 lg:col-span-6">
+          <div className="text-stack lg:col-span-6">
             {eyebrow ? (
               <p className="text-sm tracking-widest uppercase" data-reveal>
                 {eyebrow}
@@ -44,7 +44,7 @@ export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps>
             </div>
           ) : null}
         </div>
-      </section>
-    </ThemeBand>
+      </div>
+    </Section>
   )
 }

@@ -7,7 +7,7 @@ import type React from 'react'
 import type { ComponentType } from 'react'
 import { useCallback, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { type SectionTheme, ThemeBand } from '@/blocks/shared/section'
+import { Section, type SectionTheme } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import { Alert, AlertTitle } from '@/components/ui/alert'
@@ -126,7 +126,7 @@ export const FormBlock: React.FC<
   )
 
   return (
-    <ThemeBand theme={theme}>
+    <Section theme={theme}>
       <Container width="narrow">
         {enableIntro && introContent && !hasSubmitted && (
           <RichText className="mb-8 lg:mb-12" data={introContent} enableGutter={false} />
@@ -182,6 +182,6 @@ export const FormBlock: React.FC<
           </CardContent>
         </Card>
       </Container>
-    </ThemeBand>
+    </Section>
   )
 }

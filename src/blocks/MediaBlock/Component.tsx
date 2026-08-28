@@ -1,6 +1,6 @@
 import type { StaticImageData } from 'next/image'
 import type React from 'react'
-import { ThemeBand } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 // Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
 // fallow-ignore-next-line circular-dependency
 import RichText from '@/components/RichText'
@@ -64,7 +64,7 @@ export const MediaBlock: React.FC<Props> = (props) => {
   )
 
   return (
-    <ThemeBand theme={theme}>
+    <Section spacing="loose" theme={theme}>
       <div
         className={cn(
           '',
@@ -98,6 +98,6 @@ export const MediaBlock: React.FC<Props> = (props) => {
           )}
         </div>
       </div>
-    </ThemeBand>
+    </Section>
   )
 }

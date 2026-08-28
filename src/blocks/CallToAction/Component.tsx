@@ -1,5 +1,5 @@
 import type React from 'react'
-import { ThemeBand } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import { CMSLink } from '@/components/Link'
 
 // Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
@@ -10,7 +10,7 @@ import type { CallToActionBlock as CTABlockProps } from '@/payload-types'
 
 export const CallToActionBlock: React.FC<CTABlockProps> = ({ links, richText, theme }) => {
   return (
-    <ThemeBand theme={theme}>
+    <Section theme={theme}>
       <div className="container">
         <Card>
           <CardContent className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
@@ -25,6 +25,6 @@ export const CallToActionBlock: React.FC<CTABlockProps> = ({ links, richText, th
           </CardContent>
         </Card>
       </div>
-    </ThemeBand>
+    </Section>
   )
 }

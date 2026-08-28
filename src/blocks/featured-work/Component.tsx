@@ -36,7 +36,7 @@ export const FeaturedWorkBlock: React.FC<FeaturedWorkBlockProps> = async ({
   return (
     // The pinned client shell owns viewport sizing and its own containers, so
     // the section band carries no vertical padding of its own.
-    <Section className="my-0 py-0 md:py-0" theme={(theme as SectionTheme | null) ?? 'dark'}>
+    <Section spacing="none" theme={(theme as SectionTheme | null) ?? 'dark'}>
       <div id={id ? `block-${id}` : undefined}>
         <FeaturedWorkList eyebrow={eyebrow} entries={resolved} />
       </div>

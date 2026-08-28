@@ -6,7 +6,7 @@ import type {
   WorkSplitImageOffsetBlock as SplitImageOffsetBlockType,
 } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { mediaSectionYClassName, Section } from '../shared/section'
+import { Section } from '../shared/section'
 
 export const SplitImageOffset = ({
   bare = false,
@@ -89,7 +89,7 @@ export const SplitImageOffset = ({
   )
   if (bare) return inner
   return (
-    <Section className={mediaSectionYClassName} theme={block.theme}>
+    <Section spacing="loose" theme={block.theme}>
       {inner}
     </Section>
   )

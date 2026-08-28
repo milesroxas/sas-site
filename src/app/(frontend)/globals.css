@@ -864,6 +864,46 @@
   }
 }
 
+/* Vertical rhythm for the eyebrow → heading → body stack every content block
+   shares. Single source of truth — blocks apply `text-stack` and set no gap of
+   their own; the elements are direct children in reading order.
+
+   Each gap is owned by the element above it and stated in *that element's* em,
+   so it tracks the fluid type scale instead of drifting as the clamp resizes.
+   The three steps form one ladder, and because each em base differs the
+   rendered order is guaranteed at every viewport:
+
+     eyebrow → heading   0.5em of the heading  ≈ 12–48px
+     heading → body      1em of the heading     ≈ 24–96px
+
+   Both steps are a fraction of the *heading*, because the heading sets the
+   scale of the cluster: it clamps 24px → 96px, and a kicker pinned to its own
+   12px em reads correctly over a section heading and glued over a display one.
+
+   This is what the hand-set values it replaced were doing by accident. They
+   were measured on untrimmed boxes, so each gap silently carried the heading's
+   0.295em ascender slack — which scaled with the clamp. Trimming removes that
+   subsidy, so the gap has to state the scaling itself.
+
+   Children are text-box trimmed (see `text-trim`) because the margins are only
+   honest if they are. Untrimmed, the eyebrow gap is dominated by the *heading's*
+   0.295em ascender slack — 7px at heading-3, 29px at display — which is why the
+   same design needed a different hand-set number in every block. */
+@utility text-stack {
+  > * {
+    text-box-trim: trim-both;
+    text-box-edge: cap alphabetic;
+  }
+
+  > :where(p, span) + :where(h1, h2, h3, h4, h5, h6) {
+    margin-top: 0.5em;
+  }
+
+  > :where(h1, h2, h3, h4, h5, h6):not(:last-child) {
+    margin-bottom: 1em;
+  }
+}
+
 :root {
   /* Fixed site header (Header/Component.client.tsx); page frame + heroes offset by it. */
   --header-height: 4rem;

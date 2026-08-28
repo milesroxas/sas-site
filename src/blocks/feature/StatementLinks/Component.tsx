@@ -1,5 +1,5 @@
 import type React from 'react'
-import { fullViewportSectionClassName, sectionThemeClass } from '@/blocks/shared/section'
+import { BAND_SPACING, sectionThemeClass } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { CMSLink } from '@/components/Link'
 // Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
@@ -10,7 +10,7 @@ import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
 /**
- * Full-viewport statement beside a ruled link column.
+ * Statement beside a ruled link column, on the shared composition band.
  *
  * Entrance is the shared GSAP intro reveal (`variant="intro"` / `SCROLL_REVEAL_INTRO`)
  * — same template as work-page composition blocks. No CSS block-reveal wrap.
@@ -21,10 +21,7 @@ export const FeatureStatementLinksBlock: React.FC<FeatureStatementLinksBlockProp
   theme,
 }) => {
   return (
-    <ScrollReveal
-      variant="intro"
-      className={cn(fullViewportSectionClassName, sectionThemeClass(theme))}
-    >
+    <ScrollReveal variant="intro" className={cn(BAND_SPACING.normal, sectionThemeClass(theme))}>
       <Container width="default">
         <div className="flex flex-col gap-12 md:flex-row md:items-start md:justify-between">
           {statement ? (

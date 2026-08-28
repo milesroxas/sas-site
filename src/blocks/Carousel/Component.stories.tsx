@@ -42,6 +42,18 @@ export const FullWidth: Story = {
   },
 }
 
+/**
+ * Full-width block with full-width slides: the only configuration where a
+ * slide runs the whole window, so its corner radius comes off from `md`.
+ * Resize below `md` and the slide insets to a peeking card, radius included.
+ */
+export const FullBleed: Story = {
+  args: {
+    width: 'full-width',
+    slideSize: 'full',
+  },
+}
+
 export const Half: Story = {
   args: {
     slideSize: 'half',
@@ -51,6 +63,24 @@ export const Half: Story = {
 export const Third: Story = {
   args: {
     slideSize: 'third',
+  },
+}
+
+/**
+ * Phone width: the multi-slide sizes drop to a two-thirds slide so a sliver of
+ * each neighbour stays in frame, and the arrows overlay the slides instead of
+ * reserving an outer gutter.
+ */
+export const MobilePeek: Story = {
+  args: {
+    slideSize: 'third',
+  },
+  globals: {
+    viewport: { value: 'mobile1', isRotated: false },
+  },
+  parameters: {
+    // Chromatic snapshots this one at phone width so the peek is regression-covered.
+    chromatic: { viewports: [390] },
   },
 }
 

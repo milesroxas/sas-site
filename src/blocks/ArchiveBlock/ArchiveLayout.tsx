@@ -2,7 +2,7 @@ import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import type React from 'react'
 import type { CSSProperties } from 'react'
 import { ArchiveRail } from '@/blocks/ArchiveBlock/ArchiveRail.client'
-import { type SectionTheme, ThemeBand } from '@/blocks/shared/section'
+import { Section, type SectionTheme } from '@/blocks/shared/section'
 import { Card } from '@/components/Card'
 import type { CardVariant } from '@/components/Card/variants'
 import RichText from '@/components/RichText'
@@ -21,7 +21,7 @@ export const ArchiveLayout: React.FC<{
   posts: Post[]
   theme?: SectionTheme | null
 }> = ({ cardVariant, id, introContent, posts, theme }) => (
-  <ThemeBand theme={theme}>
+  <Section theme={theme}>
     <div className="my-16" id={id ? `block-${id}` : undefined}>
       {introContent && (
         <div className="container mb-8 md:mb-12 lg:mb-16">
@@ -49,5 +49,5 @@ export const ArchiveLayout: React.FC<{
         ))}
       </ArchiveRail>
     </div>
-  </ThemeBand>
+  </Section>
 )
