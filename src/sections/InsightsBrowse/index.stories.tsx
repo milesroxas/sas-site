@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 import { postFixtures } from '@/blocks/fixtures'
 import type { Category } from '@/payload-types'
 import type { InsightsBrowseTopic } from './index'
@@ -66,5 +67,26 @@ export const TopicSelected: Story = {
 export const NoMatches: Story = {
   args: {
     initialTopicSlug: 'press',
+  },
+}
+
+const mobile = {
+  globals: { viewport: { value: 'iphone12', isRotated: false } },
+  parameters: { viewport: { options: INITIAL_VIEWPORTS } },
+}
+
+/**
+ * Below `lg` the topic sidebar becomes a rail that pans. It bleeds past the
+ * page gutter so a half-cut topic is the affordance, and the active marker
+ * moves under the label — a bar at the leading edge would push the label
+ * sideways and drag every topic after it mid-pan.
+ */
+export const MobileRail: Story = { ...mobile }
+
+/** Deep link: the preselected topic sits past the rail's edge until it is panned into view on mount. */
+export const MobileRailTopicSelected: Story = {
+  ...mobile,
+  args: {
+    initialTopicSlug: 'news',
   },
 }

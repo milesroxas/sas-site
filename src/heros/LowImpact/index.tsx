@@ -30,7 +30,7 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({
           <div className="flex flex-col items-start gap-6">
             {eyebrow && (
               <p className="flex items-center gap-2 font-mono text-sm/none tracking-tight">
-                <span aria-hidden="true" className="h-px w-[42px] bg-border" />
+                <span aria-hidden="true" className="h-px w-4 shrink-0 bg-border" />
                 {eyebrow}
               </p>
             )}

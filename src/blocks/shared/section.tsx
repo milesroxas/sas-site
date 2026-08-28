@@ -7,7 +7,7 @@ import { cn } from '@/utilities/ui'
  *
  * - light: default page surface
  * - dark: contrasted band within the active theme (tertiary; always low-luminance)
- * - neutral: secondary/muted surface
+ * - neutral: quiet stripe (`--neutral`; not `--secondary`, a control fill)
  * - brand: brand accent surface
  *
  * `dark` surfaces are low-luminance in both site themes, so rich text needs
@@ -20,6 +20,9 @@ import { cn } from '@/utilities/ui'
  * theme, so on a light-theme visit a `bg-muted` media plate painted a
  * near-white sheet inside the band and its subpixel edge read as a white
  * hairline around the image. Add new surface tokens there, never inline here.
+ *
+ * `band-neutral` only remaps the canvas pair; nested chrome stays on the
+ * site theme so the light stripe keeps its current plate contrast.
  */
 export const themeClasses = {
   light: 'bg-background text-foreground',
@@ -27,7 +30,7 @@ export const themeClasses = {
     'band-dark bg-tertiary text-tertiary-foreground',
     '[&_.payload-richtext]:prose-invert',
   ].join(' '),
-  neutral: 'bg-secondary text-secondary-foreground',
+  neutral: 'band-neutral bg-neutral text-neutral-foreground',
   brand: 'bg-brand text-brand-foreground',
 } as const
 

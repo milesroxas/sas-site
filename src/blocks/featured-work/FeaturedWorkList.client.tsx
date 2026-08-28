@@ -132,7 +132,7 @@ type Props = {
 
 const EyebrowRule: React.FC<{ label: string }> = ({ label }) => (
   <div className="flex items-center gap-2.5">
-    <span aria-hidden className="block h-px w-8 shrink-0 bg-muted-foreground" />
+    <span aria-hidden className="block h-px w-4 shrink-0 bg-muted-foreground" />
     <p className="font-mono text-sm/none font-medium text-muted-foreground uppercase">{label}</p>
   </div>
 )

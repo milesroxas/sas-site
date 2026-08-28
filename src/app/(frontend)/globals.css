@@ -1010,9 +1010,13 @@
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   /* Section surfaces (block theme select). Stay inside the active site theme —
-     they contrast neighboring blocks without forcing light/dark mode. */
+     they contrast neighboring blocks without forcing light/dark mode.
+     --neutral is the quiet stripe (editor "neutral"); not --secondary, which
+     is a control fill. Light values match the previous secondary band. */
   --tertiary: oklch(0.22 0 0);
   --tertiary-foreground: oklch(0.985 0 0);
+  --neutral: oklch(0.967 0.001 286.375);
+  --neutral-foreground: oklch(0.21 0.006 285.885);
   --brand: oklch(0.87 0.14 85);
   --brand-foreground: oklch(0.22 0.04 75);
   /* Active/selected indicator green. Per-theme lightness keeps ≥3:1 against
@@ -1070,6 +1074,10 @@ html[data-scrolled] {
   /* Deeper contrast band within the dark site theme (not a light inversion). */
   --tertiary: oklch(0.08 0 0);
   --tertiary-foreground: oklch(0.9 0 0);
+  /* Lift off --background (0.145) without the control-fill step of
+     --secondary (0.274) — that read as a loud gray panel on a full band. */
+  --neutral: oklch(0.2 0 0);
+  --neutral-foreground: oklch(0.9 0 0);
   --brand: oklch(0.5 0.12 75);
   --brand-foreground: oklch(0.94 0.01 95);
   --active: oklch(0.75 0.16 150);
@@ -1115,6 +1123,16 @@ html[data-scrolled] {
   --input: oklch(1 0 0 / 15%);
 }
 
+/* Neutral composition band (`themeClasses.neutral`). Only remaps the canvas
+   pair so `bg-background` / `text-foreground` inherit the stripe. Nested
+   muted/secondary/accent stay on the site theme — the light stripe is close
+   enough to the page that restating them would darken media plates. */
+[data-band="neutral"],
+.band-neutral {
+  --background: var(--neutral);
+  --foreground: var(--neutral-foreground);
+}
+
 /* One rendering model for both themes: default (non-antialiased) smoothing
    dilates strokes, so a theme-scoped `antialiased` makes the other theme read
    bolder at the same weight. Softened dark ink (--foreground 0.9) already
@@ -1137,6 +1155,8 @@ html {
   --color-secondary-foreground: var(--secondary-foreground);
   --color-tertiary: var(--tertiary);
   --color-tertiary-foreground: var(--tertiary-foreground);
+  --color-neutral: var(--neutral);
+  --color-neutral-foreground: var(--neutral-foreground);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-muted: var(--muted);
