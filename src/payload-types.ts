@@ -1605,7 +1605,7 @@ export interface WorkPage {
     theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
     mediaTreatment?: ('contained' | 'full-bleed' | 'floating' | 'background') | null;
   };
-  intro: WorkIntro;
+  intro?: WorkIntro;
   /**
    * Website composition only. Canonical narrative remains in the related Case Study Content record.
    */
@@ -1697,7 +1697,7 @@ export interface WorkIntro {
   /**
    * Statement headline for the section.
    */
-  title: string;
+  title?: string | null;
   /**
    * Reveal the website-only override fields. Saved overrides still apply while hidden.
    */

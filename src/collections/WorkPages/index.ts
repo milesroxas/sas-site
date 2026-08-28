@@ -111,7 +111,6 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
                 {
                   name: 'title',
                   type: 'text',
-                  required: true,
                   admin: { description: 'Statement headline for the section.' },
                 },
                 showOverridesField(),
