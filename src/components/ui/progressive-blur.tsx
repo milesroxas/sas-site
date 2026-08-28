@@ -11,8 +11,8 @@ import { cn } from '@/utilities/ui'
  * scrim (e.g. `from-card`) when text contrast matters: browsers without
  * `backdrop-filter` render just the scrim and stay legible.
  *
- * Call sites own placement/size (`absolute inset-x-0 bottom-0 h-2/3`); the
- * blur ramp tuning lives here.
+ * Call sites own placement/size — size to overlapping content, not a
+ * fraction of the media. The blur ramp tuning lives here.
  */
 
 const DEFAULT_BLUR_LEVELS = [1, 2, 4, 8]

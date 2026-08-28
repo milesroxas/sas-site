@@ -30,7 +30,7 @@ const variantClassNames: Record<CardVariant, string> = {
   // Split renders its own layout branch; no CardUi chrome to override.
   split: '',
   overlay: 'relative min-h-80 justify-end bg-muted ring-0 text-white',
-  backdrop: 'relative isolate aspect-4/3 sm:aspect-3/2 justify-end bg-muted ring-0',
+  backdrop: 'relative isolate aspect-4/3 sm:aspect-3/2 justify-end bg-muted ring-0 pb-0',
 }
 
 export const Card: React.FC<{
@@ -165,52 +165,55 @@ export const Card: React.FC<{
           className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-b from-transparent to-black/80"
         />
       )}
-      {isBackdrop && (
-        <>
-          <ProgressiveBlur className="absolute inset-x-0 bottom-0 h-2/3" />
-          {/* Token scrim doubles as the no-backdrop-filter legibility fallback. */}
-          <div
-            aria-hidden
-            className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-card/85 via-card/40 to-transparent"
-          />
-        </>
-      )}
-      <CardHeader className={cn(isOpen && 'px-0', isMediaBackground && 'relative')}>
-        {showCategories && hasCategories && (
-          <CardDescription className={cn('uppercase', isOverlay && 'text-white/70')}>
-            {categories?.map((category, index) => {
-              if (typeof category === 'object') {
-                const { title: titleFromCategory } = category
-
-                const categoryTitle = titleFromCategory || 'Untitled category'
-
-                const isLast = index === categories.length - 1
-
-                return (
-                  <Fragment key={index}>
-                    {categoryTitle}
-                    {!isLast && <Fragment>, &nbsp;</Fragment>}
-                  </Fragment>
-                )
-              }
-
-              return null
-            })}
-          </CardDescription>
+      <div className={cn(isBackdrop && 'relative pb-(--card-spacing)')}>
+        {isBackdrop && (
+          <>
+            {/* Sized to the title; short fade into the photo (scroll-edge, not a wash). */}
+            <ProgressiveBlur className="absolute inset-x-0 -top-8 bottom-0" />
+            {/* Token scrim doubles as the no-backdrop-filter legibility fallback. */}
+            <div
+              aria-hidden
+              className="absolute inset-x-0 -top-8 bottom-0 bg-linear-to-t from-card/85 via-card/40 to-transparent"
+            />
+          </>
         )}
-        {titleToUse && (
-          <CardTitle className={cn(isBackdrop && 'text-xl/snug font-normal')}>
-            <Link
-              className="hover:underline"
-              href={href}
-              ref={link.ref}
-              transitionTypes={[...forwardNavTransitionTypes]}
-            >
-              {titleToUse}
-            </Link>
-          </CardTitle>
-        )}
-      </CardHeader>
+        <CardHeader className={cn(isOpen && 'px-0', isMediaBackground && 'relative')}>
+          {showCategories && hasCategories && (
+            <CardDescription className={cn('uppercase', isOverlay && 'text-white/70')}>
+              {categories?.map((category, index) => {
+                if (typeof category === 'object') {
+                  const { title: titleFromCategory } = category
+
+                  const categoryTitle = titleFromCategory || 'Untitled category'
+
+                  const isLast = index === categories.length - 1
+
+                  return (
+                    <Fragment key={index}>
+                      {categoryTitle}
+                      {!isLast && <Fragment>, &nbsp;</Fragment>}
+                    </Fragment>
+                  )
+                }
+
+                return null
+              })}
+            </CardDescription>
+          )}
+          {titleToUse && (
+            <CardTitle className={cn(isBackdrop && 'text-xl/snug font-normal')}>
+              <Link
+                className="hover:underline"
+                href={href}
+                ref={link.ref}
+                transitionTypes={[...forwardNavTransitionTypes]}
+              >
+                {titleToUse}
+              </Link>
+            </CardTitle>
+          )}
+        </CardHeader>
+      </div>
       {/* Backdrop keeps the surface title-only — the media is the content. */}
       {description && !isBackdrop && (
         <CardContent className={cn(isOpen && 'px-0', isOverlay && 'relative text-white/80')}>

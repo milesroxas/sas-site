@@ -25,7 +25,7 @@ const Frame = ({ children }: { children: React.ReactNode }) => (
 export const BottomEdge: Story = {
   render: (args) => (
     <Frame>
-      <ProgressiveBlur {...args} className="absolute inset-x-0 bottom-0 h-2/3" />
+      <ProgressiveBlur {...args} className="absolute inset-x-0 bottom-0 h-1/2" />
     </Frame>
   ),
 }
@@ -33,14 +33,18 @@ export const BottomEdge: Story = {
 export const WithScrimAndText: Story = {
   render: (args) => (
     <Frame>
-      <ProgressiveBlur {...args} className="absolute inset-x-0 bottom-0 h-2/3" />
-      <div
-        aria-hidden
-        className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-card/85 via-card/40 to-transparent"
-      />
-      <p className="absolute inset-x-0 bottom-0 p-4 text-xl/snug text-card-foreground">
-        Legible title over a progressively blurred backdrop
-      </p>
+      <div className="absolute inset-x-0 bottom-0 px-4 pb-4">
+        <div className="relative">
+          <ProgressiveBlur {...args} className="absolute inset-x-0 -top-8 bottom-0" />
+          <div
+            aria-hidden
+            className="absolute inset-x-0 -top-8 bottom-0 bg-linear-to-t from-card/85 via-card/40 to-transparent"
+          />
+          <p className="relative text-xl/snug text-card-foreground">
+            Legible title over a progressively blurred backdrop
+          </p>
+        </div>
+      </div>
     </Frame>
   ),
 }
