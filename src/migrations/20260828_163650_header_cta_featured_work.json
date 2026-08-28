@@ -68886,6 +68886,13 @@
           "primaryKey": true,
           "notNull": true
         },
+        "cta_label": {
+          "name": "cta_label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Get in touch'"
+        },
         "cta_link_type": {
           "name": "cta_link_type",
           "type": "enum_header_cta_link_type",
@@ -68912,12 +68919,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
-        },
-        "cta_link_label": {
-          "name": "cta_link_label",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
         },
         "updated_at": {
           "name": "updated_at",
@@ -75701,6 +75702,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "f76a50b0-7ae1-4d24-9995-1fc2d5ac332d",
+  "id": "15d8bd41-0343-4a30-a074-6e5b93bdeef0",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }
