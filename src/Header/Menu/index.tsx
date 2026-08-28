@@ -1,7 +1,6 @@
 'use client'
 
 import { useGSAP } from '@gsap/react'
-import { IconArrowUpRight } from '@tabler/icons-react'
 import type { ChatTransport, UIMessage } from 'ai'
 import gsap from 'gsap'
 import Link from 'next/link'
@@ -1082,16 +1081,6 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                 </li>
               )
             })}
-            <li data-menu-item {...itemHandlers(pageMedia['/search'] ?? null)}>
-              <Link
-                href="/search"
-                transitionTypes={[...lateralNavTransitionTypes]}
-                className="group flex items-center gap-2 font-heading text-xl/none font-light tracking-widest text-foreground transition-colors hover:text-primary md:text-lg/none"
-              >
-                Search
-                <IconArrowUpRight className="size-5 opacity-40 transition-opacity group-hover:opacity-100" />
-              </Link>
-            </li>
           </ul>
 
           <div data-menu-item className="mt-auto flex items-center justify-between md:hidden">

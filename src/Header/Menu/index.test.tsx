@@ -143,12 +143,12 @@ describe('TakeoverMenu', () => {
     cleanup()
   })
 
-  it('renders nav items, a trailing Search link, and a mobile-only theme toggle', () => {
+  it('renders nav items and a mobile-only theme toggle', () => {
     renderMenu()
 
     expect(screen.getByRole('link', { name: 'About' }).getAttribute('href')).toBe('/about')
     expect(screen.getByRole('link', { name: 'Contact' }).getAttribute('href')).toBe('/contact')
-    expect(screen.getByRole('link', { name: /Search/ }).getAttribute('href')).toBe('/search')
+    expect(screen.queryByRole('link', { name: /Search/ })).toBeNull()
 
     const themeToggleButton = screen.getByRole('button', {
       name: /switch to (dark|light) theme/i,
@@ -250,14 +250,6 @@ describe('TakeoverMenu', () => {
     const { onClose } = renderMenu()
 
     fireEvent.click(screen.getByRole('link', { name: 'Clarifying Complex Stories' }))
-
-    expect(onClose).toHaveBeenCalledTimes(1)
-  })
-
-  it('still closes when the Search link is clicked', () => {
-    const { onClose } = renderMenu()
-
-    fireEvent.click(screen.getByRole('link', { name: /Search/ }))
 
     expect(onClose).toHaveBeenCalledTimes(1)
   })
