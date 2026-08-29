@@ -33,10 +33,10 @@ import type {
   CaseStudyMetricsBlock,
   CaseStudyRelatedWorkBlock,
   CaseStudyTestimonialBlock,
-  CaseStudyTransitionBlock,
   Media as MediaDoc,
   Testimonial,
   WorkCaseStudyStorySectionBlock,
+  WorkCaseStudyTransitionBlock,
   WorkFeatureHeadingOffsetBlock,
   WorkFeatureImageStatementBlock,
   WorkFeatureStatementGridBlock,
@@ -423,10 +423,37 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
   )
 }
 
-/** Transition band: no bottom padding, so it runs into the next block. */
-const Transition = ({ block }: { block: CaseStudyTransitionBlock }) => (
+/**
+ * Transition band: no bottom padding, so it runs into the next block.
+ *
+ * An interstitial with a canonical source restates a story beat, so its
+ * heading and body fall back the same way the feature blocks do — written
+ * copy first, then the canonical content the picker points at.
+ */
+const Transition = ({
+  block,
+  study,
+}: {
+  block: WorkCaseStudyTransitionBlock
+  study: CaseStudy
+}) => (
   <RevealSection className="pb-0 md:pb-0" theme={block.theme} variant="intro">
-    <RichTransition bare {...block} />
+    <RichTransition
+      bare
+      {...block}
+      body={resolveFeatureBody(
+        block.body,
+        block.source,
+        block.storyBeatKey,
+        study,
+        block.storyScope,
+      )}
+      heading={
+        block.heading ||
+        resolveCaseStudyStoryHeading(study, block.source, block.storyBeatKey, block.storyScope) ||
+        ''
+      }
+    />
   </RevealSection>
 )
 
@@ -623,7 +650,7 @@ export const RenderCaseStudyBlocks = async ({
         case 'caseStudyTestimonial':
           return <TestimonialBlock block={block} key={block.id} />
         case 'caseStudyTransition':
-          return <Transition block={block} key={block.id} />
+          return <Transition block={block} key={block.id} study={study} />
         case 'caseStudyRelatedWork':
           return <RelatedWork block={block} key={block.id} page={page} study={study} />
         case 'featureHeadingOffset':

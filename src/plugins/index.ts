@@ -1,3 +1,4 @@
+import { payloadAiPlugin } from '@ai-stack/payloadcms'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
@@ -138,6 +139,42 @@ export const plugins: Plugin[] = [
     defaultView: 'justified',
     lightbox: true,
     edit: true,
+  }),
+  // AI compose/rephrase/etc. in the admin editor (OPENAI_API_KEY from env).
+  // Adds the hidden `plugin-ai-instructions` collection (per-field prompts).
+  payloadAiPlugin({
+    collections: {
+      // Website — publishing surfaces
+      pages: true,
+      posts: true,
+      'work-pages': true,
+      'lab-pages': true,
+      'expertise-pages': true,
+      'audience-pages': true,
+      // Content Hub — canonical source material
+      organizations: true,
+      projects: true,
+      'case-studies': true,
+      'lab-projects': true,
+      testimonials: true,
+    },
+    // Plugin defaults gate generation/settings on Boolean(req.user), which an
+    // MCP API key satisfies over REST. Restrict to team.
+    access: {
+      generate: authenticated,
+      settings: authenticated,
+    },
+    overrideInstructions: {
+      access: {
+        create: authenticated,
+        delete: authenticated,
+        read: authenticated,
+        update: authenticated,
+      },
+    },
+    debugging: false,
+    disableSponsorMessage: true,
+    uploadCollectionSlug: 'media',
   }),
   aeoPlugin(),
   askIndexPlugin(),

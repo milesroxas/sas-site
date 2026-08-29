@@ -2,15 +2,19 @@ import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import type { ReactNode } from 'react'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
-import type { CaseStudyTransitionBlock } from '@/payload-types'
+import type { LabTransitionBlock } from '@/payload-types'
 import { Section } from '../shared/section'
 
 /**
  * Copy fields shared by the case-study and lab rich-transition blocks.
  * `blockType` differs per collection, so it is not part of this shape.
+ *
+ * Anchored on the lab block because it carries exactly these presentational
+ * fields: the work-page variant adds a canonical-content picker and relaxes
+ * `heading`, which its renderer resolves before it reaches this component.
  */
 export type RichTransitionFields = Pick<
-  CaseStudyTransitionBlock,
+  LabTransitionBlock,
   'body' | 'eyebrow' | 'heading' | 'layout' | 'theme'
 >
 

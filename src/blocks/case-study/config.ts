@@ -5,6 +5,7 @@ import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
+import { featureSourceField } from '@/blocks/feature/shared'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { FeaturedWork } from '@/blocks/featured-work/config'
 import { FullMedia } from '@/blocks/full-media/config'
@@ -176,7 +177,10 @@ export const CaseStudyTransition: Block = {
   dbName: 'wp_transition',
   interfaceName: 'CaseStudyTransitionBlock',
   labels: { singular: 'Rich transition', plural: 'Rich transitions' },
-  fields: [...transitionFields()],
+  // The content picker leads: an interstitial either restates a canonical
+  // story beat or writes its own copy, and that choice decides which copy
+  // fields the editor ever sees.
+  fields: [featureSourceField(), ...transitionFields()],
 }
 
 export const CaseStudyRelatedWork: Block = {
@@ -215,12 +219,16 @@ const WorkFeatureImageStatement = withStoryBeatSource(
   'WorkFeatureImageStatementBlock',
 )
 const WorkFeatureTabs = withStoryBeatSource(FeatureTabs, 'WorkFeatureTabsBlock')
+const WorkCaseStudyTransition = withStoryBeatSource(
+  CaseStudyTransition,
+  'WorkCaseStudyTransitionBlock',
+)
 
 // Ordered by `admin.group` — the blocks drawer renders groups in first-appearance order.
 export const caseStudyBlocks = [
   // Narrative
   WorkCaseStudyStorySection,
-  CaseStudyTransition,
+  WorkCaseStudyTransition,
   // Media
   WorkFullMedia,
   WorkImagePair,
