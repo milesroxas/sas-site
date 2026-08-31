@@ -20,6 +20,8 @@ Two different components are named `RevealSection`: `src/shared/ui/reveal-sectio
 
 ## Route transitions
 
+> **In flight:** navigation-experience overhaul tracked in [route-transitions-roadmap.md](route-transitions-roadmap.md) (audit 2026-08-31 — coverage gaps, default-transition redesign, edge-case policy).
+
 - `DirectionalTransition` wraps every page via `src/app/(frontend)/template.tsx` and maps transition *types* to CSS classes: `nav-forward` and `nav-back` map to classes of the same name; `nav-lateral` maps to `fade-in` / `fade-out`.
 - Links tag their navigation: `CMSLink` takes `transitionDirection: 'forward' | 'back' | 'lateral'` (default `lateral`); raw `next/link` takes `transitionTypes={[...forwardNavTransitionTypes]}` from `@/shared/lib/view-transition`.
 - Untagged navigations (browser back/forward, revalidations, menu hero-handoff pushes) hard-cut by design — `default: 'none'`. The handoff relies on this: its GSAP traveler owns all visible motion, so a view-transition animation on the same navigation would double-animate.
