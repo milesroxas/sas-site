@@ -14,7 +14,7 @@ export type RelatedPostsProps = {
 }
 
 export const RelatedPosts: React.FC<RelatedPostsProps> = (props) => {
-  const { cardVariant, className, docs, introContent } = props
+  const { cardVariant = 'backdrop', className, docs, introContent } = props
 
   return (
     <div className={clsx('lg:container', className)}>
@@ -25,7 +25,14 @@ export const RelatedPosts: React.FC<RelatedPostsProps> = (props) => {
           if (typeof doc === 'string') return null
 
           return (
-            <Card key={index} doc={doc} relationTo="posts" showCategories variant={cardVariant} />
+            <Card
+              doc={doc}
+              key={index}
+              relationTo="posts"
+              // Backdrop stays title-only, matching the insights index cards.
+              showCategories={cardVariant !== 'backdrop'}
+              variant={cardVariant}
+            />
           )
         })}
       </div>

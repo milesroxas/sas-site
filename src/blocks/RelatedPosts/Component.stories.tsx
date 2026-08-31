@@ -19,7 +19,7 @@ const meta = {
     docs: postFixtures,
     introContent: richText(
       heading('h3', text('Related posts')),
-      paragraph(text('Cards link to their posts and show categories from the CMS.')),
+      paragraph(text('Cards link to their posts; non-backdrop variants show categories.')),
     ),
   },
 } satisfies Meta<typeof RelatedPosts>
