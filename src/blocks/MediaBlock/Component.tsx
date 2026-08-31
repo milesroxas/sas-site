@@ -5,6 +5,7 @@ import { Section } from '@/blocks/shared/section'
 // fallow-ignore-next-line circular-dependency
 import RichText from '@/components/RichText'
 import type { MediaBlock as MediaBlockProps, Media as MediaDoc } from '@/payload-types'
+import { hasRichTextContent } from '@/utilities/hasRichTextContent'
 import { cn } from '@/utilities/ui'
 
 import { Media } from '../../components/Media'
@@ -24,15 +25,6 @@ const sizeClasses: Record<NonNullable<MediaBlockProps['size']>, string> = {
   inset: 'mx-auto max-w-3xl',
   small: 'mx-auto max-w-md',
 }
-
-const hasRichTextContent = (state: MediaDoc['caption']): boolean =>
-  Boolean(
-    state?.root?.children?.some((node) => {
-      if (node.type !== 'paragraph') return true
-      const children = (node as { children?: unknown[] }).children
-      return Boolean(children?.length)
-    }),
-  )
 
 export const MediaBlock: React.FC<Props> = (props) => {
   const {

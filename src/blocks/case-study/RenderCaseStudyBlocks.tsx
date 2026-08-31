@@ -48,6 +48,7 @@ import type {
   WorkSplitImageOffsetBlock,
 } from '@/payload-types'
 import { RevealSection as CssRevealSection } from '@/shared/ui/reveal-section'
+import { hasRichTextContent } from '@/utilities/hasRichTextContent'
 import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
 import { cn } from '@/utilities/ui'
 import { blockRevealVariants } from '../shared/reveal-variants'
@@ -56,7 +57,9 @@ import { RevealSection } from './RevealSection.client'
 /**
  * Feature blocks carry a single rich-text body plus a `source` select. Written
  * copy always wins; an empty body pulls from the canonical case study when a
- * source other than `custom` is chosen.
+ * source other than `custom` is chosen. Empty means no real content — a
+ * touched-then-cleared editor saves an empty paragraph that must not shadow
+ * the pulled source.
  */
 const resolveFeatureBody = (
   body: CaseStudyStoryBody | null | undefined,
@@ -64,7 +67,10 @@ const resolveFeatureBody = (
   storyBeatKey: string | null | undefined,
   study: CaseStudy,
   storyScope?: CaseStudyStoryScope | null,
-) => body || resolveCaseStudyStoryBody(study, source, storyBeatKey, storyScope)
+) =>
+  hasRichTextContent(body)
+    ? body
+    : resolveCaseStudyStoryBody(study, source, storyBeatKey, storyScope)
 
 /**
  * The story copy every media block shares. `source` is nullable: a block that
@@ -87,10 +93,9 @@ const resolveStoryBody = (
   block: Pick<StoryCopyFields, 'body' | 'source' | 'storyBeatKey' | 'storyScope'>,
   study: CaseStudy,
 ) =>
-  block.source === 'custom'
+  block.source === 'custom' || hasRichTextContent(block.body)
     ? block.body
-    : block.body ||
-      resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey, block.storyScope)
+    : resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey, block.storyScope)
 
 const storyBeatHeading = (
   study: CaseStudy,
@@ -136,8 +141,9 @@ const withStoryBeatHeading = <
 const resolveStorySectionBody = (block: WorkCaseStudyStorySectionBlock, study: CaseStudy) =>
   block.source === 'custom'
     ? block.customBody
-    : block.bodyOverride ||
-      resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey, block.storyScope)
+    : hasRichTextContent(block.bodyOverride)
+      ? block.bodyOverride
+      : resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey, block.storyScope)
 
 /**
  * Heading precedence for a story section: the editor's override, then the
