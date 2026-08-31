@@ -3,13 +3,12 @@ import { Media } from '@/components/Media'
 import type { Post } from '@/payload-types'
 import { postImageVtName } from '@/shared/lib/view-transition'
 import { formatAuthors } from '@/utilities/formatAuthors'
-import { formatDateTime } from '@/utilities/formatDateTime'
 import { PostHeroBanner } from './Banner'
 
 export const PostHero: React.FC<{
   post: Post
 }> = ({ post }) => {
-  const { categories, heroImage, populatedAuthors, publishedAt, slug, title } = post
+  const { categories, heroImage, populatedAuthors, slug, title } = post
 
   if (post.heroStyle === 'banner') {
     return <PostHeroBanner post={post} />
@@ -57,13 +56,6 @@ export const PostHero: React.FC<{
 
                   <p>{formatAuthors(populatedAuthors)}</p>
                 </div>
-              </div>
-            )}
-            {publishedAt && (
-              <div className="flex flex-col gap-1">
-                <p className="text-sm">Date Published</p>
-
-                <time dateTime={publishedAt}>{formatDateTime(publishedAt)}</time>
               </div>
             )}
           </div>
