@@ -14,7 +14,11 @@ import {
 } from '@/components/ui/card'
 import { ProgressiveBlur } from '@/components/ui/progressive-blur'
 import type { Post } from '@/payload-types'
-import { forwardNavTransitionTypes, postImageVtName } from '@/shared/lib/view-transition'
+import {
+  forwardNavTransitionTypes,
+  postImageShare,
+  postImageVtName,
+} from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import useClickableCard from '@/utilities/useClickableCard'
 import type { CardVariant } from './variants'
@@ -109,7 +113,7 @@ export const Card: React.FC<{
           <div className="relative aspect-4/5 overflow-hidden rounded-xs bg-muted">
             {splitMedia &&
               (slug ? (
-                <ViewTransition default="none" name={postImageVtName(slug)} share="morph">
+                <ViewTransition default="none" name={postImageVtName(slug)} share={postImageShare}>
                   {splitMedia}
                 </ViewTransition>
               ) : (
@@ -152,7 +156,7 @@ export const Card: React.FC<{
             // Shared element: morphs into the post hero image on navigation. The
             // matching `name` lives in `PostHero`. `default: 'none'` keeps the other
             // (non-clicked) cards from cross-fading on list updates.
-            <ViewTransition default="none" name={postImageVtName(slug)} share="morph">
+            <ViewTransition default="none" name={postImageVtName(slug)} share={postImageShare}>
               {media}
             </ViewTransition>
           ) : (

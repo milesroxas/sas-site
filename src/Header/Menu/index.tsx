@@ -14,7 +14,6 @@ import { Clock } from '@/Footer/Clock'
 import { MenuAsk } from '@/features/ask/MenuAsk'
 import { cursorTarget } from '@/features/cursor'
 import type { Header as HeaderType } from '@/payload-types'
-import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import type { MenuContent, MenuMedia } from '../getMenuContent'
 import { ThemeToggle } from '../ThemeToggle'
@@ -330,9 +329,9 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   const cta = data?.cta?.link
   const ctaHref = (cta && resolveCmsLinkHref(cta)) || '/contact'
   const ctaLabel = data?.cta?.label || 'Get in touch'
-  const ctaLinkProps = cta?.newTab
-    ? { rel: 'noopener noreferrer', target: '_blank' }
-    : { transitionTypes: [...lateralNavTransitionTypes] }
+  // In-app CTA clicks are intercepted by onNavItemClick (untagged push under
+  // the close/handoff), so no transitionTypes here — only new-tab needs props.
+  const ctaLinkProps = cta?.newTab ? { rel: 'noopener noreferrer', target: '_blank' } : {}
 
   /**
    * A close has two exits with opposite scroll contracts. Dismissal (Escape,
@@ -375,8 +374,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
    * expands to FULL SCREEN while the route pushes underneath (untagged → no
    * view-transition motion), then collapses clip-only onto the new page's
    * hero — one axis at a time, never diagonally. Every unmet precondition
-   * falls back to the plain close, where the Link performs the navigation
-   * itself.
+   * (no hero media, reduced motion, mid-open click, …) falls back to the
+   * plain close — and that push is untagged too: the undock reverse owns all
+   * visible motion (the frame scales back up already holding the new route).
+   * A tagged navigation here would activate the page `<ViewTransition>` while
+   * the frame is docked, and snapshots ignore the dock's transform — full-size
+   * page snapshots would paint over the live menu.
    */
   const onNavItemClick = useCallback(
     (media: MenuMedia | null) => (event: React.MouseEvent) => {
@@ -406,6 +409,8 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           currentPathname: window.location.pathname,
         })
       if (!canHandoff) {
+        event.preventDefault()
+        router.push(anchor.pathname + anchor.search + anchor.hash)
         onClose()
         return
       }
@@ -977,7 +982,6 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                   <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
                     <Link
                       href={item.href}
-                      transitionTypes={[...lateralNavTransitionTypes]}
                       className="text-sm text-card-foreground transition-colors hover:text-primary"
                     >
                       {item.title}
@@ -997,7 +1001,6 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                   <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
                     <Link
                       href={item.href}
-                      transitionTypes={[...lateralNavTransitionTypes]}
                       className="pressable block rounded-md bg-secondary p-3 text-sm text-secondary-foreground hover:text-primary"
                     >
                       {item.title}
@@ -1046,7 +1049,6 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                 <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
                   <Link
                     href={item.href}
-                    transitionTypes={[...lateralNavTransitionTypes]}
                     className="group flex flex-col gap-3"
                     {...cursorTarget({ label: 'View work' })}
                   >

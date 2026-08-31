@@ -5,7 +5,7 @@ import { IconExclamationCircle } from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 import type React from 'react'
 import type { ComponentType } from 'react'
-import { useCallback, useState } from 'react'
+import { addTransitionType, startTransition, useCallback, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Section, type SectionTheme } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { FieldGroup } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
+import { NAV_LATERAL } from '@/shared/lib/view-transition/constants'
 import { getClientSideURL } from '@/utilities/getURL'
 import { fields } from './fields'
 
@@ -109,7 +110,14 @@ export const FormBlock: React.FC<
 
             const redirectUrl = url
 
-            if (redirectUrl) router.push(redirectUrl)
+            if (redirectUrl) {
+              // Tag the redirect so it plays the default transition instead of
+              // hard-cutting (see docs/route-transitions-roadmap.md, Stage 1).
+              startTransition(() => {
+                addTransitionType(NAV_LATERAL)
+                router.push(redirectUrl)
+              })
+            }
           }
         } catch (err) {
           console.warn(err)

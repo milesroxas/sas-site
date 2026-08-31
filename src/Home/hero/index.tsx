@@ -101,7 +101,7 @@ const HomeHero: React.FC<HomeHeroData> = ({
     <section
       // Pull under the fixed header; stop at the fixed footer so the first
       // screen is exactly header + hero + footer (page frame already pads the bottom).
-      className="vt-home-hero relative isolate -mt-(--header-height) flex h-[calc(100svh-var(--footer-height))] flex-col overflow-clip bg-background text-foreground"
+      className="relative isolate -mt-(--header-height) flex h-[calc(100svh-var(--footer-height))] flex-col overflow-clip bg-background text-foreground"
       data-theme="dark"
     >
       <HeroDarkTheme />

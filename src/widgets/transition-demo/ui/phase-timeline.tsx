@@ -53,34 +53,17 @@ export function PhaseTimeline({ run }: { run: SimRun | null }) {
 
   if (run.direction) {
     segments.push({
-      label: 'old page fades',
+      label: 'mask reveal',
       start: wait,
-      duration: run.exitMs,
-      className: 'bg-chart-2',
-    })
-    segments.push({
-      label: 'new page fades',
-      start: wait + run.exitMs,
-      duration: run.enterMs,
+      duration: run.revealMs,
       className: 'bg-chart-1',
     })
-    if (run.direction !== 'lateral') {
-      segments.push({ label: 'slide', start: wait, duration: run.moveMs, className: 'bg-chart-3' })
-    }
     if (run.morph) {
       segments.push({
         label: 'image morph',
         start: wait,
         duration: run.moveMs,
         className: 'bg-chart-4',
-      })
-    }
-    if (run.hero) {
-      segments.push({
-        label: 'hero recede',
-        start: wait,
-        duration: run.heroMs,
-        className: 'bg-chart-5',
       })
     }
   } else {

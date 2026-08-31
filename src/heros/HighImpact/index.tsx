@@ -10,11 +10,8 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, med
   return (
     <ImmersiveShell
       webgl
-      // vt-home-hero: hero recedes as its own view-transition group (see view-transition.css).
-      // isolate: contains the -z-10 image above the page frame's opaque bg-background —
-      // vt-home-hero's view-transition-name only provides that stacking context in
-      // browsers that support view transitions.
-      className="vt-home-hero relative isolate -mt-(--header-height) flex min-h-[80vh] flex-col items-start overflow-clip bg-background py-12 text-foreground"
+      // isolate: contains the -z-10 image above the page frame's opaque bg-background.
+      className="relative isolate -mt-(--header-height) flex min-h-[80vh] flex-col items-start overflow-clip bg-background py-12 text-foreground"
       data-theme="dark"
     >
       <HeroDarkTheme />

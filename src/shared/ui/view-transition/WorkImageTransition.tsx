@@ -1,6 +1,6 @@
 import type React from 'react'
 import { ViewTransition } from 'react'
-import { workImageVtName } from '@/shared/lib/view-transition/constants'
+import { workImageShare, workImageVtName } from '@/shared/lib/view-transition/constants'
 
 /**
  * Shared element: target of the work-media takeover — the block's media
@@ -9,6 +9,12 @@ import { workImageVtName } from '@/shared/lib/view-transition/constants'
  * hold → travel → shrink beats (`sequenceWorkImageMorph` — React fires `onShare` on the unmounting
  * side, so the handler lives there, not here). Renders children unwrapped
  * when the page has no slug (no source element to morph from).
+ *
+ * `share` is type-gated to `work-open`: the pair also forms on navigations
+ * that are NOT the takeover (menu hero-handoff push, browser back/forward)
+ * whenever the source spotlight and this hero coexist across the swap —
+ * ungated, the CSS fallback glide would paint a full-size media ghost over
+ * whatever owns that navigation's motion (e.g. the handoff traveler).
  */
 export function WorkImageTransition({
   slug,
@@ -19,7 +25,7 @@ export function WorkImageTransition({
 }) {
   if (!slug) return children
   return (
-    <ViewTransition default="none" name={workImageVtName(slug)} share="morph-hero">
+    <ViewTransition default="none" name={workImageVtName(slug)} share={workImageShare}>
       {children}
     </ViewTransition>
   )

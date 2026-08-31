@@ -13,6 +13,9 @@ export const Search: React.FC = () => {
   const debouncedValue = useDebounce(value)
 
   useEffect(() => {
+    // Deliberately untagged: this push is URL/state sync while typing, not a
+    // navigation — `DirectionalTransition`'s `default: 'none'` keeps every
+    // keystroke's route update a silent swap (docs/route-transitions-roadmap.md §3).
     router.push(`/search${debouncedValue ? `?q=${debouncedValue}` : ''}`)
   }, [debouncedValue, router])
 

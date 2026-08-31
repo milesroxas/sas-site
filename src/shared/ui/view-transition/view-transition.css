@@ -15,8 +15,13 @@
   --vt-duration-exit: 150ms;
   --vt-duration-enter: 210ms;
   --vt-duration-move: 400ms;
-  /* Hero recede runs longer than the page swap so it overlaps the incoming page. */
-  --vt-duration-hero: 560ms;
+  /* Default page transition — a mask reveal (docs/route-transitions-roadmap.md §4):
+     the incoming page clips open over the outgoing one, which holds static
+     beneath. One beat, no fade. Lateral reveals top-down (echoing the
+     scroll-reveal media wipe); forward/back mirror horizontally (forward's
+     edge travels right -> left, like a push; back reverses it). */
+  --vt-duration-reveal: 480ms;
+  --vt-ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
   /* Work-media takeover approach — glide vertically to the viewport center,
      then expand about its own center to full screen. Each beat is
      position-only or size-only, never both, and nothing moves or resizes
@@ -31,8 +36,6 @@
   /* Movement beats (center/travel) accelerate from rest and brake to a stop;
      the size beats keep the snappy ease-out above. */
   --vt-ease-hero-travel: cubic-bezier(0.77, 0, 0.175, 1);
-  /* How far forward/back navigations slide; each recipe signs it per direction. */
-  --vt-slide-distance: 60px;
 }
 
 @keyframes vt-fade {
@@ -46,12 +49,14 @@
   }
 }
 
-@keyframes vt-slide {
+/* Mask reveal: the incoming snapshot's clip opens from `--vt-reveal-from`
+   (an inset() sliver at the origin edge) to the full box. */
+@keyframes vt-reveal {
   from {
-    translate: var(--vt-slide-offset);
+    clip-path: inset(var(--vt-reveal-from));
   }
   to {
-    translate: 0;
+    clip-path: inset(0);
   }
 }
 
@@ -71,46 +76,39 @@
   }
 }
 
-/* Home hero exit: recede back (scale down + lift) and fade, like it's dollying away. */
-@keyframes home-hero-out {
-  from {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.92) translateY(-32px);
-    filter: blur(4px);
-  }
-}
-
-/* Home hero entry: rise and settle forward into place. */
-@keyframes home-hero-in {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateY(24px);
-    filter: blur(4px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0);
-  }
-}
-
 @supports (view-transition-name: none) {
   /*
    * Active animations are gated behind `no-preference` so reduced-motion users
    * simply never get them — no specificity override (or !important) needed.
    */
   @media (prefers-reduced-motion: no-preference) {
-    /* Lateral navigation — fade with no spatial direction. */
-    ::view-transition-old(.fade-out) {
-      animation: var(--vt-duration-exit) ease-in vt-fade reverse;
+    /*
+     * The default page transition — mask reveal (brand grammar: no page
+     * crossfades; see docs/route-transitions-roadmap.md §4). The outgoing
+     * snapshot holds static and fully opaque beneath (`animation: none` on
+     * the old layer also drops the UA's crossfade + `plus-lighter` blend,
+     * same trick as `.morph-hero`) while the incoming snapshot's clip-path
+     * sweeps open over it. One beat; the reveal edge is the only motion.
+     */
+    ::view-transition-old(.reveal-hold) {
+      animation: none;
     }
-    ::view-transition-new(.fade-in) {
-      animation: var(--vt-duration-enter) ease-out var(--vt-duration-exit) both vt-fade;
+    /* Lateral — no spatial depth: reveal top-down, the scroll-reveal wipe
+       at page scale. */
+    ::view-transition-new(.reveal-down) {
+      --vt-reveal-from: 0 0 100% 0;
+      animation: var(--vt-duration-reveal) var(--vt-ease-reveal) both vt-reveal;
+    }
+    /* Forward — going deeper: the reveal edge enters at the right and
+       travels left, an iOS-push read without the translate. */
+    ::view-transition-new(.reveal-right) {
+      --vt-reveal-from: 0 0 0 100%;
+      animation: var(--vt-duration-reveal) var(--vt-ease-reveal) both vt-reveal;
+    }
+    /* Back — going shallower: mirrored, edge enters at the left. */
+    ::view-transition-new(.reveal-left) {
+      --vt-reveal-from: 0 100% 0 0;
+      animation: var(--vt-duration-reveal) var(--vt-ease-reveal) both vt-reveal;
     }
 
     /*
@@ -135,34 +133,6 @@
           var(--vt-duration-hero-expand)
         )
         both vt-fade;
-    }
-
-    /* Forward — going deeper (list -> detail, next page). */
-    ::view-transition-old(.nav-forward) {
-      --vt-slide-offset: calc(var(--vt-slide-distance) * -1);
-      animation:
-        var(--vt-duration-exit) ease-in both vt-fade reverse,
-        var(--vt-duration-move) ease-in-out both vt-slide reverse;
-    }
-    ::view-transition-new(.nav-forward) {
-      --vt-slide-offset: var(--vt-slide-distance);
-      animation:
-        var(--vt-duration-enter) ease-out var(--vt-duration-exit) both vt-fade,
-        var(--vt-duration-move) ease-in-out both vt-slide;
-    }
-
-    /* Back — going shallower (detail -> list, previous page). */
-    ::view-transition-old(.nav-back) {
-      --vt-slide-offset: var(--vt-slide-distance);
-      animation:
-        var(--vt-duration-exit) ease-in both vt-fade reverse,
-        var(--vt-duration-move) ease-in-out both vt-slide reverse;
-    }
-    ::view-transition-new(.nav-back) {
-      --vt-slide-offset: calc(var(--vt-slide-distance) * -1);
-      animation:
-        var(--vt-duration-enter) ease-out var(--vt-duration-exit) both vt-fade,
-        var(--vt-duration-move) ease-in-out both vt-slide;
     }
 
     /* Shared-element morph — post card image -> post hero image. */
@@ -232,18 +202,6 @@
       animation: calc(var(--vt-duration-hero-center) + var(--vt-duration-hero-expand))
         var(--vt-ease-hero) var(--vt-duration-exit) both vt-opacity-in;
     }
-
-    /*
-     * Home hero recede. The hero is its own group (named below), so it animates
-     * independently of — and concurrently with — the page slide/fade: the hero
-     * dollies back and fades while the next page's UI arrives behind it.
-     */
-    ::view-transition-old(home-hero) {
-      animation: var(--vt-duration-hero) var(--vt-ease-hero) both home-hero-out;
-    }
-    ::view-transition-new(home-hero) {
-      animation: var(--vt-duration-hero) var(--vt-ease-hero) both home-hero-in;
-    }
   }
 
   /* Persistent chrome — keep header/footer rock-steady during page transitions. */
@@ -269,34 +227,37 @@
   }
 
   /*
-   * Home hero gets its own group so it can recede on its own timeline (animation
-   * defined above). Sits above the sliding page content but below the chrome, so
-   * it reads as receding *over* the incoming page. Applied via `vt-home-hero`.
-   */
-  .vt-home-hero {
-    view-transition-name: home-hero;
-  }
-  ::view-transition-group(home-hero) {
-    z-index: 50;
-  }
-  /*
    * While the takeover menu holds the page frame (inert, scaled + clipped into
-   * the docked window), the hero must NOT form its own group: snapshots ignore
-   * the frame's transform, so a view transition run while docked (a nav from a
-   * menu link) paints a giant hero ghost dollying over the menu at the wrong
-   * geometry.
+   * the docked window), or a menu hero handoff is in flight
+   * (`data-menu-handoff`, set on <html> by heroHandoff.ts for the traveler's
+   * whole flight), unname the root so those navigations skip the
+   * full-viewport root snapshot — the live menu columns stay rock-steady
+   * (no snapshot shimmer), and the traveler / undock owns all visible motion
+   * over a hard-cut route swap.
    */
-  [data-page-frame][inert] .vt-home-hero {
+  :root:has([data-page-frame][inert]),
+  :root[data-menu-handoff] {
     view-transition-name: none;
   }
   /*
-   * Same situation, the root: unname it so docked-frame navigations skip the
-   * full-viewport root cross-fade — the live menu columns stay rock-steady
-   * (no snapshot shimmer), and during a hero handoff the traveler owns all
-   * visible motion over a hard-cut route swap.
+   * Belt for the same situations: any view transition that still activates
+   * while the frame is docked or a handoff is in flight must degrade to a
+   * hard cut, never paint snapshots over the live menu or traveler —
+   * snapshots ignore the dock's transform, so they render full-size at
+   * undocked geometry. Zeroing every animation ends the transition on its
+   * first frame. The handoff attribute matters because the inert guard alone
+   * races: the frame unfreezes at route commit, exactly when a transition
+   * would be captured; `data-menu-handoff` holds until the traveler is gone.
    */
-  :root:has([data-page-frame][inert]) {
-    view-transition-name: none;
+  :root:has([data-page-frame][inert])::view-transition-group(*),
+  :root:has([data-page-frame][inert])::view-transition-image-pair(*),
+  :root:has([data-page-frame][inert])::view-transition-old(*),
+  :root:has([data-page-frame][inert])::view-transition-new(*),
+  :root[data-menu-handoff]::view-transition-group(*),
+  :root[data-menu-handoff]::view-transition-image-pair(*),
+  :root[data-menu-handoff]::view-transition-old(*),
+  :root[data-menu-handoff]::view-transition-new(*) {
+    animation: none;
   }
 
   /*

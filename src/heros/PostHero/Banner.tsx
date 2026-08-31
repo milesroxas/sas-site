@@ -2,7 +2,7 @@ import type React from 'react'
 import { ViewTransition } from 'react'
 import { Media } from '@/components/Media'
 import type { Post } from '@/payload-types'
-import { postImageVtName } from '@/shared/lib/view-transition'
+import { postImageShare, postImageVtName } from '@/shared/lib/view-transition'
 
 export const PostHeroBanner: React.FC<{
   post: Post
@@ -32,7 +32,7 @@ export const PostHeroBanner: React.FC<{
         (slug ? (
           // Shared element: receives the morph from the clicked post card's image
           // (matching `name` in `Card`).
-          <ViewTransition name={postImageVtName(slug)} share="morph">
+          <ViewTransition default="none" name={postImageVtName(slug)} share={postImageShare}>
             {image}
           </ViewTransition>
         ) : (

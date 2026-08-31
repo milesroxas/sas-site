@@ -8,8 +8,8 @@ import { type MockRoute, MockViewport, runFlags } from './mock-site'
 import { PhaseTimeline } from './phase-timeline'
 import { type SimTimings, useSimNavigation } from './use-sim-navigation'
 
-/** Label → CSS easing. The first entry is what `--vt-ease-hero` ships with. */
-const HERO_EASES = {
+/** Label → CSS easing. The first entry is what the site's eases ship with. */
+const EASES = {
   'site default — cubic-bezier(0.22, 1, 0.36, 1)': 'cubic-bezier(0.22, 1, 0.36, 1)',
   'expo out — cubic-bezier(0.16, 1, 0.3, 1)': 'cubic-bezier(0.16, 1, 0.3, 1)',
   'back out — cubic-bezier(0.34, 1.56, 0.64, 1)': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -23,14 +23,7 @@ const NETWORK_PRESETS: Record<string, number> = {
   'Slow 3G (~1.5s)': 1500,
 }
 
-const VT_VARS = [
-  '--vt-duration-exit',
-  '--vt-duration-enter',
-  '--vt-duration-move',
-  '--vt-duration-hero',
-  '--vt-ease-hero',
-  '--vt-slide-distance',
-] as const
+const VT_VARS = ['--vt-duration-reveal', '--vt-ease-reveal', '--vt-duration-move'] as const
 
 /**
  * Demo content for the transitions playground: the mock viewport, the phase
@@ -38,13 +31,14 @@ const VT_VARS = [
  * variables and (b) inserts the dead time a real navigation spends fetching.
  */
 export function TransitionSimulator() {
-  const { exitMs, enterMs, moveMs, heroMs, heroEase, slidePx } = useDemoControls('Timing', {
-    exitMs: { value: 150, min: 50, max: 500, step: 10, label: 'exit fade' },
-    enterMs: { value: 210, min: 50, max: 700, step: 10, label: 'enter fade' },
-    moveMs: { value: 400, min: 100, max: 1200, step: 25, label: 'slide / morph' },
-    heroMs: { value: 560, min: 100, max: 1500, step: 20, label: 'hero recede' },
-    heroEase: { value: 'cubic-bezier(0.22, 1, 0.36, 1)', options: HERO_EASES, label: 'hero ease' },
-    slidePx: { value: 60, min: 0, max: 240, step: 5, label: 'slide distance' },
+  const { revealMs, revealEase, moveMs } = useDemoControls('Timing', {
+    revealMs: { value: 480, min: 150, max: 1200, step: 10, label: 'mask reveal' },
+    revealEase: {
+      value: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      options: EASES,
+      label: 'reveal ease',
+    },
+    moveMs: { value: 400, min: 100, max: 1200, step: 25, label: 'morph' },
   })
 
   const { preset, latencyMs, serverMs } = useDemoControls('Conditions', {
@@ -71,19 +65,16 @@ export function TransitionSimulator() {
   // exactly the property being tuned. Cleared on unmount.
   useEffect(() => {
     const style = document.documentElement.style
-    style.setProperty('--vt-duration-exit', `${exitMs}ms`)
-    style.setProperty('--vt-duration-enter', `${enterMs}ms`)
+    style.setProperty('--vt-duration-reveal', `${revealMs}ms`)
+    style.setProperty('--vt-ease-reveal', revealEase)
     style.setProperty('--vt-duration-move', `${moveMs}ms`)
-    style.setProperty('--vt-duration-hero', `${heroMs}ms`)
-    style.setProperty('--vt-ease-hero', heroEase)
-    style.setProperty('--vt-slide-distance', `${slidePx}px`)
     return () => {
       for (const name of VT_VARS) style.removeProperty(name)
     }
-  }, [exitMs, enterMs, moveMs, heroMs, heroEase, slidePx])
+  }, [revealMs, revealEase, moveMs])
 
-  const timingsRef = useRef<SimTimings>({ networkMs, serverMs, exitMs, enterMs, moveMs, heroMs })
-  timingsRef.current = { networkMs, serverMs, exitMs, enterMs, moveMs, heroMs }
+  const timingsRef = useRef<SimTimings>({ networkMs, serverMs, revealMs, moveMs })
+  timingsRef.current = { networkMs, serverMs, revealMs, moveMs }
 
   const sim = useSimNavigation<MockRoute>({
     initialRoute: 'home',
@@ -94,12 +85,9 @@ export function TransitionSimulator() {
   useDemoAction('replay last navigation', sim.replay)
 
   useDemoSnippet({
-    '--vt-duration-exit': `${exitMs}ms`,
-    '--vt-duration-enter': `${enterMs}ms`,
+    '--vt-duration-reveal': `${revealMs}ms`,
+    '--vt-ease-reveal': revealEase,
     '--vt-duration-move': `${moveMs}ms`,
-    '--vt-duration-hero': `${heroMs}ms`,
-    '--vt-ease-hero': heroEase,
-    '--vt-slide-distance': `${slidePx}px`,
   })
 
   // Read after mount: no matchMedia/document on the server render.

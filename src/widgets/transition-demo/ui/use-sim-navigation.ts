@@ -11,10 +11,10 @@ export type SimPhase = 'idle' | 'network' | 'server' | 'animating'
 export type SimTimings = {
   networkMs: number
   serverMs: number
-  exitMs: number
-  enterMs: number
+  /** The mask reveal — the default recipe's single beat. */
+  revealMs: number
+  /** Shared-element morph window (`--vt-duration-move`). */
   moveMs: number
-  heroMs: number
 }
 
 /** One completed (or committed) simulated navigation, as the timeline plots it. */
@@ -24,7 +24,6 @@ export type SimRun<R extends string = string> = SimTimings & {
   /** `null` = untagged navigation — `default: 'none'`, a hard cut. */
   direction: SimDirection | null
   morph: boolean
-  hero: boolean
 }
 
 const TYPE_BY_DIRECTION = {
@@ -45,7 +44,7 @@ export function useSimNavigation<R extends string>(opts: {
   /** Read fresh per navigation so GUI edits apply to the next run. */
   timingsRef: React.RefObject<SimTimings>
   /** Which independently-animating groups a from→to pair engages. */
-  runFlags: (from: R, to: R) => { morph: boolean; hero: boolean }
+  runFlags: (from: R, to: R) => { morph: boolean }
 }) {
   const [route, setRoute] = useState(opts.initialRoute)
   const [phase, setPhase] = useState<SimPhase>('idle')
@@ -74,18 +73,9 @@ export function useSimNavigation<R extends string>(opts: {
   }
 
   /** The longest of the concurrent animation tracks a run engages. */
-  const animatedMs = (
-    t: SimTimings,
-    direction: SimDirection | null,
-    flags: { morph: boolean; hero: boolean },
-  ) => {
+  const animatedMs = (t: SimTimings, direction: SimDirection | null, flags: { morph: boolean }) => {
     if (!direction) return 0
-    return Math.max(
-      t.exitMs + t.enterMs,
-      direction !== 'lateral' ? t.moveMs : 0,
-      flags.morph ? t.moveMs : 0,
-      flags.hero ? t.heroMs : 0,
-    )
+    return Math.max(t.revealMs, flags.morph ? t.moveMs : 0)
   }
 
   const navigate = async (to: R, direction: SimDirection | null) => {
@@ -109,7 +99,7 @@ export function useSimNavigation<R extends string>(opts: {
       lastNavRef.current = { from, to, direction }
       setHistory((stack) => [...stack, from])
       commit(to, direction)
-      setLastRun({ from, to, direction, morph: flags.morph, hero: flags.hero, ...t })
+      setLastRun({ from, to, direction, morph: flags.morph, ...t })
 
       const animMs = animatedMs(t, direction, flags)
       if (animMs > 0) {
@@ -143,13 +133,10 @@ export function useSimNavigation<R extends string>(opts: {
       to: prev,
       direction: null,
       morph: flags.morph,
-      hero: flags.hero,
       networkMs: 0,
       serverMs: 0,
-      exitMs: timingsRef.current.exitMs,
-      enterMs: timingsRef.current.enterMs,
+      revealMs: timingsRef.current.revealMs,
       moveMs: timingsRef.current.moveMs,
-      heroMs: timingsRef.current.heroMs,
     })
   }
 

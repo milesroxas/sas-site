@@ -8,8 +8,10 @@ export {
   NAV_BACK,
   NAV_FORWARD,
   NAV_LATERAL,
+  postImageShare,
   postImageVtName,
   WORK_OPEN,
+  workImageShare,
   workImageVtName,
   workOpenTransitionTypes,
 } from './constants'

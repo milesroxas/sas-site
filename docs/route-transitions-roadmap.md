@@ -24,7 +24,7 @@ One engine for route transitions: React's experimental `<ViewTransition>` (Next 
 | Chrome isolation | header / footer / global canvas named groups, `animation: none` | Persistent elements never participate |
 | Tuning surface | `/demo/transitions` ([transition-simulator.tsx](../src/widgets/transition-demo/ui/transition-simulator.tsx)) | Live-overrides `--vt-*` vars; copy button emits the `:root` block |
 
-### Navigation map (behavior today)
+### Navigation map (behavior at audit time — Stages 1–2 have since landed; §7 has what changed)
 
 | Navigation | Mechanism | Result today |
 |---|---|---|
@@ -56,7 +56,7 @@ One engine for route transitions: React's experimental `<ViewTransition>` (Next 
 
 ## 2. Findings
 
-Ranked. **C** = coverage gap, **X** = complexity/correctness, **D** = docs drift.
+Ranked. **C** = coverage gap, **X** = complexity/correctness, **D** = docs drift. *(Status 2026-08-31: 1–5 and 8 resolved by Stages 1–2; 6 deferred to polish; 7 partially closed — reveal vars are simulator-tunable, the work-open approach vars still aren't.)*
 
 1. **C — `/works` index doesn't client-navigate at all.** `WorkPageCard` and `SegmentIndex` render raw `<a>`, so the flagship index → case-study path is a full document reload: no transition, Lenis/WebGL/menu state torn down and rebooted. The site's most designed destination has its least designed approach.
 2. **C — split-brain post cards.** Title link slides forward with an image morph; a click on the card body (`useClickableCard`) hard-cuts. Same element, luck-of-the-pixel behavior. Fix in `useClickableCard` itself (one `startTransition` + `addTransitionType` around the push) so every consumer inherits it.
@@ -137,9 +137,9 @@ Open design decisions (answer in the decision log). Per §4 the default **is a m
 
 - [x] Stage 0 — audit
 - [x] Animation standard adopted (§4)
-- [ ] Stage 1 — coverage
-- [ ] Stage 2 — default recipe (blocked on D1–D3)
-- [ ] Stage 3 — edge-case hardening
+- [x] Stage 1 — coverage *(2026-08-31: `useClickableCard` tags its push — `transitionType` option, default `nav-forward`; `WorkPageCard` + `SegmentIndex` converted from raw `<a>` to tagged `next/link`; form redirect tags `nav-lateral`; search push annotated as intentional URL sync; [animations.md](animations.md) corrected)*
+- [x] Stage 2 — default recipe, v1 *(2026-08-31: mask-reveal default shipped — `reveal-hold` old layer + `reveal-down`/`reveal-right`/`reveal-left` new-layer wipes, `--vt-duration-reveal: 480ms` + `--vt-ease-reveal`; fade/slide recipes and `--vt-slide-distance` removed; simulator + demo copy retuned to the reveal model. **Pending:** in-browser QA on `/demo/transitions` (throttle, reduced motion, Safari/Firefox, morph-over-reveal, hero-recede-over-reveal, clip-path promotion), and dialing the duration/ease by feel)*
+- [ ] Stage 3 — edge-case hardening (D3 open)
 - [ ] Stage 4 — work-entry polish
 
 ## 8. Decision log
@@ -149,4 +149,11 @@ Open design decisions (answer in the decision log). Per §4 the default **is a m
 - **2026-08-31** — Audit created. Keep the existing `<ViewTransition>` architecture; the overhaul is coverage + one designed default, not a rebuild. Work-entry transitions (`work-open`, menu handoff) explicitly out of scope until Stage 4.
 - **2026-08-31** — `default: 'none'` is non-negotiable (principle 1); the default transition ships via tagging coverage.
 - **2026-08-31** — **Animation standard adopted (§4).** Brand call: no reliance on fades except to blend the same media together; mask reveals are the identity move and the default; scale for surface-level context switches (page unchanged) or where an element mid-sequence earns a confident, purposeful beat. Consequences: the default page transition will be a mask reveal; D4 resolved (blur-fade cut from the default; fades persist only in same-media blends); directional slides slated for replacement by mask origin if D2 keeps hierarchy.
-- *(pending)* D1 which mask reveal · D2 hierarchy via mask origin or retired · D3 pending affordance.
+- **2026-08-31** — **Clean default before the index/hero redesign** (user call): ship Stages 1–2 now so the insights/work redesign builds on the finished default; shared-element morph tuning and Stage 4 wait until the new geometry exists. During the redesign, carry the thin VT wrappers (`postImageVtName` + `share="morph"`, `WorkImageTransition`) into the new markup without polishing choreography.
+- **2026-08-31** — **D1: edge-wipe reveal, v1.** Lateral reveals top-down (scroll-reveal wipe at page scale); one beat, `--vt-duration-reveal: 480ms`, site ease. The richer candidates (page-scale one-axis collapse, canvas-gap reveal) stay on the table as polish-phase upgrades — the recipe classes localize any swap to `view-transition.css` + the `DirectionalTransition` map.
+- **2026-08-31** — **D2: hierarchy kept, expressed as mask origin.** `nav-forward` reveals from the right edge, `nav-back` from the left; the translate+fade slides are retired. Existing type tagging is untouched — direction now only picks the reveal's origin.
+- **2026-08-31** — Hero recede (`home-hero` group) left as-is over the new reveal for v1; re-judge it against the standard (its crossfade component) during polish, together with the `home-hero` → `page-hero` rename (finding 6).
+- **2026-08-31** — **Hero recede retired; docked navigations hard-cut totally** (supersedes the entry above — user reported pages without hero media looking broken). Two root causes fixed: (a) `.vt-home-hero` was a raw always-on `view-transition-name`, so under `reveal-hold` the old root snapshot held a transparent hero-shaped hole (new page popping through instantly) with a recede ghost floating above — and the recede's crossfade blends *different* media, off-grammar per §4. The class, keyframes, group rules and `--vt-duration-hero` are removed; heroes now ride the page reveal as part of the page (finding 6 resolved by removal — rename moot). (b) The menu's no-handoff fallback let the tagged `nav-lateral` Link navigate while the frame was docked — snapshots ignore the dock's transform, so full-size page snapshots painted over the open menu. `onNavItemClick` now intercepts every in-app menu click with an untagged push (the undock reverse owns all visible motion — a scale beat, allowed by §4), menu links dropped their dead `transitionTypes`, and a belt-and-braces CSS guard zeroes every view-transition animation while `[data-page-frame][inert]` is set.
+- **2026-08-31** — **Shared-element `share` props are type-gated** (user reported menu → work page broken). Root cause: `share="morph-hero"` as a plain string activates on *any* transition where the name pair forms — so a menu hero-handoff push to a case study, from a page rendering that work's IndustryWork spotlight, started a view transition on a navigation the GSAP traveler owns; the `onShare` sequencer correctly refused (gated to `work-open`), which left the *CSS fallback glide* painting a full-size media snapshot (captured from the docked frame at undocked geometry) in the top layer, over the traveler. The docked CSS guard races the frame-unfreeze at route commit, so it can't reliably catch this. Fix: `share` is now a type map on every shared element — `workImageShare` (`work-open` only) on IndustryWork + `WorkImageTransition`, `postImageShare` (`nav-forward`/`nav-back` only) on `Card` + `PostHero`/`Banner` — both maps in `shared/lib/view-transition/constants.ts`. **Rule going forward: no plain-string `share` — every pair names the types it participates in.**
+- **2026-08-31** — **Handoff guard made deterministic** (user report: menu → work media "snaps out of the mask" mid-expansion — the signature of the top-layer morph glide still painting over the traveler). The `[data-page-frame][inert]` CSS guard races the frame-unfreeze at route commit — exactly when a transition would be captured. `startHeroHandoff` now stamps `data-menu-handoff` on `<html>` for the traveler's whole flight (removed in `finish`), and `view-transition.css` unnames the root + zeroes every VT animation under it. With the share maps this is belt-and-braces; the attribute guarantees "the traveler owns all visible motion" structurally, restoring the pre-morph (d2dbb0f-era) pure-traveler experience on this path. Both `morph-hero` sides now also read the shared `workImageShare` const. Note: `WorkImageTransition` is a server component — its share-map fix needs a dev-server restart / hard reload to take effect, which may explain a "still broken" observation after the previous fix.
+- *(pending)* D3 pending affordance · reveal duration/ease final values (dial on `/demo/transitions`).

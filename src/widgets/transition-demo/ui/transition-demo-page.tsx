@@ -34,7 +34,7 @@ const SECTIONS: DemoShellSection[] = [
     label: 'Route simulator',
     title: 'Route transition simulator',
     description:
-      'A miniature of the site in a browser frame: cards tag nav-forward, menu links tag nav-lateral, pagination tags by direction, post images morph into their hero, the home hero recedes on its own track — and card bodies reproduce the untagged hard cut. Set the network conditions in the GUI, then navigate.',
+      'A miniature of the site in a browser frame: cards tag nav-forward (title and body alike), menu links tag nav-lateral, pagination tags by direction, post images morph into their hero — and the frame’s browser-back button reproduces the untagged hard cut. Set the network conditions in the GUI, then navigate.',
     icon: IconAppWindow,
     paste: {
       file: 'src/shared/ui/view-transition/view-transition.css',

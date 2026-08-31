@@ -4,7 +4,11 @@ import { IconArrowLeft } from '@tabler/icons-react'
 import type React from 'react'
 import { createContext, useContext, useEffect, ViewTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { DirectionalTransition, postImageVtName } from '@/shared/lib/view-transition'
+import {
+  DirectionalTransition,
+  postImageShare,
+  postImageVtName,
+} from '@/shared/lib/view-transition'
 import { DemoBrowserFrame, DemoScroller } from '@/shared/ui/demo-kit'
 import { cn } from '@/utilities/ui'
 import type { SimDirection, SimPhase } from './use-sim-navigation'
@@ -12,10 +16,10 @@ import './transition-demo.css'
 
 /**
  * A miniature of the production site, small enough to fit a viewport frame but
- * wired identically: card title links tag `nav-forward`, menu links tag
- * `nav-lateral`, pagination tags by direction, post images share a morph name
- * with their detail hero, the home hero recedes on its own group — and card
- * *bodies* navigate untagged, reproducing the `useClickableCard` gap.
+ * wired identically: cards (title *and* body, via the fixed `useClickableCard`)
+ * tag `nav-forward`, menu links tag `nav-lateral`, pagination tags by
+ * direction, and post images share a morph name with their detail hero.
+ * Untagged hard cuts remain reachable via the frame's browser-back button.
  */
 
 export type MockRoute = 'home' | 'posts/1' | 'posts/2' | `post/${string}` | 'about'
@@ -34,14 +38,14 @@ const PAGE_ONE: MockPost[] = [
     slug: 'refraction-study',
     title: 'Refraction study',
     category: 'Lab',
-    body: 'The image above arrived by shared-element morph: the card image and this hero carry the same view-transition-name, so the browser interpolates one rect into the other while the rest of the page slides.',
+    body: 'The image above arrived by shared-element morph: the card image and this hero carry the same view-transition-name, so the browser interpolates one rect into the other while the rest of the page reveals beneath it.',
     image: 'bg-linear-to-br from-chart-2 via-chart-3 to-chart-5',
   },
   {
     slug: 'dispersion-mesh',
     title: 'Dispersion mesh',
     category: 'Lab',
-    body: 'Try the back link above against the browser back button in the frame chrome. The link tags nav-back and slides; the browser button is untagged and cuts — both are production behavior.',
+    body: 'Try the back link above against the browser back button in the frame chrome. The link tags nav-back and reveals from the left edge; the browser button is untagged and cuts — both are production behavior.',
     image: 'bg-linear-to-tr from-chart-4 via-chart-2 to-chart-1',
   },
   {
@@ -58,7 +62,7 @@ const PAGE_TWO: MockPost[] = [
     slug: 'text-load-in',
     title: 'Text load-in',
     category: 'Work',
-    body: 'You reached page two through the pagination, which tags direction imperatively: higher pages slide forward, lower pages slide back — the one place the site calls addTransitionType by hand.',
+    body: 'You reached page two through the pagination, which tags direction imperatively: higher pages reveal from the right, lower pages from the left — mirroring how Pagination calls addTransitionType by hand.',
     image: 'bg-linear-to-br from-chart-1 via-chart-2 to-chart-4',
   },
   {
@@ -72,7 +76,7 @@ const PAGE_TWO: MockPost[] = [
     slug: 'scramble-cipher',
     title: 'Scramble cipher',
     category: 'Notes',
-    body: 'Drop the slide distance to zero in the GUI and forward navigation collapses into the lateral fade. Push it to 240 and the spatial metaphor shouts. The shipped 60px is the quiet middle.',
+    body: 'Stretch the mask reveal past a second in the GUI and the wipe turns theatrical; drop it under 250ms and it reads as a cut with intent. The shipped 480ms with the site ease is the confident middle.',
     image: 'bg-linear-to-r from-chart-2 via-chart-5 to-chart-3',
   },
 ]
@@ -105,7 +109,7 @@ export const runFlags = (from: MockRoute, to: MockRoute) => {
     : toSlug
       ? routeShowsImage(from, toSlug)
       : false
-  return { morph, hero: from === 'home' || to === 'home' }
+  return { morph }
 }
 
 const routePath = (route: MockRoute) => {
@@ -258,15 +262,14 @@ function MockHome() {
   const { navigate } = useSimNav()
   return (
     <div>
-      {/* Real class: this hero recedes on the production home-hero group. */}
-      <section className="vt-home-hero relative overflow-hidden bg-linear-to-br from-chart-5/80 via-chart-3/40 to-background px-5 py-14">
+      <section className="relative overflow-hidden bg-linear-to-br from-chart-5/80 via-chart-3/40 to-background px-5 py-14">
         <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           Suits &amp; Sandals
         </p>
         <h3 className="mt-2 text-balance text-heading-3">Make it make sense</h3>
         <p className="mt-3 max-w-sm text-pretty text-sm/relaxed text-muted-foreground">
-          Leave this page and the hero recedes on its own 560ms track, dollying back over the
-          incoming page while the rest of the route swaps underneath.
+          Leave this page and it holds perfectly still while the next one wipes open over it — the
+          hero is part of the page, so the whole surface travels as one.
         </p>
         <Button className="mt-5" onClick={() => navigate('posts/1', 'lateral')}>
           View the work
@@ -285,9 +288,9 @@ function MockHome() {
 }
 
 /**
- * Mirrors the production `Card`: the whole body is clickable but untagged (the
- * `useClickableCard` gap — hard cut), while the title link tags `nav-forward`
- * and the image shares a morph name with the detail hero.
+ * Mirrors the production `Card`: the whole body is clickable and — like the
+ * fixed `useClickableCard` — tags `nav-forward` exactly as the title link
+ * does, while the image shares a morph name with the detail hero.
  */
 function MockCard({ post }: { post: MockPost }) {
   const { navigate } = useSimNav()
@@ -295,12 +298,12 @@ function MockCard({ post }: { post: MockPost }) {
 
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: mirrors production useClickableCard; the title button inside is the keyboard path.
-    // biome-ignore lint/a11y/noStaticElementInteractions: deliberately reproduces the production card's untagged body-click (the gap this demo surfaces); keyboard users get the tagged title button.
+    // biome-ignore lint/a11y/noStaticElementInteractions: mirrors the production card's body-click surface; keyboard users get the title button.
     <div
       className="group cursor-pointer overflow-hidden rounded-lg border border-border bg-card"
-      onClick={() => navigate(detail, null)}
+      onClick={() => navigate(detail, 'forward')}
     >
-      <ViewTransition default="none" name={postImageVtName(post.slug)} share="morph">
+      <ViewTransition default="none" name={postImageVtName(post.slug)} share={postImageShare}>
         <div className={cn('h-24 w-full', post.image)} />
       </ViewTransition>
       <div className="space-y-1 p-4">
@@ -356,8 +359,8 @@ function MockPosts({ page }: { page: 1 | 2 }) {
         </Button>
       </div>
       <p className="text-pretty text-xs text-muted-foreground">
-        Title links tag nav-forward; the card body navigates untagged — the production
-        useClickableCard gap, kept here so you can feel the difference.
+        Title links and card bodies both tag nav-forward — useClickableCard tags its push, so a body
+        click and a title click are indistinguishable, exactly as in production.
       </p>
     </div>
   )
@@ -376,7 +379,7 @@ function MockPostDetail({ post }: { post: MockPost }) {
           ← All posts
         </button>
       </div>
-      <ViewTransition default="none" name={postImageVtName(post.slug)} share="morph">
+      <ViewTransition default="none" name={postImageVtName(post.slug)} share={postImageShare}>
         <div className={cn('mx-5 mt-4 h-40 rounded-lg', post.image)} />
       </ViewTransition>
       <div className="space-y-3 px-5 pt-5">
@@ -398,12 +401,12 @@ function MockAbout() {
     <div className="space-y-3 px-5 py-6">
       <h3 className="text-xl tracking-tight">About</h3>
       <p className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">
-        You arrived laterally — a pure fade with no spatial direction, the default for menu links,
-        the logo, and every CMSLink that does not opt into a direction.
+        You arrived laterally — a top-down mask reveal with no spatial direction, the default for
+        menu links, the logo, and every CMSLink that does not opt into a direction.
       </p>
       <p className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">
-        Lateral is the site&apos;s quietest move: the old page blurs out over 150ms, the new one
-        resolves in over 210ms, and nothing slides.
+        Nothing fades: the old page holds perfectly still while the new one wipes open over it — the
+        same edge language as the scroll-reveal media wipe, at page scale.
       </p>
     </div>
   )

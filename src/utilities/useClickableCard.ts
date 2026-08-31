@@ -2,7 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 import type { RefObject } from 'react'
-import { useCallback, useEffect, useRef } from 'react'
+import { addTransitionType, startTransition, useCallback, useEffect, useRef } from 'react'
+
+import { NAV_FORWARD } from '@/shared/lib/view-transition/constants'
 
 type UseClickableCardType<T extends HTMLElement> = {
   card: {
@@ -17,12 +19,19 @@ interface Props {
   external?: boolean
   newTab?: boolean
   scroll?: boolean
+  /**
+   * View-transition type tagged on the card-body push, so a body click
+   * animates exactly like the card's own tagged link (card -> detail is a
+   * forward move). Pass `null` for an untagged (hard-cut) navigation.
+   */
+  transitionType?: string | null
 }
 
 function useClickableCard<T extends HTMLElement>({
   external = false,
   newTab = false,
   scroll = true,
+  transitionType = NAV_FORWARD,
 }: Props): UseClickableCardType<T> {
   const router = useRouter()
   const card = useRef<T>(null)
@@ -61,13 +70,17 @@ function useClickableCard<T extends HTMLElement>({
               const target = newTab ? '_blank' : '_self'
               window.open(link.current.href, target)
             } else {
-              router.push(link.current.href, { scroll })
+              const href = link.current.href
+              startTransition(() => {
+                if (transitionType) addTransitionType(transitionType)
+                router.push(href, { scroll })
+              })
             }
           }
         }
       }
     },
-    [router, newTab, scroll, external],
+    [router, newTab, scroll, external, transitionType],
   )
 
   useEffect(() => {

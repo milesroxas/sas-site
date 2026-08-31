@@ -181,6 +181,7 @@ export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {
   const finish = () => {
     if (finished) return
     finished = true
+    document.documentElement.removeAttribute('data-menu-handoff')
     cancelAnimationFrame(rafId)
     for (const id of timers) window.clearTimeout(id)
     timers.clear()
@@ -313,6 +314,13 @@ export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {
   }
 
   // --- Phase 1: build the traveler docked on the slot; fade the menu out. ---
+  // Marks the whole flight for view-transition.css: the traveler owns every
+  // visible pixel of this navigation, so any view transition that starts
+  // while the attribute is present must degrade to a hard cut. The inert
+  // guard alone races this — the frame unfreezes at route commit, which is
+  // exactly when a transition would be captured; this attribute holds until
+  // `finish`, deterministically.
+  document.documentElement.setAttribute('data-menu-handoff', '')
   const traveler = document.createElement('div')
   traveler.setAttribute('data-menu-hero-traveler', '')
   traveler.setAttribute('aria-hidden', 'true')

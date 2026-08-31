@@ -25,6 +25,7 @@ import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import {
   sequenceWorkImageMorph,
   WORK_OPEN,
+  workImageShare,
   workImageVtName,
   workOpenTransitionTypes,
 } from '@/shared/lib/view-transition'
@@ -371,7 +372,13 @@ export const IndustryWorkClient = ({
               collapse, dissolve (`sequenceWorkImageMorph` +
               `@/shared/ui/hero-landing`, the same landing the takeover
               menu's handoff plays; React fires `onShare` on this, the
-              unmounting, side). Matching `name` in `CaseStudyHero*`. */}
+              unmounting, side). Matching `name` in `CaseStudyHero*`.
+              `share` is type-gated: the pair also forms on navigations that
+              are NOT the takeover (a menu hero-handoff push, browser
+              back/forward) whenever this spotlight and the case-study hero
+              coexist across the swap — ungated, the CSS fallback glide would
+              paint a full-size media ghost over whatever owns that
+              navigation's motion. */}
           <ViewTransition
             default="none"
             name={workImageVtName(mediaWork.slug)}
@@ -380,7 +387,7 @@ export const IndustryWorkClient = ({
                 ? sequenceWorkImageMorph(workImageVtName(mediaWork.slug))
                 : undefined
             }
-            share="morph-hero"
+            share={workImageShare}
           >
             {/* No bg on the box itself: the loading placeholder rides the DOM
                 media layer inside, so the WebGL tilt's perspective inset shows

@@ -1,7 +1,7 @@
 import React, { ViewTransition } from 'react'
 import { Media } from '@/components/Media'
 import type { Post } from '@/payload-types'
-import { postImageVtName } from '@/shared/lib/view-transition'
+import { postImageShare, postImageVtName } from '@/shared/lib/view-transition'
 import { formatAuthors } from '@/utilities/formatAuthors'
 import { PostHeroBanner } from './Banner'
 
@@ -71,7 +71,7 @@ export const PostHero: React.FC<{
             // so the view-transition snapshot has real geometry — naming the default
             // wrapper (which collapses around the absolute `fill` image) would morph to
             // a zero-size rect and fling the image to the corner.
-            <ViewTransition name={postImageVtName(slug)} share="morph">
+            <ViewTransition default="none" name={postImageVtName(slug)} share={postImageShare}>
               <Media
                 className="absolute inset-0 -z-10"
                 fill

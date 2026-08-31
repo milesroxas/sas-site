@@ -4,11 +4,13 @@
  * Each navigation tags itself with a transition *type* (via `next/link`
  * `transitionTypes` or `addTransitionType`). `DirectionalTransition` maps each
  * type to a CSS *class*; the CSS lives in `../../ui/view-transition/view-transition.css`.
- * Type name === class name, so the strings below must stay in sync with that file.
+ * The default is a mask reveal — the old page holds static while the new one
+ * clips open over it; direction only picks the reveal's origin edge
+ * (docs/route-transitions-roadmap.md §4).
  *
- *   nav-forward  list -> detail, next page  (slide left, deeper)
- *   nav-back     detail -> list, prev page  (slide right, shallower)
- *   nav-lateral  logo / search / sibling    (fade, no spatial depth)
+ *   nav-forward  list -> detail, next page  (reveal from the right, deeper)
+ *   nav-back     detail -> list, prev page  (reveal from the left, shallower)
+ *   nav-lateral  logo / search / sibling    (reveal top-down, no spatial depth)
  *   work-open    work spotlight -> case study (media takeover; root fades
  *                under the `morph-hero` shared element)
  */
@@ -46,3 +48,23 @@ export const postImageVtName = (slug: string) =>
  */
 export const workImageVtName = (slug: string) =>
   `work-image-${slug.replace(/[^a-zA-Z0-9_-]/g, '_')}`
+
+/**
+ * Type-gated `share` maps for the shared-element pairs. A plain-string
+ * `share` activates on ANY transition where a name pair forms — including
+ * navigations something else owns (a menu hero-handoff push, browser
+ * back/forward), where the CSS morph would paint a full-size ghost over that
+ * navigation's motion. The maps let a pair participate only under the
+ * navigation types it was designed for; `default: 'none'` keeps every other
+ * pairing silent.
+ */
+export const postImageShare = {
+  [NAV_FORWARD]: 'morph',
+  [NAV_BACK]: 'morph',
+  default: 'none',
+}
+
+export const workImageShare = {
+  [WORK_OPEN]: 'morph-hero',
+  default: 'none',
+}

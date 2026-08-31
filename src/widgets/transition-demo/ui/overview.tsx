@@ -3,26 +3,22 @@ const TECHNIQUES = [
   {
     name: 'nav-forward',
     detail:
-      'Slide left + fade, going deeper. Card title links (components/Card) and pagination toward higher pages.',
+      'Mask reveal from the right edge, going deeper. Cards (title links and body clicks via useClickableCard), work/segment index cards, and pagination toward higher pages.',
   },
   {
     name: 'nav-back',
-    detail: 'Slide right + fade, going shallower. Pagination toward lower pages and back links.',
+    detail:
+      'Mask reveal from the left edge, going shallower. Pagination toward lower pages and back links.',
   },
   {
     name: 'nav-lateral',
     detail:
-      'Pure fade, no spatial depth. The CMSLink default — header logo, takeover menu links, 404.',
+      'Top-down mask reveal, no spatial depth — the scroll-reveal wipe at page scale. The CMSLink default — header logo, takeover menu links, 404.',
   },
   {
     name: 'shared-element morph',
     detail:
       'A post card image and its detail hero carry the same view-transition-name (postImageVtName), so the browser interpolates between them over the move duration.',
-  },
-  {
-    name: 'home-hero recede',
-    detail:
-      'The home hero is its own group (.vt-home-hero) and dollies back over 560ms, overlapping the incoming page.',
   },
   {
     name: 'pinned chrome',
@@ -32,7 +28,7 @@ const TECHNIQUES = [
   {
     name: 'untagged — hard cut',
     detail:
-      "Browser back/forward, revalidations, and card body clicks (the useClickableCard gap) carry no type, and default: 'none' keeps them silent by design.",
+      "Browser back/forward, revalidations, search-as-you-type URL sync, and the menu hero handoff's push carry no type, and default: 'none' keeps them silent by design.",
   },
 ]
 
