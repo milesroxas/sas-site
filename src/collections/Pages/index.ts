@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
+import { closingTab } from '@/fields/closing'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { hero } from '@/heros/config'
 import { authenticated } from '../../access/authenticated'
@@ -71,6 +72,7 @@ export const Pages: CollectionConfig<'pages'> = {
           ],
           label: 'Composition',
         },
+        closingTab(),
         seoMetaTab(),
       ],
     },

@@ -309,6 +309,7 @@ export interface Page {
     | FormBlock
     | NewsletterSignupBlock
   )[];
+  closing?: PageClosing;
   meta?: {
     /**
      * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
@@ -383,6 +384,7 @@ export interface Post {
   layout?: FeaturedWorkBlock[] | null;
   relatedPosts?: (number | Post)[] | null;
   categories?: (number | Category)[] | null;
+  closing?: PageClosing;
   meta?: {
     /**
      * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
@@ -1647,6 +1649,7 @@ export interface WorkPage {
    */
   relatedWorkPages?: (number | WorkPage)[] | null;
   editorialNotes?: string | null;
+  closing?: PageClosing;
   meta?: {
     /**
      * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
@@ -2741,6 +2744,76 @@ export interface CaseStudyRelatedWorkBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'caseStudyRelatedWork';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PageClosing".
+ */
+export interface PageClosing {
+  /**
+   * Turn on to omit the closing band on this page. The Footer global is unchanged; saved overrides are kept.
+   */
+  hidden?: boolean | null;
+  /**
+   * Reveal fields to override the Footer global on this page only. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Short kicker above the heading, e.g. “Ready to start?” Leave empty to use the Footer global.
+   */
+  eyebrowOverride?: string | null;
+  /**
+   * Closing statement over the background media. Leave empty to use the Footer global.
+   */
+  headingOverride?: string | null;
+  /**
+   * Call-to-action buttons under the heading, up to two. Leave empty to use the Footer global.
+   */
+  linksOverride?:
+    | {
+        link: {
+          type?: ('reference' | 'site' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Intro copy above the “Ask anything” composer in the right-hand panel. Leave empty to use the Footer global.
+   */
+  askOverride?: {
+    /**
+     * Panel lead-in, e.g. “A homepage can only tell you so much…” Leave empty to use the Footer global.
+     */
+    title?: string | null;
+    /**
+     * Supporting copy between the lead-in and the composer. Leave empty to use the Footer global.
+     */
+    body?: string | null;
+  };
+  /**
+   * Background image or video. Optional — without one the band renders on the plain dark surface. Leave empty to use the Footer global.
+   */
+  mediaOverride?: (number | null) | Media;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4186,6 +4259,7 @@ export interface ExpertisePage {
    */
   relatedWorkPages?: (number | WorkPage)[] | null;
   editorialNotes?: string | null;
+  closing?: PageClosing;
   meta?: {
     /**
      * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
@@ -4316,6 +4390,7 @@ export interface AudiencePage {
    */
   relatedWorkPages?: (number | WorkPage)[] | null;
   editorialNotes?: string | null;
+  closing?: PageClosing;
   meta?: {
     /**
      * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
@@ -5195,6 +5270,7 @@ export interface PagesSelect<T extends boolean = true> {
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
+  closing?: T | PageClosingSelect<T>;
   meta?:
     | T
     | {
@@ -5594,6 +5670,39 @@ export interface NewsletterSignupBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PageClosing_select".
+ */
+export interface PageClosingSelect<T extends boolean = true> {
+  hidden?: T;
+  showOverrides?: T;
+  eyebrowOverride?: T;
+  headingOverride?: T;
+  linksOverride?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              sitePage?: T;
+              url?: T;
+              label?: T;
+              appearance?: T;
+            };
+        id?: T;
+      };
+  askOverride?:
+    | T
+    | {
+        title?: T;
+        body?: T;
+      };
+  mediaOverride?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -5608,6 +5717,7 @@ export interface PostsSelect<T extends boolean = true> {
       };
   relatedPosts?: T;
   categories?: T;
+  closing?: T | PageClosingSelect<T>;
   meta?:
     | T
     | {
@@ -5688,6 +5798,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
   browseAllMedia?: T;
   relatedWorkPages?: T;
   editorialNotes?: T;
+  closing?: T | PageClosingSelect<T>;
   meta?:
     | T
     | {
@@ -6200,6 +6311,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
   capabilities?: T;
   relatedWorkPages?: T;
   editorialNotes?: T;
+  closing?: T | PageClosingSelect<T>;
   meta?:
     | T
     | {
@@ -6273,6 +6385,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
   industries?: T;
   relatedWorkPages?: T;
   editorialNotes?: T;
+  closing?: T | PageClosingSelect<T>;
   meta?:
     | T
     | {
@@ -7481,6 +7594,7 @@ export interface Home {
     | FormBlock
     | NewsletterSignupBlock
   )[];
+  closing?: PageClosing;
   meta?: {
     /**
      * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
@@ -7841,7 +7955,7 @@ export interface Footer {
     label: string;
   };
   /**
-   * Full-screen media band above the footer bar on Home, Pages and the Posts index.
+   * Default full-screen band above the footer bar. Home, Pages, Posts, Work, Audience, and Expertise inherit this unless a page hides or overrides it.
    */
   closing?: {
     /**
@@ -7994,6 +8108,7 @@ export interface HomeSelect<T extends boolean = true> {
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
+  closing?: T | PageClosingSelect<T>;
   meta?:
     | T
     | {

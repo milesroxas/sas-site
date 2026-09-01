@@ -4,6 +4,7 @@ import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { caseStudyBlocks } from '@/blocks/case-study/config'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { closingTab } from '@/fields/closing'
 import { overridesVisible, showOverridesField } from '@/fields/overrides'
 import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/fields/pageFields'
 import { heroContentCollapsible, heroPresentationFields } from '@/fields/pageHero'
@@ -175,6 +176,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
             editorialNotesField(),
           ],
         },
+        closingTab(),
         seoMetaTab(),
       ],
     },

@@ -346,7 +346,7 @@ export const IndustryWorkClient = ({
             data-reveal
           >
             <h3
-              className="text-heading-3 font-light text-foreground lg:pointer-events-auto"
+              className="max-w-[24ch] text-heading-3 font-light text-foreground lg:pointer-events-auto"
               data-swap="text"
             >
               {work.title}

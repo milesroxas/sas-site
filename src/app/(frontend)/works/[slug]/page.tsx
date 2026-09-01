@@ -5,6 +5,8 @@ import { resolveRelatedWorkEntries } from '@/blocks/featured-work/resolve-entrie
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
+import { FooterClosingSection } from '@/Footer/Closing/Component'
+import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { CaseStudyHero } from '@/heros/CaseStudyHero'
 import type { CaseStudy } from '@/payload-types'
 import { WorkIntro } from '@/sections/WorkIntro'
@@ -71,32 +73,35 @@ export default async function WorkPageRoute({ params }: SlugRouteArgs) {
   if (!page || !study) return <PayloadRedirects url={url} />
   const relatedEntries = await resolveRelatedWorkEntries(page)
   return (
-    <article>
-      <PageClient />
-      <JsonLd
-        data={[
-          creativeWorkSchema(page, '/works'),
-          breadcrumbSchema([
-            { name: 'Work', path: '/works' },
-            { name: page.title, path: url },
-          ]),
-        ]}
-      />
-      <PayloadRedirects disableNotFound url={url} />
-      {draft && <LivePreviewListener />}
-      <CaseStudyHero page={page} study={study} />
-      {page.intro?.title ? (
-        <WorkIntro
-          body={page.intro.bodyOverride}
-          eyebrow={page.intro.eyebrow}
-          summary={introSummary(study.summaries)}
-          title={page.intro.title}
+    <>
+      <article className={FOOTER_CLOSING_ARTICLE_CLASS}>
+        <PageClient />
+        <JsonLd
+          data={[
+            creativeWorkSchema(page, '/works'),
+            breadcrumbSchema([
+              { name: 'Work', path: '/works' },
+              { name: page.title, path: url },
+            ]),
+          ]}
         />
-      ) : null}
-      {page.layout?.length ? (
-        <RenderCaseStudyBlocks blocks={page.layout} page={page} study={study} />
-      ) : null}
-      <FeaturedWorkSection eyebrow="Explore More Work" entries={relatedEntries} />
-    </article>
+        <PayloadRedirects disableNotFound url={url} />
+        {draft && <LivePreviewListener />}
+        <CaseStudyHero page={page} study={study} />
+        {page.intro?.title ? (
+          <WorkIntro
+            body={page.intro.bodyOverride}
+            eyebrow={page.intro.eyebrow}
+            summary={introSummary(study.summaries)}
+            title={page.intro.title}
+          />
+        ) : null}
+        {page.layout?.length ? (
+          <RenderCaseStudyBlocks blocks={page.layout} page={page} study={study} />
+        ) : null}
+        <FeaturedWorkSection eyebrow="Explore More Work" entries={relatedEntries} />
+      </article>
+      <FooterClosingSection closing={page.closing} />
+    </>
   )
 }

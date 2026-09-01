@@ -7,6 +7,7 @@ import type {
 import { slugField } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
+import { closingTab } from '@/fields/closing'
 import { editorialNotesField } from '@/fields/pageFields'
 import { segmentPageBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
@@ -103,6 +104,7 @@ export const segmentPageCollection = <S extends SegmentPageSlug>({
             editorialNotesField(),
           ],
         },
+        closingTab(),
         seoMetaTab(),
       ],
     },

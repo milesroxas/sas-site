@@ -5,6 +5,8 @@ import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import type { WorkPageCardData } from '@/components/WorkPageCard'
+import { FooterClosingSection } from '@/Footer/Closing/Component'
+import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { RenderHero } from '@/heros/RenderHero'
 import type { AudiencePage, WorkPage } from '@/payload-types'
 import { RelatedWorkSection } from '@/sections/RelatedWork'
@@ -31,20 +33,23 @@ export default async function AudiencePageRoute({ params }: SlugRouteArgs) {
   if (!page) return <PayloadRedirects url={url} />
   const relatedWork = await resolveRelatedWork(page)
   return (
-    <article className="pt-16 pb-24">
-      <PageClient />
-      <JsonLd
-        data={breadcrumbSchema([
-          { name: 'Who We Help', path: '/who-we-help' },
-          { name: page.title, path: url },
-        ])}
-      />
-      <PayloadRedirects disableNotFound url={url} />
-      {draft && <LivePreviewListener />}
-      <RenderHero {...page.hero} />
-      <RenderBlocks blocks={page.layout} />
-      <RelatedWorkSection pages={relatedWork} />
-    </article>
+    <>
+      <article className={`${FOOTER_CLOSING_ARTICLE_CLASS} pt-16 pb-24`}>
+        <PageClient />
+        <JsonLd
+          data={breadcrumbSchema([
+            { name: 'Who We Help', path: '/who-we-help' },
+            { name: page.title, path: url },
+          ])}
+        />
+        <PayloadRedirects disableNotFound url={url} />
+        {draft && <LivePreviewListener />}
+        <RenderHero {...page.hero} />
+        <RenderBlocks blocks={page.layout} />
+        <RelatedWorkSection pages={relatedWork} />
+      </article>
+      <FooterClosingSection closing={page.closing} />
+    </>
   )
 }
 

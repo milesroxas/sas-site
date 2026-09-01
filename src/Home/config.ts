@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
+import { closingTab } from '@/fields/closing'
 import { homeLayoutBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { generateHomePreviewPath } from '@/utilities/generatePreviewPath'
@@ -54,6 +55,7 @@ export const Home: GlobalConfig = {
           ],
           label: 'Composition',
         },
+        closingTab(),
         seoMetaTab(),
       ],
     },

@@ -7,6 +7,7 @@ import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
+import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import { cn } from '@/utilities/ui'
@@ -62,7 +63,11 @@ export default async function Page({ params: paramsPromise }: Args) {
       {/* Opaque and above the closing band: the band is a sticky curtain the
           page uncovers by scrolling this off it (src/Footer/Closing/curtain). */}
       <article
-        className={cn('relative z-10 bg-background pb-24', hero?.type !== 'highImpact' && 'pt-16')}
+        className={cn(
+          FOOTER_CLOSING_ARTICLE_CLASS,
+          'pb-24',
+          hero?.type !== 'highImpact' && 'pt-16',
+        )}
       >
         <PageClient />
         {/* Allows redirects for valid pages too */}
@@ -73,7 +78,7 @@ export default async function Page({ params: paramsPromise }: Args) {
         <RenderHero {...hero} />
         <RenderBlocks blocks={layout} />
       </article>
-      <FooterClosingSection />
+      <FooterClosingSection closing={page.closing} />
     </>
   )
 }

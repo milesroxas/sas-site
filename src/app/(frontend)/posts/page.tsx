@@ -7,6 +7,7 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PageRange } from '@/components/PageRange'
 import { Pagination } from '@/components/Pagination'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
+import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { RenderHero } from '@/heros/RenderHero'
 import { CollectionArchive } from '@/sections/CollectionArchive'
 import { RevealSection } from '@/shared/ui/reveal-section'
@@ -39,7 +40,7 @@ export default async function Page() {
     <>
       {/* Opaque and above the closing band: the band is a sticky curtain the
           page uncovers by scrolling this off it (src/Footer/Closing/curtain). */}
-      <div className="relative z-10 bg-background pb-24">
+      <div className={`${FOOTER_CLOSING_ARTICLE_CLASS} pb-24`}>
         <PageClient />
         {draft && <LivePreviewListener />}
         <RevealSection delayMs={0}>

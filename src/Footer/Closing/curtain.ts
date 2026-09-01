@@ -11,3 +11,9 @@
  * scrub (`ClosingMedia`), so both are timed off the same line.
  */
 export const FOOTER_CLOSING_GATE_SELECTOR = '[data-footer-closing-gate]'
+
+/**
+ * Opaque stacking context for the page article so the sticky closing curtain
+ * sits behind it. Required on every surface that renders the band.
+ */
+export const FOOTER_CLOSING_ARTICLE_CLASS = 'relative z-10 bg-background'

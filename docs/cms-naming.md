@@ -17,6 +17,7 @@ Conventions for naming tabs, groups, fields, blocks, and admin copy across the P
 | `layout` | An arrangement-variant select on a block or hero (`centered-media`, `text-left`, `grid`) — and the page-level blocks field named `layout` | A tab or group label |
 | Composition | The tab holding the page's `layout` blocks field | — |
 | Opening | The tab holding the full-screen sections before the composition (hero, intro) | — |
+| Closing | The tab holding the full-screen band above the footer bar | — |
 | `theme` | Section surface select (`light`, `dark`, `neutral`, `brand`) within the visitor's site theme | Light/dark mode |
 | `source` | Which complete canonical section a block pulls from (`context`, `challenge`, …, `custom`) | A Story Beat (use `storyBeatKey`) or attribution/credit (use `credit`) |
 | `*Override` | Website-only value that wins over canonical content when set; never copies it | A default or fallback |
@@ -27,11 +28,12 @@ Conventions for naming tabs, groups, fields, blocks, and admin copy across the P
 
 Standard tab set for website page collections (in order; omit tabs a collection doesn't need):
 
-`Content Source` → `Opening` → `Composition` → `Assets` → `Related Work` → `SEO`
+`Content Source` → `Opening` → `Composition` → `Assets` → `Related Work` → `Closing` → `SEO`
 
 - **Content Source** — the relationship to the canonical Content Hub record.
 - **Opening** — full-screen sections before the composed body (hero group, intro group). Give the tab a `description` naming its sections.
 - **Composition** — the `layout` blocks field. Website composition only; canonical narrative stays in the hub.
+- **Closing** — the full-screen band above the footer bar. Inherits the Footer global; the page may hide it or override fields. Never copy Footer content onto the page.
 - Content Hub collections name tabs by content role instead. Case Studies use `Overview`, `Narrative`, `Objectives & Decisions`, `Evidence`, and `Asset Libraries`; don't force the website tab set onto hub collections.
 - Tabs are label-only unless they have a `name` — keep them unnamed so labels can change freely without schema impact.
 

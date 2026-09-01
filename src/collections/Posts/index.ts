@@ -8,6 +8,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
+import { closingTab } from '@/fields/closing'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
@@ -158,6 +159,7 @@ export const Posts: CollectionConfig<'posts'> = {
           ],
           label: 'Related & Categories',
         },
+        closingTab(),
         seoMetaTab(),
       ],
     },
