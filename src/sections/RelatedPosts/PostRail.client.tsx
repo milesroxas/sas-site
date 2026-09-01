@@ -3,8 +3,10 @@
 import { IconArrowUpRight } from '@tabler/icons-react'
 import Link from 'next/link'
 import type React from 'react'
+import { useState } from 'react'
 import { Card, type CardPostData } from '@/components/Card'
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
+import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel'
+import { useCarouselEdgeFade } from '@/components/ui/use-carousel-edge-fade'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 
@@ -33,12 +35,22 @@ const SLIDE_BASIS = 'basis-5/6 md:basis-[calc(100%/2.5)] lg:basis-[calc(100%/3.5
 /**
  * Slide gutter, split evenly across both edges so the gap between two cards is
  * the sum of theirs (`px-8` + `px-8` = `gap-16`). The negative track margin
- * cancels the outer half, keeping the first card flush with the page column —
- * the rail reads as starting at the text above it, not indented from it. The
- * grid uses the same `gap-16` so both layouts sit on one rhythm.
+ * cancels the outer half at the **start** only, keeping the first card flush
+ * with the page column — the rail reads as starting at the text above it, not
+ * indented from it. The end half stays: the rail runs off the screen (see
+ * `container-bleed-e` below), so cancelling it too would land the last card
+ * dead against the browser edge at the final snap. The grid uses the same
+ * `gap-16` so both layouts sit on one rhythm.
+ *
+ * `-ml-*`, not the logical `-ms-*`, because the shadcn track hardcodes `-ml-4`
+ * and `cn`'s tailwind-merge only drops a class it recognises as the same
+ * property: `-ms-8` leaves `-ml-4` standing and the cascade keeps it, which
+ * cancels half the gutter and pushes the first card 16px off the column.
+ * `-ml-8` replaces it outright. The primitive is left-to-right only here
+ * either way.
  */
 const SLIDE_GUTTER = 'px-8'
-const TRACK_GUTTER = '-mx-8'
+const TRACK_GUTTER = '-ml-8'
 const GRID_GAP = 'gap-16'
 
 const RailCard: React.FC<{ post: CardPostData }> = ({ post }) => (
@@ -53,12 +65,14 @@ export const PostRail: React.FC<{
   posts: CardPostData[]
 }> = ({ heading, posts }) => {
   const isCarousel = posts.length >= CAROUSEL_MIN_COUNT
+  const [api, setApi] = useState<CarouselApi>()
+  useCarouselEdgeFade(api)
 
   return (
     // `underMedia`: the cards are copy paired with media, so each card's frame
     // wipes open when the rail enters and its copy drops in on the same beat.
-    <ScrollReveal as="div" className="container" variant="underMedia">
-      <div className="mb-16 flex items-start justify-between gap-8 border-t border-border pt-8">
+    <ScrollReveal as="div" variant="underMedia">
+      <div className="container mb-16 flex items-start justify-between gap-8 border-t border-border pt-8">
         {/* Grouped with the link beside it: one line of furniture, one beat. */}
         <h2
           className="max-w-lg text-heading-3 font-light"
@@ -83,12 +97,18 @@ export const PostRail: React.FC<{
       </div>
 
       {isCarousel ? (
-        // The rail runs past the page column's right edge: the cut card sits in
-        // the gutter rather than a hand's width inside it, so the list reads as
-        // continuing off the page. The left edge stays on the column.
-        <div className="-mr-(--spacing-gutter)">
+        // The rail starts on the page column and runs off the end of the
+        // screen — the clipped card sits in the browser's edge, not a hand's
+        // width inside it, so the list reads as continuing off the page rather
+        // than stopping at an invisible boundary. `drag-fade-x` dissolves
+        // whichever edge still has cards behind it, the same signal
+        // `scroll-fade-x` gives the site's native rails. It lands on the embla
+        // viewport (`[data-slot=carousel-content]`), which is not reachable
+        // through a prop, and carries its own width — no size class needed.
+        <div className="container-bleed-e">
           <Carousel
             aria-label="More insights"
+            className="[&_[data-slot=carousel-content]]:drag-fade-x"
             opts={{
               // A finite archive, so no loop and no wrap-around: `start` keeps
               // the first card on the page column and `trimSnaps` stops the
@@ -96,6 +116,7 @@ export const PostRail: React.FC<{
               align: 'start',
               containScroll: 'trimSnaps',
             }}
+            setApi={setApi}
           >
             <CarouselContent className={TRACK_GUTTER}>
               {posts.map((post) => (
@@ -107,7 +128,7 @@ export const PostRail: React.FC<{
           </Carousel>
         </div>
       ) : (
-        <div className={`grid grid-cols-1 md:grid-cols-3 ${GRID_GAP}`}>
+        <div className={`container grid grid-cols-1 md:grid-cols-3 ${GRID_GAP}`}>
           {posts.map((post) => (
             <RailCard key={post.slug} post={post} />
           ))}

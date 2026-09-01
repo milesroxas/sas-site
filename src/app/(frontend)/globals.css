@@ -130,6 +130,18 @@
     transition-timing-function: var(--press-ease);
   }
 
+  /* A press that became a drag was never a click. Cards on a rail are dragged
+     about as often as they are opened, and one that stays compressed for the
+     length of a drag reads as an accepted click. `useClickableCard` sets the
+     attribute the moment travel passes its slop. It goes quiet on the press
+     curve rather than the springy release curve — a cancelled press should not
+     bounce back as if something completed. */
+  &[data-dragging]:active:not([aria-haspopup="true"]) {
+    scale: 1;
+    transition-duration: var(--press-duration);
+    transition-timing-function: var(--press-ease);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     transition-duration: 0s;
   }
@@ -545,6 +557,59 @@
   }
 }
 
+/* drag-fade: the scroll-fade mask for a rail that is dragged, not scrolled. */
+@property --drag-fade-ks {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+@property --drag-fade-ke {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
+/*
+ * Same mask and the same `--scroll-fade-s/-e` properties as `scroll-fade-x`,
+ * minus the scroll timeline. An embla viewport translates its track and its
+ * own `scrollLeft` never moves, so `scroll(self inline)` would sit at progress
+ * 0 forever. `useCarouselEdgeFade` writes the two 0..1 ramp factors from
+ * embla's scroll position instead. Their initial values are the rest state —
+ * start edge clear, end edge faded — so a server-rendered rail is already
+ * right before that hook runs.
+ */
+@utility drag-fade-x {
+  /* Same shape as `scroll-fade`'s own default (`min(12%, 40px)`), with a cap
+     sized for a card rail rather than a row of pills: the edge here is the
+     full height of a card, where 40px reads as a trim rather than a
+     dissolve. `scroll-fade-*` still overrides it at a call site. */
+  --drag-fade-size: var(--scroll-fade-size, min(12%, calc(var(--spacing) * 32)));
+  --scroll-fade-s: calc(var(--drag-fade-size) * var(--drag-fade-ks));
+  --scroll-fade-e: calc(var(--drag-fade-size) * var(--drag-fade-ke));
+  --scroll-fade-mask: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--scroll-fade-s),
+    #000 calc(100% - var(--scroll-fade-e)),
+    transparent 100%
+  );
+  &:where([dir="rtl"], [dir="rtl"] *) {
+    --scroll-fade-mask: linear-gradient(
+      to left,
+      transparent 0,
+      #000 var(--scroll-fade-s),
+      #000 calc(100% - var(--scroll-fade-e)),
+      transparent 100%
+    );
+  }
+  -webkit-mask-image: var(--scroll-fade-mask);
+  mask-image: var(--scroll-fade-mask);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
 @utility scroll-fade-* {
   --scroll-fade-size: calc(var(--spacing) * --value(integer));
   --scroll-fade-size: --value([length], [percentage]);
@@ -888,6 +953,28 @@
   max-width: none;
   margin-inline: 0;
   padding-inline: 0;
+}
+
+/*
+ * A rail that starts on the page column and runs off the end of the screen —
+ * the clipped card sits in the browser's edge, not a hand's width inside it.
+ *
+ * The start padding reproduces `container`'s own inset without a viewport
+ * unit: percentage padding resolves against the containing block, so on a
+ * full-width parent `100%` is the document's content width and
+ * `(100% - max-width) / 2 + gutter` lands exactly where the page column
+ * starts; `max()` collapses it to the plain gutter below the cap. `100vw`
+ * would overshoot by half the scrollbar space `html` reserves with
+ * `scrollbar-gutter: stable` and hang a horizontal scrollbar off the page.
+ *
+ * Requires a full-width parent — a sibling of `.container`, never a child.
+ */
+@utility container-bleed-e {
+  width: 100%;
+  padding-inline-start: max(
+    var(--spacing-gutter),
+    calc((100% - var(--max-width-content-default)) / 2 + var(--spacing-gutter))
+  );
 }
 
 /* Optical text-box trimming. A line box carries half-leading plus the font's
