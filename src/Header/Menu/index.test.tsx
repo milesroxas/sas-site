@@ -255,9 +255,11 @@ describe('TakeoverMenu', () => {
   })
 
   it('falls back to the plain close when a link has media but the handoff preconditions fail', () => {
-    // jsdom rects are all zero, so the preview slot is unmeasurable — the
-    // click must take the ordinary close path (Link navigates, menu undocks)
-    // instead of starting a hero handoff.
+    // jsdom rects are all zero, so the preview slot is unmeasurable and the
+    // handoff cannot start. The fallback then owns the navigation itself: it
+    // pushes the destination untagged, so `DirectionalTransition`'s
+    // `default: 'none'` leaves the undock reverse as the only visible motion.
+    // No traveler is mounted — that belongs to the handoff alone.
     const withMedia: MenuContent = {
       ...mockMenuContent,
       expertise: [
@@ -282,7 +284,8 @@ describe('TakeoverMenu', () => {
     fireEvent.click(screen.getByRole('link', { name: 'Clarifying Complex Stories' }))
 
     expect(onClose).toHaveBeenCalledTimes(1)
-    expect(routerPush).not.toHaveBeenCalled()
+    expect(routerPush).toHaveBeenCalledTimes(1)
+    expect(routerPush).toHaveBeenCalledWith('/expertise/clarifying-complex-stories')
     expect(document.querySelector('[data-menu-hero-traveler]')).toBeNull()
   })
 })

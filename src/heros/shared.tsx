@@ -24,6 +24,17 @@ export const HeroTitle: React.FC<{ title: Hero['title'] }> = ({ title }) => {
   return <h1 className="max-w-xl text-heading-1 text-foreground">{title}</h1>
 }
 
+/** Hairline-and-label kicker above an index or hero title. */
+export const HeroEyebrow: React.FC<{ eyebrow: Hero['eyebrow'] }> = ({ eyebrow }) => {
+  if (!eyebrow) return null
+  return (
+    <p className="flex items-center gap-2 font-mono text-sm/none tracking-tight">
+      <span aria-hidden="true" className="h-px w-4 shrink-0 bg-border" />
+      {eyebrow}
+    </p>
+  )
+}
+
 export const HeroLinks: React.FC<{ links: Hero['links'] }> = ({ links }) => {
   if (!Array.isArray(links) || links.length === 0) return null
   return (

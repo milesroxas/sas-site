@@ -5,7 +5,6 @@ import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/fe
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
 import { FeatureStatementLinksBlock as FeatureStatementLinks } from '@/blocks/feature/StatementLinks/Component'
 import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component'
-import { FeaturedWorkBlock } from '@/blocks/featured-work/Component'
 import { FullMedia } from '@/blocks/full-media/FullMedia'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
@@ -670,8 +669,8 @@ export const RenderCaseStudyBlocks = async ({
           // Owns its own full-viewport `ScrollReveal` shell — do not wrap again.
           return <IndustryWorkBlock key={block.id} {...block} />
         case 'featuredWork':
-          // Owns its own pinned shell and section band — do not wrap again.
-          return <FeaturedWorkBlock key={block.id} {...block} />
+          // Work pages always close with this block from the Related Work tab.
+          return null
         case 'featureImageStatement':
           return <FeatureImageStatementSection block={block} key={block.id} study={study} />
         case 'audienceTabs':

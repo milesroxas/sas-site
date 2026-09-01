@@ -1,7 +1,7 @@
 import type React from 'react'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
-import { HeroTitle } from '@/heros/shared'
+import { HeroEyebrow, HeroTitle } from '@/heros/shared'
 import type { Page } from '@/payload-types'
 
 type LowImpactHeroType =
@@ -28,12 +28,7 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({
       <Container className="flex flex-col items-start gap-12">
         {(eyebrow || title) && (
           <div className="flex flex-col items-start gap-6">
-            {eyebrow && (
-              <p className="flex items-center gap-2 font-mono text-sm/none tracking-tight">
-                <span aria-hidden="true" className="h-px w-4 shrink-0 bg-border" />
-                {eyebrow}
-              </p>
-            )}
+            <HeroEyebrow eyebrow={eyebrow} />
             <HeroTitle title={title} />
           </div>
         )}

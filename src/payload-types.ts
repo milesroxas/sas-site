@@ -1642,6 +1642,9 @@ export interface WorkPage {
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
   browseAllMedia?: boolean | null;
+  /**
+   * Shown in the featured-work list at the end of this page, in this order. Unpublished picks are skipped. Leave empty to show the four most recently published work pages (excluding this one).
+   */
   relatedWorkPages?: (number | WorkPage)[] | null;
   editorialNotes?: string | null;
   meta?: {

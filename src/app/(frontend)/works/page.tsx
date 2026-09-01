@@ -1,11 +1,11 @@
 import { draftMode } from 'next/headers'
 import type { Metadata } from 'next/types'
 import { queryWorksIndex, worksIndexHeroFallback } from '@/CollectionIndexes/queries'
-import { getPublishedWorkPageCards } from '@/collections/WorkPages/queries'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { WorkPageCard } from '@/components/WorkPageCard'
-import { RenderHero } from '@/heros/RenderHero'
+import { WorksBrowse } from '@/sections/WorksBrowse'
+import { queryWorksBrowseData } from '@/sections/WorksBrowse/queries'
 import { generateMeta } from '@/utilities/generateMeta'
+import PageClient from './page.client'
 
 export const revalidate = 600
 
@@ -13,17 +13,19 @@ export default async function WorksPage() {
   const { isEnabled: draft } = await draftMode()
   const worksIndex = await queryWorksIndex()
   const hero = worksIndex?.hero?.title ? worksIndex.hero : worksIndexHeroFallback
-  const { docs } = await getPublishedWorkPageCards()
+  const { items, industries, capabilities } = await queryWorksBrowseData()
 
   return (
-    <main className="pb-24">
+    <main>
+      <PageClient />
       {draft && <LivePreviewListener />}
-      <RenderHero {...hero} />
-      <div className="container grid gap-12 md:grid-cols-2">
-        {docs.map((page) => (
-          <WorkPageCard key={page.id} page={page} />
-        ))}
-      </div>
+      <WorksBrowse
+        capabilities={capabilities}
+        eyebrow={hero.eyebrow}
+        industries={industries}
+        items={items}
+        title={hero.title}
+      />
     </main>
   )
 }

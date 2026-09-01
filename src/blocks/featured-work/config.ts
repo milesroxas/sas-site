@@ -36,9 +36,6 @@ export const FeaturedWork: Block = {
           'Work pages shown in order. Hover reveals client, industry, and featured media (cover, else hero media).',
       },
     },
-    {
-      ...themeField(),
-      defaultValue: 'dark',
-    },
+    themeField(),
   ],
 }

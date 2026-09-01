@@ -3,11 +3,11 @@
 import { IconX } from '@tabler/icons-react'
 import type React from 'react'
 import type { CSSProperties } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Card, type CardPostData } from '@/components/Card'
 import { Badge } from '@/components/ui/badge'
-import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import type { Category } from '@/payload-types'
+import { FILTER_SWAP_MAX_STAGGER_STEPS, useFilterSwap } from '@/shared/ui/filter-swap'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import { cn } from '@/utilities/ui'
 
@@ -19,14 +19,6 @@ export type Props = {
   posts: CardPostData[]
   topics: InsightsBrowseTopic[]
 }
-
-/**
- * Outgoing-grid fade before the filtered set enters. Pairs with the
- * `.filter-swap` transition in globals.css — exit stays faster than enter.
- */
-const GRID_EXIT_MS = 150
-/** Cap the enter stagger so late cards don't trail on big result sets. */
-const MAX_STAGGER_STEPS = 8
 
 /**
  * Below `lg` the topic list pans instead of stacking. The rail bleeds past the
@@ -49,24 +41,10 @@ const TOPIC_RAIL_MOBILE =
  * static /insights/[slug] route, anything else falls back to /insights.
  */
 export const InsightsBrowse: React.FC<Props> = ({ initialTopicSlug, posts, topics }) => {
-  const prefersReducedMotion = usePrefersReducedMotion()
-  const [selected, setSelected] = useState<string[]>(() =>
+  const { selected, rendered, exiting, hasFiltered, apply } = useFilterSwap<string[]>(
     initialTopicSlug ? [initialTopicSlug] : [],
   )
-  /** What the grid currently shows — lags `selected` by the exit fade. */
-  const [rendered, setRendered] = useState(selected)
-  const [exiting, setExiting] = useState(false)
-  /** First render keeps the scroll-reveal stagger; swaps use the faster filter enter. */
-  const [hasFiltered, setHasFiltered] = useState(false)
-  const swapTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const railRef = useRef<HTMLUListElement>(null)
-
-  useEffect(
-    () => () => {
-      if (swapTimer.current) clearTimeout(swapTimer.current)
-    },
-    [],
-  )
 
   // Land a deep-linked topic inside the rail's viewport. Below `lg` the rail
   // pans, and /insights/[topic] preselects a topic that is usually past the
@@ -94,10 +72,7 @@ export const InsightsBrowse: React.FC<Props> = ({ initialTopicSlug, posts, topic
     rail.scrollBy({ left, behavior: 'auto' })
   }, [])
 
-  // fallow-ignore-next-line complexity -- CRAP flags coverage gap; small state handler
   const applySelection = (next: string[]) => {
-    setSelected(next)
-    setHasFiltered(true)
     if (typeof window !== 'undefined') {
       const href = next.length === 1 ? `/insights/${next[0]}` : '/insights'
       // Null state lets Next's patched replaceState wrap its own internals and
@@ -106,17 +81,7 @@ export const InsightsBrowse: React.FC<Props> = ({ initialTopicSlug, posts, topic
       // stale tree on back/forward and snaps the address bar back.
       window.history.replaceState(null, '', href)
     }
-    if (swapTimer.current) clearTimeout(swapTimer.current)
-    if (prefersReducedMotion) {
-      setExiting(false)
-      setRendered(next)
-      return
-    }
-    setExiting(true)
-    swapTimer.current = setTimeout(() => {
-      setRendered(next)
-      setExiting(false)
-    }, GRID_EXIT_MS)
+    apply(next)
   }
 
   const toggleTopic = (slug: string) => {
@@ -299,7 +264,11 @@ export const InsightsBrowse: React.FC<Props> = ({ initialTopicSlug, posts, topic
                   <div
                     className={hasFiltered ? 'filter-swap-item' : 'reveal-stagger-item'}
                     key={post.slug ?? index}
-                    style={{ '--stagger': Math.min(index, MAX_STAGGER_STEPS) } as CSSProperties}
+                    style={
+                      {
+                        '--stagger': Math.min(index, FILTER_SWAP_MAX_STAGGER_STEPS),
+                      } as CSSProperties
+                    }
                   >
                     <Card className="h-full" doc={post} relationTo="posts" variant="backdrop" />
                   </div>

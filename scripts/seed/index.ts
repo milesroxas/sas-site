@@ -770,28 +770,7 @@ async function run() {
       ),
     )
   }
-  // Featured work lists the other work pages, so it can only be appended once
-  // every work page exists.
-  const [firstWorkPageId, ...otherWorkPageIds] = workPageIds
-  await payload.update({
-    collection: 'work-pages',
-    id: firstWorkPageId,
-    data: {
-      layout: [
-        ...workLayouts[0],
-        {
-          blockType: 'featuredWork',
-          eyebrow: 'Featured Work',
-          entries: otherWorkPageIds,
-          theme: 'dark',
-        },
-      ],
-    },
-    depth: 0,
-    draft: false,
-    context: ctx,
-  })
-  log(`${workPageIds.length} work pages (featured work on ${WORK_ITEMS[0].slug})`)
+  log(`${workPageIds.length} work pages`)
 
   console.log('Seeding posts…')
   const users = await payload.find({ collection: 'users', limit: 1, depth: 0 })

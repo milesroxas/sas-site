@@ -164,7 +164,16 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
         },
         {
           label: 'Related Work',
-          fields: [relatedPagesField('relatedWorkPages', 'work-pages'), editorialNotesField()],
+          fields: [
+            {
+              ...relatedPagesField('relatedWorkPages', 'work-pages'),
+              admin: {
+                description:
+                  'Shown in the featured-work list at the end of this page, in this order. Unpublished picks are skipped. Leave empty to show the four most recently published work pages (excluding this one).',
+              },
+            },
+            editorialNotesField(),
+          ],
         },
         seoMetaTab(),
       ],

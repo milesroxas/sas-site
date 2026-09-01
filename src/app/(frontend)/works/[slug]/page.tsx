@@ -1,5 +1,7 @@
 import { draftMode } from 'next/headers'
 import { RenderCaseStudyBlocks } from '@/blocks/case-study/RenderCaseStudyBlocks'
+import { FeaturedWorkSection } from '@/blocks/featured-work/Component'
+import { resolveRelatedWorkEntries } from '@/blocks/featured-work/resolve-entries'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
@@ -67,6 +69,7 @@ export default async function WorkPageRoute({ params }: SlugRouteArgs) {
   const page = await queryWorkPageBySlug(decodedSlug)
   const study = populatedDoc<CaseStudy>(page?.caseStudy)
   if (!page || !study) return <PayloadRedirects url={url} />
+  const relatedEntries = await resolveRelatedWorkEntries(page)
   return (
     <article>
       <PageClient />
@@ -93,6 +96,7 @@ export default async function WorkPageRoute({ params }: SlugRouteArgs) {
       {page.layout?.length ? (
         <RenderCaseStudyBlocks blocks={page.layout} page={page} study={study} />
       ) : null}
+      <FeaturedWorkSection eyebrow="Explore More Work" entries={relatedEntries} />
     </article>
   )
 }

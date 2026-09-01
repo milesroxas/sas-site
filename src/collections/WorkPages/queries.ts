@@ -11,11 +11,6 @@ const workPageCardArgs = {
   select: { title: true, slug: true, caseStudy: true, coverAsset: true, featured: true },
 } as const
 
-export const getPublishedWorkPageCards = async ({ limit = 100 }: { limit?: number } = {}) => {
-  const payload = await getPayload({ config: configPromise })
-  return payload.find({ ...workPageCardArgs, limit })
-}
-
 const findWorkPageCards = async (where: Where, limit: number): Promise<WorkPageCardData[]> => {
   const payload = await getPayload({ config: configPromise })
   const result = await payload.find({ ...workPageCardArgs, limit, where })

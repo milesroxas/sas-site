@@ -27,9 +27,12 @@ function SelectTrigger({
   className,
   size = 'default',
   children,
+  icon,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
   size?: 'sm' | 'default'
+  /** Replaces the default selector glyph — for triggers styled as bare text. */
+  icon?: React.ReactNode
 }) {
   return (
     <SelectPrimitive.Trigger
@@ -43,7 +46,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <IconSelector className="pointer-events-none size-3.5 text-muted-foreground" />
+        {icon ?? <IconSelector className="pointer-events-none size-3.5 text-muted-foreground" />}
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -72,12 +75,12 @@ function SelectContent({
         {...props}
       >
         <SelectScrollUpButton />
+        {/* Popper mode matches the trigger's width but never its height: a
+            trigger styled as bare text is one line tall, and pinning the
+            viewport to it would clip the menu to a single row. */}
         <SelectPrimitive.Viewport
           data-position={position}
-          className={cn(
-            'data-[position=popper]:h-(--radix-select-trigger-height) data-[position=popper]:w-full data-[position=popper]:min-w-(--radix-select-trigger-width)',
-            position === 'popper' && '',
-          )}
+          className="data-[position=popper]:w-full data-[position=popper]:min-w-(--radix-select-trigger-width)"
         >
           {children}
         </SelectPrimitive.Viewport>

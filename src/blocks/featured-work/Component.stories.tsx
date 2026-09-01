@@ -31,12 +31,12 @@ const meta = {
   parameters: {
     layout: 'fullscreen',
   },
-  // Mirror the server block's frame: dark section band, no vertical padding
+  // Mirror the server block's frame: page-surface band, no vertical padding
   // (the pinned client shell owns viewport sizing), scroll room after the pin.
   decorators: [
     (Story) => (
       <div className="bg-background">
-        <Section spacing="none" theme="dark">
+        <Section spacing="none" theme="light">
           <Story />
         </Section>
         <div className="h-svh" />
