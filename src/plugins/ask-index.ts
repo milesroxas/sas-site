@@ -19,7 +19,7 @@ export const askIndexPlugin = (): Plugin => (config) => {
     if (surface.body.kind === 'walk' && surface.body.canonicalField) {
       canonicalHooks.set(
         surface.body.canonicalField.collection as string,
-        askIndexCanonicalAfterChange(surface, surface.body.canonicalField.name),
+        askIndexCanonicalAfterChange(surface, surface.body.canonicalField),
       )
     }
   }

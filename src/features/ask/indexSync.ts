@@ -62,7 +62,7 @@ export async function syncSurfaceDoc(
 
 export const askIndexAfterChange =
   (surface: ContentSurface): CollectionAfterChangeHook =>
-  async ({ doc, req: { payload } }) => {
+  async ({ doc, previousDoc, req: { payload } }) => {
     try {
       if (!embeddingsConfigured(payload)) return doc
 
@@ -71,9 +71,14 @@ export const askIndexAfterChange =
         return doc
       }
 
-      // Draft save or unpublish. A draft on top of a still-published doc must
-      // NOT remove the live version from the index — only a true unpublish
-      // (no published version left) deletes.
+      // Draft save or unpublish. Draft saves never change published output
+      // (the live version's rows are already indexed), and autosave fires
+      // every 100ms — so never re-embed here. A doc that was never published
+      // has nothing in the index either; skip without touching the DB.
+      if (previousDoc?._status !== 'published') return doc
+
+      // Only a true unpublish (no published version left) deletes; a draft
+      // on top of a still-published doc must NOT remove the live version.
       const published = (await payload.findByID({
         collection: surface.collection,
         id: doc.id,
@@ -82,9 +87,7 @@ export const askIndexAfterChange =
         disableErrors: true,
       })) as SurfaceDoc | null
 
-      if (published?._status === 'published') {
-        await syncSurfaceDoc(payload, surface, published)
-      } else {
+      if (published?._status !== 'published') {
         await deleteDocEmbeddings(payload, surface.collection, doc.id)
       }
     } catch (err) {
@@ -116,14 +119,33 @@ export const askIndexAfterDelete =
 
 /**
  * Canonical Content Hub records (case-studies, lab-projects) carry the
- * narrative their website pages render — editing one must re-embed every
+ * narrative their website pages render — publishing one must re-embed every
  * published page that points at it.
  */
 export const askIndexCanonicalAfterChange =
-  (surface: ContentSurface, canonicalFieldName: string): CollectionAfterChangeHook =>
-  async ({ doc, req: { payload } }) => {
+  (
+    surface: ContentSurface,
+    canonicalField: { name: string; collection: CollectionSlug },
+  ): CollectionAfterChangeHook =>
+  async ({ doc, previousDoc, req: { payload } }) => {
     try {
       if (!embeddingsConfigured(payload)) return doc
+
+      // Dependent pages extract the canonical with draft: false, so draft
+      // edits here change nothing until publish — and autosave fires every
+      // 100ms. Re-embed dependents only on publish, or on a true unpublish
+      // (the published narrative their index rows include just went away).
+      if (doc._status !== 'published') {
+        if (previousDoc?._status !== 'published') return doc
+        const published = (await payload.findByID({
+          collection: canonicalField.collection,
+          id: doc.id,
+          depth: 0,
+          draft: false,
+          disableErrors: true,
+        })) as SurfaceDoc | null
+        if (published?._status === 'published') return doc
+      }
 
       const { docs } = await payload.find({
         collection: surface.collection as CollectionSlug,
@@ -131,7 +153,7 @@ export const askIndexCanonicalAfterChange =
         limit: 100,
         pagination: false,
         where: {
-          [canonicalFieldName]: { equals: doc.id },
+          [canonicalField.name]: { equals: doc.id },
           _status: { equals: 'published' },
         },
       })

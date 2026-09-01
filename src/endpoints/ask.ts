@@ -26,6 +26,10 @@ import { retrieveSources } from '@/features/ask/retrieve'
 const MIN_QUESTION_LENGTH = 3
 const MAX_QUESTION_LENGTH = 500
 const MAX_MESSAGES = 30
+/** Cap on the combined text of the whole transcript — the history is client-supplied. */
+const MAX_TOTAL_CHARS = 8_000
+/** Output budget per answer; includes gpt-5 reasoning tokens, so leave headroom over the ~150-word answer. */
+const MAX_ANSWER_TOKENS = 1_500
 
 const NO_SOURCES_ANSWER =
   "I couldn't find anything on this site that answers that. Try the search page, or browse the latest posts."
@@ -66,6 +70,33 @@ function messageText(message: UIMessage): string {
     .join('')
 }
 
+/**
+ * The transcript comes straight from the client, so before it reaches the
+ * model: only user/assistant roles (a forged system message would sit above
+ * our grounding rules), only text parts (file/image parts would bill vision
+ * tokens), and a hard budget on total characters (only the last message has a
+ * length check of its own).
+ */
+function sanitizeMessages(messages: UIMessage[]): UIMessage[] | null {
+  let totalChars = 0
+  const sanitized: UIMessage[] = []
+
+  for (const message of messages) {
+    if (message.role !== 'user' && message.role !== 'assistant') return null
+    if (!Array.isArray(message.parts)) return null
+
+    const parts = message.parts.filter(
+      (part): part is Extract<typeof part, { type: 'text' }> => part.type === 'text',
+    )
+    for (const part of parts) totalChars += part.text.length
+    if (totalChars > MAX_TOTAL_CHARS) return null
+
+    sanitized.push({ id: message.id, role: message.role, parts })
+  }
+
+  return sanitized
+}
+
 /** Streams a fixed answer through the UI-message protocol without a model call. */
 function staticAnswerResponse(text: string): Response {
   const stream = createUIMessageStream({
@@ -96,10 +127,11 @@ const ask: Endpoint = {
     }
 
     const body = (await req.json?.().catch(() => null)) as { messages?: unknown } | null
-    const messages = Array.isArray(body?.messages) ? (body.messages as UIMessage[]) : []
-    const lastMessage = messages.at(-1)
+    const rawMessages = Array.isArray(body?.messages) ? (body.messages as UIMessage[]) : []
+    const messages = rawMessages.length <= MAX_MESSAGES ? sanitizeMessages(rawMessages) : null
+    const lastMessage = messages?.at(-1)
 
-    if (messages.length > MAX_MESSAGES || lastMessage?.role !== 'user') {
+    if (!messages || lastMessage?.role !== 'user') {
       return json({ error: 'Send a conversation ending in a user question.' }, 400)
     }
 
@@ -130,6 +162,10 @@ const ask: Endpoint = {
       model: askModel,
       system: `${SYSTEM_PROMPT}\n\n<sources>\n${sourcesBlock}\n</sources>`,
       messages: await convertToModelMessages(messages),
+      maxOutputTokens: MAX_ANSWER_TOKENS,
+      // Extractive answers over provided sources don't need deep reasoning;
+      // the default (medium) burns hidden reasoning tokens on every question.
+      providerOptions: { openai: { reasoningEffort: 'low' } },
       onFinish: ({ usage }) => {
         req.payload.logger.info({
           msg: 'ask answered',
