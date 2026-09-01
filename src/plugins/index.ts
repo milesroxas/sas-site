@@ -1,4 +1,3 @@
-import { payloadAiPlugin } from '@ai-stack/payloadcms'
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
@@ -14,6 +13,7 @@ import { authenticated } from '@/access/authenticated'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import type { AudiencePage, ExpertisePage, LabPage, Page, Post, WorkPage } from '@/payload-types'
 import { aeoPlugin } from '@/plugins/aeo'
+import { aiPlugin } from '@/plugins/ai'
 import { askIndexPlugin } from '@/plugins/ask-index'
 import { mcp } from '@/plugins/mcp'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
@@ -140,42 +140,9 @@ export const plugins: Plugin[] = [
     lightbox: true,
     edit: true,
   }),
-  // AI compose/rephrase/etc. in the admin editor (OPENAI_API_KEY from env).
-  // Adds the hidden `plugin-ai-instructions` collection (per-field prompts).
-  payloadAiPlugin({
-    collections: {
-      // Website — publishing surfaces
-      pages: true,
-      posts: true,
-      'work-pages': true,
-      'lab-pages': true,
-      'expertise-pages': true,
-      'audience-pages': true,
-      // Content Hub — canonical source material
-      organizations: true,
-      projects: true,
-      'case-studies': true,
-      'lab-projects': true,
-      testimonials: true,
-    },
-    // Plugin defaults gate generation/settings on Boolean(req.user), which an
-    // MCP API key satisfies over REST. Restrict to team.
-    access: {
-      generate: authenticated,
-      settings: authenticated,
-    },
-    overrideInstructions: {
-      access: {
-        create: authenticated,
-        delete: authenticated,
-        read: authenticated,
-        update: authenticated,
-      },
-    },
-    debugging: false,
-    disableSponsorMessage: true,
-    uploadCollectionSlug: 'media',
-  }),
+  // AI compose/rephrase/etc. in the admin editor. Full config (voice, per-field
+  // prompt seeds, context getters, action prompts) lives in ./ai.
+  aiPlugin,
   aeoPlugin(),
   askIndexPlugin(),
   // Internal-team MCP server at /api/mcp for agent-driven content authoring.
