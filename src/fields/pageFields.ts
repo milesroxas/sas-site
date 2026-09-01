@@ -43,12 +43,12 @@ export const projectLinksField = (): ArrayField => ({
 })
 
 /**
- * "More like this" picker for a page collection: other pages in the same
+ * "More like this" picker for a page collection: other documents in the same
  * collection, with the document being edited excluded from its own list.
  */
 export const relatedPagesField = (
   name: string,
-  relationTo: 'lab-pages' | 'work-pages',
+  relationTo: 'lab-pages' | 'posts' | 'work-pages',
 ): RelationshipField => ({
   name,
   type: 'relationship',

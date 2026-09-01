@@ -9,6 +9,7 @@ import {
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { closingTab } from '@/fields/closing'
+import { editorialNotesField, relatedPagesField } from '@/fields/pageFields'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
@@ -74,21 +75,20 @@ export const Posts: CollectionConfig<'posts'> = {
         {
           fields: [
             {
-              name: 'heroStyle',
-              type: 'select',
-              defaultValue: 'immersive',
-              options: [
-                { label: 'Immersive (full-bleed image)', value: 'immersive' },
-                { label: 'Banner (compact)', value: 'banner' },
-              ],
-              admin: {
-                description: 'How the hero renders on the post page.',
-              },
-            },
-            {
               name: 'heroImage',
               type: 'upload',
               relationTo: 'media',
+              admin: {
+                description: 'Portrait crop (4:5) beside the title in the post hero.',
+              },
+            },
+            {
+              name: 'standfirst',
+              type: 'textarea',
+              admin: {
+                description:
+                  'Editorial sentence under the title in the hero. Distinct from the SEO description — this one is written to be read.',
+              },
             },
             {
               name: 'content',
@@ -130,38 +130,40 @@ export const Posts: CollectionConfig<'posts'> = {
           label: 'Composition',
         },
         {
+          label: 'Related Posts',
           fields: [
             {
-              name: 'relatedPosts',
-              type: 'relationship',
+              ...relatedPagesField('relatedPosts', 'posts'),
               admin: {
-                position: 'sidebar',
+                description:
+                  'Shown in the rail at the end of this post, in this order. Unpublished picks are skipped. Leave empty to show the most recently published posts (excluding this one).',
               },
-              filterOptions: ({ id }) => {
-                return {
-                  id: {
-                    not_in: [id],
-                  },
-                }
-              },
-              hasMany: true,
-              relationTo: 'posts',
             },
             {
-              name: 'categories',
-              type: 'relationship',
+              name: 'hideRelatedPosts',
+              type: 'checkbox',
+              defaultValue: false,
+              label: 'Hide the rail on this post',
               admin: {
-                position: 'sidebar',
+                description:
+                  'Every post ends with the rail. Tick this to end on the article instead.',
               },
-              hasMany: true,
-              relationTo: 'categories',
             },
+            editorialNotesField(),
           ],
-          label: 'Related & Categories',
         },
         closingTab(),
         seoMetaTab(),
       ],
+    },
+    {
+      name: 'categories',
+      type: 'relationship',
+      admin: {
+        position: 'sidebar',
+      },
+      hasMany: true,
+      relationTo: 'categories',
     },
     {
       name: 'publishedAt',

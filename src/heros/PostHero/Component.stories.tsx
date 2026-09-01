@@ -5,7 +5,6 @@ import { PostHero } from './index'
 const basePost = {
   ...postFixtures[0],
   heroImage: mediaFixture,
-  heroStyle: 'immersive' as const,
   populatedAuthors: [{ id: '1', name: 'Alex Rivera' }],
 }
 
@@ -42,21 +41,13 @@ export const Video: Story = {
   },
 }
 
-export const Banner: Story = {
+/** No standfirst and no author: the two rows the hero can drop. */
+export const Minimal: Story = {
   args: {
     post: {
       ...basePost,
-      heroStyle: 'banner',
-    },
-  },
-}
-
-export const BannerVideo: Story = {
-  args: {
-    post: {
-      ...basePost,
-      heroStyle: 'banner',
-      heroImage: videoFixture,
+      populatedAuthors: [],
+      standfirst: null,
     },
   },
 }

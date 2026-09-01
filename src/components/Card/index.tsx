@@ -1,5 +1,4 @@
 'use client'
-import { IconArrowRight, IconColorSwatch } from '@tabler/icons-react'
 import Link from 'next/link'
 import type React from 'react'
 import { Fragment, ViewTransition } from 'react'
@@ -75,18 +74,37 @@ export const Card: React.FC<{
       : undefined
 
     const splitMedia = metaImage && typeof metaImage !== 'string' && (
-      <Media fill imgClassName="object-cover" resource={metaImage} size="256px" />
+      <Media
+        fill
+        // The frame is the clipped window (see `data-reveal="media"` below), so
+        // the zoom rides the image itself — scaling the frame would fight the
+        // wipe's clip-path for the same box.
+        imgClassName="object-cover transition-transform duration-300 ease-out group-hover:scale-102 motion-reduce:transition-none"
+        resource={metaImage}
+        size="256px"
+      />
     )
 
     return (
+      // `data-reveal*` markers are inert without a `ScrollReveal` ancestor
+      // (docs/animations.md); the related-posts rail is the shell that plays
+      // them. One group value per card, so a card's copy lands on one beat and
+      // consecutive cards still cascade.
       <div
         className={cn('group pressable pressable-subtle flex cursor-pointer gap-3', className)}
         ref={card.ref}
       >
-        <div className="flex min-w-0 flex-1 flex-col justify-between gap-4">
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
           <div className="flex flex-col gap-2">
             {titleToUse && (
-              <h3 className="text-xl font-normal md:text-lg lg:text-xl">
+              // Clamped so a card's height stays near its 4:5 frame: this
+              // variant is built for a rail and a grid, where one long title
+              // otherwise sets the height of every card beside it.
+              <h3
+                className="line-clamp-2 text-lg/normal font-normal"
+                data-reveal
+                data-reveal-group={slug ?? titleToUse}
+              >
                 <Link
                   className="hover:underline"
                   href={href}
@@ -98,19 +116,28 @@ export const Card: React.FC<{
               </h3>
             )}
             {sanitizedDescription && (
-              <p className="text-base text-muted-foreground md:text-sm lg:text-base">
+              <p
+                className="line-clamp-3 text-sm/normal text-muted-foreground"
+                data-reveal
+                data-reveal-group={slug ?? titleToUse}
+              >
                 {sanitizedDescription}
               </p>
             )}
           </div>
-          {/* Decorative affordance — the title link (and clickable card) carry navigation. */}
-          <span aria-hidden className="flex items-center gap-1 text-xs font-medium">
-            Read more
-            <IconArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-          </span>
+          {showCategories && firstCategory && (
+            <Badge data-reveal data-reveal-group={slug ?? titleToUse} variant="secondary">
+              {firstCategory.title || 'Untitled category'}
+            </Badge>
+          )}
         </div>
-        <div className="relative min-w-0 max-w-64 flex-1">
-          <div className="relative aspect-4/5 overflow-hidden rounded-xs bg-muted">
+        {/* 5/12 against the copy's remainder is the design's 155:197 split —
+            the title needs the wider half to stay above two lines in the rail. */}
+        <div className="min-w-0 max-w-64 shrink-0 basis-5/12">
+          <div
+            className="relative aspect-4/5 overflow-hidden rounded-xs bg-muted"
+            data-reveal="media"
+          >
             {splitMedia &&
               (slug ? (
                 <ViewTransition default="none" name={postImageVtName(slug)} share={postImageShare}>
@@ -120,12 +147,6 @@ export const Card: React.FC<{
                 splitMedia
               ))}
           </div>
-          {showCategories && firstCategory && (
-            <Badge className="absolute top-3 right-3" variant="secondary">
-              <IconColorSwatch />
-              {firstCategory.title || 'Untitled category'}
-            </Badge>
-          )}
         </div>
       </div>
     )

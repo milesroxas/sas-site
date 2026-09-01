@@ -153,6 +153,8 @@ const postFixture = (id: number, title: string, slug: string): Post => ({
   title,
   slug,
   content: richText(paragraph(text('Post body.'))),
+  standfirst:
+    'Internal misalignment shows up everywhere your brand touches the world. A shared language system fixes the story before it fractures.',
   meta: {
     title,
     description:

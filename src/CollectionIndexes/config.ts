@@ -17,8 +17,8 @@ type CollectionIndexArgs = {
 }
 
 /**
- * Editor-configured singleton for a collection index page (`/posts`, `/works`).
- * Mirrors the Home global: hero + SEO only — the archive listing itself stays
+ * Editor-configured singleton for a collection index page (`/insights`, `/works`).
+ * Mirrors the Home global: hero + SEO only — the listing itself stays
  * code-owned.
  */
 const collectionIndexGlobal = ({
@@ -84,9 +84,9 @@ export const InsightsIndex = collectionIndexGlobal({
   slug: 'insights-index',
   label: 'Insights Index',
   path: '/insights',
-  extraPaths: ['/posts', '/posts/page/[pageNumber]'],
+  extraPaths: ['/posts', '/post'],
   description:
-    'The insights hub published at /insights (also opens the /posts archive). Hero and SEO only — the lists are automatic.',
+    'The insights hub published at /insights (also at /posts). Hero and SEO only — the lists are automatic.',
 })
 
 export const WorksIndex = collectionIndexGlobal({

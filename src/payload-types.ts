@@ -359,10 +359,13 @@ export interface Post {
   id: number;
   title: string;
   /**
-   * How the hero renders on the post page.
+   * Portrait crop (4:5) beside the title in the post hero.
    */
-  heroStyle?: ('immersive' | 'banner') | null;
   heroImage?: (number | null) | Media;
+  /**
+   * Editorial sentence under the title in the hero. Distinct from the SEO description — this one is written to be read.
+   */
+  standfirst?: string | null;
   content: {
     root: {
       type: string;
@@ -382,8 +385,15 @@ export interface Post {
    * Optional full-width sections rendered after the article body. The article itself stays in the Content tab.
    */
   layout?: FeaturedWorkBlock[] | null;
+  /**
+   * Shown in the rail at the end of this post, in this order. Unpublished picks are skipped. Leave empty to show the most recently published posts (excluding this one).
+   */
   relatedPosts?: (number | Post)[] | null;
-  categories?: (number | Category)[] | null;
+  /**
+   * Every post ends with the rail. Tick this to end on the article instead.
+   */
+  hideRelatedPosts?: boolean | null;
+  editorialNotes?: string | null;
   closing?: PageClosing;
   meta?: {
     /**
@@ -416,6 +426,7 @@ export interface Post {
       image?: (number | null) | Media;
     };
   };
+  categories?: (number | Category)[] | null;
   publishedAt?: string | null;
   authors?: (number | User)[] | null;
   populatedAuthors?:
@@ -5707,8 +5718,8 @@ export interface PageClosingSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
-  heroStyle?: T;
   heroImage?: T;
+  standfirst?: T;
   content?: T;
   layout?:
     | T
@@ -5716,7 +5727,8 @@ export interface PostsSelect<T extends boolean = true> {
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
   relatedPosts?: T;
-  categories?: T;
+  hideRelatedPosts?: T;
+  editorialNotes?: T;
   closing?: T | PageClosingSelect<T>;
   meta?:
     | T
@@ -5732,6 +5744,7 @@ export interface PostsSelect<T extends boolean = true> {
               image?: T;
             };
       };
+  categories?: T;
   publishedAt?: T;
   authors?: T;
   populatedAuthors?:
@@ -7662,7 +7675,7 @@ export interface HomeStatement {
   } | null;
 }
 /**
- * The insights hub published at /insights (also opens the /posts archive). Hero and SEO only — the lists are automatic.
+ * The insights hub published at /insights (also at /posts). Hero and SEO only — the lists are automatic.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "insights-index".

@@ -36,6 +36,7 @@ import { SectionToggleAll as SectionToggleAll_1ba37f1a47d78984fe73dea23b65dbc9 }
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { AdminIcon as AdminIcon_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
+import { AdminLogo as AdminLogo_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { BlocksDrawerTabs as BlocksDrawerTabs_382fdb41e52232ddd723ecac128689ab } from '@/components/admin/BlocksDrawerTabs'
 import { InstructionsProvider as InstructionsProvider_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
@@ -83,6 +84,7 @@ export const importMap = {
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/components/AdminIcon#AdminIcon": AdminIcon_c1363893506d7ed29a71d1a4da01ddb5,
+  "@/components/AdminLogo#AdminLogo": AdminLogo_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/admin/BlocksDrawerTabs#BlocksDrawerTabs": BlocksDrawerTabs_382fdb41e52232ddd723ecac128689ab,
   "@ai-stack/payloadcms/client#InstructionsProvider": InstructionsProvider_4490b89d4413c1ffaecdacfe72efaf73,

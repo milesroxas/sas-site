@@ -2,8 +2,9 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
 /**
- * Topics + posts backing the InsightsBrowse section — shared by /insights and
- * the deep-linked /insights/[topic] route so both render the same browse set.
+ * Topics + posts backing the InsightsBrowse section — shared by /insights,
+ * /posts, and the deep-linked /insights/[topic] route so all render the same
+ * browse set.
  */
 export const queryInsightsBrowseData = async () => {
   const payload = await getPayload({ config: configPromise })

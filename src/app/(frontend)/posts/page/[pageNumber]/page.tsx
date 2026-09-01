@@ -1,18 +1,4 @@
-import configPromise from '@payload-config'
-import { draftMode } from 'next/headers'
-import { notFound } from 'next/navigation'
-import type { Metadata } from 'next/types'
-import { getPayload } from 'payload'
-import { insightsIndexHeroFallback, queryInsightsIndex } from '@/CollectionIndexes/queries'
-import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { PageRange } from '@/components/PageRange'
-import { Pagination } from '@/components/Pagination'
-import { RenderHero } from '@/heros/RenderHero'
-import { CollectionArchive } from '@/sections/CollectionArchive'
-import { RevealSection } from '@/shared/ui/reveal-section'
-import PageClient from './page.client'
-
-export const revalidate = 600
+import { permanentRedirect } from 'next/navigation'
 
 type Args = {
   params: Promise<{
@@ -20,74 +6,8 @@ type Args = {
   }>
 }
 
-export default async function Page({ params: paramsPromise }: Args) {
-  const { pageNumber } = await paramsPromise
-  const { isEnabled: draft } = await draftMode()
-  const payload = await getPayload({ config: configPromise })
-  const postsIndex = await queryInsightsIndex()
-  const hero = postsIndex?.hero?.title ? postsIndex.hero : insightsIndexHeroFallback
-
-  const sanitizedPageNumber = Number(pageNumber)
-
-  if (!Number.isInteger(sanitizedPageNumber)) notFound()
-
-  const posts = await payload.find({
-    collection: 'posts',
-    depth: 1,
-    limit: 12,
-    page: sanitizedPageNumber,
-    overrideAccess: false,
-  })
-
-  return (
-    <div className="pb-24">
-      <PageClient />
-      {draft && <LivePreviewListener />}
-      <RevealSection>
-        <RenderHero {...hero} />
-      </RevealSection>
-
-      <RevealSection className="container mb-8" delayMs={60}>
-        <PageRange
-          collection="posts"
-          currentPage={posts.page}
-          limit={12}
-          totalDocs={posts.totalDocs}
-        />
-      </RevealSection>
-
-      <CollectionArchive posts={posts.docs} />
-
-      {posts?.page && posts?.totalPages > 1 ? (
-        <RevealSection className="container" delayMs={120}>
-          <Pagination page={posts.page} totalPages={posts.totalPages} />
-        </RevealSection>
-      ) : null}
-    </div>
-  )
-}
-
-export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
-  const { pageNumber } = await paramsPromise
-  return {
-    title: `Payload Website Template Posts Page ${pageNumber || ''}`,
-  }
-}
-
-export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const { totalDocs } = await payload.count({
-    collection: 'posts',
-    overrideAccess: false,
-  })
-
-  const totalPages = Math.ceil(totalDocs / 10)
-
-  const pages: { pageNumber: string }[] = []
-
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push({ pageNumber: String(i) })
-  }
-
-  return pages
+/** Old archive pages; the Insights Index singleton does not paginate. */
+export default async function Page({ params }: Args) {
+  await params
+  permanentRedirect('/posts')
 }

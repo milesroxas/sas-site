@@ -49,6 +49,7 @@ export default buildConfig({
       beforeLogin: ['@/components/BeforeLogin'],
       graphics: {
         Icon: '@/components/AdminIcon#AdminIcon',
+        Logo: '@/components/AdminLogo#AdminLogo',
       },
       providers: ['@/components/admin/BlocksDrawerTabs#BlocksDrawerTabs'],
     },
