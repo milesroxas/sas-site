@@ -7,7 +7,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
-import { slugField } from 'payload'
+import { slugField } from '@/fields/slug'
 import { closingTab } from '@/fields/closing'
 import { editorialNotesField, relatedPagesField } from '@/fields/pageFields'
 import { postLayoutBlocks } from '@/fields/pageLayoutBlocks'

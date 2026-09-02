@@ -4,7 +4,7 @@ import type {
   CollectionConfig,
   CollectionSlug,
 } from 'payload'
-import { slugField } from 'payload'
+import { slugField } from '@/fields/slug'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { closingTab } from '@/fields/closing'

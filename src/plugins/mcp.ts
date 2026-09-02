@@ -194,6 +194,7 @@ export const mcp: Plugin = mcpPlugin({
         'Rich text fields expect Lexical editor state JSON, not markdown or HTML.',
         'Before updating a document, find it first and edit from its current state.',
         'Relationship fields take document ids — look them up with the relevant find tool.',
+        'Omit slug, key, and generateSlug fields on create and update: slugs auto-generate from the title or name, and any value you send is normalized to a URL-safe slug.',
         'Asset libraries require organization and project ids; omit rootFolder to auto-create one.',
         'Media cannot be uploaded here; reference existing media documents by id.',
       ].join(' '),
