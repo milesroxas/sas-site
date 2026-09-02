@@ -5,6 +5,7 @@ import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { CallToAction } from '@/blocks/CallToAction/config'
 import { Carousel } from '@/blocks/Carousel/config'
 import { Content } from '@/blocks/Content/config'
+import { ContactBlock } from '@/blocks/contact/config'
 import { DynamicAudience } from '@/blocks/DynamicAudience/config'
 import { FormBlock } from '@/blocks/Form/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
@@ -49,6 +50,7 @@ export const pageLayoutBlocks: Block[] = [
   FeaturedWork,
   // Forms & CTAs
   CallToAction,
+  ContactBlock,
   FormBlock,
   NewsletterSignup,
 ]
@@ -84,5 +86,6 @@ export const segmentPageBlocks: Block[] = [
   FeaturedWork,
   // Forms & CTAs
   CallToAction,
+  ContactBlock,
   FormBlock,
 ]

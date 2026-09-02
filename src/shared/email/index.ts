@@ -7,4 +7,9 @@
  * Rendering and newsletter helpers are imported by deep path (`@/shared/email/lib/render`,
  * `@/shared/email/newsletter/*`); this barrel only exposes the wired send entry points.
  */
-export { sendInviteEmail, sendNewsletterConfirmEmail } from './lib/send'
+export {
+  sendInquiryNotificationEmail,
+  sendInquiryReceivedEmail,
+  sendInviteEmail,
+  sendNewsletterConfirmEmail,
+} from './lib/send'

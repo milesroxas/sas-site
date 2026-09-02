@@ -16,6 +16,7 @@ import {
   getViewportWidth,
   HERO_MEDIA_SELECTOR,
   MENU_EASE,
+  onMediaReady,
   TRAVELER_Z,
 } from './motion'
 
@@ -131,22 +132,6 @@ const createMediaElement = (media: MenuMedia, frame: HTMLElement) => {
     if (playing) el.currentTime = playing.currentTime
   }
   return el
-}
-
-/** Resolve once the element has real pixels to show (or after a grace timeout,
- *  scheduled by the caller). */
-const onMediaReady = (el: HTMLElement, done: () => void) => {
-  if (el instanceof HTMLImageElement) {
-    if (el.complete && el.naturalWidth > 0) return done()
-    el.addEventListener('load', done, { once: true })
-    el.addEventListener('error', done, { once: true })
-  } else if (el instanceof HTMLVideoElement) {
-    if (el.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) return done()
-    el.addEventListener('loadeddata', done, { once: true })
-    el.addEventListener('error', done, { once: true })
-  } else {
-    done()
-  }
 }
 
 export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {

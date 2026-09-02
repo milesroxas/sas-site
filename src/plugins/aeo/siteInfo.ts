@@ -70,6 +70,34 @@ export const SiteInfo: GlobalConfig = {
       type: 'email',
     },
     {
+      // The two promises the contact page makes and the confirmation email
+      // repeats. They live here rather than on the block so the studio states
+      // them once — every contact template and the receipt email read these.
+      name: 'inquiries',
+      type: 'group',
+      label: 'Inquiries',
+      admin: { description: 'Defaults for the contact templates and the confirmation email.' },
+      fields: [
+        {
+          name: 'responseTime',
+          type: 'text',
+          defaultValue: 'within 2 business days',
+          admin: {
+            description:
+              'Completes the sentence "you will hear back ___". Shown on the contact page and in the confirmation email.',
+          },
+        },
+        {
+          name: 'scheduleUrl',
+          type: 'text',
+          admin: {
+            description:
+              'Booking link behind "Schedule a call". Leave empty to hide that action everywhere.',
+          },
+        },
+      ],
+    },
+    {
       name: 'logo',
       type: 'upload',
       relationTo: 'media',

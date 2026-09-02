@@ -19,13 +19,16 @@ export type SelectInputProps = {
   label?: string | null
   name: string
   options: SelectInputOption[]
+  placeholder?: string
   required?: boolean | null
+  /** Matches the surrounding fields; `line` is the site's editorial treatment. */
+  variant?: 'default' | 'line'
 }
 
 /**
- * Controlled shadcn select bound to react-hook-form. Shared by the Select,
- * Country, and State fields, which differ only in where their options come
- * from.
+ * Controlled shadcn select bound to react-hook-form. Used wherever a list is
+ * long enough that a menu beats a row of chips (country, state), and by any
+ * CMS-authored select field.
  */
 export const SelectInput: React.FC<SelectInputProps> = ({
   control,
@@ -34,7 +37,9 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   label,
   name,
   options,
+  placeholder,
   required,
+  variant = 'line',
 }) => (
   <Controller
     control={control}
@@ -45,8 +50,13 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 
       return (
         <Select onValueChange={onChange} value={controlledValue?.value}>
-          <SelectTrigger aria-invalid={hasError || undefined} className="w-full" id={name}>
-            <SelectValue placeholder={label} />
+          <SelectTrigger
+            aria-invalid={hasError || undefined}
+            className="w-full"
+            id={name}
+            variant={variant}
+          >
+            <SelectValue placeholder={placeholder ?? label} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>

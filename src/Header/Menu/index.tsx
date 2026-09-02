@@ -37,8 +37,10 @@ import {
   getViewportWidth,
   HERO_MEDIA_SELECTOR,
   isInAppNavClick,
+  isMediaReady,
   MENU_EASE,
   MOBILE_CARD_SHADOW,
+  onMediaReady,
 } from './motion'
 
 gsap.registerPlugin(useGSAP)
@@ -65,6 +67,13 @@ const PREVIEW_SLOT_SELECTOR = '[data-menu-preview-slot]'
  * animating mask. The docking window dissolves from page to media; the
  * settled menu shows only the current page's media. Pages without hero media
  * keep the scaled page view.
+ *
+ * The layer itself is always visible and always empty-safe: it is a
+ * transparent, mask-cropped box, and what fades is whatever it holds (the
+ * base clone, the hover previews stacked above it, the chat cover). That is
+ * what lets a cold cache degrade cleanly — a piece of media that cannot paint
+ * yet simply stays at zero opacity, and the page crop underneath keeps the
+ * window honest until it can.
  */
 const HERO_LAYER_SELECTOR = '[data-menu-hero-media]'
 /** The current page's own media inside the layer — the hover-preview resting state. */
@@ -140,7 +149,6 @@ const mountHeroMedia = (frame: HTMLElement, scrollTop: number) => {
     // Above any in-page stacking; the frame's transform scopes this context.
     zIndex: 100,
     pointerEvents: 'none',
-    autoAlpha: 0,
   })
 
   const source = frame.querySelector<HTMLImageElement | HTMLVideoElement>(HERO_MEDIA_SELECTOR)
@@ -171,12 +179,10 @@ const mountHeroMedia = (frame: HTMLElement, scrollTop: number) => {
       width: '100%',
       height: '100%',
       objectFit: 'cover',
+      // The dissolve raises this, not the layer — see the layer's note above.
+      autoAlpha: 0,
     })
     layer.appendChild(clone)
-  } else {
-    // No base to dissolve to — the timeline skips the open dissolve, so the
-    // layer must be visible from the start for hover previews to show.
-    gsap.set(layer, { autoAlpha: 1 })
   }
 
   frame.appendChild(layer)
@@ -221,12 +227,25 @@ const overlayFadeTimeline = (overlay: HTMLElement) =>
  * The incoming element fades in above the stack and drops what it covers on
  * complete — outgoing media never fades under it, so the base can't ghost
  * through mid-dissolve. Reduced motion snaps.
+ *
+ * Nothing is revealed before it can paint. A preview whose bytes are still in
+ * flight waits, invisible, at the top of the stack while the window keeps
+ * showing what it was showing — the honest answer to "not loaded yet", and
+ * the only one that never flashes a hole. If the pointer moves on first, the
+ * waiting element is dropped where it stands, so a slow image can never
+ * surface after the intent that asked for it is gone.
  */
 const showHoverMedia = (media: MenuMedia | null) => {
   const layer = getPageFrame()?.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
   if (!layer) return
   const duration = prefersReducedMotion() ? 0 : DISSOLVE_DURATION
-  const previous = Array.from(layer.querySelectorAll<HTMLElement>(HOVER_ITEM_SELECTOR))
+  const stack = Array.from(layer.querySelectorAll<HTMLElement>(HOVER_ITEM_SELECTOR))
+  for (const el of stack) {
+    if (el.dataset.menuHoverPending !== undefined) el.remove()
+  }
+  // Everything still on screen: what the incoming preview has to cover before
+  // any of it may be dropped.
+  const previous = stack.filter((el) => el.isConnected)
 
   if (!media) {
     for (const el of previous) {
@@ -262,6 +281,7 @@ const showHoverMedia = (media: MenuMedia | null) => {
 
   const el = createMenuMediaElement(media)
   el.setAttribute('data-menu-hover-item', media.url)
+  el.dataset.menuHoverPending = ''
   gsap.set(el, {
     position: 'absolute',
     inset: 0,
@@ -271,17 +291,27 @@ const showHoverMedia = (media: MenuMedia | null) => {
     autoAlpha: 0,
   })
   layer.appendChild(el)
-  gsap.to(el, {
-    autoAlpha: 1,
-    duration,
-    ease: DISSOLVE_EASE,
-    overwrite: 'auto',
-    // Fully covered now — drop the outgoing stack beneath.
-    onComplete: () => {
-      for (const p of previous) p.remove()
-    },
-  })
   if (el instanceof HTMLVideoElement) void el.play().catch(() => {})
+  onMediaReady(el, (ok) => {
+    // Dropped while it loaded (pointer moved on, menu closed), or it will
+    // never paint at all — either way the window keeps what it already has.
+    if (!el.isConnected) return
+    if (!ok) {
+      el.remove()
+      return
+    }
+    delete el.dataset.menuHoverPending
+    gsap.to(el, {
+      autoAlpha: 1,
+      duration,
+      ease: DISSOLVE_EASE,
+      overwrite: 'auto',
+      // Fully covered now — drop the outgoing stack beneath.
+      onComplete: () => {
+        for (const p of previous) p.remove()
+      },
+    })
+  })
 }
 
 type NavItemLink = NonNullable<HeaderType['navItems']>[number]['link']
@@ -383,6 +413,56 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     }
   }, [])
 
+  /** URLs the warm pass has decoded — see `warmMedia` below. */
+  const warmedRef = useRef<Set<string>>(new Set())
+
+  /**
+   * Can this media paint the instant the handoff asks for it? Either the warm
+   * pass decoded it, or a preview in the docked window is already holding
+   * those exact pixels — the desktop path, where the pointer has been sitting
+   * on the link that previews them. Anything else is cold, and the handoff
+   * stands aside for the plain close rather than expanding an empty box to
+   * full screen.
+   */
+  const isMenuMediaReady = useCallback((media: MenuMedia) => {
+    if (warmedRef.current.has(media.url)) return true
+    const layer = getPageFrame()?.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
+    if (!layer) return false
+    for (const el of layer.querySelectorAll<HTMLElement>(HOVER_ITEM_SELECTOR)) {
+      if (el.dataset.menuHoverItem === media.url && isMediaReady(el)) return true
+    }
+    return false
+  }, [])
+
+  /**
+   * Late base media (cold cache). The open timeline only owns a dissolve it
+   * can play in both directions, so a clone with no pixels at build time was
+   * left out of it and the window opened on the page crop — correct, and the
+   * only honest thing to show. Bring the media in the moment it can paint, on
+   * the hover-preview beat so it reads as the window settling rather than a
+   * pop, and record that this opacity is ours and not the timeline's: the
+   * close has to take it back out by hand.
+   */
+  const lateBaseRef = useRef(false)
+  const revealLateHeroBase = useCallback(() => {
+    const base = getPageFrame()?.querySelector<HTMLElement>(
+      `${HERO_LAYER_SELECTOR} ${HERO_BASE_SELECTOR}`,
+    )
+    if (!base || isMediaReady(base)) return
+    lateBaseRef.current = true
+    onMediaReady(base, (ok) => {
+      // Closed, or reopened onto a fresh layer, while it loaded — the resting
+      // state is no longer ours to change.
+      if (!ok || !openRef.current || !base.isConnected) return
+      gsap.to(base, {
+        autoAlpha: 1,
+        duration: prefersReducedMotion() ? 0 : DISSOLVE_DURATION,
+        ease: HERO_DISSOLVE_EASE,
+        overwrite: 'auto',
+      })
+    })
+  }, [])
+
   /**
    * Same-tab in-app link → this close is a navigation. When the destination
    * has hero media and the menu is fully open, the click starts the hero
@@ -428,6 +508,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           timelineProgress: tlRef.current?.progress(),
           destinationPathname: anchor.pathname,
           currentPathname: window.location.pathname,
+          mediaReady: isMenuMediaReady(media),
         })
       if (!canHandoff) {
         event.preventDefault()
@@ -467,7 +548,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       router.push(anchor.pathname + anchor.search + anchor.hash)
       onClose()
     },
-    [onClose, restoreFrame, router],
+    [onClose, restoreFrame, router, isMenuMediaReady],
   )
 
   // Route committed while the frame is still frozen (menu open or mid-undock):
@@ -529,22 +610,51 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     return [...byUrl.values()]
   }, [expertise, audiences, works, pageMedia])
 
-  // Warm the image cache on first open so a hover dissolve never pops in
-  // half-loaded. Videos stream on demand — preloading them would be wasteful.
+  /**
+   * Cache warming. Every surface below refuses to reveal media it cannot
+   * paint, so the way to make the menu feel instant is not to animate around
+   * a cold cache — it is not to have one. The pass runs on the first *intent*
+   * signal from the menu button (hover, focus, or the pointerdown that
+   * precedes a tap) and, failing that, on the first open, which buys it the
+   * whole open animation as head start.
+   *
+   * `warmedRef` records what actually finished decoding — the synchronous
+   * answer the hero handoff needs at click time (`isMenuMediaReady`). Videos
+   * are never warmed: pulling whole clips down ahead of an intent nobody has
+   * expressed is the speculative cost this pass exists to avoid.
+   */
   const preloadedRef = useRef(false)
-  useEffect(() => {
-    if (!open || preloadedRef.current) return
+  const warmMedia = useCallback(() => {
+    if (preloadedRef.current) return
     preloadedRef.current = true
     for (const media of hoverMediaList) {
-      if (media.mime.startsWith('image/')) {
-        const img = new Image()
-        // Cache warming must never compete with page-critical requests.
-        img.fetchPriority = 'low'
-        img.decoding = 'async'
-        img.src = media.url
-      }
+      if (!media.mime.startsWith('image/')) continue
+      const img = new Image()
+      // Cache warming must never compete with page-critical requests.
+      img.fetchPriority = 'low'
+      img.decoding = 'async'
+      img.src = media.url
+      onMediaReady(img, (ok) => {
+        if (ok) warmedRef.current.add(media.url)
+      })
     }
-  }, [open, hoverMediaList])
+  }, [hoverMediaList])
+
+  useEffect(() => {
+    if (open) warmMedia()
+  }, [open, warmMedia])
+
+  // Intent, one beat ahead of the open: reaching for the button is enough.
+  useEffect(() => {
+    const button = menuButtonRef.current
+    if (!button) return
+    // pointerdown covers touch, where there is no hover to read intent from.
+    const events = ['pointerenter', 'pointerdown', 'focus'] as const
+    for (const type of events) button.addEventListener(type, warmMedia)
+    return () => {
+      for (const type of events) button.removeEventListener(type, warmMedia)
+    }
+  }, [menuButtonRef, warmMedia])
 
   useGSAP(
     () => {
@@ -587,9 +697,16 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             // Dissolve layer — injected into the frame by mountHeroMedia at
             // open time (so the animating mask crops it). The open dissolve
             // only wires up when the page contributed base media; a base-less
-            // layer stays visible as the empty home for hover previews.
+            // layer stays as the empty home for hover previews.
             const heroLayer = frame.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
-            const heroBase = heroLayer?.querySelector(HERO_BASE_SELECTOR)
+            const heroBase = heroLayer?.querySelector<HTMLElement>(HERO_BASE_SELECTOR) ?? null
+            // Only media that can paint *this frame* belongs in the timeline.
+            // A clone whose bytes are still in flight would dissolve the page
+            // crop away to nothing and then pop when it decodes; leave it out,
+            // open on the page, and let `revealLateHeroBase` bring it in when
+            // it is real. (The timeline also has to be able to take its own
+            // dissolve back out on the reverse — hence the strict split.)
+            const dissolveBase = heroBase && isMediaReady(heroBase) ? heroBase : null
 
             let tl: gsap.core.Timeline
             if (!motionOK) {
@@ -610,7 +727,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                 0,
               )
               // Snap straight to the settled view: hero media fills the window.
-              if (heroLayer) tl.set(heroLayer, { autoAlpha: 1 }, 0)
+              if (dissolveBase) tl.set(dissolveBase, { autoAlpha: 1 }, 0)
               if (footer) tl.set(footer, { autoAlpha: 0 }, 0)
             } else {
               // Scale + dock and the clip mask run in parallel; the mask starts
@@ -667,13 +784,13 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                   },
                   CLIP_LAG,
                 )
-              if (heroLayer && heroBase) {
+              if (dissolveBase) {
                 // Cross-fade dissolve: the page's own hero media fades in over
                 // the page content inside the docking window, landing as the
                 // clip mask settles. The layer is a frame child, so the mask
                 // crops the fade at every step — nothing paints outside it.
                 tl.fromTo(
-                  heroLayer,
+                  dissolveBase,
                   { autoAlpha: 0 },
                   {
                     autoAlpha: 1,
@@ -805,6 +922,9 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         // timeline wires the dissolve only when the layer exists.
         mountHeroMedia(frame, window.scrollY)
         tl = rebuildTimelineRef.current()
+        // Fresh layer: whatever the previous open arranged is gone.
+        lateBaseRef.current = false
+        revealLateHeroBase()
       }
       // Freeze the page at its current scroll position inside a fixed
       // full-viewport frame. Scale + clip-path do the rest — no width/height
@@ -844,6 +964,22 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       // left behind (Escape while hovering) would ride the reverse and pop off.
       window.clearTimeout(hoverClearTimer.current)
       showHoverMedia(null)
+      // A base the timeline never owned has to be dissolved back out by hand,
+      // over the beat the reverse would have given it.
+      if (lateBaseRef.current) {
+        lateBaseRef.current = false
+        const base = frame.querySelector<HTMLElement>(
+          `${HERO_LAYER_SELECTOR} ${HERO_BASE_SELECTOR}`,
+        )
+        if (base) {
+          gsap.to(base, {
+            autoAlpha: 0,
+            duration: prefersReducedMotion() ? 0 : HERO_DISSOLVE_END - HERO_DISSOLVE_START,
+            ease: HERO_DISSOLVE_EASE,
+            overwrite: 'auto',
+          })
+        }
+      }
       // The Ask transcript may have faded the window out — restore it so the
       // undock animation has something to show.
       gsap.set(frame, { autoAlpha: 1 })
@@ -860,7 +996,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       })
       tl.reverse()
     }
-  }, [open, menuButtonRef, restoreFrame])
+  }, [open, menuButtonRef, restoreFrame, revealLateHeroBase])
 
   // Escape steps back: transcript → preview first, then menu → page.
   // Safety-net cleanup if unmounted mid-open lives in the unmount effect below.

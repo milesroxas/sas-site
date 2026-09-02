@@ -36,3 +36,24 @@ export const Invalid: Story = {
 export const File: Story = {
   args: { placeholder: undefined, type: 'file' },
 }
+
+/** The editorial treatment: a mono label above a hairline, no box. */
+export const Line: Story = {
+  args: { variant: 'line' },
+  decorators: [
+    (Story) => (
+      <div className="flex w-80 flex-col gap-3">
+        <span className="font-mono text-xs/4 tracking-widest text-muted-foreground uppercase">
+          Email
+        </span>
+        <Story />
+      </div>
+    ),
+  ],
+}
+
+/** A filled `line` input darkens its rule — pure CSS, no state to track. */
+export const LineFilled: Story = {
+  args: { variant: 'line', defaultValue: 'maya@northlight.co' },
+  decorators: Line.decorators,
+}

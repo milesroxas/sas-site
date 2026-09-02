@@ -92,13 +92,84 @@ function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
+/**
+ * `mono` is the site's editorial field label: small uppercase mono, quiet
+ * until the field takes focus, when it turns primary alongside the `line`
+ * input's rule. Stated here, not at call sites, so every form that uses the
+ * editorial treatment reads the same.
+ */
+const fieldLabelVariants = cva(
+  'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-2 dark:has-data-checked:bg-primary/10',
+  {
+    variants: {
+      variant: {
+        default: '',
+        mono: 'font-mono text-xs/4 font-normal tracking-widest text-muted-foreground uppercase group-has-[:focus-visible]/field:text-primary group-data-[invalid=true]/field:text-destructive',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  },
+)
+
+function FieldLabel({
+  className,
+  variant,
+  ...props
+}: React.ComponentProps<typeof Label> & VariantProps<typeof fieldLabelVariants>) {
   return (
     <Label
       data-slot="field-label"
+      data-variant={variant ?? 'default'}
+      className={cn(fieldLabelVariants({ variant }), className)}
+      {...props}
+    />
+  )
+}
+
+/**
+ * Trailing counterpart to a `mono` label, set on the same baseline at the far
+ * end of the field's header row: the unit, the selection rule, the character
+ * count ("SELECT ANY", "USD", "0 / 1200").
+ */
+function FieldMeta({ className, ...props }: React.ComponentProps<'span'>) {
+  return (
+    <span
+      data-slot="field-meta"
       className={cn(
-        'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-2 dark:has-data-checked:bg-primary/10',
-        'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col',
+        'shrink-0 font-mono text-xs/4 tracking-widest text-muted-foreground uppercase tabular-nums',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+/**
+ * Framed writing surface: one border around a `bare` control and a footer rail
+ * beneath it, so the counter and helper line read as part of the field rather
+ * than as loose text under it.
+ */
+function FieldPanel({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="field-panel"
+      className={cn(
+        'flex w-full flex-col rounded-md border border-input bg-input/20 transition-colors focus-within:border-ring group-data-[invalid=true]/field:border-destructive dark:bg-input/30',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function FieldPanelFooter({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="field-panel-footer"
+      className={cn(
+        'flex items-center justify-between gap-4 border-t border-input px-5 py-3',
         className,
       )}
       {...props}
@@ -218,7 +289,11 @@ export {
   FieldGroup,
   FieldLabel,
   FieldLegend,
+  FieldMeta,
+  FieldPanel,
+  FieldPanelFooter,
   FieldSeparator,
   FieldSet,
   FieldTitle,
+  fieldLabelVariants,
 }

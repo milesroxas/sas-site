@@ -1,6 +1,8 @@
 import type { Payload } from 'payload'
 import type { ReactElement } from 'react'
 import { ActivationEmail } from '../templates/activation-email'
+import { InquiryNotificationEmail } from '../templates/inquiry-notification-email'
+import { InquiryReceivedEmail } from '../templates/inquiry-received-email'
 import { InviteEmail } from '../templates/invite-email'
 import { NewsletterConfirmEmail } from '../templates/newsletter-confirm-email'
 import { PasswordResetEmail } from '../templates/password-reset-email'
@@ -11,7 +13,8 @@ import { renderEmail } from './render'
 
 interface SendEmailArgs {
   payload: Payload
-  to: string
+  /** One address, or many for a single fan-out send (team notifications). */
+  to: string | string[]
   subject: string
   email: ReactElement
 }
@@ -185,6 +188,93 @@ export function sendSubscriptionConfirmationEmail({
         planPrice={planPrice}
         cycleLabel={cycleLabel}
         nextBillingDate={nextBillingDate}
+        {...brandDefaults(brand)}
+      />
+    ),
+  })
+}
+
+export interface SendInquiryNotificationEmailArgs extends BrandOverrides {
+  payload: Payload
+  to: string | string[]
+  adminUrl: string
+  reference: string
+  senderName: string
+  senderEmail: string
+  company?: string
+  summary?: { label: string; value: string }[]
+  excerpt: string
+  typeLabel: string
+  subject?: string
+}
+
+/** Tells the studio a request has landed. One send, many recipients. */
+export function sendInquiryNotificationEmail({
+  payload,
+  to,
+  subject,
+  adminUrl,
+  reference,
+  senderName,
+  senderEmail,
+  company,
+  summary,
+  excerpt,
+  typeLabel,
+  ...brand
+}: SendInquiryNotificationEmailArgs) {
+  return sendEmail({
+    payload,
+    to,
+    subject:
+      subject ?? `${typeLabel} — ${senderName}${company ? ` (${company})` : ''} · ${reference}`,
+    email: (
+      <InquiryNotificationEmail
+        adminUrl={adminUrl}
+        company={company}
+        excerpt={excerpt}
+        reference={reference}
+        senderEmail={senderEmail}
+        senderName={senderName}
+        summary={summary}
+        typeLabel={typeLabel}
+        {...brandDefaults(brand)}
+      />
+    ),
+  })
+}
+
+export interface SendInquiryReceivedEmailArgs extends BrandOverrides {
+  payload: Payload
+  to: string
+  senderName: string
+  reference: string
+  responseTime: string
+  scheduleUrl?: string
+  subject?: string
+}
+
+/** Confirms to the visitor that their note arrived, and when to expect an answer. */
+export function sendInquiryReceivedEmail({
+  payload,
+  to,
+  subject,
+  senderName,
+  reference,
+  responseTime,
+  scheduleUrl,
+  ...brand
+}: SendInquiryReceivedEmailArgs) {
+  return sendEmail({
+    payload,
+    to,
+    subject: subject ?? `We have your note (${reference})`,
+    email: (
+      <InquiryReceivedEmail
+        reference={reference}
+        responseTime={responseTime}
+        scheduleUrl={scheduleUrl}
+        senderName={senderName}
         {...brandDefaults(brand)}
       />
     ),

@@ -23,6 +23,8 @@ import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@pa
 import { MediaFilenameCell as MediaFilenameCell_e30d35f4a7f8b6958ff3d3dfd7138119 } from '@/components/MediaFilenameCell'
 import { MediaUpload as MediaUpload_723dfad18d90b991b29baca9a3998dd1 } from '@/components/MediaUpload'
 import { MediaGallery as MediaGallery_6f514b404e7f1589cac282e4c156f993 } from '@sitebytom/payload-media-gallery/client'
+import { InquiryActions as InquiryActions_b2c2cebae1858c3ee8d4e6a6dd6abc0c } from '@/collections/Inquiries/components/InquiryActions'
+import { InboxFilters as InboxFilters_aaad21e601cb033ff32297ebb9c0eb64 } from '@/collections/Inquiries/components/InboxFilters'
 import { OrderedListFeatureClient as OrderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { UnorderedListFeatureClient as UnorderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { SendPanel as SendPanel_31190afebae247357b767d1f03bd15c8 } from '@/collections/Newsletters/components/SendPanel'
@@ -37,7 +39,9 @@ import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } f
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { AdminIcon as AdminIcon_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
 import { AdminLogo as AdminLogo_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
+import { InquiriesDashboard as InquiriesDashboard_ef92ef0a0367c0619848229c330ca202 } from '@/collections/Inquiries/components/InquiriesDashboard'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
+import { InboxNavBadge as InboxNavBadge_26f5323f2ed216f767c955478f81a680 } from '@/collections/Inquiries/components/InboxNavBadge'
 import { BlocksDrawerTabs as BlocksDrawerTabs_382fdb41e52232ddd723ecac128689ab } from '@/components/admin/BlocksDrawerTabs'
 import { InstructionsProvider as InstructionsProvider_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { AdminErrorBoundary as AdminErrorBoundary_e5a9e14bdbe97e70ba60697217fe7688 } from '@payloadcms/plugin-sentry/client'
@@ -71,6 +75,8 @@ export const importMap = {
   "@/components/MediaFilenameCell#MediaFilenameCell": MediaFilenameCell_e30d35f4a7f8b6958ff3d3dfd7138119,
   "@/components/MediaUpload#MediaUpload": MediaUpload_723dfad18d90b991b29baca9a3998dd1,
   "@sitebytom/payload-media-gallery/client#MediaGallery": MediaGallery_6f514b404e7f1589cac282e4c156f993,
+  "@/collections/Inquiries/components/InquiryActions#InquiryActions": InquiryActions_b2c2cebae1858c3ee8d4e6a6dd6abc0c,
+  "@/collections/Inquiries/components/InboxFilters#InboxFilters": InboxFilters_aaad21e601cb033ff32297ebb9c0eb64,
   "@payloadcms/richtext-lexical/client#OrderedListFeatureClient": OrderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#UnorderedListFeatureClient": UnorderedListFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/collections/Newsletters/components/SendPanel#SendPanel": SendPanel_31190afebae247357b767d1f03bd15c8,
@@ -85,7 +91,9 @@ export const importMap = {
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/components/AdminIcon#AdminIcon": AdminIcon_c1363893506d7ed29a71d1a4da01ddb5,
   "@/components/AdminLogo#AdminLogo": AdminLogo_aa0a2d19d38a4839dbd373417e210b89,
+  "@/collections/Inquiries/components/InquiriesDashboard#InquiriesDashboard": InquiriesDashboard_ef92ef0a0367c0619848229c330ca202,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
+  "@/collections/Inquiries/components/InboxNavBadge#InboxNavBadge": InboxNavBadge_26f5323f2ed216f767c955478f81a680,
   "@/components/admin/BlocksDrawerTabs#BlocksDrawerTabs": BlocksDrawerTabs_382fdb41e52232ddd723ecac128689ab,
   "@ai-stack/payloadcms/client#InstructionsProvider": InstructionsProvider_4490b89d4413c1ffaecdacfe72efaf73,
   "@payloadcms/plugin-sentry/client#AdminErrorBoundary": AdminErrorBoundary_e5a9e14bdbe97e70ba60697217fe7688,

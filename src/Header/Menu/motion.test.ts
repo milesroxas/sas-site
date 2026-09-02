@@ -1,7 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { clipPathInset } from '@/shared/ui/hero-landing'
-import { canStartHeroHandoff, getCardMotion, getViewportCrop, isInAppNavClick } from './motion'
+import {
+  canStartHeroHandoff,
+  getCardMotion,
+  getViewportCrop,
+  isInAppNavClick,
+  isMediaReady,
+  onMediaReady,
+} from './motion'
 
 const setViewport = (width: number, height: number) => {
   Object.defineProperty(document.documentElement, 'clientWidth', {
@@ -60,6 +67,7 @@ describe('canStartHeroHandoff', () => {
     timelineProgress: 1,
     destinationPathname: '/work',
     currentPathname: '/',
+    mediaReady: true,
   }
 
   it('passes when the menu is fully open on a laid-out slot toward another page', () => {
@@ -75,6 +83,64 @@ describe('canStartHeroHandoff', () => {
     expect(canStartHeroHandoff({ ...openGate, timelineProgress: undefined })).toBe(false)
     // Same-page links re-land where they are.
     expect(canStartHeroHandoff({ ...openGate, destinationPathname: '/' })).toBe(false)
+    // Cold cache: the traveler would expand a box with nothing in it.
+    expect(canStartHeroHandoff({ ...openGate, mediaReady: false })).toBe(false)
+  })
+})
+
+describe('media readiness', () => {
+  // jsdom never loads anything, so painted state is stubbed the way the DOM
+  // reports it: a decoded image has pixels, a video has buffered a frame.
+  const paintedImage = () => {
+    const img = document.createElement('img')
+    Object.defineProperty(img, 'naturalWidth', { value: 1200, configurable: true })
+    return img
+  }
+  const bufferedVideo = () => {
+    const video = document.createElement('video')
+    Object.defineProperty(video, 'readyState', {
+      value: HTMLMediaElement.HAVE_CURRENT_DATA,
+      configurable: true,
+    })
+    return video
+  }
+
+  it('calls an element ready only once it has pixels to show', () => {
+    expect(isMediaReady(document.createElement('img'))).toBe(false)
+    expect(isMediaReady(paintedImage())).toBe(true)
+    expect(isMediaReady(document.createElement('video'))).toBe(false)
+    expect(isMediaReady(bufferedVideo())).toBe(true)
+    // Anything else carries its own pixels — nothing to wait for.
+    expect(isMediaReady(document.createElement('div'))).toBe(true)
+  })
+
+  it('resolves immediately for media that can already paint', () => {
+    const done = vi.fn()
+    onMediaReady(paintedImage(), done)
+    expect(done).toHaveBeenCalledWith(true)
+    onMediaReady(bufferedVideo(), done)
+    expect(done).toHaveBeenLastCalledWith(true)
+  })
+
+  it('waits for the load, and reports a failure as not-ready', () => {
+    const img = document.createElement('img')
+    const done = vi.fn()
+    onMediaReady(img, done)
+    expect(done).not.toHaveBeenCalled()
+    img.dispatchEvent(new Event('load'))
+    expect(done).toHaveBeenCalledWith(true)
+
+    const broken = document.createElement('img')
+    const failed = vi.fn()
+    onMediaReady(broken, failed)
+    broken.dispatchEvent(new Event('error'))
+    expect(failed).toHaveBeenCalledWith(false)
+
+    const video = document.createElement('video')
+    const played = vi.fn()
+    onMediaReady(video, played)
+    video.dispatchEvent(new Event('loadeddata'))
+    expect(played).toHaveBeenCalledWith(true)
   })
 })
 

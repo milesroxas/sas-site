@@ -5,6 +5,7 @@ import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
+import { ContactBlockComponent } from '@/blocks/contact/Component'
 import { DynamicAudienceBlock } from '@/blocks/DynamicAudience/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Component'
@@ -28,6 +29,7 @@ const blockComponents = {
   archive: ArchiveBlock,
   audienceTabs: AudienceTabsBlock,
   carousel: CarouselBlock,
+  contactBlock: ContactBlockComponent,
   content: ContentBlock,
   cta: CallToActionBlock,
   dynamicAudience: DynamicAudienceBlock,

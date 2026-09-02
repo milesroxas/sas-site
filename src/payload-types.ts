@@ -85,6 +85,7 @@ export interface Config {
     industries: Industry;
     platforms: Platform;
     categories: Category;
+    inquiries: Inquiry;
     newsletters: Newsletter;
     audiences: Audience;
     subscribers: Subscriber;
@@ -135,6 +136,7 @@ export interface Config {
     industries: IndustriesSelect<false> | IndustriesSelect<true>;
     platforms: PlatformsSelect<false> | PlatformsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
     newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
     audiences: AudiencesSelect<false> | AudiencesSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
@@ -306,6 +308,7 @@ export interface Page {
     | ArchiveBlock
     | FeaturedWorkBlock
     | CallToActionBlock
+    | ContactBlock
     | FormBlock
     | NewsletterSignupBlock
   )[];
@@ -2862,6 +2865,16 @@ export interface Category {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * What this person is emailed about, on top of anything assigned to them.
+   */
+  notifications?: {
+    inquiries?: boolean | null;
+    /**
+     * Leave both selected to be told about everything.
+     */
+    inquiryTypes?: ('project' | 'general')[] | null;
+  };
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -3502,6 +3515,135 @@ export interface CallToActionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'cta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactBlock".
+ */
+export interface ContactBlock {
+  /**
+   * Which questions the form asks. The scoping groups below appear only for a project inquiry.
+   */
+  variant: 'project' | 'general';
+  eyebrow?: string | null;
+  heading: string;
+  lead?: string | null;
+  /**
+   * Facts worth knowing before writing: how fast, where else, who.
+   */
+  details?:
+    | {
+        term: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  nextStepsTitle?: string | null;
+  /**
+   * The first line is set in full contrast; the rest are quiet.
+   */
+  nextSteps?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * For visitors who would rather talk. Hidden if turned off.
+   */
+  altCta?: {
+    enabled?: boolean | null;
+    body?: string | null;
+    label?: string | null;
+    /**
+     * Leave empty to use the booking link from Site Info → Inquiries.
+     */
+    url?: string | null;
+  };
+  nameLabel: string;
+  emailLabel: string;
+  companyLabel?: string | null;
+  websiteLabel?: string | null;
+  capabilities?: {
+    label: string;
+    hint?: string | null;
+    /**
+     * Offered as chips, in this order. Leave empty to offer every capability.
+     */
+    options?: (number | Capability)[] | null;
+    /**
+     * Escape hatch chip. Clear it to drop the option entirely.
+     */
+    unsureLabel?: string | null;
+  };
+  budgetLabel?: string | null;
+  budgetHint?: string | null;
+  /**
+   * The bands offered, in order.
+   */
+  budgetOptions?:
+    | {
+        /**
+         * What gets recorded. Fixed list.
+         */
+        value: 'under-25k' | '25-50k' | '50-100k' | '100k-plus' | 'guidance';
+        /**
+         * What the visitor reads.
+         */
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  timelineLabel?: string | null;
+  /**
+   * The timings offered, in order.
+   */
+  timelineOptions?:
+    | {
+        /**
+         * What gets recorded. Fixed list.
+         */
+        value: 'asap' | '1-3-months' | '3-6-months' | 'exploring';
+        /**
+         * What the visitor reads.
+         */
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  message: {
+    label: string;
+    placeholder?: string | null;
+    /**
+     * Quiet line under the writing area. The counter runs to 1200 characters.
+     */
+    helper?: string | null;
+  };
+  submitLabel: string;
+  submitNote?: string | null;
+  sentEyebrow?: string | null;
+  sentHeading: string;
+  sentBody?: string | null;
+  sentReferenceLabel?: string | null;
+  sentSentLabel?: string | null;
+  sentCopyLabel?: string | null;
+  sentSummaryTitle?: string | null;
+  sentEditLabel?: string | null;
+  sentScopeLabel?: string | null;
+  sentBudgetLabel?: string | null;
+  sentTimelineLabel?: string | null;
+  sentBriefLabel?: string | null;
+  /**
+   * Uses the same booking link as the intro column.
+   */
+  sentAltBody?: string | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'contactBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4259,6 +4401,7 @@ export interface ExpertisePage {
     | ArchiveBlock
     | FeaturedWorkBlock
     | CallToActionBlock
+    | ContactBlock
     | FormBlock
   )[];
   /**
@@ -4390,6 +4533,7 @@ export interface AudiencePage {
     | ArchiveBlock
     | FeaturedWorkBlock
     | CallToActionBlock
+    | ContactBlock
     | FormBlock
   )[];
   /**
@@ -4442,6 +4586,59 @@ export interface AudiencePage {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * Requests from the site. New ones are unread until someone opens them — assign an owner so nothing sits.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inquiries".
+ */
+export interface Inquiry {
+  id: number;
+  /**
+   * Quoted in the confirmation email — the visitor knows this code.
+   */
+  reference?: string | null;
+  type: 'project' | 'general';
+  /**
+   * Where this request has got to. "New" means nobody has picked it up yet.
+   */
+  status: 'new' | 'in-progress' | 'replied' | 'closed' | 'spam';
+  /**
+   * Who owns the reply. Assigning emails them.
+   */
+  assignedTo?: (number | null) | User;
+  submittedAt?: string | null;
+  repliedAt?: string | null;
+  name: string;
+  email: string;
+  company?: string | null;
+  website?: string | null;
+  /**
+   * What they said they need.
+   */
+  capabilities?: (number | Capability)[] | null;
+  capabilitiesUnsure?: boolean | null;
+  budget?: ('under-25k' | '25-50k' | '50-100k' | '100k-plus' | 'guidance') | null;
+  timeline?: ('asap' | '1-3-months' | '3-6-months' | 'exploring') | null;
+  message: string;
+  /**
+   * Page the form was on — useful when a campaign is running.
+   */
+  sourceUrl?: string | null;
+  /**
+   * What was said, decided, or is still outstanding.
+   */
+  notes?:
+    | {
+        note: string;
+        author?: (number | null) | User;
+        createdAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5131,6 +5328,10 @@ export interface PayloadLockedDocument {
         value: number | Category;
       } | null)
     | ({
+        relationTo: 'inquiries';
+        value: number | Inquiry;
+      } | null)
+    | ({
         relationTo: 'newsletters';
         value: number | Newsletter;
       } | null)
@@ -5278,6 +5479,7 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
+        contactBlock?: T | ContactBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
@@ -5649,6 +5851,92 @@ export interface CallToActionBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactBlock_select".
+ */
+export interface ContactBlockSelect<T extends boolean = true> {
+  variant?: T;
+  eyebrow?: T;
+  heading?: T;
+  lead?: T;
+  details?:
+    | T
+    | {
+        term?: T;
+        value?: T;
+        id?: T;
+      };
+  nextStepsTitle?: T;
+  nextSteps?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  altCta?:
+    | T
+    | {
+        enabled?: T;
+        body?: T;
+        label?: T;
+        url?: T;
+      };
+  nameLabel?: T;
+  emailLabel?: T;
+  companyLabel?: T;
+  websiteLabel?: T;
+  capabilities?:
+    | T
+    | {
+        label?: T;
+        hint?: T;
+        options?: T;
+        unsureLabel?: T;
+      };
+  budgetLabel?: T;
+  budgetHint?: T;
+  budgetOptions?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  timelineLabel?: T;
+  timelineOptions?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  message?:
+    | T
+    | {
+        label?: T;
+        placeholder?: T;
+        helper?: T;
+      };
+  submitLabel?: T;
+  submitNote?: T;
+  sentEyebrow?: T;
+  sentHeading?: T;
+  sentBody?: T;
+  sentReferenceLabel?: T;
+  sentSentLabel?: T;
+  sentCopyLabel?: T;
+  sentSummaryTitle?: T;
+  sentEditLabel?: T;
+  sentScopeLabel?: T;
+  sentBudgetLabel?: T;
+  sentTimelineLabel?: T;
+  sentBriefLabel?: T;
+  sentAltBody?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -6319,6 +6607,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
+        contactBlock?: T | ContactBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
       };
   capabilities?: T;
@@ -6393,6 +6682,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
+        contactBlock?: T | ContactBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
       };
   industries?: T;
@@ -6904,6 +7194,38 @@ export interface CategoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inquiries_select".
+ */
+export interface InquiriesSelect<T extends boolean = true> {
+  reference?: T;
+  type?: T;
+  status?: T;
+  assignedTo?: T;
+  submittedAt?: T;
+  repliedAt?: T;
+  name?: T;
+  email?: T;
+  company?: T;
+  website?: T;
+  capabilities?: T;
+  capabilitiesUnsure?: T;
+  budget?: T;
+  timeline?: T;
+  message?: T;
+  sourceUrl?: T;
+  notes?:
+    | T
+    | {
+        note?: T;
+        author?: T;
+        createdAt?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "newsletters_select".
  */
 export interface NewslettersSelect<T extends boolean = true> {
@@ -7029,6 +7351,12 @@ export interface SubscribersSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  notifications?:
+    | T
+    | {
+        inquiries?: T;
+        inquiryTypes?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -7604,6 +7932,7 @@ export interface Home {
     | CarouselBlock
     | ArchiveBlock
     | CallToActionBlock
+    | ContactBlock
     | FormBlock
     | NewsletterSignupBlock
   )[];
@@ -8055,6 +8384,19 @@ export interface SiteInfo {
   foundingYear?: number | null;
   contactEmail?: string | null;
   /**
+   * Defaults for the contact templates and the confirmation email.
+   */
+  inquiries?: {
+    /**
+     * Completes the sentence "you will hear back ___". Shown on the contact page and in the confirmation email.
+     */
+    responseTime?: string | null;
+    /**
+     * Booking link behind "Schedule a call". Leave empty to hide that action everywhere.
+     */
+    scheduleUrl?: string | null;
+  };
+  /**
    * Used as the Organization logo in structured data.
    */
   logo?: (number | null) | Media;
@@ -8118,6 +8460,7 @@ export interface HomeSelect<T extends boolean = true> {
         carousel?: T | CarouselBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
+        contactBlock?: T | ContactBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
@@ -8351,6 +8694,12 @@ export interface SiteInfoSelect<T extends boolean = true> {
   description?: T;
   foundingYear?: T;
   contactEmail?: T;
+  inquiries?:
+    | T
+    | {
+        responseTime?: T;
+        scheduleUrl?: T;
+      };
   logo?: T;
   address?:
     | T

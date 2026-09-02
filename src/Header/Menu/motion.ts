@@ -67,6 +67,61 @@ export const TRAVELER_Z = 46
  */
 export const HERO_MEDIA_SELECTOR = '[data-hero-media] img, [data-hero-media] video'
 
+/**
+ * Media readiness — the menu never dissolves *to* a hole.
+ *
+ * Every surface in this system replaces what the user is already looking at
+ * (the page crop, the previous preview, the docked window) with a piece of
+ * media. On a cold cache that media can be an element with no pixels yet, and
+ * fading one in reads as the window breaking: the thing it covered vanishes,
+ * nothing takes its place, then the image snaps in when it decodes. So the
+ * rule is one line long — reveal only what can already paint, and until then
+ * keep showing whatever is on screen.
+ *
+ * `isMediaReady` is the synchronous answer (used to decide, at build time,
+ * whether the open timeline can own the dissolve); `onMediaReady` is the
+ * asynchronous one for everything that can afford to wait.
+ */
+export const isMediaReady = (el: HTMLElement): boolean => {
+  if (el instanceof HTMLImageElement) return el.complete && el.naturalWidth > 0
+  if (el instanceof HTMLVideoElement) return el.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+  // Anything else carries its own pixels (or none) — nothing to wait for.
+  return true
+}
+
+/**
+ * Resolve once `el` can paint. `ok` is false when it never will (decode or
+ * network error) — callers use that to abandon the reveal rather than
+ * dissolve to an empty box.
+ *
+ * Images go through `decode()`: `load` only says the bytes arrived, and the
+ * decode it still owes lands as a dropped frame in the middle of the
+ * cross-fade. Browsers without it (or that reject for a detached/odd case)
+ * fall back to the completeness check.
+ */
+export const onMediaReady = (el: HTMLElement, done: (ok: boolean) => void) => {
+  if (el instanceof HTMLImageElement) {
+    if (typeof el.decode === 'function') {
+      el.decode().then(
+        () => done(true),
+        () => done(isMediaReady(el)),
+      )
+      return
+    }
+    if (isMediaReady(el)) return done(true)
+    el.addEventListener('load', () => done(true), { once: true })
+    el.addEventListener('error', () => done(false), { once: true })
+    return
+  }
+  if (el instanceof HTMLVideoElement) {
+    if (isMediaReady(el)) return done(true)
+    el.addEventListener('loadeddata', () => done(true), { once: true })
+    el.addEventListener('error', () => done(false), { once: true })
+    return
+  }
+  done(true)
+}
+
 /** Layout viewport width — excludes classic scrollbar / `scrollbar-gutter: stable`. */
 export const getViewportWidth = () => document.documentElement.clientWidth
 
@@ -98,6 +153,13 @@ export type HeroHandoffGate = {
   /** Same-page links re-land where they are; nothing to hand off to. */
   destinationPathname: string
   currentPathname: string
+  /**
+   * The destination's media can paint *now*. The traveler is the only thing
+   * on screen for most of the flight, so starting one around media that has
+   * not arrived would expand a hole to full screen; the plain close is a
+   * complete navigation and the honest fallback while the cache is cold.
+   */
+  mediaReady: boolean
 }
 
 /** Preconditions for starting the hero handoff on a nav click — every unmet
@@ -107,6 +169,7 @@ export const canStartHeroHandoff = (gate: HeroHandoffGate): boolean =>
   gate.slotRect.height > 0 &&
   !gate.reducedMotion &&
   !gate.handoffActive &&
+  gate.mediaReady &&
   gate.timelineProgress === 1 &&
   gate.destinationPathname !== gate.currentPathname
 

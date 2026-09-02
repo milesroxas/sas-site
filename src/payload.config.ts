@@ -15,6 +15,7 @@ import { CaseStudies } from './collections/CaseStudies'
 import { Categories } from './collections/Categories'
 import { ExpertisePages } from './collections/ExpertisePages'
 import { Industries } from './collections/Industries'
+import { Inquiries } from './collections/Inquiries'
 import { LabPages } from './collections/LabPages'
 import { LabProjects } from './collections/LabProjects'
 import { Media } from './collections/Media'
@@ -44,6 +45,10 @@ const dirname = path.dirname(filename)
 export default buildConfig({
   admin: {
     components: {
+      // Unanswered requests, first thing on the dashboard and pinned above the
+      // nav so an inquiry cannot be missed on the way to anything else.
+      beforeDashboard: ['@/collections/Inquiries/components/InquiriesDashboard#InquiriesDashboard'],
+      beforeNavLinks: ['@/collections/Inquiries/components/InboxNavBadge#InboxNavBadge'],
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
       beforeLogin: ['@/components/BeforeLogin'],
@@ -137,6 +142,8 @@ export default buildConfig({
     Industries,
     Platforms,
     Categories,
+    // Inbox
+    Inquiries,
     // Newsletter
     Newsletters,
     Audiences,
