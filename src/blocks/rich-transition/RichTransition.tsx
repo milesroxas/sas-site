@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import type { LabTransitionBlock } from '@/payload-types'
+import { BlockGrid } from '../shared/grid'
 import { Section } from '../shared/section'
 
 /**
@@ -29,16 +30,14 @@ const Body = ({ className, data }: { className?: string; data: DefaultTypedEdito
 )
 
 /**
- * Left: a leading spacer then a heading column, with the body on a narrower
- * measure underneath. The 12.9% / 61% tracks are the Paper frame's 173px
- * spacer and 821px column as fractions of the 1440 inner width, so they
- * scale instead of locking to those pixels.
+ * Left: the heading cluster starts one column in (columns 2-5), with the body
+ * on a narrower measure underneath (columns 2-4). The default section-heading
+ * arrangement on the composition grid.
  */
 const Left = ({ body, eyebrow, heading }: RichTransitionFields) => (
   <Container>
-    <div className="flex flex-col items-start gap-12 md:grid md:grid-cols-[12.9%_minmax(0,61%)_1fr]">
-      <div aria-hidden className="hidden md:block" />
-      <div className="text-stack w-full">
+    <BlockGrid>
+      <div className="text-stack md:col-span-4 md:col-start-2">
         {eyebrow ? (
           <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
             {eyebrow}
@@ -47,9 +46,13 @@ const Left = ({ body, eyebrow, heading }: RichTransitionFields) => (
         <h2 className="text-heading-1" data-reveal data-reveal-group="heading">
           {heading}
         </h2>
-        {body ? <Body className="max-w-120 text-lg" data={body} /> : null}
       </div>
-    </div>
+      {body ? (
+        <div className="md:col-span-3 md:col-start-2">
+          <Body className="text-lg" data={body} />
+        </div>
+      ) : null}
+    </BlockGrid>
   </Container>
 )
 
@@ -74,11 +77,11 @@ const Centered = ({ body, eyebrow, heading }: RichTransitionFields) => (
   </Container>
 )
 
-/** Split: heading column on the left, body on the right from `lg`. */
+/** Split: heading cluster in columns 1-4, body across the gap in columns 6-8. */
 const Split = ({ body, eyebrow, heading }: RichTransitionFields) => (
   <Container>
-    <div className="grid gap-12 lg:grid-cols-12 lg:gap-24">
-      <div className="text-stack lg:col-span-6">
+    <BlockGrid>
+      <div className="text-stack md:col-span-4">
         {eyebrow ? (
           <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
             {eyebrow}
@@ -89,11 +92,11 @@ const Split = ({ body, eyebrow, heading }: RichTransitionFields) => (
         </h2>
       </div>
       {body ? (
-        <div className="lg:col-span-4 lg:col-start-9">
+        <div className="md:col-span-3 md:col-start-6">
           <Body className="text-lg" data={body} />
         </div>
       ) : null}
-    </div>
+    </BlockGrid>
   </Container>
 )
 

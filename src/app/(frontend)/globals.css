@@ -901,6 +901,10 @@
   /* Outer page gutter — used by `.container` / `.container-narrow`. Mobile
      value below; ≥md override further down (must live outside @theme). */
   --spacing-gutter: 1rem; /* = px-4 */
+  /* Composition grid gap: the one gap between the 8 columns of `BlockGrid`
+     (src/blocks/shared/grid.tsx). Tune here only; blocks never state their
+     own column gap. See docs/block-grid-roadmap.md. */
+  --spacing-grid: 2rem;
   --max-width-content-narrow: 40rem; /* ~640px — single-column reading */
   --max-width-content-default: 96rem; /* ~1536px — page column */
 

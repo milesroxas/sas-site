@@ -1,4 +1,5 @@
 import type React from 'react'
+import { BlockGrid } from '@/blocks/shared/grid'
 import { Section } from '@/blocks/shared/section'
 import RichText from '@/components/RichText'
 import type { FeatureHeadingOffsetBlock as FeatureHeadingOffsetBlockData } from '@/payload-types'
@@ -30,8 +31,8 @@ export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps>
   return (
     <Section bare={bare} theme={theme}>
       <div className="container">
-        <div className="grid gap-12 lg:grid-cols-12 lg:gap-24">
-          <div className="text-stack lg:col-span-6">
+        <BlockGrid>
+          <div className="text-stack md:col-span-4">
             {eyebrow ? (
               <p className="text-sm tracking-widest uppercase" data-reveal>
                 {eyebrow}
@@ -42,7 +43,7 @@ export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps>
             </h2>
           </div>
           {body ? (
-            <div className="lg:col-span-4 lg:col-start-9 lg:pt-24" data-reveal>
+            <div className="md:col-span-3 md:col-start-6 md:pt-24" data-reveal>
               <RichText
                 className={BODY_SIZE_CLASS[bodySize ?? 'medium']}
                 data={body}
@@ -51,7 +52,7 @@ export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps>
               />
             </div>
           ) : null}
-        </div>
+        </BlockGrid>
       </div>
     </Section>
   )

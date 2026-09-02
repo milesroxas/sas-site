@@ -66,6 +66,7 @@ import * as migration_20260902_044039_inquiries_contact from './20260902_044039_
 import * as migration_20260902_174924_contact_pages_delta from './20260902_174924_contact_pages_delta';
 import * as migration_20260902_191423_sections_and_media_content_split from './20260902_191423_sections_and_media_content_split';
 import * as migration_20260902_201235_block_coverage from './20260902_201235_block_coverage';
+import * as migration_20260902_203939_link_contact_pages from './20260902_203939_link_contact_pages';
 
 export const migrations = [
   {
@@ -406,6 +407,11 @@ export const migrations = [
   {
     up: migration_20260902_201235_block_coverage.up,
     down: migration_20260902_201235_block_coverage.down,
-    name: '20260902_201235_block_coverage'
+    name: '20260902_201235_block_coverage',
+  },
+  {
+    up: migration_20260902_203939_link_contact_pages.up,
+    down: migration_20260902_203939_link_contact_pages.down,
+    name: '20260902_203939_link_contact_pages'
   },
 ];

@@ -22,6 +22,7 @@ import type {
   FeatureStatementLinksBlock as FeatureStatementLinksBlockProps,
   MediaBlock as MediaBlockProps,
 } from '@/payload-types'
+import { surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
 import { cn } from '@/utilities/ui'
 
 type NodeTypes =
@@ -45,7 +46,8 @@ const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
     throw new Error('Expected value to be an object')
   }
   const slug = value.slug
-  return relationTo === 'posts' ? `/posts/${slug}` : `/${slug}`
+  const surface = surfaceByCollection.get(relationTo)
+  return surface && typeof slug === 'string' ? surfaceDocPath(surface, slug) : `/${slug}`
 }
 
 const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) => ({

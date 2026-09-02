@@ -3,7 +3,7 @@ import Link from 'next/link'
 import type React from 'react'
 import { Button, type buttonVariants } from '@/components/ui/button'
 import type { SitePage } from '@/fields/sitePages'
-import type { Page, Post } from '@/payload-types'
+import type { ContactPage, Page, Post } from '@/payload-types'
 import {
   backNavTransitionTypes,
   forwardNavTransitionTypes,
@@ -27,8 +27,8 @@ type CMSLinkType = {
   label?: string | null
   newTab?: boolean | null
   reference?: {
-    relationTo: 'pages' | 'posts'
-    value: Page | Post | string | number
+    relationTo: 'contact-pages' | 'pages' | 'posts'
+    value: ContactPage | Page | Post | string | number
   } | null
   size?: ButtonVariants['size'] | null
   sitePage?: SitePage | null

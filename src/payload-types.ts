@@ -275,6 +275,10 @@ export interface Page {
               | ({
                   relationTo: 'posts';
                   value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'contact-pages';
+                  value: number | ContactPage;
                 } | null);
             /**
              * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -2605,6 +2609,10 @@ export interface FeatureStatementLinksBlock {
             | ({
                 relationTo: 'posts';
                 value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
               } | null);
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -2623,6 +2631,369 @@ export interface FeatureStatementLinksBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureStatementLinks';
+}
+/**
+ * Published at /contact/[slug], or at /contact for the page slugged "contact". The questions live on the linked form.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-pages".
+ */
+export interface ContactPage {
+  id: number;
+  title: string;
+  eyebrow?: string | null;
+  heading: string;
+  lead?: string | null;
+  /**
+   * Facts worth knowing before writing: how fast, where else, who.
+   */
+  details?:
+    | {
+        term: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  nextStepsTitle?: string | null;
+  /**
+   * The first line is set in full contrast; the rest are quiet.
+   */
+  nextSteps?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * For visitors who would rather talk. Hidden if turned off.
+   */
+  altCta?: {
+    enabled?: boolean | null;
+    body?: string | null;
+    label?: string | null;
+    /**
+     * Leave empty to use the booking link from Site Info → Inquiries.
+     */
+    url?: string | null;
+  };
+  /**
+   * The questions this page asks. Set the form's Delivery to "Inquiries inbox" so answers arrive with a reference and an owner.
+   */
+  form: number | Form;
+  /**
+   * Quiet line beside the submit button.
+   */
+  submitNote?: string | null;
+  sentEyebrow?: string | null;
+  sentHeading: string;
+  sentBody?: string | null;
+  sentReferenceLabel?: string | null;
+  sentSentLabel?: string | null;
+  sentCopyLabel?: string | null;
+  sentSummaryTitle?: string | null;
+  sentEditLabel?: string | null;
+  /**
+   * Uses the same booking link as the intro column.
+   */
+  sentAltBody?: string | null;
+  meta?: {
+    /**
+     * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
+     */
+    title?: string | null;
+    /**
+     * Default image for search and social previews. Landscape, at least 1200×630px. Also used for share cards unless an Open Graph image is set below.
+     */
+    image?: (number | null) | Media;
+    /**
+     * The short summary under the title in Google results. Aim for 100–150 characters — front-load the most important message.
+     */
+    description?: string | null;
+    /**
+     * Controls how this page looks when shared on LinkedIn, Facebook, Slack, iMessage, etc. Every field is optional — anything left blank falls back to the SEO fields above.
+     */
+    og?: {
+      /**
+       * Headline on the share card. Can be punchier than the SEO title — no need to include "| Suits & Sandals". Blank = SEO title.
+       */
+      title?: string | null;
+      /**
+       * One or two sentences under the share-card headline. Keep it under ~200 characters; platforms truncate longer text. Blank = SEO description.
+       */
+      description?: string | null;
+      /**
+       * Share-card image. Landscape 1200×630px (1.91:1) — square or portrait images get cropped by most platforms. Blank = SEO image.
+       */
+      image?: (number | null) | Media;
+    };
+  };
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms".
+ */
+export interface Form {
+  id: number;
+  title: string;
+  fields?:
+    | (
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            defaultValue?: boolean | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'checkbox';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            /**
+             * Resting hint inside the control. It disappears as soon as they type.
+             */
+            placeholder?: string | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'email';
+          }
+        | {
+            message?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'message';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: number | null;
+            required?: boolean | null;
+            /**
+             * Resting hint inside the control. It disappears as soon as they type.
+             */
+            placeholder?: string | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'number';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            placeholder?: string | null;
+            options?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            required?: boolean | null;
+            hint?: string | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'select';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'state';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            /**
+             * Resting hint inside the control. It disappears as soon as they type.
+             */
+            placeholder?: string | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            /**
+             * Resting hint inside the control. It disappears as soon as they type.
+             */
+            placeholder?: string | null;
+            hint?: string | null;
+            /**
+             * Character limit and counter. The inbox stores up to 1200.
+             */
+            maxLength?: number | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'textarea';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            /**
+             * Trailing note on the label row.
+             */
+            hint?: string | null;
+            /**
+             * Field width, as a percentage.
+             */
+            width?: number | null;
+            /**
+             * Offered as chips, in this order. Leave empty to offer every capability.
+             */
+            options?: (number | Capability)[] | null;
+            /**
+             * Escape-hatch chip. Clear it to drop the option.
+             */
+            unsureLabel?: string | null;
+            required?: boolean | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'capabilities';
+          }
+      )[]
+    | null;
+  submitButtonLabel?: string | null;
+  confirmationType?: ('message' | 'redirect') | null;
+  confirmationMessage?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  redirect?: {
+    url: string;
+  };
+  emails?:
+    | {
+        emailTo?: string | null;
+        cc?: string | null;
+        bcc?: string | null;
+        replyTo?: string | null;
+        emailFrom?: string | null;
+        subject: string;
+        message?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Where answers land. "Inquiries inbox" gives each submission a reference, an owner and a status, and asks each field above where it maps.
+   */
+  delivery: 'submissions' | 'inquiries';
+  /**
+   * What kind of request this form produces. Sets the inquiry type in the inbox, which decides who is notified and which questions the admin shows.
+   */
+  inquiryType?: ('project' | 'general') | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2956,6 +3327,10 @@ export interface PageClosing {
             | ({
                 relationTo: 'posts';
                 value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
               } | null);
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -3496,6 +3871,10 @@ export interface ContentBlock {
             | ({
                 relationTo: 'posts';
                 value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
               } | null);
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -3713,6 +4092,10 @@ export interface TestimonialsMarqueeBlock {
             | ({
                 relationTo: 'posts';
                 value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
               } | null);
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -3815,6 +4198,10 @@ export interface CallToActionBlock {
             | ({
                 relationTo: 'posts';
                 value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
               } | null);
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -3867,264 +4254,6 @@ export interface FormBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'formBlock';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "forms".
- */
-export interface Form {
-  id: number;
-  title: string;
-  fields?:
-    | (
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            defaultValue?: boolean | null;
-            /**
-             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
-             */
-            mapsTo?:
-              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
-              | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'checkbox';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            /**
-             * Resting hint inside the control. It disappears as soon as they type.
-             */
-            placeholder?: string | null;
-            /**
-             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
-             */
-            mapsTo?:
-              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
-              | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'email';
-          }
-        | {
-            message?: {
-              root: {
-                type: string;
-                children: {
-                  type: any;
-                  version: number;
-                  [k: string]: unknown;
-                }[];
-                direction: ('ltr' | 'rtl') | null;
-                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-                indent: number;
-                version: number;
-              };
-              [k: string]: unknown;
-            } | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'message';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: number | null;
-            required?: boolean | null;
-            /**
-             * Resting hint inside the control. It disappears as soon as they type.
-             */
-            placeholder?: string | null;
-            /**
-             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
-             */
-            mapsTo?:
-              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
-              | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'number';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            placeholder?: string | null;
-            options?:
-              | {
-                  label: string;
-                  value: string;
-                  id?: string | null;
-                }[]
-              | null;
-            required?: boolean | null;
-            hint?: string | null;
-            /**
-             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
-             */
-            mapsTo?:
-              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
-              | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'select';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            /**
-             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
-             */
-            mapsTo?:
-              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
-              | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'state';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
-            /**
-             * Resting hint inside the control. It disappears as soon as they type.
-             */
-            placeholder?: string | null;
-            /**
-             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
-             */
-            mapsTo?:
-              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
-              | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'text';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
-            /**
-             * Resting hint inside the control. It disappears as soon as they type.
-             */
-            placeholder?: string | null;
-            hint?: string | null;
-            /**
-             * Character limit and counter. The inbox stores up to 1200.
-             */
-            maxLength?: number | null;
-            /**
-             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
-             */
-            mapsTo?:
-              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
-              | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'textarea';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            /**
-             * Trailing note on the label row.
-             */
-            hint?: string | null;
-            /**
-             * Field width, as a percentage.
-             */
-            width?: number | null;
-            /**
-             * Offered as chips, in this order. Leave empty to offer every capability.
-             */
-            options?: (number | Capability)[] | null;
-            /**
-             * Escape-hatch chip. Clear it to drop the option.
-             */
-            unsureLabel?: string | null;
-            required?: boolean | null;
-            /**
-             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
-             */
-            mapsTo?:
-              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
-              | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'capabilities';
-          }
-      )[]
-    | null;
-  submitButtonLabel?: string | null;
-  confirmationType?: ('message' | 'redirect') | null;
-  confirmationMessage?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  redirect?: {
-    url: string;
-  };
-  emails?:
-    | {
-        emailTo?: string | null;
-        cc?: string | null;
-        bcc?: string | null;
-        replyTo?: string | null;
-        emailFrom?: string | null;
-        subject: string;
-        message?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Where answers land. "Inquiries inbox" gives each submission a reference, an owner and a status, and asks each field above where it maps.
-   */
-  delivery: 'submissions' | 'inquiries';
-  /**
-   * What kind of request this form produces. Sets the inquiry type in the inbox, which decides who is notified and which questions the admin shows.
-   */
-  inquiryType?: ('project' | 'general') | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4699,6 +4828,10 @@ export interface ExpertisePage {
               | ({
                   relationTo: 'posts';
                   value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'contact-pages';
+                  value: number | ContactPage;
                 } | null);
             /**
              * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -4868,6 +5001,10 @@ export interface AudiencePage {
               | ({
                   relationTo: 'posts';
                   value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'contact-pages';
+                  value: number | ContactPage;
                 } | null);
             /**
              * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -4915,111 +5052,6 @@ export interface AudiencePage {
   relatedWorkPages?: (number | WorkPage)[] | null;
   editorialNotes?: string | null;
   closing?: PageClosing;
-  meta?: {
-    /**
-     * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
-     */
-    title?: string | null;
-    /**
-     * Default image for search and social previews. Landscape, at least 1200×630px. Also used for share cards unless an Open Graph image is set below.
-     */
-    image?: (number | null) | Media;
-    /**
-     * The short summary under the title in Google results. Aim for 100–150 characters — front-load the most important message.
-     */
-    description?: string | null;
-    /**
-     * Controls how this page looks when shared on LinkedIn, Facebook, Slack, iMessage, etc. Every field is optional — anything left blank falls back to the SEO fields above.
-     */
-    og?: {
-      /**
-       * Headline on the share card. Can be punchier than the SEO title — no need to include "| Suits & Sandals". Blank = SEO title.
-       */
-      title?: string | null;
-      /**
-       * One or two sentences under the share-card headline. Keep it under ~200 characters; platforms truncate longer text. Blank = SEO description.
-       */
-      description?: string | null;
-      /**
-       * Share-card image. Landscape 1200×630px (1.91:1) — square or portrait images get cropped by most platforms. Blank = SEO image.
-       */
-      image?: (number | null) | Media;
-    };
-  };
-  publishedAt?: string | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * Published at /contact/[slug], or at /contact for the page slugged "contact". The questions live on the linked form.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "contact-pages".
- */
-export interface ContactPage {
-  id: number;
-  title: string;
-  eyebrow?: string | null;
-  heading: string;
-  lead?: string | null;
-  /**
-   * Facts worth knowing before writing: how fast, where else, who.
-   */
-  details?:
-    | {
-        term: string;
-        value: string;
-        id?: string | null;
-      }[]
-    | null;
-  nextStepsTitle?: string | null;
-  /**
-   * The first line is set in full contrast; the rest are quiet.
-   */
-  nextSteps?:
-    | {
-        text: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * For visitors who would rather talk. Hidden if turned off.
-   */
-  altCta?: {
-    enabled?: boolean | null;
-    body?: string | null;
-    label?: string | null;
-    /**
-     * Leave empty to use the booking link from Site Info → Inquiries.
-     */
-    url?: string | null;
-  };
-  /**
-   * The questions this page asks. Set the form's Delivery to "Inquiries inbox" so answers arrive with a reference and an owner.
-   */
-  form: number | Form;
-  /**
-   * Quiet line beside the submit button.
-   */
-  submitNote?: string | null;
-  sentEyebrow?: string | null;
-  sentHeading: string;
-  sentBody?: string | null;
-  sentReferenceLabel?: string | null;
-  sentSentLabel?: string | null;
-  sentCopyLabel?: string | null;
-  sentSummaryTitle?: string | null;
-  sentEditLabel?: string | null;
-  /**
-   * Uses the same booking link as the intro column.
-   */
-  sentAltBody?: string | null;
   meta?: {
     /**
      * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
@@ -8741,6 +8773,10 @@ export interface InsightsIndex {
               | ({
                   relationTo: 'posts';
                   value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'contact-pages';
+                  value: number | ContactPage;
                 } | null);
             /**
              * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -8841,6 +8877,10 @@ export interface WorksIndex {
               | ({
                   relationTo: 'posts';
                   value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'contact-pages';
+                  value: number | ContactPage;
                 } | null);
             /**
              * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -8912,6 +8952,10 @@ export interface Header {
             | ({
                 relationTo: 'posts';
                 value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
               } | null);
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -8939,6 +8983,10 @@ export interface Header {
         | ({
             relationTo: 'posts';
             value: number | Post;
+          } | null)
+        | ({
+            relationTo: 'contact-pages';
+            value: number | ContactPage;
           } | null);
       /**
        * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -8978,6 +9026,10 @@ export interface Footer {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'contact-pages';
+          value: number | ContactPage;
         } | null);
     /**
      * Home (/), Works Index (/works), or Insights Index (/insights).
@@ -9014,6 +9066,10 @@ export interface Footer {
               | ({
                   relationTo: 'posts';
                   value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'contact-pages';
+                  value: number | ContactPage;
                 } | null);
             /**
              * Home (/), Works Index (/works), or Insights Index (/insights).
