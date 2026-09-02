@@ -120,6 +120,7 @@ const existingForm = await payload.find({
 const formData = {
   title: FORM_TITLE,
   delivery: 'inquiries' as const,
+  inquiryType: 'project' as const,
   submitButtonLabel: 'Send inquiry',
   confirmationType: 'message' as const,
   // biome-ignore lint/suspicious/noExplicitAny: the editor state type is wider than the seed needs

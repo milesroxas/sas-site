@@ -1,5 +1,6 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { cache } from 'react'
 import type { Capability, Form } from '@/payload-types'
 import type { FormFieldOption, ResolvedFormField } from './types'
 
@@ -15,13 +16,12 @@ const toOption = (capability: Pick<Capability, 'id' | 'name'>): FormFieldOption 
 })
 
 /**
- * Every capability the studio offers, in its editorial order. Fetched once per
- * render even when several fields want it, because a page can carry more than
- * one form and each would otherwise ask again.
+ * Every capability the studio offers, in its editorial order. `cache` scopes
+ * the memo to one render pass — a page carrying several forms asks once — while
+ * a fresh render always rereads, so a capability added to the taxonomy shows up
+ * on the next revalidation rather than the next deploy.
  */
-let allCapabilities: Promise<FormFieldOption[]> | undefined
-
-const everyCapability = async (): Promise<FormFieldOption[]> => {
+const everyCapability = cache(async (): Promise<FormFieldOption[]> => {
   const payload = await getPayload({ config: configPromise })
   const { docs } = await payload.find({
     collection: 'capabilities',
@@ -31,7 +31,7 @@ const everyCapability = async (): Promise<FormFieldOption[]> => {
     select: { name: true },
   })
   return docs.map(toOption)
-}
+})
 
 /**
  * Turn a stored form into fields the browser can render directly.
@@ -51,8 +51,7 @@ export async function resolveFormFields(form: Form): Promise<ResolvedFormField[]
       const selected = Array.isArray(chosen) ? chosen.filter(isCapability).map(toOption) : []
       if (selected.length > 0) return { ...field, options: selected }
 
-      allCapabilities ??= everyCapability()
-      return { ...field, options: await allCapabilities }
+      return { ...field, options: await everyCapability() }
     }),
   )
 }

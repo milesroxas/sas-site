@@ -33,3 +33,6 @@ export type ResolvedFormField = {
 }
 
 export type FormDelivery = NonNullable<Form['delivery']>
+
+/** What an inquiries-delivery form files its submissions as. */
+export type FormInquiryType = Form['inquiryType']

@@ -9,7 +9,10 @@
  */
 export type InquiryOption = { label: string; value: string }
 
-/** Which template a request came from. Drives conditional fields in the admin. */
+/**
+ * Which kind of form a request came from. Declared per form (Forms → sidebar,
+ * with Delivery set to the inbox) and drives conditional fields in the admin.
+ */
 export const INQUIRY_TYPES = [
   { label: 'Project inquiry', value: 'project' },
   { label: 'General message', value: 'general' },
@@ -18,7 +21,7 @@ export const INQUIRY_TYPES = [
 /**
  * Triage state. `new` is the only one the public endpoint may write; every
  * other transition is a person deciding something, which is why the admin
- * stamps `readAt` / `repliedAt` alongside.
+ * stamps `repliedAt` alongside.
  */
 export const INQUIRY_STATUSES = [
   { label: 'New', value: 'new' },
@@ -64,7 +67,6 @@ export const INQUIRY_FIELD_TARGETS = [
   { label: 'Timeline', value: 'timeline' },
   { label: 'The brief', value: 'message' },
 ] as const satisfies readonly InquiryOption[]
-
 
 /** How a form's answers are stored: the generic log, or the triaged inbox. */
 export const FORM_DELIVERY = [

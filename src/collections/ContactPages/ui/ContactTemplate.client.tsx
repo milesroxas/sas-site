@@ -7,7 +7,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { FormFields } from '@/blocks/shared/form/form-fields.client'
 import { FormSubmit } from '@/blocks/shared/form/form-submit'
 import { submitForm, UNSURE } from '@/blocks/shared/form/submit'
-import type { FormDelivery, ResolvedFormField } from '@/blocks/shared/form/types'
+import type { FormDelivery, FormInquiryType, ResolvedFormField } from '@/blocks/shared/form/types'
 import { Container } from '@/components/Container'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -42,6 +42,7 @@ export type ContactTemplateProps = {
   delivery: FormDelivery
   fields: ResolvedFormField[]
   formId: number | string
+  inquiryType?: FormInquiryType
   submitLabel: string
 }
 
@@ -94,6 +95,7 @@ export function ContactTemplate({
   delivery,
   fields,
   formId,
+  inquiryType,
   submitLabel,
 }: ContactTemplateProps) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -122,7 +124,7 @@ export function ContactTemplate({
       setError(undefined)
       setIsSending(true)
       try {
-        const result = await submitForm({ delivery, fields, formId, values })
+        const result = await submitForm({ delivery, fields, formId, inquiryType, values })
         setReceipt({ ...result, values })
         swapTo(1)
       } catch (err) {
@@ -135,7 +137,7 @@ export function ContactTemplate({
         setIsSending(false)
       }
     },
-    [delivery, fields, formId, swapTo],
+    [delivery, fields, formId, inquiryType, swapTo],
   )
 
   const scheduleUrl = content.altCta?.url

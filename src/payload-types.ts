@@ -3798,6 +3798,10 @@ export interface Form {
    * Where answers land. "Inquiries inbox" gives each submission a reference, an owner and a status, and asks each field above where it maps.
    */
   delivery: 'submissions' | 'inquiries';
+  /**
+   * What kind of request this form produces. Sets the inquiry type in the inbox, which decides who is notified and which questions the admin shows.
+   */
+  inquiryType?: ('project' | 'general') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -7591,6 +7595,7 @@ export interface FormsSelect<T extends boolean = true> {
         id?: T;
       };
   delivery?: T;
+  inquiryType?: T;
   updatedAt?: T;
   createdAt?: T;
 }

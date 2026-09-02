@@ -1,5 +1,5 @@
 import { getClientSideURL } from '@/utilities/getURL'
-import type { FormDelivery, ResolvedFormField } from './types'
+import type { FormDelivery, FormInquiryType, ResolvedFormField } from './types'
 
 /**
  * Chip value standing in for "I don't know yet". It rides in the same chip
@@ -15,6 +15,8 @@ export type SubmitArgs = {
   delivery: FormDelivery
   fields: ResolvedFormField[]
   formId: number | string
+  /** What the inquiry is filed as. The form declares this; see `inquiryType` in Forms. */
+  inquiryType?: FormInquiryType
   values: Record<string, unknown>
 }
 
@@ -69,6 +71,7 @@ export async function submitForm({
   delivery,
   fields,
   formId,
+  inquiryType,
   values,
 }: SubmitArgs): Promise<SubmitResult> {
   const base = getClientSideURL()
@@ -80,7 +83,9 @@ export async function submitForm({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...toInquiry(fields, values),
-        type: 'project',
+        // Forms created before the field existed carry no type; they were all
+        // the project template, so that stays their meaning.
+        type: inquiryType ?? 'project',
         sourceUrl,
         // Honeypot — a human never sees this field, so it is always empty.
         role: values.role,

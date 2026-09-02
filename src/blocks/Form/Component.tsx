@@ -37,6 +37,7 @@ export const FormBlock: React.FC<FormBlockProps & { theme?: SectionTheme | null 
           delivery={doc.delivery ?? 'submissions'}
           fields={fields}
           formId={doc.id}
+          inquiryType={doc.inquiryType}
           redirectUrl={doc.redirect?.url}
           submitLabel={doc.submitButtonLabel ?? 'Submit'}
         />

@@ -6,6 +6,7 @@ import {
   FORM_DELIVERY,
   INQUIRY_FIELD_TARGETS,
   INQUIRY_MESSAGE_MAX_LENGTH,
+  INQUIRY_TYPES,
 } from '@/shared/content/inquiry'
 
 /**
@@ -184,18 +185,32 @@ export const formBuilder = formBuilderPlugin({
           }
           return field
         }),
-      ).concat({
-        name: 'delivery',
-        type: 'select',
-        required: true,
-        defaultValue: 'submissions',
-        options: [...FORM_DELIVERY],
-        admin: {
-          position: 'sidebar',
-          description:
-            'Where answers land. "Inquiries inbox" gives each submission a reference, an owner and a status, and asks each field above where it maps.',
+      ).concat(
+        {
+          name: 'delivery',
+          type: 'select',
+          required: true,
+          defaultValue: 'submissions',
+          options: [...FORM_DELIVERY],
+          admin: {
+            position: 'sidebar',
+            description:
+              'Where answers land. "Inquiries inbox" gives each submission a reference, an owner and a status, and asks each field above where it maps.',
+          },
         },
-      }),
+        {
+          name: 'inquiryType',
+          type: 'select',
+          defaultValue: 'project',
+          options: [...INQUIRY_TYPES],
+          admin: {
+            position: 'sidebar',
+            condition: (data) => data?.delivery === 'inquiries',
+            description:
+              'What kind of request this form produces. Sets the inquiry type in the inbox, which decides who is notified and which questions the admin shows.',
+          },
+        },
+      ),
   },
   formSubmissionOverrides: {
     // Submissions hold visitor PII: readable/deletable by team only. Public

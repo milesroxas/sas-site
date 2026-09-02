@@ -64,7 +64,9 @@ A form's `Delivery` decides what a submission becomes:
 - **Form submissions** — a row in the generic log, as before.
 - **Inquiries inbox** — a triaged inquiry with a reference, an owner and a
   status. Each field then gets a **maps to** select saying which part of an
-  inquiry it becomes.
+  inquiry it becomes, and the form's sidebar gains an **Inquiry type** select
+  (project or general) saying what the inbox files it as. Forms created before
+  that select existed are treated as project inquiries.
 
 The mapping is explicit rather than inferred from field names: an editor
 renaming "email" to "Your email" must not silently empty a column. Anything

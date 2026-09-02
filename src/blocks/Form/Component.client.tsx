@@ -20,6 +20,7 @@ export type FormRendererProps = {
   delivery: FormDelivery
   fields: ResolvedFormField[]
   formId: number | string
+  inquiryType?: FormDoc['inquiryType']
   redirectUrl?: string | null
   submitLabel: string
 }
@@ -37,6 +38,7 @@ export function FormRenderer({
   delivery,
   fields,
   formId,
+  inquiryType,
   redirectUrl,
   submitLabel,
 }: FormRendererProps) {
@@ -58,7 +60,7 @@ export function FormRenderer({
       setError(undefined)
       setIsSending(true)
       try {
-        await submitForm({ delivery, fields, formId, values })
+        await submitForm({ delivery, fields, formId, inquiryType, values })
         setHasSubmitted(true)
 
         if (confirmationType === 'redirect' && redirectUrl) {
@@ -75,7 +77,7 @@ export function FormRenderer({
         setIsSending(false)
       }
     },
-    [confirmationType, delivery, fields, formId, redirectUrl, router],
+    [confirmationType, delivery, fields, formId, inquiryType, redirectUrl, router],
   )
 
   if (hasSubmitted && confirmationType === 'message' && confirmationMessage) {
