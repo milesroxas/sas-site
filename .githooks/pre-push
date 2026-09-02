@@ -121,13 +121,17 @@ check_range() {
   # Postgres forbids using a newly ADD VALUE'd enum label in the same transaction.
   # Payload wraps each migration in a transaction — catch generated ADD VALUE +
   # SET DEFAULT (etc.) before CI fails on Neon.
+  # Deletions are excluded: a removed migration has no contents to check, and
+  # passing its path crashes the checker on ENOENT.
+  local changed_existing
+  changed_existing="$(git diff --diff-filter=d --name-only "$base" "$local_sha" 2>/dev/null || true)"
   local migration_ts=()
   while IFS= read -r f; do
     [[ -z "$f" ]] && continue
     if [[ "$f" =~ $MIGRATION_TS_RE ]]; then
       migration_ts+=("$f")
     fi
-  done <<<"$changed"
+  done <<<"$changed_existing"
 
   if ((${#migration_ts[@]} > 0)); then
     need_drift_check=1
