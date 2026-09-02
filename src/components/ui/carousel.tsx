@@ -74,6 +74,10 @@ function Carousel({
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
+      // A carousel switched off at this media query (`active: false`) is a
+      // plain overflow container — the browser scrolls it with the same keys,
+      // so swallowing them here would leave the arrows dead.
+      if (api && !api.internalEngine().options.active) return
       if (event.key === 'ArrowLeft') {
         event.preventDefault()
         scrollPrev()
@@ -82,7 +86,7 @@ function Carousel({
         scrollNext()
       }
     },
-    [scrollPrev, scrollNext],
+    [api, scrollPrev, scrollNext],
   )
 
   React.useEffect(() => {

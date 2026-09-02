@@ -53,6 +53,41 @@ const SLIDE_GUTTER = 'px-8'
 const TRACK_GUTTER = '-ml-8'
 const GRID_GAP = 'gap-16'
 
+/**
+ * Touch rail. Embla drags its track from pointer events, and a finger keeps
+ * feeding those even while root Lenis (`syncTouch`) drives the page from the
+ * same touchmove — so a swipe that is mostly down and a little sideways pans
+ * the rail and scrolls the page at once. Below a fine pointer the rail is a
+ * plain scroll container instead (embla `active: false`, see `opts`) and the
+ * browser's own axis lock decides which one the gesture belongs to. Same fix
+ * as the testimonials rail (blocks/TestimonialsMarquee/Component).
+ *
+ * `data-lenis-prevent-horizontal` on the root is the other half: Lenis
+ * preventDefaults every touchmove, so without it a sideways swipe never
+ * reaches the browser and the rail cannot pan at all. It releases only the
+ * gestures Lenis reads as horizontal — an up/down swipe started on a card
+ * still smooth-scrolls the page.
+ *
+ * No snap classes: this is a rail, not a slideshow (see `dragFree` below), and
+ * native momentum already comes to rest wherever the hand left it.
+ *
+ * The classes land on the embla viewport, which the primitive does not expose
+ * through a prop.
+ */
+const TOUCH_RAIL =
+  'pointer-coarse:[&_[data-slot=carousel-content]]:no-scrollbar pointer-coarse:[&_[data-slot=carousel-content]]:overflow-x-auto pointer-coarse:[&_[data-slot=carousel-content]]:overscroll-x-contain'
+
+/**
+ * Edge fade, one per input. `drag-fade-x` reads embla's translate through
+ * `useCarouselEdgeFade` because a dragged viewport never scrolls; the touch
+ * rail has a real scroll position, so it takes `scroll-fade-x` off its own
+ * scroll timeline instead — the same signal every native rail on the site
+ * gives. `scroll-fade-32` restates the wider cap `drag-fade-x` sets for a card
+ * rail, so both inputs dissolve by the same amount.
+ */
+const EDGE_FADE =
+  'pointer-fine:[&_[data-slot=carousel-content]]:drag-fade-x pointer-coarse:[&_[data-slot=carousel-content]]:scroll-fade-x pointer-coarse:[&_[data-slot=carousel-content]]:scroll-fade-32'
+
 const RailCard: React.FC<{ post: CardPostData }> = ({ post }) => (
   // h-full: every card takes the tallest neighbour's height, so the category
   // chips sit on one line across the row instead of wherever each card's copy
@@ -72,7 +107,7 @@ export const PostRail: React.FC<{
     // `underMedia`: the cards are copy paired with media, so each card's frame
     // wipes open when the rail enters and its copy drops in on the same beat.
     <ScrollReveal as="div" variant="underMedia">
-      <div className="container mb-16 flex items-start justify-between gap-8 border-t border-border pt-8">
+      <div className="container mb-16 flex items-start justify-between gap-8">
         {/* Grouped with the link beside it: one line of furniture, one beat. */}
         <h2
           className="max-w-lg text-heading-3 font-light"
@@ -100,16 +135,20 @@ export const PostRail: React.FC<{
         // The rail starts on the page column and runs off the end of the
         // screen — the clipped card sits in the browser's edge, not a hand's
         // width inside it, so the list reads as continuing off the page rather
-        // than stopping at an invisible boundary. `drag-fade-x` dissolves
-        // whichever edge still has cards behind it, the same signal
-        // `scroll-fade-x` gives the site's native rails. It lands on the embla
-        // viewport (`[data-slot=carousel-content]`), which is not reachable
-        // through a prop, and carries its own width — no size class needed.
+        // than stopping at an invisible boundary. The edge fade dissolves
+        // whichever side still has cards behind it (see `EDGE_FADE`), and the
+        // viewport carries its own width — no size class needed.
         <div className="container-bleed-e">
           <Carousel
             aria-label="More insights"
-            className="[&_[data-slot=carousel-content]]:drag-fade-x"
+            className={`${TOUCH_RAIL} ${EDGE_FADE}`}
+            data-lenis-prevent-horizontal
             opts={{
+              // Embla only where a mouse can drag it. `breakpoints` re-reads
+              // this on the media query, so a tablet that gains a pointer
+              // rebuilds the carousel rather than staying a scroll container.
+              active: false,
+              breakpoints: { '(pointer: fine)': { active: true } },
               // A finite archive, so no loop and no wrap-around: `start` keeps
               // the first card on the page column and `trimSnaps` stops the
               // last drag from parking on empty gutter.

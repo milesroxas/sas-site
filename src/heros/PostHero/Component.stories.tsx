@@ -41,6 +41,21 @@ export const Video: Story = {
   },
 }
 
+/**
+ * No `heroImage`: the hero falls back to the SEO image — the same asset the
+ * insights cards show — so the header (and the takeover menu's docked window,
+ * which clones it) still opens on media rather than an empty box.
+ */
+export const SeoImageFallback: Story = {
+  args: {
+    post: {
+      ...basePost,
+      heroImage: null,
+      meta: { ...basePost.meta, image: mediaFixture },
+    },
+  },
+}
+
 /** No standfirst and no author: the two rows the hero can drop. */
 export const Minimal: Story = {
   args: {

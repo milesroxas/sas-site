@@ -4,14 +4,14 @@ import {
   LOCAL_BACKUP_FILE,
   POSTGRES_DOCKER_IMAGE,
   PROJECT_ROOT,
-  SNAPSHOT_FILE,
+  SNAPSHOT_DIR,
   SNAPSHOT_REL_DIR,
 } from './constants'
 import {
   localDropAndCreatePayloadDb,
-  localRestorePayloadFromDumpFile,
+  localRestorePayloadFromDumpDir,
   pgDumpLocalComposeToFile,
-  pgDumpRemoteDockerToFile,
+  pgDumpRemoteDockerToDir,
 } from './pg-tools'
 
 export type SyncResult = { ok: true; messages: string[] } | { ok: false; messages: string[] }
@@ -63,10 +63,10 @@ export async function backupLocalDatabase(): Promise<SyncResult> {
  */
 export async function syncProductionToLocal(productionUrl: string): Promise<SyncResult> {
   const messages: string[] = []
-  const snapshotPath = path.join(await snapshotDir(), SNAPSHOT_FILE)
+  const snapshotPath = path.join(await snapshotDir(), SNAPSHOT_DIR)
 
   try {
-    await pgDumpRemoteDockerToFile(productionUrl, snapshotPath)
+    await pgDumpRemoteDockerToDir(productionUrl, snapshotPath)
     messages.push(`Production dump: ${path.relative(PROJECT_ROOT, snapshotPath)}`)
   } catch (e) {
     return {
@@ -81,7 +81,7 @@ export async function syncProductionToLocal(productionUrl: string): Promise<Sync
 
   try {
     await localDropAndCreatePayloadDb()
-    await localRestorePayloadFromDumpFile(snapshotPath)
+    await localRestorePayloadFromDumpDir(snapshotPath)
   } catch (e) {
     return {
       ok: false,

@@ -22,19 +22,26 @@ export const LOCAL_POSTGRES_DB = 'postgresql://postgres@127.0.0.1:54320/payload'
  */
 export const VERCEL_PULL_ENV_FILE = '.env.production.pulled'
 export const SNAPSHOT_REL_DIR = '.dev-tui'
-/** Custom-format archives (`pg_dump -Fc`) — see scripts/dev-tui/pg-tools.ts. */
-export const SNAPSHOT_FILE = 'snapshot.dump'
+/** Directory-format archive (`pg_dump -Fd -j`) — see scripts/dev-tui/pg-tools.ts. */
+export const SNAPSHOT_DIR = 'snapshot.pgdir'
+/** Custom-format archive (`pg_dump -Fc`); the local backup is small enough to stay one file. */
 export const LOCAL_BACKUP_FILE = 'local-backup.dump'
 
 /**
  * Where the snapshot lands inside the Postgres container. `pg_restore -j` needs
  * a seekable archive, so the dump is copied in rather than piped over stdin.
  */
-export const CONTAINER_RESTORE_PATH = '/tmp/sas-dev-tui-restore.dump'
+export const CONTAINER_RESTORE_PATH = '/tmp/sas-dev-tui-restore'
 
 /**
- * Parallel `pg_restore` jobs. The restore is dominated by index and foreign-key
- * builds, so this is the main lever on wall-clock; 4 keeps it well inside the
- * container's default connection limit.
+ * Parallel `pg_dump` / `pg_restore` jobs.
+ *
+ * Measured against production (2026-09-01): a serial `-Fc` dump took 112.5s, of
+ * which 90.3s was schema-only — pg_dump's per-object catalog round-trips over
+ * the WAN for ~470 tables / ~1700 indexes / ~800 foreign keys. Parallel jobs
+ * hide the data phase entirely behind that floor (`-Fd -j 4` = 90.1s), so this
+ * buys ~20% and the rest is object count, not bytes. Restore of the same
+ * archive is ~2s serial, ~1.2s parallel — never the bottleneck.
  */
+export const DUMP_JOBS = 4
 export const RESTORE_JOBS = 4

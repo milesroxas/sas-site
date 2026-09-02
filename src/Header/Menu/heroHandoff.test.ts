@@ -242,6 +242,33 @@ describe('startHeroHandoff', () => {
     expect(onDone).toHaveBeenCalledTimes(1)
   })
 
+  it('suppresses the platform view transition for the whole flight', () => {
+    // React starts a view transition on every route commit whatever the
+    // tagging says, and its capture freezes rendering (and rAF) mid-flight —
+    // the traveler would stall and snap forward. The API must be gone from
+    // the click until the traveler is, and back afterwards.
+    const native = vi.fn()
+    Object.defineProperty(document, 'startViewTransition', {
+      configurable: true,
+      writable: true,
+      value: native,
+    })
+
+    const handoff = start()
+    expect(document.startViewTransition).toBeUndefined()
+
+    completeTravelerFade()
+    mountDestinationHero()
+    handoff.routeChanged()
+    completeFullscreen()
+    expect(document.startViewTransition).toBeUndefined()
+
+    handoff.abort()
+    expect(document.startViewTransition).toBe(native)
+
+    Reflect.deleteProperty(document, 'startViewTransition')
+  })
+
   it('abort tears down instantly and restores the frame exactly once', () => {
     const handoff = start()
     handoff.abort()

@@ -248,6 +248,14 @@
    * first frame. The handoff attribute matters because the inert guard alone
    * races: the frame unfreezes at route commit, exactly when a transition
    * would be captured; `data-menu-handoff` holds until the traveler is gone.
+   *
+   * CSS cannot be the whole fix, because the damage starts before any
+   * animation does: a started transition suspends the document's rendering
+   * (and rAF) for its capture, which stalls the GSAP motion these guards
+   * exist to protect. Menu-owned navigations therefore remove
+   * `document.startViewTransition` for their flight
+   * (`shared/lib/view-transition/suppress.ts`) — these rules are what catches
+   * anything that slips past that.
    */
   :root:has([data-page-frame][inert])::view-transition-group(*),
   :root:has([data-page-frame][inert])::view-transition-image-pair(*),

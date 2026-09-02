@@ -1,23 +1,28 @@
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { execa } from 'execa'
 import {
   CONTAINER_RESTORE_PATH,
+  DUMP_JOBS,
   POSTGRES_DOCKER_IMAGE,
   PROJECT_ROOT,
   RESTORE_JOBS,
 } from './constants'
 
 /**
- * Dumps use the custom format (`-Fc`) so the restore can run `pg_restore -j`:
- * this schema is ~470 tables / ~1700 indexes / ~800 foreign keys for only a few
- * thousand rows, so restore wall-clock is index and constraint builds, not data
- * volume, and those are what parallel restore overlaps. Custom format is also
- * binary — every dump streams straight to a file rather than through a JS
- * string, and it sidesteps the `\restrict` / `SET transaction_timeout` lines a
- * PG 18 client emits into plain SQL for an older server.
+ * Dumps are binary archives rather than plain SQL: the production dump uses the
+ * directory format so `pg_dump -j` can run, the restore uses `pg_restore -j`,
+ * and neither streams through a JS string. Binary format also sidesteps the
+ * `\restrict` / `SET transaction_timeout` lines a PG 18 client writes into plain
+ * SQL for an older server (production is PG 17, this image is PG 18).
+ *
+ * See `DUMP_JOBS` in ./constants for what the parallelism does and does not buy.
  */
 
 /**
- * Dump local Docker `payload` DB using the **container’s** pg_dump (matches server version).
+ * Dump local Docker `payload` DB using the **container’s** pg_dump (matches server
+ * version). Single-file custom format — the local dump is ~0.7s, so the
+ * directory format's extra moving parts would buy nothing.
  */
 export async function pgDumpLocalComposeToFile(outPath: string): Promise<void> {
   await execa(
@@ -43,27 +48,41 @@ export async function pgDumpLocalComposeToFile(outPath: string): Promise<void> {
   )
 }
 
-/** Dump a remote DB using the same official image as `POSTGRES_DOCKER_IMAGE` (bundled pg_dump). */
-export async function pgDumpRemoteDockerToFile(
+/**
+ * Dump a remote DB using the same official image as `POSTGRES_DOCKER_IMAGE`
+ * (bundled pg_dump). The output directory's parent is bind-mounted so pg_dump's
+ * parallel workers write straight to the host — `-Fd` cannot write to stdout.
+ */
+export async function pgDumpRemoteDockerToDir(
   connectionUri: string,
-  outPath: string,
+  outDir: string,
 ): Promise<void> {
+  // pg_dump -Fd refuses a non-empty target directory.
+  await fs.rm(outDir, { recursive: true, force: true })
+
+  const parent = path.dirname(outDir)
+  const name = path.basename(outDir)
   await execa(
     'docker',
     [
       'run',
       '--rm',
+      '-v',
+      `${parent}:/dump`,
       POSTGRES_DOCKER_IMAGE,
       'pg_dump',
       connectionUri,
-      '-Fc',
+      '-Fd',
+      '-j',
+      String(DUMP_JOBS),
       '--no-owner',
       '--no-acl',
+      '-f',
+      `/dump/${name}`,
     ],
     {
       cwd: PROJECT_ROOT,
-      timeout: 600_000,
-      stdout: { file: outPath },
+      timeout: 900_000,
     },
   )
 }
@@ -104,14 +123,19 @@ export async function localDropAndCreatePayloadDb(): Promise<void> {
 }
 
 /**
- * Restore a custom-format dump into the local `payload` database.
+ * Restore a directory-format dump into the local `payload` database.
  *
  * Parallel restore needs a seekable archive, so the dump is copied into the
  * container rather than piped over stdin. `--exit-on-error` keeps the strictness
  * `ON_ERROR_STOP=1` gave the old plain-SQL path.
  */
-export async function localRestorePayloadFromDumpFile(dumpPath: string): Promise<void> {
-  await execa('docker', ['compose', 'cp', dumpPath, `postgres:${CONTAINER_RESTORE_PATH}`], {
+export async function localRestorePayloadFromDumpDir(dumpDir: string): Promise<void> {
+  await execa(
+    'docker',
+    ['compose', 'exec', '-T', 'postgres', 'rm', '-rf', CONTAINER_RESTORE_PATH],
+    { cwd: PROJECT_ROOT, reject: false, timeout: 60_000 },
+  )
+  await execa('docker', ['compose', 'cp', dumpDir, `postgres:${CONTAINER_RESTORE_PATH}`], {
     cwd: PROJECT_ROOT,
     timeout: 600_000,
   })
@@ -148,7 +172,7 @@ export async function localRestorePayloadFromDumpFile(dumpPath: string): Promise
   } finally {
     await execa(
       'docker',
-      ['compose', 'exec', '-T', 'postgres', 'rm', '-f', CONTAINER_RESTORE_PATH],
+      ['compose', 'exec', '-T', 'postgres', 'rm', '-rf', CONTAINER_RESTORE_PATH],
       { cwd: PROJECT_ROOT, reject: false, timeout: 60_000 },
     )
   }

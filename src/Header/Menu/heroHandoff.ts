@@ -1,4 +1,5 @@
 import gsap from 'gsap'
+import { suppressViewTransitions } from '@/shared/lib/view-transition/suppress'
 import {
   clipPathInset,
   type HeroLandingPlan,
@@ -149,6 +150,17 @@ const onMediaReady = (el: HTMLElement, done: () => void) => {
 }
 
 export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {
+  /**
+   * The traveler owns this navigation's motion, so the platform must not also
+   * run one. React starts a view transition on EVERY route commit — the
+   * template remount places a new `<ViewTransition>`, which flags it before
+   * any class is resolved, so the untagged push and `default: 'none'` cannot
+   * prevent it. Its capture suspends rendering and rAF (React holds the
+   * update callback up to 500ms for the incoming page's images and fonts),
+   * which stalls the expansion mid-flight and snaps it forward on the next
+   * tick. Held for the whole flight, released in `finish`.
+   */
+  const releaseViewTransitions = suppressViewTransitions()
   let finished = false
   let routeCommitted = false
   let frameRestored = false
@@ -181,6 +193,7 @@ export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {
   const finish = () => {
     if (finished) return
     finished = true
+    releaseViewTransitions()
     document.documentElement.removeAttribute('data-menu-handoff')
     cancelAnimationFrame(rafId)
     for (const id of timers) window.clearTimeout(id)
@@ -314,12 +327,13 @@ export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {
   }
 
   // --- Phase 1: build the traveler docked on the slot; fade the menu out. ---
-  // Marks the whole flight for view-transition.css: the traveler owns every
-  // visible pixel of this navigation, so any view transition that starts
-  // while the attribute is present must degrade to a hard cut. The inert
-  // guard alone races this — the frame unfreezes at route commit, which is
-  // exactly when a transition would be captured; this attribute holds until
-  // `finish`, deterministically.
+  // Marks the whole flight for view-transition.css. Belt to the suppression
+  // above: no transition should start at all now, but if one ever does (an
+  // engine that starts one outside React), it must degrade to a hard cut
+  // rather than paint snapshots over the traveler. The inert guard alone
+  // races this — the frame unfreezes at route commit, which is exactly when a
+  // transition would be captured; this attribute holds until `finish`,
+  // deterministically.
   document.documentElement.setAttribute('data-menu-handoff', '')
   const traveler = document.createElement('div')
   traveler.setAttribute('data-menu-hero-traveler', '')

@@ -1,7 +1,7 @@
 import type React from 'react'
 import { ViewTransition } from 'react'
 import { Media } from '@/components/Media'
-import type { Post } from '@/payload-types'
+import type { Media as MediaDoc, Post } from '@/payload-types'
 import { readingTimeMinutes } from '@/shared/content/reading-time'
 import { postImageShare, postImageVtName } from '@/shared/lib/view-transition'
 import { formatAuthors } from '@/utilities/formatAuthors'
@@ -32,7 +32,7 @@ const MetaRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 export const PostHero: React.FC<{
   post: Post
 }> = ({ post }) => {
-  const { categories, content, heroImage, populatedAuthors, slug, standfirst, title } = post
+  const { categories, content, heroImage, meta, populatedAuthors, slug, standfirst, title } = post
 
   const kicker = (categories ?? [])
     .filter((category) => typeof category === 'object' && category !== null)
@@ -42,12 +42,23 @@ export const PostHero: React.FC<{
   const authors = formatAuthors(populatedAuthors ?? [])
   const readingTime = `${readingTimeMinutes(content)} min`
 
-  const media = heroImage && typeof heroImage !== 'string' && (
+  /**
+   * Header art, in order of intent: the post's own portrait crop, else the SEO
+   * image — the asset the insights cards already show for this post, so a post
+   * that skips `heroImage` opens on media instead of an empty box. The takeover
+   * menu clones whatever lands inside `data-hero-media`, so its docked window
+   * inherits the same fallback (src/Header/Menu).
+   */
+  const heroMedia = [heroImage, meta?.image].find(
+    (candidate): candidate is MediaDoc => typeof candidate === 'object' && candidate !== null,
+  )
+
+  const media = heroMedia && (
     <Media
       fill
       imgClassName="object-cover"
       priority
-      resource={heroImage}
+      resource={heroMedia}
       size="(min-width: 64rem) 42vw, 100vw"
     />
   )

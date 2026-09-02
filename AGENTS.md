@@ -7,6 +7,7 @@ Keep this file short. Deep Payload reference lives in skills and `.cursor/rules/
 ## Non-negotiables
 
 - Solve only what was asked. Prefer existing patterns. Use **pnpm** and project import aliases.
+- Never use em dashes in prose. Applies to chat replies, code comments, commit messages, docs, PR bodies, UI copy, and design/placeholder content. Recast with a comma, colon, parentheses, or a period. Exception: numeric figures and ranges may use an em or en dash (50—100K, 1–3 months).
 - TypeScript-first; import types from `@/payload-types` after schema work.
 - After schema changes you may run `pnpm generate:types` and `pnpm generate:importmap` without asking.
 - Validate with `tsc --noEmit` when you change types/config meaningfully.

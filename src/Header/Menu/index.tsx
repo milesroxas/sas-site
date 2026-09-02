@@ -14,6 +14,7 @@ import { Clock } from '@/Footer/Clock'
 import { MenuAsk } from '@/features/ask/MenuAsk'
 import { cursorTarget } from '@/features/cursor'
 import type { Header as HeaderType } from '@/payload-types'
+import { suppressViewTransitions } from '@/shared/lib/view-transition/suppress'
 import { cn } from '@/utilities/ui'
 import type { MenuContent, MenuMedia } from '../getMenuContent'
 import { ThemeToggle } from '../ThemeToggle'
@@ -343,6 +344,15 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   const pendingNavRef = useRef(false)
   /** In-flight hero handoff (see ./heroHandoff) — owns the exit while active. */
   const handoffRef = useRef<HeroHandoff | null>(null)
+  /**
+   * Held while the plain undock close carries a navigation. React starts a
+   * view transition on every route commit whatever the tagging says, and its
+   * capture suspends rendering (and rAF) for as long as React holds the
+   * update callback — up to 500ms on the incoming page's images — which
+   * stalls the undock reverse mid-flight and snaps it forward. The handoff
+   * holds its own token; see `suppressViewTransitions`.
+   */
+  const releaseViewTransitionsRef = useRef<(() => void) | null>(null)
   const pathname = usePathname()
   const lastPathnameRef = useRef(pathname)
   const router = useRouter()
@@ -351,6 +361,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   /** Unfreeze the frozen page frame. `navigated`: land on the new route's
    *  top/anchor; otherwise restore the offset frozen at open. */
   const restoreFrame = useCallback((navigated: boolean) => {
+    // The undock is over by the time this runs on the plain-close path, so the
+    // route swap can go back to being a normal view transition. (The handoff
+    // calls this at route commit and keeps its own token until its traveler
+    // is gone — it never sets this one.)
+    releaseViewTransitionsRef.current?.()
+    releaseViewTransitionsRef.current = null
     const frame = getPageFrame()
     if (!frame) return
     frame.removeAttribute('inert')
@@ -371,15 +387,20 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
    * Same-tab in-app link → this close is a navigation. When the destination
    * has hero media and the menu is fully open, the click starts the hero
    * handoff instead of the undock: the docked window holds the media and
-   * expands to FULL SCREEN while the route pushes underneath (untagged → no
-   * view-transition motion), then collapses clip-only onto the new page's
-   * hero — one axis at a time, never diagonally. Every unmet precondition
-   * (no hero media, reduced motion, mid-open click, …) falls back to the
-   * plain close — and that push is untagged too: the undock reverse owns all
-   * visible motion (the frame scales back up already holding the new route).
-   * A tagged navigation here would activate the page `<ViewTransition>` while
-   * the frame is docked, and snapshots ignore the dock's transform — full-size
-   * page snapshots would paint over the live menu.
+   * expands to FULL SCREEN while the route pushes underneath, then collapses
+   * clip-only onto the new page's hero — one axis at a time, never
+   * diagonally. Every unmet precondition (no hero media, reduced motion,
+   * mid-open click, …) falls back to the plain close, where the undock
+   * reverse owns all visible motion (the frame scales back up already holding
+   * the new route).
+   *
+   * Both pushes stay untagged AND suppress the platform view transition. The
+   * tagging keeps `DirectionalTransition` silent, but it does not stop React
+   * from starting a transition — the template remount always does — and a
+   * started transition both freezes the GSAP motion during its capture and
+   * paints snapshots at undocked geometry over the live menu (snapshots
+   * ignore the dock's transform). Only removing the API for the flight covers
+   * both; see `suppressViewTransitions`.
    */
   const onNavItemClick = useCallback(
     (media: MenuMedia | null) => (event: React.MouseEvent) => {
@@ -410,6 +431,11 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         })
       if (!canHandoff) {
         event.preventDefault()
+        // The undock reverse owns every visible pixel of this navigation, so
+        // the platform must not run a transition under it (released in
+        // `restoreFrame`, at the end of the reverse).
+        releaseViewTransitionsRef.current?.()
+        releaseViewTransitionsRef.current = suppressViewTransitions()
         router.push(anchor.pathname + anchor.search + anchor.hash)
         onClose()
         return
@@ -436,8 +462,8 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           rebuildTimelineRef.current?.()
         },
       })
-      // Untagged push: DirectionalTransition's `default: 'none'` keeps the
-      // route swap a hard cut — the traveler owns all visible motion.
+      // Untagged push, with the platform transition suppressed for the whole
+      // flight by `startHeroHandoff` — the traveler owns all visible motion.
       router.push(anchor.pathname + anchor.search + anchor.hash)
       onClose()
     },
@@ -766,6 +792,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
     if (open) {
       pendingNavRef.current = false
+      // Insurance: a close that never reached `restoreFrame` (no timeline, no
+      // frame) must not leave the document without view transitions.
+      releaseViewTransitionsRef.current?.()
+      releaseViewTransitionsRef.current = null
       // Rebuild from the current viewport before freezing: the timeline's clip
       // insets must match the frame size read below in the same tick, or the
       // crop is off by however much innerHeight drifted (mobile URL bar).
@@ -850,6 +880,9 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       window.clearTimeout(hoverClearTimer.current)
       // Unmount mid-handoff: drop the traveler and restore the frame now.
       handoffRef.current?.abort()
+      // …and never leave the document without view transitions.
+      releaseViewTransitionsRef.current?.()
+      releaseViewTransitionsRef.current = null
       const frame = getPageFrame()
       if (frame?.hasAttribute('inert')) {
         frame.removeAttribute('inert')

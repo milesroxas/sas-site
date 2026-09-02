@@ -149,7 +149,9 @@ pnpm generate:importmap
 - **Dev server — default env**: plain `pnpm dev`; `POSTGRES_URL` resolves from the `.env` chain (the footer shows which file wins).
 - **Dev server — local Docker DB**: forces `POSTGRES_URL` to the compose Postgres for that run only (no env files edited) and starts/waits for the container.
 - **Dev server — production DB**: forces `POSTGRES_URL` (and production's `PAYLOAD_SECRET`, so encrypted fields decrypt) from `.env.production.pulled`, with `PAYLOAD_DB_PUSH=false` so drizzle dev push can never touch the production schema. Writes from the admin panel are still real — read-mostly use.
-- **Pull production content → local Docker DB**: `pg_dump` production (non-pooling URL) and restore into the Docker `payload` database, backing up the local DB first to `.dev-tui/local-backup.sql`.
+- **Pull production content → local Docker DB**: parallel `pg_dump -Fd -j` of production (non-pooling URL) into `.dev-tui/snapshot.pgdir`, then `pg_restore -j` into the Docker `payload` database. Local data is replaced and **not** backed up — run **Database… → Back up local Docker DB** first if it holds work worth keeping.
+
+  Most of the wall-clock is pg_dump's per-object catalog round-trips to Neon (~90s of a ~110s pull, measured 2026-09-01), which scales with the ~470 tables / ~1700 indexes this schema generates, not with the ~15 MB of data. The restore itself is ~1s.
 
 Both production-DB options pull `.env.production.pulled` automatically when it is missing (needs the `vercel` CLI), so no separate step is required. They never refresh an existing file — use **Database… → Pull Vercel production env** to force a re-pull after credentials rotate.
 
