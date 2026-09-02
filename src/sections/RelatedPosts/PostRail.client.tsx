@@ -115,6 +115,15 @@ export const PostRail: React.FC<{
               // last drag from parking on empty gutter.
               align: 'start',
               containScroll: 'trimSnaps',
+              // A rail, not a slideshow. Embla's snapped default only commits a
+              // drag that clears its go-to-next force threshold and otherwise
+              // animates back to the snap it started on — with no arrows here,
+              // a deliberate short drag reads as the rail refusing to move.
+              // Free drag lets the track come to rest under its own momentum
+              // wherever the hand left it, still clamped by `trimSnaps` at both
+              // ends, which is how every other scrollable row on the site
+              // behaves.
+              dragFree: true,
             }}
             setApi={setApi}
           >

@@ -22,5 +22,19 @@ export const LOCAL_POSTGRES_DB = 'postgresql://postgres@127.0.0.1:54320/payload'
  */
 export const VERCEL_PULL_ENV_FILE = '.env.production.pulled'
 export const SNAPSHOT_REL_DIR = '.dev-tui'
-export const SNAPSHOT_FILE = 'snapshot.sql'
-export const LOCAL_BACKUP_FILE = 'local-backup.sql'
+/** Custom-format archives (`pg_dump -Fc`) — see scripts/dev-tui/pg-tools.ts. */
+export const SNAPSHOT_FILE = 'snapshot.dump'
+export const LOCAL_BACKUP_FILE = 'local-backup.dump'
+
+/**
+ * Where the snapshot lands inside the Postgres container. `pg_restore -j` needs
+ * a seekable archive, so the dump is copied in rather than piped over stdin.
+ */
+export const CONTAINER_RESTORE_PATH = '/tmp/sas-dev-tui-restore.dump'
+
+/**
+ * Parallel `pg_restore` jobs. The restore is dominated by index and foreign-key
+ * builds, so this is the main lever on wall-clock; 4 keeps it well inside the
+ * container's default connection limit.
+ */
+export const RESTORE_JOBS = 4

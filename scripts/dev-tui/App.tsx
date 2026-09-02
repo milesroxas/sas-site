@@ -3,7 +3,7 @@ import { Box, Text, useApp, useInput } from 'ink'
 import Spinner from 'ink-spinner'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LOCAL_POSTGRES_DB, PROJECT_ROOT, VERCEL_PULL_ENV_FILE } from './constants'
-import { syncProductionToLocal } from './db-sync'
+import { backupLocalDatabase, syncProductionToLocal } from './db-sync'
 import {
   assertPostgresUrl,
   maskPostgresUrlForDisplay,
@@ -37,6 +37,7 @@ type ActionId =
   | 'back'
   | 'db-up'
   | 'db-down'
+  | 'db-backup'
   | 'seed'
   | 'seed-drop'
   | 'env-pull'
@@ -71,7 +72,7 @@ const MENU: Record<Stack, MenuItem[]> = {
     {
       id: 'import-prod',
       label: 'Pull production content → local Docker DB',
-      hint: 'pg_dump production, restore into Docker (backup attempted first)',
+      hint: 'pg_dump production, parallel restore into Docker (local data is NOT backed up)',
     },
     { id: 'menu-db', label: 'Database…' },
     { id: 'menu-payload', label: 'Payload…' },
@@ -84,6 +85,11 @@ const MENU: Record<Stack, MenuItem[]> = {
   db: [
     { id: 'db-up', label: 'Docker: start Postgres (pnpm db:up)' },
     { id: 'db-down', label: 'Docker: stop compose (pnpm db:down)' },
+    {
+      id: 'db-backup',
+      label: 'Back up local Docker DB → .dev-tui/local-backup.dump',
+      hint: 'run before pulling production if local has work worth keeping',
+    },
     {
       id: 'seed',
       label: 'Seed placeholder content → local Docker DB (pnpm seed)',
@@ -282,7 +288,8 @@ export function App({ unmount }: { unmount: () => void }) {
             title:
               'Replace the local Docker `payload` database with a dump from production? ' +
               'The production URL is read (or pulled) automatically. ' +
-              'Local data is overwritten (a backup is attempted first). Env files are not changed.',
+              'Local data is overwritten and NOT backed up — use Database → Back up local Docker DB ' +
+              'first if you need it. Env files are not changed.',
             onYes: () => {
               void (async () => {
                 const r = await ensureProductionUrls()
@@ -322,6 +329,18 @@ export function App({ unmount }: { unmount: () => void }) {
         case 'db-down':
           await runCapture('pnpm db:down', ['run', 'db:down'])
           return
+        case 'db-backup': {
+          setPhase({ kind: 'running', label: 'Starting local Postgres (Docker)…' })
+          const ready = await ensureLocalPostgresReady()
+          if (!ready.ok) {
+            setPhase({ kind: 'done', ok: false, output: ready.message })
+            return
+          }
+          setPhase({ kind: 'running', label: 'Dumping local Docker DB…' })
+          const result = await backupLocalDatabase()
+          setPhase({ kind: 'done', ok: result.ok, output: result.messages.join('\n') })
+          return
+        }
         case 'seed': {
           setPhase({ kind: 'running', label: 'Starting local Postgres (Docker)…' })
           const ready = await ensureLocalPostgresReady()

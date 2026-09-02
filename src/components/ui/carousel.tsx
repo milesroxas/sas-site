@@ -130,10 +130,21 @@ function Carousel({
 }
 
 function CarouselContent({ className, ...props }: React.ComponentProps<'div'>) {
-  const { carouselRef, orientation } = useCarousel()
+  const { carouselRef, orientation, opts } = useCarousel()
+  // Embla only preventDefaults `dragstart` (the native link/image ghost) — it
+  // leaves `mousedown` alone, so a mouse drag across a slide runs the browser's
+  // text selection under the gesture and the rail ends up dragging a blue
+  // highlight with it. Suppress selection on the drag surface itself, and only
+  // where dragging is actually on: a carousel with `watchDrag: false` is a
+  // static row whose copy should stay selectable.
+  const isDraggable = opts?.watchDrag !== false
 
   return (
-    <div ref={carouselRef} className="overflow-hidden" data-slot="carousel-content">
+    <div
+      ref={carouselRef}
+      className={cn('overflow-hidden', isDraggable && 'select-none')}
+      data-slot="carousel-content"
+    >
       <div
         className={cn('flex', orientation === 'horizontal' ? '-ml-4' : '-mt-4 flex-col', className)}
         {...props}
