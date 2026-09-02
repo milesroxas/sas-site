@@ -6,7 +6,15 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import type { IndustryWorkPanel } from '@/blocks/IndustryWork/Component.client'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
-import type { Media, Post, Testimonial } from '@/payload-types'
+import type {
+  CaseStudy,
+  LabPage,
+  LabProject,
+  Media,
+  Post,
+  Testimonial,
+  WorkPage,
+} from '@/payload-types'
 
 type SerializedNode = Record<string, unknown>
 
@@ -219,4 +227,134 @@ export const testimonialFixtures: Testimonial[] = [
     'Every conversation moved the work forward. The site finally says what we do — plainly and well.',
     'Fieldnote Labs',
   ),
+]
+
+/**
+ * Canonical decisions on a case study. Blocks narrow them by `featured`, so
+ * the set carries both kinds.
+ */
+export const caseStudyKeyDecisionsFixture: NonNullable<CaseStudy['keyDecisions']> = [
+  {
+    key: 'organize-around-user-intent',
+    title: 'Organize around intent, not org chart',
+    decision: 'Navigation follows what a visitor came to do, not how the company is structured.',
+    impact: 'Sales stopped fielding "where do I find" emails within a month of launch.',
+    featured: true,
+  },
+  {
+    key: 'one-proof-per-claim',
+    title: 'One proof per claim',
+    decision:
+      'Every capability page carries a single piece of evidence rather than a wall of logos.',
+    impact: 'Page length halved and time on page went up.',
+    featured: true,
+  },
+  {
+    key: 'defer-the-configurator',
+    title: 'Defer the configurator',
+    decision: 'The pricing configurator moved to phase two so the story could ship first.',
+    impact: 'Launch landed six weeks earlier.',
+  },
+]
+
+/**
+ * Structured results. Only `approvedForPublic` metrics ever leave the study,
+ * so the unapproved one here exercises the filter in the renderer.
+ */
+export const caseStudyMetricsFixture: NonNullable<CaseStudy['metrics']> = [
+  {
+    key: 'qualified-leads',
+    label: 'Qualified leads per month',
+    value: '+68',
+    unit: '%',
+    qualifier: 'Six months post-launch, against the prior half-year.',
+    approvedForPublic: true,
+    featured: true,
+  },
+  {
+    key: 'time-to-first-demo',
+    label: 'Time to first demo',
+    value: '9',
+    unit: ' days',
+    approvedForPublic: true,
+    featured: true,
+  },
+  {
+    key: 'bounce-rate',
+    label: 'Bounce rate',
+    value: '-22',
+    unit: '%',
+    approvedForPublic: true,
+  },
+  {
+    key: 'internal-nps',
+    label: 'Internal NPS',
+    value: '61',
+    approvedForPublic: false,
+    featured: true,
+  },
+]
+
+const workPageFixture = (id: number, title: string, slug: string): WorkPage => ({
+  id,
+  title,
+  slug,
+  caseStudy: {
+    id,
+    title,
+    key: slug,
+    project: id,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+  coverAsset: mediaFixture,
+  _status: 'published',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+})
+
+/** Related-work grids: published work pages with a populated case study. */
+export const workPageFixtures: WorkPage[] = [
+  workPageFixture(1, 'Clarity for a payments platform', 'interchecks'),
+  workPageFixture(2, 'A calmer story for a care network', 'blindcut'),
+  workPageFixture(3, 'Repositioning a freight marketplace', 'northbeam'),
+]
+
+const labPageFixture = (id: number, title: string, slug: string): LabPage => ({
+  id,
+  title,
+  slug,
+  labProject: {
+    id,
+    title,
+    key: slug,
+    kind: 'experiment',
+    status: 'active',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+  coverAsset: mediaFixture,
+  _status: 'published',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+})
+
+/** Related-project grids on lab pages. */
+export const labPageFixtures: LabPage[] = [
+  labPageFixture(1, 'Type scale playground', 'type-scale-playground'),
+  labPageFixture(2, 'Shader-backed page transitions', 'shader-page-transitions'),
+  labPageFixture(3, 'A retrieval index for our own writing', 'retrieval-index'),
+]
+
+export const labTechnologiesFixture: NonNullable<LabProject['technologies']> = [
+  { name: 'Next.js' },
+  { name: 'React Three Fiber' },
+  { name: 'GLSL' },
+  { name: 'GSAP' },
+]
+
+/** Internal links are filtered out upstream, so only public ones appear here. */
+export const labProjectLinksFixture: NonNullable<LabProject['projectLinks']> = [
+  { label: 'Live demo', url: 'https://example.com/demo', visibility: 'public' },
+  { label: 'Source', url: 'https://example.com/source', visibility: 'public' },
 ]

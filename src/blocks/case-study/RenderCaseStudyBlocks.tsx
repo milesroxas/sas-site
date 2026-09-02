@@ -23,7 +23,6 @@ import {
   resolveCaseStudyStoryBody,
   resolveCaseStudyStoryHeading,
 } from '@/collections/CaseStudies/story'
-import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type {
   CaseStudy,
@@ -49,9 +48,13 @@ import type {
 import { RevealSection as CssRevealSection } from '@/shared/ui/reveal-section'
 import { hasRichTextContent } from '@/utilities/hasRichTextContent'
 import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
-import { cn } from '@/utilities/ui'
 import { blockRevealVariants } from '../shared/reveal-variants'
+import { KeyDecisions as KeyDecisionsList } from './KeyDecisions'
+import { Metrics as MetricsList } from './Metrics'
+import { RelatedWorkList } from './RelatedWork'
 import { RevealSection } from './RevealSection.client'
+import { StorySection as StorySectionLayout } from './StorySection'
+import { TestimonialBlock as TestimonialQuote } from './Testimonial'
 
 /**
  * Feature blocks carry a single rich-text body plus a `source` select. Written
@@ -154,53 +157,19 @@ const storySectionHeading = (block: WorkCaseStudyStorySectionBlock, study: CaseS
   storyBeatHeading(study, block.source, block.storyBeatKey) ||
   defaultHeading(block.source)
 
-const storySectionWidths: Record<NonNullable<WorkCaseStudyStorySectionBlock['width']>, string> = {
-  narrow: 'max-w-3xl',
-  standard: 'max-w-5xl',
-  wide: 'max-w-7xl',
-}
-
 const StorySection = ({
   block,
   study,
 }: {
   block: WorkCaseStudyStorySectionBlock
   study: CaseStudy
-}) => {
-  const content = resolveStorySectionBody(block, study)
-  if (!content) return null
-  const media = populatedDoc<MediaDoc>(block.media)
-  return (
-    <RevealSection theme={block.theme} variant={media ? 'underMedia' : 'intro'}>
-      <div
-        className={cn(
-          'container mx-auto grid gap-10',
-          storySectionWidths[block.width ?? 'standard'],
-          block.media && block.layout !== 'text-only' && 'md:grid-cols-2',
-        )}
-      >
-        <div className={cn('text-stack', block.layout === 'text-right' && 'md:order-2')}>
-          {block.eyebrow && (
-            <p className="text-sm uppercase tracking-[0.2em]" data-reveal>
-              {block.eyebrow}
-            </p>
-          )}
-          <h2 className="text-heading-2" data-reveal>
-            {storySectionHeading(block, study)}
-          </h2>
-          <div data-reveal>
-            <RichText data={content} enableGutter={false} />
-          </div>
-        </div>
-        {media && (
-          <div data-reveal="media">
-            <Media resource={media} imgClassName="h-auto w-full" />
-          </div>
-        )}
-      </div>
-    </RevealSection>
-  )
-}
+}) => (
+  <StorySectionLayout
+    block={block}
+    content={resolveStorySectionBody(block, study)}
+    heading={storySectionHeading(block, study)}
+  />
+)
 
 /**
  * What a story-driven media block needs before it can render: the resolved
@@ -321,112 +290,35 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
   )
 }
 
+/** `featured` narrows the study's decisions to the ones marked for prominence. */
 const KeyDecisions = ({
   block,
   study,
 }: {
   block: CaseStudyKeyDecisionsBlock
   study: CaseStudy
-}) => {
-  const decisions = (study.keyDecisions || []).filter(
-    (decision) => block.source === 'all' || decision.featured,
-  )
-  if (!decisions.length) return null
-  return (
-    <RevealSection theme={block.theme} variant="intro">
-      <div className="container mx-auto">
-        <h2 className="mb-8 text-heading-2" data-reveal>
-          {block.heading || 'Key decisions'}
-        </h2>
-        {block.introduction && (
-          <div data-reveal>
-            <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
-          </div>
-        )}
-        <div className={cn('grid gap-6', block.layout === 'cards' && 'md:grid-cols-2')}>
-          {decisions.map((decision) => (
-            <article className="border-current/20 border p-6" data-reveal key={decision.key}>
-              <h3 className="mb-4 text-heading-3">{decision.title}</h3>
-              {decision.decision && <p>{decision.decision}</p>}
-              {decision.impact && <p className="mt-4 opacity-75">{decision.impact}</p>}
-            </article>
-          ))}
-        </div>
-      </div>
-    </RevealSection>
-  )
-}
+}) => (
+  <KeyDecisionsList
+    block={block}
+    decisions={(study.keyDecisions || []).filter(
+      (decision) => block.source === 'all' || decision.featured,
+    )}
+  />
+)
 
-const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseStudy }) => {
-  const metrics = (study.metrics || []).filter(
-    (metric) => metric.approvedForPublic && (block.source === 'all-public' || metric.featured),
-  )
-  if (!metrics.length) return null
-  return (
-    <RevealSection theme={block.theme} variant="intro">
-      <div className="container mx-auto">
-        <h2 className="mb-8 text-heading-2" data-reveal>
-          {block.heading || 'Results'}
-        </h2>
-        {block.introduction && (
-          <div data-reveal>
-            <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
-          </div>
-        )}
-        <dl className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
-          {metrics.map((metric) => (
-            <div data-reveal key={metric.key}>
-              <dd className="text-heading-1">
-                {metric.value}
-                {metric.unit}
-              </dd>
-              <dt className="mt-3 text-lg">{metric.label}</dt>
-              {metric.qualifier && <p className="mt-2 text-sm opacity-70">{metric.qualifier}</p>}
-            </div>
-          ))}
-        </dl>
-      </div>
-    </RevealSection>
-  )
-}
+/** Only public-approved metrics leave the study; `featured` narrows further. */
+const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseStudy }) => (
+  <MetricsList
+    block={block}
+    metrics={(study.metrics || []).filter(
+      (metric) => metric.approvedForPublic && (block.source === 'all-public' || metric.featured),
+    )}
+  />
+)
 
-/**
- * A quote may only appear once it is published and the speaker has approved it
- * for public use — a draft or an internal-only testimonial never reaches the
- * site.
- */
-const isPublicTestimonial = (testimonial: Testimonial | null): testimonial is Testimonial =>
-  testimonial?._status === 'published' && testimonial.approvalStatus === 'approved-public'
-
-const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => {
-  const testimonial = populatedDoc<Testimonial>(block.testimonial)
-  if (!isPublicTestimonial(testimonial)) return null
-  const portrait = block.showPortrait ? populatedDoc<MediaDoc>(testimonial.portrait) : null
-  return (
-    <RevealSection theme={block.theme} variant={portrait ? 'underMedia' : 'intro'}>
-      <figure className="container mx-auto max-w-4xl text-center">
-        {portrait && (
-          <div data-reveal="media">
-            <Media className="mx-auto mb-6 w-24 overflow-hidden rounded-full" resource={portrait} />
-          </div>
-        )}
-        <blockquote data-reveal>
-          <RichText
-            className="text-heading-2 leading-snug [&_p+p]:mt-4"
-            data={testimonial.quote}
-            enableGutter={false}
-            enableProse={false}
-          />
-        </blockquote>
-        <figcaption className="mt-6" data-reveal>
-          <strong>{testimonial.speakerName}</strong>
-          {testimonial.speakerRole && `, ${testimonial.speakerRole}`}
-          {testimonial.speakerOrganization && ` — ${testimonial.speakerOrganization}`}
-        </figcaption>
-      </figure>
-    </RevealSection>
-  )
-}
+const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => (
+  <TestimonialQuote block={block} testimonial={populatedDoc<Testimonial>(block.testimonial)} />
+)
 
 /**
  * Transition band: no bottom padding, so it runs into the next block.
@@ -462,19 +354,6 @@ const Transition = ({
   </RevealSection>
 )
 
-const RelatedWorkCard = ({ page }: { page: WorkPage }) => {
-  const cover = populatedDoc<MediaDoc>(page.coverAsset)
-  const caseStudy = populatedDoc<CaseStudy>(page.caseStudy)
-  return (
-    <a className="group pressable pressable-subtle block" data-reveal href={`/works/${page.slug}`}>
-      {cover && <Media resource={cover} imgClassName="h-auto w-full" />}
-      <h3 className="mt-4 text-heading-3 group-hover:underline">
-        {caseStudy ? caseStudy.title : page.title}
-      </h3>
-    </a>
-  )
-}
-
 const RelatedWork = async ({
   block,
   page,
@@ -483,34 +362,24 @@ const RelatedWork = async ({
   block: CaseStudyRelatedWorkBlock
   page: WorkPage
   study: CaseStudy
-}) => {
-  const pages = await resolveRelatedPages<WorkPage>({
-    automatic: block.selectionMode === 'automatic-capability-match',
-    capabilityIds: relationshipIds(study.featuredCapabilities || []),
-    capabilityPath: 'caseStudy.featuredCapabilities',
-    collection: 'work-pages',
-    currentId: page.id,
-    limit: block.limit || 3,
-    manual: (page.relatedWorkPages || []).filter(
-      (item): item is WorkPage => typeof item === 'object',
-    ),
-  })
-  if (!pages.length) return null
-  return (
-    <RevealSection variant="intro">
-      <div className="container mx-auto">
-        <h2 className="mb-8 text-heading-2" data-reveal>
-          {block.heading || 'Related work'}
-        </h2>
-        <div className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
-          {pages.map((item) => (
-            <RelatedWorkCard key={item.id} page={item} />
-          ))}
-        </div>
-      </div>
-    </RevealSection>
-  )
-}
+}) => (
+  <RelatedWorkList
+    block={block}
+    pages={
+      await resolveRelatedPages<WorkPage>({
+        automatic: block.selectionMode === 'automatic-capability-match',
+        capabilityIds: relationshipIds(study.featuredCapabilities || []),
+        capabilityPath: 'caseStudy.featuredCapabilities',
+        collection: 'work-pages',
+        currentId: page.id,
+        limit: block.limit || 3,
+        manual: (page.relatedWorkPages || []).filter(
+          (item): item is WorkPage => typeof item === 'object',
+        ),
+      })
+    }
+  />
+)
 
 const FeatureHeadingOffsetSection = ({
   block,
