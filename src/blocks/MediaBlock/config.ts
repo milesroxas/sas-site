@@ -7,6 +7,7 @@ export const MediaBlock: Block = {
   slug: 'mediaBlock',
   admin: { group: BLOCK_GROUPS.media },
   interfaceName: 'MediaBlock',
+  labels: { singular: 'Caption', plural: 'Captions' },
   fields: [
     {
       name: 'media',

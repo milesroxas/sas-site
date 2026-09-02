@@ -6,9 +6,9 @@ import { featureHeaderFields, featureSourceField } from '../shared'
 
 export const FeatureHeadingOffset: Block = {
   slug: 'featureHeadingOffset',
-  admin: { group: BLOCK_GROUPS.statements },
+  admin: { group: BLOCK_GROUPS.sectionHeading },
   interfaceName: 'FeatureHeadingOffsetBlock',
-  labels: { singular: 'Feature: heading offset', plural: 'Feature: heading offsets' },
+  labels: { singular: 'Offset', plural: 'Offsets' },
   fields: [
     ...featureHeaderFields,
     featureSourceField(),
@@ -18,6 +18,18 @@ export const FeatureHeadingOffset: Block = {
       admin: {
         description: 'Supporting copy in the offset right column. Leave empty to pull the source.',
       },
+    },
+    {
+      name: 'bodySize',
+      type: 'select',
+      label: 'Body size',
+      defaultValue: 'medium',
+      options: [
+        { label: 'Small', value: 'small' },
+        { label: 'Medium', value: 'medium' },
+        { label: 'Large', value: 'large' },
+      ],
+      admin: { description: 'Type size of the supporting copy.' },
     },
     themeField(),
   ],

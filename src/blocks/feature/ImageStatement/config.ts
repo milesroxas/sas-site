@@ -7,12 +7,12 @@ import { featureSourceField } from '../shared'
 
 export const FeatureImageStatement: Block = {
   slug: 'featureImageStatement',
-  admin: { group: BLOCK_GROUPS.statements },
+  admin: { group: BLOCK_GROUPS.media },
   // Per-parent table name: a static dbName would collapse every collection that
   // uses this block into one table whose FK points at the first parent only.
   dbName: ({ tableName }) => `${tableName}_image_statement`,
   interfaceName: 'FeatureImageStatementBlock',
-  labels: { singular: 'Feature: image statement', plural: 'Feature: image statements' },
+  labels: { singular: 'Statement', plural: 'Statements' },
   fields: [
     {
       name: 'media',
@@ -33,8 +33,9 @@ export const FeatureImageStatement: Block = {
     {
       name: 'textPosition',
       type: 'select',
-      defaultValue: 'right',
-      options: ['right', 'left'],
+      label: 'Layout',
+      defaultValue: 'left',
+      options: ['left', 'right'],
       admin: { description: 'Which edge the statement aligns to beneath the image.' },
     },
     {

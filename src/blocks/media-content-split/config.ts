@@ -4,23 +4,23 @@ import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 
 /**
- * Two images side by side — a 4:5 portrait beside a 16:10 landscape on a 1:2
- * column split, which lands both at the same rendered height. Text sits under
- * one of the images and is sized to that column: compact under the portrait,
- * large under the landscape.
+ * Split layout on an even grid: media fills one half, the content column the
+ * other (the wide sibling of Split narrow, whose text column is fixed and
+ * compact). `layout` arranges the media on the left or the right from `md`;
+ * below that the media always stacks first.
  *
  * Self-contained by default (authors the body inline), so it can be dropped
  * into any collection's `blocks` field. On Work Pages the `source` select can
  * pull canonical Case Study story content instead.
  */
-export const ImagePair: Block = {
-  slug: 'imagePair',
+export const MediaContentSplit: Block = {
+  slug: 'mediaContentSplit',
   admin: { group: BLOCK_GROUPS.mediaContent },
   // Per-parent table name: a static dbName would collapse every collection that
   // uses this block into one table whose FK points at the first parent only.
-  dbName: ({ tableName }) => `${tableName}_image_pair`,
-  interfaceName: 'ImagePairBlock',
-  labels: { singular: 'Pair', plural: 'Pairs' },
+  dbName: ({ tableName }) => `${tableName}_media_split`,
+  interfaceName: 'MediaContentSplitBlock',
+  labels: { singular: 'Split', plural: 'Splits' },
   fields: [
     {
       name: 'source',
@@ -41,6 +41,7 @@ export const ImagePair: Block = {
           'Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).',
       },
     },
+    { name: 'eyebrow', type: 'text', admin: { description: 'Short kicker above the heading.' } },
     { name: 'heading', type: 'text' },
     {
       name: 'body',
@@ -51,43 +52,33 @@ export const ImagePair: Block = {
       },
     },
     {
-      name: 'portraitMedia',
+      name: 'media',
       type: 'upload',
       relationTo: 'media',
       required: true,
-      admin: { description: 'Cropped to 4:5.' },
-      filterOptions: caseStudyScopedMediaFilter,
-    },
-    {
-      name: 'landscapeMedia',
-      type: 'upload',
-      relationTo: 'media',
-      required: true,
-      admin: { description: 'Cropped to 16:10.' },
       filterOptions: caseStudyScopedMediaFilter,
     },
     browseAllMediaField(),
     {
-      name: 'portraitPosition',
+      name: 'layout',
       type: 'select',
-      label: 'Layout: primary media',
+      label: 'Layout',
       defaultValue: 'left',
       options: ['left', 'right'],
       admin: {
-        description:
-          'Arrange the portrait on the left or the right; the landscape fills the other column. On small screens the left image stacks first.',
+        description: 'Arrange the media on the left or the right of the content.',
       },
     },
     {
-      name: 'textPosition',
+      name: 'aspectRatio',
       type: 'select',
-      label: 'Layout: content',
-      defaultValue: 'under-portrait',
-      options: ['under-portrait', 'under-landscape'],
-      admin: {
-        description:
-          'Which image the text sits under. Under the portrait it stays compact; under the landscape it runs larger and wider.',
-      },
+      defaultValue: '16-9',
+      options: [
+        { label: '16:9', value: '16-9' },
+        { label: '3:2', value: '3-2' },
+        { label: '21:9', value: '21-9' },
+      ],
+      admin: { description: 'Crop for the media column.' },
     },
     themeField(),
   ],

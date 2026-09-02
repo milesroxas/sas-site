@@ -77,6 +77,9 @@ export const segmentPageCollection = <S extends SegmentPageSlug>({
               name: 'layout',
               type: 'blocks',
               label: 'Composition',
+              // The add button reads "Add Section": editors reach for a Section
+              // first and nest content blocks inside it.
+              labels: { singular: 'Section', plural: 'Sections' },
               blocks: segmentPageBlocks,
               required: true,
               admin: { initCollapsed: true },

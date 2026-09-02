@@ -49,10 +49,14 @@ export const transitionFields = (): Field[] => [
       {
         name: 'layout',
         type: 'select',
-        defaultValue: 'centered',
+        label: 'Layout',
+        defaultValue: 'left',
+        // Stored values are live in production: relabel only. `centered` is
+        // labelled "Center"; retiring `split`/`statement` is a later contract
+        // step (see docs/blocks-reorg-roadmap.md, Phase D).
         options: [
           { label: 'Left', value: 'left' },
-          { label: 'Centered', value: 'centered' },
+          { label: 'Center', value: 'centered' },
           { label: 'Split', value: 'split' },
           { label: 'Statement', value: 'statement' },
         ],

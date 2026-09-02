@@ -3,7 +3,7 @@ import { mediaFixture, videoFixture } from '../fixtures'
 import { MediaBlock } from './Component'
 
 const meta = {
-  title: 'Blocks/Media',
+  title: 'Blocks/Media/Caption',
   component: MediaBlock,
   parameters: {
     layout: 'fullscreen',

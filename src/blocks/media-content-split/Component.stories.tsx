@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { mediaFixture, paragraph, richText, text, videoFixture } from '../fixtures'
-import { SplitContentNarrowBlock } from './Component'
+import { MediaContentSplitBlock } from './Component'
 
 const body = richText(
   paragraph(
@@ -16,37 +16,40 @@ const body = richText(
 )
 
 const meta = {
-  title: 'Blocks/MediaAndContent/SplitNarrow',
-  component: SplitContentNarrowBlock,
+  title: 'Blocks/MediaAndContent/Split',
+  component: MediaContentSplitBlock,
   parameters: {
     layout: 'fullscreen',
   },
   args: {
-    blockType: 'splitContentNarrow',
+    blockType: 'mediaContentSplit',
     source: 'custom',
-    media: mediaFixture,
+    eyebrow: 'About',
+    heading: 'A branding agency for complex offerings',
     body,
-    imagePosition: 'right',
+    media: mediaFixture,
+    layout: 'left',
+    aspectRatio: '16-9',
     theme: 'light',
   },
-} satisfies Meta<typeof SplitContentNarrowBlock>
+} satisfies Meta<typeof MediaContentSplitBlock>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const ImageRight: Story = {}
+export const MediaLeft: Story = {}
+
+export const MediaRight: Story = {
+  args: { layout: 'right' },
+}
 
 export const Video: Story = {
   args: { media: videoFixture },
 }
 
-export const ImageLeft: Story = {
-  args: { imagePosition: 'left' },
-}
-
-export const WithHeading: Story = {
-  args: { eyebrow: 'About', heading: 'A branding agency for complex offerings' },
+export const ThreeTwo: Story = {
+  args: { aspectRatio: '3-2' },
 }
 
 export const Dark: Story = {

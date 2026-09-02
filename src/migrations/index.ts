@@ -64,6 +64,7 @@ import * as migration_20260901_200423_page_closing from './20260901_200423_page_
 import * as migration_20260901_215802_post_split_hero_related from './20260901_215802_post_split_hero_related';
 import * as migration_20260902_044039_inquiries_contact from './20260902_044039_inquiries_contact';
 import * as migration_20260902_174924_contact_pages_delta from './20260902_174924_contact_pages_delta';
+import * as migration_20260902_191423_sections_and_media_content_split from './20260902_191423_sections_and_media_content_split';
 
 export const migrations = [
   {
@@ -394,6 +395,11 @@ export const migrations = [
   {
     up: migration_20260902_174924_contact_pages_delta.up,
     down: migration_20260902_174924_contact_pages_delta.down,
-    name: '20260902_174924_contact_pages_delta'
+    name: '20260902_174924_contact_pages_delta',
+  },
+  {
+    up: migration_20260902_191423_sections_and_media_content_split.up,
+    down: migration_20260902_191423_sections_and_media_content_split.down,
+    name: '20260902_191423_sections_and_media_content_split'
   },
 ];

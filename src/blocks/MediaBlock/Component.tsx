@@ -11,6 +11,8 @@ import { cn } from '@/utilities/ui'
 import { Media } from '../../components/Media'
 
 type Props = MediaBlockProps & {
+  /** Skip the band when the caller's shell owns it (the Section block). */
+  bare?: boolean
   breakout?: boolean
   captionClassName?: string
   className?: string
@@ -28,6 +30,7 @@ const sizeClasses: Record<NonNullable<MediaBlockProps['size']>, string> = {
 
 export const MediaBlock: React.FC<Props> = (props) => {
   const {
+    bare,
     captionClassName,
     captionOverride,
     className,
@@ -56,7 +59,7 @@ export const MediaBlock: React.FC<Props> = (props) => {
   )
 
   return (
-    <Section spacing="loose" theme={theme}>
+    <Section bare={bare} spacing="loose" theme={theme}>
       <div
         className={cn(
           '',

@@ -49,11 +49,15 @@ export type SectionTheme = keyof typeof themeClasses
  * - loose  + normal → 10rem / 14rem — full-bleed media next to copy
  * - loose  + loose  → 12rem / 16rem — two images in a row
  *
+ * `tight` is the editor-facing step below normal: a Section block holding a
+ * short run of related blocks that should read as one beat.
+ *
  * `none` is for blocks that own a pinned or self-sized shell (featured work),
  * where the band only supplies the surface.
  */
 export const BAND_SPACING = {
   none: 'py-0',
+  tight: 'py-8 md:py-12',
   normal: 'py-16 md:py-24',
   loose: 'py-24 md:py-32',
 } as const

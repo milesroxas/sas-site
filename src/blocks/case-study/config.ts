@@ -11,7 +11,9 @@ import { FeaturedWork } from '@/blocks/featured-work/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
+import { MediaContentSplit } from '@/blocks/media-content-split/config'
 import { ScrollGallery } from '@/blocks/scroll-gallery/config'
+import { sectionBlock } from '@/blocks/section/config'
 import {
   relatedSelectionFields,
   storySectionCopyFields,
@@ -173,10 +175,10 @@ export const CaseStudyTestimonial: Block = {
 
 export const CaseStudyTransition: Block = {
   slug: 'caseStudyTransition',
-  admin: { group: BLOCK_GROUPS.narrative },
+  admin: { group: BLOCK_GROUPS.sectionHeading },
   dbName: 'wp_transition',
   interfaceName: 'CaseStudyTransitionBlock',
-  labels: { singular: 'Rich transition', plural: 'Rich transitions' },
+  labels: { singular: 'Standard', plural: 'Standard' },
   // The content picker leads: an interstitial either restates a canonical
   // story beat or writes its own copy, and that choice decides which copy
   // fields the editor ever sees.
@@ -223,25 +225,46 @@ const WorkCaseStudyTransition = withStoryBeatSource(
   CaseStudyTransition,
   'WorkCaseStudyTransitionBlock',
 )
+const WorkMediaContentSplit = withStoryBeatSource(MediaContentSplit, 'WorkMediaContentSplitBlock')
+
+/**
+ * Blocks a Work Page Section can nest, and the same run offered at the top
+ * level while the Section transition is underway (docs/blocks-reorg-roadmap.md).
+ * Ordered by `admin.group` like the drawer list below.
+ */
+const workSectionBlocks: Block[] = [
+  // Section heading
+  WorkCaseStudyTransition,
+  WorkFeatureHeadingOffset,
+  // Media and content
+  WorkFullMedia,
+  WorkMediaContentSplit,
+  WorkSplitContentNarrow,
+  WorkImagePair,
+  WorkSplitImageOffset,
+  // Media
+  WorkFeatureImageStatement,
+]
+
+export const WorkSection = sectionBlock({
+  blocks: workSectionBlocks,
+  interfaceName: 'WorkSectionBlock',
+})
 
 // Ordered by `admin.group` — the blocks drawer renders groups in first-appearance order.
 export const caseStudyBlocks = [
+  // Structure
+  WorkSection,
   // Narrative
   WorkCaseStudyStorySection,
-  WorkCaseStudyTransition,
+  // Section heading / Media and content / Media: the Section-nestable run
+  ...workSectionBlocks,
   // Media
-  WorkFullMedia,
-  WorkImagePair,
-  WorkSplitImageOffset,
   CaseStudyMediaShowcase,
   ScrollGallery,
-  // Split layouts
-  WorkSplitContentNarrow,
   // Statements
   WorkFeatureStatementGrid,
   FeatureStatementLinks,
-  WorkFeatureHeadingOffset,
-  WorkFeatureImageStatement,
   CaseStudyTestimonial,
   // Interactive
   WorkFeatureTabs,

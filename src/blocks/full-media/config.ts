@@ -18,13 +18,16 @@ import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseSt
  * pull canonical Case Study story content instead.
  */
 export const FullMedia: Block = {
+  // Admin name is "Stacked" (Media and content); the slug predates the
+  // taxonomy and is live in production, and renaming it would cascade through
+  // tables, versions, and authored content for no editor-visible gain.
   slug: 'fullMedia',
-  admin: { group: BLOCK_GROUPS.media },
+  admin: { group: BLOCK_GROUPS.mediaContent },
   // Per-parent table name: a static dbName would collapse every collection that
   // uses this block into one table whose FK points at the first parent only.
   dbName: ({ tableName }) => `${tableName}_full_media`,
   interfaceName: 'FullMediaBlock',
-  labels: { singular: 'Full media', plural: 'Full media' },
+  labels: { singular: 'Stacked', plural: 'Stacked' },
   fields: [
     {
       name: 'showContent',
@@ -119,6 +122,7 @@ export const FullMedia: Block = {
     {
       name: 'contentPosition',
       type: 'select',
+      label: 'Layout',
       defaultValue: 'left',
       options: ['left', 'right'],
       admin: {

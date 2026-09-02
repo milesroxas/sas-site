@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 import { Carousel } from '@/blocks/Carousel/config'
 import { ScrollGallery } from '@/blocks/scroll-gallery/config'
+import { sectionBlock } from '@/blocks/section/config'
 import {
   relatedSelectionFields,
   storySectionCopyFields,
@@ -99,10 +100,10 @@ export const LabFacts: Block = {
 
 export const LabTransition: Block = {
   slug: 'labTransition',
-  admin: { group: BLOCK_GROUPS.narrative },
+  admin: { group: BLOCK_GROUPS.sectionHeading },
   dbName: 'lp_transition',
   interfaceName: 'LabTransitionBlock',
-  labels: { singular: 'Rich transition', plural: 'Rich transitions' },
+  labels: { singular: 'Standard', plural: 'Standard' },
   fields: [...transitionFields()],
 }
 
@@ -118,18 +119,35 @@ export const LabRelatedProjects: Block = {
   ],
 }
 
+/**
+ * Blocks a Lab Page Section can nest, and the same run offered at the top
+ * level while the Section transition is underway (docs/blocks-reorg-roadmap.md).
+ */
+const labSectionBlocks: Block[] = [
+  // Section heading
+  LabTransition,
+  // Media and content
+  SplitContentNarrow,
+]
+
+export const LabSection = sectionBlock({
+  blocks: labSectionBlocks,
+  interfaceName: 'LabSectionBlock',
+})
+
 // Ordered by `admin.group` — the blocks drawer renders groups in first-appearance order.
 export const labBlocks = [
+  // Structure
+  LabSection,
   // Narrative
   LabStorySection,
-  LabTransition,
+  // Section heading / Media and content: the Section-nestable run
+  ...labSectionBlocks,
   // Media
   LabMediaShowcase,
   ScrollGallery,
   // Interactive
   Carousel,
-  // Split layouts
-  SplitContentNarrow,
   // Lists & grids
   LabFacts,
   LabRelatedProjects,

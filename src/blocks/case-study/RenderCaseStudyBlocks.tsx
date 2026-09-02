@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/Component'
@@ -8,8 +9,10 @@ import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component
 import { FullMedia } from '@/blocks/full-media/FullMedia'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
+import { MediaContentSplit } from '@/blocks/media-content-split/MediaContentSplit'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
+import { SectionBand } from '@/blocks/section/SectionBand'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
@@ -41,6 +44,7 @@ import type {
   WorkFeatureTabsBlock,
   WorkFullMediaBlock,
   WorkImagePairBlock,
+  WorkMediaContentSplitBlock,
   WorkPage,
   WorkSplitContentNarrowBlock,
   WorkSplitImageOffsetBlock,
@@ -177,7 +181,9 @@ const StorySection = ({
  * heading filled in where the editor left the override empty. Null when the
  * block has no populated media, which is nothing to show.
  */
-const storyMediaProps = <T extends WorkFullMediaBlock | WorkSplitContentNarrowBlock>(
+const storyMediaProps = <
+  T extends WorkFullMediaBlock | WorkMediaContentSplitBlock | WorkSplitContentNarrowBlock,
+>(
   block: T,
   study: CaseStudy,
 ) => {
@@ -191,9 +197,11 @@ const storyMediaProps = <T extends WorkFullMediaBlock | WorkSplitContentNarrowBl
 }
 
 const SplitNarrow = ({
+  bare,
   block,
   study,
 }: {
+  bare?: boolean
   block: WorkSplitContentNarrowBlock
   study: CaseStudy
 }) => {
@@ -201,6 +209,7 @@ const SplitNarrow = ({
   if (!props) return null
   return (
     <RevealSection
+      bare={bare}
       spacing="loose"
       theme={block.theme}
       variant={blockRevealVariants.splitContentNarrow}
@@ -210,23 +219,67 @@ const SplitNarrow = ({
   )
 }
 
-const FullMediaSection = ({ block, study }: { block: WorkFullMediaBlock; study: CaseStudy }) => {
+const FullMediaSection = ({
+  bare,
+  block,
+  study,
+}: {
+  bare?: boolean
+  block: WorkFullMediaBlock
+  study: CaseStudy
+}) => {
   const props = storyMediaProps(block, study)
   if (!props) return null
   return (
-    <RevealSection spacing="loose" theme={block.theme} variant={blockRevealVariants.fullMedia}>
+    <RevealSection
+      bare={bare}
+      spacing="loose"
+      theme={block.theme}
+      variant={blockRevealVariants.fullMedia}
+    >
       <FullMedia bare {...props} />
     </RevealSection>
   )
 }
 
-const ImagePairSection = ({ block, study }: { block: WorkImagePairBlock; study: CaseStudy }) => {
+const MediaContentSplitSection = ({
+  bare,
+  block,
+  study,
+}: {
+  bare?: boolean
+  block: WorkMediaContentSplitBlock
+  study: CaseStudy
+}) => {
+  const props = storyMediaProps(block, study)
+  if (!props) return null
+  return (
+    <RevealSection
+      bare={bare}
+      spacing="loose"
+      theme={block.theme}
+      variant={blockRevealVariants.mediaContentSplit}
+    >
+      <MediaContentSplit bare {...props} />
+    </RevealSection>
+  )
+}
+
+const ImagePairSection = ({
+  bare,
+  block,
+  study,
+}: {
+  bare?: boolean
+  block: WorkImagePairBlock
+  study: CaseStudy
+}) => {
   const content = resolveStoryBody(block, study)
   const portrait = populatedDoc<MediaDoc>(block.portraitMedia)
   const landscape = populatedDoc<MediaDoc>(block.landscapeMedia)
   if (!portrait || !landscape) return null
   return (
-    <RevealSection spacing="loose" theme={block.theme} variant="underMedia">
+    <RevealSection bare={bare} spacing="loose" theme={block.theme} variant="underMedia">
       <ImagePair
         bare
         block={withStoryBeatHeading(block, study)}
@@ -239,9 +292,11 @@ const ImagePairSection = ({ block, study }: { block: WorkImagePairBlock; study: 
 }
 
 const SplitImageOffsetSection = ({
+  bare,
   block,
   study,
 }: {
+  bare?: boolean
   block: WorkSplitImageOffsetBlock
   study: CaseStudy
 }) => {
@@ -250,7 +305,7 @@ const SplitImageOffsetSection = ({
   const small = populatedDoc<MediaDoc>(block.smallMedia)
   if (!large || !small) return null
   return (
-    <RevealSection spacing="loose" theme={block.theme} variant="underMedia">
+    <RevealSection bare={bare} spacing="loose" theme={block.theme} variant="underMedia">
       <SplitImageOffset
         bare
         block={withStoryBeatHeading(block, study)}
@@ -328,13 +383,15 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => (
  * copy first, then the canonical content the picker points at.
  */
 const Transition = ({
+  bare,
   block,
   study,
 }: {
+  bare?: boolean
   block: WorkCaseStudyTransitionBlock
   study: CaseStudy
 }) => (
-  <RevealSection className="pb-0 md:pb-0" theme={block.theme} variant="intro">
+  <RevealSection bare={bare} className="pb-0 md:pb-0" theme={block.theme} variant="intro">
     <RichTransition
       bare
       {...block}
@@ -382,13 +439,15 @@ const RelatedWork = async ({
 )
 
 const FeatureHeadingOffsetSection = ({
+  bare,
   block,
   study,
 }: {
+  bare?: boolean
   block: WorkFeatureHeadingOffsetBlock
   study: CaseStudy
 }) => (
-  <RevealSection theme={block.theme} variant={blockRevealVariants.featureHeadingOffset}>
+  <RevealSection bare={bare} theme={block.theme} variant={blockRevealVariants.featureHeadingOffset}>
     <FeatureHeadingOffset
       bare
       {...block}
@@ -436,13 +495,16 @@ const FeatureStatementGridSection = ({
 )
 
 const FeatureImageStatementSection = ({
+  bare,
   block,
   study,
 }: {
+  bare?: boolean
   block: WorkFeatureImageStatementBlock
   study: CaseStudy
 }) => (
   <RevealSection
+    bare={bare}
     spacing="loose"
     theme={block.theme}
     variant={blockRevealVariants.featureImageStatement}
@@ -490,6 +552,95 @@ const FeatureTabsSection = ({
   </RevealSection>
 )
 
+type WorkLayoutBlock = NonNullable<WorkPage['layout']>[number]
+
+/**
+ * One work-page block. `bare` is set for blocks nested inside a Section
+ * block: the block keeps its scroll entrance but skips its band, because the
+ * Section's `SectionBand` painted it. Only the Section-nestable blocks ever
+ * receive `bare: true`, so the self-shell cases ignore it.
+ */
+const renderWorkBlock = (
+  block: WorkLayoutBlock,
+  ctx: { bare?: boolean; page: WorkPage; study: CaseStudy },
+): ReactNode => {
+  const { bare, page, study } = ctx
+  switch (block.blockType) {
+    case 'section':
+      // The Section owns the band; children render bare inside it with their
+      // usual entrances. The band itself never animates: a second entrance
+      // on the shell would double every child's motion.
+      return (
+        <SectionBand
+          customize={block.customize}
+          key={block.id}
+          spacing={block.spacing}
+          theme={block.theme}
+        >
+          {(block.blocks ?? []).map((child) => renderWorkBlock(child, { ...ctx, bare: true }))}
+        </SectionBand>
+      )
+    case 'caseStudyStorySection':
+      return <StorySection block={block} key={block.id} study={study} />
+    case 'splitContentNarrow':
+      return <SplitNarrow bare={bare} block={block} key={block.id} study={study} />
+    case 'fullMedia':
+      return <FullMediaSection bare={bare} block={block} key={block.id} study={study} />
+    case 'mediaContentSplit':
+      return <MediaContentSplitSection bare={bare} block={block} key={block.id} study={study} />
+    case 'imagePair':
+      return <ImagePairSection bare={bare} block={block} key={block.id} study={study} />
+    case 'splitImageOffset':
+      return <SplitImageOffsetSection bare={bare} block={block} key={block.id} study={study} />
+    case 'caseStudyMediaShowcase':
+      return <MediaShowcase block={block} key={block.id} />
+    case 'scrollGallery':
+      // Owns its own pinned full-viewport shell and section band — do not wrap again.
+      return <ScrollGalleryBlock key={block.id} {...block} />
+    case 'caseStudyKeyDecisions':
+      return <KeyDecisions block={block} key={block.id} study={study} />
+    case 'caseStudyMetrics':
+      return <Metrics block={block} key={block.id} study={study} />
+    case 'caseStudyTestimonial':
+      return <TestimonialBlock block={block} key={block.id} />
+    case 'caseStudyTransition':
+      return <Transition bare={bare} block={block} key={block.id} study={study} />
+    case 'caseStudyRelatedWork':
+      return <RelatedWork block={block} key={block.id} page={page} study={study} />
+    case 'featureHeadingOffset':
+      return <FeatureHeadingOffsetSection bare={bare} block={block} key={block.id} study={study} />
+    case 'featureStatementGrid':
+      return <FeatureStatementGridSection block={block} key={block.id} study={study} />
+    case 'featureStatementLinks':
+      // Owns its own GSAP intro `ScrollReveal` shell — do not wrap again.
+      return <FeatureStatementLinks key={block.id} {...block} />
+    case 'industryWork':
+      // Owns its own full-viewport `ScrollReveal` shell — do not wrap again.
+      return <IndustryWorkBlock key={block.id} {...block} />
+    case 'featuredWork':
+      // Work pages always close with this block from the Related Work tab.
+      return null
+    case 'featureImageStatement':
+      return <FeatureImageStatementSection bare={bare} block={block} key={block.id} study={study} />
+    case 'audienceTabs':
+      // Owns its own GSAP entrance + swap shell — do not wrap again.
+      return <AudienceTabsBlock key={block.id} {...block} />
+    case 'featureTabs':
+      return <FeatureTabsSection block={block} key={block.id} study={study} />
+    case 'carousel':
+      // Same CSS entrance as Pages/Home — no data-reveal markers, and the
+      // GSAP shell would put a transform on an ancestor of embla. The
+      // block paints its own band, so the wrapper only carries the entrance.
+      return (
+        <CssRevealSection key={block.id}>
+          <CarouselBlock {...block} disableInnerContainer />
+        </CssRevealSection>
+      )
+    default:
+      return null
+  }
+}
+
 export const RenderCaseStudyBlocks = async ({
   blocks,
   page,
@@ -498,67 +649,4 @@ export const RenderCaseStudyBlocks = async ({
   blocks: NonNullable<WorkPage['layout']>
   page: WorkPage
   study: CaseStudy
-}) => (
-  <>
-    {blocks.map((block) => {
-      switch (block.blockType) {
-        case 'caseStudyStorySection':
-          return <StorySection block={block} key={block.id} study={study} />
-        case 'splitContentNarrow':
-          return <SplitNarrow block={block} key={block.id} study={study} />
-        case 'fullMedia':
-          return <FullMediaSection block={block} key={block.id} study={study} />
-        case 'imagePair':
-          return <ImagePairSection block={block} key={block.id} study={study} />
-        case 'splitImageOffset':
-          return <SplitImageOffsetSection block={block} key={block.id} study={study} />
-        case 'caseStudyMediaShowcase':
-          return <MediaShowcase block={block} key={block.id} />
-        case 'scrollGallery':
-          // Owns its own pinned full-viewport shell and section band — do not wrap again.
-          return <ScrollGalleryBlock key={block.id} {...block} />
-        case 'caseStudyKeyDecisions':
-          return <KeyDecisions block={block} key={block.id} study={study} />
-        case 'caseStudyMetrics':
-          return <Metrics block={block} key={block.id} study={study} />
-        case 'caseStudyTestimonial':
-          return <TestimonialBlock block={block} key={block.id} />
-        case 'caseStudyTransition':
-          return <Transition block={block} key={block.id} study={study} />
-        case 'caseStudyRelatedWork':
-          return <RelatedWork block={block} key={block.id} page={page} study={study} />
-        case 'featureHeadingOffset':
-          return <FeatureHeadingOffsetSection block={block} key={block.id} study={study} />
-        case 'featureStatementGrid':
-          return <FeatureStatementGridSection block={block} key={block.id} study={study} />
-        case 'featureStatementLinks':
-          // Owns its own GSAP intro `ScrollReveal` shell — do not wrap again.
-          return <FeatureStatementLinks key={block.id} {...block} />
-        case 'industryWork':
-          // Owns its own full-viewport `ScrollReveal` shell — do not wrap again.
-          return <IndustryWorkBlock key={block.id} {...block} />
-        case 'featuredWork':
-          // Work pages always close with this block from the Related Work tab.
-          return null
-        case 'featureImageStatement':
-          return <FeatureImageStatementSection block={block} key={block.id} study={study} />
-        case 'audienceTabs':
-          // Owns its own GSAP entrance + swap shell — do not wrap again.
-          return <AudienceTabsBlock key={block.id} {...block} />
-        case 'featureTabs':
-          return <FeatureTabsSection block={block} key={block.id} study={study} />
-        case 'carousel':
-          // Same CSS entrance as Pages/Home — no data-reveal markers, and the
-          // GSAP shell would put a transform on an ancestor of embla. The
-          // block paints its own band, so the wrapper only carries the entrance.
-          return (
-            <CssRevealSection key={block.id}>
-              <CarouselBlock {...block} disableInnerContainer />
-            </CssRevealSection>
-          )
-        default:
-          return null
-      }
-    })}
-  </>
-)
+}) => <>{blocks.map((block) => renderWorkBlock(block, { page, study }))}</>

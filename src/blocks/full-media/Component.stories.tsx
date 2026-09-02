@@ -14,7 +14,7 @@ const body = richText(
 )
 
 const meta = {
-  title: 'Blocks/FullMedia',
+  title: 'Blocks/MediaAndContent/Stacked',
   component: FullMediaBlock,
   parameters: {
     layout: 'fullscreen',

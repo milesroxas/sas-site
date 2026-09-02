@@ -9,13 +9,21 @@ import type { FeatureHeadingOffsetBlock as FeatureHeadingOffsetBlockData } from 
  */
 type FeatureHeadingOffsetBlockProps = Pick<
   FeatureHeadingOffsetBlockData,
-  'blockType' | 'body' | 'eyebrow' | 'heading' | 'theme'
+  'blockType' | 'body' | 'bodySize' | 'eyebrow' | 'heading' | 'theme'
 > & { bare?: boolean }
+
+/** Editor-chosen type size of the supporting copy; `medium` is the original treatment. */
+const BODY_SIZE_CLASS: Record<NonNullable<FeatureHeadingOffsetBlockData['bodySize']>, string> = {
+  small: 'text-base text-muted-foreground md:text-lg/6',
+  medium: 'text-lg text-muted-foreground md:text-xl/6',
+  large: 'text-xl text-muted-foreground md:text-2xl/8',
+}
 
 export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps> = ({
   eyebrow,
   heading,
   body,
+  bodySize,
   bare,
   theme,
 }) => {
@@ -36,7 +44,7 @@ export const FeatureHeadingOffsetBlock: React.FC<FeatureHeadingOffsetBlockProps>
           {body ? (
             <div className="lg:col-span-4 lg:col-start-9 lg:pt-24" data-reveal>
               <RichText
-                className="text-lg text-muted-foreground md:text-xl/6"
+                className={BODY_SIZE_CLASS[bodySize ?? 'medium']}
                 data={body}
                 enableGutter={false}
                 enableProse={false}

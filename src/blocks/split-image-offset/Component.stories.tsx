@@ -9,7 +9,7 @@ const body = richText(
 )
 
 const meta = {
-  title: 'Blocks/SplitImageOffset',
+  title: 'Blocks/MediaAndContent/PairOffset',
   component: SplitImageOffsetBlock,
   parameters: {
     layout: 'fullscreen',

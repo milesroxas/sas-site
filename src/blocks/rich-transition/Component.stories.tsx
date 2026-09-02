@@ -11,7 +11,7 @@ const body = richText(
 )
 
 const meta = {
-  title: 'Blocks/RichTransition',
+  title: 'Blocks/SectionHeading/Standard',
   component: RichTransition,
   parameters: {
     layout: 'fullscreen',

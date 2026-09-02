@@ -1,6 +1,8 @@
+import type { ReactNode } from 'react'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
+import { SectionBand } from '@/blocks/section/SectionBand'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { blockRevealVariants } from '@/blocks/shared/reveal-variants'
@@ -77,7 +79,9 @@ const Facts = ({ block, project }: { block: LabFactsBlock; project: LabProject }
   />
 )
 
-const Transition = ({ block }: { block: LabTransitionBlock }) => <RichTransition {...block} />
+const Transition = ({ bare, block }: { bare?: boolean; block: LabTransitionBlock }) => (
+  <RichTransition bare={bare} {...block} />
+)
 
 const RelatedProjects = async ({
   block,
@@ -106,6 +110,71 @@ const RelatedProjects = async ({
   />
 )
 
+type LabLayoutBlock = NonNullable<LabPage['layout']>[number]
+
+/**
+ * One lab-page block. `bare` is set for blocks nested inside a Section block:
+ * the block keeps its entrance but skips its band, because the Section's
+ * `SectionBand` painted it.
+ */
+const renderLabBlock = (
+  block: LabLayoutBlock,
+  ctx: { bare?: boolean; page: LabPage; project: LabProject },
+): ReactNode => {
+  const { bare, page, project } = ctx
+  if (block.blockType === 'section') {
+    // The Section owns the band; children render bare inside it with their
+    // usual entrances. The band itself never animates: a second entrance on
+    // the shell would double every child's motion.
+    return (
+      <SectionBand
+        customize={block.customize}
+        key={block.id}
+        spacing={block.spacing}
+        theme={block.theme}
+      >
+        {(block.blocks ?? []).map((child) => renderLabBlock(child, { ...ctx, bare: true }))}
+      </SectionBand>
+    )
+  }
+  if (block.blockType === 'splitContentNarrow') {
+    return (
+      <ScrollReveal as="div" key={block.id} variant={blockRevealVariants.splitContentNarrow}>
+        <SplitContentNarrowBlock bare={bare} {...block} />
+      </ScrollReveal>
+    )
+  }
+  if (block.blockType === 'scrollGallery') {
+    // Owns its own pinned full-viewport shell and section band — do not wrap again.
+    return <ScrollGalleryBlock key={block.id} {...block} />
+  }
+  if (block.blockType === 'carousel') {
+    return (
+      <RevealSection key={block.id}>
+        <CarouselBlock {...block} disableInnerContainer />
+      </RevealSection>
+    )
+  }
+  const content = (() => {
+    switch (block.blockType) {
+      case 'labStorySection':
+        return <StorySection block={block} project={project} />
+      case 'labMediaShowcase':
+        return <MediaShowcase block={block} />
+      case 'labFacts':
+        return <Facts block={block} project={project} />
+      case 'labTransition':
+        return <Transition bare={bare} block={block} />
+      case 'labRelatedProjects':
+        return <RelatedProjects block={block} page={page} project={project} />
+      default:
+        return null
+    }
+  })()
+  if (!content) return null
+  return <RevealSection key={block.id}>{content}</RevealSection>
+}
+
 /**
  * Lab blocks enter like generic page blocks: the CSS block reveal wraps each
  * section, except `splitContentNarrow`, whose `data-reveal` markers play the
@@ -122,45 +191,4 @@ export const RenderLabBlocks = async ({
   blocks: NonNullable<LabPage['layout']>
   page: LabPage
   project: LabProject
-}) => (
-  <>
-    {blocks.map((block) => {
-      if (block.blockType === 'splitContentNarrow') {
-        return (
-          <ScrollReveal as="div" key={block.id} variant={blockRevealVariants.splitContentNarrow}>
-            <SplitContentNarrowBlock {...block} />
-          </ScrollReveal>
-        )
-      }
-      if (block.blockType === 'scrollGallery') {
-        // Owns its own pinned full-viewport shell and section band — do not wrap again.
-        return <ScrollGalleryBlock key={block.id} {...block} />
-      }
-      if (block.blockType === 'carousel') {
-        return (
-          <RevealSection key={block.id}>
-            <CarouselBlock {...block} disableInnerContainer />
-          </RevealSection>
-        )
-      }
-      const content = (() => {
-        switch (block.blockType) {
-          case 'labStorySection':
-            return <StorySection block={block} project={project} />
-          case 'labMediaShowcase':
-            return <MediaShowcase block={block} />
-          case 'labFacts':
-            return <Facts block={block} project={project} />
-          case 'labTransition':
-            return <Transition block={block} />
-          case 'labRelatedProjects':
-            return <RelatedProjects block={block} page={page} project={project} />
-          default:
-            return null
-        }
-      })()
-      if (!content) return null
-      return <RevealSection key={block.id}>{content}</RevealSection>
-    })}
-  </>
-)
+}) => <>{blocks.map((block) => renderLabBlock(block, { page, project }))}</>

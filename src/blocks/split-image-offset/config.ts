@@ -16,12 +16,12 @@ import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseSt
  */
 export const SplitImageOffset: Block = {
   slug: 'splitImageOffset',
-  admin: { group: BLOCK_GROUPS.media },
+  admin: { group: BLOCK_GROUPS.mediaContent },
   // Per-parent table name: a static dbName would collapse every collection that
   // uses this block into one table whose FK points at the first parent only.
   dbName: ({ tableName }) => `${tableName}_split_offset`,
   interfaceName: 'SplitImageOffsetBlock',
-  labels: { singular: 'Split image offset', plural: 'Split image offsets' },
+  labels: { singular: 'Pair offset', plural: 'Pair offsets' },
   fields: [
     {
       name: 'source',
@@ -71,7 +71,8 @@ export const SplitImageOffset: Block = {
     {
       name: 'captionPosition',
       type: 'select',
-      defaultValue: 'right',
+      label: 'Layout',
+      defaultValue: 'left',
       options: ['left', 'right'],
       admin: {
         description:

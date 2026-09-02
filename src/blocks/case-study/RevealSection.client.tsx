@@ -22,14 +22,19 @@ import { cn } from '@/utilities/ui'
  *
  * Spacing is the shared scale, so a work page and a Page stack the same block
  * with the same gap. Bands are never forced to viewport height.
+ *
+ * `bare` keeps the scroll entrance but drops the band (spacing + surface) for
+ * a block nested inside a Section block, whose `SectionBand` owns both.
  */
 export function RevealSection({
+  bare = false,
   children,
   className,
   spacing = 'normal',
   theme = 'light',
   variant,
 }: {
+  bare?: boolean
   children: ReactNode
   className?: string
   spacing?: BandSpacing
@@ -40,7 +45,11 @@ export function RevealSection({
     <ScrollReveal
       as="section"
       variant={variant}
-      className={cn(BAND_SPACING[spacing], sectionThemeClass(theme), 'overflow-clip', className)}
+      className={cn(
+        !bare && cn(BAND_SPACING[spacing], sectionThemeClass(theme)),
+        'overflow-clip',
+        className,
+      )}
     >
       {children}
     </ScrollReveal>

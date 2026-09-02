@@ -3,7 +3,7 @@ import { richTextFixture } from '@/shared/testing/richTextFixture'
 import { FeatureHeadingOffsetBlock } from './Component'
 
 const meta = {
-  title: 'Blocks/Feature/HeadingOffset',
+  title: 'Blocks/SectionHeading/Offset',
   component: FeatureHeadingOffsetBlock,
   parameters: {
     layout: 'padded',
@@ -28,6 +28,14 @@ export const WithoutEyebrow: Story = {
   args: {
     eyebrow: null,
   },
+}
+
+export const BodySmall: Story = {
+  args: { bodySize: 'small' },
+}
+
+export const BodyLarge: Story = {
+  args: { bodySize: 'large' },
 }
 
 export const Dark: Story = {

@@ -9,7 +9,7 @@ const body = richText(
 )
 
 const meta = {
-  title: 'Blocks/ImagePair',
+  title: 'Blocks/MediaAndContent/Pair',
   component: ImagePairBlock,
   parameters: {
     layout: 'fullscreen',

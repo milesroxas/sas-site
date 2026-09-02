@@ -104,6 +104,9 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
               name: 'layout',
               type: 'blocks',
               label: 'Composition',
+              // The add button reads "Add Section": editors reach for a Section
+              // first and nest content blocks inside it.
+              labels: { singular: 'Section', plural: 'Sections' },
               blocks: labBlocks,
               admin: {
                 initCollapsed: true,

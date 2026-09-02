@@ -14,12 +14,12 @@ import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseSt
  */
 export const SplitContentNarrow: Block = {
   slug: 'splitContentNarrow',
-  admin: { group: BLOCK_GROUPS.split },
+  admin: { group: BLOCK_GROUPS.mediaContent },
   // Per-parent table name: a static dbName would collapse every collection that
   // uses this block into one table whose FK points at the first parent only.
   dbName: ({ tableName }) => `${tableName}_split_narrow`,
   interfaceName: 'SplitContentNarrowBlock',
-  labels: { singular: 'Split content (narrow)', plural: 'Split content (narrow)' },
+  labels: { singular: 'Split narrow', plural: 'Split narrow' },
   fields: [
     {
       name: 'source',
@@ -61,7 +61,8 @@ export const SplitContentNarrow: Block = {
     {
       name: 'imagePosition',
       type: 'select',
-      defaultValue: 'right',
+      label: 'Layout',
+      defaultValue: 'left',
       options: ['left', 'right'],
       admin: { description: 'Arrange the image on the left or the right of the text.' },
     },

@@ -4,7 +4,7 @@ import { mediaFixture, videoFixture } from '../../fixtures'
 import { FeatureImageStatementBlock } from './Component'
 
 const meta = {
-  title: 'Blocks/Feature/ImageStatement',
+  title: 'Blocks/Media/Statement',
   component: FeatureImageStatementBlock,
   parameters: {
     layout: 'padded',
