@@ -13,6 +13,7 @@ import { Audiences } from './collections/Audiences'
 import { Capabilities } from './collections/Capabilities'
 import { CaseStudies } from './collections/CaseStudies'
 import { Categories } from './collections/Categories'
+import { ContactPages } from './collections/ContactPages'
 import { ExpertisePages } from './collections/ExpertisePages'
 import { Industries } from './collections/Industries'
 import { Inquiries } from './collections/Inquiries'
@@ -128,6 +129,7 @@ export default buildConfig({
     LabPages,
     ExpertisePages,
     AudiencePages,
+    ContactPages,
     // Content Hub — canonical, channel-agnostic source material
     Organizations,
     Projects,

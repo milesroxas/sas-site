@@ -46,6 +46,32 @@ export const INQUIRY_TIMELINES = [
   { label: 'Just exploring', value: 'exploring' },
 ] as const satisfies readonly InquiryOption[]
 
+/**
+ * Where a form field's answer lands on an inquiry.
+ *
+ * A form-builder submission is flat `{field, value}` pairs, so a form that
+ * feeds the inbox says explicitly which of its fields is the name, which is
+ * the brief, and so on. Explicit rather than by convention on the field name:
+ * an editor renaming "email" to "Your email" must not silently empty a column.
+ */
+export const INQUIRY_FIELD_TARGETS = [
+  { label: 'Name', value: 'name' },
+  { label: 'Email address', value: 'email' },
+  { label: 'Company', value: 'company' },
+  { label: 'Current site', value: 'website' },
+  { label: 'What they need', value: 'capabilities' },
+  { label: 'Budget', value: 'budget' },
+  { label: 'Timeline', value: 'timeline' },
+  { label: 'The brief', value: 'message' },
+] as const satisfies readonly InquiryOption[]
+
+
+/** How a form's answers are stored: the generic log, or the triaged inbox. */
+export const FORM_DELIVERY = [
+  { label: 'Form submissions', value: 'submissions' },
+  { label: 'Inquiries inbox', value: 'inquiries' },
+] as const satisfies readonly InquiryOption[]
+
 /** Longest brief the form accepts, and the counter's denominator. */
 export const INQUIRY_MESSAGE_MAX_LENGTH = 1200
 

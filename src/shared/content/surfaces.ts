@@ -1,4 +1,5 @@
 import type { CollectionSlug } from 'payload'
+import { CONTACT_INDEX_SLUG } from '@/collections/ContactPages/constants'
 
 /**
  * The single source of truth for the site's public content surfaces: which
@@ -32,6 +33,11 @@ export type ContentSurface = {
   urlPrefix: string
   /** Slug that maps to the site root instead of `${urlPrefix}/${slug}`. */
   homeSlug?: string
+  /**
+   * Slug that maps to the prefix itself rather than a child of it, so the
+   * primary contact page is `/contact` and not `/contact/contact`.
+   */
+  indexSlug?: string
   /** Payload sort order where listing order matters. Defaults to 'title'. */
   sort?: string
   body: SurfaceBody
@@ -64,6 +70,13 @@ export const CONTENT_SURFACES: ContentSurface[] = [
     body: { kind: 'walk', canonicalField: { name: 'labProject', collection: 'lab-projects' } },
   },
   {
+    collection: 'contact-pages',
+    title: 'Contact',
+    urlPrefix: '/contact',
+    indexSlug: CONTACT_INDEX_SLUG,
+    body: { kind: 'walk' },
+  },
+  {
     collection: 'posts',
     title: 'Insights',
     urlPrefix: '/posts',
@@ -80,5 +93,8 @@ export const surfaceByCollection: ReadonlyMap<string, ContentSurface> = new Map(
 export const SEARCH_COLLECTIONS = CONTENT_SURFACES.map((surface) => surface.collection)
 
 /** Site-relative path for a surface document, honoring the home-slug → root mapping. */
-export const surfaceDocPath = (surface: ContentSurface, slug: string): string =>
-  surface.homeSlug && slug === surface.homeSlug ? '/' : `${surface.urlPrefix}/${slug}`
+export const surfaceDocPath = (surface: ContentSurface, slug: string): string => {
+  if (surface.homeSlug && slug === surface.homeSlug) return '/'
+  if (surface.indexSlug && slug === surface.indexSlug) return surface.urlPrefix
+  return `${surface.urlPrefix}/${slug}`
+}

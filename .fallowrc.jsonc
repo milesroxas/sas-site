@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   // Standalone operational script, run manually via `tsx` (see src/features/ask/README.md)
-  "entry": ["scripts/backfill-ask-index.ts"],
+  "entry": ["scripts/backfill-ask-index.ts", "scripts/seed-contact-page.ts"],
   // An export consumed within its own module is not dead API surface
   "ignoreExportsUsedInFile": true,
   // Payload-generated artifacts: recreated by `payload generate:types` / `payload migrate:create`

@@ -74,6 +74,7 @@ export interface Config {
     'lab-pages': LabPage;
     'expertise-pages': ExpertisePage;
     'audience-pages': AudiencePage;
+    'contact-pages': ContactPage;
     organizations: Organization;
     projects: Project;
     'case-studies': CaseStudy;
@@ -125,6 +126,7 @@ export interface Config {
     'lab-pages': LabPagesSelect<false> | LabPagesSelect<true>;
     'expertise-pages': ExpertisePagesSelect<false> | ExpertisePagesSelect<true>;
     'audience-pages': AudiencePagesSelect<false> | AudiencePagesSelect<true>;
+    'contact-pages': ContactPagesSelect<false> | ContactPagesSelect<true>;
     organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
@@ -308,7 +310,6 @@ export interface Page {
     | ArchiveBlock
     | FeaturedWorkBlock
     | CallToActionBlock
-    | ContactBlock
     | FormBlock
     | NewsletterSignupBlock
   )[];
@@ -3518,135 +3519,6 @@ export interface CallToActionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContactBlock".
- */
-export interface ContactBlock {
-  /**
-   * Which questions the form asks. The scoping groups below appear only for a project inquiry.
-   */
-  variant: 'project' | 'general';
-  eyebrow?: string | null;
-  heading: string;
-  lead?: string | null;
-  /**
-   * Facts worth knowing before writing: how fast, where else, who.
-   */
-  details?:
-    | {
-        term: string;
-        value: string;
-        id?: string | null;
-      }[]
-    | null;
-  nextStepsTitle?: string | null;
-  /**
-   * The first line is set in full contrast; the rest are quiet.
-   */
-  nextSteps?:
-    | {
-        text: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * For visitors who would rather talk. Hidden if turned off.
-   */
-  altCta?: {
-    enabled?: boolean | null;
-    body?: string | null;
-    label?: string | null;
-    /**
-     * Leave empty to use the booking link from Site Info → Inquiries.
-     */
-    url?: string | null;
-  };
-  nameLabel: string;
-  emailLabel: string;
-  companyLabel?: string | null;
-  websiteLabel?: string | null;
-  capabilities?: {
-    label: string;
-    hint?: string | null;
-    /**
-     * Offered as chips, in this order. Leave empty to offer every capability.
-     */
-    options?: (number | Capability)[] | null;
-    /**
-     * Escape hatch chip. Clear it to drop the option entirely.
-     */
-    unsureLabel?: string | null;
-  };
-  budgetLabel?: string | null;
-  budgetHint?: string | null;
-  /**
-   * The bands offered, in order.
-   */
-  budgetOptions?:
-    | {
-        /**
-         * What gets recorded. Fixed list.
-         */
-        value: 'under-25k' | '25-50k' | '50-100k' | '100k-plus' | 'guidance';
-        /**
-         * What the visitor reads.
-         */
-        label: string;
-        id?: string | null;
-      }[]
-    | null;
-  timelineLabel?: string | null;
-  /**
-   * The timings offered, in order.
-   */
-  timelineOptions?:
-    | {
-        /**
-         * What gets recorded. Fixed list.
-         */
-        value: 'asap' | '1-3-months' | '3-6-months' | 'exploring';
-        /**
-         * What the visitor reads.
-         */
-        label: string;
-        id?: string | null;
-      }[]
-    | null;
-  message: {
-    label: string;
-    placeholder?: string | null;
-    /**
-     * Quiet line under the writing area. The counter runs to 1200 characters.
-     */
-    helper?: string | null;
-  };
-  submitLabel: string;
-  submitNote?: string | null;
-  sentEyebrow?: string | null;
-  sentHeading: string;
-  sentBody?: string | null;
-  sentReferenceLabel?: string | null;
-  sentSentLabel?: string | null;
-  sentCopyLabel?: string | null;
-  sentSummaryTitle?: string | null;
-  sentEditLabel?: string | null;
-  sentScopeLabel?: string | null;
-  sentBudgetLabel?: string | null;
-  sentTimelineLabel?: string | null;
-  sentBriefLabel?: string | null;
-  /**
-   * Uses the same booking link as the intro column.
-   */
-  sentAltBody?: string | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'contactBlock';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "FormBlock".
  */
 export interface FormBlock {
@@ -3690,6 +3562,12 @@ export interface Form {
             width?: number | null;
             required?: boolean | null;
             defaultValue?: boolean | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'checkbox';
@@ -3699,15 +3577,16 @@ export interface Form {
             label?: string | null;
             width?: number | null;
             required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'country';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
+            /**
+             * Resting hint inside the control. It disappears as soon as they type.
+             */
+            placeholder?: string | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'email';
@@ -3738,6 +3617,16 @@ export interface Form {
             width?: number | null;
             defaultValue?: number | null;
             required?: boolean | null;
+            /**
+             * Resting hint inside the control. It disappears as soon as they type.
+             */
+            placeholder?: string | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'number';
@@ -3756,6 +3645,13 @@ export interface Form {
                 }[]
               | null;
             required?: boolean | null;
+            hint?: string | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'select';
@@ -3765,6 +3661,12 @@ export interface Form {
             label?: string | null;
             width?: number | null;
             required?: boolean | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'state';
@@ -3775,6 +3677,16 @@ export interface Form {
             width?: number | null;
             defaultValue?: string | null;
             required?: boolean | null;
+            /**
+             * Resting hint inside the control. It disappears as soon as they type.
+             */
+            placeholder?: string | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'text';
@@ -3785,9 +3697,54 @@ export interface Form {
             width?: number | null;
             defaultValue?: string | null;
             required?: boolean | null;
+            /**
+             * Resting hint inside the control. It disappears as soon as they type.
+             */
+            placeholder?: string | null;
+            hint?: string | null;
+            /**
+             * Character limit and counter. The inbox stores up to 1200.
+             */
+            maxLength?: number | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'textarea';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            /**
+             * Trailing note on the label row.
+             */
+            hint?: string | null;
+            /**
+             * Field width, as a percentage.
+             */
+            width?: number | null;
+            /**
+             * Offered as chips, in this order. Leave empty to offer every capability.
+             */
+            options?: (number | Capability)[] | null;
+            /**
+             * Escape-hatch chip. Clear it to drop the option.
+             */
+            unsureLabel?: string | null;
+            required?: boolean | null;
+            /**
+             * Which part of the inquiry this answer becomes. Unmapped answers are kept as notes.
+             */
+            mapsTo?:
+              | ('name' | 'email' | 'company' | 'website' | 'capabilities' | 'budget' | 'timeline' | 'message')
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'capabilities';
           }
       )[]
     | null;
@@ -3837,6 +3794,10 @@ export interface Form {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Where answers land. "Inquiries inbox" gives each submission a reference, an owner and a status, and asks each field above where it maps.
+   */
+  delivery: 'submissions' | 'inquiries';
   updatedAt: string;
   createdAt: string;
 }
@@ -4401,7 +4362,6 @@ export interface ExpertisePage {
     | ArchiveBlock
     | FeaturedWorkBlock
     | CallToActionBlock
-    | ContactBlock
     | FormBlock
   )[];
   /**
@@ -4533,7 +4493,6 @@ export interface AudiencePage {
     | ArchiveBlock
     | FeaturedWorkBlock
     | CallToActionBlock
-    | ContactBlock
     | FormBlock
   )[];
   /**
@@ -4546,6 +4505,111 @@ export interface AudiencePage {
   relatedWorkPages?: (number | WorkPage)[] | null;
   editorialNotes?: string | null;
   closing?: PageClosing;
+  meta?: {
+    /**
+     * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
+     */
+    title?: string | null;
+    /**
+     * Default image for search and social previews. Landscape, at least 1200×630px. Also used for share cards unless an Open Graph image is set below.
+     */
+    image?: (number | null) | Media;
+    /**
+     * The short summary under the title in Google results. Aim for 100–150 characters — front-load the most important message.
+     */
+    description?: string | null;
+    /**
+     * Controls how this page looks when shared on LinkedIn, Facebook, Slack, iMessage, etc. Every field is optional — anything left blank falls back to the SEO fields above.
+     */
+    og?: {
+      /**
+       * Headline on the share card. Can be punchier than the SEO title — no need to include "| Suits & Sandals". Blank = SEO title.
+       */
+      title?: string | null;
+      /**
+       * One or two sentences under the share-card headline. Keep it under ~200 characters; platforms truncate longer text. Blank = SEO description.
+       */
+      description?: string | null;
+      /**
+       * Share-card image. Landscape 1200×630px (1.91:1) — square or portrait images get cropped by most platforms. Blank = SEO image.
+       */
+      image?: (number | null) | Media;
+    };
+  };
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Published at /contact/[slug], or at /contact for the page slugged "contact". The questions live on the linked form.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-pages".
+ */
+export interface ContactPage {
+  id: number;
+  title: string;
+  eyebrow?: string | null;
+  heading: string;
+  lead?: string | null;
+  /**
+   * Facts worth knowing before writing: how fast, where else, who.
+   */
+  details?:
+    | {
+        term: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  nextStepsTitle?: string | null;
+  /**
+   * The first line is set in full contrast; the rest are quiet.
+   */
+  nextSteps?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * For visitors who would rather talk. Hidden if turned off.
+   */
+  altCta?: {
+    enabled?: boolean | null;
+    body?: string | null;
+    label?: string | null;
+    /**
+     * Leave empty to use the booking link from Site Info → Inquiries.
+     */
+    url?: string | null;
+  };
+  /**
+   * The questions this page asks. Set the form's Delivery to "Inquiries inbox" so answers arrive with a reference and an owner.
+   */
+  form: number | Form;
+  /**
+   * Quiet line beside the submit button.
+   */
+  submitNote?: string | null;
+  sentEyebrow?: string | null;
+  sentHeading: string;
+  sentBody?: string | null;
+  sentReferenceLabel?: string | null;
+  sentSentLabel?: string | null;
+  sentCopyLabel?: string | null;
+  sentSummaryTitle?: string | null;
+  sentEditLabel?: string | null;
+  /**
+   * Uses the same booking link as the intro column.
+   */
+  sentAltBody?: string | null;
   meta?: {
     /**
      * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
@@ -4906,6 +4970,10 @@ export interface Search {
         value: number | LabPage;
       }
     | {
+        relationTo: 'contact-pages';
+        value: number | ContactPage;
+      }
+    | {
         relationTo: 'posts';
         value: number | Post;
       };
@@ -5046,6 +5114,12 @@ export interface PayloadMcpApiKey {
     delete?: boolean | null;
   };
   labPages?: {
+    find?: boolean | null;
+    create?: boolean | null;
+    update?: boolean | null;
+    delete?: boolean | null;
+  };
+  contactPages?: {
     find?: boolean | null;
     create?: boolean | null;
     update?: boolean | null;
@@ -5284,6 +5358,10 @@ export interface PayloadLockedDocument {
         value: number | AudiencePage;
       } | null)
     | ({
+        relationTo: 'contact-pages';
+        value: number | ContactPage;
+      } | null)
+    | ({
         relationTo: 'organizations';
         value: number | Organization;
       } | null)
@@ -5479,7 +5557,6 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
-        contactBlock?: T | ContactBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
@@ -5851,92 +5928,6 @@ export interface CallToActionBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContactBlock_select".
- */
-export interface ContactBlockSelect<T extends boolean = true> {
-  variant?: T;
-  eyebrow?: T;
-  heading?: T;
-  lead?: T;
-  details?:
-    | T
-    | {
-        term?: T;
-        value?: T;
-        id?: T;
-      };
-  nextStepsTitle?: T;
-  nextSteps?:
-    | T
-    | {
-        text?: T;
-        id?: T;
-      };
-  altCta?:
-    | T
-    | {
-        enabled?: T;
-        body?: T;
-        label?: T;
-        url?: T;
-      };
-  nameLabel?: T;
-  emailLabel?: T;
-  companyLabel?: T;
-  websiteLabel?: T;
-  capabilities?:
-    | T
-    | {
-        label?: T;
-        hint?: T;
-        options?: T;
-        unsureLabel?: T;
-      };
-  budgetLabel?: T;
-  budgetHint?: T;
-  budgetOptions?:
-    | T
-    | {
-        value?: T;
-        label?: T;
-        id?: T;
-      };
-  timelineLabel?: T;
-  timelineOptions?:
-    | T
-    | {
-        value?: T;
-        label?: T;
-        id?: T;
-      };
-  message?:
-    | T
-    | {
-        label?: T;
-        placeholder?: T;
-        helper?: T;
-      };
-  submitLabel?: T;
-  submitNote?: T;
-  sentEyebrow?: T;
-  sentHeading?: T;
-  sentBody?: T;
-  sentReferenceLabel?: T;
-  sentSentLabel?: T;
-  sentCopyLabel?: T;
-  sentSummaryTitle?: T;
-  sentEditLabel?: T;
-  sentScopeLabel?: T;
-  sentBudgetLabel?: T;
-  sentTimelineLabel?: T;
-  sentBriefLabel?: T;
-  sentAltBody?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -6607,7 +6598,6 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
-        contactBlock?: T | ContactBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
       };
   capabilities?: T;
@@ -6682,13 +6672,75 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
-        contactBlock?: T | ContactBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
       };
   industries?: T;
   relatedWorkPages?: T;
   editorialNotes?: T;
   closing?: T | PageClosingSelect<T>;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+        og?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+      };
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-pages_select".
+ */
+export interface ContactPagesSelect<T extends boolean = true> {
+  title?: T;
+  eyebrow?: T;
+  heading?: T;
+  lead?: T;
+  details?:
+    | T
+    | {
+        term?: T;
+        value?: T;
+        id?: T;
+      };
+  nextStepsTitle?: T;
+  nextSteps?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  altCta?:
+    | T
+    | {
+        enabled?: T;
+        body?: T;
+        label?: T;
+        url?: T;
+      };
+  form?: T;
+  submitNote?: T;
+  sentEyebrow?: T;
+  sentHeading?: T;
+  sentBody?: T;
+  sentReferenceLabel?: T;
+  sentSentLabel?: T;
+  sentCopyLabel?: T;
+  sentSummaryTitle?: T;
+  sentEditLabel?: T;
+  sentAltBody?: T;
   meta?:
     | T
     | {
@@ -7407,16 +7459,7 @@ export interface FormsSelect<T extends boolean = true> {
               width?: T;
               required?: T;
               defaultValue?: T;
-              id?: T;
-              blockName?: T;
-            };
-        country?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              width?: T;
-              required?: T;
+              mapsTo?: T;
               id?: T;
               blockName?: T;
             };
@@ -7427,6 +7470,8 @@ export interface FormsSelect<T extends boolean = true> {
               label?: T;
               width?: T;
               required?: T;
+              placeholder?: T;
+              mapsTo?: T;
               id?: T;
               blockName?: T;
             };
@@ -7445,6 +7490,8 @@ export interface FormsSelect<T extends boolean = true> {
               width?: T;
               defaultValue?: T;
               required?: T;
+              placeholder?: T;
+              mapsTo?: T;
               id?: T;
               blockName?: T;
             };
@@ -7464,6 +7511,8 @@ export interface FormsSelect<T extends boolean = true> {
                     id?: T;
                   };
               required?: T;
+              hint?: T;
+              mapsTo?: T;
               id?: T;
               blockName?: T;
             };
@@ -7474,6 +7523,7 @@ export interface FormsSelect<T extends boolean = true> {
               label?: T;
               width?: T;
               required?: T;
+              mapsTo?: T;
               id?: T;
               blockName?: T;
             };
@@ -7485,6 +7535,8 @@ export interface FormsSelect<T extends boolean = true> {
               width?: T;
               defaultValue?: T;
               required?: T;
+              placeholder?: T;
+              mapsTo?: T;
               id?: T;
               blockName?: T;
             };
@@ -7496,6 +7548,24 @@ export interface FormsSelect<T extends boolean = true> {
               width?: T;
               defaultValue?: T;
               required?: T;
+              placeholder?: T;
+              hint?: T;
+              maxLength?: T;
+              mapsTo?: T;
+              id?: T;
+              blockName?: T;
+            };
+        capabilities?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              hint?: T;
+              width?: T;
+              options?: T;
+              unsureLabel?: T;
+              required?: T;
+              mapsTo?: T;
               id?: T;
               blockName?: T;
             };
@@ -7520,6 +7590,7 @@ export interface FormsSelect<T extends boolean = true> {
         message?: T;
         id?: T;
       };
+  delivery?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -7672,6 +7743,14 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         delete?: T;
       };
   labPages?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  contactPages?:
     | T
     | {
         find?: T;
@@ -7932,7 +8011,6 @@ export interface Home {
     | CarouselBlock
     | ArchiveBlock
     | CallToActionBlock
-    | ContactBlock
     | FormBlock
     | NewsletterSignupBlock
   )[];
@@ -8460,7 +8538,6 @@ export interface HomeSelect<T extends boolean = true> {
         carousel?: T | CarouselBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
-        contactBlock?: T | ContactBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
@@ -8776,6 +8853,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'audience-pages';
           value: number | AudiencePage;
+        } | null)
+      | ({
+          relationTo: 'contact-pages';
+          value: number | ContactPage;
         } | null)
       | ({
           relationTo: 'organizations';

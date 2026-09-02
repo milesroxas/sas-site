@@ -1,19 +1,19 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import type React from 'react'
 import type { Control, FieldValues, UseFormRegister } from 'react-hook-form'
+import RichText from '@/components/RichText'
 import {
   type BaseFieldProps,
   CheckboxField,
   ChipsField,
   SelectField,
-  type SelectInputOption,
   TextareaField,
   TextField,
-  Width,
-} from '@/blocks/shared/form'
-import { countryOptions } from '@/blocks/shared/form/country-options'
-import { stateOptions } from '@/blocks/shared/form/state-options'
-import RichText from '@/components/RichText'
+} from './fields'
+import { stateOptions } from './state-options'
+import { UNSURE } from './submit'
+import type { FormFieldOption } from './types'
+import { Width } from './width'
 
 /**
  * Adapters from a form-builder field document to the site's shared form
@@ -26,8 +26,14 @@ import RichText from '@/components/RichText'
 type PluginFieldProps = BaseFieldProps & {
   control: Control
   defaultValue?: boolean | string
-  options?: SelectInputOption[]
+  /** Trailing note on the label row. */
+  hint?: string | null
+  /** Character cap on a long-form field; drives the counter. */
+  maxLength?: number | null
+  options?: FormFieldOption[]
+  placeholder?: string | null
   register: UseFormRegister<FieldValues>
+  unsureLabel?: string | null
 }
 
 const asText = (value: PluginFieldProps['defaultValue']) =>
@@ -38,21 +44,48 @@ const textFieldFor = (
   inputType: 'email' | 'number' | 'text',
   pattern?: RegExp,
 ): React.FC<PluginFieldProps> =>
-  function PluginTextField({ defaultValue, ...props }) {
+  function PluginTextField({ defaultValue, placeholder, ...props }) {
     return (
       <TextField
         {...props}
         defaultValue={asText(defaultValue)}
         inputType={inputType}
         pattern={pattern}
+        placeholder={placeholder ?? undefined}
       />
     )
   }
 
-/** `country` and `state` differ only in which list they offer. */
-const optionsSelectFor = (options: SelectInputOption[]): React.FC<PluginFieldProps> =>
-  function PluginOptionsSelect({ defaultValue, ...props }) {
-    return <SelectField {...props} defaultValue={asText(defaultValue)} options={options} />
+/**
+ * Chips over the Capabilities taxonomy, plus the "not sure yet" escape hatch.
+ * The sentinel rides in the same group so it sits where a visitor looks for
+ * it, and is split back out at submit time (`submit.ts`).
+ */
+const PluginCapabilities: React.FC<PluginFieldProps> = ({
+  hint,
+  options = [],
+  unsureLabel,
+  ...props
+}) => (
+  <ChipsField
+    {...props}
+    meta={hint}
+    multiple
+    options={unsureLabel ? [...options, { label: unsureLabel, value: UNSURE }] : options}
+  />
+)
+
+/** Menu-backed field over a fixed list. `state` is the only one left. */
+const optionsSelectFor = (options: FormFieldOption[]): React.FC<PluginFieldProps> =>
+  function PluginOptionsSelect({ defaultValue, placeholder, ...props }) {
+    return (
+      <SelectField
+        {...props}
+        defaultValue={asText(defaultValue)}
+        options={options}
+        placeholder={placeholder ?? undefined}
+      />
+    )
   }
 
 /**
@@ -62,11 +95,23 @@ const optionsSelectFor = (options: SelectInputOption[]): React.FC<PluginFieldPro
  */
 const CHIP_THRESHOLD = 6
 
-const PluginSelect: React.FC<PluginFieldProps> = ({ defaultValue, options = [], ...props }) =>
+const PluginSelect: React.FC<PluginFieldProps> = ({
+  defaultValue,
+  hint,
+  options = [],
+  placeholder,
+  ...props
+}) =>
   options.length <= CHIP_THRESHOLD ? (
-    <ChipsField {...props} options={options} />
+    <ChipsField {...props} meta={hint} options={options} />
   ) : (
-    <SelectField {...props} defaultValue={asText(defaultValue)} options={options} />
+    <SelectField
+      {...props}
+      defaultValue={asText(defaultValue)}
+      meta={hint}
+      options={options}
+      placeholder={placeholder ?? undefined}
+    />
   )
 
 /** Static rich text between fields — copy, not a control. */
@@ -75,17 +120,23 @@ const PluginMessage: React.FC<{ message: DefaultTypedEditorState }> = ({ message
 )
 
 export const fields = {
+  capabilities: PluginCapabilities,
   checkbox: ({ defaultValue, ...props }: PluginFieldProps) => (
     <CheckboxField {...props} defaultValue={Boolean(defaultValue)} />
   ),
-  country: optionsSelectFor(countryOptions),
   email: textFieldFor('text', /^\S[^\s@]*@\S+$/),
   message: PluginMessage,
   number: textFieldFor('number'),
   select: PluginSelect,
   state: optionsSelectFor(stateOptions),
   text: textFieldFor('text'),
-  textarea: ({ defaultValue, ...props }: PluginFieldProps) => (
-    <TextareaField {...props} defaultValue={asText(defaultValue)} />
+  textarea: ({ defaultValue, hint, maxLength, placeholder, ...props }: PluginFieldProps) => (
+    <TextareaField
+      {...props}
+      defaultValue={asText(defaultValue)}
+      maxLength={maxLength ?? undefined}
+      meta={hint}
+      placeholder={placeholder ?? undefined}
+    />
   ),
 }

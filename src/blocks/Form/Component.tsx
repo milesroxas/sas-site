@@ -1,189 +1,45 @@
-'use client'
-import type { FormFieldBlock, Form as FormType } from '@payloadcms/plugin-form-builder/types'
-import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
-import { IconExclamationCircle } from '@tabler/icons-react'
-import { useRouter } from 'next/navigation'
-import type React from 'react'
-import type { ComponentType } from 'react'
-import { addTransitionType, startTransition, useCallback, useState } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
-import { FormSubmit } from '@/blocks/shared/form'
+import { resolveFormFields } from '@/blocks/shared/form/resolve-form'
 import { Section, type SectionTheme } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
-import { Alert, AlertTitle } from '@/components/ui/alert'
-import { FieldGroup } from '@/components/ui/field'
-import { Spinner } from '@/components/ui/spinner'
-import { NAV_LATERAL } from '@/shared/lib/view-transition/constants'
-import { getClientSideURL } from '@/utilities/getURL'
-import { fields } from './fields'
+import type { FormBlock as FormBlockProps, Form as FormDoc } from '@/payload-types'
+import { FormRenderer } from './Component.client'
 
-export type FormBlockType = {
-  blockName?: string
-  blockType?: 'formBlock'
-  enableIntro: boolean
-  form: FormType
-  introContent?: DefaultTypedEditorState
-  theme?: SectionTheme | null
-}
+export type { FormBlockProps }
 
-/** Props passed to each form field component (field config + react-hook-form + form meta). */
-type FormFieldRendererProps = FormFieldBlock & Record<string, unknown> & { form: FormType }
+/**
+ * A form composed onto a page.
+ *
+ * Server-side because a form's fields can point at other documents — capability
+ * chips name taxonomy terms — and those resolve here rather than shipping ids
+ * to the browser and fetching again.
+ */
+export const FormBlock: React.FC<FormBlockProps & { theme?: SectionTheme | null }> = async ({
+  enableIntro,
+  form,
+  introContent,
+  theme,
+}) => {
+  if (typeof form !== 'object' || form === null) return null
 
-export const FormBlock: React.FC<
-  {
-    id?: string
-  } & FormBlockType
-> = (props) => {
-  const {
-    enableIntro,
-    form: formFromProps,
-    form: { id: formID, confirmationMessage, confirmationType, redirect, submitButtonLabel } = {},
-    introContent,
-    theme,
-  } = props
-
-  const formMethods = useForm({
-    defaultValues: formFromProps.fields,
-  })
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-    register,
-  } = formMethods
-
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>()
-  const [error, setError] = useState<{ message: string; status?: string } | undefined>()
-  const router = useRouter()
-
-  const onSubmit = useCallback(
-    (data: FormFieldBlock[]) => {
-      let loadingTimerID: ReturnType<typeof setTimeout>
-      const submitForm = async () => {
-        setError(undefined)
-
-        const dataToSend = Object.entries(data).map(([name, value]) => ({
-          field: name,
-          value,
-        }))
-
-        // delay loading indicator by 1s
-        loadingTimerID = setTimeout(() => {
-          setIsLoading(true)
-        }, 1000)
-
-        try {
-          const req = await fetch(`${getClientSideURL()}/api/form-submissions`, {
-            body: JSON.stringify({
-              form: formID,
-              submissionData: dataToSend,
-            }),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            method: 'POST',
-          })
-
-          const res = await req.json()
-
-          clearTimeout(loadingTimerID)
-
-          if (req.status >= 400) {
-            setIsLoading(false)
-
-            setError({
-              message: res.errors?.[0]?.message || 'Internal Server Error',
-              status: res.status,
-            })
-
-            return
-          }
-
-          setIsLoading(false)
-          setHasSubmitted(true)
-
-          if (confirmationType === 'redirect' && redirect) {
-            const { url } = redirect
-
-            const redirectUrl = url
-
-            if (redirectUrl) {
-              // Tag the redirect so it plays the default transition instead of
-              // hard-cutting (see docs/route-transitions-roadmap.md, Stage 1).
-              startTransition(() => {
-                addTransitionType(NAV_LATERAL)
-                router.push(redirectUrl)
-              })
-            }
-          }
-        } catch (err) {
-          console.warn(err)
-          setIsLoading(false)
-          setError({
-            message: 'Something went wrong.',
-          })
-        }
-      }
-
-      void submitForm()
-    },
-    [router, formID, redirect, confirmationType],
-  )
+  const doc = form as FormDoc
+  const fields = await resolveFormFields(doc)
 
   return (
     <Section theme={theme}>
       <Container width="narrow">
-        {enableIntro && introContent && !hasSubmitted && (
+        {enableIntro && introContent ? (
           <RichText className="mb-8 lg:mb-12" data={introContent} enableGutter={false} />
-        )}
-        <FormProvider {...formMethods}>
-          {!isLoading && hasSubmitted && confirmationType === 'message' && (
-            <RichText data={confirmationMessage} />
-          )}
-          {isLoading && !hasSubmitted && (
-            <div className="flex items-center gap-2">
-              <Spinner />
-              <p>Loading, please wait...</p>
-            </div>
-          )}
-          {error && (
-            <Alert variant="destructive">
-              <IconExclamationCircle />
-              <AlertTitle>{`${error.status || '500'}: ${error.message || ''}`}</AlertTitle>
-            </Alert>
-          )}
-          {!hasSubmitted && (
-            <form className="flex flex-col gap-12" id={formID} onSubmit={handleSubmit(onSubmit)}>
-              <FieldGroup className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
-                {formFromProps?.fields?.map((field, index) => {
-                  const Field = fields?.[field.blockType as keyof typeof fields] as
-                    | ComponentType<FormFieldRendererProps>
-                    | undefined
-                  if (Field) {
-                    return (
-                      <Field
-                        key={index}
-                        form={formFromProps}
-                        {...field}
-                        {...formMethods}
-                        control={control}
-                        errors={errors}
-                        register={register}
-                      />
-                    )
-                  }
-                  return null
-                })}
-              </FieldGroup>
-
-              <FormSubmit form={formID} pending={isLoading}>
-                {submitButtonLabel}
-              </FormSubmit>
-            </form>
-          )}
-        </FormProvider>
+        ) : null}
+        <FormRenderer
+          confirmationMessage={doc.confirmationMessage}
+          confirmationType={doc.confirmationType}
+          delivery={doc.delivery ?? 'submissions'}
+          fields={fields}
+          formId={doc.id}
+          redirectUrl={doc.redirect?.url}
+          submitLabel={doc.submitButtonLabel ?? 'Submit'}
+        />
       </Container>
     </Section>
   )

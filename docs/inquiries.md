@@ -30,33 +30,55 @@ The editorial label marks **optional** fields in their own words rather than
 starring the required ones (`Current site (optional)`). The boxed `default`
 label still shows an asterisk.
 
-## The contact block
+## The contact page
 
-One block, `contactBlock`, with a `variant`:
+`Contact Pages` is its own collection, not a Pages composition, because the
+layout is fixed and unlike anything else on the site: a column of editorial
+copy standing beside a form, which the page replaces in situ with a receipt
+once the form is sent. That is a template, not an arrangement of blocks.
 
-- **Project inquiry** asks for scope, budget, timeline, and a brief.
-- **General message** drops the scoping questions and keeps the rest.
+It publishes at `/contact/[slug]`, and the page slugged `contact`
+(`CONTACT_INDEX_SLUG`) renders at `/contact` itself. The collection owns three
+tabs: **Intro** (the column beside the form), **Form** (which form to ask), and
+**After sending** (the receipt).
 
-Everything on the page is CMS content, on three tabs: **Intro** (the column
-beside the form), **Form** (labels and the offered options), **After sending**
-(the receipt). The project-only groups hide themselves when the variant is
-`general`, so a general contact form opens as a short list of fields.
+The questions are deliberately not on it. They live on a form in `Forms`, so
+one set of questions can serve several contact pages *and* be composed onto an
+ordinary page through the Form block. Same fields, same renderer, same
+language, wherever it appears.
 
-Two values are deliberately *not* on the block. `Site Info → Inquiries` holds
-the response-time promise and the booking link, because the page, the receipt,
-and the confirmation email all state them and they must agree. The block can
-override the booking link; it never has to.
-
-Capability chips come from the `capabilities` taxonomy, so the studio's service
-list is edited once. Leaving the selection empty offers all of them.
+Two values are not on the page either. `Site Info → Inquiries` holds the
+response-time promise and the booking link, because the page, the receipt and
+the confirmation email all state them and they must agree. A page can override
+the booking link; it never has to.
 
 Sending does not navigate: the form swaps in place for a receipt of what was
 just sent, on the shared panel choreography (`useRevealSwap`), and **Edit and
-resend** swaps back with every value intact.
+resend** swaps back with every value intact. The receipt's rows are the form's
+own field labels, so renaming a question renames it there too.
+
+## Forms, and where answers go
+
+A form's `Delivery` decides what a submission becomes:
+
+- **Form submissions** — a row in the generic log, as before.
+- **Inquiries inbox** — a triaged inquiry with a reference, an owner and a
+  status. Each field then gets a **maps to** select saying which part of an
+  inquiry it becomes.
+
+The mapping is explicit rather than inferred from field names: an editor
+renaming "email" to "Your email" must not silently empty a column. Anything
+left unmapped is appended to the brief rather than dropped, so a question added
+without a mapping still reaches a human.
+
+One custom field type ships with this: **Capabilities**, chips drawn from the
+Capabilities taxonomy, so the studio's service list is edited once and every
+form asking "what do you need" follows. Leaving its picker empty offers all of
+them.
 
 ## The collection
 
-`inquiries` (admin group **Inbox**) holds both templates' submissions.
+`inquiries` (admin group **Inbox**) holds every submission from a form set to deliver there.
 
 - Team-only for every operation. The single public door is
   `POST /api/inquiries/submit`, which validates each value against the

@@ -62,7 +62,7 @@ import * as migration_20260828_202452_work_block_story_scope from './20260828_20
 import * as migration_20260829_153800_ai_plugin_and_work_transition from './20260829_153800_ai_plugin_and_work_transition';
 import * as migration_20260901_200423_page_closing from './20260901_200423_page_closing';
 import * as migration_20260901_215802_post_split_hero_related from './20260901_215802_post_split_hero_related';
-import * as migration_20260902_044039_inquiries_contact from './20260902_044039_inquiries_contact';
+import * as migration_20260902_171401_inquiries_contact from './20260902_171401_inquiries_contact';
 
 export const migrations = [
   {
@@ -386,8 +386,8 @@ export const migrations = [
     name: '20260901_215802_post_split_hero_related',
   },
   {
-    up: migration_20260902_044039_inquiries_contact.up,
-    down: migration_20260902_044039_inquiries_contact.down,
-    name: '20260902_044039_inquiries_contact'
+    up: migration_20260902_171401_inquiries_contact.up,
+    down: migration_20260902_171401_inquiries_contact.down,
+    name: '20260902_171401_inquiries_contact'
   },
 ];

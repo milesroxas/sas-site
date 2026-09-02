@@ -1,11 +1,9 @@
-import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { searchPlugin } from '@payloadcms/plugin-search'
 import { sentryPlugin } from '@payloadcms/plugin-sentry'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import type { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
-import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import * as Sentry from '@sentry/nextjs'
 import { mediaGalleryPlugin } from '@sitebytom/payload-media-gallery'
 import type { Plugin } from 'payload'
@@ -15,6 +13,7 @@ import type { AudiencePage, ExpertisePage, LabPage, Page, Post, WorkPage } from 
 import { aeoPlugin } from '@/plugins/aeo'
 import { aiPlugin } from '@/plugins/ai'
 import { askIndexPlugin } from '@/plugins/ask-index'
+import { formBuilder } from '@/plugins/form-builder'
 import { mcp } from '@/plugins/mcp'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { searchFields } from '@/search/fieldOverrides'
@@ -74,49 +73,7 @@ export const plugins: Plugin[] = [
     generateTitle,
     generateURL,
   }),
-  formBuilderPlugin({
-    fields: {
-      payment: false,
-    },
-    formOverrides: {
-      // Team-only writes; MCP API keys authenticate as req.user over REST but
-      // must not manage forms. Public read stays (frontend renders forms).
-      access: {
-        create: authenticated,
-        delete: authenticated,
-        update: authenticated,
-      },
-      admin: { group: 'Forms' },
-      fields: ({ defaultFields }) => {
-        return defaultFields.map((field) => {
-          if ('name' in field && field.name === 'confirmationMessage') {
-            return {
-              ...field,
-              editor: lexicalEditor({
-                features: ({ rootFeatures }) => {
-                  return [
-                    ...rootFeatures,
-                    FixedToolbarFeature(),
-                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                  ]
-                },
-              }),
-            }
-          }
-          return field
-        })
-      },
-    },
-    formSubmissionOverrides: {
-      // Submissions hold visitor PII: readable/deletable by team only. Public
-      // create stays (site visitors submit forms); plugin keeps update: false.
-      access: {
-        delete: authenticated,
-        read: authenticated,
-      },
-      admin: { group: 'Forms' },
-    },
-  }),
+  formBuilder,
   searchPlugin({
     collections: SEARCH_COLLECTIONS,
     beforeSync: beforeSyncWithSearch,
