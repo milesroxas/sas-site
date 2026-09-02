@@ -1,6 +1,6 @@
 # Blocks reorg and Sections roadmap
 
-Status: Phases A and B implemented and the migration generated + guard-checked, Phase C script written and rehearsed locally (2026-09-02). Production still needs: commit + deploy (CI applies the migration), then the Phase C script against production. Phase D remains future work.
+Status: Phases A and B shipped to main (a06a1ea, 2026-09-02; CI applies migration `20260902_191423`). Phase C is being done MANUALLY in admin (cheat sheet below; the script remains as fallback). Phase D remains future work. Agents: read this doc before any block naming/organizing task instead of re-exploring the block system.
 
 Scope: Pages, WorkPages, LabPages, ExpertisePages, AudiencePages. Blocks not named below stay as they are for now. Home global is out of scope (it uses none of the affected blocks).
 
@@ -185,28 +185,37 @@ Sequenced so that every deploy leaves production rendering identically until the
 - [x] Verified against the adapter's drizzle table map: nesting adds ONLY `{pages,work_pages,lab_pages,expertise_pages,audience_pages}_section` (+ `_v`) and `*_media_split` tables; every child block table keeps its exact name (`work_pages_full_media`, `wp_transition`, `pages_blocks_media_block`, ...). No renames, no re-homing.
 - [x] `pnpm generate:types && pnpm generate:importmap`, `tsc --noEmit`, `pnpm lint`, `pnpm storybook:build` all clean.
 - [x] `pnpm migrate:create sections-and-media-content-split` ran 2026-09-02 with **no create/rename prompts**, as predicted. Generated `src/migrations/20260902_191423_sections_and_media_content_split.{ts,json}`: creates (section + media_split tables, `body_size` enums/columns), default flips to `left`, and safe enum recreates for `text_position` (the options reorder). Normalizing `UPDATE`s were added by hand before every `text_position` cast in both `up()` and `down()` per the enum-cast rule; `pnpm check:migrations`, `pnpm check:migrations:drift`, `tsc`, and lint all pass. Never run `payload migrate` locally; CI applies it.
-- [ ] Commit code + migration `.ts` + `.json` together; deploy. Site renders byte-identical; editors can already author new content with sections.
+- [x] Committed and pushed to main (a06a1ea, 2026-09-02); CI applies the migration on deploy. Site renders byte-identical; editors can author with Sections immediately.
 
-### Phase C: content migration (18 instances, 2 docs, plus republish) — SCRIPT READY, rehearsed locally 2026-09-02
+### Phase C: content migration (18 instances, 2 docs) — MANUAL in admin (decided 2026-09-02)
 
-`scripts/wrap-sections.ts`: idempotent 1:1 wrap with `--dry-run` and `--restore <snapshot>` modes; a real run writes a full layout snapshot to `scripts/snapshots/` (gitignored) first. Rehearsed against the local prod copy: 2 docs transformed, round-trip verified (children keep media ids and fields), second run reports everything unchanged.
+Miles wraps the existing prod content into Sections by hand. `scripts/wrap-sections.ts` (idempotent 1:1 wrap, `--dry-run`, snapshot + `--restore`) stays in the repo as fallback and as the reference for the mapping below; it was rehearsed successfully against a local prod copy but will not run against prod.
 
-Known parity caveat found during implementation: transition bands render `pb-0` today, which a Section cannot restate, so the two wrapped `caseStudyTransition` instances on vault gain default bottom padding. Review in the dry-run; if unwanted, merge each transition into the following Section by hand afterwards (better editorial structure anyway).
+**Constraint that makes this re-authoring:** Payload admin cannot move a block between fields. Each wrap = Add Section, recreate the block inside it (re-pick media, copy rich text, re-set selects), delete the original, drag the Section into position. Work in draft, check live preview, publish once per page.
 
-Transform, per doc, per top-level block that is one of the nine:
+**Mapping (theme: light -> Inherit, neutral -> Secondary):**
 
-1. Wrap it 1:1 in a `section` block: `{ blockType: 'section', customize: <true if mapped theme/spacing differ from defaults>, theme: map(block.theme), spacing: map(blockType) , blocks: [block] }`.
-2. Theme map: `light -> inherit`, `neutral -> secondary`, `brand -> accent`, `dark -> inverted`. (Prod data only contains light and neutral.)
-3. Spacing map preserves today's hardcoded rhythm: `fullMedia | splitContentNarrow | splitImageOffset | imagePair -> loose`; `*Transition | featureHeadingOffset | featureImageStatement (contained) | mediaBlock -> default`.
-4. Out-of-scope blocks stay top-level, order preserved.
-5. Skip docs/blocks already wrapped (idempotency); `--dry-run` prints the before/after layout diff.
+| Section settings | Applies to |
+|---|---|
+| Customize ON, Spacing Loose, Theme Inherit | light media blocks: Stacked, Split narrow, Pair offset (and Pair, Caption if ever used) |
+| Customize ON, Spacing Loose, Theme Secondary | the one neutral Stacked on vault |
+| Customize OFF (defaults) | contained Statement blocks; light Standard transitions |
+| Customize ON, Theme Secondary, Spacing Default | the neutral Standard transition on vault |
 
-- [ ] Run against local prod copy (`db:reset` pull), visual-diff `adacore` and `vault-workforce-screening` against the Phase 0 baseline. Target: pixel parity (band theme and py identical by construction).
-- [ ] Content freeze on the two work pages (only those docs change).
-- [ ] Run against prod, republish the touched docs, spot-check live.
-- [ ] Keep the Phase 0 JSON snapshot until Phase D ships.
+**Per-page inventory (prod audit 2026-09-02, drafts identical to published):**
 
-Notes: drafts equal published everywhere today, so the script updates and publishes in one pass. Old versions in `_v` tables keep the flat shape; they remain restorable while legacy config paths exist (i.e. until Phase D removes fields).
+- `adacore` (6 in scope): 3 Stacked, 2 Statement, 1 Split narrow, all light. Out of scope, leave top-level: story section, featured work.
+- `vault-workforce-screening` (12 in scope): 5 Stacked (1 neutral), 4 Split narrow, 1 Pair offset, 1 Statement (neutral), 2 Standard transitions (1 neutral, 1 light). Leave top-level: carousel, featured work.
+- Every other doc uses only `content`: nothing to do.
+
+**Editorial improvements while wrapping (encouraged, not required):**
+
+- Transitions render `pb-0` today, which a Section cannot restate. Put each transition in the SAME Section as the blocks it introduces (transition first). Fixes the padding and gives real structure.
+- Blocks inside one Section sit closer (space-y-16 md:space-y-24) than adjacent Sections do. Grouping same-theme runs into one Section is the intended look; one block per Section reproduces today's looser rhythm.
+
+- [ ] adacore wrapped and published
+- [ ] vault-workforce-screening wrapped and published
+- [ ] Old versions note: `_v` history keeps the flat shape; restorable until Phase D drops columns.
 
 ### Phase D: contract and normalize (separate, later, lowest urgency)
 

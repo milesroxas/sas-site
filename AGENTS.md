@@ -91,6 +91,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | Animations — reveals, route transitions, tuning workflow | [docs/animations.md](docs/animations.md) |
 | Contact forms, the inquiries inbox, notification | [docs/inquiries.md](docs/inquiries.md) |
 | CMS admin naming (tabs, groups, overrides, blocks) | [docs/cms-naming.md](docs/cms-naming.md) |
+| Blocks reorg + Sections (taxonomy, phases, Section contract) | [docs/blocks-reorg-roadmap.md](docs/blocks-reorg-roadmap.md) |
 | Cursor topic rules (security, fields, hooks, …) | `.cursor/rules/` |
 | Human DB docs | [README.md](README.md#database--migrations) |
 | Conductor — parallel workspaces, per-workspace DBs, schema changes across branches | [docs/conductor.md](docs/conductor.md) |
