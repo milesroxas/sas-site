@@ -136,17 +136,21 @@ export const LabSection = sectionBlock({
   interfaceName: 'LabSectionBlock',
 })
 
-// Ordered by `admin.group` — the blocks drawer renders groups in first-appearance order.
+/**
+ * Ordered by `admin.group`: the blocks drawer renders groups in
+ * first-appearance order, and the reorganized groups lead
+ * (docs/blocks-reorg-roadmap.md) ahead of the legacy ones.
+ */
 export const labBlocks = [
   // Structure
   LabSection,
-  // Narrative
-  LabStorySection,
   // Section heading / Media and content / Media: the Section-nestable run
   ...labSectionBlocks,
   // Media
   LabMediaShowcase,
   ScrollGallery,
+  // Narrative
+  LabStorySection,
   // Interactive
   Carousel,
   // Lists & grids

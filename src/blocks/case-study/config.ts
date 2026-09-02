@@ -254,17 +254,21 @@ export const WorkSection = sectionBlock({
   interfaceName: 'WorkSectionBlock',
 })
 
-// Ordered by `admin.group` — the blocks drawer renders groups in first-appearance order.
+/**
+ * Ordered by `admin.group`: the blocks drawer renders groups in
+ * first-appearance order, and the reorganized groups lead
+ * (docs/blocks-reorg-roadmap.md) ahead of the legacy ones.
+ */
 export const caseStudyBlocks = [
   // Structure
   WorkSection,
-  // Narrative
-  WorkCaseStudyStorySection,
   // Section heading / Media and content / Media: the Section-nestable run
   ...workSectionBlocks,
   // Media
   CaseStudyMediaShowcase,
   ScrollGallery,
+  // Narrative
+  WorkCaseStudyStorySection,
   // Statements
   WorkFeatureStatementGrid,
   FeatureStatementLinks,

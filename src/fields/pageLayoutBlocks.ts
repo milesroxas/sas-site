@@ -26,15 +26,17 @@ export const PageSection = sectionBlock({
 
 /**
  * Layout blocks offered by Pages.
- * Ordered by `admin.group` — the blocks drawer renders groups in first-appearance order.
+ * Ordered by `admin.group`: the blocks drawer renders groups in
+ * first-appearance order, and the reorganized groups lead
+ * (docs/blocks-reorg-roadmap.md) ahead of the legacy ones.
  */
 export const pageLayoutBlocks: Block[] = [
   // Structure
   PageSection,
-  // Text
-  Content,
   // Section heading / Media and content / Media: the Section-nestable run
   ...sectionNestableBlocks,
+  // Text
+  Content,
   // Statements
   FeatureStatementGrid,
   FeatureStatementLinks,
@@ -95,10 +97,10 @@ export const SegmentSection = sectionBlock({
 export const segmentPageBlocks: Block[] = [
   // Structure
   SegmentSection,
-  // Text
-  Content,
   // Section heading / Media and content / Media: the Section-nestable run
   ...sectionNestableBlocks,
+  // Text
+  Content,
   // Statements
   FeatureStatementGrid,
   // Interactive

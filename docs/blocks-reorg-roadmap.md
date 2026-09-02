@@ -1,6 +1,6 @@
 # Blocks reorg and Sections roadmap
 
-Status: Phases A and B shipped to main (a06a1ea, 2026-09-02; CI applies migration `20260902_191423`). Phase B2 (collection coverage: the same run offered by all six composition surfaces) is CODE DONE 2026-09-02, migration pending. Phase C is being done MANUALLY in admin (cheat sheet below; the script remains as fallback). Phase D remains future work. Agents: read this doc before any block naming/organizing task instead of re-exploring the block system.
+Status: Phases A and B shipped to main (a06a1ea, 2026-09-02; CI applies migration `20260902_191423`). Phase B2 (collection coverage: the same run offered by all six composition surfaces, plus drawer group order) shipped 2026-09-02 (a472523, migration `20260902_201235_block_coverage`). Phase C is being done MANUALLY in admin (cheat sheet below; the script remains as fallback). Phase D remains future work. Agents: read this doc before any block naming/organizing task instead of re-exploring the block system.
 
 Scope: Pages, Posts, WorkPages, LabPages, ExpertisePages, AudiencePages (Posts added in B2, 2026-09-02). Blocks not named below stay as they are for now. Home global is out of scope: it keeps the set it had before B2 (no Section, no Pair or Pair offset), so the global's schema does not grow for blocks it has never offered.
 
@@ -126,6 +126,22 @@ Two blocks stay collection-owned on purpose:
 - **Standard** is two blocks, not one: `caseStudyTransition` resolves canonical Case Study story copy and `labTransition` is the Lab twin with a static `dbName` (`lp_transition`). Neither can be offered to a collection that has no story record behind it, so Pages, Posts and the segment pages use **Offset** as their section heading.
 - **Work variants** are the `withStoryBeatSource` wrappers: same slug and table, extra story-beat fields. Caption carries no copy fields, so Work offers the plain block.
 
+### Drawer group order
+
+Every composition surface leads with the reorganized groups, then its legacy groups in the order they already had:
+
+`Structure > Section heading > Media and content > Media > (legacy)`
+
+| Surface | Full order |
+|---|---|
+| Pages, Expertise, Audience | Structure, Section heading, Media and content, Media, Text, Statements, Interactive, Lists & grids, Forms & CTAs |
+| Posts | Structure, Section heading, Media and content, Media, Lists & grids |
+| Work Pages | Structure, Section heading, Media and content, Media, Narrative, Statements, Interactive, Lists & grids |
+| Lab Pages | Structure, Section heading, Media and content, Media, Narrative, Interactive, Lists & grids |
+| Home (global, no Section) | Section heading, Media and content, Media, Text, Statements, Interactive, Lists & grids, Forms & CTAs |
+
+Order comes only from each block array (`admin.group`, first appearance wins), so keep each group's blocks contiguous: Text (`Content`) and Narrative (the story-section blocks) now sit after the run, and the legacy Media blocks (`caseStudyMediaShowcase`, `labMediaShowcase`, `scrollGallery`) stay inside the Media group beside Statement and Caption. `Structure` is still the group label for the Section block itself.
+
 Rendering follows the same single-definition rule: `src/blocks/shared/content-block-renderer.tsx` owns the slug-to-component map (`sectionChildComponents`) and the entrance rules for the run. `RenderBlocks` (Pages, Posts, Home, segment pages) spreads that map into its own; `RenderLabBlocks` delegates to it for any block in the run; `RenderCaseStudyBlocks` keeps its own cases because it resolves story copy first.
 
 ---
@@ -211,7 +227,7 @@ Sequenced so that every deploy leaves production rendering identically until the
 - [x] `pnpm migrate:create sections-and-media-content-split` ran 2026-09-02 with **no create/rename prompts**, as predicted. Generated `src/migrations/20260902_191423_sections_and_media_content_split.{ts,json}`: creates (section + media_split tables, `body_size` enums/columns), default flips to `left`, and safe enum recreates for `text_position` (the options reorder). Normalizing `UPDATE`s were added by hand before every `text_position` cast in both `up()` and `down()` per the enum-cast rule; `pnpm check:migrations`, `pnpm check:migrations:drift`, `tsc`, and lint all pass. Never run `payload migrate` locally; CI applies it.
 - [x] Committed and pushed to main (a06a1ea, 2026-09-02); CI applies the migration on deploy. Site renders byte-identical; editors can author with Sections immediately.
 
-### Phase B2: collection coverage (additive schema): CODE DONE 2026-09-02, migration pending
+### Phase B2: collection coverage (additive schema): DONE 2026-09-02 (a472523)
 
 Every composition surface now offers the same run. Posts joined the scope here: its Composition tab (sections after the article body) previously offered only Featured work.
 
@@ -225,7 +241,7 @@ Every composition surface now offers the same run. Posts joined the scope here: 
 - [x] `imagePair` and `splitImageOffset` joined `blockRevealVariants` (`underMedia`, the variant the work renderer already hardcoded); both adapters/presentationals now type on the shared `ImagePairBlock` / `SplitImageOffsetBlock` interfaces and forward `bare`.
 - [x] `pnpm generate:types`, `pnpm generate:importmap` (no new imports), `tsc --noEmit`, `pnpm lint` clean.
 - [x] `pnpm check:migrations:drift` previews the pending migration: 54 `CREATE TABLE`, 122 FK constraints, 230 indexes, 200 new enum types, **all additive**, no drop and no rename-shaped statement, so `migrate:create` should not prompt. Table names stay per-parent (`audience_pages_image_pair`, `posts_section`, `lab_pages_blocks_media_block`), confirming again that nesting under a Section does not re-home child rows.
-- [ ] `pnpm migrate:create block-coverage` (ask first), then `pnpm check:migrations`, commit `.ts` + `.json` together. Until that lands, only local push-synced DBs have the new tables.
+- [x] `pnpm migrate:create block-coverage` run 2026-09-02 with **no create/rename prompts**, as predicted. `src/migrations/20260902_201235_block_coverage.{ts,json}` matches the preview exactly (200 `CREATE TYPE`, 54 `CREATE TABLE`, 122 FK alters, 230 indexes, no drop and no `ADD VALUE`). `pnpm check:migrations`, `pnpm check:migrations:drift` pass. Committed with the code (a472523); CI applies it.
 
 ### Phase C: content migration (18 instances, 2 docs) — MANUAL in admin (decided 2026-09-02)
 
