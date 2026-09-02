@@ -3,11 +3,10 @@ import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
 import { SectionBand } from '@/blocks/section/SectionBand'
+import { renderContentBlock, sectionChildComponents } from '@/blocks/shared/content-block-renderer'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
-import { blockRevealVariants } from '@/blocks/shared/reveal-variants'
 import { Section } from '@/blocks/shared/section'
-import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
 import RichText from '@/components/RichText'
 import type {
   LabFactsBlock,
@@ -19,7 +18,6 @@ import type {
   LabTransitionBlock,
 } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
-import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { relationshipIds } from '@/utilities/relationshipId'
 import { Facts as FactsList } from './Facts'
 import { RelatedProjectsList } from './RelatedProjects'
@@ -137,11 +135,14 @@ const renderLabBlock = (
       </SectionBand>
     )
   }
-  if (block.blockType === 'splitContentNarrow') {
-    return (
-      <ScrollReveal as="div" key={block.id} variant={blockRevealVariants.splitContentNarrow}>
-        <SplitContentNarrowBlock bare={bare} {...block} />
-      </ScrollReveal>
+  // The shared Section-nestable run paints itself the same way it does on
+  // Pages and Posts: one map, one set of entrances, no lab-only drift.
+  if (block.blockType && block.blockType in sectionChildComponents) {
+    return renderContentBlock(
+      block,
+      block.id ?? block.blockType,
+      Boolean(bare),
+      sectionChildComponents,
     )
   }
   if (block.blockType === 'scrollGallery') {
@@ -177,8 +178,9 @@ const renderLabBlock = (
 
 /**
  * Lab blocks enter like generic page blocks: the CSS block reveal wraps each
- * section, except `splitContentNarrow`, whose `data-reveal` markers play the
- * shared GSAP reveal — the same motion it has on every other surface —
+ * section, except the shared Section-nestable run, which enters through the
+ * common content-block renderer (`data-reveal` markers play the shared GSAP
+ * reveal, the same motion those blocks have on every other surface),
  * `carousel`, which matches Pages/Home (CSS reveal only, no GSAP shell — the
  * block paints its own band, so the wrapper never adds margin), and
  * `scrollGallery`, whose pinned shell must not sit under a transformed ancestor.

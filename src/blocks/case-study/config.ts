@@ -11,6 +11,7 @@ import { FeaturedWork } from '@/blocks/featured-work/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
+import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { MediaContentSplit } from '@/blocks/media-content-split/config'
 import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import { sectionBlock } from '@/blocks/section/config'
@@ -244,6 +245,8 @@ const workSectionBlocks: Block[] = [
   WorkSplitImageOffset,
   // Media
   WorkFeatureImageStatement,
+  // Caption carries no story copy, so it needs no story-beat wrapper.
+  MediaBlock,
 ]
 
 export const WorkSection = sectionBlock({

@@ -9,6 +9,7 @@ import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component
 import { FullMedia } from '@/blocks/full-media/FullMedia'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
+import { MediaBlock as MediaBlockComponent } from '@/blocks/MediaBlock/Component'
 import { MediaContentSplit } from '@/blocks/media-content-split/MediaContentSplit'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
@@ -279,7 +280,12 @@ const ImagePairSection = ({
   const landscape = populatedDoc<MediaDoc>(block.landscapeMedia)
   if (!portrait || !landscape) return null
   return (
-    <RevealSection bare={bare} spacing="loose" theme={block.theme} variant="underMedia">
+    <RevealSection
+      bare={bare}
+      spacing="loose"
+      theme={block.theme}
+      variant={blockRevealVariants.imagePair}
+    >
       <ImagePair
         bare
         block={withStoryBeatHeading(block, study)}
@@ -305,7 +311,12 @@ const SplitImageOffsetSection = ({
   const small = populatedDoc<MediaDoc>(block.smallMedia)
   if (!large || !small) return null
   return (
-    <RevealSection bare={bare} spacing="loose" theme={block.theme} variant="underMedia">
+    <RevealSection
+      bare={bare}
+      spacing="loose"
+      theme={block.theme}
+      variant={blockRevealVariants.splitImageOffset}
+    >
       <SplitImageOffset
         bare
         block={withStoryBeatHeading(block, study)}
@@ -622,6 +633,14 @@ const renderWorkBlock = (
       return null
     case 'featureImageStatement':
       return <FeatureImageStatementSection bare={bare} block={block} key={block.id} study={study} />
+    case 'mediaBlock':
+      // Caption carries no story copy: it paints the same band and caption it
+      // does on every other surface, bare inside a Section.
+      return (
+        <CssRevealSection key={block.id}>
+          <MediaBlockComponent {...block} bare={bare} disableInnerContainer />
+        </CssRevealSection>
+      )
     case 'audienceTabs':
       // Owns its own GSAP entrance + swap shell — do not wrap again.
       return <AudienceTabsBlock key={block.id} {...block} />

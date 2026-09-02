@@ -3,7 +3,7 @@ import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type {
   Media as MediaDoc,
-  WorkSplitImageOffsetBlock as SplitImageOffsetBlockType,
+  SplitImageOffsetBlock as SplitImageOffsetBlockType,
 } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { Section } from '../shared/section'

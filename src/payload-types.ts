@@ -299,6 +299,8 @@ export interface Page {
     | FullMediaBlock
     | MediaContentSplitBlock
     | SplitContentNarrowBlock
+    | ImagePairBlock
+    | SplitImageOffsetBlock
     | FeatureImageStatementBlock
     | MediaBlock
     | FeatureStatementGridBlock
@@ -390,7 +392,20 @@ export interface Post {
   /**
    * Optional full-width sections rendered after the article body. The article itself stays in the Content tab.
    */
-  layout?: FeaturedWorkBlock[] | null;
+  layout?:
+    | (
+        | PageSectionBlock
+        | FeatureHeadingOffsetBlock
+        | FullMediaBlock
+        | MediaContentSplitBlock
+        | SplitContentNarrowBlock
+        | ImagePairBlock
+        | SplitImageOffsetBlock
+        | FeatureImageStatementBlock
+        | MediaBlock
+        | FeaturedWorkBlock
+      )[]
+    | null;
   /**
    * Shown in the rail at the end of this post, in this order. Unpublished picks are skipped. Leave empty to show the most recently published posts (excluding this one).
    */
@@ -1642,6 +1657,7 @@ export interface WorkPage {
         | WorkImagePairBlock
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
+        | MediaBlock
         | CaseStudyMediaShowcaseBlock
         | ScrollGalleryBlock
         | WorkFeatureStatementGridBlock
@@ -1776,6 +1792,7 @@ export interface WorkSectionBlock {
         | WorkImagePairBlock
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
+        | MediaBlock
       )[]
     | null;
   id?: string | null;
@@ -2289,6 +2306,42 @@ export interface WorkFeatureImageStatementBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureImageStatement';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  media: number | Media;
+  /**
+   * Presentation for this placement only; the media document itself stays layout-neutral.
+   */
+  size?: ('full' | 'inset' | 'small') | null;
+  /**
+   * Optional. Replaces the media document's canonical caption for this placement only.
+   */
+  captionOverride?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2938,71 +2991,6 @@ export interface PageClosing {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
- */
-export interface Category {
-  id: number;
-  _order?: string | null;
-  title: string;
-  /**
-   * Intro copy for this topic hub at /insights/[slug].
-   */
-  description?: string | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  parent?: (number | null) | Category;
-  breadcrumbs?:
-    | {
-        doc?: (number | null) | Category;
-        url?: string | null;
-        label?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  /**
-   * What this person is emailed about, on top of anything assigned to them.
-   */
-  notifications?: {
-    inquiries?: boolean | null;
-    /**
-     * Leave both selected to be told about everything.
-     */
-    inquiryTypes?: ('project' | 'general')[] | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "PageSectionBlock".
  */
 export interface PageSectionBlock {
@@ -3024,6 +3012,8 @@ export interface PageSectionBlock {
         | FullMediaBlock
         | MediaContentSplitBlock
         | SplitContentNarrowBlock
+        | ImagePairBlock
+        | SplitImageOffsetBlock
         | FeatureImageStatementBlock
         | MediaBlock
       )[]
@@ -3244,6 +3234,114 @@ export interface SplitContentNarrowBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImagePairBlock".
+ */
+export interface ImagePairBlock {
+  /**
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Cropped to 4:5.
+   */
+  portraitMedia: number | Media;
+  /**
+   * Cropped to 16:10.
+   */
+  landscapeMedia: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Arrange the portrait on the left or the right; the landscape fills the other column. On small screens the left image stacks first.
+   */
+  portraitPosition?: ('left' | 'right') | null;
+  /**
+   * Which image the text sits under. Under the portrait it stays compact; under the landscape it runs larger and wider.
+   */
+  textPosition?: ('under-portrait' | 'under-landscape') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'imagePair';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitImageOffsetBlock".
+ */
+export interface SplitImageOffsetBlock {
+  /**
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Cropped to 5:4.
+   */
+  largeMedia: number | Media;
+  /**
+   * Cropped to 3:2. Shown above the caption.
+   */
+  smallMedia: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Place the small image and caption on the left or the right of the large image.
+   */
+  captionPosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'splitImageOffset';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "FeatureImageStatementBlock".
  */
 export interface FeatureImageStatementBlock {
@@ -3300,39 +3398,68 @@ export interface FeatureImageStatementBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
+ * via the `definition` "categories".
  */
-export interface MediaBlock {
-  media: number | Media;
+export interface Category {
+  id: number;
+  _order?: string | null;
+  title: string;
   /**
-   * Presentation for this placement only; the media document itself stays layout-neutral.
+   * Intro copy for this topic hub at /insights/[slug].
    */
-  size?: ('full' | 'inset' | 'small') | null;
+  description?: string | null;
   /**
-   * Optional. Replaces the media document's canonical caption for this placement only.
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
-  captionOverride?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+  generateSlug?: boolean | null;
+  slug: string;
+  parent?: (number | null) | Category;
+  breadcrumbs?:
+    | {
+        doc?: (number | null) | Category;
+        url?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
   /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   * What this person is emailed about, on top of anything assigned to them.
    */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'mediaBlock';
+  notifications?: {
+    inquiries?: boolean | null;
+    /**
+     * Leave both selected to be told about everything.
+     */
+    inquiryTypes?: ('project' | 'general')[] | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4090,7 +4217,14 @@ export interface LabPage {
         | LabSectionBlock
         | LabStorySectionBlock
         | LabTransitionBlock
+        | FeatureHeadingOffsetBlock
+        | FullMediaBlock
+        | MediaContentSplitBlock
         | SplitContentNarrowBlock
+        | ImagePairBlock
+        | SplitImageOffsetBlock
+        | FeatureImageStatementBlock
+        | MediaBlock
         | LabMediaShowcaseBlock
         | ScrollGalleryBlock
         | CarouselBlock
@@ -4345,7 +4479,19 @@ export interface LabSectionBlock {
    * Vertical rhythm of the band. "None" is for a section whose content owns its shell.
    */
   spacing?: ('default' | 'tight' | 'loose' | 'none') | null;
-  blocks?: (LabTransitionBlock | SplitContentNarrowBlock)[] | null;
+  blocks?:
+    | (
+        | LabTransitionBlock
+        | FeatureHeadingOffsetBlock
+        | FullMediaBlock
+        | MediaContentSplitBlock
+        | SplitContentNarrowBlock
+        | ImagePairBlock
+        | SplitImageOffsetBlock
+        | FeatureImageStatementBlock
+        | MediaBlock
+      )[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'section';
@@ -4574,7 +4720,11 @@ export interface ExpertisePage {
     | SegmentSectionBlock
     | ContentBlock
     | FeatureHeadingOffsetBlock
+    | FullMediaBlock
+    | MediaContentSplitBlock
     | SplitContentNarrowBlock
+    | ImagePairBlock
+    | SplitImageOffsetBlock
     | FeatureImageStatementBlock
     | MediaBlock
     | FeatureStatementGridBlock
@@ -4654,7 +4804,18 @@ export interface SegmentSectionBlock {
    * Vertical rhythm of the band. "None" is for a section whose content owns its shell.
    */
   spacing?: ('default' | 'tight' | 'loose' | 'none') | null;
-  blocks?: (FeatureHeadingOffsetBlock | SplitContentNarrowBlock | FeatureImageStatementBlock | MediaBlock)[] | null;
+  blocks?:
+    | (
+        | FeatureHeadingOffsetBlock
+        | FullMediaBlock
+        | MediaContentSplitBlock
+        | SplitContentNarrowBlock
+        | ImagePairBlock
+        | SplitImageOffsetBlock
+        | FeatureImageStatementBlock
+        | MediaBlock
+      )[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'section';
@@ -4728,7 +4889,11 @@ export interface AudiencePage {
     | SegmentSectionBlock
     | ContentBlock
     | FeatureHeadingOffsetBlock
+    | FullMediaBlock
+    | MediaContentSplitBlock
     | SplitContentNarrowBlock
+    | ImagePairBlock
+    | SplitImageOffsetBlock
     | FeatureImageStatementBlock
     | MediaBlock
     | FeatureStatementGridBlock
@@ -5791,6 +5956,8 @@ export interface PagesSelect<T extends boolean = true> {
         fullMedia?: T | FullMediaBlockSelect<T>;
         mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        imagePair?: T | ImagePairBlockSelect<T>;
+        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
@@ -5844,6 +6011,8 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         fullMedia?: T | FullMediaBlockSelect<T>;
         mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        imagePair?: T | ImagePairBlockSelect<T>;
+        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
       };
@@ -5912,6 +6081,39 @@ export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
   media?: T;
   browseAllMedia?: T;
   imagePosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ImagePairBlock_select".
+ */
+export interface ImagePairBlockSelect<T extends boolean = true> {
+  source?: T;
+  heading?: T;
+  body?: T;
+  portraitMedia?: T;
+  landscapeMedia?: T;
+  browseAllMedia?: T;
+  portraitPosition?: T;
+  textPosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SplitImageOffsetBlock_select".
+ */
+export interface SplitImageOffsetBlockSelect<T extends boolean = true> {
+  source?: T;
+  heading?: T;
+  body?: T;
+  largeMedia?: T;
+  smallMedia?: T;
+  browseAllMedia?: T;
+  captionPosition?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -6289,6 +6491,15 @@ export interface PostsSelect<T extends boolean = true> {
   layout?:
     | T
     | {
+        section?: T | PageSectionBlockSelect<T>;
+        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
+        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
+        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        imagePair?: T | ImagePairBlockSelect<T>;
+        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
+        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
+        mediaBlock?: T | MediaBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
   relatedPosts?: T;
@@ -6359,6 +6570,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         imagePair?: T | WorkImagePairBlockSelect<T>;
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
+        mediaBlock?: T | MediaBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
         scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         featureStatementGrid?: T | WorkFeatureStatementGridBlockSelect<T>;
@@ -6430,6 +6642,7 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         imagePair?: T | WorkImagePairBlockSelect<T>;
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
+        mediaBlock?: T | MediaBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
@@ -6782,7 +6995,14 @@ export interface LabPagesSelect<T extends boolean = true> {
         section?: T | LabSectionBlockSelect<T>;
         labStorySection?: T | LabStorySectionBlockSelect<T>;
         labTransition?: T | LabTransitionBlockSelect<T>;
+        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
+        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        imagePair?: T | ImagePairBlockSelect<T>;
+        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
+        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
+        mediaBlock?: T | MediaBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
         scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
@@ -6826,7 +7046,14 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
     | T
     | {
         labTransition?: T | LabTransitionBlockSelect<T>;
+        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
+        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        imagePair?: T | ImagePairBlockSelect<T>;
+        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
+        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
+        mediaBlock?: T | MediaBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
@@ -6939,7 +7166,11 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         section?: T | SegmentSectionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
+        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        imagePair?: T | ImagePairBlockSelect<T>;
+        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
@@ -6988,7 +7219,11 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
     | T
     | {
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
+        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        imagePair?: T | ImagePairBlockSelect<T>;
+        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
       };
@@ -7033,7 +7268,11 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         section?: T | SegmentSectionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
+        fullMedia?: T | FullMediaBlockSelect<T>;
+        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
+        imagePair?: T | ImagePairBlockSelect<T>;
+        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;

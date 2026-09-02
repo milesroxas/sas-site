@@ -1,7 +1,7 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import type { Media as MediaDoc, WorkImagePairBlock } from '@/payload-types'
+import type { ImagePairBlock, Media as MediaDoc } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { Section } from '../shared/section'
 
@@ -13,7 +13,7 @@ export const ImagePair = ({
   portrait,
 }: {
   bare?: boolean
-  block: Pick<WorkImagePairBlock, 'heading' | 'portraitPosition' | 'textPosition' | 'theme'>
+  block: Pick<ImagePairBlock, 'heading' | 'portraitPosition' | 'textPosition' | 'theme'>
   content: DefaultTypedEditorState | null | undefined
   landscape: MediaDoc
   portrait: MediaDoc

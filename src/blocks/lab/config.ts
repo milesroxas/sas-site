@@ -9,7 +9,7 @@ import {
   transitionFields,
 } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { SplitContentNarrow } from '@/blocks/split-content/config'
+import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
 
 export const LabStorySection: Block = {
   slug: 'labStorySection',
@@ -122,12 +122,13 @@ export const LabRelatedProjects: Block = {
 /**
  * Blocks a Lab Page Section can nest, and the same run offered at the top
  * level while the Section transition is underway (docs/blocks-reorg-roadmap.md).
+ * The lab Standard transition leads; everything after it is the shared run
+ * every composition surface offers.
  */
 const labSectionBlocks: Block[] = [
   // Section heading
   LabTransition,
-  // Media and content
-  SplitContentNarrow,
+  ...sectionNestableBlocks,
 ]
 
 export const LabSection = sectionBlock({
@@ -141,7 +142,7 @@ export const labBlocks = [
   LabSection,
   // Narrative
   LabStorySection,
-  // Section heading / Media and content: the Section-nestable run
+  // Section heading / Media and content / Media: the Section-nestable run
   ...labSectionBlocks,
   // Media
   LabMediaShowcase,

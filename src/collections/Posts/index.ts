@@ -10,6 +10,7 @@ import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 import { closingTab } from '@/fields/closing'
 import { editorialNotesField, relatedPagesField } from '@/fields/pageFields'
+import { postLayoutBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
@@ -17,7 +18,6 @@ import { Banner } from '../../blocks/Banner/config'
 import { Carousel } from '../../blocks/Carousel/config'
 import { Code } from '../../blocks/Code/config'
 import { FeatureStatementLinks } from '../../blocks/feature/StatementLinks/config'
-import { FeaturedWork } from '../../blocks/featured-work/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { populateAuthors } from './hooks/populateAuthors'
@@ -119,7 +119,8 @@ export const Posts: CollectionConfig<'posts'> = {
               name: 'layout',
               type: 'blocks',
               label: 'Composition',
-              blocks: [FeaturedWork],
+              labels: { singular: 'Section', plural: 'Sections' },
+              blocks: postLayoutBlocks,
               admin: {
                 initCollapsed: true,
                 description:

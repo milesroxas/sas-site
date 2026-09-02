@@ -7,40 +7,20 @@ import { Carousel } from '@/blocks/Carousel/config'
 import { Content } from '@/blocks/Content/config'
 import { DynamicAudience } from '@/blocks/DynamicAudience/config'
 import { FormBlock } from '@/blocks/Form/config'
-import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
-import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { FeaturedWork } from '@/blocks/featured-work/config'
-import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
-import { MediaBlock } from '@/blocks/MediaBlock/config'
-import { MediaContentSplit } from '@/blocks/media-content-split/config'
+import { ImagePair } from '@/blocks/image-pair/config'
 import { NewsletterSignup } from '@/blocks/NewsletterSignup/config'
 import { sectionBlock } from '@/blocks/section/config'
-import { SplitContentNarrow } from '@/blocks/split-content/config'
+import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
+import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { TestimonialsMarquee } from '@/blocks/TestimonialsMarquee/config'
 
-/**
- * Blocks a Pages Section can nest, and the same run offered at the top level
- * while the Section transition is underway (docs/blocks-reorg-roadmap.md).
- * Ordered by `admin.group` like every drawer list below.
- */
-const pageSectionBlocks: Block[] = [
-  // Section heading
-  FeatureHeadingOffset,
-  // Media and content
-  FullMedia,
-  MediaContentSplit,
-  SplitContentNarrow,
-  // Media
-  FeatureImageStatement,
-  MediaBlock,
-]
-
 export const PageSection = sectionBlock({
-  blocks: pageSectionBlocks,
+  blocks: sectionNestableBlocks,
   interfaceName: 'PageSectionBlock',
 })
 
@@ -54,7 +34,7 @@ export const pageLayoutBlocks: Block[] = [
   // Text
   Content,
   // Section heading / Media and content / Media: the Section-nestable run
-  ...pageSectionBlocks,
+  ...sectionNestableBlocks,
   // Statements
   FeatureStatementGrid,
   FeatureStatementLinks,
@@ -75,29 +55,35 @@ export const pageLayoutBlocks: Block[] = [
 ]
 
 /**
+ * Posts compose optional full-width sections after the article body, so they
+ * get the same Section-nestable run as Pages plus the curated work list. The
+ * article itself stays in the Content tab.
+ */
+export const postLayoutBlocks: Block[] = [
+  // Structure
+  PageSection,
+  // Section heading / Media and content / Media: the Section-nestable run
+  ...sectionNestableBlocks,
+  // Lists & grids
+  FeaturedWork,
+]
+
+/**
  * Home composition: everything Pages offers except the curated work list (the
  * homepage tells that story through its own hero and industry blocks) and the
  * Section wrapper, which Home does not adopt yet (docs/blocks-reorg-roadmap.md).
+ * The two pair blocks are held back with it: they are case-study grammar that
+ * Home has never offered, and adding them here would grow the global's schema
+ * for no editorial need.
  */
+const homeExcludedBlocks = new Set<Block>([FeaturedWork, PageSection, ImagePair, SplitImageOffset])
+
 export const homeLayoutBlocks: Block[] = pageLayoutBlocks.filter(
-  (block) => block !== FeaturedWork && block !== PageSection,
+  (block) => !homeExcludedBlocks.has(block),
 )
 
-/**
- * Blocks a segment-page Section can nest: the segment slice of the Pages run.
- */
-const segmentSectionBlocks: Block[] = [
-  // Section heading
-  FeatureHeadingOffset,
-  // Media and content
-  SplitContentNarrow,
-  // Media
-  FeatureImageStatement,
-  MediaBlock,
-]
-
 export const SegmentSection = sectionBlock({
-  blocks: segmentSectionBlocks,
+  blocks: sectionNestableBlocks,
   interfaceName: 'SegmentSectionBlock',
 })
 
@@ -112,7 +98,7 @@ export const segmentPageBlocks: Block[] = [
   // Text
   Content,
   // Section heading / Media and content / Media: the Section-nestable run
-  ...segmentSectionBlocks,
+  ...sectionNestableBlocks,
   // Statements
   FeatureStatementGrid,
   // Interactive

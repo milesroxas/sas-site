@@ -65,6 +65,7 @@ import * as migration_20260901_215802_post_split_hero_related from './20260901_2
 import * as migration_20260902_044039_inquiries_contact from './20260902_044039_inquiries_contact';
 import * as migration_20260902_174924_contact_pages_delta from './20260902_174924_contact_pages_delta';
 import * as migration_20260902_191423_sections_and_media_content_split from './20260902_191423_sections_and_media_content_split';
+import * as migration_20260902_201235_block_coverage from './20260902_201235_block_coverage';
 
 export const migrations = [
   {
@@ -400,6 +401,11 @@ export const migrations = [
   {
     up: migration_20260902_191423_sections_and_media_content_split.up,
     down: migration_20260902_191423_sections_and_media_content_split.down,
-    name: '20260902_191423_sections_and_media_content_split'
+    name: '20260902_191423_sections_and_media_content_split',
+  },
+  {
+    up: migration_20260902_201235_block_coverage.up,
+    down: migration_20260902_201235_block_coverage.down,
+    name: '20260902_201235_block_coverage'
   },
 ];

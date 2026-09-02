@@ -1,8 +1,8 @@
 # Blocks reorg and Sections roadmap
 
-Status: Phases A and B shipped to main (a06a1ea, 2026-09-02; CI applies migration `20260902_191423`). Phase C is being done MANUALLY in admin (cheat sheet below; the script remains as fallback). Phase D remains future work. Agents: read this doc before any block naming/organizing task instead of re-exploring the block system.
+Status: Phases A and B shipped to main (a06a1ea, 2026-09-02; CI applies migration `20260902_191423`). Phase B2 (collection coverage: the same run offered by all six composition surfaces) is CODE DONE 2026-09-02, migration pending. Phase C is being done MANUALLY in admin (cheat sheet below; the script remains as fallback). Phase D remains future work. Agents: read this doc before any block naming/organizing task instead of re-exploring the block system.
 
-Scope: Pages, WorkPages, LabPages, ExpertisePages, AudiencePages. Blocks not named below stay as they are for now. Home global is out of scope (it uses none of the affected blocks).
+Scope: Pages, Posts, WorkPages, LabPages, ExpertisePages, AudiencePages (Posts added in B2, 2026-09-02). Blocks not named below stay as they are for now. Home global is out of scope: it keeps the set it had before B2 (no Section, no Pair or Pair offset), so the global's schema does not grow for blocks it has never offered.
 
 ---
 
@@ -104,6 +104,30 @@ Theme value mapping (Section stores the new values natively; existing block `the
 | Statement | `textPosition` (right/left, default right) | Layout | keep; `textSize`/`imageWidth`/`aspectRatio` fate is D8 | relabel |
 | Caption (`mediaBlock`) | `size` (full/inset/small) | see D7 | zero prod rows | decide in D7 |
 
+### Collection coverage (B2, 2026-09-02)
+
+The Section-nestable run is defined once in `src/blocks/shared/section-blocks.ts` (`sectionNestableBlocks`) and offered by every composition surface, nested inside that collection's Section instance and spread into its top-level drawer list. One array = nested and top-level offerings can never drift, and no collection can quietly fall behind the taxonomy.
+
+| Block | Pages | Posts | Work | Lab | Expertise | Audience | Home |
+|---|---|---|---|---|---|---|---|
+| Section | PageSection | PageSection | WorkSection | LabSection | SegmentSection | SegmentSection | not yet |
+| Standard (`caseStudyTransition` / `labTransition`) | n/a | n/a | yes | yes | n/a | n/a | n/a |
+| Offset (`featureHeadingOffset`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
+| Stacked (`fullMedia`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
+| Split (`mediaContentSplit`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
+| Split narrow (`splitContentNarrow`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
+| Pair (`imagePair`) | yes | yes | yes (story variant) | yes | yes | yes | held |
+| Pair offset (`splitImageOffset`) | yes | yes | yes (story variant) | yes | yes | yes | held |
+| Statement (`featureImageStatement`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
+| Caption (`mediaBlock`) | yes | yes | yes | yes | yes | yes | yes |
+
+Two blocks stay collection-owned on purpose:
+
+- **Standard** is two blocks, not one: `caseStudyTransition` resolves canonical Case Study story copy and `labTransition` is the Lab twin with a static `dbName` (`lp_transition`). Neither can be offered to a collection that has no story record behind it, so Pages, Posts and the segment pages use **Offset** as their section heading.
+- **Work variants** are the `withStoryBeatSource` wrappers: same slug and table, extra story-beat fields. Caption carries no copy fields, so Work offers the plain block.
+
+Rendering follows the same single-definition rule: `src/blocks/shared/content-block-renderer.tsx` owns the slug-to-component map (`sectionChildComponents`) and the entrance rules for the run. `RenderBlocks` (Pages, Posts, Home, segment pages) spreads that map into its own; `RenderLabBlocks` delegates to it for any block in the run; `RenderCaseStudyBlocks` keeps its own cases because it resolves story copy first.
+
 ---
 
 ## 3. Section block design
@@ -186,6 +210,22 @@ Sequenced so that every deploy leaves production rendering identically until the
 - [x] `pnpm generate:types && pnpm generate:importmap`, `tsc --noEmit`, `pnpm lint`, `pnpm storybook:build` all clean.
 - [x] `pnpm migrate:create sections-and-media-content-split` ran 2026-09-02 with **no create/rename prompts**, as predicted. Generated `src/migrations/20260902_191423_sections_and_media_content_split.{ts,json}`: creates (section + media_split tables, `body_size` enums/columns), default flips to `left`, and safe enum recreates for `text_position` (the options reorder). Normalizing `UPDATE`s were added by hand before every `text_position` cast in both `up()` and `down()` per the enum-cast rule; `pnpm check:migrations`, `pnpm check:migrations:drift`, `tsc`, and lint all pass. Never run `payload migrate` locally; CI applies it.
 - [x] Committed and pushed to main (a06a1ea, 2026-09-02); CI applies the migration on deploy. Site renders byte-identical; editors can author with Sections immediately.
+
+### Phase B2: collection coverage (additive schema): CODE DONE 2026-09-02, migration pending
+
+Every composition surface now offers the same run. Posts joined the scope here: its Composition tab (sections after the article body) previously offered only Featured work.
+
+- [x] `src/blocks/shared/section-blocks.ts` defines `sectionNestableBlocks`, the run stated once (Offset, Stacked, Split, Split narrow, Pair, Pair offset, Statement, Caption), ordered by `admin.group`.
+- [x] Pages and the segment pages (Expertise, Audience) consume it, so they gained Pair and Pair offset (segments also gained Stacked and Split).
+- [x] Posts: `postLayoutBlocks` = Section + the run + Featured work, Composition field `labels` now Section/Sections.
+- [x] Lab: `labSectionBlocks` = the lab Standard transition + the run (was Standard + Split narrow only).
+- [x] Work: Caption added to `workSectionBlocks` (no story-beat wrapper, since it carries no copy fields).
+- [x] Home held at its pre-B2 set (`homeExcludedBlocks`): no Section, no Pair, no Pair offset. Home does not adopt Sections yet, so growing the global's schema for blocks it never offered buys nothing.
+- [x] `src/blocks/shared/content-block-renderer.tsx`, extracted from `RenderBlocks` so the map and the entrance rules for the run live once; `RenderLabBlocks` delegates to it (its bespoke `splitContentNarrow` case is gone), `RenderBlocks` spreads it into its page-only components.
+- [x] `imagePair` and `splitImageOffset` joined `blockRevealVariants` (`underMedia`, the variant the work renderer already hardcoded); both adapters/presentationals now type on the shared `ImagePairBlock` / `SplitImageOffsetBlock` interfaces and forward `bare`.
+- [x] `pnpm generate:types`, `pnpm generate:importmap` (no new imports), `tsc --noEmit`, `pnpm lint` clean.
+- [x] `pnpm check:migrations:drift` previews the pending migration: 54 `CREATE TABLE`, 122 FK constraints, 230 indexes, 200 new enum types, **all additive**, no drop and no rename-shaped statement, so `migrate:create` should not prompt. Table names stay per-parent (`audience_pages_image_pair`, `posts_section`, `lab_pages_blocks_media_block`), confirming again that nesting under a Section does not re-home child rows.
+- [ ] `pnpm migrate:create block-coverage` (ask first), then `pnpm check:migrations`, commit `.ts` + `.json` together. Until that lands, only local push-synced DBs have the new tables.
 
 ### Phase C: content migration (18 instances, 2 docs) — MANUAL in admin (decided 2026-09-02)
 
@@ -285,6 +325,12 @@ Additive only; expected prompts and answers:
 5. `section` nested `blocks` linkage: no prompt expected (child blocks keep existing tables; only `_path` semantics change at runtime)
 
 If any prompt offers "rename" against an existing media/split table, stop: that means the dbName collided or nesting re-tabled children; abort and re-check the Phase B verification step.
+
+### Phase B2: `pnpm migrate:create block-coverage` (do not run without asking)
+
+Additive only: 54 new tables (block tables and their `_v` twins for Pages, Posts, Lab, Expertise, Audience, Work), their FK constraints, indexes and per-table enums. Nothing is dropped, nothing changes shape, so **no create/rename prompt is expected**.
+
+If a prompt does appear offering "rename" against an existing block table, stop: that means a `dbName` collided or a block was re-homed. Re-run `pnpm check:migrations:drift` and compare its table list against the one above before answering.
 
 ### Phase D (per-PR, examples)
 
