@@ -6,7 +6,7 @@ import {
 
 export const AudiencePages = segmentPageCollection({
   slug: 'audience-pages',
-  labels: { singular: 'Audience Page', plural: 'Audience Pages' },
+  labels: { singular: 'Audience Page', plural: 'Who We Help' },
   description:
     'Who We Help segment pages published at /who-we-help/[slug]. The page defines the audience segment; industries drive automatic related-work matching.',
   taxonomy: {

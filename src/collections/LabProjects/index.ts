@@ -27,7 +27,7 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'kind', 'status', '_status', 'updatedAt'],
     description:
-      'Canonical, reusable records of internal work — experiments, prototypes, and showcase pieces that are not client engagements. Website presentation is authored under Website → Lab Pages.',
+      'Canonical, reusable records of internal work — experiments, prototypes, and showcase pieces that are not client engagements. Website presentation is authored under Website: Pages → Lab.',
   },
   defaultPopulate: {
     title: true,

@@ -98,6 +98,27 @@ export const SiteInfo: GlobalConfig = {
       ],
     },
     {
+      // Site-wide switch for the Ask feature. It lives here, not on Header or
+      // Footer, because Ask surfaces in both plus its own page and endpoint;
+      // every surface reads this one flag (src/features/ask/README.md).
+      name: 'ask',
+      type: 'group',
+      label: 'Ask',
+      admin: { description: 'The grounded Q&A composer in the menu and the closing band.' },
+      fields: [
+        {
+          name: 'hidden',
+          type: 'checkbox',
+          defaultValue: false,
+          label: 'Hide Ask',
+          admin: {
+            description:
+              'Turn on to remove Ask from the site: the composer leaves the menu and the closing band, and /ask returns not found. The closing band shows the address panel from Footer › Closing instead.',
+          },
+        },
+      ],
+    },
+    {
       name: 'logo',
       type: 'upload',
       relationTo: 'media',

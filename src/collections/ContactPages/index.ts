@@ -22,7 +22,7 @@ import { revalidateContactPage, revalidateContactPageDelete } from './hooks/reva
  */
 export const ContactPages: CollectionConfig<'contact-pages'> = {
   slug: 'contact-pages',
-  labels: { singular: 'Contact Page', plural: 'Contact Pages' },
+  labels: { singular: 'Contact Page', plural: 'Contact' },
   access: {
     create: authenticated,
     delete: authenticated,

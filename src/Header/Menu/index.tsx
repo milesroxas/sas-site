@@ -1,6 +1,7 @@
 'use client'
 
 import { useGSAP } from '@gsap/react'
+import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
 import type { ChatTransport, UIMessage } from 'ai'
 import gsap from 'gsap'
 import Link from 'next/link'
@@ -13,10 +14,11 @@ import { Button } from '@/components/ui/button'
 import { Clock } from '@/Footer/Clock'
 import { MenuAsk } from '@/features/ask/MenuAsk'
 import { cursorTarget } from '@/features/cursor'
+import { useIsMobile } from '@/hooks/use-mobile'
 import type { Header as HeaderType } from '@/payload-types'
 import { suppressViewTransitions } from '@/shared/lib/view-transition/suppress'
 import { cn } from '@/utilities/ui'
-import type { MenuContent, MenuMedia } from '../getMenuContent'
+import type { MenuContent, MenuLink, MenuMedia } from '../getMenuContent'
 import { ThemeToggle } from '../ThemeToggle'
 import { createMenuMediaElement, type HeroHandoff, startHeroHandoff } from './heroHandoff'
 import {
@@ -43,6 +45,7 @@ import {
   MOBILE_CARD_SHADOW,
   onMediaReady,
 } from './motion'
+import { MenuPreviewSlot } from './PreviewSlot'
 
 gsap.registerPlugin(useGSAP)
 
@@ -104,6 +107,101 @@ const HERO_DISSOLVE_EASE = 'power1.inOut'
 /** Grace before dissolving back to base — lets the pointer travel between
  *  adjacent links without flashing the resting state. */
 const HOVER_CLEAR_DELAY_MS = 80
+
+/** Breakpoint where the phone stack becomes the three-column layout. */
+const DESKTOP_MEDIA_QUERY = '(min-width: 768px)'
+
+/* Phone sub-views. Below `md` the editorial columns are hidden, so the primary
+   nav carries a drill-in row per column (Expertise, Who We Help) whose list
+   swaps in over the nav. A sub-view's items still carry `data-menu-item`: the
+   hero handoff fades every visible item, and the open timeline cycles their
+   inline state so nothing is stranded at zero. They hold no slot in the open
+   cascade, though (see `buildTimeline`). */
+type SubView = 'expertise' | 'audiences'
+const SUB_VIEW_SELECTOR = '[data-menu-subview]'
+const subViewId = (view: SubView) => `site-menu-${view}`
+
+/**
+ * Nav row type: 16px light with wide tracking (18px from `md`). Below `md`
+ * the `::before` box grows each row's touch target to the list's 40px pitch
+ * (the row's 24px line box + the 16px gap) without touching the rhythm, the
+ * boxes meeting edge to edge; 40 is the compromise between Apple's 44pt and
+ * a six-row list that has to share a phone with the window and the CTA. It
+ * needs the control's own box to be its line: a button already is, and a
+ * link gets `inline-block` for it (an inline anchor's box is the font's
+ * content area, which would overrun the next row). The sub-view's 14px
+ * links stand 19px tall, so their box grows by 10px a side and leaves a 1px
+ * seam instead of overrunning.
+ */
+const NAV_ROW =
+  'font-heading text-base/none font-light tracking-widest text-foreground transition-colors hover:text-primary md:text-lg/none'
+const TOUCH_ROW = 'max-md:relative max-md:before:absolute max-md:before:inset-x-0'
+const TOUCH_ROW_HIT = cn(TOUCH_ROW, 'max-md:before:-inset-y-3')
+/** The nav's links: a button row's box is already its line, a link's needs `inline-block`. */
+const NAV_LINK = cn(NAV_ROW, TOUCH_ROW_HIT, 'max-md:inline-block')
+/** Sub-view links: one step down from the nav rows, as the desktop columns are. */
+const SUB_VIEW_LINK = cn(
+  'text-sm/snug text-foreground transition-colors hover:text-primary max-md:inline-block',
+  TOUCH_ROW,
+  'max-md:before:-inset-y-2.5',
+)
+
+/**
+ * Sub-view stage (phone): the nav and its sub-views share one cell that is
+ * the column's whole height, so a swap never changes the layout around it;
+ * each panel scrolls on its own and sits its content at the bottom (thumb
+ * zone, like the nav). From `md` both wrappers dissolve (`contents`) and the
+ * nav list is the column's direct child again, exactly as before. A hidden
+ * panel is `inert`, which takes it out of the tab order and the
+ * accessibility tree at once (`visibility` would still read hidden on the
+ * first frame of its own transition and refuse the focus move into the
+ * arriving panel).
+ */
+const SUB_VIEW_STAGE =
+  'max-md:grid max-md:min-h-0 max-md:flex-1 max-md:*:col-start-1 max-md:*:row-start-1 md:contents'
+const SUB_VIEW_SCROLL =
+  'no-scrollbar max-md:flex max-md:min-h-0 max-md:flex-col max-md:overflow-y-auto max-md:overscroll-contain'
+
+/**
+ * Sub-view swap, row by row. Forward: the nav's rows clear to the left,
+ * quick and close together, and the sub-view's rows follow from the right on
+ * a longer settle, each a beat after the last, its title row first; back is
+ * the same choreography run the other way, so the space stays consistent.
+ * 12px of travel, not a push: both panels are the same kind of list, and a
+ * heavy slide would only add distance. Exits are shorter than entries, and
+ * the incoming rows wait out most of the outgoing ones so the two lists
+ * never read as one crowd.
+ *
+ * Motion sits on each row's control, never on its `data-menu-item` wrapper:
+ * the open cascade owns that one's inline opacity (see `chatHideable`). The
+ * wrapper carries the row's timing as custom properties for the control's
+ * `menu-row` utility (globals.css) to read, so the destination state, enter
+ * or exit, brings its own duration and delay. The same utility gives the row
+ * its press feedback (the site's press tokens, plus the hover color) on the
+ * control itself: the hitbox pseudo paints above the label, so a press lands
+ * on the control and nothing inside it. Reduced motion is the utility's.
+ */
+const SUB_VIEW_ENTER_MS = 250
+const SUB_VIEW_ENTER_STAGGER_MS = 25
+/** Lead before the first incoming row, while the outgoing rows clear. */
+const SUB_VIEW_ENTER_DELAY_MS = 60
+const SUB_VIEW_EXIT_MS = 150
+const SUB_VIEW_EXIT_STAGGER_MS = 12
+const SUB_VIEW_ROW = 'max-md:menu-row'
+const subViewRowHidden = (offstage: 'start' | 'end') =>
+  cn(
+    'max-md:opacity-0',
+    offstage === 'start' ? 'max-md:motion-safe:-translate-x-3' : 'max-md:motion-safe:translate-x-3',
+  )
+const subViewRowTiming = (index: number, visible: boolean): React.CSSProperties =>
+  ({
+    '--menu-row-duration': `${visible ? SUB_VIEW_ENTER_MS : SUB_VIEW_EXIT_MS}ms`,
+    '--menu-row-delay': `${
+      visible
+        ? SUB_VIEW_ENTER_DELAY_MS + index * SUB_VIEW_ENTER_STAGGER_MS
+        : index * SUB_VIEW_EXIT_STAGGER_MS
+    }ms`,
+  }) as React.CSSProperties
 
 /** Chat swap — see the CHAT_* block in ./motion for the mask's full contract. */
 const CHAT_COVER_SELECTOR = '[data-menu-chat-cover]'
@@ -327,6 +425,11 @@ type TakeoverMenuProps = {
   onClose: () => void
   /** Focus returns here when the menu closes. */
   menuButtonRef: React.RefObject<HTMLButtonElement | null>
+  /**
+   * Site Info › Ask › Hide Ask: the composer and transcript leave the menu.
+   * The preview slot stays, since the docked page frame lands on it.
+   */
+  askHidden?: boolean
   /** Ask transport override — stories/tests script the chat without /api/ask. */
   askTransport?: ChatTransport<UIMessage>
   askInitialMessages?: UIMessage[]
@@ -338,6 +441,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   open,
   onClose,
   menuButtonRef,
+  askHidden = false,
   askTransport,
   askInitialMessages,
 }) => {
@@ -534,7 +638,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         frame,
         items: gsap.utils.toArray<HTMLElement>('[data-menu-item]', overlay),
         slotRect,
-        desktop: window.matchMedia('(min-width: 768px)').matches,
+        desktop: window.matchMedia(DESKTOP_MEDIA_QUERY).matches,
         restoreFrame,
         onDone: () => {
           handoffRef.current = null
@@ -669,7 +773,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
       mm.add(
         {
-          desktop: '(min-width: 768px)',
+          desktop: DESKTOP_MEDIA_QUERY,
           motionOK: '(prefers-reduced-motion: no-preference)',
         },
         (context) => {
@@ -811,9 +915,19 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                   0,
                 )
               }
-              // Content cascade begins at the window's halfway point.
+              // Content cascade begins at the window's halfway point. It
+              // counts only what this breakpoint shows: items hidden at build
+              // (the other breakpoint's columns, the phone sub-views behind
+              // the nav) still cycle their state with the timeline, so
+              // nothing is stranded at zero, but hold no slot. A phone's nav
+              // is not kept waiting on the desktop columns, and the desktop
+              // order is untouched by phone-only rows.
+              const cascade = items.filter(
+                (el) => (el.checkVisibility?.() ?? true) && !el.closest(SUB_VIEW_SELECTOR),
+              )
+              const offstage = items.filter((el) => !cascade.includes(el))
               tl.fromTo(
-                items,
+                cascade,
                 { autoAlpha: 0, y: desktop ? 16 : 12 },
                 {
                   autoAlpha: 1,
@@ -824,6 +938,15 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                 },
                 ITEMS_START,
               )
+              if (offstage.length > 0) {
+                // `y: 0` also clears the lift a hero handoff leaves on them.
+                tl.fromTo(
+                  offstage,
+                  { autoAlpha: 0, y: 0 },
+                  { autoAlpha: 1, duration: ITEM_DURATION, ease: ITEM_EASE },
+                  ITEMS_START,
+                )
+              }
             }
 
             tlRef.current = tl
@@ -949,8 +1072,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       document.documentElement.style.overflow = 'hidden'
 
       tl.eventCallback('onComplete', () => {
-        // First *visible* menu link — the editorial columns are hidden on mobile.
-        const candidates = overlay.querySelectorAll<HTMLElement>('[data-menu-item] a')
+        // First *visible* menu control: a link, or a phone drill-in row (never
+        // the composer's submit). The editorial columns are hidden on mobile,
+        // the drill-in rows from md.
+        const candidates = overlay.querySelectorAll<HTMLElement>(
+          '[data-menu-item] :is(a, button[aria-controls])',
+        )
         for (const el of candidates) {
           if (el.checkVisibility?.() ?? true) {
             el.focus()
@@ -999,18 +1126,69 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     }
   }, [open, menuButtonRef, restoreFrame, revealLateHeroBase])
 
-  // Escape steps back: transcript → preview first, then menu → page.
+  /**
+   * Phone sub-view in front of the nav (see the SUB_VIEW_* block above).
+   * Every open starts on the nav. The reset waits for the open rather than
+   * running at close, where the nav sliding back in would ride the undock;
+   * at open the overlay is still transparent and every item sits at zero
+   * until the cascade, so the swap back is never seen.
+   */
+  const [subView, setSubView] = useState<SubView | null>(null)
+  const subViewTriggerRefs = useRef<Record<SubView, HTMLButtonElement | null>>({
+    expertise: null,
+    audiences: null,
+  })
+  const subViewBackRefs = useRef<Record<SubView, HTMLButtonElement | null>>({
+    expertise: null,
+    audiences: null,
+  })
+  /** The sub-view the last swap left, so a step back can return focus to its row. */
+  const lastSubViewRef = useRef<SubView | null>(null)
+  const resetSubView = useCallback(() => {
+    lastSubViewRef.current = null
+    setSubView(null)
+  }, [])
+  useEffect(() => {
+    if (open) resetSubView()
+  }, [open, resetSubView])
+  // A sub-view is a phone-only layer: crossing to md (a tablet rotating)
+  // lands on the three-column layout, where a lingering one would only
+  // misroute Escape. The same flag keeps the nav's `inert` off the desktop
+  // column, whose layout the sub-view classes never touch.
+  const isMobile = useIsMobile()
+  useEffect(() => {
+    if (!isMobile) resetSubView()
+  }, [isMobile, resetSubView])
+  // Focus follows the swap: into the sub-view's back row (its first control,
+  // which also names where the user is), and back onto the row that opened it.
+  useEffect(() => {
+    const previous = lastSubViewRef.current
+    lastSubViewRef.current = subView
+    if (subView) subViewBackRefs.current[subView]?.focus({ preventScroll: true })
+    else if (previous) subViewTriggerRefs.current[previous]?.focus({ preventScroll: true })
+  }, [subView])
+
+  /** Phone drill-in views, one per editorial column; an empty column gets no row. */
+  const subViewDefs: { key: SubView; title: string; items: MenuLink[] }[] = [
+    { key: 'expertise', title: 'Expertise', items: expertise },
+    { key: 'audiences', title: 'Who We Help', items: audiences },
+  ]
+  const subViews = subViewDefs.filter((view) => view.items.length > 0)
+
+  // Escape steps back one layer at a time: transcript → preview, sub-view →
+  // nav, then menu → page.
   // Safety-net cleanup if unmounted mid-open lives in the unmount effect below.
   useEffect(() => {
     if (!open) return
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
       if (chatViewRef.current && exitChatViewRef.current) exitChatViewRef.current()
+      else if (subView) setSubView(null)
       else onClose()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [open, onClose])
+  }, [open, onClose, subView])
 
   useEffect(
     () => () => {
@@ -1204,14 +1382,22 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
         {/* Center column — slot + form are MenuAsk fragment children, so they
             sit on this grid (row 1 + 2). The CTA (row 3) renders after the
-            right column so the mobile flex stack pins it to the bottom. */}
-        <MenuAsk
-          open={open}
-          onViewChange={handleChatViewChange}
-          exitChatViewRef={exitChatViewRef}
-          transport={askTransport}
-          initialMessages={askInitialMessages}
-        />
+            right column so the mobile flex stack pins it to the bottom.
+            With Ask hidden only the slot renders: the frame still docks onto
+            it, and row 2 stays empty on purpose, so the CTA keeps its place
+            and the composer's absence reads as air under the window rather
+            than a re-flow. */}
+        {askHidden ? (
+          <MenuPreviewSlot />
+        ) : (
+          <MenuAsk
+            open={open}
+            onViewChange={handleChatViewChange}
+            exitChatViewRef={exitChatViewRef}
+            transport={askTransport}
+            initialMessages={askInitialMessages}
+          />
+        )}
 
         {/* Right column — recent work (desktop) + primary nav. Right-aligned to
             the outer gutter so it mirrors the left column instead of hugging
@@ -1248,38 +1434,154 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             <div data-menu-item className="hidden h-px w-10 bg-border md:block" />
           )}
 
-          {/* max-md:mt-auto (not justify-end) so the list stays scrollable
-              when it overflows: auto margins collapse to 0 inside overflow.
-              max-md:pb-4 is the extra breathing room above the CTA; it lives
-              inside the scroll column so short viewports clip padding, never
-              the last link. */}
-          <ul className="flex flex-col items-start gap-5 max-md:mt-auto max-md:pb-4 md:gap-6">
-            {navItems.map(({ link }, i) => {
-              const href = navItemHref(link)
+          {/* Phone: the nav and its sub-views stack on SUB_VIEW_STAGE; from md
+              both wrappers are `contents`, so the list is the column's direct
+              child as before. */}
+          <div className={SUB_VIEW_STAGE}>
+            <div
+              inert={isMobile && subView !== null}
+              className={cn(
+                SUB_VIEW_SCROLL,
+                'md:contents',
+                subView !== null && 'max-md:pointer-events-none',
+              )}
+            >
+              {/* max-md:mt-auto (not justify-end) so the list stays scrollable
+                  when it overflows: auto margins collapse to 0 inside overflow.
+                  max-md:pb-4 is the extra breathing room above the CTA; it lives
+                  inside the scroll panel so short viewports clip padding, never
+                  the last link. */}
+              <ul className="flex flex-col items-start gap-4 max-md:mt-auto max-md:pb-4 md:gap-6">
+                {/* Drill-in rows lead the nav (the offer, then the proof). The
+                    chevron marks a deeper level; destinations carry none. */}
+                {subViews.map(({ key, title }, index) => (
+                  <li
+                    key={key}
+                    data-menu-item
+                    className="md:hidden"
+                    style={subViewRowTiming(index, subView === null)}
+                  >
+                    <button
+                      ref={(el) => {
+                        subViewTriggerRefs.current[key] = el
+                      }}
+                      type="button"
+                      aria-expanded={subView === key}
+                      aria-controls={subViewId(key)}
+                      onClick={() => setSubView(key)}
+                      className={cn(
+                        NAV_ROW,
+                        TOUCH_ROW_HIT,
+                        SUB_VIEW_ROW,
+                        'inline-flex items-center gap-1',
+                        subView !== null && subViewRowHidden('start'),
+                      )}
+                    >
+                      {title}
+                      <IconChevronRight aria-hidden className="size-4 text-muted-foreground" />
+                    </button>
+                  </li>
+                ))}
+                {navItems.map(({ link }, i) => {
+                  const href = navItemHref(link)
+                  return (
+                    <li
+                      key={i}
+                      data-menu-item
+                      style={subViewRowTiming(subViews.length + i, subView === null)}
+                      {...itemHandlers(href ? (pageMedia[href] ?? null) : null)}
+                    >
+                      <CMSLink
+                        {...link}
+                        appearance="inline"
+                        className={cn(
+                          NAV_LINK,
+                          SUB_VIEW_ROW,
+                          subView !== null && subViewRowHidden('start'),
+                        )}
+                      />
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+
+            {/* The back row mirrors the row that opened the view (‹ Expertise
+                for Expertise ›): the flipped chevron and the rows' arrival
+                from the right say which way it goes. */}
+            {subViews.map(({ key, title, items }) => {
+              const active = subView === key
               return (
-                <li
-                  key={i}
-                  data-menu-item
-                  {...itemHandlers(href ? (pageMedia[href] ?? null) : null)}
+                <section
+                  key={key}
+                  id={subViewId(key)}
+                  aria-label={title}
+                  data-menu-subview={key}
+                  inert={!active}
+                  className={cn(
+                    SUB_VIEW_SCROLL,
+                    'md:hidden',
+                    !active && 'max-md:pointer-events-none',
+                  )}
                 >
-                  <CMSLink
-                    {...link}
-                    appearance="inline"
-                    className="font-heading text-xl/none font-light tracking-widest text-foreground transition-colors hover:text-primary md:text-lg/none"
-                  />
-                </li>
+                  {/* gap-8 over the list's 16: the back row is the view's title,
+                      not its first item. */}
+                  <div className="mt-auto flex flex-col items-start gap-8 pb-4">
+                    <div data-menu-item style={subViewRowTiming(0, active)}>
+                      <button
+                        ref={(el) => {
+                          subViewBackRefs.current[key] = el
+                        }}
+                        type="button"
+                        onClick={() => setSubView(null)}
+                        className={cn(
+                          NAV_ROW,
+                          TOUCH_ROW_HIT,
+                          SUB_VIEW_ROW,
+                          'inline-flex items-center gap-1',
+                          !active && subViewRowHidden('end'),
+                        )}
+                      >
+                        <IconChevronLeft aria-hidden className="size-4 text-muted-foreground" />
+                        {title}
+                        <span className="sr-only">, back to menu</span>
+                      </button>
+                    </div>
+                    <ul className="flex flex-col items-start gap-4">
+                      {items.map((item, i) => (
+                        <li
+                          key={item.href}
+                          data-menu-item
+                          style={subViewRowTiming(i + 1, active)}
+                          {...itemHandlers(item.media)}
+                        >
+                          <Link
+                            href={item.href}
+                            className={cn(
+                              SUB_VIEW_LINK,
+                              SUB_VIEW_ROW,
+                              !active && subViewRowHidden('end'),
+                            )}
+                          >
+                            {item.title}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </section>
               )
             })}
-          </ul>
+          </div>
         </div>
 
         {/* Bottom of the mobile stack: primary CTA, then the utility strip
             (studio clock + theme toggle) at the safe-area edge. Both live
             outside the scrolling nav column so they hold position when the
-            nav overflows. Gap scale: nav pitch 20 < CTA-to-strip 24 (stack
+            nav overflows. Gap scale: nav pitch 16 < CTA-to-strip 24 (stack
             gap) < nav-to-CTA 40 (stack gap + the list's pb-4, one blank nav
-            row), so the pill reads as the footer block's lead, not a fifth
-            nav item.
+            row), so the pill reads as the footer block's lead, not a seventh
+            nav row.
             Desktop keeps the CTA under the composer (row 3) and hides the
             strip: the footer owns the clock from md up. */}
         {/* chatHideable sits on a wrapper, not on the data-menu-item: the open

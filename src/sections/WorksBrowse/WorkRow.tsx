@@ -29,6 +29,12 @@ type Fact = { label: string; active?: boolean }
  * direct children of the row: the same nodes in both layouts, so the reveal
  * markers and their beats never duplicate.
  *
+ * The row's fixed lanes (number, thumbnail, arrow) and the gaps between them
+ * step up with the page column so the copy always keeps a working measure.
+ * At `md` the column is 672px: the `lg` sizes would spend 528px of it on the
+ * lanes and leave the title one word per line, so the thumbnail and gaps
+ * take a size down there and the copy keeps roughly 280px.
+ *
  * `data-reveal*` markers are inert without a `ScrollReveal` ancestor
  * (docs/animations.md); the index and the related-work list each wrap a row
  * in the under-media reveal so it gates on its own scroll position.
@@ -50,7 +56,7 @@ export const WorkRow: React.FC<{
 
   return (
     <Link
-      className="group pressable pressable-subtle flex flex-col gap-5 py-8 outline-none md:flex-row md:items-center md:gap-12"
+      className="group pressable pressable-subtle flex flex-col gap-5 py-8 outline-none md:flex-row md:items-center md:gap-8 lg:gap-12"
       href={`/works/${item.slug}`}
       transitionTypes={[...forwardNavTransitionTypes]}
       {...cursorTarget({ variant: 'view' })}
@@ -72,7 +78,7 @@ export const WorkRow: React.FC<{
       </div>
 
       <div
-        className="relative aspect-video w-full shrink-0 overflow-hidden rounded-md bg-muted md:w-80 lg:w-96"
+        className="relative aspect-video w-full shrink-0 overflow-hidden rounded-md bg-muted md:w-56 lg:w-96"
         data-reveal="media"
       >
         {item.media && (
@@ -81,7 +87,7 @@ export const WorkRow: React.FC<{
             htmlElement={null}
             imgClassName="object-cover"
             resource={item.media}
-            size="(min-width: 1024px) 24rem, (min-width: 768px) 20rem, 100vw"
+            size="(min-width: 1024px) 24rem, (min-width: 768px) 14rem, 100vw"
           />
         )}
       </div>

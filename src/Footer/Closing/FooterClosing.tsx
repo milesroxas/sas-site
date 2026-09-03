@@ -16,18 +16,38 @@ import { FOOTER_CLOSING_GATE_SELECTOR } from './curtain'
 type FooterClosingProps = {
   closing: Footer['closing']
   /**
+   * Site Info › Ask › Hide Ask. The address panel takes the composer's place
+   * in the right-hand column; the band's composition does not change.
+   */
+  askHidden?: boolean
+  /** Postal lines from Site Info › Address (see `./address`). */
+  address?: string[]
+  /**
    * Chat transport passthrough to the embedded AskWidget — Storybook and tests
    * inject a scripted transport; real pages omit it and POST /api/ask.
    */
   askTransport?: ChatTransport<UIMessage>
 }
 
+/**
+ * Panel height on `lg`, published as a variable because the copy column
+ * reads it too: its bottom padding lifts the button row so it lands just past
+ * the panel's top edge, per the design. The ask card holds room for the
+ * transcript the widget mounts above its composer; the address panel is a
+ * note over a postal block and sits lower, so a shorter card reads as sized
+ * to its content rather than emptied of a composer.
+ */
+const panelMinHeight = {
+  ask: 'lg:[--closing-panel-min-h:26rem]',
+  address: 'lg:[--closing-panel-min-h:14rem]',
+} as const
+
 const ClosingCopy = ({ closing }: { closing: Footer['closing'] }) => {
   const links = closing?.links ?? []
 
   return (
     <div
-      className="flex flex-col items-start gap-4 lg:pb-[calc(var(--ask-card-min-h)-2rem)]"
+      className="flex flex-col items-start gap-4 lg:pb-[calc(var(--closing-panel-min-h)-2rem)]"
       data-reveal
     >
       {closing?.eyebrow ? <p className="text-sm text-foreground/80">{closing.eyebrow}</p> : null}
@@ -60,7 +80,7 @@ const ClosingAskPanel = ({
   askTransport?: ChatTransport<UIMessage>
 }) => (
   <Card
-    className="gap-10 bg-card/75 backdrop-blur-md lg:min-h-(--ask-card-min-h) [--card-spacing:--spacing(6)]"
+    className="gap-10 bg-card/75 backdrop-blur-md lg:min-h-(--closing-panel-min-h) [--card-spacing:--spacing(6)]"
     data-reveal="panel"
     {...leakExcite()}
   >
@@ -75,6 +95,41 @@ const ClosingAskPanel = ({
     <CardContent className="mt-auto">
       <AskWidget placeholder="Ask anything…" transport={askTransport} />
     </CardContent>
+  </Card>
+)
+
+/**
+ * The composer's stand-in while Ask is hidden: the same translucent card, so
+ * flipping the flag never re-composes the band, holding a note in the site's
+ * voice over the studio address set as a postal block. The block borrows the
+ * footer bar's location vernacular (mono, uppercase, the size of the bar's
+ * own line) so the two read as one register of place facts, and a hairline
+ * separates it from the note the way an address line sits on letterhead. It
+ * is `<address>` for real: the studio's contact address, not a quotation.
+ * Static content, so no `leakExcite()` — a panel that gathers light on hover
+ * promises an interaction this one does not have.
+ */
+const ClosingAddressPanel = ({ note, lines }: { note?: string | null; lines: string[] }) => (
+  <Card
+    className="gap-8 bg-card/75 backdrop-blur-md lg:min-h-(--closing-panel-min-h) [--card-spacing:--spacing(6)]"
+    data-reveal="panel"
+  >
+    {note ? (
+      <CardHeader>
+        <CardDescription className="max-w-prose text-base/relaxed">{note}</CardDescription>
+      </CardHeader>
+    ) : null}
+    {lines.length > 0 ? (
+      <CardContent className="mt-auto">
+        <address className="border-t border-foreground/10 pt-4 font-mono text-xs/relaxed uppercase not-italic">
+          {lines.map((line) => (
+            <span className="block" key={line}>
+              {line}
+            </span>
+          ))}
+        </address>
+      </CardContent>
+    ) : null}
   </Card>
 )
 
@@ -99,10 +154,19 @@ const ClosingAskPanel = ({
  * that offset and pads by the live `--footer-bar-height` plus the shared
  * section rhythm (`py-16` / `md:py-24`) — otherwise a light strip of frame
  * background shows between the media and the bar once the bar has shrunk
- * on scroll, and the ask card would sit flush against the bar.
+ * on scroll, and the panel would sit flush against the bar.
  */
-export const FooterClosing = ({ closing, askTransport }: FooterClosingProps) => {
+export const FooterClosing = ({
+  closing,
+  askHidden = false,
+  address = [],
+  askTransport,
+}: FooterClosingProps) => {
   const media = populatedDoc<Media>(closing?.media)
+  const note = closing?.address?.note
+  // With Ask hidden and nothing to say in its place, the column is simply
+  // empty: no panel, and no variable, so the copy's lift falls away with it.
+  const panel = askHidden ? (note || address.length > 0 ? 'address' : null) : 'ask'
 
   return (
     <>
@@ -123,7 +187,7 @@ export const FooterClosing = ({ closing, askTransport }: FooterClosingProps) => 
           'tall:sticky tall:bottom-(--footer-height)',
           '-mb-(--footer-height)',
           // Shared band uses `py-16 md:py-24`. Bottom must clear the live
-          // fixed bar *and* keep that rhythm, or the ask card sits flush
+          // fixed bar *and* keep that rhythm, or the panel sits flush
           // against the footer. `!` so the calc wins over `py-*` at both
           // breakpoints (arbitrary `pb-*` does not merge with `py-*`).
           'pb-[calc(var(--footer-bar-height)+--spacing(16))]! md:pb-[calc(var(--footer-bar-height)+--spacing(24))]!',
@@ -139,20 +203,29 @@ export const FooterClosing = ({ closing, askTransport }: FooterClosingProps) => 
             edges fighting. ClosingMedia keeps the scrubbed parallax layer. */}
         {media ? <ClosingMedia media={media} /> : null}
 
-        <Container className="grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] lg:gap-16 lg:[--ask-card-min-h:26rem]">
-          {/* Copy sits above the ask card: bottom padding lifts it so the button
-              row lands just past the card's top edge, per the design. */}
+        <Container
+          className={cn(
+            'grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] lg:gap-16',
+            panel && panelMinHeight[panel],
+          )}
+        >
+          {/* Copy sits above the panel: bottom padding lifts it so the button
+              row lands just past the panel's top edge, per the design. */}
           <ClosingCopy closing={closing} />
 
-          {/* Ask panel from the design: intro copy over the site's ask composer,
-              translucent so the background media reads through. The min-height
-              holds the composer low in the card and leaves room for the
-              transcript the widget mounts above it. */}
-          <ClosingAskPanel ask={closing?.ask} askTransport={askTransport} />
+          {/* Right-hand panel from the design, translucent so the background
+              media reads through. Ask: intro copy over the site's ask
+              composer, with the min-height holding the composer low in the
+              card and leaving room for the transcript the widget mounts above
+              it. Ask hidden: the studio's address panel in the same place. */}
+          {panel === 'ask' ? (
+            <ClosingAskPanel ask={closing?.ask} askTransport={askTransport} />
+          ) : null}
+          {panel === 'address' ? <ClosingAddressPanel lines={address} note={note} /> : null}
         </Container>
 
         {/* Film light leak over the whole band — last child, so it composites
-            above the copy and the ask card as well as the media, the way light
+            above the copy and the panel as well as the media, the way light
             striking the frame would. The wrapper's `isolate` is load-bearing:
             it keeps the screen-like blend inside this band instead of letting
             it reach the page above. Interaction is unaffected (the overlay is

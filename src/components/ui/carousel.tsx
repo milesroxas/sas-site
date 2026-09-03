@@ -105,6 +105,32 @@ function Carousel({
     }
   }, [api, onSelect])
 
+  // Root Lenis runs `syncTouch`: it reads every touchmove itself and scrolls
+  // the page by the finger's vertical delta, and it never checks whether embla
+  // already claimed the move. So a sideways drag walked the page along with
+  // the hand, by however much the finger drifted up or down. Embla decides
+  // ownership per gesture (its axis lock on the first move), while Lenis's
+  // static `data-lenis-prevent-horizontal` (the native rails' fix) decides per
+  // event and would still let a wobbly frame through. Hand embla's verdict to
+  // Lenis instead: while embla owns a pointer the viewport carries
+  // `data-lenis-prevent`. A swipe embla releases as vertical emits `pointerUp`
+  // from inside that first touchmove, before Lenis's window listener sees it,
+  // so an up/down swipe started on a slide still smooth-scrolls the page.
+  React.useEffect(() => {
+    if (!api) return
+    const viewport = api.rootNode()
+    const claim = () => viewport.setAttribute('data-lenis-prevent', '')
+    const release = () => viewport.removeAttribute('data-lenis-prevent')
+    api.on('pointerDown', claim)
+    api.on('pointerUp', release)
+
+    return () => {
+      api.off('pointerDown', claim)
+      api.off('pointerUp', release)
+      release()
+    }
+  }, [api])
+
   return (
     <CarouselContext.Provider
       value={{

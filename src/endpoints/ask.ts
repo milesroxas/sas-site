@@ -116,6 +116,14 @@ const ask: Endpoint = {
   path: '/ask',
   method: 'post',
   handler: async (req) => {
+    // Site Info › Ask › Hide Ask removes every surface, this one included:
+    // a hidden feature must not keep answering (and billing) for stale
+    // clients or direct callers.
+    const siteInfo = await req.payload.findGlobal({ slug: 'site-info', depth: 0 })
+    if (siteInfo.ask?.hidden) {
+      return json({ error: 'Ask is turned off on this site.' }, 404)
+    }
+
     if (!process.env[ASK_MODEL_API_KEY_VAR]) {
       req.payload.logger.error(`Ask endpoint disabled: ${ASK_MODEL_API_KEY_VAR} is not set.`)
       return json({ error: 'Ask is not configured on this site yet.' }, 503)

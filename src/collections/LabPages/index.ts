@@ -13,7 +13,7 @@ import { validateLabPage } from './hooks/validateLabPage'
 
 export const LabPages: CollectionConfig<'lab-pages'> = {
   slug: 'lab-pages',
-  labels: { singular: 'Lab Page', plural: 'Lab Pages' },
+  labels: { singular: 'Lab Page', plural: 'Lab' },
   access: {
     create: authenticated,
     delete: authenticated,

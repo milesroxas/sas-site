@@ -957,7 +957,7 @@ export interface FolderInterface {
   createdAt: string;
 }
 /**
- * Canonical, reusable engagement content. Website presentation is authored under Website → Work Pages.
+ * Canonical, reusable engagement content. Website presentation is authored under Website: Pages → Work.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "case-studies".
@@ -4437,7 +4437,7 @@ export interface LabPage {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Canonical, reusable records of internal work — experiments, prototypes, and showcase pieces that are not client engagements. Website presentation is authored under Website → Lab Pages.
+ * Canonical, reusable records of internal work — experiments, prototypes, and showcase pieces that are not client engagements. Website presentation is authored under Website: Pages → Lab.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "lab-projects".
@@ -9141,6 +9141,15 @@ export interface Footer {
       body?: string | null;
     };
     /**
+     * Takes the ask panel’s place while Ask is hidden (Site Info › Ask). The address lines come from Site Info › Address.
+     */
+    address?: {
+      /**
+       * Lead-in above the address. Leave empty to show the address alone.
+       */
+      note?: string | null;
+    };
+    /**
      * Background image or video. Optional — without one the band renders on the plain dark surface.
      */
     media?: (number | null) | Media;
@@ -9183,6 +9192,15 @@ export interface SiteInfo {
      * Booking link behind "Schedule a call". Leave empty to hide that action everywhere.
      */
     scheduleUrl?: string | null;
+  };
+  /**
+   * The grounded Q&A composer in the menu and the closing band.
+   */
+  ask?: {
+    /**
+     * Turn on to remove Ask from the site: the composer leaves the menu and the closing band, and /ask returns not found. The closing band shows the address panel from Footer › Closing instead.
+     */
+    hidden?: boolean | null;
   };
   /**
    * Used as the Organization logo in structured data.
@@ -9465,6 +9483,11 @@ export interface FooterSelect<T extends boolean = true> {
               title?: T;
               body?: T;
             };
+        address?:
+          | T
+          | {
+              note?: T;
+            };
         media?: T;
       };
   updatedAt?: T;
@@ -9487,6 +9510,11 @@ export interface SiteInfoSelect<T extends boolean = true> {
     | {
         responseTime?: T;
         scheduleUrl?: T;
+      };
+  ask?:
+    | T
+    | {
+        hidden?: T;
       };
   logo?: T;
   address?:

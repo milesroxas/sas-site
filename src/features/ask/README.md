@@ -105,6 +105,23 @@ Models live in `model.ts`. Changing the **embedding** model or provider means re
 corpus: update `EMBEDDING_DIMENSIONS` in `schema.ts` if the size differs, migrate, and run the
 backfill script.
 
+## Turning Ask off
+
+**Site Info › Ask › Hide Ask** removes the feature from the site in one place. Every surface
+reads that flag:
+
+| Surface | Hidden behavior |
+| --- | --- |
+| Takeover menu (`MenuAsk`) | Composer and transcript are not rendered; the preview slot stays (the docked page frame lands on it). |
+| Closing band (`Footer/Closing`) | The address panel takes the composer's place: note from **Footer › Closing › Address panel**, postal lines from **Site Info › Address**. |
+| `/ask` page | `notFound()`. |
+| `POST /api/ask` | 404 before any model call, so stale clients and direct callers cannot keep billing. |
+
+Header, closing band, and `/ask` read Site Info through `getCachedGlobal('site-info')`; the
+global's `afterChange` hook revalidates that tag, so flipping the flag takes effect on the next
+request. The endpoint reads the global per request. Indexing hooks keep running while hidden, so
+the corpus is current the moment Ask comes back.
+
 ## Known limits (accepted for this stage)
 
 - **Rate limiter is per warm serverless instance.** A cost fuse, not a guarantee. Move to a

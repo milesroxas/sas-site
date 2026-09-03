@@ -153,6 +153,38 @@
   --press-scale: var(--press-scale-subtle);
 }
 
+/* Takeover-menu nav rows below md (src/Header/Menu/index.tsx, SUB_VIEW_ROW).
+   The sub-view swap moves each row's control (opacity + translate, on the
+   duration and delay its `data-menu-item` wrapper sets as --menu-row-duration
+   / --menu-row-delay) and the press recipe compresses that same element, so
+   both share one transition list. Press timing reuses the `pressable` tokens
+   above; the swap rides the theme's `--ease-out-quint`. Unlike `pressable`,
+   which owns every property of its element, a press here retunes only scale
+   and color, so a tap mid-swap never disturbs the swap's own timing. Reduced
+   motion keeps the crossfade (it carries the swap's meaning) and drops the
+   stagger, the travel and the press animation. */
+@utility menu-row {
+  transition:
+    opacity var(--menu-row-duration, 0s) var(--ease-out-quint) var(--menu-row-delay, 0s),
+    translate var(--menu-row-duration, 0s) var(--ease-out-quint) var(--menu-row-delay, 0s),
+    color var(--press-duration) var(--press-ease),
+    scale var(--press-release-duration) var(--press-release-ease);
+
+  &:active {
+    scale: var(--press-scale);
+    color: var(--primary);
+    transition:
+      opacity var(--menu-row-duration, 0s) var(--ease-out-quint) var(--menu-row-delay, 0s),
+      translate var(--menu-row-duration, 0s) var(--ease-out-quint) var(--menu-row-delay, 0s),
+      color var(--press-duration) var(--press-ease),
+      scale var(--press-duration) var(--press-ease);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: opacity var(--menu-row-duration, 0s) linear;
+  }
+}
+
 /* scroll-fade */
 @property --scroll-fade-t {
   syntax: "<length-percentage>";
@@ -878,6 +910,11 @@
   --text-heading-3--font-weight: var(--font-weight-normal);
   --text-lead: clamp(1.25rem, 1.16rem + 0.38vw, 1.5rem); /* intro/standfirst body */
   --text-lead--line-height: 1.5;
+
+  /* Strong ease-out (quint): the site's settle curve for entrances and swaps,
+     as `ease-out-quint`. The reveal and filter-swap rules below spell out the
+     same curve. */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (width >= 48rem) {

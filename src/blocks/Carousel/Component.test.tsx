@@ -94,10 +94,10 @@ describe('CarouselBlock', () => {
     expect(captions.map((caption) => caption.style.opacity)).toEqual(['1', '0'])
   })
 
-  it('gives the half size a bigger slide on a tighter gutter', () => {
+  it('gives the half size a four-fifths slide on a tighter gutter', () => {
     const { container } = render(<CarouselBlock {...baseProps} slideSize="half" />)
     const item = container.querySelector('[data-slot="carousel-item"]')
-    expect(item?.className).toContain('md:basis-2/3')
+    expect(item?.className).toContain('md:basis-4/5')
     expect(item?.className).toContain('px-1.5')
     expect(container.querySelector('[data-slot="carousel-content"] > div')?.className).toContain(
       '-mx-1.5',
@@ -109,22 +109,22 @@ describe('CarouselBlock', () => {
       <CarouselBlock {...baseProps} slideSize="half" width="full-width" />,
     )
     const item = container.querySelector('[data-slot="carousel-item"]')
-    expect(item?.className).toContain('md:basis-1/2')
-    expect(item?.className).not.toContain('md:basis-2/3')
+    expect(item?.className).toContain('md:basis-5/8')
+    expect(item?.className).not.toContain('md:basis-4/5')
   })
 
-  it('steps a third-size carousel 1 → 2 → 3 up the breakpoints', () => {
+  it('steps a third-size carousel up through the breakpoints', () => {
     const { container } = render(<CarouselBlock {...baseProps} slideSize="third" />)
     const item = container.querySelector('[data-slot="carousel-item"]')
-    expect(item?.className).toContain('basis-5/8')
-    expect(item?.className).toContain('md:basis-1/2')
-    expect(item?.className).toContain('lg:basis-1/3')
+    expect(item?.className).toContain('basis-3/4')
+    expect(item?.className).toContain('md:basis-5/8')
+    expect(item?.className).toContain('lg:basis-5/12')
   })
 
   it('peeks on mobile for the full slide size too, and fills the column from md', () => {
     const { container } = render(<CarouselBlock {...baseProps} />)
     const item = container.querySelector('[data-slot="carousel-item"]')
-    expect(item?.className).toContain('basis-5/8')
+    expect(item?.className).toContain('basis-3/4')
     expect(item?.className).toContain('md:basis-full')
   })
 

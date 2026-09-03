@@ -15,9 +15,11 @@ import { ThemeToggle } from './ThemeToggle'
 interface HeaderClientProps {
   data: Header
   menuContent: MenuContent
+  /** Site Info › Ask › Hide Ask: the takeover menu renders without the composer. */
+  askHidden?: boolean
 }
 
-export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent }) => {
+export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent, askHidden }) => {
   const { menuOpen, setMenuOpen, menuButtonRef } = useTakeoverMenuState()
 
   // Past a small scroll threshold both fixed bars shrink (globals.css keys
@@ -105,6 +107,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent })
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         menuButtonRef={menuButtonRef}
+        askHidden={askHidden}
       />
     </>
   )

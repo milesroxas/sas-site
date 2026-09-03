@@ -68,6 +68,7 @@ import * as migration_20260902_191423_sections_and_media_content_split from './2
 import * as migration_20260902_201235_block_coverage from './20260902_201235_block_coverage';
 import * as migration_20260902_203939_link_contact_pages from './20260902_203939_link_contact_pages';
 import * as migration_20260903_154839_form_steps from './20260903_154839_form_steps';
+import * as migration_20260903_161541_ask_hidden_address_panel from './20260903_161541_ask_hidden_address_panel';
 
 export const migrations = [
   {
@@ -418,6 +419,11 @@ export const migrations = [
   {
     up: migration_20260903_154839_form_steps.up,
     down: migration_20260903_154839_form_steps.down,
-    name: '20260903_154839_form_steps'
+    name: '20260903_154839_form_steps',
+  },
+  {
+    up: migration_20260903_161541_ask_hidden_address_panel.up,
+    down: migration_20260903_161541_ask_hidden_address_panel.down,
+    name: '20260903_161541_ask_hidden_address_panel'
   },
 ];

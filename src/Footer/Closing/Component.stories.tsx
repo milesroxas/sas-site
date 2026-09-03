@@ -66,3 +66,20 @@ export const Default: Story = {}
 export const Video: Story = {
   args: { closing: { ...closing, media: videoFixture } },
 }
+
+/**
+ * Site Info › Ask › Hide Ask: the address panel takes the composer's place.
+ * Note from Footer › Closing › Address panel; lines from Site Info › Address.
+ */
+export const AddressPanel: Story = {
+  args: {
+    askHidden: true,
+    address: ['240 Kent Ave', 'Brooklyn, NY 11249'],
+    closing: {
+      ...closing,
+      address: {
+        note: 'We’re a fully remote company and have been since 2019. But, in case you need it, our business address is:',
+      },
+    },
+  },
+}

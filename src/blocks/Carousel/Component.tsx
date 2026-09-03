@@ -29,44 +29,45 @@ type PopulatedMedia = Exclude<Slide['media'], number | null | undefined>
 
 /**
  * Every size shows one slide plus a sliver of each neighbour on a phone: the
- * sliver is the only affordance a touch carousel has — no arrow gutter, no
- * scrollbar, no hover — so the editor's size choice starts at `md` and a phone
- * is always 1-up. Five eighths is what the sliver costs: a neighbour is drawn
- * at 0.8 scale and pushed 90px back (see ./visual-state), together eating
- * ~26% of its width, so an 85%-style slide would leave nothing showing. Five
- * eighths lands a ~25px sliver on each edge at 390px.
+ * sliver is the only affordance a touch carousel has (no arrow gutter, no
+ * scrollbar, no hover), so the editor's size choice starts at `md` and a phone
+ * is always 1-up. The deck is packed (see ./visual-state), so everything
+ * either side of the active slide is neighbour, less the gutter: three
+ * quarters lands a ~25px sliver on each edge at 390px.
  */
-const MOBILE_PEEK_BASIS = 'basis-5/8'
+const MOBILE_PEEK_BASIS = 'basis-3/4'
 
 /**
  * Slide width from `md` up.
  *
- * `half` runs at two thirds rather than a literal half: the pose recesses and
- * blurs the neighbours, so a true 50/50 split spends a third of the column on
- * two slides nobody is reading. Two thirds puts the weight on the active
- * slide and leaves the neighbours as what they are — a peek.
+ * The pose recesses and blurs the neighbours and the packed deck (see
+ * ./visual-state) pulls them in against the active slide, so every pixel
+ * outside the active slide is peek, and nobody is reading a peek. The sizes
+ * therefore run well above their names. `half` at four fifths leaves a tenth
+ * of the column per side to the neighbours. `third` at five twelfths is what
+ * three packed slides need to fill the column: the neighbours' outer edges
+ * just clip the column edge, so no fourth slide (or its blur halo) leaks in
+ * behind them.
  *
- * `third` steps 1 → 2 → 3 rather than jumping straight to three columns at
- * 768px, where a third of the column is narrower than the phone slide it
- * replaces.
+ * `third` steps up through the breakpoints rather than jumping straight to
+ * three across at 768px, where five twelfths of the column is narrower than
+ * the phone slide it replaces.
  */
 const slideSizeClasses: Record<NonNullable<CarouselBlockProps['slideSize']>, string> = {
   full: 'md:basis-full',
-  half: 'md:basis-2/3',
-  third: 'md:basis-1/2 lg:basis-1/3',
+  half: 'md:basis-4/5',
+  third: 'md:basis-5/8 lg:basis-5/12',
 }
 
 /**
  * Full-bleed overrides. The window is the column here, so a `half` carousel
- * can spend width on its neighbours and still leave a large active slide —
- * half of 1440px is 714px of media, wider than the whole contained column at
- * that viewport. It also closes the distance between slides: the gap is
- * mostly the neighbour's own scale-back (see ./visual-state), which is a
- * fraction of the slide's width, so a narrower slide sits closer.
+ * can spend a quarter of it on the neighbours and still leave a large active
+ * slide: five eighths of 1440px is 900px of media, a match for the contained
+ * slide at that viewport with twice its peek.
  */
 const fullWidthSizeClasses: Partial<Record<NonNullable<CarouselBlockProps['slideSize']>, string>> =
   {
-    half: 'md:basis-1/2',
+    half: 'md:basis-5/8',
   }
 
 /**

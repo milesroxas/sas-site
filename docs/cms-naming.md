@@ -69,7 +69,7 @@ One pattern everywhere (`src/fields/overrides.ts`):
 
 | Group | Holds |
 |-------|-------|
-| `Website: Pages` | Publishing surfaces with public URLs (Pages, Posts, Work, Lab, Expertise, Audience, Contact) |
+| `Website: Pages` | Publishing surfaces with public URLs (Pages, Posts, Work, Lab, Expertise, Who We Help, Contact) |
 | `Website: Landing` | Editor-configured entry points (Home, Insights Index, Works Index) |
 | `Website: Globals` | Site-wide chrome and identity (Header, Footer, Site Info) |
 

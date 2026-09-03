@@ -67,8 +67,8 @@ export const Third: Story = {
 }
 
 /**
- * Phone width: the multi-slide sizes drop to a two-thirds slide so a sliver of
- * each neighbour stays in frame, and the arrows overlay the slides instead of
+ * Phone width: every size drops to a three-quarter slide so a sliver of each
+ * neighbour stays in frame, and the arrows overlay the slides instead of
  * reserving an outer gutter.
  */
 export const MobilePeek: Story = {

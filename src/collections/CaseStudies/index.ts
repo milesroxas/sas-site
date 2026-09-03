@@ -27,7 +27,7 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'project', '_status', 'updatedAt'],
     description:
-      'Canonical, reusable engagement content. Website presentation is authored under Website → Work Pages.',
+      'Canonical, reusable engagement content. Website presentation is authored under Website: Pages → Work.',
   },
   defaultPopulate: {
     title: true,

@@ -60,7 +60,18 @@ export const SingleProject: Story = {
   args: { items: byCapability.slice(0, 1) },
 }
 
-/** Below `lg` the aside stacks above the list and the rows fold as on the index. */
+/**
+ * Below `2xl` the aside sits above the list and its terms run inline, the
+ * marker a rule under each label; at `md` the aside keeps to half the columns,
+ * so several terms wrap inside it rather than run the page.
+ */
+export const Tablet: Story = {
+  args: SeveralTerms.args,
+  globals: { viewport: { value: 'ipad', isRotated: false } },
+  parameters: { viewport: { options: INITIAL_VIEWPORTS } },
+}
+
+/** On a phone the aside takes the full column and the rows fold as on the index. */
 export const Mobile: Story = {
   globals: { viewport: { value: 'iphone12', isRotated: false } },
   parameters: { viewport: { options: INITIAL_VIEWPORTS } },

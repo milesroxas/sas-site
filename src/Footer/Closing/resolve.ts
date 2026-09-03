@@ -18,6 +18,8 @@ export const resolveClosing = (
       title: page.askOverride?.title || fallback?.ask?.title,
       body: page.askOverride?.body || fallback?.ask?.body,
     },
+    // No page override: the address panel is a company fact the Footer states once.
+    address: fallback?.address,
     media: page.mediaOverride || fallback?.media,
   }
 }

@@ -115,7 +115,7 @@ const scriptedAsk = createChat()
     )
   })
 
-function TakeoverMenuDemo() {
+function TakeoverMenuDemo({ askHidden = false }: { askHidden?: boolean }) {
   const [open, setOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -163,6 +163,7 @@ function TakeoverMenuDemo() {
         open={open}
         onClose={() => setOpen(false)}
         menuButtonRef={menuButtonRef}
+        askHidden={askHidden}
         askTransport={scriptedAsk.transport({
           fallback: 'End of the scripted demo — reload the story to start over.',
         })}
@@ -193,4 +194,29 @@ export const Default: Story = {
     menuButtonRef: { current: null },
   },
   render: () => <TakeoverMenuDemo />,
+}
+
+/**
+ * Site Info › Ask › Hide Ask: the page still docks onto the center window;
+ * the composer under it and the transcript swap are gone.
+ */
+export const AskHidden: Story = {
+  args: { ...Default.args, askHidden: true },
+  render: () => <TakeoverMenuDemo askHidden />,
+}
+
+/**
+ * Phone width: the editorial columns fold into two drill-in rows at the head
+ * of the nav (Expertise, Who We Help). Tap one and its list swaps in over the
+ * nav; the mirrored row (‹ Expertise) steps back.
+ */
+export const Mobile: Story = {
+  ...Default,
+  globals: {
+    viewport: { value: 'mobile1', isRotated: false },
+  },
+  parameters: {
+    // Chromatic snapshots at phone width so the drill-in rows are regression-covered.
+    chromatic: { viewports: [390] },
+  },
 }

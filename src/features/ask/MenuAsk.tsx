@@ -26,6 +26,7 @@ import {
   CHAT_STAGE_DELAY_MS,
   CHAT_STAGE_DURATION_MS,
 } from '@/Header/Menu/motion'
+import { MenuPreviewSlot } from '@/Header/Menu/PreviewSlot'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
 import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
@@ -196,10 +197,8 @@ export function MenuAsk({
     <>
       {/* The docked page frame lands exactly on this slot (measured by the
           menu's GSAP timeline); the transcript replaces it in place. */}
-      <div
-        data-menu-preview-slot
+      <MenuPreviewSlot
         className={cn(
-          'pointer-events-none relative aspect-video w-full md:col-start-2 md:row-start-1 md:aspect-auto md:h-full md:min-h-0',
           // Mobile chat view grows the 16:9 preview box into the column the nav
           // and CTA release, so the transcript reads as a full chat surface and
           // not a letterboxed strip. It must not grow before the wipe has
@@ -302,7 +301,7 @@ export function MenuAsk({
             </MessageScroller>
           </MessageScrollerProvider>
         </section>
-      </div>
+      </MenuPreviewSlot>
 
       <form
         ref={formRef}

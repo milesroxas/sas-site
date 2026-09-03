@@ -65,7 +65,8 @@ export const relatedWorkTerms = (
  * list the other six, the narrowest column that still seats the index row
  * (number lane, thumbnail, arrow) with a two-line title beside it. Below that
  * the list takes the full width and the aside sits above it on half the
- * columns, so its hairline rows never run the width of the page. Motion is
+ * columns, its filter terms running inline so the aside spends its height on
+ * the heading rather than on one hairline row per term. Motion is
  * the site's two reveals and nothing else: the aside plays the intro reveal
  * as one cluster, each row plays the under-media reveal gated on its own
  * position, exactly as the index does on first paint.
@@ -105,18 +106,28 @@ export const RelatedWorkSection: React.FC<{
               </p>
               {filter.terms.length > 0 && (
                 <div className="flex w-full flex-col pt-6" data-reveal>
-                  <p className={cn(LABEL, 'pb-4 text-muted-foreground')}>{copy.label}</p>
+                  <p className={cn(LABEL, 'pb-2 text-muted-foreground 2xl:pb-4')}>{copy.label}</p>
                   {/* The Insights sidebar's active row, static: the term is the
-                      page, so there is nothing to toggle. */}
-                  <ul aria-label={`${copy.label} shared by this work`} className="flex flex-col">
+                      page, so there is nothing to toggle. It takes both of that
+                      row's forms, and turns where this aside turns: while the
+                      aside sits above the list the terms run inline and the
+                      marker is the rule under each label, as on the Insights
+                      rail below its own sidebar; once the aside is a sidebar
+                      at `2xl` they stack on hairlines and the marker returns
+                      to the leading edge. Inline terms wrap rather than pan: a
+                      page carries a handful, not a rail's worth. */}
+                  <ul
+                    aria-label={`${copy.label} shared by this work`}
+                    className="flex flex-wrap items-center gap-x-6 2xl:flex-col 2xl:items-stretch 2xl:gap-x-0"
+                  >
                     {filter.terms.map((term) => (
                       <li
-                        className="flex items-center gap-3 border-t border-border pt-2 pb-4"
+                        className="relative flex items-center py-2 2xl:gap-3 2xl:border-t 2xl:border-border 2xl:pb-4"
                         key={term.slug}
                       >
                         <span
                           aria-hidden="true"
-                          className="h-4 w-0.5 shrink-0 rounded-full bg-active"
+                          className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-active 2xl:static 2xl:h-4 2xl:w-0.5 2xl:shrink-0"
                         />
                         {term.label}
                       </li>

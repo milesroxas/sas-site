@@ -123,7 +123,7 @@ const mockMenuContent: MenuContent = {
   pageMedia: {},
 }
 
-function renderMenu(open = true) {
+function renderMenu(open = true, props: { askHidden?: boolean } = {}) {
   const onClose = vi.fn()
   const menuButtonRef: React.RefObject<HTMLButtonElement | null> = { current: null }
   const utils = render(
@@ -133,10 +133,26 @@ function renderMenu(open = true) {
       open={open}
       onClose={onClose}
       menuButtonRef={menuButtonRef}
+      {...props}
     />,
   )
   return { onClose, ...utils }
 }
+
+/**
+ * Collection links render twice, in the desktop column and in the phone
+ * sub-view; the breakpoint displays exactly one, jsdom (no layout) both.
+ */
+const columnLink = (name: string) =>
+  screen
+    .getAllByRole('link', { name })
+    .find((el) => !el.closest('[data-menu-subview]')) as HTMLElement
+const subViewLink = (name: string) =>
+  screen
+    .getAllByRole('link', { name })
+    .find((el) => el.closest('[data-menu-subview]')) as HTMLElement
+const subView = (key: 'expertise' | 'audiences') =>
+  document.querySelector(`[data-menu-subview="${key}"]`) as HTMLElement
 
 describe('TakeoverMenu', () => {
   afterEach(() => {
@@ -164,12 +180,16 @@ describe('TakeoverMenu', () => {
   it('renders the editorial columns from menuContent and the contact CTA', () => {
     renderMenu()
 
-    expect(
-      screen.getByRole('link', { name: 'Clarifying Complex Stories' }).getAttribute('href'),
-    ).toBe('/expertise/clarifying-complex-stories')
-    expect(
-      screen.getByRole('link', { name: 'Healthtech & Life Sciences' }).getAttribute('href'),
-    ).toBe('/who-we-help/healthtech')
+    const expertiseLinks = screen.getAllByRole('link', { name: 'Clarifying Complex Stories' })
+    expect(expertiseLinks).toHaveLength(2)
+    for (const link of expertiseLinks) {
+      expect(link.getAttribute('href')).toBe('/expertise/clarifying-complex-stories')
+    }
+    const audienceLinks = screen.getAllByRole('link', { name: 'Healthtech & Life Sciences' })
+    expect(audienceLinks).toHaveLength(2)
+    for (const link of audienceLinks) {
+      expect(link.getAttribute('href')).toBe('/who-we-help/healthtech')
+    }
 
     const workLink = screen.getByRole('link', { name: /Trialbee Hive/ })
     expect(workLink.getAttribute('href')).toBe('/works/trialbee-hive')
@@ -240,6 +260,15 @@ describe('TakeoverMenu', () => {
     expect(onClose).not.toHaveBeenCalled()
   })
 
+  it('keeps the preview slot but drops the Ask composer while Ask is hidden', () => {
+    const { container } = renderMenu(true, { askHidden: true })
+
+    // The docked page frame still needs its landing box.
+    expect(container.querySelector('[data-menu-preview-slot]')).not.toBeNull()
+    expect(screen.queryByPlaceholderText('Ask anything…')).toBeNull()
+    expect(screen.getByRole('link', { name: /Get in touch/i })).not.toBeNull()
+  })
+
   it('closes when a nav item link is clicked, via onClickCapture', () => {
     const { onClose } = renderMenu()
 
@@ -251,7 +280,7 @@ describe('TakeoverMenu', () => {
   it('closes when an editorial column link is clicked', () => {
     const { onClose } = renderMenu()
 
-    fireEvent.click(screen.getByRole('link', { name: 'Clarifying Complex Stories' }))
+    fireEvent.click(columnLink('Clarifying Complex Stories'))
 
     expect(onClose).toHaveBeenCalledTimes(1)
   })
@@ -283,11 +312,82 @@ describe('TakeoverMenu', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('link', { name: 'Clarifying Complex Stories' }))
+    fireEvent.click(columnLink('Clarifying Complex Stories'))
 
     expect(onClose).toHaveBeenCalledTimes(1)
     expect(routerPush).toHaveBeenCalledTimes(1)
     expect(routerPush).toHaveBeenCalledWith('/expertise/clarifying-complex-stories')
     expect(document.querySelector('[data-menu-hero-traveler]')).toBeNull()
+  })
+
+  describe('phone sub-views', () => {
+    it('drills in from its row and steps back from the mirrored row, focus following', () => {
+      renderMenu()
+      const trigger = screen.getByRole('button', { name: 'Expertise' })
+      expect(trigger.getAttribute('aria-expanded')).toBe('false')
+      expect(subView('expertise').hasAttribute('inert')).toBe(true)
+
+      fireEvent.click(trigger)
+
+      const back = screen.getByRole('button', { name: 'Expertise, back to menu' })
+      expect(trigger.getAttribute('aria-expanded')).toBe('true')
+      expect(subView('expertise').hasAttribute('inert')).toBe(false)
+      expect(subView('audiences').hasAttribute('inert')).toBe(true)
+      expect(document.activeElement).toBe(back)
+
+      fireEvent.click(back)
+
+      expect(trigger.getAttribute('aria-expanded')).toBe('false')
+      expect(subView('expertise').hasAttribute('inert')).toBe(true)
+      expect(document.activeElement).toBe(trigger)
+    })
+
+    it('steps back from a sub-view on Escape before closing the menu', () => {
+      const { onClose } = renderMenu()
+      fireEvent.click(screen.getByRole('button', { name: 'Who We Help' }))
+      expect(subView('audiences').hasAttribute('inert')).toBe(false)
+
+      fireEvent.keyDown(window, { key: 'Escape' })
+      expect(onClose).not.toHaveBeenCalled()
+      expect(subView('audiences').hasAttribute('inert')).toBe(true)
+
+      fireEvent.keyDown(window, { key: 'Escape' })
+      expect(onClose).toHaveBeenCalledTimes(1)
+    })
+
+    it('closes when a sub-view link is clicked, via onClickCapture', () => {
+      const { onClose } = renderMenu()
+      fireEvent.click(screen.getByRole('button', { name: 'Expertise' }))
+
+      fireEvent.click(subViewLink('Clarifying Complex Stories'))
+
+      expect(onClose).toHaveBeenCalledTimes(1)
+    })
+
+    it('reopens on the nav, not on the sub-view the last open left', () => {
+      const menu = (open: boolean) => (
+        <TakeoverMenu
+          data={mockHeaderData}
+          menuContent={mockMenuContent}
+          open={open}
+          onClose={() => {}}
+          menuButtonRef={{ current: null }}
+        />
+      )
+      const { rerender } = render(menu(true))
+      fireEvent.click(screen.getByRole('button', { name: 'Expertise' }))
+      expect(subView('expertise').hasAttribute('inert')).toBe(false)
+
+      // The reset waits for the next open: at close the nav sliding back in
+      // would ride the undock.
+      rerender(menu(false))
+      expect(subView('expertise').hasAttribute('inert')).toBe(false)
+
+      rerender(menu(true))
+      expect(subView('expertise').hasAttribute('inert')).toBe(true)
+      expect(screen.getByRole('button', { name: 'Expertise' }).getAttribute('aria-expanded')).toBe(
+        'false',
+      )
+    })
   })
 })

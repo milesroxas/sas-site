@@ -16,7 +16,7 @@ import { validateWorkPage } from './hooks/validateWorkPage'
 
 export const WorkPages: CollectionConfig<'work-pages'> = {
   slug: 'work-pages',
-  labels: { singular: 'Work Page', plural: 'Work Pages' },
+  labels: { singular: 'Work Page', plural: 'Work' },
   orderable: true,
   defaultSort: '_order',
   access: {

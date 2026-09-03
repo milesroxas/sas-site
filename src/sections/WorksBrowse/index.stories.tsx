@@ -33,6 +33,16 @@ export const Empty: Story = {
 }
 
 /**
+ * At `md` the row takes its horizontal form on the narrowest page column that
+ * carries it: the thumbnail and gaps sit a size down so the copy keeps a
+ * working measure beside them.
+ */
+export const Tablet: Story = {
+  globals: { viewport: { value: 'ipad', isRotated: false } },
+  parameters: { viewport: { options: INITIAL_VIEWPORTS } },
+}
+
+/**
  * Below `md` the row stacks: the number and arrow ride a header line above the
  * thumbnail, and the filter strip wraps onto its own rows.
  */

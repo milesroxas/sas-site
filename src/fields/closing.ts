@@ -22,8 +22,37 @@ type ClosingContentOptions = {
 }
 
 /**
- * Copy, links, ask panel, and media for the closing band. Footer stores these
- * as the default; page-level Closing tabs reuse them as `*Override` fields.
+ * Replaces the ask panel in the closing band while Ask is hidden site-wide.
+ * The note is the only copy here: the address lines come from Site Info ›
+ * Address, the same record the Organization JSON-LD reads, so the visible
+ * address and the structured one can never disagree.
+ */
+const addressPanelField = (): GroupField => ({
+  name: 'address',
+  type: 'group',
+  label: 'Address panel',
+  admin: {
+    description:
+      'Takes the ask panel’s place while Ask is hidden (Site Info › Ask). The address lines come from Site Info › Address.',
+  },
+  fields: [
+    {
+      name: 'note',
+      type: 'textarea',
+      label: 'Note',
+      defaultValue:
+        'We’re a fully remote company and have been since 2019. But, in case you need it, our business address is:',
+      admin: {
+        description: 'Lead-in above the address. Leave empty to show the address alone.',
+      },
+    },
+  ],
+})
+
+/**
+ * Copy, links, ask panel, address panel, and media for the closing band.
+ * Footer stores these as the default; page-level Closing tabs reuse them as
+ * `*Override` fields (the address panel excepted).
  */
 export const closingContentFields = ({
   asOverride = false,
@@ -90,6 +119,10 @@ export const closingContentFields = ({
         },
       ],
     },
+    // Shown in the ask panel's place while Ask is hidden site-wide (Site
+    // Info › Ask). A company fact rather than page copy, so it has no
+    // page-level override: the Footer states it once.
+    ...(asOverride ? [] : [addressPanelField()]),
     {
       name: name('media'),
       type: 'upload',
