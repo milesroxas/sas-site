@@ -22,14 +22,14 @@ export type RelatedWorkFilter = {
  */
 const RELATED_WORK_COPY = {
   capabilities: {
-    heading: 'This expertise in practice',
+    heading: 'In practice',
     description: 'Case studies where this work was central.',
     filterLabel: 'Filter by capability',
     empty: 'No projects using this capability yet.',
   },
   industries: {
-    heading: 'Work for companies like yours',
-    description: 'Selected case studies from clients in this space.',
+    heading: 'Companies like yours',
+    description: 'A few case studies from clients in this space.',
     filterLabel: 'Filter by industry',
     empty: 'No projects in this industry yet.',
   },
