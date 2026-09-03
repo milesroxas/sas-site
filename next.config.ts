@@ -19,6 +19,11 @@ const posthogIngestHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.
 const posthogAssetsHost = posthogIngestHost.replace('.i.posthog.com', '-assets.i.posthog.com')
 
 const nextConfig: NextConfig = {
+  // Dev only: phones on the LAN load the dev server by IP. Without this,
+  // Next 16 answers every /_next/* request from that origin with 403 (and
+  // refuses the HMR socket), so the page renders but never hydrates and
+  // nothing is tappable. Add the machine's current LAN IP here.
+  allowedDevOrigins: ['192.168.1.169'],
   // Keep the ffmpeg binary out of the bundler — Next must load it from
   // node_modules at runtime (video poster extraction in Media hooks).
   serverExternalPackages: ['ffmpeg-static'],
