@@ -27,6 +27,41 @@ const nextConfig: NextConfig = {
   // Keep the ffmpeg binary out of the bundler — Next must load it from
   // node_modules at runtime (video poster extraction in Media hooks).
   serverExternalPackages: ['ffmpeg-static'],
+  // Vercel packs routes into as few functions as fit under the per-function
+  // size cap, so anything traced into every route multiplies the function
+  // count (Hobby caps a deployment at 12). Payload's config finder resolves
+  // process.cwd() against an env var, which makes the tracer include the
+  // whole project root in every Payload route, and its migration-dir finder
+  // pulls src/migrations (100MB+ of drizzle JSON snapshots that only
+  // migrate:create reads). Strip both, plus build-only trees.
+  //
+  // Turbopack applies these natively: keys are route pathnames with route
+  // groups removed ('/api/**' is the Payload REST and GraphQL handlers),
+  // '*' is every route, and includes are applied after excludes.
+  outputFileTracingExcludes: {
+    '*': [
+      './src/migrations/**',
+      './public/**',
+      './docs/**',
+      './plans/**',
+      './scripts/**',
+      './tests/**',
+      './patches/**',
+      './storybook-static/**',
+      './ds-bundle/**',
+      './playwright-report/**',
+      './*.tsbuildinfo',
+      './*.log',
+      // The ffmpeg binary (~75MB on linux) is only spawned by the Media
+      // video-poster hook, which runs on writes through the Payload API.
+      // The package's index.js stays traced so the top-level import in
+      // extractVideoFrame still resolves everywhere.
+      './**/ffmpeg-static/ffmpeg',
+    ],
+  },
+  outputFileTracingIncludes: {
+    '/api/**': ['./node_modules/.pnpm/ffmpeg-static@*/node_modules/ffmpeg-static/ffmpeg'],
+  },
   experimental: {
     viewTransition: true,
   },
