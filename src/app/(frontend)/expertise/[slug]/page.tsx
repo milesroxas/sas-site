@@ -18,7 +18,6 @@ import {
   slugMetadata,
   slugStaticParams,
 } from '@/utilities/slugRoute'
-import PageClient from './page.client'
 
 const queryExpertisePageBySlug = createSlugQuery('expertise-pages', { depth: 3 })
 
@@ -35,8 +34,8 @@ export default async function ExpertisePageRoute({ params }: SlugRouteArgs) {
   const relatedWork = await resolveRelatedWork(page)
   return (
     <>
-      <article className={`${FOOTER_CLOSING_ARTICLE_CLASS} pt-16 pb-24`}>
-        <PageClient />
+      {/* No top inset: the hero band pulls under the fixed header and owns its own. */}
+      <article className={`${FOOTER_CLOSING_ARTICLE_CLASS} pb-24`}>
         <JsonLd
           data={[
             serviceSchema(page),

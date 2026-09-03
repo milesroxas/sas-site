@@ -1,11 +1,13 @@
 import type { Block } from 'payload'
 
+import { Content } from '@/blocks/Content/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { ImagePair } from '@/blocks/image-pair/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { MediaContentSplit } from '@/blocks/media-content-split/config'
+import { RichTextBlock } from '@/blocks/rich-text/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
@@ -37,4 +39,19 @@ export const sectionNestableBlocks: Block[] = [
   // Media
   FeatureImageStatement,
   MediaBlock,
+  // Text
+  RichTextBlock,
+]
+
+/**
+ * Everything a Section can nest: the run plus the legacy multi-column
+ * `content` block (Custom group). Content stays out of the run itself because
+ * the run is spread into every top-level drawer list, and Custom must close
+ * that list rather than land mid-order; Sections built by hand (Work Pages)
+ * append Content the same way.
+ */
+export const sectionChildBlocks: Block[] = [
+  ...sectionNestableBlocks,
+  // Custom
+  Content,
 ]

@@ -7,7 +7,6 @@ import { InsightsBrowse } from '@/sections/InsightsBrowse'
 import { queryInsightsBrowseData } from '@/sections/InsightsBrowse/queries'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import { generateMeta } from '@/utilities/generateMeta'
-import PageClient from './page.client'
 
 /** Shared by `/insights` and `/posts` so both always render the Insights Index singleton. */
 export async function InsightsIndexView() {
@@ -18,7 +17,6 @@ export async function InsightsIndexView() {
 
   return (
     <div className="pb-24">
-      <PageClient />
       {draft && <LivePreviewListener />}
       <RevealSection delayMs={0}>
         <RenderHero {...hero} />

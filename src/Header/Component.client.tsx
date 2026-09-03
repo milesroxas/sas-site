@@ -5,6 +5,7 @@ import type React from 'react'
 import { useEffect } from 'react'
 import { Container } from '@/components/Container'
 import type { Header } from '@/payload-types'
+import { useChromeTheme } from '@/providers/ChromeTheme'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import type { MenuContent } from './getMenuContent'
@@ -25,6 +26,11 @@ interface HeaderClientProps {
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent, askHidden }) => {
   const { menuOpen, setMenuOpen, menuButtonRef } = useTakeoverMenuState()
+  const { chromeTheme } = useChromeTheme()
+  // A hero band under the bar pins it to the band's palette (HeroBand); the
+  // pin stands aside while the takeover overlay is up, since the bar then
+  // reads against the overlay's site-theme surface, not the page under it.
+  const heroTheme = menuOpen ? null : chromeTheme.header
 
   // Past a small scroll threshold both fixed bars shrink (globals.css keys
   // --header-bar-height/--footer-bar-height off this attribute) so more of
@@ -57,11 +63,15 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent, a
   return (
     <>
       <header
+        data-site-header
+        data-theme={heroTheme ?? undefined}
         className={cn(
-          'fixed inset-x-0 top-0 z-50 h-(--header-bar-height) transition-[height,background-color,color] duration-300 motion-reduce:transition-none',
-          // Solid like the footer; transparent only under the open takeover
-          // overlay so its background surface reads through.
-          menuOpen ? 'bg-transparent text-foreground' : 'bg-background text-foreground',
+          'fixed inset-x-0 top-0 z-50 h-(--header-bar-height) text-foreground transition-[height,background-color,color] duration-300 motion-reduce:transition-none',
+          // Solid like the footer. Transparent over a hero band (its media
+          // runs under the bar) and under the open takeover overlay, so that
+          // surface reads through; the palette swap and the plate fade share
+          // one transition, so leaving the band is a single settle.
+          menuOpen || heroTheme ? 'bg-transparent' : 'bg-background',
         )}
         // Pull the header out of the page snapshot so it stays static during transitions.
         style={{ viewTransitionName: 'site-header' }}

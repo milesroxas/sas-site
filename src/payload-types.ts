@@ -307,7 +307,7 @@ export interface Page {
     | SplitImageOffsetBlock
     | FeatureImageStatementBlock
     | MediaBlock
-    | ContentBlock
+    | RichTextBlock
     | FeatureStatementGridBlock
     | FeatureStatementLinksBlock
     | FeatureTabsBlock
@@ -321,6 +321,7 @@ export interface Page {
     | CallToActionBlock
     | FormBlock
     | NewsletterSignupBlock
+    | ContentBlock
   )[];
   closing?: PageClosing;
   meta?: {
@@ -409,6 +410,7 @@ export interface Post {
         | SplitImageOffsetBlock
         | FeatureImageStatementBlock
         | MediaBlock
+        | RichTextBlock
         | FeaturedWorkBlock
       )[]
     | null;
@@ -1799,6 +1801,7 @@ export interface WorkSectionBlock {
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
         | MediaBlock
+        | ContentBlock
       )[]
     | null;
   id?: string | null;
@@ -2351,256 +2354,29 @@ export interface MediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyMediaShowcaseBlock".
+ * via the `definition` "ContentBlock".
  */
-export interface CaseStudyMediaShowcaseBlock {
-  heading?: string | null;
-  introduction?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  media: (number | Media)[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  layout?: ('single' | 'grid' | 'horizontal' | 'stacked' | 'full-bleed' | 'comparison') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  showCaptions?: boolean | null;
-  showCredits?: boolean | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'caseStudyMediaShowcase';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ScrollGalleryBlock".
- */
-export interface ScrollGalleryBlock {
-  /**
-   * Small label pinned at the top of the gallery. Leave empty to hide.
-   */
-  eyebrow?: string | null;
-  /**
-   * Statement pinned under the eyebrow. Leave empty to hide.
-   */
-  heading?: string | null;
-  /**
-   * Each item is one plane in depth, in order. The caption shown while an item is in focus is the media document’s caption.
-   */
-  items: {
-    media: number | Media;
-    /**
-     * Background palette while this item is in focus.
-     */
-    mood?: {
-      /**
-       * The ground behind the planes. Hex, e.g. #1f4a40. Leave empty for the default.
-       */
-      background?: string | null;
-      /**
-       * Primary soft glow. Hex, e.g. #1f4a40. Leave empty for the default.
-       */
-      blob1?: string | null;
-      /**
-       * Secondary soft glow. Hex, e.g. #1f4a40. Leave empty for the default.
-       */
-      blob2?: string | null;
-    };
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'scrollGallery';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkCaseStudyStorySectionBlock".
- */
-export interface WorkCaseStudyStorySectionBlock {
-  /**
-   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
-   */
-  source: 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings' | 'custom';
-  /**
-   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
-   */
-  storyScope?: ('overview' | 'section' | 'beat') | null;
-  /**
-   * Choose one reusable beat from the selected section.
-   */
-  storyBeatKey?: string | null;
-  /**
-   * Reveal the website-only override fields. Saved overrides still apply while hidden.
-   */
-  showOverrides?: boolean | null;
-  eyebrow?: string | null;
-  headingOverride?: string | null;
-  /**
-   * Website-only override; canonical content is unchanged.
-   */
-  bodyOverride?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  customBody?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  media?: (number | null) | Media;
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  layout?: ('text-only' | 'text-left' | 'text-right' | 'centered' | 'sticky-media') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  width?: ('narrow' | 'standard' | 'wide') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'caseStudyStorySection';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureStatementGridBlock".
- */
-export interface WorkFeatureStatementGridBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading?: string | null;
-  /**
-   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
-   */
-  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-  /**
-   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
-   */
-  storyScope?: ('overview' | 'section' | 'beat') | null;
-  /**
-   * Choose one reusable beat from the selected section.
-   */
-  storyBeatKey?: string | null;
-  /**
-   * Reveal the website-only override fields. Saved overrides still apply while hidden.
-   */
-  showOverrides?: boolean | null;
-  /**
-   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
-   */
-  statement?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Short supporting line pinned below the statement.
-   */
-  footnote?: string | null;
-  cards: {
-    media?: (number | null) | Media;
-    title: string;
-    description: string;
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureStatementGrid';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementLinksBlock".
- */
-export interface FeatureStatementLinksBlock {
-  /**
-   * Renders in muted ink at regular weight. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
-   */
-  statement?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Stacked in order beside the statement, in the right-hand column.
-   */
-  links?:
+export interface ContentBlock {
+  columns?:
     | {
-        link: {
+        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
+        richText?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        enableLink?: boolean | null;
+        link?: {
           type?: ('reference' | 'site' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
@@ -2622,6 +2398,10 @@ export interface FeatureStatementLinksBlock {
           sitePage?: ('home' | 'works-index' | 'insights-index') | null;
           url?: string | null;
           label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
         };
         id?: string | null;
       }[]
@@ -2632,7 +2412,7 @@ export interface FeatureStatementLinksBlock {
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'featureStatementLinks';
+  blockType: 'content';
 }
 /**
  * Published at /contact/[slug], or at /contact for the page slugged "contact". The questions live on the linked form.
@@ -3048,6 +2828,291 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CaseStudyMediaShowcaseBlock".
+ */
+export interface CaseStudyMediaShowcaseBlock {
+  heading?: string | null;
+  introduction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media: (number | Media)[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  layout?: ('single' | 'grid' | 'horizontal' | 'stacked' | 'full-bleed' | 'comparison') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  showCaptions?: boolean | null;
+  showCredits?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyMediaShowcase';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ScrollGalleryBlock".
+ */
+export interface ScrollGalleryBlock {
+  /**
+   * Small label pinned at the top of the gallery. Leave empty to hide.
+   */
+  eyebrow?: string | null;
+  /**
+   * Statement pinned under the eyebrow. Leave empty to hide.
+   */
+  heading?: string | null;
+  /**
+   * Each item is one plane in depth, in order. The caption shown while an item is in focus is the media document’s caption.
+   */
+  items: {
+    media: number | Media;
+    /**
+     * Background palette while this item is in focus.
+     */
+    mood?: {
+      /**
+       * The ground behind the planes. Hex, e.g. #1f4a40. Leave empty for the default.
+       */
+      background?: string | null;
+      /**
+       * Primary soft glow. Hex, e.g. #1f4a40. Leave empty for the default.
+       */
+      blob1?: string | null;
+      /**
+       * Secondary soft glow. Hex, e.g. #1f4a40. Leave empty for the default.
+       */
+      blob2?: string | null;
+    };
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'scrollGallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkCaseStudyStorySectionBlock".
+ */
+export interface WorkCaseStudyStorySectionBlock {
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source: 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings' | 'custom';
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  eyebrow?: string | null;
+  headingOverride?: string | null;
+  /**
+   * Website-only override; canonical content is unchanged.
+   */
+  bodyOverride?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  customBody?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media?: (number | null) | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  layout?: ('text-only' | 'text-left' | 'text-right' | 'centered' | 'sticky-media') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  width?: ('narrow' | 'standard' | 'wide') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'caseStudyStorySection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFeatureStatementGridBlock".
+ */
+export interface WorkFeatureStatementGridBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
+   */
+  statement?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Short supporting line pinned below the statement.
+   */
+  footnote?: string | null;
+  cards: {
+    media?: (number | null) | Media;
+    title: string;
+    description: string;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureStatementGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureStatementLinksBlock".
+ */
+export interface FeatureStatementLinksBlock {
+  /**
+   * Renders in muted ink at regular weight. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
+   */
+  statement?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Stacked in order beside the statement, in the right-hand column.
+   */
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'site' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
+              } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          url?: string | null;
+          label: string;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureStatementLinks';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyTestimonialBlock".
  */
 export interface CaseStudyTestimonialBlock {
@@ -3443,6 +3508,8 @@ export interface PageSectionBlock {
         | SplitImageOffsetBlock
         | FeatureImageStatementBlock
         | MediaBlock
+        | RichTextBlock
+        | ContentBlock
       )[]
     | null;
   id?: string | null;
@@ -3859,6 +3926,34 @@ export interface FeatureImageStatementBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock".
+ */
+export interface RichTextBlock {
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'richText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
 export interface Category {
@@ -3921,68 +4016,6 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContentBlock".
- */
-export interface ContentBlock {
-  columns?:
-    | {
-        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
-        richText?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        enableLink?: boolean | null;
-        link?: {
-          type?: ('reference' | 'site' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null)
-            | ({
-                relationTo: 'contact-pages';
-                value: number | ContactPage;
-              } | null);
-          /**
-           * Home (/), Works Index (/works), or Insights Index (/insights).
-           */
-          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'content';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4439,6 +4472,7 @@ export interface LabPage {
         | SplitImageOffsetBlock
         | FeatureImageStatementBlock
         | MediaBlock
+        | RichTextBlock
         | LabMediaShowcaseBlock
         | ScrollGalleryBlock
         | LabStorySectionBlock
@@ -4705,6 +4739,8 @@ export interface LabSectionBlock {
         | SplitImageOffsetBlock
         | FeatureImageStatementBlock
         | MediaBlock
+        | RichTextBlock
+        | ContentBlock
       )[]
     | null;
   id?: string | null;
@@ -4853,7 +4889,7 @@ export interface ExpertisePage {
     | SplitImageOffsetBlock
     | FeatureImageStatementBlock
     | MediaBlock
-    | ContentBlock
+    | RichTextBlock
     | FeatureStatementGridBlock
     | FeatureTabsBlock
     | AudienceTabsBlock
@@ -4862,6 +4898,7 @@ export interface ExpertisePage {
     | FeaturedWorkBlock
     | CallToActionBlock
     | FormBlock
+    | ContentBlock
   )[];
   /**
    * Canonical capabilities this offering bundles. Drives automatic related-work matching.
@@ -4924,6 +4961,10 @@ export interface SegmentHero {
    */
   eyebrow?: string | null;
   title: string;
+  /**
+   * One-line statement above the supporting paragraph, bottom right of the hero.
+   */
+  lead?: string | null;
   /**
    * Supporting paragraph, anchored to the bottom right of the hero.
    */
@@ -4992,6 +5033,8 @@ export interface SegmentSectionBlock {
         | SplitImageOffsetBlock
         | FeatureImageStatementBlock
         | MediaBlock
+        | RichTextBlock
+        | ContentBlock
       )[]
     | null;
   id?: string | null;
@@ -5019,7 +5062,7 @@ export interface AudiencePage {
     | SplitImageOffsetBlock
     | FeatureImageStatementBlock
     | MediaBlock
-    | ContentBlock
+    | RichTextBlock
     | FeatureStatementGridBlock
     | FeatureTabsBlock
     | AudienceTabsBlock
@@ -5028,6 +5071,7 @@ export interface AudiencePage {
     | FeaturedWorkBlock
     | CallToActionBlock
     | FormBlock
+    | ContentBlock
   )[];
   /**
    * Industries this segment spans. Drives automatic related-work matching.
@@ -5979,7 +6023,7 @@ export interface PagesSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
@@ -5993,6 +6037,7 @@ export interface PagesSelect<T extends boolean = true> {
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
       };
   closing?: T | PageClosingSelect<T>;
   meta?:
@@ -6036,6 +6081,8 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
@@ -6177,6 +6224,16 @@ export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
   size?: T;
   captionOverride?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock_select".
+ */
+export interface RichTextBlockSelect<T extends boolean = true> {
+  body?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -6535,6 +6592,7 @@ export interface PostsSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
   relatedPosts?: T;
@@ -6678,6 +6736,7 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
@@ -7037,6 +7096,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
         scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         labStorySection?: T | LabStorySectionBlockSelect<T>;
@@ -7089,6 +7149,8 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
@@ -7170,7 +7232,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
@@ -7179,6 +7241,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
       };
   capabilities?: T;
   relatedWorkPages?: T;
@@ -7212,6 +7275,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
 export interface SegmentHeroSelect<T extends boolean = true> {
   eyebrow?: T;
   title?: T;
+  lead?: T;
   description?: T;
   links?:
     | T
@@ -7250,6 +7314,8 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
@@ -7274,7 +7340,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
@@ -7283,6 +7349,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
       };
   industries?: T;
   relatedWorkPages?: T;
@@ -8636,7 +8703,7 @@ export interface Home {
     | SplitContentNarrowBlock
     | FeatureImageStatementBlock
     | MediaBlock
-    | ContentBlock
+    | RichTextBlock
     | FeatureStatementGridBlock
     | FeatureStatementLinksBlock
     | FeatureTabsBlock
@@ -8649,6 +8716,7 @@ export interface Home {
     | CallToActionBlock
     | FormBlock
     | NewsletterSignupBlock
+    | ContentBlock
   )[];
   closing?: PageClosing;
   meta?: {
@@ -9206,7 +9274,7 @@ export interface HomeSelect<T extends boolean = true> {
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
@@ -9219,6 +9287,7 @@ export interface HomeSelect<T extends boolean = true> {
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
+        content?: T | ContentBlockSelect<T>;
       };
   closing?: T | PageClosingSelect<T>;
   meta?:

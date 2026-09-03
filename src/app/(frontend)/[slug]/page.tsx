@@ -11,7 +11,6 @@ import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import { cn } from '@/utilities/ui'
-import PageClient from './page.client'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -69,7 +68,6 @@ export default async function Page({ params: paramsPromise }: Args) {
           hero?.type !== 'highImpact' && 'pt-16',
         )}
       >
-        <PageClient />
         {/* Allows redirects for valid pages too */}
         <PayloadRedirects disableNotFound url={url} />
 

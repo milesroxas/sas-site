@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
+import { ContentBlock } from '@/blocks/Content/Component'
 import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/feature/ImageStatement/Component'
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
@@ -47,6 +48,7 @@ import type {
   WorkImagePairBlock,
   WorkMediaContentSplitBlock,
   WorkPage,
+  WorkSectionBlock,
   WorkSplitContentNarrowBlock,
   WorkSplitImageOffsetBlock,
 } from '@/payload-types'
@@ -563,7 +565,10 @@ const FeatureTabsSection = ({
   </RevealSection>
 )
 
-type WorkLayoutBlock = NonNullable<WorkPage['layout']>[number]
+/** A block a work Section can nest: the child union carries the nested-only ones (Content). */
+type WorkSectionChildBlock = NonNullable<WorkSectionBlock['blocks']>[number]
+
+type WorkLayoutBlock = NonNullable<WorkPage['layout']>[number] | WorkSectionChildBlock
 
 /**
  * One work-page block. `bare` is set for blocks nested inside a Section
@@ -639,6 +644,14 @@ const renderWorkBlock = (
       return (
         <CssRevealSection key={block.id}>
           <MediaBlockComponent {...block} bare={bare} disableInnerContainer />
+        </CssRevealSection>
+      )
+    case 'content':
+      // Same deal for the multi-column Content block: no story copy, same
+      // entrance as Pages, bare inside a Section.
+      return (
+        <CssRevealSection key={block.id}>
+          <ContentBlock {...block} bare={bare} />
         </CssRevealSection>
       )
     case 'audienceTabs':

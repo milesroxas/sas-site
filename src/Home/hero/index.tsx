@@ -1,6 +1,6 @@
 import type React from 'react'
 import { Container } from '@/components/Container'
-import { HeroDarkTheme } from '@/heros/shared'
+import { HeroBand } from '@/heros/HeroBand'
 import type { Home, Media, Post } from '@/payload-types'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { populatedDoc } from '@/utilities/relationshipId'
@@ -98,14 +98,11 @@ const HomeHero: React.FC<HomeHeroData> = ({
   const post = populatedDoc<Post>(featuredPost)
 
   return (
-    <section
+    <HeroBand
       // Pull under the fixed header; stop at the fixed footer so the first
       // screen is exactly header + hero + footer (page frame already pads the bottom).
       className="relative isolate -mt-(--header-height) flex h-[calc(100svh-var(--footer-height))] flex-col overflow-clip bg-background text-foreground"
-      data-theme="dark"
     >
-      <HeroDarkTheme />
-
       {backgroundMedia && <HeroBackground media={backgroundMedia} />}
 
       {/* Header inset only — section height already ends at the footer. */}
@@ -142,6 +139,6 @@ const HomeHero: React.FC<HomeHeroData> = ({
           />
         </Container>
       </ScrollReveal>
-    </section>
+    </HeroBand>
   )
 }

@@ -9,7 +9,8 @@ import { linkGroup } from '@/fields/linkGroup'
  * same controls on every website page collection.
  *
  * Field names match the retired multi-type hero (`eyebrow`, `title`,
- * `description`, `links`, `media`) so existing rows carry over untouched.
+ * `description`, `links`, `media`) so existing rows carry over untouched;
+ * `lead` is the one addition (the statement above the paragraph).
  */
 export const segmentHero: GroupField = {
   name: 'hero',
@@ -27,6 +28,14 @@ export const segmentHero: GroupField = {
           admin: { description: 'Small label above the title, e.g. "Who We Help".' },
         },
         { name: 'title', type: 'text', required: true },
+        {
+          name: 'lead',
+          type: 'textarea',
+          admin: {
+            description:
+              'One-line statement above the supporting paragraph, bottom right of the hero.',
+          },
+        },
         {
           name: 'description',
           type: 'textarea',

@@ -52,7 +52,7 @@ export const Clock: React.FC<{ className?: string }> = ({ className }) => {
   if (!time) return null
 
   return (
-    <span className={cn('flex items-center gap-2 font-mono text-sm text-foreground', className)}>
+    <span className={cn('flex items-center gap-2 font-mono text-sm', className)}>
       {/* Status green from the design — legible on both light and dark backgrounds. */}
       <span aria-hidden className="size-2 rounded-full bg-[#33952A]" />
       {time}

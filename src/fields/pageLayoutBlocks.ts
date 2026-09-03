@@ -16,12 +16,12 @@ import { ImagePair } from '@/blocks/image-pair/config'
 import { NewsletterSignup } from '@/blocks/NewsletterSignup/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
 import { sectionBlock } from '@/blocks/section/config'
-import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
+import { sectionChildBlocks, sectionNestableBlocks } from '@/blocks/shared/section-blocks'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { TestimonialsMarquee } from '@/blocks/TestimonialsMarquee/config'
 
 export const PageSection = sectionBlock({
-  blocks: sectionNestableBlocks,
+  blocks: sectionChildBlocks,
   interfaceName: 'PageSectionBlock',
 })
 
@@ -34,10 +34,8 @@ export const PageSection = sectionBlock({
 export const pageLayoutBlocks: Block[] = [
   // Structure
   PageSection,
-  // Section heading / Media and content / Media: the Section-nestable run
+  // Section heading / Media and content / Media / Text: the Section-nestable run
   ...sectionNestableBlocks,
-  // Text
-  Content,
   // Statements
   FeatureStatementGrid,
   FeatureStatementLinks,
@@ -55,6 +53,8 @@ export const pageLayoutBlocks: Block[] = [
   CallToAction,
   FormBlock,
   NewsletterSignup,
+  // Custom
+  Content,
 ]
 
 /**
@@ -65,7 +65,7 @@ export const pageLayoutBlocks: Block[] = [
 export const postLayoutBlocks: Block[] = [
   // Structure
   PageSection,
-  // Section heading / Media and content / Media: the Section-nestable run
+  // Section heading / Media and content / Media / Text: the Section-nestable run
   ...sectionNestableBlocks,
   // Lists & grids
   FeaturedWork,
@@ -92,7 +92,7 @@ export const homeLayoutBlocks: Block[] = pageLayoutBlocks.filter(
 )
 
 export const SegmentSection = sectionBlock({
-  blocks: sectionNestableBlocks,
+  blocks: sectionChildBlocks,
   interfaceName: 'SegmentSectionBlock',
 })
 
@@ -104,10 +104,8 @@ export const SegmentSection = sectionBlock({
 export const segmentPageBlocks: Block[] = [
   // Structure
   SegmentSection,
-  // Section heading / Media and content / Media: the Section-nestable run
+  // Section heading / Media and content / Media / Text: the Section-nestable run
   ...sectionNestableBlocks,
-  // Text
-  Content,
   // Statements
   FeatureStatementGrid,
   // Interactive
@@ -120,4 +118,6 @@ export const segmentPageBlocks: Block[] = [
   // Forms & CTAs
   CallToAction,
   FormBlock,
+  // Custom
+  Content,
 ]

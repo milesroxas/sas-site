@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { Carousel } from '@/blocks/Carousel/config'
+import { Content } from '@/blocks/Content/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
@@ -250,7 +251,9 @@ const workSectionBlocks: Block[] = [
 ]
 
 export const WorkSection = sectionBlock({
-  blocks: workSectionBlocks,
+  // Content carries no story copy either; it closes the nested list under
+  // Custom exactly as `sectionChildBlocks` does on every other surface.
+  blocks: [...workSectionBlocks, Content],
   interfaceName: 'WorkSectionBlock',
 })
 

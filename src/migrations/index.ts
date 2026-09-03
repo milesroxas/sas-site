@@ -71,6 +71,8 @@ import * as migration_20260903_154839_form_steps from './20260903_154839_form_st
 import * as migration_20260903_161541_ask_hidden_address_panel from './20260903_161541_ask_hidden_address_panel';
 import * as migration_20260903_190809_contact_alt_cta_link from './20260903_190809_contact_alt_cta_link';
 import * as migration_20260903_200959_rich_transition_segment_hero from './20260903_200959_rich_transition_segment_hero';
+import * as migration_20260903_205728_segment_hero_lead from './20260903_205728_segment_hero_lead';
+import * as migration_20260903_210428_content_in_sections from './20260903_210428_content_in_sections';
 
 export const migrations = [
   {
@@ -436,6 +438,16 @@ export const migrations = [
   {
     up: migration_20260903_200959_rich_transition_segment_hero.up,
     down: migration_20260903_200959_rich_transition_segment_hero.down,
-    name: '20260903_200959_rich_transition_segment_hero'
+    name: '20260903_200959_rich_transition_segment_hero',
+  },
+  {
+    up: migration_20260903_205728_segment_hero_lead.up,
+    down: migration_20260903_205728_segment_hero_lead.down,
+    name: '20260903_205728_segment_hero_lead',
+  },
+  {
+    up: migration_20260903_210428_content_in_sections.up,
+    down: migration_20260903_210428_content_in_sections.down,
+    name: '20260903_210428_content_in_sections'
   },
 ];

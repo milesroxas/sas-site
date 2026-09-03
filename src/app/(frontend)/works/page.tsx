@@ -5,7 +5,6 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { WorksBrowse } from '@/sections/WorksBrowse'
 import { queryWorksBrowseData } from '@/sections/WorksBrowse/queries'
 import { generateMeta } from '@/utilities/generateMeta'
-import PageClient from './page.client'
 
 export const revalidate = 600
 
@@ -17,7 +16,6 @@ export default async function WorksPage() {
 
   return (
     <main>
-      <PageClient />
       {draft && <LivePreviewListener />}
       <WorksBrowse
         capabilities={capabilities}

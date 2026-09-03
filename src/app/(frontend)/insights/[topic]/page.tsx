@@ -4,7 +4,6 @@ import type { Metadata } from 'next/types'
 import { getPayload } from 'payload'
 import { InsightsBrowse } from '@/sections/InsightsBrowse'
 import { queryInsightsBrowseData } from '@/sections/InsightsBrowse/queries'
-import PageClient from './page.client'
 
 export const dynamic = 'force-static'
 export const revalidate = 600
@@ -44,7 +43,6 @@ export default async function InsightsTopicPage({ params }: Args) {
 
   return (
     <div className="pt-24 pb-24">
-      <PageClient />
       {/* The sidebar filters in place (no page heading there); keep an h1 for
           document semantics on this deep-linked topic route. */}
       <h1 className="sr-only">{category.title}</h1>

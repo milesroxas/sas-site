@@ -3,7 +3,7 @@ import { BlockGrid } from '@/blocks/shared/grid'
 import { Container } from '@/components/Container'
 import { CMSLink } from '@/components/Link'
 import { Media } from '@/components/Media'
-import { HeroDarkTheme } from '@/heros/shared'
+import { HeroBand } from '@/heros/HeroBand'
 import type { SegmentHero as SegmentHeroData } from '@/payload-types'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 
@@ -15,10 +15,13 @@ const actionAppearances = ['glass', 'underline'] as const
  * The glass chip's `backdrop-filter` would be killed by a `filter` on the same
  * node, and the shell's blur settle is a `filter`.
  */
-const HeroActions: React.FC<{ links: SegmentHeroData['links'] }> = ({ links }) => {
+const HeroActions: React.FC<{ className?: string; links: SegmentHeroData['links'] }> = ({
+  className,
+  links,
+}) => {
   if (!Array.isArray(links) || links.length === 0) return null
   return (
-    <ul className="flex items-start gap-3" data-reveal="panel">
+    <ul className={className} data-reveal="panel">
       {links.slice(0, actionAppearances.length).map(({ link }, i) => (
         <li key={link.label}>
           <CMSLink {...link} appearance={actionAppearances[i]} size="action" />
@@ -29,34 +32,44 @@ const HeroActions: React.FC<{ links: SegmentHeroData['links'] }> = ({ links }) =
 }
 
 /**
- * Segment-page hero: a dark band (forced `data-theme="dark"`, like the other
- * heroes) with the media as backdrop. Eyebrow, title and actions stack on the
- * left; the supporting paragraph sits bottom-right on the composition grid
- * (columns 5 to 7), below the stack on one column.
+ * Segment-page hero: the page's opening screen. A dark band (`HeroBand`
+ * pins the palette and carries the fixed chrome with it) with the media as
+ * its backdrop, pulled under the header and running under the footer, so the
+ * first screen is the band alone with both bars floating over it.
+ *
+ * Laid out on the composition grid (docs/block-grid-roadmap.md):
+ * - Eyebrow and title: columns 1-4, top.
+ * - Actions: under the title on the same 4 columns.
+ * - Lead and paragraph: columns 6-8, anchored to the bottom.
+ * Below `md` everything stacks left-aligned in reading order, with the
+ * actions last.
  *
  * The copy plays the site's intro reveal on load: eyebrow and title land on
- * one beat, the actions follow, the paragraph settles last. The media stays
- * static, as on the home hero: it is the surface the menu handoff and the
- * work-open landing dissolve onto, so an entrance mask of its own would fight
- * that settle.
+ * one beat, the actions follow, the closing copy settles last. The media
+ * stays static, as on the home hero: it is the surface the menu handoff and
+ * the work-open landing dissolve onto, so an entrance mask of its own would
+ * fight that settle.
  */
 export const SegmentHero: React.FC<SegmentHeroData> = ({
   description,
   eyebrow,
+  lead,
   links,
   media,
   title,
 }) => {
+  const hasClosing = Boolean(lead || description)
   return (
-    <header
-      className="relative isolate flex min-h-150 flex-col overflow-clip bg-background py-12 text-foreground"
-      data-theme="dark"
+    <HeroBand
+      as="header"
+      // Pull under the fixed header and run under the fixed footer: the band
+      // is one full viewport, and both bars float over its edges.
+      className="relative isolate -mt-(--header-height) flex min-h-svh flex-col overflow-clip bg-background pt-(--header-height) pb-(--footer-height) text-foreground"
     >
-      <HeroDarkTheme />
       <ScrollReveal as="div" className="relative z-10 flex flex-1 flex-col" variant="intro">
-        <Container className="flex w-full flex-1 flex-col">
-          <BlockGrid className="flex-1 content-between md:content-stretch">
-            <div className="flex flex-col items-start gap-6 md:col-span-4">
+        <Container className="flex w-full flex-1 flex-col py-24">
+          <BlockGrid className="flex-1 gap-y-12 md:grid-rows-[auto_minmax(0,1fr)]">
+            <div className="flex flex-col items-start gap-4 md:col-span-4">
               {eyebrow && (
                 <p
                   className="font-heading text-sm/none tracking-tight text-accent-foreground"
@@ -67,21 +80,30 @@ export const SegmentHero: React.FC<SegmentHeroData> = ({
                 </p>
               )}
               <h1
-                className="max-w-xl text-heading-2 text-foreground"
+                className="text-heading-2 text-foreground"
                 data-reveal
                 data-reveal-group="hero-title"
               >
                 {title}
               </h1>
-              <HeroActions links={links} />
             </div>
-            {description && (
-              <p
-                className="text-lead text-foreground md:col-span-3 md:col-start-5 md:self-end"
-                data-reveal
-              >
-                {description}
-              </p>
+            <HeroActions
+              className="flex items-start gap-3 max-md:order-last md:col-span-4 md:col-start-1 md:row-start-2 md:self-start"
+              links={links}
+            />
+            {hasClosing && (
+              <div className="flex flex-col items-start gap-6 md:col-span-3 md:col-start-6 md:row-start-2 md:self-end">
+                {lead && (
+                  <p className="text-lead text-foreground" data-reveal>
+                    {lead}
+                  </p>
+                )}
+                {description && (
+                  <p className="text-xl/normal text-muted-foreground" data-reveal>
+                    {description}
+                  </p>
+                )}
+              </div>
             )}
           </BlockGrid>
         </Container>
@@ -99,6 +121,6 @@ export const SegmentHero: React.FC<SegmentHeroData> = ({
           />
         </div>
       )}
-    </header>
+    </HeroBand>
   )
 }

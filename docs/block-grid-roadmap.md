@@ -2,7 +2,7 @@
 
 Status: contract defined, Phase 1 (Section heading) and Phase 2 (Media and content + Statement) shipped 2026-09-02. Phase 3 (Pair offset, Caption) pending. Zero schema: this is presentational only, no migrations, no admin changes. Chromatic baseline churn expected per phase. Agents: read this doc before any block layout/grid task instead of re-auditing the block system. Companion to [blocks-reorg-roadmap.md](blocks-reorg-roadmap.md), which owns taxonomy, Sections, and admin naming; this doc owns how the same blocks lay out horizontally.
 
-Scope: the nine reorganized blocks (Section heading, Media and content, Media groups). Blocks outside the reorg (heroes, featured work, galleries, forms) keep their bespoke layouts until they enter the taxonomy.
+Scope: the nine reorganized blocks (Section heading, Media and content, Media groups) plus Rich text (Text group, added 2026-09-03 straight onto the contract). Blocks outside the reorg (heroes, featured work, galleries, forms) keep their bespoke layouts until they enter the taxonomy.
 
 ---
 
@@ -86,6 +86,7 @@ The default Standard arrangement (Layout: Left) on the 8-column grid:
 | Pair offset (`splitImageOffset`) | `split-image-offset/SplitImageOffset.tsx` | `px-gutter lg:pe-0` + `[1fr_0.5fr_0.25fr]` tracks + `w-4/5` | hardest: right-bleed is a container concern (`container-bleed-e` family), not a grid concern; separate the bleed shell from an inner 8-col placement | Phase 3 |
 | Statement | `feature/ImageStatement/Component.tsx` | flex `justify-start/end` + `max-w-2xl` | caption cols 1-4 (left) / 5-8 (right); contained media spans all 8 on the same grid, full-bleed media edge to edge with the caption re-entering the page column | DONE 2026-09-02 |
 | Caption (`mediaBlock`) | `MediaBlock/Component.tsx` | `mx-auto max-w-3xl` / `max-w-md` per `size` | candidate to stay measure-based (centered figure); decide with D7 of the reorg doc (its `size` field redesign) | Phase 3 |
+| Rich text (`richText`) | `rich-text/Component.tsx` | new block (2026-09-03) | body cols 2-4, the Standard Left body measure; prose mode, `text-base` stepping to `text-lg` from `xl` | DONE 2026-09-03 |
 
 Phase 3 column proposals are starting points to be tuned visually per block, the same way Left was specified. The contract (section 2) is the fixed part; spans are art direction, and the shipped Phase 2 spans remain tunable per block.
 

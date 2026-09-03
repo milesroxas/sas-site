@@ -16,7 +16,6 @@ import { RelatedPostsSection } from '@/sections/RelatedPosts'
 import { resolveRelatedPosts } from '@/sections/RelatedPosts/resolve-posts'
 import { generateMeta } from '@/utilities/generateMeta'
 import { blogPostingSchema, breadcrumbSchema } from '@/utilities/schema'
-import PageClient from './page.client'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -59,7 +58,6 @@ export default async function Post({ params: paramsPromise }: Args) {
   return (
     <>
       <article className={`${FOOTER_CLOSING_ARTICLE_CLASS} pb-16`}>
-        <PageClient />
         <JsonLd
           data={[
             blogPostingSchema(post),

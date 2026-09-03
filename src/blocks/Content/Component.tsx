@@ -6,8 +6,14 @@ import { cn } from '@/utilities/ui'
 
 import { CMSLink } from '../../components/Link'
 
-export const ContentBlock: React.FC<ContentBlockProps> = (props) => {
-  const { columns, theme } = props
+/**
+ * `bare` skips the themed band for callers that supply their own shell (a
+ * Section block's band, or a renderer's reveal band).
+ */
+type ContentBlockComponentProps = ContentBlockProps & { bare?: boolean }
+
+export const ContentBlock: React.FC<ContentBlockComponentProps> = (props) => {
+  const { bare, columns, theme } = props
 
   const colsSpanClasses = {
     full: '12',
@@ -17,7 +23,7 @@ export const ContentBlock: React.FC<ContentBlockProps> = (props) => {
   }
 
   return (
-    <Section theme={theme}>
+    <Section bare={bare} theme={theme}>
       <div className="container my-16">
         <div className="grid grid-cols-4 lg:grid-cols-12 gap-y-8 gap-x-16">
           {columns &&

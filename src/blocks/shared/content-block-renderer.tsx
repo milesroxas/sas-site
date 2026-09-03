@@ -1,10 +1,12 @@
 import type React from 'react'
+import { ContentBlock } from '@/blocks/Content/Component'
 import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Component'
 import { FullMediaBlock } from '@/blocks/full-media/Component'
 import { ImagePairBlock } from '@/blocks/image-pair/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { MediaContentSplitBlock } from '@/blocks/media-content-split/Component'
+import { RichTextBlock } from '@/blocks/rich-text/Component'
 import { RichTransitionBlock } from '@/blocks/rich-transition/Component'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
 import { SplitImageOffsetBlock } from '@/blocks/split-image-offset/Component'
@@ -13,20 +15,22 @@ import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { blockRevealVariants, type RevealMappedBlockSlug } from './reveal-variants'
 
 /**
- * Components for the Section-nestable run, keyed by block slug: the render
- * mirror of `sectionNestableBlocks` in `section-blocks.ts`. Every collection
+ * Components for everything a Section can nest, keyed by block slug: the
+ * render mirror of `sectionChildBlocks` in `section-blocks.ts`. Every collection
  * that offers the run renders it through this map (Pages, Posts, segment
  * pages, lab pages), so the same CMS block paints and moves identically
  * wherever an editor places it. Work pages resolve canonical story copy first
  * and render their own variants (`RenderCaseStudyBlocks`).
  */
 export const sectionChildComponents = {
+  content: ContentBlock,
   featureHeadingOffset: FeatureHeadingOffsetBlock,
   featureImageStatement: FeatureImageStatementBlock,
   fullMedia: FullMediaBlock,
   imagePair: ImagePairBlock,
   mediaBlock: MediaBlock,
   mediaContentSplit: MediaContentSplitBlock,
+  richText: RichTextBlock,
   richTransition: RichTransitionBlock,
   splitContentNarrow: SplitContentNarrowBlock,
   splitImageOffset: SplitImageOffsetBlock,

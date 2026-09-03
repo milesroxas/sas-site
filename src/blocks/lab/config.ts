@@ -4,7 +4,7 @@ import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import { sectionBlock } from '@/blocks/section/config'
 import { relatedSelectionFields, storySectionCopyFields, themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
+import { sectionChildBlocks, sectionNestableBlocks } from '@/blocks/shared/section-blocks'
 
 export const LabStorySection: Block = {
   slug: 'labStorySection',
@@ -111,7 +111,7 @@ export const LabRelatedProjects: Block = {
  * own, so the generic Standard heading in that run is the lab Standard.
  */
 export const LabSection = sectionBlock({
-  blocks: sectionNestableBlocks,
+  blocks: sectionChildBlocks,
   interfaceName: 'LabSectionBlock',
 })
 
@@ -123,7 +123,7 @@ export const LabSection = sectionBlock({
 export const labBlocks = [
   // Structure
   LabSection,
-  // Section heading / Media and content / Media: the Section-nestable run
+  // Section heading / Media and content / Media / Text: the Section-nestable run
   ...sectionNestableBlocks,
   // Media
   LabMediaShowcase,

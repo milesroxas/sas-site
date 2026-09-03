@@ -28,4 +28,6 @@ export const BLOCK_GROUPS = {
   lists: 'Lists & grids',
   /** Forms, signups, calls to action. */
   forms: 'Forms & CTAs',
+  /** Free-form escape hatch: column builders with no fixed pattern. */
+  custom: 'Custom',
 } as const

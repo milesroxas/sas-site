@@ -13,6 +13,7 @@ import type {
   LabPage,
   LabProject,
   LabRelatedProjectsBlock,
+  LabSectionBlock,
   LabStorySectionBlock,
 } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
@@ -102,7 +103,10 @@ const RelatedProjects = async ({
   />
 )
 
-type LabLayoutBlock = NonNullable<LabPage['layout']>[number]
+/** A block a lab Section can nest: the child union carries the nested-only ones (Content). */
+type LabSectionChildBlock = NonNullable<LabSectionBlock['blocks']>[number]
+
+type LabLayoutBlock = NonNullable<LabPage['layout']>[number] | LabSectionChildBlock
 
 /**
  * One lab-page block. `bare` is set for blocks nested inside a Section block:

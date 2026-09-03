@@ -18,7 +18,6 @@ import {
   slugMetadata,
   slugStaticParams,
 } from '@/utilities/slugRoute'
-import PageClient from './page.client'
 
 const queryWorkPageBySlug = createSlugQuery('work-pages', {
   depth: 4,
@@ -75,7 +74,6 @@ export default async function WorkPageRoute({ params }: SlugRouteArgs) {
   return (
     <>
       <article className={FOOTER_CLOSING_ARTICLE_CLASS}>
-        <PageClient />
         <JsonLd
           data={[
             creativeWorkSchema(page, '/works'),

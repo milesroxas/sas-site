@@ -13,7 +13,6 @@ import {
   slugMetadata,
   slugStaticParams,
 } from '@/utilities/slugRoute'
-import PageClient from './page.client'
 
 const queryLabPageBySlug = createSlugQuery('lab-pages', {
   depth: 4,
@@ -55,7 +54,6 @@ export default async function LabPageRoute({ params }: SlugRouteArgs) {
   if (!page || !project) return <PayloadRedirects url={url} />
   return (
     <article>
-      <PageClient />
       <JsonLd
         data={[
           creativeWorkSchema(page, '/lab'),

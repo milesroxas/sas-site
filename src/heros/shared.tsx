@@ -1,23 +1,10 @@
 'use client'
 
 import type React from 'react'
-import { useEffect } from 'react'
 import { CMSLink } from '@/components/Link'
 import type { Page } from '@/payload-types'
-import { useHeaderTheme } from '@/providers/HeaderTheme'
 
 type Hero = NonNullable<Page['hero']>
-
-/** Forces the fixed site header onto the dark theme while a dark hero is mounted. */
-export const HeroDarkTheme: React.FC = () => {
-  const { setHeaderTheme } = useHeaderTheme()
-
-  useEffect(() => {
-    setHeaderTheme('dark')
-  }, [setHeaderTheme])
-
-  return null
-}
 
 export const HeroTitle: React.FC<{ title: Hero['title'] }> = ({ title }) => {
   if (!title) return null

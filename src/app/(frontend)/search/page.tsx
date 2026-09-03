@@ -6,7 +6,6 @@ import { Search } from '@/search/Component'
 import { CollectionArchive } from '@/sections/CollectionArchive'
 import { surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
 import { RevealSection } from '@/shared/ui/reveal-section'
-import PageClient from './page.client'
 
 type Args = {
   searchParams: Promise<{
@@ -70,7 +69,6 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
 
   return (
     <div className="pt-24 pb-24">
-      <PageClient />
       <RevealSection className="container mb-16" delayMs={0}>
         <div className="prose dark:prose-invert max-w-none text-center">
           <h1 className="mb-8 lg:mb-16">Search</h1>

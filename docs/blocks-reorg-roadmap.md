@@ -134,13 +134,13 @@ Every composition surface leads with the reorganized groups, then its legacy gro
 
 | Surface | Full order |
 |---|---|
-| Pages, Expertise, Audience | Structure, Section heading, Media and content, Media, Text, Statements, Interactive, Lists & grids, Forms & CTAs |
+| Pages, Expertise, Audience | Structure, Section heading, Media and content, Media, Text, Statements, Interactive, Lists & grids, Forms & CTAs, Custom |
 | Posts | Structure, Section heading, Media and content, Media, Lists & grids |
 | Work Pages | Structure, Section heading, Media and content, Media, Narrative, Statements, Interactive, Lists & grids |
 | Lab Pages | Structure, Section heading, Media and content, Media, Narrative, Interactive, Lists & grids |
-| Home (global, no Section) | Section heading, Media and content, Media, Text, Statements, Interactive, Lists & grids, Forms & CTAs |
+| Home (global, no Section) | Section heading, Media and content, Media, Text, Statements, Interactive, Lists & grids, Forms & CTAs, Custom |
 
-Order comes only from each block array (`admin.group`, first appearance wins), so keep each group's blocks contiguous: Text (`Content`) and Narrative (the story-section blocks) now sit after the run, and the legacy Media blocks (`caseStudyMediaShowcase`, `labMediaShowcase`, `scrollGallery`) stay inside the Media group beside Statement and Caption. `Structure` is still the group label for the Section block itself.
+Order comes only from each block array (`admin.group`, first appearance wins), so keep each group's blocks contiguous: Narrative (the story-section blocks) sits after the run, the column-builder `content` block closes every top-level list and every Section's nested list under `Custom` (added 2026-09-03 via `sectionChildBlocks`; Text now holds only Rich text, inside the run), and the legacy Media blocks (`caseStudyMediaShowcase`, `labMediaShowcase`, `scrollGallery`) stay inside the Media group beside Statement and Caption. `Structure` is still the group label for the Section block itself.
 
 Rendering follows the same single-definition rule: `src/blocks/shared/content-block-renderer.tsx` owns the slug-to-component map (`sectionChildComponents`) and the entrance rules for the run. `RenderBlocks` (Pages, Posts, Home, segment pages) spreads that map into its own; `RenderLabBlocks` delegates to it for any block in the run; `RenderCaseStudyBlocks` keeps its own cases because it resolves story copy first.
 
@@ -180,7 +180,7 @@ export const sectionBlock = (blocks: Block[], interfaceName: string): Block => (
 
 Per-collection instances (same slug, different nested lists and interfaces, mirroring `withStoryBeatSource`): `PageSection`, `WorkSection`, `LabSection`, `SegmentSection`. All four table shapes are identical, and the function `dbName` is mandatory since the slug lives in five collections (see the shared-block dbName hazard).
 
-Initial nested `blocks` lists contain **only the nine reorganized blocks** (per collection availability). Everything else stays top-level for now; collections' top-level lists become `[Section, ...existing list unchanged]`. Full "sections only at top level" is a Phase E goal once every remaining block is section-ready (D4).
+Initial nested `blocks` lists contain **only the nine reorganized blocks** (per collection availability). Rich text (`richText`, Text group, 2026-09-03) is the first block added to the run since: born on the Section and grid contracts, it joins `sectionNestableBlocks` directly, so every surface that spreads the run offers it (Work Pages build their run by hand and do not yet). The legacy `content` block joins the nested list on every Section (2026-09-03) through `sectionChildBlocks` = run + Content, kept out of the run so Custom closes the top-level drawer; on Posts, Lab, and Work it is nested-only. Everything else stays top-level for now; collections' top-level lists become `[Section, ...existing list unchanged]`. Full "sections only at top level" is a Phase E goal once every remaining block is section-ready (D4).
 
 ### Rendering contract
 

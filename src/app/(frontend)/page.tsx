@@ -11,7 +11,6 @@ import { RenderHomeHero } from '@/Home/hero'
 import { homeStatic } from '@/Home/home-static'
 import { HomeStatement } from '@/Home/statement'
 import { generateMeta } from '@/utilities/generateMeta'
-import PageClient from './[slug]/page.client'
 
 export default async function HomePage() {
   const { isEnabled: draft } = await draftMode()
@@ -24,7 +23,6 @@ export default async function HomePage() {
       {/* Opaque and above the closing band: the band is a sticky curtain the
           page uncovers by scrolling this off it (src/Footer/Closing/curtain). */}
       <article className={`${FOOTER_CLOSING_ARTICLE_CLASS} pb-24`}>
-        <PageClient />
         {draft && <LivePreviewListener />}
         <RenderHomeHero {...hero} />
         {statement && !statement.hidden ? <HomeStatement {...statement} /> : null}
