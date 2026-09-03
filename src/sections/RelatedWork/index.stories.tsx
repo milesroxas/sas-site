@@ -31,7 +31,10 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Expertise page: the page's capability is the filter, and its chip carries the dot in every row. */
+/**
+ * Expertise page defined by one capability: its chip carries the dot in every
+ * row, and with a single term there is nothing to narrow, so no filter shows.
+ */
 export const Expertise: Story = {}
 
 /** Audience page: the filter is an industry, so the match lights in the facts line instead of a chip. */
@@ -42,7 +45,11 @@ export const Audience: Story = {
   },
 }
 
-/** A page defined by more than one term: one filter row each, every match lit. */
+/**
+ * A page defined by more than one term the rows carry: one filter each,
+ * nothing pressed and every match lit until a term is picked, which narrows
+ * the list to it.
+ */
 export const SeveralTerms: Story = {
   args: {
     filter: {
@@ -55,15 +62,15 @@ export const SeveralTerms: Story = {
   },
 }
 
-/** Sole match: the list keeps its opening rule and closing hairline. */
+/** Sole match: the list keeps its opening rule and closing hairline, and too few rows for a filter. */
 export const SingleProject: Story = {
   args: { items: byCapability.slice(0, 1) },
 }
 
 /**
- * Below `2xl` the aside sits above the list and its terms run inline, the
- * marker a rule under each label; at `md` the aside keeps to half the columns,
- * so several terms wrap inside it rather than run the page.
+ * Below `2xl` the aside sits above the list and its terms run inline across
+ * the full page column, the active marker a rule under a picked label; the
+ * heading keeps to half the columns.
  */
 export const Tablet: Story = {
   args: SeveralTerms.args,
