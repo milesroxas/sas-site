@@ -22,7 +22,7 @@ import { cn } from '@/utilities/ui'
 import useClickableCard from '@/utilities/useClickableCard'
 import type { CardVariant } from './variants'
 
-export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title'> & {
+export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title' | 'standfirst'> & {
   /** Explicit destination — takes precedence over `/${relationTo}/${slug}`. */
   url?: string
 }
@@ -55,7 +55,7 @@ export const Card: React.FC<{
     variant = 'contained',
   } = props
 
-  const { slug, categories, meta, title } = doc || {}
+  const { slug, categories, meta, title, standfirst } = doc || {}
   const { description, image: metaImage } = meta || {}
 
   const hasCategories = categories && Array.isArray(categories) && categories.length > 0
@@ -100,8 +100,12 @@ export const Card: React.FC<{
               // Clamped so a card's height stays near its 4:5 frame: this
               // variant is built for a rail and a grid, where one long title
               // otherwise sets the height of every card beside it.
+              //
+              // Base size on a phone: the rail's own heading drops to `lead`
+              // there (sections/RelatedPosts/PostRail), and a card title one
+              // step below it keeps the scale reading heading, title, body.
               <h3
-                className="line-clamp-2 text-lg/normal font-normal"
+                className="line-clamp-2 text-base/normal font-normal md:text-lg/normal"
                 data-reveal
                 data-reveal-group={slug ?? titleToUse}
               >
@@ -115,13 +119,14 @@ export const Card: React.FC<{
                 </Link>
               </h3>
             )}
-            {sanitizedDescription && (
+            {(standfirst || sanitizedDescription) && (
+              // One step under the title at each breakpoint (see the `h3`).
               <p
-                className="line-clamp-3 text-sm/normal text-muted-foreground"
+                className="line-clamp-3 text-xs/normal text-muted-foreground md:text-sm/normal"
                 data-reveal
                 data-reveal-group={slug ?? titleToUse}
               >
-                {sanitizedDescription}
+                {standfirst || sanitizedDescription}
               </p>
             )}
           </div>

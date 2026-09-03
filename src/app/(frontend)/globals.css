@@ -557,59 +557,6 @@
   }
 }
 
-/* drag-fade: the scroll-fade mask for a rail that is dragged, not scrolled. */
-@property --drag-fade-ks {
-  syntax: "<number>";
-  inherits: false;
-  initial-value: 0;
-}
-@property --drag-fade-ke {
-  syntax: "<number>";
-  inherits: false;
-  initial-value: 1;
-}
-
-/*
- * Same mask and the same `--scroll-fade-s/-e` properties as `scroll-fade-x`,
- * minus the scroll timeline. An embla viewport translates its track and its
- * own `scrollLeft` never moves, so `scroll(self inline)` would sit at progress
- * 0 forever. `useCarouselEdgeFade` writes the two 0..1 ramp factors from
- * embla's scroll position instead. Their initial values are the rest state —
- * start edge clear, end edge faded — so a server-rendered rail is already
- * right before that hook runs.
- */
-@utility drag-fade-x {
-  /* Same shape as `scroll-fade`'s own default (`min(12%, 40px)`), with a cap
-     sized for a card rail rather than a row of pills: the edge here is the
-     full height of a card, where 40px reads as a trim rather than a
-     dissolve. `scroll-fade-*` still overrides it at a call site. */
-  --drag-fade-size: var(--scroll-fade-size, min(12%, calc(var(--spacing) * 32)));
-  --scroll-fade-s: calc(var(--drag-fade-size) * var(--drag-fade-ks));
-  --scroll-fade-e: calc(var(--drag-fade-size) * var(--drag-fade-ke));
-  --scroll-fade-mask: linear-gradient(
-    to right,
-    transparent 0,
-    #000 var(--scroll-fade-s),
-    #000 calc(100% - var(--scroll-fade-e)),
-    transparent 100%
-  );
-  &:where([dir="rtl"], [dir="rtl"] *) {
-    --scroll-fade-mask: linear-gradient(
-      to left,
-      transparent 0,
-      #000 var(--scroll-fade-s),
-      #000 calc(100% - var(--scroll-fade-e)),
-      transparent 100%
-    );
-  }
-  -webkit-mask-image: var(--scroll-fade-mask);
-  mask-image: var(--scroll-fade-mask);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-}
-
 @utility scroll-fade-* {
   --scroll-fade-size: calc(var(--spacing) * --value(integer));
   --scroll-fade-size: --value([length], [percentage]);
@@ -960,24 +907,31 @@
 }
 
 /*
- * A rail that starts on the page column and runs off the end of the screen —
- * the clipped card sits in the browser's edge, not a hand's width inside it.
+ * A box that bleeds to the screen while its content sits on the page column.
+ * `container-bleed` marks the bleeding box (full width: a sibling of
+ * `.container`, never a child) and publishes `--container-inset`, the distance
+ * from its edge back to the column, for descendants to spend as padding or
+ * width on whichever box does the clipping or scrolling. Overflow clips at the
+ * padding box, so a scroller carrying the inset as padding shows panned
+ * content right up to the screen and only rests on the column: a collection
+ * view's content inset. Same shape as `-mx-gutter` + `px-gutter` on the pill
+ * rails, carried up to the column cap.
  *
- * The start padding reproduces `container`'s own inset without a viewport
- * unit: percentage padding resolves against the containing block, so on a
- * full-width parent `100%` is the document's content width and
- * `(100% - max-width) / 2 + gutter` lands exactly where the page column
- * starts; `max()` collapses it to the plain gutter below the cap. `100vw`
- * would overshoot by half the scrollbar space `html` reserves with
- * `scrollbar-gutter: stable` and hang a horizontal scrollbar off the page.
- *
- * Requires a full-width parent — a sibling of `.container`, never a child.
+ * The inset reproduces `container`'s own: `(width - max-width) / 2 + gutter`
+ * lands exactly where the column starts, and `max()` collapses it to the
+ * plain gutter below the cap. It reads the bleeding box's width in `cqw`,
+ * which resolves where the token is used, against the nearest size container,
+ * so it stays exact at any depth: a percentage would resolve against each
+ * descendant's own containing block, and `100vw` would overshoot by half the
+ * scrollbar space `html` reserves with `scrollbar-gutter: stable` and hang a
+ * horizontal scrollbar off the page. The one condition is that nothing
+ * between the box and the use site is itself a size container.
  */
-@utility container-bleed-e {
-  width: 100%;
-  padding-inline-start: max(
+@utility container-bleed {
+  container-type: inline-size;
+  --container-inset: max(
     var(--spacing-gutter),
-    calc((100% - var(--max-width-content-default)) / 2 + var(--spacing-gutter))
+    calc((100cqw - var(--max-width-content-default)) / 2 + var(--spacing-gutter))
   );
 }
 
@@ -1362,6 +1316,45 @@ html {
     opacity: 1;
     transform: none;
     animation: none;
+  }
+}
+
+/* Stepped forms (blocks/shared/form/form-steps): a step's body opens and
+   closes as a grid track, 0fr ↔ 1fr, so height follows the content without
+   measuring it; the box inside fades with the track. Exit is shorter than
+   enter, and the incoming fade waits a beat so the fields arrive into space
+   that already exists. The clip box is inset by a spacing unit on each side
+   so a focus ring at the edge of a chip row survives the overflow clip. */
+.form-step-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.form-step-body > * {
+  min-height: 0;
+  overflow: hidden;
+  margin-inline: calc(var(--spacing) * -1);
+  padding-inline: var(--spacing);
+  opacity: 0;
+  transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.form-step-body[data-open] {
+  grid-template-rows: 1fr;
+  transition-duration: 250ms;
+}
+
+.form-step-body[data-open] > * {
+  opacity: 1;
+  transition-duration: 200ms;
+  transition-delay: 50ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-step-body,
+  .form-step-body > * {
+    transition: none;
   }
 }
 

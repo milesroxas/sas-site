@@ -1,5 +1,6 @@
 'use client'
 
+import { IconCheck, IconPlus } from '@tabler/icons-react'
 import { createContext, use } from 'react'
 import { cn } from '@/utilities/ui'
 
@@ -45,6 +46,10 @@ function ChoiceChips({
  * One option. The input is visually hidden but still the focus target and the
  * thing that carries state, so selection styling reads off `:checked` and the
  * ring reads off `:focus-visible` — no JS state, nothing to keep in sync.
+ *
+ * A pick-any chip leads with a `+` that becomes a check once picked, so a row
+ * of pills reads as things to add rather than tags to read; pick-one chips
+ * stay plain, and their filled state alone says which one.
  */
 function ChoiceChip({
   children,
@@ -57,19 +62,31 @@ function ChoiceChip({
     throw new Error('ChoiceChip must be rendered inside ChoiceChips')
   }
 
+  const additive = context.type === 'checkbox'
+
   return (
     <label
       data-slot="choice-chip"
       className={cn(
-        'pressable inline-flex cursor-pointer items-center rounded-full border border-border px-4 py-2 font-mono text-xs/4 text-foreground select-none',
+        'group/chip pressable inline-flex cursor-pointer items-center rounded-full border border-border px-4 py-2 font-mono text-xs/4 text-foreground select-none',
         'hover:border-foreground',
         'has-[input:checked]:border-foreground has-[input:checked]:bg-foreground has-[input:checked]:text-background',
         'has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-ring/30',
         'has-[input:disabled]:pointer-events-none has-[input:disabled]:opacity-50',
+        additive && 'gap-1.5 pl-3',
         className,
       )}
     >
       <input className="sr-only" name={context.name} type={context.type} {...props} />
+      {additive ? (
+        <span
+          aria-hidden="true"
+          className="size-3 shrink-0 text-muted-foreground group-has-[input:checked]/chip:text-background"
+        >
+          <IconPlus className="size-3 group-has-[input:checked]/chip:hidden" stroke={1.5} />
+          <IconCheck className="hidden size-3 group-has-[input:checked]/chip:block" stroke={1.5} />
+        </span>
+      ) : null}
       {children}
     </label>
   )

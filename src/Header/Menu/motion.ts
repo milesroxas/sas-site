@@ -45,6 +45,19 @@ export const CHAT_COVER_FULL = 'inset(0% 0% 0% 0%)'
 export const CHAT_STAGE_DELAY_MS = 200
 export const CHAT_STAGE_DURATION_MS = 300
 
+/**
+ * Panel exit. The frame comes back at once under the still-full cover, so
+ * the transcript's top is occluded from the first frame while the cover
+ * retracts (CHAT_UNWIPE_DURATION). The part of the panel below the window,
+ * on a phone where it had grown into the nav's column, fades in place
+ * (CHAT_PANEL_EXIT_MS); the column is released on the cover's beat
+ * (CHAT_EXIT_RELEASE_MS), after the fade: the slot collapses, unseen, and
+ * the nav fades back into the freed space. Content leaves, then chrome
+ * returns: the entry in reverse.
+ */
+export const CHAT_PANEL_EXIT_MS = 150
+export const CHAT_EXIT_RELEASE_MS = CHAT_UNWIPE_DURATION * 1000
+
 /** Docked-window card chrome, per breakpoint. */
 export const CARD_RADIUS_DESKTOP = 24
 export const CARD_RADIUS_MOBILE = 20

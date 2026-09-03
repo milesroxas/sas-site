@@ -13,7 +13,7 @@ export const Home: GlobalConfig = {
   slug: 'home',
   label: 'Home',
   admin: {
-    group: 'Website',
+    group: 'Website: Landing',
     description: 'The site homepage published at /. Composition and SEO only.',
     livePreview: {
       url: ({ req }) => generateHomePreviewPath({ req }),

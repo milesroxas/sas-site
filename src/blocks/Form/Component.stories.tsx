@@ -56,6 +56,16 @@ const inquiryFields: ResolvedFormField[] = [
   },
 ]
 
+/** The inquiry form split at step dividers, as an editor would author it. */
+const steppedFields: ResolvedFormField[] = [
+  { blockType: 'step', title: 'About you' },
+  ...inquiryFields.slice(0, 2),
+  { blockType: 'step', title: 'The work' },
+  ...inquiryFields.slice(2, 4),
+  { blockType: 'step', title: 'The brief' },
+  ...inquiryFields.slice(4),
+]
+
 const meta = {
   title: 'Blocks/Form',
   component: FormRenderer,
@@ -90,6 +100,19 @@ export const InquiryDelivery: Story = {
   args: {
     delivery: 'inquiries',
     fields: inquiryFields,
+    submitLabel: 'Send inquiry',
+  },
+}
+
+/**
+ * The same form with step dividers: one step at a time, finished steps
+ * collapsed to their answers, Enter and Continue doing the same thing.
+ */
+export const Stepped: Story = {
+  args: {
+    delivery: 'inquiries',
+    fields: steppedFields,
+    steps: { estimatedTime: 'About two minutes' },
     submitLabel: 'Send inquiry',
   },
 }

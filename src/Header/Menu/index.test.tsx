@@ -153,10 +153,12 @@ describe('TakeoverMenu', () => {
     const themeToggleButton = screen.getByRole('button', {
       name: /switch to (dark|light) theme/i,
     })
-    // The toggle lives in the trailing utility row, hidden from md up.
+    // The toggle lives in the trailing utility row, hidden from md up. The
+    // row's chat-view wrapper owns the breakpoint (the item itself carries
+    // the stagger's inline styles, so the wrapper drives display and fade).
     const themeToggleItem = themeToggleButton.closest('[data-menu-item]')
     expect(themeToggleItem).not.toBeNull()
-    expect(themeToggleItem?.className).toContain('md:hidden')
+    expect(themeToggleItem?.parentElement?.className).toContain('md:hidden')
   })
 
   it('renders the editorial columns from menuContent and the contact CTA', () => {

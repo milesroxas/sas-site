@@ -2936,6 +2936,15 @@ export interface Form {
             blockName?: string | null;
             blockType: 'capabilities';
           }
+        | {
+            /**
+             * Opens a step. The questions below it, up to the next step, are asked together; the rest of the form waits.
+             */
+            title: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'step';
+          }
       )[]
     | null;
   submitButtonLabel?: string | null;
@@ -2992,6 +3001,24 @@ export interface Form {
    * What kind of request this form produces. Sets the inquiry type in the inbox, which decides who is notified and which questions the admin shows.
    */
   inquiryType?: ('project' | 'general') | null;
+  /**
+   * How a form with Step dividers walks the visitor through them.
+   */
+  steps?: {
+    /**
+     * Beside the step count, before the first step ("About two minutes"). Leave empty to show the count alone.
+     */
+    estimatedTime?: string | null;
+    continueLabel?: string | null;
+    /**
+     * On each finished step, beside its summary.
+     */
+    editLabel?: string | null;
+    /**
+     * Quiet line beside Continue.
+     */
+    note?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -8211,6 +8238,13 @@ export interface FormsSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        step?:
+          | T
+          | {
+              title?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   submitButtonLabel?: T;
   confirmationType?: T;
@@ -8234,6 +8268,14 @@ export interface FormsSelect<T extends boolean = true> {
       };
   delivery?: T;
   inquiryType?: T;
+  steps?:
+    | T
+    | {
+        estimatedTime?: T;
+        continueLabel?: T;
+        editLabel?: T;
+        note?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

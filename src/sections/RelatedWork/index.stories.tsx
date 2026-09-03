@@ -1,48 +1,29 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { mediaFixture, videoFixture } from '@/blocks/fixtures'
-import type { CaseStudy, WorkPage } from '@/payload-types'
+import { INITIAL_VIEWPORTS } from 'storybook/viewport'
+import {
+  worksBrowseCapabilities,
+  worksBrowseIndustries,
+  worksBrowseItems,
+} from '@/sections/WorksBrowse/fixtures'
 import { RelatedWorkSection } from './index'
 
-const study = {
-  id: 1,
-  title: 'Clarity for a complex platform',
-  project: 1,
-  summaries: {
-    oneLine: 'A clearer brand for a technical platform.',
-    short: 'We repositioned Acme so buyers could understand the platform without a sales call.',
-  },
-  createdAt: '2026-01-01T00:00:00.000Z',
-  updatedAt: '2026-01-01T00:00:00.000Z',
-} as CaseStudy
+const webDesign = worksBrowseCapabilities.filter((option) => option.slug === 'web-design')
+const enterprise = worksBrowseIndustries.filter((option) => option.slug === 'enterprise-technology')
 
-const pages = [
-  {
-    id: 1,
-    title: 'Acme',
-    slug: 'acme',
-    caseStudy: study,
-    coverAsset: mediaFixture,
-    featured: true,
-  },
-  {
-    id: 2,
-    title: 'Northwind',
-    slug: 'northwind',
-    caseStudy: { ...study, id: 2, title: 'A sharper category story' },
-    coverAsset: videoFixture,
-    featured: false,
-  },
-] as WorkPage[]
+const byCapability = worksBrowseItems.filter((item) =>
+  item.capabilities.some((capability) => capability.slug === 'web-design'),
+)
+const byIndustry = worksBrowseItems.filter((item) =>
+  item.industries.some((industry) => industry.slug === 'enterprise-technology'),
+)
 
 const meta = {
   title: 'Sections/RelatedWork',
   component: RelatedWorkSection,
-  parameters: {
-    layout: 'padded',
-  },
+  parameters: { layout: 'fullscreen' },
   args: {
-    pages,
-    heading: 'Related work',
+    filter: { kind: 'capabilities', terms: webDesign },
+    items: byCapability,
   },
 } satisfies Meta<typeof RelatedWorkSection>
 
@@ -50,4 +31,37 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Default: Story = {}
+/** Expertise page: the page's capability is the filter, and its chip carries the dot in every row. */
+export const Expertise: Story = {}
+
+/** Audience page: the filter is an industry, so the match lights in the facts line instead of a chip. */
+export const Audience: Story = {
+  args: {
+    filter: { kind: 'industries', terms: enterprise },
+    items: byIndustry,
+  },
+}
+
+/** A page defined by more than one term: one filter row each, every match lit. */
+export const SeveralTerms: Story = {
+  args: {
+    filter: {
+      kind: 'capabilities',
+      terms: worksBrowseCapabilities.filter((option) =>
+        ['web-design', 'brand-communications'].includes(option.slug),
+      ),
+    },
+    items: worksBrowseItems,
+  },
+}
+
+/** Sole match: the list keeps its opening rule and closing hairline. */
+export const SingleProject: Story = {
+  args: { items: byCapability.slice(0, 1) },
+}
+
+/** Below `lg` the aside stacks above the list and the rows fold as on the index. */
+export const Mobile: Story = {
+  globals: { viewport: { value: 'iphone12', isRotated: false } },
+  parameters: { viewport: { options: INITIAL_VIEWPORTS } },
+}

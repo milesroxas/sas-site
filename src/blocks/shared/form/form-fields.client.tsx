@@ -26,8 +26,9 @@ export type FormFieldsProps = {
  * editorial form pairs name with email and company with site. Below that every
  * field spans: a half-width control on a phone is unusable.
  *
- * Shared by the form block and the contact template, so a form composed onto
- * an ordinary page and the same form on its own page are the same form.
+ * Rendered by `FormBody` — once for a flat form, once per step for a stepped
+ * one — so a form composed onto an ordinary page and the same form on its own
+ * page are the same form.
  */
 export function FormFields({ control, errors, fields, register }: FormFieldsProps) {
   return (
@@ -48,12 +49,6 @@ export function FormFields({ control, errors, fields, register }: FormFieldsProp
           />
         )
       })}
-
-      {/* Honeypot. Off-screen rather than display:none, because bots that skip
-          hidden fields still fill this one in. */}
-      <div aria-hidden="true" className="absolute left-[-9999px]">
-        <input autoComplete="off" tabIndex={-1} {...register('role')} />
-      </div>
     </FieldGroup>
   )
 }

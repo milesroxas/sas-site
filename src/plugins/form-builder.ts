@@ -4,6 +4,7 @@ import type { Block, Field } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import {
   FORM_DELIVERY,
+  FORM_STEP_COPY,
   INQUIRY_FIELD_TARGETS,
   INQUIRY_MESSAGE_MAX_LENGTH,
   INQUIRY_TYPES,
@@ -64,6 +65,29 @@ const capabilitiesField: Block = {
 }
 
 /**
+ * A divider that opens a step. Every question below it, up to the next
+ * divider, belongs to that step, and a form carrying two or more steps asks
+ * one step at a time: the visitor sees the questions for where they are, a
+ * one-line summary of what they have already answered, and the titles of what
+ * is left. Questions above the first divider form an untitled first step.
+ */
+const stepField: Block = {
+  slug: 'step',
+  labels: { singular: 'Step', plural: 'Steps' },
+  fields: [
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+      admin: {
+        description:
+          'Opens a step. The questions below it, up to the next step, are asked together; the rest of the form waits.',
+      },
+    },
+  ],
+}
+
+/**
  * Only a form that feeds the inbox needs to say where each answer lands, so
  * the mapping hides itself on an ordinary form.
  */
@@ -78,8 +102,8 @@ const mapsToField: Field = {
   },
 }
 
-/** Static copy blocks have no answer, so there is nothing to map. */
-const UNMAPPED_BLOCKS = new Set(['message'])
+/** Copy and divider blocks have no answer, so there is nothing to map. */
+const UNMAPPED_BLOCKS = new Set(['message', 'step'])
 
 const placeholderField: Field = {
   name: 'placeholder',
@@ -128,12 +152,12 @@ const EXTRA_FIELDS: Record<string, Field[]> = {
 const withFieldMapping = (fields: Field[]): Field[] =>
   fields.map((field) => {
     if (!('name' in field) || field.name !== 'fields' || field.type !== 'blocks') return field
-    // The custom block joins the list *before* the pass, not after it: append
-    // it afterwards and it is the one block without a `mapsTo`, so its answer
+    // The custom blocks join the list *before* the pass, not after it: append
+    // one afterwards and it is the one block without a `mapsTo`, so its answer
     // silently takes the unmapped path.
     return {
       ...field,
-      blocks: [...field.blocks, capabilitiesField].map((block) => {
+      blocks: [...field.blocks, capabilitiesField, stepField].map((block) => {
         const extras = [
           ...(EXTRA_FIELDS[block.slug] ?? []),
           ...(UNMAPPED_BLOCKS.has(block.slug) ? [] : [mapsToField]),
@@ -209,6 +233,50 @@ export const formBuilder = formBuilderPlugin({
             description:
               'What kind of request this form produces. Sets the inquiry type in the inbox, which decides who is notified and which questions the admin shows.',
           },
+        },
+        {
+          name: 'steps',
+          type: 'group',
+          label: 'Steps',
+          admin: {
+            position: 'sidebar',
+            // Only a form carrying step dividers asks one step at a time, so
+            // the copy for that stays out of the way on every other form.
+            condition: (data) =>
+              Array.isArray(data?.fields) &&
+              data.fields.some((field: { blockType?: string }) => field?.blockType === 'step'),
+            description: 'How a form with Step dividers walks the visitor through them.',
+          },
+          fields: [
+            {
+              name: 'estimatedTime',
+              type: 'text',
+              label: 'Estimated time',
+              admin: {
+                description:
+                  'Beside the step count, before the first step ("About two minutes"). Leave empty to show the count alone.',
+              },
+            },
+            {
+              name: 'continueLabel',
+              type: 'text',
+              label: 'Continue button',
+              defaultValue: FORM_STEP_COPY.continueLabel,
+            },
+            {
+              name: 'editLabel',
+              type: 'text',
+              label: 'Edit link',
+              defaultValue: FORM_STEP_COPY.editLabel,
+              admin: { description: 'On each finished step, beside its summary.' },
+            },
+            {
+              name: 'note',
+              type: 'text',
+              defaultValue: FORM_STEP_COPY.note,
+              admin: { description: 'Quiet line beside Continue.' },
+            },
+          ],
         },
       ),
   },

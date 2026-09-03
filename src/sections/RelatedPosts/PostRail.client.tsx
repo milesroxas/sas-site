@@ -3,10 +3,8 @@
 import { IconArrowUpRight } from '@tabler/icons-react'
 import Link from 'next/link'
 import type React from 'react'
-import { useState } from 'react'
 import { Card, type CardPostData } from '@/components/Card'
-import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel'
-import { useCarouselEdgeFade } from '@/components/ui/use-carousel-edge-fade'
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 
@@ -14,10 +12,10 @@ import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 const CAROUSEL_MIN_COUNT = 4
 
 /**
- * Slide width as a fraction of the rail's window. Every step is a whole number
- * of cards plus a half, never a whole number: the rail carries no arrows —
+ * Slide width as a fraction of the rail's track. Every step is a whole number
+ * of cards plus a half, never a whole number: the rail carries no arrows,
  * dragging is the whole interaction, and the `drag` cursor variant attaches
- * itself to `[data-slot="carousel"]` (features/cursor/variants) — so the cut
+ * itself to `[data-slot="carousel"]` (features/cursor/variants), so the cut
  * card is the only thing on screen that says the list continues. Half a card
  * reads as an interrupted card; a sliver reads as a rendering seam.
  *
@@ -32,25 +30,58 @@ const CAROUSEL_MIN_COUNT = 4
 const SLIDE_BASIS = 'basis-5/6 md:basis-[calc(100%/2.5)]'
 
 /**
- * Slide gutter, split evenly across both edges so the gap between two cards is
- * the sum of theirs (`px-8` + `px-8` = `gap-16`). The negative track margin
- * cancels the outer half at the **start** only, keeping the first card flush
- * with the page column — the rail reads as starting at the text above it, not
- * indented from it. The end half stays: the rail runs off the screen (see
- * `container-bleed-e` below), so cancelling it too would land the last card
- * dead against the browser edge at the final snap. The grid uses the same
- * `gap-16` so both layouts sit on one rhythm.
+ * Slide gap, the primitive's own way: each slide carries the whole gap as
+ * start padding and the track's negative margin swallows the first one, so
+ * the first card sits flush on the track's content edge and the last card ends
+ * on its own edge with nothing trailing it. Both ends therefore land exactly
+ * where `RAIL_INSET` puts the track. The grid uses the same `gap-16`, so both
+ * layouts sit on one rhythm from `md`.
+ *
+ * A phone halves the gap (`gap-8`). The slide basis is a fraction of a narrow
+ * window and the gap comes out of that fraction, so the full-width pair cost
+ * the card a fifth of its own width; the peeking neighbour already says the
+ * row continues, the seam only has to separate.
  *
  * `-ml-*`, not the logical `-ms-*`, because the shadcn track hardcodes `-ml-4`
  * and `cn`'s tailwind-merge only drops a class it recognises as the same
  * property: `-ms-8` leaves `-ml-4` standing and the cascade keeps it, which
- * cancels half the gutter and pushes the first card 16px off the column.
- * `-ml-8` replaces it outright. The primitive is left-to-right only here
- * either way.
+ * cancels half the gap and pushes the first card off the column. `-ml-8`
+ * replaces it outright. The primitive is left-to-right only here either way.
  */
-const SLIDE_GUTTER = 'px-8'
-const TRACK_GUTTER = '-ml-8'
+const SLIDE_GUTTER = 'pl-8 md:pl-16'
+const TRACK_GUTTER = '-ml-8 md:-ml-16'
 const GRID_GAP = 'gap-16'
+
+/**
+ * Content inset. The root bleeds (`container-bleed`, which publishes
+ * `--container-inset`), and the viewport, the element that clips, spends the
+ * inset as padding: full width, with the first card on the page column at
+ * rest and the last card on the column's far edge at the end of the pan. In
+ * between, cards clip at the screen's edge, the way a collection view's
+ * content inset works: the device edge is the cut, and a card leaving the
+ * screen needs no fade to say the row continues. The mask this replaces
+ * dissolved photographs into the page, which read as haze, and on the start
+ * edge it sat mid-page, on the column, right under a heading that cuts clean.
+ *
+ * Embla measures its snaps and its scroll limit from the track's box, which
+ * starts and ends at the viewport's padding edges: every snap lands a card on
+ * the column, and the end limit stops with the last card's edge on it, so the
+ * inset needs no help from JS.
+ *
+ * The touch rail is a native scroller, and there the viewport's end padding
+ * counts for nothing: a scroller's padding extends its scrollable overflow
+ * only past its own in-flow content, and the track (its one child) never
+ * overflows, the slides do. Nor does an end margin on the last slide. What
+ * does extend it is a box, so the track ends in a `::after` spacer the width
+ * of the inset. Embla measures slides from the track's element children and
+ * never sees the pseudo-element, and its end limit leaves the spacer beyond
+ * the edge, so the two inputs do not double up.
+ *
+ * On the embla viewport, which the primitive does not expose through a prop.
+ */
+const RAIL_BLEED = 'container-bleed'
+const RAIL_INSET = '[&_[data-slot=carousel-content]]:px-(--container-inset)'
+const TRACK_END = 'after:shrink-0 after:basis-(--container-inset)'
 
 /**
  * Touch rail. Embla drags its track from pointer events, and a finger keeps
@@ -76,16 +107,8 @@ const GRID_GAP = 'gap-16'
 const TOUCH_RAIL =
   'pointer-coarse:[&_[data-slot=carousel-content]]:no-scrollbar pointer-coarse:[&_[data-slot=carousel-content]]:overflow-x-auto pointer-coarse:[&_[data-slot=carousel-content]]:overscroll-x-contain'
 
-/**
- * Edge fade, one per input. `drag-fade-x` reads embla's translate through
- * `useCarouselEdgeFade` because a dragged viewport never scrolls; the touch
- * rail has a real scroll position, so it takes `scroll-fade-x` off its own
- * scroll timeline instead — the same signal every native rail on the site
- * gives. `scroll-fade-32` restates the wider cap `drag-fade-x` sets for a card
- * rail, so both inputs dissolve by the same amount.
- */
-const EDGE_FADE =
-  'pointer-fine:[&_[data-slot=carousel-content]]:drag-fade-x pointer-coarse:[&_[data-slot=carousel-content]]:scroll-fade-x pointer-coarse:[&_[data-slot=carousel-content]]:scroll-fade-32'
+/** 20px line + 12px each side = 44px (HIG minimum). See the link below. */
+const LINK_TOUCH_TARGET = 'relative after:absolute after:inset-x-0 after:-inset-y-3 md:after:hidden'
 
 const RailCard: React.FC<{ post: CardPostData }> = ({ post }) => (
   // h-full: every card takes the tallest neighbour's height, so the category
@@ -99,24 +122,42 @@ export const PostRail: React.FC<{
   posts: CardPostData[]
 }> = ({ heading, posts }) => {
   const isCarousel = posts.length >= CAROUSEL_MIN_COUNT
-  const [api, setApi] = useState<CarouselApi>()
-  useCarouselEdgeFade(api)
 
   return (
     // `underMedia`: the cards are copy paired with media, so each card's frame
     // wipes open when the rail enters and its copy drops in on the same beat.
     <ScrollReveal as="div" variant="underMedia">
-      <div className="container mb-16 flex items-start justify-between gap-8">
-        {/* Grouped with the link beside it: one line of furniture, one beat. */}
+      {/*
+        One row at every width: `items-baseline` sits the link on the heading's
+        first baseline, not its cap line, so the pair reads as one line of
+        furniture even where the heading wraps and the two sizes differ. The
+        gap closes on a phone, where the link and its gap are a real share of
+        the column, so the heading keeps the width for a two-line sentence.
+      */}
+      <div className="container mb-16 flex items-baseline justify-between gap-4 md:gap-8">
+        {/*
+          A rail label, not a section heading: the lead size on a phone, with
+          heading-3's leading rather than lead's body leading (`/snug`), and
+          `text-balance` evens the break so it does not orphan a word.
+        */}
         <h2
-          className="max-w-lg text-heading-3 font-light"
+          className="max-w-lg text-balance text-lead/snug font-light md:text-heading-3"
           data-reveal
           data-reveal-group="rail-intro"
         >
           {heading}
         </h2>
+        {/*
+          A secondary action, so a phone sets it at `sm` (14px, above the 11pt
+          floor iOS puts on legible text) with the arrow stepped down to match;
+          `lg` beside the lead-size heading read as a second heading. The
+          `::after` pads the 20px line out to a 44px press target without
+          inflating how it looks — the same trick the audience tabs and the
+          carousel arrows use — and `md:after:hidden` drops the pad once the
+          pointer is fine.
+        */}
         <Link
-          className="group pressable flex shrink-0 items-center gap-3 text-lg"
+          className={`${LINK_TOUCH_TARGET} group pressable flex shrink-0 items-center gap-2 text-sm md:gap-3 md:text-lg`}
           data-reveal
           data-reveal-group="rail-intro"
           href="/posts"
@@ -125,55 +166,54 @@ export const PostRail: React.FC<{
           View All
           <IconArrowUpRight
             aria-hidden="true"
-            className="size-6 shrink-0 stroke-1 transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
+            className="size-5 shrink-0 stroke-1 transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none md:size-6"
           />
         </Link>
       </div>
 
       {isCarousel ? (
-        // The rail starts on the page column and runs off the end of the
-        // screen — the clipped card sits in the browser's edge, not a hand's
-        // width inside it, so the list reads as continuing off the page rather
-        // than stopping at an invisible boundary. The edge fade dissolves
-        // whichever side still has cards behind it (see `EDGE_FADE`), and the
-        // viewport carries its own width — no size class needed.
-        <div className="container-bleed-e">
-          <Carousel
-            aria-label="More insights"
-            className={`${TOUCH_RAIL} ${EDGE_FADE}`}
-            data-lenis-prevent-horizontal
-            opts={{
-              // Embla only where a mouse can drag it. `breakpoints` re-reads
-              // this on the media query, so a tablet that gains a pointer
-              // rebuilds the carousel rather than staying a scroll container.
-              active: false,
-              breakpoints: { '(pointer: fine)': { active: true } },
-              // A finite archive, so no loop and no wrap-around: `start` keeps
-              // the first card on the page column and `trimSnaps` stops the
-              // last drag from parking on empty gutter.
-              align: 'start',
-              containScroll: 'trimSnaps',
-              // A rail, not a slideshow. Embla's snapped default only commits a
-              // drag that clears its go-to-next force threshold and otherwise
-              // animates back to the snap it started on — with no arrows here,
-              // a deliberate short drag reads as the rail refusing to move.
-              // Free drag lets the track come to rest under its own momentum
-              // wherever the hand left it, still clamped by `trimSnaps` at both
-              // ends, which is how every other scrollable row on the site
-              // behaves.
-              dragFree: true,
-            }}
-            setApi={setApi}
-          >
-            <CarouselContent className={TRACK_GUTTER}>
-              {posts.map((post) => (
-                <CarouselItem className={`${SLIDE_GUTTER} ${SLIDE_BASIS}`} key={post.slug}>
-                  <RailCard post={post} />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
+        // The rail spans the screen and its content sits on the page column
+        // (see `RAIL_INSET`): at rest the first card lines up with the heading
+        // above it and the row runs off the right of the screen, the cut card
+        // in the browser's edge rather than a hand's width inside it. Panned,
+        // cards clip at both screen edges, so the row reads as running under
+        // the device's bezel rather than stopping at an invisible boundary.
+        // The root is full width by being a block in a full-width shell; no
+        // size class is needed. Both ends sit on the column: see `RAIL_INSET`.
+        <Carousel
+          aria-label="More insights"
+          className={`${RAIL_BLEED} ${TOUCH_RAIL} ${RAIL_INSET}`}
+          data-lenis-prevent-horizontal
+          opts={{
+            // Embla only where a mouse can drag it. `breakpoints` re-reads
+            // this on the media query, so a tablet that gains a pointer
+            // rebuilds the carousel rather than staying a scroll container.
+            active: false,
+            breakpoints: { '(pointer: fine)': { active: true } },
+            // A finite archive, so no loop and no wrap-around: `start` keeps
+            // the first card on the page column and `trimSnaps` stops the
+            // last drag from parking on empty gutter.
+            align: 'start',
+            containScroll: 'trimSnaps',
+            // A rail, not a slideshow. Embla's snapped default only commits a
+            // drag that clears its go-to-next force threshold and otherwise
+            // animates back to the snap it started on — with no arrows here,
+            // a deliberate short drag reads as the rail refusing to move.
+            // Free drag lets the track come to rest under its own momentum
+            // wherever the hand left it, still clamped by `trimSnaps` at both
+            // ends, which is how every other scrollable row on the site
+            // behaves.
+            dragFree: true,
+          }}
+        >
+          <CarouselContent className={`${TRACK_GUTTER} ${TRACK_END}`}>
+            {posts.map((post) => (
+              <CarouselItem className={`${SLIDE_GUTTER} ${SLIDE_BASIS}`} key={post.slug}>
+                <RailCard post={post} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
       ) : (
         <div className={`container grid grid-cols-1 md:grid-cols-3 ${GRID_GAP}`}>
           {posts.map((post) => (

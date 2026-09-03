@@ -21,7 +21,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
     update: authenticated,
   },
   admin: {
-    group: 'Website',
+    group: 'Website: Pages',
     useAsTitle: 'title',
     defaultColumns: ['title', 'labProject', 'slug', 'featured', '_status', 'updatedAt'],
     description:

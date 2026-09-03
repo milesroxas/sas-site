@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { addTransitionType, startTransition, useCallback, useState } from 'react'
 import type { FieldValues } from 'react-hook-form'
 import { FormProvider, useForm } from 'react-hook-form'
-import { FormFields } from '@/blocks/shared/form/form-fields.client'
+import { FormBody } from '@/blocks/shared/form/form-body.client'
 import { FormSubmit } from '@/blocks/shared/form/form-submit'
 import { submitForm } from '@/blocks/shared/form/submit'
 import type { FormDelivery, ResolvedFormField } from '@/blocks/shared/form/types'
@@ -22,6 +22,8 @@ export type FormRendererProps = {
   formId: number | string
   inquiryType?: FormDoc['inquiryType']
   redirectUrl?: string | null
+  /** The form's Steps copy; read only when its fields carry step dividers. */
+  steps?: FormDoc['steps']
   submitLabel: string
 }
 
@@ -40,15 +42,10 @@ export function FormRenderer({
   formId,
   inquiryType,
   redirectUrl,
+  steps,
   submitLabel,
 }: FormRendererProps) {
   const formMethods = useForm()
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-    register,
-  } = formMethods
 
   const [isSending, setIsSending] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
@@ -86,9 +83,7 @@ export function FormRenderer({
 
   return (
     <FormProvider {...formMethods}>
-      <form className="flex flex-col gap-12" onSubmit={handleSubmit(onSubmit)}>
-        <FormFields control={control} errors={errors} fields={fields} register={register} />
-
+      <FormBody fields={fields} onSubmit={onSubmit} steps={steps}>
         {error ? (
           <Alert variant="destructive">
             <IconExclamationCircle />
@@ -97,7 +92,7 @@ export function FormRenderer({
         ) : null}
 
         <FormSubmit pending={isSending}>{submitLabel}</FormSubmit>
-      </form>
+      </FormBody>
     </FormProvider>
   )
 }

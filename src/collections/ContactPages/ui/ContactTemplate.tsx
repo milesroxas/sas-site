@@ -57,6 +57,7 @@ export async function ContactPageTemplate({ page }: { page: ContactPage }) {
       fields={fields}
       formId={form.id}
       inquiryType={form.inquiryType}
+      steps={form.steps}
       submitLabel={form.submitButtonLabel ?? 'Send'}
     />
   )

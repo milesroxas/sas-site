@@ -1,8 +1,9 @@
 import { getPayload, type Payload, type PayloadRequest } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
-  getWorkPageCardsByCapabilities,
-  getWorkPageCardsByIndustries,
+  getRelatedWorkByCapabilities,
+  getRelatedWorkByIds,
+  getRelatedWorkByIndustries,
 } from '@/collections/WorkPages/queries'
 import config from '@/payload.config'
 import type { User } from '@/payload-types'
@@ -264,14 +265,21 @@ describe.sequential('website IA surfaces', () => {
     })
     workPageId = workPage.id
 
-    const byCapability = await getWorkPageCardsByCapabilities([capabilityId])
+    const byCapability = await getRelatedWorkByCapabilities([capabilityId])
     expect(byCapability.map((doc) => doc.id)).toContain(workPageId)
 
-    const byIndustry = await getWorkPageCardsByIndustries([industryId])
+    const byIndustry = await getRelatedWorkByIndustries([industryId])
     expect(byIndustry.map((doc) => doc.id)).toContain(workPageId)
 
-    expect(await getWorkPageCardsByCapabilities([])).toEqual([])
-    expect(await getWorkPageCardsByIndustries([])).toEqual([])
+    const byId = await getRelatedWorkByIds([workPageId])
+    expect(byId.map((item) => item.id)).toEqual([workPageId])
+    expect(byId[0]?.capabilities.map((capability) => capability.slug)).toContain(
+      `capability-${suffix}`,
+    )
+
+    expect(await getRelatedWorkByCapabilities([])).toEqual([])
+    expect(await getRelatedWorkByIndustries([])).toEqual([])
+    expect(await getRelatedWorkByIds([])).toEqual([])
   })
 
   it('stores topic hub descriptions on categories', async () => {

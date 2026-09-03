@@ -9,10 +9,16 @@ import { relationshipIds } from '@/utilities/relationshipId'
  * Exactly what the rail's card reads. `depth: 1` populates `meta.image` and
  * the category titles behind it and nothing else.
  */
-const RAIL_SELECT = { title: true, slug: true, categories: true, meta: true } as const
+const RAIL_SELECT = {
+  title: true,
+  slug: true,
+  categories: true,
+  meta: true,
+  standfirst: true,
+} as const
 
 /** A post as the rail query returns it — `RAIL_SELECT`, plus the id it keys on. */
-type RailPost = Pick<Post, 'id' | 'title' | 'slug' | 'categories' | 'meta'>
+type RailPost = Pick<Post, 'id' | 'title' | 'slug' | 'categories' | 'meta' | 'standfirst'>
 
 /**
  * Rail length when the editor picked nothing. Wider than the work closer's

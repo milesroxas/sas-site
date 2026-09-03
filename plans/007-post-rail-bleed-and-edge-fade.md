@@ -1,7 +1,10 @@
 # 007 — Bleed the post rail to the screen edge and fade the edge it clips
 
 - **Commit:** f7f4cf7
-- **Status:** DONE
+- **Status:** DONE, then superseded (2026-09-03): the rail now bleeds at both
+  edges with a content inset on the clipping viewport (`container-bleed` +
+  `--container-inset`, `globals.css`), and the edge fade, `drag-fade-x` and
+  `useCarouselEdgeFade` are gone. Cards clip at the screen edge instead.
 - **Severity:** MEDIUM
 - **Category:** 7 (cohesion, hierarchy & spatial consistency)
 - **Estimated scope:** 4 files, ~90 lines

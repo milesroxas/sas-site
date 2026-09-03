@@ -30,7 +30,7 @@ export const ContactPages: CollectionConfig<'contact-pages'> = {
     update: authenticated,
   },
   admin: {
-    group: 'Website',
+    group: 'Website: Pages',
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', 'form', '_status', 'updatedAt'],
     description:
@@ -45,7 +45,8 @@ export const ContactPages: CollectionConfig<'contact-pages'> = {
       tabs: [
         {
           label: 'Intro',
-          description: 'The column beside the form: what this is, and what happens after sending.',
+          description:
+            'The column beside the form: what this is, the facts worth knowing first, and the alternative to writing. What happens next is shown above the send button.',
           fields: [
             { name: 'eyebrow', type: 'text', defaultValue: 'Project inquiry' },
             {

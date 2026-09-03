@@ -1,13 +1,6 @@
 import { getClientSideURL } from '@/utilities/getURL'
+import { isQuestion, UNSURE } from './answers'
 import type { FormDelivery, FormInquiryType, ResolvedFormField } from './types'
-
-/**
- * Chip value standing in for "I don't know yet". It rides in the same chip
- * group as the capabilities so the escape hatch sits where a visitor looks for
- * it, and is split back out before the request is sent. Real options are
- * numeric ids, so it can never collide with one.
- */
-export const UNSURE = 'unsure'
 
 export type SubmitResult = { reference: string | null; submittedAt: string }
 
@@ -36,7 +29,7 @@ function toInquiry(fields: ResolvedFormField[], values: Record<string, unknown>)
   const unmapped: string[] = []
 
   for (const field of fields) {
-    if (!field.name || field.blockType === 'message') continue
+    if (!isQuestion(field)) continue
     const value = values[field.name]
     if (value === undefined || value === '' || value === null) continue
 

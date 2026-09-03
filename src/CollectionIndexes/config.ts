@@ -31,7 +31,7 @@ const collectionIndexGlobal = ({
   slug,
   label,
   admin: {
-    group: 'Website',
+    group: 'Website: Landing',
     description,
     livePreview: {
       url: () => generateGlobalPreviewPath({ global: slug, path }),

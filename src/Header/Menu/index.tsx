@@ -24,6 +24,7 @@ import {
   CARD_RADIUS_MOBILE,
   CHAT_COVER_FULL,
   CHAT_COVER_HIDDEN,
+  CHAT_EXIT_RELEASE_MS,
   CHAT_UNWIPE_DURATION,
   CHAT_UNWIPE_EASE,
   CHAT_WIPE_DURATION,
@@ -1037,9 +1038,24 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   // context on purpose — the frame outlives this component's scope, and
   // close/unmount always restores it via clearFrameProps (the cover lives
   // inside the hero layer, which clearFrameProps removes).
+  // Exit releases the mobile layout only after the panel has faded
+  // (CHAT_EXIT_RELEASE_MS): the nav must not return into a column the
+  // transcript still occupies. Entry, menu close, and reduced motion flip at
+  // once: the close fade (resp. no fade at all) covers the change.
+  const layoutReleaseRef = useRef<number | null>(null)
+  useEffect(() => () => window.clearTimeout(layoutReleaseRef.current ?? undefined), [])
   const handleChatViewChange = useCallback((next: boolean) => {
     chatViewRef.current = next
-    setChatView(next)
+    window.clearTimeout(layoutReleaseRef.current ?? undefined)
+    layoutReleaseRef.current = null
+    if (next || !openRef.current || prefersReducedMotion()) {
+      setChatView(next)
+    } else {
+      layoutReleaseRef.current = window.setTimeout(() => {
+        layoutReleaseRef.current = null
+        setChatView(false)
+      }, CHAT_EXIT_RELEASE_MS)
+    }
     const frame = getPageFrame()
     if (!frame) return
     const layer = frame.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
@@ -1094,14 +1110,16 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   /**
    * Mobile chat view: nav chrome yields the column to the transcript. Fades
    * out first, then releases its layout space (`transition-discrete` flips
-   * `display` at the fade's end); the return path snaps back under the menu's
-   * own close fade, where it's invisible. Desktop keeps its three columns.
+   * `display` at the fade's end). The return path is the mirror: `display`
+   * comes back once the transcript has released the column (see
+   * handleChatViewChange) and the chrome fades in from `@starting-style`.
+   * Desktop keeps its three columns.
    */
   // Fade duration matches CHAT_STAGE_DELAY_MS (Menu/motion.ts): the space this
   // releases is the space the transcript panel starts growing into.
   const chatHideable = (extra?: string) =>
     cn(
-      'max-md:transition-[opacity,display] max-md:transition-discrete max-md:duration-200 max-md:ease-out',
+      'max-md:transition-[opacity,display] max-md:transition-discrete max-md:duration-200 max-md:ease-out max-md:starting:opacity-0',
       chatView && 'max-md:hidden max-md:opacity-0 max-md:pointer-events-none',
       extra,
     )
@@ -1130,7 +1148,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       <nav
         aria-label="Site menu"
         data-menu-backdrop
-        // Mobile: preview on top, primary nav scrolls, composer + CTA pinned.
+        // Mobile: two modules. Ask (preview + composer) holds the top; the
+        // primary nav anchors to the bottom cluster with the CTA + utility
+        // strip (thumb zone), so any spare height reads as a deliberate
+        // break between the modules rather than a void above the CTA.
         // Desktop: three columns — editorial lists, centered window, nav.
         // Rows pin the side columns to the preview slot; ask + CTA sit below.
         className="absolute inset-0 flex flex-col gap-6 px-gutter pt-[calc(var(--header-bar-height)+0.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] md:grid md:grid-cols-[1fr_minmax(18rem,28rem)_1fr] md:grid-rows-[minmax(0,1fr)_auto_auto] md:gap-x-12 md:gap-y-6 md:pt-[calc(var(--header-height)+2.5rem)] md:pb-10"
@@ -1182,7 +1203,8 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         </div>
 
         {/* Center column — slot + form are MenuAsk fragment children, so they
-            sit on this grid (row 1 + 2). CTA is row 3. */}
+            sit on this grid (row 1 + 2). The CTA (row 3) renders after the
+            right column so the mobile flex stack pins it to the bottom. */}
         <MenuAsk
           open={open}
           onViewChange={handleChatViewChange}
@@ -1190,17 +1212,6 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           transport={askTransport}
           initialMessages={askInitialMessages}
         />
-        <div
-          data-menu-item
-          {...itemHandlers(pageMedia[ctaHref] ?? null)}
-          className={chatHideable('self-center justify-self-center md:col-start-2 md:row-start-3')}
-        >
-          <Button asChild variant="default" size="pill">
-            <Link href={ctaHref} {...ctaLinkProps} {...cursorTarget()}>
-              <span>{ctaLabel}</span>
-            </Link>
-          </Button>
-        </div>
 
         {/* Right column — recent work (desktop) + primary nav. Right-aligned to
             the outer gutter so it mirrors the left column instead of hugging
@@ -1237,7 +1248,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             <div data-menu-item className="hidden h-px w-10 bg-border md:block" />
           )}
 
-          <ul className="flex flex-col items-start gap-5 md:gap-6">
+          {/* max-md:mt-auto (not justify-end) so the list stays scrollable
+              when it overflows: auto margins collapse to 0 inside overflow.
+              max-md:pb-4 is the extra breathing room above the CTA; it lives
+              inside the scroll column so short viewports clip padding, never
+              the last link. */}
+          <ul className="flex flex-col items-start gap-5 max-md:mt-auto max-md:pb-4 md:gap-6">
             {navItems.map(({ link }, i) => {
               const href = navItemHref(link)
               return (
@@ -1255,8 +1271,33 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               )
             })}
           </ul>
+        </div>
 
-          <div data-menu-item className="mt-auto flex items-center justify-between md:hidden">
+        {/* Bottom of the mobile stack: primary CTA, then the utility strip
+            (studio clock + theme toggle) at the safe-area edge. Both live
+            outside the scrolling nav column so they hold position when the
+            nav overflows. Gap scale: nav pitch 20 < CTA-to-strip 24 (stack
+            gap) < nav-to-CTA 40 (stack gap + the list's pb-4, one blank nav
+            row), so the pill reads as the footer block's lead, not a fifth
+            nav item.
+            Desktop keeps the CTA under the composer (row 3) and hides the
+            strip: the footer owns the clock from md up. */}
+        {/* chatHideable sits on a wrapper, not on the data-menu-item: the open
+            stagger leaves inline opacity on every item, which would beat the
+            class-driven fade in both directions. */}
+        <div
+          className={chatHideable('self-center justify-self-center md:col-start-2 md:row-start-3')}
+        >
+          <div data-menu-item {...itemHandlers(pageMedia[ctaHref] ?? null)}>
+            <Button asChild variant="default" size="pill">
+              <Link href={ctaHref} {...ctaLinkProps} {...cursorTarget()}>
+                <span>{ctaLabel}</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
+        <div className={chatHideable('md:hidden')}>
+          <div data-menu-item className="flex items-center justify-between">
             <Clock className="text-foreground" />
             <ThemeToggle className="text-foreground" />
           </div>

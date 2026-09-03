@@ -26,7 +26,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
     update: authenticated,
   },
   admin: {
-    group: 'Website',
+    group: 'Website: Pages',
     useAsTitle: 'title',
     defaultColumns: ['title', 'caseStudy', 'slug', 'featured', '_status', 'updatedAt'],
     description:

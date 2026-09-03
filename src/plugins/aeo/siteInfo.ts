@@ -22,7 +22,7 @@ export const SiteInfo: GlobalConfig = {
   slug: 'site-info',
   label: 'Site Info',
   admin: {
-    group: 'Website',
+    group: 'Website: Globals',
     description:
       'Company identity used for structured data (JSON-LD), llms.txt, and default page metadata.',
   },

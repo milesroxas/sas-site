@@ -63,6 +63,18 @@ One pattern everywhere (`src/fields/overrides.ts`):
 - Labels: `Domain: thing` for shared families (`Feature: statement grid`), plain nouns for collection-specific blocks (`Story section`).
 - `dbName`: short static name (`wp_story`) when the block has one parent collection; a **function** `dbName` when reused across parents (see `src/blocks/split-content/config.ts`) — a static name would collapse every parent into one table.
 
+## Sidebar groups
+
+`admin.group` is one level deep; Payload has no nested nav groups (open requests since 2024, nothing shipped as of 3.88). Split by editorial role instead, with a shared prefix so related groups read as one family:
+
+| Group | Holds |
+|-------|-------|
+| `Website: Pages` | Publishing surfaces with public URLs (Pages, Posts, Work, Lab, Expertise, Audience, Contact) |
+| `Website: Landing` | Editor-configured entry points (Home, Insights Index, Works Index) |
+| `Website: Globals` | Site-wide chrome and identity (Header, Footer, Site Info) |
+
+Ordering rule: groups appear in first-appearance order over `[...collections, ...globals]`, so a group holding only globals always sits below every collection-only group. Renaming a group label resets each user's collapsed state for it once (preferences are keyed by label).
+
 ## Cleanup status (swept 2026-07-31)
 
 Applied across the CMS:

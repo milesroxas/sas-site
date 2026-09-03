@@ -2,6 +2,7 @@ import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import type React from 'react'
 import type { Control, FieldValues, UseFormRegister } from 'react-hook-form'
 import RichText from '@/components/RichText'
+import { UNSURE } from './answers'
 import {
   type BaseFieldProps,
   CheckboxField,
@@ -11,7 +12,6 @@ import {
   TextField,
 } from './fields'
 import { stateOptions } from './state-options'
-import { UNSURE } from './submit'
 import type { FormFieldOption } from './types'
 import { Width } from './width'
 

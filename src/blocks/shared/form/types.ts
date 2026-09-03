@@ -30,9 +30,14 @@ export type ResolvedFormField = {
   message?: unknown
   /** Which part of an inquiry this answer becomes. */
   mapsTo?: string | null
+  /** Title of a `step` divider. */
+  title?: string | null
 }
 
 export type FormDelivery = NonNullable<Form['delivery']>
 
 /** What an inquiries-delivery form files its submissions as. */
 export type FormInquiryType = Form['inquiryType']
+
+/** Copy for a form that asks its steps one at a time (Forms → Steps). */
+export type FormStepsCopy = Form['steps']

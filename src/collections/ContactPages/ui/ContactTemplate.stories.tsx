@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import type { ResolvedFormField } from '@/blocks/shared/form/types'
+import { PROJECT_INQUIRY_FIELDS, PROJECT_INQUIRY_STEPS } from '../inquiryForm'
 import { ContactTemplate, type ContactTemplateContent } from './ContactTemplate.client'
 
 const content: ContactTemplateContent = {
@@ -35,61 +36,19 @@ const content: ContactTemplateContent = {
   responseTime: 'within 2 business days',
 }
 
-/** As `resolveFormFields` hands them over: capability chips already named. */
-const inquiryFields: ResolvedFormField[] = [
-  { blockType: 'text', name: 'name', label: 'Name', required: true, width: 50, mapsTo: 'name' },
-  { blockType: 'email', name: 'email', label: 'Email', required: true, width: 50, mapsTo: 'email' },
-  { blockType: 'text', name: 'company', label: 'Company', width: 50, mapsTo: 'company' },
-  {
-    blockType: 'text',
-    name: 'website',
-    label: 'Current site (optional)',
-    width: 50,
-    mapsTo: 'website',
-  },
-  {
-    blockType: 'capabilities',
-    name: 'capabilities',
-    label: 'What you need',
-    hint: 'Select any',
-    unsureLabel: 'Not sure yet',
-    mapsTo: 'capabilities',
-    options: [
-      { label: 'Brand Expansion', value: '1' },
-      { label: 'Web Design', value: '2' },
-      { label: 'Web Strategy', value: '3' },
-      { label: 'Website Production', value: '4' },
-      { label: 'Brand Communications', value: '5' },
-    ],
-  },
-  {
-    blockType: 'select',
-    name: 'budget',
-    label: 'Budget range',
-    hint: 'USD',
-    mapsTo: 'budget',
-    options: [
-      { label: 'Under 25K', value: 'under-25k' },
-      { label: '25–50K', value: '25-50k' },
-      { label: '50–100K', value: '50-100k' },
-      { label: '100K +', value: '100k-plus' },
-      { label: 'Need guidance', value: 'guidance' },
-    ],
-  },
-  {
-    blockType: 'select',
-    name: 'timeline',
-    label: 'Timeline',
-    mapsTo: 'timeline',
-    options: [
-      { label: 'As soon as possible', value: 'asap' },
-      { label: '1–3 months', value: '1-3-months' },
-      { label: '3–6 months', value: '3-6-months' },
-      { label: 'Just exploring', value: 'exploring' },
-    ],
-  },
-  { blockType: 'textarea', name: 'brief', label: 'The brief', required: true, mapsTo: 'message' },
+/** Capability chips as `resolveFormFields` names them from the taxonomy. */
+const capabilityOptions = [
+  { label: 'Brand Expansion', value: '1' },
+  { label: 'Web Design', value: '2' },
+  { label: 'Web Strategy', value: '3' },
+  { label: 'Website Production', value: '4' },
+  { label: 'Brand Communications', value: '5' },
 ]
+
+/** The shipped inquiry form, with its capability chips already resolved. */
+const inquiryFields: ResolvedFormField[] = PROJECT_INQUIRY_FIELDS.map((field) =>
+  field.blockType === 'capabilities' ? { ...field, options: capabilityOptions } : field,
+)
 
 const generalFields: ResolvedFormField[] = [
   { blockType: 'text', name: 'name', label: 'Name', required: true, width: 50, mapsTo: 'name' },
@@ -124,6 +83,7 @@ const meta = {
     delivery: 'inquiries',
     fields: inquiryFields,
     formId: 1,
+    steps: PROJECT_INQUIRY_STEPS,
     submitLabel: 'Send inquiry',
   },
 } satisfies Meta<typeof ContactTemplate>
@@ -132,10 +92,10 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** The scoped inquiry: capabilities, budget, timeline, brief. */
+/** The scoped inquiry, asked in three steps: who you are, the work, the brief. */
 export const ProjectInquiry: Story = {}
 
-/** The same template pointed at a shorter form. */
+/** The same template pointed at a shorter form with no dividers, asked all at once. */
 export const GeneralMessage: Story = {
   args: {
     content: {

@@ -1,34 +1,49 @@
 import configPromise from '@payload-config'
 import { getPayload, type Where } from 'payload'
-import type { WorkPageCardData } from '@/components/WorkPageCard'
+import {
+  toWorksBrowseItems,
+  WORKS_BROWSE_QUERY,
+  type WorksBrowseItem,
+} from '@/sections/WorksBrowse/queries'
 
-const workPageCardArgs = {
-  collection: 'work-pages',
-  draft: false,
-  overrideAccess: false,
-  depth: 2,
-  sort: '-featured,-publishedAt',
-  select: { title: true, slug: true, caseStudy: true, coverAsset: true, featured: true },
-} as const
+/** Rows the automatic match fills on a segment page's related-work list. */
+const RELATED_WORK_LIMIT = 4
 
-const findWorkPageCards = async (where: Where, limit: number): Promise<WorkPageCardData[]> => {
+/**
+ * Work pages as index rows, the shape the related-work list shares with the
+ * works index. Published-only and access-enforced (`WORKS_BROWSE_QUERY`), so a
+ * page an editor picked but has not published never reaches a public render.
+ */
+const findRelatedWork = async (
+  where: Where,
+  limit: number,
+  sort = '-featured,-publishedAt',
+): Promise<WorksBrowseItem[]> => {
   const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({ ...workPageCardArgs, limit, where })
-  return result.docs
+  const { docs } = await payload.find({ ...WORKS_BROWSE_QUERY, limit, sort, where })
+  return toWorksBrowseItems(docs)
 }
 
-export const getWorkPageCardsByCapabilities = async (
-  capabilityIds: number[],
-  limit = 4,
-): Promise<WorkPageCardData[]> => {
+/** The editor's manual picks, in the order they were picked. */
+export const getRelatedWorkByIds = async (ids: (number | string)[]): Promise<WorksBrowseItem[]> => {
+  if (!ids.length) return []
+  const rank = new Map(ids.map((id, index) => [id, index]))
+  const items = await findRelatedWork({ id: { in: ids } }, ids.length)
+  return items.sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0))
+}
+
+export const getRelatedWorkByCapabilities = async (
+  capabilityIds: (number | string)[],
+  limit = RELATED_WORK_LIMIT,
+): Promise<WorksBrowseItem[]> => {
   if (!capabilityIds.length) return []
-  return findWorkPageCards({ 'caseStudy.featuredCapabilities': { in: capabilityIds } }, limit)
+  return findRelatedWork({ 'caseStudy.featuredCapabilities': { in: capabilityIds } }, limit)
 }
 
-export const getWorkPageCardsByIndustries = async (
-  industryIds: number[],
-  limit = 4,
-): Promise<WorkPageCardData[]> => {
+export const getRelatedWorkByIndustries = async (
+  industryIds: (number | string)[],
+  limit = RELATED_WORK_LIMIT,
+): Promise<WorksBrowseItem[]> => {
   if (!industryIds.length) return []
   const payload = await getPayload({ config: configPromise })
   const studies = await payload.find({
@@ -43,5 +58,5 @@ export const getWorkPageCardsByIndustries = async (
   })
   const studyIds = studies.docs.map((doc) => doc.id)
   if (!studyIds.length) return []
-  return findWorkPageCards({ caseStudy: { in: studyIds } }, limit)
+  return findRelatedWork({ caseStudy: { in: studyIds } }, limit)
 }

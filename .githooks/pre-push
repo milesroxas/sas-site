@@ -52,6 +52,7 @@ SCHEMA_RES=(
   # Plugin / search field overrides that reshape tables.
   '^src/search/fieldOverrides\.ts$'
   '^src/plugins/index\.ts$'
+  '^src/plugins/form-builder\.ts$'
   '^src/plugins/mcp\.ts$'
   '^src/plugins/aeo/siteInfo\.ts$'
 )

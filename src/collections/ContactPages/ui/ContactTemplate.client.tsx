@@ -4,10 +4,16 @@ import { IconExclamationCircle } from '@tabler/icons-react'
 import { useCallback, useRef, useState } from 'react'
 import type { FieldValues } from 'react-hook-form'
 import { FormProvider, useForm } from 'react-hook-form'
-import { FormFields } from '@/blocks/shared/form/form-fields.client'
+import { answered, isQuestion, readable } from '@/blocks/shared/form/answers'
+import { FormBody } from '@/blocks/shared/form/form-body.client'
 import { FormSubmit } from '@/blocks/shared/form/form-submit'
-import { submitForm, UNSURE } from '@/blocks/shared/form/submit'
-import type { FormDelivery, FormInquiryType, ResolvedFormField } from '@/blocks/shared/form/types'
+import { submitForm } from '@/blocks/shared/form/submit'
+import type {
+  FormDelivery,
+  FormInquiryType,
+  FormStepsCopy,
+  ResolvedFormField,
+} from '@/blocks/shared/form/types'
 import { Container } from '@/components/Container'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -43,6 +49,8 @@ export type ContactTemplateProps = {
   fields: ResolvedFormField[]
   formId: number | string
   inquiryType?: FormInquiryType
+  /** The form's Steps copy; read only when its fields carry step dividers. */
+  steps?: FormStepsCopy
   submitLabel: string
 }
 
@@ -63,19 +71,6 @@ const formatSentAt = (iso: string) =>
     timeZoneName: 'short',
   })
 
-/** What a stored answer reads as, once its option labels are applied. */
-const readable = (field: ResolvedFormField, value: unknown): string => {
-  const options = field.options
-  const label = (entry: string) =>
-    entry === UNSURE
-      ? (field.unsureLabel ?? entry)
-      : (options?.find((o) => o.value === entry)?.label ?? entry)
-
-  if (Array.isArray(value)) return value.map(String).map(label).join(', ')
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-  return options ? label(String(value)) : String(value)
-}
-
 /**
  * The contact template.
  *
@@ -89,6 +84,11 @@ const readable = (field: ResolvedFormField, value: unknown): string => {
  *
  * "Edit and resend" swaps back. React Hook Form keeps its values across the
  * unmount, so the form comes back exactly as it was left.
+ *
+ * The copy column is short on purpose and sticks from `lg` up: the heading,
+ * the facts, and the alternative to writing at all stay in view for the whole
+ * length of the form. What happens after sending sits above the send button,
+ * where that reassurance is read.
  */
 export function ContactTemplate({
   content,
@@ -96,6 +96,7 @@ export function ContactTemplate({
   fields,
   formId,
   inquiryType,
+  steps,
   submitLabel,
 }: ContactTemplateProps) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -105,12 +106,6 @@ export function ContactTemplate({
   const [isSending, setIsSending] = useState(false)
 
   const formMethods = useForm()
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-    register,
-  } = formMethods
 
   const swapTo = useRevealSwap({
     rootRef,
@@ -146,7 +141,7 @@ export function ContactTemplate({
   return (
     <Container>
       <div className="flex flex-col gap-16 lg:flex-row lg:gap-24" ref={rootRef}>
-        <div className="flex flex-col gap-16 lg:w-130 lg:shrink-0">
+        <div className="flex flex-col gap-16 lg:sticky lg:top-(--header-height) lg:w-130 lg:shrink-0 lg:self-start">
           {isSent ? (
             <SentIntro
               content={content}
@@ -169,8 +164,10 @@ export function ContactTemplate({
             />
           ) : (
             <FormProvider {...formMethods}>
-              <form className="flex flex-col gap-12" noValidate onSubmit={handleSubmit(onSubmit)}>
-                <FormFields control={control} errors={errors} fields={fields} register={register} />
+              <FormBody fields={fields} onSubmit={onSubmit} steps={steps}>
+                {content.nextSteps.length > 0 ? (
+                  <NextSteps steps={content.nextSteps} title={content.nextStepsTitle} />
+                ) : null}
 
                 {error ? (
                   <Alert variant="destructive">
@@ -182,7 +179,7 @@ export function ContactTemplate({
                 <FormSubmit note={content.submitNote} pending={isSending}>
                   {submitLabel}
                 </FormSubmit>
-              </form>
+              </FormBody>
             </FormProvider>
           )}
         </div>
@@ -242,32 +239,36 @@ function FormIntro({
         </DetailList>
       ) : null}
 
-      {content.nextSteps.length > 0 ? (
-        <div className="flex flex-col gap-6" data-swap="text">
-          {content.nextStepsTitle ? <p className={MONO_LABEL}>{content.nextStepsTitle}</p> : null}
-          <ol className="flex flex-col gap-3">
-            {content.nextSteps.map((step, index) => (
-              <li
-                className={cn('max-w-105 text-base/relaxed', index > 0 && 'text-muted-foreground')}
-                key={step}
-              >
-                {step}
-              </li>
-            ))}
-          </ol>
-        </div>
-      ) : null}
-
       {content.altCta?.body && scheduleUrl ? (
-        <div
-          className="flex flex-col items-start gap-4 border-t border-border pt-6"
-          data-swap="text"
-        >
+        <div className="flex flex-col items-start gap-4" data-swap="text">
           <p className="max-w-105 text-base/relaxed text-muted-foreground">{content.altCta.body}</p>
           <ScheduleButton label={content.altCta.label} url={scheduleUrl} />
         </div>
       ) : null}
     </>
+  )
+}
+
+/**
+ * What happens after sending, read right before it: the first line in full
+ * contrast, the rest quiet. Sits above the send rule inside the form column
+ * (and inside the last step of a stepped form), never in the copy column.
+ */
+function NextSteps({ steps, title }: { steps: string[]; title?: string | null }) {
+  return (
+    <div className="flex flex-col gap-6">
+      {title ? <p className={MONO_LABEL}>{title}</p> : null}
+      <ol className="flex flex-col gap-3">
+        {steps.map((step, index) => (
+          <li
+            className={cn('max-w-105 text-base/relaxed', index > 0 && 'text-muted-foreground')}
+            key={step}
+          >
+            {step}
+          </li>
+        ))}
+      </ol>
+    </div>
   )
 }
 
@@ -346,29 +347,21 @@ function SentSummary({
   onEdit: () => void
   receipt: Receipt
 }) {
-  const rows = fields.filter((field) => {
-    if (!field.name || field.blockType === 'message') return false
-    if (field.mapsTo === 'name' || field.mapsTo === 'email') return false
-    const value = receipt.values[field.name]
-    return (
-      value !== undefined &&
-      value !== '' &&
-      value !== null &&
-      (!Array.isArray(value) || value.length > 0)
-    )
-  })
+  const rows = fields.filter(
+    (field) =>
+      isQuestion(field) &&
+      field.mapsTo !== 'name' &&
+      field.mapsTo !== 'email' &&
+      answered(receipt.values[field.name]),
+  )
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-baseline justify-between gap-6 border-b border-b-foreground pb-4">
         <p className={MONO_LABEL}>{content.sentSummaryTitle}</p>
-        <button
-          className="pressable font-mono text-xs/4 tracking-widest text-foreground uppercase underline underline-offset-4 hover:text-primary"
-          onClick={onEdit}
-          type="button"
-        >
+        <Button onClick={onEdit} size="clear" type="button" variant="mono">
           {content.sentEditLabel}
-        </button>
+        </Button>
       </div>
 
       <DetailList className="border-t-0" size="lg">

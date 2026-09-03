@@ -23,6 +23,9 @@ const buttonVariants = cva(
         // label. Pair with `size="clear"` — the variant owns its own metrics.
         ruled:
           'w-full justify-between rounded-none border-t-foreground py-2 text-base/none font-normal text-muted-foreground hover:text-foreground',
+        // Editorial text action in the field-label voice (Edit, Edit and
+        // resend): mono small caps on an underline. Pair with `size="clear"`.
+        mono: 'font-mono text-xs/4 font-normal tracking-widest text-foreground uppercase underline underline-offset-4 hover:text-primary',
       },
       size: {
         default:

@@ -1,12 +1,9 @@
 'use client'
 
-import { IconArrowUpRight, IconChevronDown } from '@tabler/icons-react'
-import Link from 'next/link'
+import { IconChevronDown } from '@tabler/icons-react'
 import type React from 'react'
 import { type CSSProperties, useMemo } from 'react'
 import { Container } from '@/components/Container'
-import { Media } from '@/components/Media'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -14,13 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { cursorTarget } from '@/features/cursor'
 import { HeroEyebrow } from '@/heros/shared'
-import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
 import { FILTER_SWAP_MAX_STAGGER_STEPS, useFilterSwap } from '@/shared/ui/filter-swap'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 import type { WorksBrowseData, WorksBrowseFilterOption, WorksBrowseItem } from './queries'
+import { CONTROL, FIGURE, LABEL } from './registers'
+import { WorkRow } from './WorkRow'
 
 /** Sentinel for an unset dropdown — Radix Select has no empty-string value. */
 const ALL = 'all'
@@ -55,22 +52,8 @@ type WorksQuery = { industry: string; capability: string; sort: WorksSortKey }
 
 const INITIAL_QUERY: WorksQuery = { industry: ALL, capability: ALL, sort: 'newest' }
 
-const padIndex = (index: number) => String(index + 1).padStart(2, '0')
-
 const matchesSlug = (options: WorksBrowseFilterOption[], slug: string) =>
   slug === ALL || options.some((option) => option.slug === slug)
-
-/**
- * The index's three mono registers. Each carries a real lead rather than
- * `leading-none`: the strip wraps at narrow widths and the row facts line runs
- * long, and wide tracking on a collapsed lead closes up the moment it wraps.
- */
-/** Section labels — `Filter`, `Sort`, and the row's facts line. */
-const LABEL = 'font-mono text-xs/4 tracking-widest uppercase'
-/** Values the reader acts on: dropdown text and the sort options. */
-const CONTROL = 'font-mono text-xs/4 uppercase'
-/** Figures — the index count and the row numbers — sit one step larger. */
-const FIGURE = 'font-mono text-sm/none uppercase'
 
 export type Props = {
   /** Kicker above the index title — CMS hero copy. */
@@ -261,83 +244,3 @@ const FilterSelect: React.FC<{
     </SelectContent>
   </Select>
 )
-
-/**
- * One index row. Below `md` it stacks and the number and arrow ride a header
- * line; at `md` that wrapper dissolves (`display: contents`) so both become
- * direct children of the row — the same nodes in both layouts, so the reveal
- * markers and their beats never duplicate.
- */
-const WorkRow: React.FC<{ item: WorksBrowseItem; index: number }> = ({ item, index }) => {
-  const facts = [item.client, item.industries[0]?.label, item.year].filter(Boolean)
-
-  return (
-    <Link
-      className="group pressable pressable-subtle flex flex-col gap-5 py-8 outline-none md:flex-row md:items-center md:gap-12"
-      href={`/works/${item.slug}`}
-      transitionTypes={[...forwardNavTransitionTypes]}
-      {...cursorTarget({ variant: 'view' })}
-    >
-      <div className="flex items-center justify-between md:contents">
-        <span
-          className={cn(FIGURE, 'text-muted-foreground md:w-10 md:shrink-0')}
-          data-reveal
-          data-reveal-group="row-furniture"
-        >
-          {padIndex(index)}
-        </span>
-        <IconArrowUpRight
-          aria-hidden="true"
-          className="size-6 shrink-0 stroke-1 text-foreground transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none md:order-last"
-          data-reveal
-          data-reveal-group="row-furniture"
-        />
-      </div>
-
-      <div
-        className="relative aspect-video w-full shrink-0 overflow-hidden rounded-md bg-muted md:w-80 lg:w-96"
-        data-reveal="media"
-      >
-        {item.media && (
-          <Media
-            fill
-            htmlElement={null}
-            imgClassName="object-cover"
-            resource={item.media}
-            size="(min-width: 1024px) 24rem, (min-width: 768px) 20rem, 100vw"
-          />
-        )}
-      </div>
-
-      <div className="flex min-w-0 grow flex-col gap-4">
-        {facts.length > 0 && (
-          <p
-            className={cn(LABEL, 'text-muted-foreground')}
-            data-reveal
-            data-reveal-group="row-identity"
-          >
-            {facts.join(' · ')}
-          </p>
-        )}
-        <h2
-          className="text-heading-3 text-foreground group-hover:underline"
-          data-reveal
-          data-reveal-group="row-identity"
-        >
-          {item.title}
-        </h2>
-        {item.capabilities.length > 0 && (
-          <ul className="flex flex-wrap items-center gap-2" data-reveal>
-            {item.capabilities.map((capability) => (
-              <li key={capability.slug}>
-                <Badge className="rounded-full px-3 py-1 font-mono font-normal" variant="outline">
-                  {capability.label}
-                </Badge>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </Link>
-  )
-}

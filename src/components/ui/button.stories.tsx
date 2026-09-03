@@ -120,6 +120,11 @@ export const Clear: Story = {
   args: { size: 'clear', variant: 'link' },
 }
 
+/** Editorial text action in the field-label voice (Edit, Edit and resend). */
+export const Mono: Story = {
+  args: { size: 'clear', variant: 'mono', children: 'Edit' },
+}
+
 export const Disabled: Story = {
   args: { disabled: true },
 }

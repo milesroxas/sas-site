@@ -1,15 +1,16 @@
 import { draftMode } from 'next/headers'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
-import { getWorkPageCardsByCapabilities } from '@/collections/WorkPages/queries'
+import { getRelatedWorkByCapabilities, getRelatedWorkByIds } from '@/collections/WorkPages/queries'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
-import type { WorkPageCardData } from '@/components/WorkPageCard'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { RenderHero } from '@/heros/RenderHero'
-import type { ExpertisePage, WorkPage } from '@/payload-types'
-import { RelatedWorkSection } from '@/sections/RelatedWork'
+import type { ExpertisePage } from '@/payload-types'
+import { RelatedWorkSection, relatedWorkTerms } from '@/sections/RelatedWork'
+import type { WorksBrowseItem } from '@/sections/WorksBrowse/queries'
+import { relationshipIds } from '@/utilities/relationshipId'
 import { breadcrumbSchema, serviceSchema } from '@/utilities/schema'
 import {
   createSlugQuery,
@@ -49,20 +50,19 @@ export default async function ExpertisePageRoute({ params }: SlugRouteArgs) {
         {draft && <LivePreviewListener />}
         <RenderHero {...page.hero} />
         <RenderBlocks blocks={page.layout} />
-        <RelatedWorkSection pages={relatedWork} />
+        <RelatedWorkSection
+          filter={{ kind: 'capabilities', terms: relatedWorkTerms(page.capabilities) }}
+          items={relatedWork}
+        />
       </article>
       <FooterClosingSection closing={page.closing} />
     </>
   )
 }
 
-const resolveRelatedWork = async (page: ExpertisePage): Promise<WorkPageCardData[]> => {
-  const manual = (page.relatedWorkPages ?? []).filter(
-    (doc): doc is WorkPage => typeof doc === 'object',
-  )
-  if (manual.length) return manual
-  const capabilityIds = (page.capabilities ?? []).map((capability) =>
-    typeof capability === 'object' ? capability.id : capability,
-  )
-  return getWorkPageCardsByCapabilities(capabilityIds)
+/** The editor's picks win; otherwise published work sharing one of the page's capabilities. */
+const resolveRelatedWork = async (page: ExpertisePage): Promise<WorksBrowseItem[]> => {
+  const manualIds = relationshipIds(page.relatedWorkPages ?? [])
+  if (manualIds.length) return getRelatedWorkByIds(manualIds)
+  return getRelatedWorkByCapabilities(relationshipIds(page.capabilities ?? []))
 }

@@ -1,15 +1,16 @@
 import { draftMode } from 'next/headers'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
-import { getWorkPageCardsByIndustries } from '@/collections/WorkPages/queries'
+import { getRelatedWorkByIds, getRelatedWorkByIndustries } from '@/collections/WorkPages/queries'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
-import type { WorkPageCardData } from '@/components/WorkPageCard'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { RenderHero } from '@/heros/RenderHero'
-import type { AudiencePage, WorkPage } from '@/payload-types'
-import { RelatedWorkSection } from '@/sections/RelatedWork'
+import type { AudiencePage } from '@/payload-types'
+import { RelatedWorkSection, relatedWorkTerms } from '@/sections/RelatedWork'
+import type { WorksBrowseItem } from '@/sections/WorksBrowse/queries'
+import { relationshipIds } from '@/utilities/relationshipId'
 import { breadcrumbSchema } from '@/utilities/schema'
 import {
   createSlugQuery,
@@ -46,20 +47,19 @@ export default async function AudiencePageRoute({ params }: SlugRouteArgs) {
         {draft && <LivePreviewListener />}
         <RenderHero {...page.hero} />
         <RenderBlocks blocks={page.layout} />
-        <RelatedWorkSection pages={relatedWork} />
+        <RelatedWorkSection
+          filter={{ kind: 'industries', terms: relatedWorkTerms(page.industries) }}
+          items={relatedWork}
+        />
       </article>
       <FooterClosingSection closing={page.closing} />
     </>
   )
 }
 
-const resolveRelatedWork = async (page: AudiencePage): Promise<WorkPageCardData[]> => {
-  const manual = (page.relatedWorkPages ?? []).filter(
-    (doc): doc is WorkPage => typeof doc === 'object',
-  )
-  if (manual.length) return manual
-  const industryIds = (page.industries ?? []).map((industry) =>
-    typeof industry === 'object' ? industry.id : industry,
-  )
-  return getWorkPageCardsByIndustries(industryIds)
+/** The editor's picks win; otherwise published work sharing one of the page's industries. */
+const resolveRelatedWork = async (page: AudiencePage): Promise<WorksBrowseItem[]> => {
+  const manualIds = relationshipIds(page.relatedWorkPages ?? [])
+  if (manualIds.length) return getRelatedWorkByIds(manualIds)
+  return getRelatedWorkByIndustries(relationshipIds(page.industries ?? []))
 }

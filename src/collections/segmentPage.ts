@@ -57,7 +57,7 @@ export const segmentPageCollection = <S extends SegmentPageSlug>({
     update: authenticated,
   },
   admin: {
-    group: 'Website',
+    group: 'Website: Pages',
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', taxonomy.name, '_status', 'updatedAt'],
     description,

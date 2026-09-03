@@ -1,6 +1,6 @@
 /**
- * Bootstraps the contact surface: the "Project inquiry" form, and the contact
- * page that renders it at /contact.
+ * Bootstraps the contact surface: the "Project inquiry" form, asked in three
+ * steps, and the contact page that renders it at /contact.
  *
  * Idempotent — it matches on slug and title, so running it twice updates
  * rather than duplicates. Written as a script because the same two documents
@@ -14,61 +14,11 @@ import config from '@payload-config'
 import { getPayload } from 'payload'
 import { CONTACT_INDEX_SLUG } from '@/collections/ContactPages/constants'
 import {
-  INQUIRY_BUDGETS,
-  INQUIRY_MESSAGE_MAX_LENGTH,
-  INQUIRY_TIMELINES,
-} from '@/shared/content/inquiry'
-
-const FORM_TITLE = 'Project inquiry'
-
-const options = (list: readonly { label: string; value: string }[]) =>
-  list.map((entry) => ({ label: entry.label, value: entry.value }))
-
-const formFields = [
-  { blockType: 'text', name: 'name', label: 'Name', required: true, width: 50, mapsTo: 'name' },
-  { blockType: 'email', name: 'email', label: 'Email', required: true, width: 50, mapsTo: 'email' },
-  { blockType: 'text', name: 'company', label: 'Company', width: 50, mapsTo: 'company' },
-  {
-    blockType: 'text',
-    name: 'website',
-    label: 'Current site (optional)',
-    width: 50,
-    mapsTo: 'website',
-  },
-  {
-    blockType: 'capabilities',
-    name: 'capabilities',
-    label: 'What you need',
-    hint: 'Select any',
-    unsureLabel: 'Not sure yet',
-    mapsTo: 'capabilities',
-  },
-  {
-    blockType: 'select',
-    name: 'budget',
-    label: 'Budget range',
-    hint: 'USD',
-    options: options(INQUIRY_BUDGETS),
-    mapsTo: 'budget',
-  },
-  {
-    blockType: 'select',
-    name: 'timeline',
-    label: 'Timeline',
-    options: options(INQUIRY_TIMELINES),
-    mapsTo: 'timeline',
-  },
-  {
-    blockType: 'textarea',
-    name: 'brief',
-    label: 'The brief',
-    required: true,
-    maxLength: INQUIRY_MESSAGE_MAX_LENGTH,
-    placeholder:
-      'What are you trying to move? A launch, a rebrand, a site that stopped keeping up. A paragraph is plenty.',
-    mapsTo: 'message',
-  },
-]
+  PROJECT_INQUIRY_FIELDS,
+  PROJECT_INQUIRY_FORM_TITLE,
+  PROJECT_INQUIRY_STEPS,
+} from '@/collections/ContactPages/inquiryForm'
+import { INQUIRY_MESSAGE_MAX_LENGTH } from '@/shared/content/inquiry'
 
 /**
  * Minimal Lexical state for the form's own confirmation message. The contact
@@ -112,21 +62,22 @@ const payload = await getPayload({ config })
 
 const existingForm = await payload.find({
   collection: 'forms',
-  where: { title: { equals: FORM_TITLE } },
+  where: { title: { equals: PROJECT_INQUIRY_FORM_TITLE } },
   limit: 1,
   depth: 0,
 })
 
 const formData = {
-  title: FORM_TITLE,
+  title: PROJECT_INQUIRY_FORM_TITLE,
   delivery: 'inquiries' as const,
   inquiryType: 'project' as const,
   submitButtonLabel: 'Send inquiry',
+  steps: PROJECT_INQUIRY_STEPS,
   confirmationType: 'message' as const,
   // biome-ignore lint/suspicious/noExplicitAny: the editor state type is wider than the seed needs
   confirmationMessage: confirmationMessage as any,
   // biome-ignore lint/suspicious/noExplicitAny: the plugin's field blocks are looser than the generated union
-  fields: formFields as any,
+  fields: PROJECT_INQUIRY_FIELDS as any,
 }
 
 const form = existingForm.docs[0]

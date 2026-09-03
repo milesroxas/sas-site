@@ -74,6 +74,17 @@ export const FORM_DELIVERY = [
   { label: 'Inquiries inbox', value: 'inquiries' },
 ] as const satisfies readonly InquiryOption[]
 
+/**
+ * Copy for a form that asks its steps one at a time. The Forms sidebar seeds
+ * these as defaults and the stepper falls back to them, so a form saved before
+ * the group existed reads the same as one saved after.
+ */
+export const FORM_STEP_COPY = {
+  continueLabel: 'Continue',
+  editLabel: 'Edit',
+  note: 'Nothing is sent until the last step.',
+} as const
+
 /** Longest brief the form accepts, and the counter's denominator. */
 export const INQUIRY_MESSAGE_MAX_LENGTH = 1200
 
