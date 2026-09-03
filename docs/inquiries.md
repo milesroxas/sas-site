@@ -51,7 +51,8 @@ language, wherever it appears.
 Two values are not on the page either. `Site Info → Inquiries` holds the
 response-time promise and the booking link, because the page, the receipt and
 the confirmation email all state them and they must agree. A page can override
-the booking link; it never has to.
+the booking link with the shared link field (a document, a site page, or a
+custom URL); it never has to.
 
 Sending does not navigate: the form swaps in place for a receipt of what was
 just sent, on the shared panel choreography (`useRevealSwap`), and **Edit and

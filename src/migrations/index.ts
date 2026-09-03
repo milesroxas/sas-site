@@ -69,6 +69,7 @@ import * as migration_20260902_201235_block_coverage from './20260902_201235_blo
 import * as migration_20260902_203939_link_contact_pages from './20260902_203939_link_contact_pages';
 import * as migration_20260903_154839_form_steps from './20260903_154839_form_steps';
 import * as migration_20260903_161541_ask_hidden_address_panel from './20260903_161541_ask_hidden_address_panel';
+import * as migration_20260903_190809_contact_alt_cta_link from './20260903_190809_contact_alt_cta_link';
 
 export const migrations = [
   {
@@ -424,6 +425,11 @@ export const migrations = [
   {
     up: migration_20260903_161541_ask_hidden_address_panel.up,
     down: migration_20260903_161541_ask_hidden_address_panel.down,
-    name: '20260903_161541_ask_hidden_address_panel'
+    name: '20260903_161541_ask_hidden_address_panel',
+  },
+  {
+    up: migration_20260903_190809_contact_alt_cta_link.up,
+    down: migration_20260903_190809_contact_alt_cta_link.down,
+    name: '20260903_190809_contact_alt_cta_link'
   },
 ];

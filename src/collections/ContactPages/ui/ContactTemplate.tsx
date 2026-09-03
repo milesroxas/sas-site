@@ -1,7 +1,22 @@
 import { resolveFormFields } from '@/blocks/shared/form/resolve-form'
+import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 import type { ContactPage, Form as FormDoc } from '@/payload-types'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 import { ContactTemplate, type ContactTemplateContent } from './ContactTemplate.client'
+
+/**
+ * Where "Schedule a call" goes. The studio-wide booking link from Site Info
+ * unless the page opts out, in which case its own link field decides, on the
+ * same URL scheme as every other CMS link.
+ */
+const resolveAltCtaLink = (
+  altCta: NonNullable<ContactPage['altCta']>,
+  siteScheduleUrl: string | null | undefined,
+): Pick<NonNullable<ContactTemplateContent['altCta']>, 'href' | 'newTab'> => {
+  if (altCta.useSiteLink !== false) return { href: siteScheduleUrl ?? null }
+  const link = altCta.link
+  return { href: link ? resolveCmsLinkHref(link) : null, newTab: link?.newTab }
+}
 
 /**
  * The contact page, resolved.
@@ -33,8 +48,7 @@ export async function ContactPageTemplate({ page }: { page: ContactPage }) {
       ? {
           body: page.altCta.body,
           label: page.altCta.label,
-          // The page may override the studio-wide booking link, but never has to.
-          url: page.altCta.url || siteInfo?.inquiries?.scheduleUrl,
+          ...resolveAltCtaLink(page.altCta, siteInfo?.inquiries?.scheduleUrl),
         }
       : null,
     submitNote: page.submitNote,

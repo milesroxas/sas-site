@@ -2672,9 +2672,31 @@ export interface ContactPage {
     body?: string | null;
     label?: string | null;
     /**
-     * Leave empty to use the booking link from Site Info → Inquiries.
+     * The link from Site Info → Inquiries, so every page agrees. Turn off to send this page somewhere else.
      */
-    url?: string | null;
+    useSiteLink?: boolean | null;
+    link?: {
+      type?: ('reference' | 'site' | 'custom') | null;
+      newTab?: boolean | null;
+      reference?:
+        | ({
+            relationTo: 'pages';
+            value: number | Page;
+          } | null)
+        | ({
+            relationTo: 'posts';
+            value: number | Post;
+          } | null)
+        | ({
+            relationTo: 'contact-pages';
+            value: number | ContactPage;
+          } | null);
+      /**
+       * Home (/), Works Index (/works), or Insights Index (/insights).
+       */
+      sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+      url?: string | null;
+    };
   };
   /**
    * The questions this page asks. Set the form's Delivery to "Inquiries inbox" so answers arrive with a reference and an owner.
@@ -7397,7 +7419,16 @@ export interface ContactPagesSelect<T extends boolean = true> {
         enabled?: T;
         body?: T;
         label?: T;
-        url?: T;
+        useSiteLink?: T;
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              sitePage?: T;
+              url?: T;
+            };
       };
   form?: T;
   submitNote?: T;

@@ -15,6 +15,7 @@ import type {
   ResolvedFormField,
 } from '@/blocks/shared/form/types'
 import { Container } from '@/components/Container'
+import { CMSLink } from '@/components/Link'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { DetailList, DetailRow } from '@/components/ui/detail-list'
@@ -28,7 +29,13 @@ export type ContactTemplateContent = {
   details: { term: string; value: string }[]
   nextStepsTitle?: string | null
   nextSteps: string[]
-  altCta?: { body?: string | null; label?: string | null; url?: string | null } | null
+  altCta?: {
+    body?: string | null
+    label?: string | null
+    /** Already resolved on the server, so the browser never sees a linked document. */
+    href?: string | null
+    newTab?: boolean | null
+  } | null
   submitNote?: string | null
   sentEyebrow?: string | null
   sentHeading: string
@@ -135,7 +142,7 @@ export function ContactTemplate({
     [delivery, fields, formId, inquiryType, swapTo],
   )
 
-  const scheduleUrl = content.altCta?.url
+  const scheduleUrl = content.altCta?.href
   const isSent = panel === 1 && receipt
 
   return (
@@ -203,12 +210,16 @@ function Eyebrow({ children, marker }: { children: React.ReactNode; marker: 'dot
   )
 }
 
-function ScheduleButton({ label, url }: { label?: string | null; url?: string | null }) {
-  if (!url || !label) return null
+function ScheduleButton({ altCta }: { altCta: ContactTemplateContent['altCta'] }) {
+  if (!altCta?.href || !altCta.label) return null
   return (
-    <Button asChild size="xl" variant="outline">
-      <a href={url}>{label}</a>
-    </Button>
+    <CMSLink
+      appearance="outline"
+      label={altCta.label}
+      newTab={altCta.newTab}
+      size="xl"
+      url={altCta.href}
+    />
   )
 }
 
@@ -242,7 +253,7 @@ function FormIntro({
       {content.altCta?.body && scheduleUrl ? (
         <div className="flex flex-col items-start gap-4" data-swap="text">
           <p className="max-w-105 text-base/relaxed text-muted-foreground">{content.altCta.body}</p>
-          <ScheduleButton label={content.altCta.label} url={scheduleUrl} />
+          <ScheduleButton altCta={content.altCta} />
         </div>
       ) : null}
     </>
@@ -322,7 +333,7 @@ function SentIntro({
       {content.sentAltBody && scheduleUrl ? (
         <div className="flex flex-col items-start gap-4" data-swap="text">
           <p className="max-w-105 text-base/relaxed text-muted-foreground">{content.sentAltBody}</p>
-          <ScheduleButton label={content.altCta?.label} url={scheduleUrl} />
+          <ScheduleButton altCta={content.altCta} />
         </div>
       ) : null}
     </>

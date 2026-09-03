@@ -21,7 +21,7 @@ const content: ContactTemplateContent = {
   altCta: {
     body: 'Rather talk it through first?',
     label: 'Schedule a call',
-    url: 'https://example.com/schedule',
+    href: 'https://example.com/schedule',
   },
   submitNote: 'We read every one. No sales sequence, no newsletter.',
   sentEyebrow: 'Inquiry received',

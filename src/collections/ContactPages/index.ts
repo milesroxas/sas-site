@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
+import { link } from '@/fields/link'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
@@ -120,13 +121,26 @@ export const ContactPages: CollectionConfig<'contact-pages'> = {
                   admin: { condition: (_, siblingData) => Boolean(siblingData?.enabled) },
                 },
                 {
-                  name: 'url',
-                  type: 'text',
+                  name: 'useSiteLink',
+                  type: 'checkbox',
+                  label: 'Use the studio booking link',
+                  defaultValue: true,
                   admin: {
                     condition: (_, siblingData) => Boolean(siblingData?.enabled),
-                    description: 'Leave empty to use the booking link from Site Info → Inquiries.',
+                    description:
+                      'The link from Site Info → Inquiries, so every page agrees. Turn off to send this page somewhere else.',
                   },
                 },
+                link({
+                  appearances: false,
+                  disableLabel: true,
+                  overrides: {
+                    admin: {
+                      condition: (_, siblingData) =>
+                        Boolean(siblingData?.enabled) && !siblingData?.useSiteLink,
+                    },
+                  },
+                }),
               ],
             },
           ],
