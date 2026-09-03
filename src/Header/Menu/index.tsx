@@ -4,6 +4,7 @@ import { useGSAP } from '@gsap/react'
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
 import type { ChatTransport, UIMessage } from 'ai'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import type React from 'react'
@@ -47,7 +48,7 @@ import {
 } from './motion'
 import { MenuPreviewSlot } from './PreviewSlot'
 
-gsap.registerPlugin(useGSAP)
+gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 /**
  * The takeover menu animates the element carrying this attribute — the
@@ -547,6 +548,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     } else {
       window.scrollTo(0, scrollYRef.current)
     }
+    // Anything that measured the page while the frame was frozen read a
+    // fixed, scaled frame over a document collapsed to one viewport (scrollY
+    // 0). A route that commits mid-dock mounts its scroll-driven effects in
+    // exactly that state, so their start/end positions are scaled down and
+    // the trigger sits past its end once the real page scrolls (the featured
+    // work roll pinned on its last item). The frame is back in flow and the
+    // scroll offset is final here, so re-measure once.
+    ScrollTrigger.refresh()
   }, [])
 
   /** URLs the warm pass has decoded — see `warmMedia` below. */

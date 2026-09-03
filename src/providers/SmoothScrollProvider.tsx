@@ -1,5 +1,8 @@
 'use client'
 
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import type Lenis from 'lenis'
 import type { LenisOptions } from 'lenis'
 import { useLenis } from 'lenis/react'
 import { usePathname } from 'next/navigation'
@@ -7,6 +10,55 @@ import type React from 'react'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { SmoothScroll } from '@/lib/interactions/smooth-scroll'
+
+/**
+ * Lenis is the only writer of the document scroll position: every
+ * programmatic scroll on the site goes through `lenis.scrollTo`. ScrollTrigger
+ * features that move the page (the featured work roll's `snap`) write
+ * `window.scrollTo` natively by default, and Lenis ignores native scroll
+ * events while its own ease is still running, so a snap that fires in that
+ * tail alternates writes with Lenis every frame and Lenis stamps its stale
+ * position back when it completes: the page jumps and the snap re-fires.
+ *
+ * The scroller proxy routes ScrollTrigger's writes through Lenis instead.
+ * `immediate` lands the value this frame and resets Lenis's own animation, so
+ * the tween owns the motion and Lenis's target stays exactly where the page
+ * is when the next input arrives. Reads stay native: ScrollTrigger measures
+ * what is painted, as it did before. Without a root Lenis (reduced motion,
+ * provider unmounted) the proxy is the native default.
+ *
+ * Registered at module level, like `gsap.registerPlugin`: a trigger captures
+ * its scroll functions when it is created, and page effects run before this
+ * provider's, so the proxy has to exist before the first trigger does.
+ */
+let rootLenis: Lenis | null = null
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger)
+  ScrollTrigger.scrollerProxy(window, {
+    scrollTop(value?: number) {
+      if (value !== undefined) {
+        // A stopped or locked Lenis drops the write; ScrollTrigger reads the
+        // unchanged position back and ends the tween as an interruption.
+        if (rootLenis) rootLenis.scrollTo(value, { immediate: true })
+        else window.scrollTo(window.scrollX, value)
+      }
+      return window.scrollY
+    },
+  })
+}
+
+/** Binds the root Lenis instance to the scroller proxy for its lifetime. */
+const LenisScrollTriggerWriter: React.FC = () => {
+  const lenis = useLenis()
+  useEffect(() => {
+    rootLenis = lenis ?? null
+    return () => {
+      rootLenis = null
+    }
+  }, [lenis])
+  return null
+}
 
 function shouldPreventLenisSmooth(node: HTMLElement | null): boolean {
   if (!node) return false
@@ -95,6 +147,7 @@ export const SmoothScrollProvider: React.FC<{
   return (
     <SmoothScroll root options={rootLenisOptions}>
       <LenisRouteReset />
+      <LenisScrollTriggerWriter />
       {children}
     </SmoothScroll>
   )
