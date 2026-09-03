@@ -74,13 +74,50 @@ describe('HeaderClient', () => {
     expect(screen.getByTestId('takeover-menu').getAttribute('data-open')).toBe('false')
   })
 
-  it('renders the ThemeToggle hidden on mobile and inline-flex from md up', () => {
+  it('keeps the ThemeToggle in the trailing cell, hidden on mobile until the menu opens', () => {
     render(<HeaderClient data={mockHeaderData} menuContent={mockMenuContent} />)
 
-    const toggle = screen.getByTestId('theme-toggle')
-    expect(toggle.className).toContain('hidden')
-    expect(toggle.className).toContain('justify-self-end')
-    expect(toggle.className).toContain('md:inline-flex')
+    const cell = screen.getByTestId('theme-toggle').parentElement as HTMLElement
+    expect(cell.className).toContain('col-start-3')
+    expect(cell.className).toContain('justify-self-end')
+    expect(cell.className).toContain('max-md:invisible')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+    expect(cell.className).not.toContain('max-md:invisible')
+  })
+
+  it('places the menu button in the leading cell on mobile and centers it from md up', () => {
+    render(<HeaderClient data={mockHeaderData} menuContent={mockMenuContent} />)
+
+    const menuButton = screen.getByRole('button', { name: 'Open menu' })
+    expect(menuButton.className).toContain('col-start-1')
+    expect(menuButton.className).toContain('md:col-start-2')
+  })
+
+  it('does not toggle data-scrolled while the page frame is frozen by the menu', () => {
+    const frame = document.createElement('div')
+    frame.setAttribute('data-page-frame', '')
+    document.body.appendChild(frame)
+    try {
+      render(<HeaderClient data={mockHeaderData} menuContent={mockMenuContent} />)
+      Object.defineProperty(window, 'scrollY', { value: 900, configurable: true })
+      fireEvent.scroll(window)
+      expect(document.documentElement.hasAttribute('data-scrolled')).toBe(true)
+
+      // Docked: the frame is inert and the collapsed document reads scrollY 0.
+      frame.setAttribute('inert', '')
+      Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
+      fireEvent.scroll(window)
+      expect(document.documentElement.hasAttribute('data-scrolled')).toBe(true)
+
+      // Undocked and restored: the next scroll event re-syncs.
+      frame.removeAttribute('inert')
+      fireEvent.scroll(window)
+      expect(document.documentElement.hasAttribute('data-scrolled')).toBe(false)
+    } finally {
+      frame.remove()
+      Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
+    }
   })
 
   it('toggles the menu label, aria-expanded, and the takeover menu open state', () => {

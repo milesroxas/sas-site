@@ -159,22 +159,28 @@ describe('TakeoverMenu', () => {
     cleanup()
   })
 
-  it('renders nav items and a mobile-only theme toggle', () => {
+  it('renders nav items and the mobile utility strip: clock left, CTA right', () => {
     renderMenu()
 
     expect(screen.getByRole('link', { name: 'About' }).getAttribute('href')).toBe('/about')
     expect(screen.getByRole('link', { name: 'Contact' }).getAttribute('href')).toBe('/contact')
     expect(screen.queryByRole('link', { name: /Search/ })).toBeNull()
 
-    const themeToggleButton = screen.getByRole('button', {
-      name: /switch to (dark|light) theme/i,
-    })
-    // The toggle lives in the trailing utility row, hidden from md up. The
-    // row's chat-view wrapper owns the breakpoint (the item itself carries
-    // the stagger's inline styles, so the wrapper drives display and fade).
-    const themeToggleItem = themeToggleButton.closest('[data-menu-item]')
-    expect(themeToggleItem).not.toBeNull()
-    expect(themeToggleItem?.parentElement?.className).toContain('md:hidden')
+    // The theme toggle lives in the header now, not in the menu.
+    expect(screen.queryByRole('button', { name: /switch to (dark|light) theme/i })).toBeNull()
+
+    // The CTA closes the strip; its wrapper dissolves from md so the CTA
+    // becomes a grid item under the composer (row 3) and the clock hides.
+    const cta = screen.getByRole('link', { name: /Get in touch/i })
+    const ctaItem = cta.closest('[data-menu-item]') as HTMLElement
+    expect(ctaItem.className).toContain('md:col-start-2')
+    expect(ctaItem.className).toContain('md:row-start-3')
+    const strip = ctaItem.parentElement as HTMLElement
+    expect(strip.className).toContain('justify-between')
+    expect(strip.className).toContain('md:contents')
+    const clockItem = strip.firstElementChild as HTMLElement
+    expect(clockItem).not.toBe(ctaItem)
+    expect(clockItem.className).toContain('md:hidden')
   })
 
   it('renders the editorial columns from menuContent and the contact CTA', () => {
@@ -242,14 +248,6 @@ describe('TakeoverMenu', () => {
 
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(onClose).toHaveBeenCalledTimes(1)
-  })
-
-  it('does not close when the mobile theme toggle inside the menu is clicked', () => {
-    const { onClose } = renderMenu()
-
-    fireEvent.click(screen.getByRole('button', { name: /switch to (dark|light) theme/i }))
-
-    expect(onClose).not.toHaveBeenCalled()
   })
 
   it('does not close when the Ask composer is clicked', () => {

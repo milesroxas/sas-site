@@ -128,12 +128,57 @@ describe('CarouselBlock', () => {
     expect(item?.className).toContain('md:basis-full')
   })
 
-  it('squares the corners of a slide that runs the whole window from md', () => {
+  it('caps every slide by the tallest media so a portrait deck stays inside the viewport', () => {
+    const { container } = render(
+      <CarouselBlock
+        {...baseProps}
+        slideSize="half"
+        slides={[
+          { id: 'wide', media: mediaFixture, caption: null },
+          {
+            id: 'tall',
+            media: { ...mediaFixture, id: 7, width: 1080, height: 1350 },
+            caption: null,
+          },
+          { id: 'video', media: videoFixture, caption: null },
+        ]}
+      />,
+    )
+    const track = container.querySelector('[data-slot="carousel-content"] > div')
+    expect(track?.getAttribute('style')).toContain('--carousel-slide-aspect: 0.8000')
+    for (const item of container.querySelectorAll('[data-slot="carousel-item"]')) {
+      expect(item.className).toContain('max-w-[calc(70svh*var(--carousel-slide-aspect))]')
+      expect(item.className).toContain('md:basis-4/5')
+    }
+  })
+
+  it('runs uncapped when no slide carries dimensions', () => {
+    const { container } = render(
+      <CarouselBlock
+        {...baseProps}
+        slides={[
+          { id: 'a', media: { ...mediaFixture, width: null, height: null }, caption: null },
+          {
+            id: 'b',
+            media: { ...mediaFixture, id: 8, width: undefined, height: 0 },
+            caption: null,
+          },
+        ]}
+      />,
+    )
+    const track = container.querySelector('[data-slot="carousel-content"] > div')
+    expect(track?.getAttribute('style') ?? '').not.toContain('--carousel-slide-aspect')
+    expect(container.querySelector('[data-slot="carousel-item"]')?.className).not.toContain(
+      'max-w-',
+    )
+  })
+
+  it('squares the corners of a slide that runs the whole window', () => {
     const { container } = render(
       <CarouselBlock {...baseProps} width="full-width" slideSize="full" />,
     )
     expect(container.querySelector('[data-testid="media"]')?.getAttribute('data-img-class')).toBe(
-      'rounded-lg md:rounded-none',
+      'rounded-lg @min-[calc(100vw-1.5rem)]:rounded-none',
     )
   })
 

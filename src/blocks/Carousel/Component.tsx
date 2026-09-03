@@ -1,7 +1,7 @@
 'use client'
 
 import type React from 'react'
-import { useId, useRef, useState } from 'react'
+import { type CSSProperties, useId, useRef, useState } from 'react'
 import { Section } from '@/blocks/shared/section'
 import { Media } from '@/components/Media'
 import {
@@ -97,6 +97,42 @@ const slideGutterClasses: Record<
 const renderableSlidesOf = (slides: CarouselBlockProps['slides']): Slide[] =>
   (slides ?? []).filter((slide) => slide.media && typeof slide.media === 'object')
 
+/**
+ * Viewport-height cap on the slide width.
+ *
+ * Every size above is a fraction of the column, so the slide's height is
+ * whatever its media's aspect ratio makes of that width: a portrait deck at
+ * four fifths of a desktop column runs taller than the window. The cap is the
+ * width at which the deck's tallest media reaches 70svh, published per deck
+ * as `--carousel-slide-aspect` (see `tallestAspectRatio`), so no slide is ever
+ * taller than that. The other 30svh holds the header, the caption and a
+ * margin of page around the slide.
+ *
+ * It caps every slide by the same width, not each by its own media: the deck
+ * stays uniform, which the packed pose (see ./visual-state) and the tween's
+ * snap spacing (see ./geometry) both assume. Landscape media in a portrait
+ * deck simply run shorter, centred by `items-center` on the track. Below the
+ * cap the width fraction still wins, so a landscape deck is untouched until
+ * the window is short enough to need it.
+ */
+const SLIDE_HEIGHT_CAP = 'max-w-[calc(70svh*var(--carousel-slide-aspect))]'
+
+/**
+ * Width over height of the deck's tallest media, or undefined when no slide
+ * carries dimensions (an upload processed without them), in which case the
+ * deck runs uncapped rather than against a guessed ratio.
+ */
+const tallestAspectRatio = (slides: Slide[]): number | undefined => {
+  let tallest: number | undefined
+  for (const slide of slides) {
+    const { height, width } = slide.media as PopulatedMedia
+    if (!width || !height) continue
+    const aspect = width / height
+    if (tallest === undefined || aspect < tallest) tallest = aspect
+  }
+  return tallest
+}
+
 const CarouselSlide: React.FC<{
   cornerClass: string
   gutterClass: string
@@ -107,7 +143,7 @@ const CarouselSlide: React.FC<{
   const media = slide.media as PopulatedMedia
   const posterDoc = media.poster && typeof media.poster === 'object' ? media.poster : null
   return (
-    <CarouselItem className={cn(gutterClass, MOBILE_PEEK_BASIS, sizeClass)}>
+    <CarouselItem className={cn('@container', gutterClass, MOBILE_PEEK_BASIS, sizeClass)}>
       {/* First child is the tween target. Server-rendered rest-state styles
           match the tween's frame 0, so hydration never flickers. */}
       <div className="will-change-slide" style={slideVisualState(restSigned)}>
@@ -209,14 +245,25 @@ export const CarouselBlock: React.FC<Props> = (props) => {
 
   const isFullWidth = width === 'full-width'
   const size = slideSize ?? 'full'
-  const sizeClass = (isFullWidth && fullWidthSizeClasses[size]) || slideSizeClasses[size]
+  const slideAspect = tallestAspectRatio(renderableSlides)
+  const sizeClass = cn(
+    (isFullWidth && fullWidthSizeClasses[size]) || slideSizeClasses[size],
+    slideAspect !== undefined && SLIDE_HEIGHT_CAP,
+  )
   const gutter = slideGutterClasses[size]
   // A corner radius reads as a card edge, which needs room around it. A slide
-  // that runs the whole window — full-width block, full-width slides — has
-  // none, and the curve gets cut off against the browser edge, so it squares
-  // off. That only happens from `md`: below it the slide is peeking, inset on
-  // both sides, and reads as a card again.
-  const cornerClass = cn('rounded-lg', isFullWidth && size === 'full' && 'md:rounded-none')
+  // that runs the whole window has none, and the curve gets cut off against
+  // the browser edge, so it squares off. Only a full-width block with
+  // full-width slides can span the window, and even then only when the
+  // height cap isn't holding it in from the edges, so the slide asks its own
+  // width (the item is a size container): a slide within a scrollbar's width
+  // of the window squares off, one inset any further keeps its corners. Below
+  // `md` the slide is always peeking, inset on both sides, and the query never
+  // matches.
+  const cornerClass = cn(
+    'rounded-lg',
+    isFullWidth && size === 'full' && '@min-[calc(100vw-1.5rem)]:rounded-none',
+  )
 
   return (
     <Section spacing="loose" theme={theme}>
@@ -242,7 +289,14 @@ export const CarouselBlock: React.FC<Props> = (props) => {
           setApi={setApi}
         >
           {/* items-center: slides keep their media's natural aspect ratio, so shorter slides align to the vertical middle of the tallest. */}
-          <CarouselContent className={cn(gutter.track, 'items-center')}>
+          <CarouselContent
+            className={cn(gutter.track, 'items-center')}
+            style={
+              slideAspect !== undefined
+                ? ({ '--carousel-slide-aspect': slideAspect.toFixed(4) } as CSSProperties)
+                : undefined
+            }
+          >
             {renderableSlides.map((slide, index) => (
               <CarouselSlide
                 cornerClass={cornerClass}

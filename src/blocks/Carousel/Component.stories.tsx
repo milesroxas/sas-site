@@ -102,6 +102,28 @@ export const MixedAspectRatios: Story = {
   },
 }
 
+/**
+ * Portrait media: at four fifths of a desktop column a 4:5 slide would run
+ * taller than the window, so the deck is capped at the width where its
+ * tallest media reaches 70svh. Shrink the browser height and the deck follows.
+ */
+export const Portrait: Story = {
+  args: {
+    slideSize: 'half',
+    slides: slides.map((slide) => ({
+      ...slide,
+      media: {
+        ...mediaFixture,
+        alt: 'Window onto a mountain landscape',
+        url: 'https://media.suits-sandals.com/window-landscape-mountains-poster.jpg',
+        filename: 'window-landscape-mountains-poster.jpg',
+        width: 1920,
+        height: 2400,
+      },
+    })),
+  },
+}
+
 export const WithVideo: Story = {
   args: {
     slides: [slides[0], { id: 'slide-video', media: videoFixture, caption: null }, slides[2]],
