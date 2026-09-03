@@ -99,7 +99,7 @@ export const SegmentHero: React.FC<SegmentHeroData> = ({
                   </p>
                 )}
                 {description && (
-                  <p className="text-xl/normal text-muted-foreground" data-reveal>
+                  <p className="text-base/normal text-muted-foreground" data-reveal>
                     {description}
                   </p>
                 )}
