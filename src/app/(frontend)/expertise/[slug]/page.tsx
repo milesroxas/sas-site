@@ -6,7 +6,7 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
-import { RenderHero } from '@/heros/RenderHero'
+import { SegmentHero } from '@/heros/SegmentHero'
 import type { ExpertisePage } from '@/payload-types'
 import { RelatedWorkSection, relatedWorkTerms } from '@/sections/RelatedWork'
 import type { WorksBrowseItem } from '@/sections/WorksBrowse/queries'
@@ -48,7 +48,7 @@ export default async function ExpertisePageRoute({ params }: SlugRouteArgs) {
         />
         <PayloadRedirects disableNotFound url={url} />
         {draft && <LivePreviewListener />}
-        <RenderHero {...page.hero} />
+        <SegmentHero {...page.hero} />
         <RenderBlocks blocks={page.layout} />
         <RelatedWorkSection
           filter={{ kind: 'capabilities', terms: relatedWorkTerms(page.capabilities) }}

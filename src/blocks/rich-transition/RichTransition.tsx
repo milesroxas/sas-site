@@ -2,20 +2,21 @@ import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import type { ReactNode } from 'react'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
-import type { LabTransitionBlock } from '@/payload-types'
+import type { RichTransitionBlock } from '@/payload-types'
 import { BlockGrid } from '../shared/grid'
 import { Section } from '../shared/section'
 
 /**
- * Copy fields shared by the case-study and lab rich-transition blocks.
+ * Copy fields shared by the generic and case-study rich-transition blocks.
  * `blockType` differs per collection, so it is not part of this shape.
  *
- * Anchored on the lab block because it carries exactly these presentational
- * fields: the work-page variant adds a canonical-content picker and relaxes
- * `heading`, which its renderer resolves before it reaches this component.
+ * Anchored on the generic block because it carries exactly these
+ * presentational fields: the work-page variant adds a canonical-content picker
+ * and relaxes `heading`, which its renderer resolves before it reaches this
+ * component.
  */
 export type RichTransitionFields = Pick<
-  LabTransitionBlock,
+  RichTransitionBlock,
   'body' | 'eyebrow' | 'heading' | 'layout' | 'theme'
 >
 
@@ -126,8 +127,8 @@ const layouts: Record<Layout, (props: RichTransitionFields) => ReactNode> = {
 
 /**
  * Presentational rich-transition: eyebrow, heading, and optional body on a
- * themed band, arranged by `layout`. Collection-agnostic — case-study and lab
- * blocks share this shape.
+ * themed band, arranged by `layout`. Collection-agnostic: the generic Standard
+ * block and the case-study variant share this shape.
  *
  * The band drops its bottom padding so the block runs straight into whatever
  * follows; only the top of the band carries rhythm.

@@ -298,6 +298,7 @@ export interface Page {
   };
   layout: (
     | PageSectionBlock
+    | RichTransitionBlock
     | FeatureHeadingOffsetBlock
     | FullMediaBlock
     | MediaContentSplitBlock
@@ -399,6 +400,7 @@ export interface Post {
   layout?:
     | (
         | PageSectionBlock
+        | RichTransitionBlock
         | FeatureHeadingOffsetBlock
         | FullMediaBlock
         | MediaContentSplitBlock
@@ -3432,6 +3434,7 @@ export interface PageSectionBlock {
   spacing?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
+        | RichTransitionBlock
         | FeatureHeadingOffsetBlock
         | FullMediaBlock
         | MediaContentSplitBlock
@@ -3445,6 +3448,40 @@ export interface PageSectionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'section';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTransitionBlock".
+ */
+export interface RichTransitionBlock {
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * How the copy sits on the band.
+   */
+  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'richTransition';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4393,7 +4430,7 @@ export interface LabPage {
   layout?:
     | (
         | LabSectionBlock
-        | LabTransitionBlock
+        | RichTransitionBlock
         | FeatureHeadingOffsetBlock
         | FullMediaBlock
         | MediaContentSplitBlock
@@ -4659,7 +4696,7 @@ export interface LabSectionBlock {
   spacing?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
-        | LabTransitionBlock
+        | RichTransitionBlock
         | FeatureHeadingOffsetBlock
         | FullMediaBlock
         | MediaContentSplitBlock
@@ -4673,40 +4710,6 @@ export interface LabSectionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'section';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabTransitionBlock".
- */
-export interface LabTransitionBlock {
-  eyebrow?: string | null;
-  heading: string;
-  /**
-   * How the copy sits on the band.
-   */
-  layout?: ('left' | 'centered' | 'split' | 'statement') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  body?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'labTransition';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4838,68 +4841,10 @@ export interface LabRelatedProjectsBlock {
 export interface ExpertisePage {
   id: number;
   title: string;
-  hero: {
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
-    /**
-     * Small label above the title, e.g. an area of expertise.
-     */
-    eyebrow?: string | null;
-    title?: string | null;
-    richText?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    /**
-     * Short supporting paragraph anchored to the bottom of the hero.
-     */
-    description?: string | null;
-    links?:
-      | {
-          link: {
-            type?: ('reference' | 'site' | 'custom') | null;
-            newTab?: boolean | null;
-            reference?:
-              | ({
-                  relationTo: 'pages';
-                  value: number | Page;
-                } | null)
-              | ({
-                  relationTo: 'posts';
-                  value: number | Post;
-                } | null)
-              | ({
-                  relationTo: 'contact-pages';
-                  value: number | ContactPage;
-                } | null);
-            /**
-             * Home (/), Works Index (/works), or Insights Index (/insights).
-             */
-            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
-            url?: string | null;
-            label: string;
-            /**
-             * Choose how the link should be rendered.
-             */
-            appearance?: ('default' | 'outline') | null;
-          };
-          id?: string | null;
-        }[]
-      | null;
-    media?: (number | null) | Media;
-  };
+  hero: SegmentHero;
   layout: (
     | SegmentSectionBlock
+    | RichTransitionBlock
     | FeatureHeadingOffsetBlock
     | FullMediaBlock
     | MediaContentSplitBlock
@@ -4971,6 +4916,56 @@ export interface ExpertisePage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SegmentHero".
+ */
+export interface SegmentHero {
+  /**
+   * Small label above the title, e.g. "Who We Help".
+   */
+  eyebrow?: string | null;
+  title: string;
+  /**
+   * Supporting paragraph, anchored to the bottom right of the hero.
+   */
+  description?: string | null;
+  /**
+   * The first link renders as the primary action, the second as a text link.
+   */
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'site' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
+              } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          url?: string | null;
+          label: string;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Fills the band behind the copy.
+   */
+  media: number | Media;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "SegmentSectionBlock".
  */
 export interface SegmentSectionBlock {
@@ -4988,6 +4983,7 @@ export interface SegmentSectionBlock {
   spacing?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
+        | RichTransitionBlock
         | FeatureHeadingOffsetBlock
         | FullMediaBlock
         | MediaContentSplitBlock
@@ -5011,68 +5007,10 @@ export interface SegmentSectionBlock {
 export interface AudiencePage {
   id: number;
   title: string;
-  hero: {
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
-    /**
-     * Small label above the title, e.g. an area of expertise.
-     */
-    eyebrow?: string | null;
-    title?: string | null;
-    richText?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    /**
-     * Short supporting paragraph anchored to the bottom of the hero.
-     */
-    description?: string | null;
-    links?:
-      | {
-          link: {
-            type?: ('reference' | 'site' | 'custom') | null;
-            newTab?: boolean | null;
-            reference?:
-              | ({
-                  relationTo: 'pages';
-                  value: number | Page;
-                } | null)
-              | ({
-                  relationTo: 'posts';
-                  value: number | Post;
-                } | null)
-              | ({
-                  relationTo: 'contact-pages';
-                  value: number | ContactPage;
-                } | null);
-            /**
-             * Home (/), Works Index (/works), or Insights Index (/insights).
-             */
-            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
-            url?: string | null;
-            label: string;
-            /**
-             * Choose how the link should be rendered.
-             */
-            appearance?: ('default' | 'outline') | null;
-          };
-          id?: string | null;
-        }[]
-      | null;
-    media?: (number | null) | Media;
-  };
+  hero: SegmentHero;
   layout: (
     | SegmentSectionBlock
+    | RichTransitionBlock
     | FeatureHeadingOffsetBlock
     | FullMediaBlock
     | MediaContentSplitBlock
@@ -6032,6 +5970,7 @@ export interface PagesSelect<T extends boolean = true> {
     | T
     | {
         section?: T | PageSectionBlockSelect<T>;
+        richTransition?: T | RichTransitionBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         fullMedia?: T | FullMediaBlockSelect<T>;
         mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
@@ -6088,6 +6027,7 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
   blocks?:
     | T
     | {
+        richTransition?: T | RichTransitionBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         fullMedia?: T | FullMediaBlockSelect<T>;
         mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
@@ -6097,6 +6037,19 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTransitionBlock_select".
+ */
+export interface RichTransitionBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  layout?: T;
+  theme?: T;
+  body?: T;
   id?: T;
   blockName?: T;
 }
@@ -6573,6 +6526,7 @@ export interface PostsSelect<T extends boolean = true> {
     | T
     | {
         section?: T | PageSectionBlockSelect<T>;
+        richTransition?: T | RichTransitionBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         fullMedia?: T | FullMediaBlockSelect<T>;
         mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
@@ -7074,7 +7028,7 @@ export interface LabPagesSelect<T extends boolean = true> {
     | T
     | {
         section?: T | LabSectionBlockSelect<T>;
-        labTransition?: T | LabTransitionBlockSelect<T>;
+        richTransition?: T | RichTransitionBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         fullMedia?: T | FullMediaBlockSelect<T>;
         mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
@@ -7126,7 +7080,7 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
   blocks?:
     | T
     | {
-        labTransition?: T | LabTransitionBlockSelect<T>;
+        richTransition?: T | RichTransitionBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         fullMedia?: T | FullMediaBlockSelect<T>;
         mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
@@ -7136,19 +7090,6 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
       };
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabTransitionBlock_select".
- */
-export interface LabTransitionBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  heading?: T;
-  layout?: T;
-  theme?: T;
-  body?: T;
   id?: T;
   blockName?: T;
 }
@@ -7215,36 +7156,12 @@ export interface LabRelatedProjectsBlockSelect<T extends boolean = true> {
  */
 export interface ExpertisePagesSelect<T extends boolean = true> {
   title?: T;
-  hero?:
-    | T
-    | {
-        type?: T;
-        eyebrow?: T;
-        title?: T;
-        richText?: T;
-        description?: T;
-        links?:
-          | T
-          | {
-              link?:
-                | T
-                | {
-                    type?: T;
-                    newTab?: T;
-                    reference?: T;
-                    sitePage?: T;
-                    url?: T;
-                    label?: T;
-                    appearance?: T;
-                  };
-              id?: T;
-            };
-        media?: T;
-      };
+  hero?: T | SegmentHeroSelect<T>;
   layout?:
     | T
     | {
         section?: T | SegmentSectionBlockSelect<T>;
+        richTransition?: T | RichTransitionBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         fullMedia?: T | FullMediaBlockSelect<T>;
         mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
@@ -7290,6 +7207,31 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SegmentHero_select".
+ */
+export interface SegmentHeroSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  description?: T;
+  links?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              sitePage?: T;
+              url?: T;
+              label?: T;
+            };
+        id?: T;
+      };
+  media?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "SegmentSectionBlock_select".
  */
 export interface SegmentSectionBlockSelect<T extends boolean = true> {
@@ -7299,6 +7241,7 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
   blocks?:
     | T
     | {
+        richTransition?: T | RichTransitionBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         fullMedia?: T | FullMediaBlockSelect<T>;
         mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
@@ -7317,36 +7260,12 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
  */
 export interface AudiencePagesSelect<T extends boolean = true> {
   title?: T;
-  hero?:
-    | T
-    | {
-        type?: T;
-        eyebrow?: T;
-        title?: T;
-        richText?: T;
-        description?: T;
-        links?:
-          | T
-          | {
-              link?:
-                | T
-                | {
-                    type?: T;
-                    newTab?: T;
-                    reference?: T;
-                    sitePage?: T;
-                    url?: T;
-                    label?: T;
-                    appearance?: T;
-                  };
-              id?: T;
-            };
-        media?: T;
-      };
+  hero?: T | SegmentHeroSelect<T>;
   layout?:
     | T
     | {
         section?: T | SegmentSectionBlockSelect<T>;
+        richTransition?: T | RichTransitionBlockSelect<T>;
         featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
         fullMedia?: T | FullMediaBlockSelect<T>;
         mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;

@@ -11,7 +11,7 @@ import { editorialNotesField } from '@/fields/pageFields'
 import { segmentPageBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
-import { hero } from '@/heros/config'
+import { segmentHero } from '@/heros/SegmentHero/config'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { collectionPreview } from '@/utilities/generatePreviewPath'
 
@@ -69,7 +69,11 @@ export const segmentPageCollection = <S extends SegmentPageSlug>({
     {
       type: 'tabs',
       tabs: [
-        { label: 'Opening', fields: [hero] },
+        {
+          label: 'Opening',
+          description: 'The full-screen opening of the page: the hero.',
+          fields: [segmentHero],
+        },
         {
           label: 'Composition',
           fields: [

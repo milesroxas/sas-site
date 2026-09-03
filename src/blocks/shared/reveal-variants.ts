@@ -23,6 +23,7 @@ export const blockRevealVariants = {
   fullMedia: 'underMedia',
   imagePair: 'underMedia',
   mediaContentSplit: 'underMedia',
+  richTransition: 'intro',
   splitImageOffset: 'underMedia',
   featureStatementLinks: 'self',
   // Pinned ScrollTrigger shell (sticky viewport + scrubbed list) — a CSS

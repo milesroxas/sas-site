@@ -5,6 +5,7 @@ import { FullMediaBlock } from '@/blocks/full-media/Component'
 import { ImagePairBlock } from '@/blocks/image-pair/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { MediaContentSplitBlock } from '@/blocks/media-content-split/Component'
+import { RichTransitionBlock } from '@/blocks/rich-transition/Component'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
 import { SplitImageOffsetBlock } from '@/blocks/split-image-offset/Component'
 import { RevealSection } from '@/shared/ui/reveal-section'
@@ -26,6 +27,7 @@ export const sectionChildComponents = {
   imagePair: ImagePairBlock,
   mediaBlock: MediaBlock,
   mediaContentSplit: MediaContentSplitBlock,
+  richTransition: RichTransitionBlock,
   splitContentNarrow: SplitContentNarrowBlock,
   splitImageOffset: SplitImageOffsetBlock,
 }

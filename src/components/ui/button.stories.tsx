@@ -15,7 +15,18 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'outline', 'secondary', 'ghost', 'destructive', 'link'],
+      options: [
+        'default',
+        'outline',
+        'secondary',
+        'ghost',
+        'destructive',
+        'link',
+        'ruled',
+        'mono',
+        'glass',
+        'underline',
+      ],
     },
     size: {
       control: 'select',
@@ -29,6 +40,7 @@ const meta = {
         'icon-sm',
         'icon-lg',
         'clear',
+        'action',
         'pill',
       ],
     },
@@ -127,4 +139,21 @@ export const Mono: Story = {
 
 export const Disabled: Story = {
   args: { disabled: true },
+}
+
+/** Hero actions over media: frosted primary chip beside an underlined text action. */
+export const HeroActions: Story = {
+  parameters: {
+    backgrounds: { default: 'dark' },
+  },
+  render: () => (
+    <div className="flex items-start gap-3 bg-tertiary p-12" data-theme="dark">
+      <Button size="action" variant="glass">
+        Primary Action
+      </Button>
+      <Button size="action" variant="underline">
+        Secondary Action
+      </Button>
+    </div>
+  ),
 }

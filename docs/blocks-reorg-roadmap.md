@@ -111,7 +111,7 @@ The Section-nestable run is defined once in `src/blocks/shared/section-blocks.ts
 | Block | Pages | Posts | Work | Lab | Expertise | Audience | Home |
 |---|---|---|---|---|---|---|---|
 | Section | PageSection | PageSection | WorkSection | LabSection | SegmentSection | SegmentSection | not yet |
-| Standard (`caseStudyTransition` / `labTransition`) | n/a | n/a | yes | yes | n/a | n/a | n/a |
+| Standard (`richTransition`; Work: `caseStudyTransition`) | yes | yes | yes (story variant) | yes | yes | yes | held |
 | Offset (`featureHeadingOffset`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
 | Stacked (`fullMedia`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
 | Split (`mediaContentSplit`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
@@ -121,9 +121,9 @@ The Section-nestable run is defined once in `src/blocks/shared/section-blocks.ts
 | Statement (`featureImageStatement`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
 | Caption (`mediaBlock`) | yes | yes | yes | yes | yes | yes | yes |
 
-Two blocks stay collection-owned on purpose:
+Two things stay collection-owned on purpose:
 
-- **Standard** is two blocks, not one: `caseStudyTransition` resolves canonical Case Study story copy and `labTransition` is the Lab twin with a static `dbName` (`lp_transition`). Neither can be offered to a collection that has no story record behind it, so Pages, Posts and the segment pages use **Offset** as their section heading.
+- **Standard on Work** is its own block: `caseStudyTransition` (`wp_transition`, live in production) puts the same copy fields behind a canonical Case Study story picker. Everywhere else Standard is the generic `richTransition` (`src/blocks/rich-transition/config.ts`, per-parent `*_transition` tables) in the shared run, added 2026-09-03; it replaced the lab twin `labTransition` (`lp_transition`, zero production rows), which carried exactly these fields under a static `dbName`. Work builds its run by hand so it never offers both.
 - **Work variants** are the `withStoryBeatSource` wrappers: same slug and table, extra story-beat fields. Caption carries no copy fields, so Work offers the plain block.
 
 ### Drawer group order
@@ -234,7 +234,7 @@ Every composition surface now offers the same run. Posts joined the scope here: 
 - [x] `src/blocks/shared/section-blocks.ts` defines `sectionNestableBlocks`, the run stated once (Offset, Stacked, Split, Split narrow, Pair, Pair offset, Statement, Caption), ordered by `admin.group`.
 - [x] Pages and the segment pages (Expertise, Audience) consume it, so they gained Pair and Pair offset (segments also gained Stacked and Split).
 - [x] Posts: `postLayoutBlocks` = Section + the run + Featured work, Composition field `labels` now Section/Sections.
-- [x] Lab: `labSectionBlocks` = the lab Standard transition + the run (was Standard + Split narrow only).
+- [x] Lab: `labSectionBlocks` = the lab Standard transition + the run (was Standard + Split narrow only). Superseded 2026-09-03: `labTransition` removed, Lab nests `sectionNestableBlocks` directly and gets Standard from the generic `richTransition`.
 - [x] Work: Caption added to `workSectionBlocks` (no story-beat wrapper, since it carries no copy fields).
 - [x] Home held at its pre-B2 set (`homeExcludedBlocks`): no Section, no Pair, no Pair offset. Home does not adopt Sections yet, so growing the global's schema for blocks it never offered buys nothing.
 - [x] `src/blocks/shared/content-block-renderer.tsx`, extracted from `RenderBlocks` so the map and the entrance rules for the run live once; `RenderLabBlocks` delegates to it (its bespoke `splitContentNarrow` case is gone), `RenderBlocks` spreads it into its page-only components.

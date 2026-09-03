@@ -26,6 +26,18 @@ const buttonVariants = cva(
         // Editorial text action in the field-label voice (Edit, Edit and
         // resend): mono small caps on an underline. Pair with `size="clear"`.
         mono: 'font-mono text-xs/4 font-normal tracking-widest text-foreground uppercase underline underline-offset-4 hover:text-primary',
+        // Frosted chip for actions that sit over media (hero primary action):
+        // a translucent tint of the band's foreground with a light backdrop
+        // blur, so it reads on any photograph without a solid plate. The
+        // hover deepens the tint on the `pressable` transition list. Pair
+        // with `size="action"`.
+        glass:
+          'bg-foreground/10 font-normal tracking-tight text-foreground backdrop-blur-xs hover:bg-foreground/15',
+        // Plain underlined label for the secondary action beside `glass`:
+        // same metrics, no plate, so the pair aligns as one row. The hover
+        // lifts the rule instead of changing color. Pair with `size="action"`.
+        underline:
+          'font-normal tracking-tight text-foreground underline underline-offset-2 hover:underline-offset-4',
       },
       size: {
         default:
@@ -44,6 +56,11 @@ const buttonVariants = cva(
         // Unpadded size for text-flow usage (e.g. nav links via CMSLink's
         // `link` appearance) where button chrome would break the text rhythm.
         clear: "gap-1 [&_svg:not([class*='size-'])]:size-3.5",
+        // Hero action: a 14px label on a 32px sharp-cornered chip, the one
+        // size sized to sit beside a display headline over media rather than
+        // inside form chrome.
+        action:
+          "h-8 gap-1 rounded-sm px-3 text-sm/4 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-4",
         // Takeover-menu pill: letterspaced all-caps capsule (CLOSE / GET IN
         // TOUCH). Trailing letter-space is offset so the label reads centered.
         pill: "h-8 gap-1 rounded-full px-6 text-sm/none font-semibold tracking-widest uppercase [&>span]:mr-[-0.1em] [&_svg:not([class*='size-'])]:size-4",

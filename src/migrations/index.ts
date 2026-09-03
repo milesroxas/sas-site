@@ -70,6 +70,7 @@ import * as migration_20260902_203939_link_contact_pages from './20260902_203939
 import * as migration_20260903_154839_form_steps from './20260903_154839_form_steps';
 import * as migration_20260903_161541_ask_hidden_address_panel from './20260903_161541_ask_hidden_address_panel';
 import * as migration_20260903_190809_contact_alt_cta_link from './20260903_190809_contact_alt_cta_link';
+import * as migration_20260903_200959_rich_transition_segment_hero from './20260903_200959_rich_transition_segment_hero';
 
 export const migrations = [
   {
@@ -430,6 +431,11 @@ export const migrations = [
   {
     up: migration_20260903_190809_contact_alt_cta_link.up,
     down: migration_20260903_190809_contact_alt_cta_link.down,
-    name: '20260903_190809_contact_alt_cta_link'
+    name: '20260903_190809_contact_alt_cta_link',
+  },
+  {
+    up: migration_20260903_200959_rich_transition_segment_hero.up,
+    down: migration_20260903_200959_rich_transition_segment_hero.down,
+    name: '20260903_200959_rich_transition_segment_hero'
   },
 ];

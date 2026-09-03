@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
-import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
 import { SectionBand } from '@/blocks/section/SectionBand'
 import { renderContentBlock, sectionChildComponents } from '@/blocks/shared/content-block-renderer'
@@ -15,7 +14,6 @@ import type {
   LabProject,
   LabRelatedProjectsBlock,
   LabStorySectionBlock,
-  LabTransitionBlock,
 } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import { relationshipIds } from '@/utilities/relationshipId'
@@ -75,10 +73,6 @@ const Facts = ({ block, project }: { block: LabFactsBlock; project: LabProject }
     status={block.showStatus ? project.status : null}
     technologies={block.showTechnologies ? project.technologies || [] : []}
   />
-)
-
-const Transition = ({ bare, block }: { bare?: boolean; block: LabTransitionBlock }) => (
-  <RichTransition bare={bare} {...block} />
 )
 
 const RelatedProjects = async ({
@@ -164,8 +158,6 @@ const renderLabBlock = (
         return <MediaShowcase block={block} />
       case 'labFacts':
         return <Facts block={block} project={project} />
-      case 'labTransition':
-        return <Transition bare={bare} block={block} />
       case 'labRelatedProjects':
         return <RelatedProjects block={block} page={page} project={project} />
       default:

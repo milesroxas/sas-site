@@ -14,6 +14,7 @@ import { FeaturedWork } from '@/blocks/featured-work/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
 import { NewsletterSignup } from '@/blocks/NewsletterSignup/config'
+import { RichTransition } from '@/blocks/rich-transition/config'
 import { sectionBlock } from '@/blocks/section/config'
 import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
@@ -74,11 +75,17 @@ export const postLayoutBlocks: Block[] = [
  * Home composition: everything Pages offers except the curated work list (the
  * homepage tells that story through its own hero and industry blocks) and the
  * Section wrapper, which Home does not adopt yet (docs/blocks-reorg-roadmap.md).
- * The two pair blocks are held back with it: they are case-study grammar that
- * Home has never offered, and adding them here would grow the global's schema
- * for no editorial need.
+ * The two pair blocks and the Standard heading are held back with it: they
+ * are case-study grammar that Home has never offered, and adding them here
+ * would grow the global's schema for no editorial need.
  */
-const homeExcludedBlocks = new Set<Block>([FeaturedWork, PageSection, ImagePair, SplitImageOffset])
+const homeExcludedBlocks = new Set<Block>([
+  FeaturedWork,
+  PageSection,
+  ImagePair,
+  SplitImageOffset,
+  RichTransition,
+])
 
 export const homeLayoutBlocks: Block[] = pageLayoutBlocks.filter(
   (block) => !homeExcludedBlocks.has(block),

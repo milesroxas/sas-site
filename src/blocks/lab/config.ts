@@ -2,12 +2,7 @@ import type { Block } from 'payload'
 import { Carousel } from '@/blocks/Carousel/config'
 import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import { sectionBlock } from '@/blocks/section/config'
-import {
-  relatedSelectionFields,
-  storySectionCopyFields,
-  themeField,
-  transitionFields,
-} from '@/blocks/shared/fields'
+import { relatedSelectionFields, storySectionCopyFields, themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
 
@@ -98,15 +93,6 @@ export const LabFacts: Block = {
   ],
 }
 
-export const LabTransition: Block = {
-  slug: 'labTransition',
-  admin: { group: BLOCK_GROUPS.sectionHeading },
-  dbName: 'lp_transition',
-  interfaceName: 'LabTransitionBlock',
-  labels: { singular: 'Standard', plural: 'Standard' },
-  fields: [...transitionFields()],
-}
-
 export const LabRelatedProjects: Block = {
   slug: 'labRelatedProjects',
   admin: { group: BLOCK_GROUPS.lists },
@@ -120,19 +106,12 @@ export const LabRelatedProjects: Block = {
 }
 
 /**
- * Blocks a Lab Page Section can nest, and the same run offered at the top
- * level while the Section transition is underway (docs/blocks-reorg-roadmap.md).
- * The lab Standard transition leads; everything after it is the shared run
- * every composition surface offers.
+ * A Lab Page Section nests the shared run every composition surface offers
+ * (docs/blocks-reorg-roadmap.md); lab pages resolve no story copy of their
+ * own, so the generic Standard heading in that run is the lab Standard.
  */
-const labSectionBlocks: Block[] = [
-  // Section heading
-  LabTransition,
-  ...sectionNestableBlocks,
-]
-
 export const LabSection = sectionBlock({
-  blocks: labSectionBlocks,
+  blocks: sectionNestableBlocks,
   interfaceName: 'LabSectionBlock',
 })
 
@@ -145,7 +124,7 @@ export const labBlocks = [
   // Structure
   LabSection,
   // Section heading / Media and content / Media: the Section-nestable run
-  ...labSectionBlocks,
+  ...sectionNestableBlocks,
   // Media
   LabMediaShowcase,
   ScrollGallery,
