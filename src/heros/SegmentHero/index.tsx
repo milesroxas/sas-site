@@ -40,7 +40,8 @@ const HeroActions: React.FC<{ className?: string; links: SegmentHeroData['links'
  * Laid out on the composition grid (docs/block-grid-roadmap.md):
  * - Eyebrow and title: columns 1-4, top.
  * - Actions: under the title on the same 4 columns.
- * - Lead and paragraph: columns 6-8, anchored to the bottom.
+ * - Lead and paragraph: columns 6-8, narrowing to 6-7 from `lg` so the
+ *   closing copy keeps a reading measure and never fills the last column.
  * Below `md` everything stacks left-aligned in reading order, with the
  * actions last.
  *
@@ -92,7 +93,7 @@ export const SegmentHero: React.FC<SegmentHeroData> = ({
               links={links}
             />
             {hasClosing && (
-              <div className="flex flex-col items-start gap-6 md:col-span-3 md:col-start-6 md:row-start-2 md:self-end">
+              <div className="flex flex-col items-start gap-6 md:col-span-3 md:col-start-6 md:row-start-2 md:self-end lg:col-span-2">
                 {lead && (
                   <p className="text-lead text-foreground" data-reveal>
                     {lead}
