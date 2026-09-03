@@ -16,7 +16,7 @@ type RailPost = Pick<Post, 'id' | 'title' | 'slug' | 'categories' | 'meta'>
 
 /**
  * Rail length when the editor picked nothing. Wider than the work closer's
- * four because this rail shows three and a half at once — a list that ends at
+ * four because this rail shows two and a half at once — a list that ends at
  * the fold has nothing for the drag affordance to reveal.
  */
 export const RELATED_POSTS_FALLBACK_LIMIT = 8

@@ -21,16 +21,15 @@ const CAROUSEL_MIN_COUNT = 4
  * card is the only thing on screen that says the list continues. Half a card
  * reads as an interrupted card; a sliver reads as a rendering seam.
  *
- * Three and a half is the desktop figure (`lg+`): cards scale with the window
- * so the row always fills, instead of packing a fourth-and-a-half at `xl` that
- * left each card narrower than its own title. `md` holds at two and a half —
- * a third-and-a-half of that column is still too tight for the split card.
+ * Two and a half from `md` up: cards scale with the window so the row always
+ * fills, instead of packing a third-and-a-half that left each card narrower
+ * than its own title once the split card took its share.
  *
  * A phone gets one card with a peek of the next, the same affordance the
  * carousel block uses. Five sixths rather than that block's five eighths
  * because these slides carry no scale-back pose eating their own width.
  */
-const SLIDE_BASIS = 'basis-5/6 md:basis-[calc(100%/2.5)] lg:basis-[calc(100%/3.5)]'
+const SLIDE_BASIS = 'basis-5/6 md:basis-[calc(100%/2.5)]'
 
 /**
  * Slide gutter, split evenly across both edges so the gap between two cards is
