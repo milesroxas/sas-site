@@ -93,7 +93,7 @@ export const SegmentHero: React.FC<SegmentHeroData> = ({
               links={links}
             />
             {hasClosing && (
-              <div className="flex flex-col items-start gap-6 md:col-span-3 md:col-start-6 md:row-start-2 md:self-end lg:col-span-2">
+              <div className="flex flex-col items-start gap-6 md:col-span-3 md:col-start-6 md:row-start-2 md:self-end lg:col-span-2 lg:col-start-6">
                 {lead && (
                   <p className="text-lead text-foreground" data-reveal>
                     {lead}
