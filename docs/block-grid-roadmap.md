@@ -1,6 +1,6 @@
 # Block layout grid roadmap
 
-Status: contract defined and Phase 1 (Section heading) shipped to the working tree 2026-09-02. Phases 2 and 3 pending, one block family per pass. Zero schema: this is presentational only, no migrations, no admin changes. Chromatic baseline churn expected per phase. Agents: read this doc before any block layout/grid task instead of re-auditing the block system. Companion to [blocks-reorg-roadmap.md](blocks-reorg-roadmap.md), which owns taxonomy, Sections, and admin naming; this doc owns how the same blocks lay out horizontally.
+Status: contract defined, Phase 1 (Section heading) and Phase 2 (Media and content + Statement) shipped 2026-09-02. Phase 3 (Pair offset, Caption) pending. Zero schema: this is presentational only, no migrations, no admin changes. Chromatic baseline churn expected per phase. Agents: read this doc before any block layout/grid task instead of re-auditing the block system. Companion to [blocks-reorg-roadmap.md](blocks-reorg-roadmap.md), which owns taxonomy, Sections, and admin naming; this doc owns how the same blocks lay out horizontally.
 
 Scope: the nine reorganized blocks (Section heading, Media and content, Media groups). Blocks outside the reorg (heroes, featured work, galleries, forms) keep their bespoke layouts until they enter the taxonomy.
 
@@ -79,15 +79,17 @@ The default Standard arrangement (Layout: Left) on the 8-column grid:
 | Standard, Split | same file | `lg:grid-cols-12 lg:gap-24`, span 6 + span 4 start 9 | heading cols 1-4, body cols 6-8; mounts `md` (was `lg`) | DONE 2026-09-02 |
 | Standard, Centered / Statement | same file | centered `text-stack` + reading measures (`max-w-3xl` / `max-w-160` / `max-w-xl`) | unchanged: measure-based by design, exempt per rule 2 | DONE (no change) |
 | Offset | `feature/HeadingOffset/Component.tsx` | duplicated 12-col pattern, `lg` mount, `lg:pt-24` | heading cols 1-4, body cols 6-8 + `md:pt-24`; mounts `md` | DONE 2026-09-02 |
-| Stacked (`fullMedia`) | `full-media/FullMedia.tsx` | content row `md:grid-cols-[1fr_1fr_0.5fr]` then `lg:max-w-3xl lg:grid-cols-2` + `lg:ml-auto` | proposal: heading cols 1-3, body cols 4-6 (right layout: heading 3-5, body 6-8); media row spans all 8 when contained | Phase 2 |
-| Split (`mediaContentSplit`) | `media-content-split/MediaContentSplit.tsx` | `md:grid-cols-2` + `max-w-xl` text clamp | proposal: media cols 1-4, content cols 5-7 (mirrored for `layout: right`) | Phase 2 |
-| Split narrow | `split-content/SplitContentNarrow.tsx` | `md:grid-cols-[minmax(0,1fr)_17rem]` | proposal: media spans 6, text spans 2 (17rem of 1440 is 1.9 columns; verify text column readability at `md` before committing, else 5+3) | Phase 2 |
-| Pair (`imagePair`) | `image-pair/ImagePair.tsx` | `md:grid-cols-[2fr_1fr]` + `max-w-80`/`max-w-lg` + `pr-8 md:pr-24` | proposal: landscape 5 cols, portrait 3; text cell spans 2-3 in its column, drop the `pr` and `max-w` air hacks | Phase 2 |
+| Stacked (`fullMedia`) | `full-media/FullMedia.tsx` | content row `md:grid-cols-[1fr_1fr_0.5fr]` then `lg:max-w-3xl lg:grid-cols-2` + `lg:ml-auto` | heading cols 1-3, body cols 4-6 (right layout: heading 3-5, body 6-8); contained media spans all 8 on the same grid, full-width media stays edge to edge with the content re-entering the page column | DONE 2026-09-02 |
+| Split (`mediaContentSplit`) | `media-content-split/MediaContentSplit.tsx` | `md:grid-cols-2` + `max-w-xl` text clamp | media cols 1-4, content cols 5-7 (mirrored for `layout: right`: media 5-8, content 2-4); content still vertically centered via `items-center` on the grid | DONE 2026-09-02 |
+| Split narrow | `split-content/SplitContentNarrow.tsx` | `md:grid-cols-[minmax(0,1fr)_17rem]` | media spans 5 at `md` and 6 from `lg`, text takes the rest (3, then 2): the `lg` pair matches the old 17rem column at the design width, and holding 3 columns at `md` keeps the copy readable where 2 would be too tight | DONE 2026-09-02 |
+| Pair (`imagePair`) | `image-pair/ImagePair.tsx` | `md:grid-cols-[2fr_1fr]` + `max-w-80`/`max-w-lg` + `pr-8 md:pr-24` | landscape 5 cols, portrait 3; text in row 2 spanning 3 from its figure's start column; `pr` and `max-w` air hacks gone | DONE 2026-09-02 |
 | Pair offset (`splitImageOffset`) | `split-image-offset/SplitImageOffset.tsx` | `px-gutter lg:pe-0` + `[1fr_0.5fr_0.25fr]` tracks + `w-4/5` | hardest: right-bleed is a container concern (`container-bleed-e` family), not a grid concern; separate the bleed shell from an inner 8-col placement | Phase 3 |
-| Statement | `feature/ImageStatement/Component.tsx` | flex `justify-start/end` + `max-w-2xl` | proposal: caption cols 1-4 (left) / 5-8 (right); media row spans all 8 | Phase 2 |
+| Statement | `feature/ImageStatement/Component.tsx` | flex `justify-start/end` + `max-w-2xl` | caption cols 1-4 (left) / 5-8 (right); contained media spans all 8 on the same grid, full-bleed media edge to edge with the caption re-entering the page column | DONE 2026-09-02 |
 | Caption (`mediaBlock`) | `MediaBlock/Component.tsx` | `mx-auto max-w-3xl` / `max-w-md` per `size` | candidate to stay measure-based (centered figure); decide with D7 of the reorg doc (its `size` field redesign) | Phase 3 |
 
-Phase 2/3 column proposals are starting points to be tuned visually per block, the same way Left was specified. The contract (section 2) is the fixed part; spans are art direction.
+Phase 3 column proposals are starting points to be tuned visually per block, the same way Left was specified. The contract (section 2) is the fixed part; spans are art direction, and the shipped Phase 2 spans remain tunable per block.
+
+Placement gotcha learned in Phase 2: auto-placement only moves forward. In a mirrored layout the media cell stays first in source order (mobile stacks media first) but sits in later columns, so the following cell would wrap to the next row. Pin both cells with `md:row-start-1` whenever a later-column cell precedes an earlier-column one.
 
 ---
 
@@ -103,10 +105,17 @@ Phase 2/3 column proposals are starting points to be tuned visually per block, t
 
 Visual deltas accepted in Phase 1: side-by-side from `md` instead of `lg` on Split/Offset; stack gap on mobile now `2rem` (was `3rem`); Left heading narrower per the new spec (spans 4 of 8, was 61%).
 
-### Phase 2: Media and content + Statement (per-block PRs)
+### Phase 2: Media and content + Statement. DONE 2026-09-02
 
-- [ ] Stacked, Split, Split narrow, Pair, Statement onto `BlockGrid` per the map above, one block per pass, tuning spans on the demo/Storybook pages.
-- [ ] While touching each block: unify its container usage (`Container` component vs raw `div.container`, audit item) and delete local width/air hacks that the grid now owns.
+- [x] Stacked, Split, Split narrow, Pair, Statement onto `BlockGrid` per the map above. Spans follow the proposals; tune visually per block as needed.
+- [x] Container usage unified: all five now use the `Container` component (raw `div.container` gone from the seven grid-compliant blocks) and the local width/air hacks (`max-w-xl`, `max-w-3xl`, `max-w-2xl`, `max-w-80`/`max-w-lg`, `pr-8`/`pr-24`, `ml-auto`) are deleted.
+
+Visual deltas accepted in Phase 2:
+
+- Every gap standardized to the token: Split's `md` gap was 3rem, Pair's 1.5rem, Statement's media-to-caption 1.5rem, Stacked's mobile heading-to-body 1rem; all now 2rem.
+- Pair figures no longer resolve to exactly equal heights: the old `2fr/1fr` tracks made 16:10 and 4:5 match; 5+3 columns approximate it and the portrait runs a little taller. If equal bottoms matter, that is a span/aspect tuning conversation, not a grid exception.
+- Statement caption width is now span 4 (~656-704px in the page column) instead of `max-w-2xl` (672px); near-identical at the design width.
+- Split narrow text column is wider at `md` (3 columns) than the old fixed 17rem, converging from `lg`.
 
 ### Phase 3: the holdouts
 

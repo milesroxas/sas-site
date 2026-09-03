@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload'
-import { slugField } from '@/fields/slug'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
+import { slugField } from '@/fields/slug'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 
 export const Organizations: CollectionConfig<'organizations'> = {

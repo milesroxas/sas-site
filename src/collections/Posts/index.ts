@@ -7,11 +7,11 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
-import { slugField } from '@/fields/slug'
 import { closingTab } from '@/fields/closing'
 import { editorialNotesField, relatedPagesField } from '@/fields/pageFields'
 import { postLayoutBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
+import { slugField } from '@/fields/slug'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Banner } from '../../blocks/Banner/config'

@@ -1,7 +1,7 @@
 import type { CollectionConfig, Labels } from 'payload'
-import { slugField } from '@/fields/slug'
 import { anyone } from '@/access/anyone'
 import { authenticated } from '@/access/authenticated'
+import { slugField } from '@/fields/slug'
 
 /**
  * A shared-vocabulary collection: an ordered, publicly readable list of named

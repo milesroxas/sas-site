@@ -1,6 +1,7 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import { ASPECT_RATIO_CLASS } from '@/blocks/shared/aspect-ratio'
 import { eyebrowClassName } from '@/blocks/shared/typography'
+import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type {
@@ -8,16 +9,20 @@ import type {
   Media as MediaDoc,
 } from '@/payload-types'
 import { cn } from '@/utilities/ui'
+import { BlockGrid } from '../shared/grid'
 import { Section } from '../shared/section'
 
 /**
- * Presentational even split: media fills one column, the content stack the
- * other (the wide sibling of Split narrow). Collection-agnostic: the caller
- * resolves `content` from whichever source applies (inline body or canonical
- * story content) and passes it in.
+ * Presentational split on the composition grid: media in columns 1-4 with the
+ * content stack in columns 5-7, mirrored (media 5-8, content 2-4) when
+ * `layout` is `right`. The wide sibling of Split narrow. Collection-agnostic:
+ * the caller resolves `content` from whichever source applies (inline body or
+ * canonical story content) and passes it in.
  *
- * Stacked below `md` (media always first regardless of `layout`); side by
- * side from `md`, with `layout` choosing which column the media takes.
+ * Stacked below `md` (media always first regardless of `layout`). Both cells
+ * pin `md:row-start-1`: in the mirrored layout the media cell precedes the
+ * content cell in source order but sits in later columns, and auto-placement
+ * would push the content to the next row.
  *
  * `bare` skips the `Section` wrapper for callers that supply their own shell
  * (the work-page renderer and the Section block both paint the band).
@@ -39,13 +44,13 @@ export const MediaContentSplit = ({
 }) => {
   const mediaRight = block.layout === 'right'
   const inner = (
-    <div className="container">
-      <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
+    <Container>
+      <BlockGrid className="items-center">
         <div
           className={cn(
-            'relative w-full self-start overflow-hidden bg-muted',
+            'relative w-full self-start overflow-hidden bg-muted md:col-span-4 md:row-start-1',
             ASPECT_RATIO_CLASS[block.aspectRatio ?? '16-9'],
-            mediaRight && 'md:order-2',
+            mediaRight && 'md:col-start-5',
           )}
           data-reveal="media"
         >
@@ -57,7 +62,12 @@ export const MediaContentSplit = ({
             size="(max-width: 768px) 100vw, 50vw"
           />
         </div>
-        <div className="text-stack max-w-xl">
+        <div
+          className={cn(
+            'text-stack md:col-span-3 md:row-start-1',
+            mediaRight ? 'md:col-start-2' : 'md:col-start-5',
+          )}
+        >
           {block.eyebrow && (
             <p className={eyebrowClassName} data-reveal>
               {block.eyebrow}
@@ -79,8 +89,8 @@ export const MediaContentSplit = ({
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </BlockGrid>
+    </Container>
   )
   if (bare) return inner
   return (

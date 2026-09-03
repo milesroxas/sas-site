@@ -6,22 +6,25 @@ import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { FullMediaBlock, Media as MediaDoc } from '@/payload-types'
 import { cn } from '@/utilities/ui'
+import { BlockGrid } from '../shared/grid'
 import { Section } from '../shared/section'
 
 /**
- * Presentational full-media layout: media above an optional two-column content
- * row. Collection-agnostic — the caller resolves `content` from whichever source
- * applies (inline body or canonical story content) and passes it in.
+ * Presentational full-media layout: media above an optional content row on the
+ * composition grid. Collection-agnostic, the caller resolves `content` from
+ * whichever source applies (inline body or canonical story content) and passes
+ * it in.
  *
  * Media is the only requirement: with `showContent` off, or with no eyebrow,
  * heading or body authored, the block renders the media on its own.
  *
- * Full-width media is 16:9 below `md` and 21:9 from `md` up, edge to edge.
- * Contained media sits in the page column at the editor-chosen aspect ratio.
- * From `lg` the content row caps at `max-w-3xl` and follows `contentPosition`;
- * from `md` to `lg` it sits left on a `1fr 1fr 0.5fr` grid, the trailing half
- * column leaving the offset from the design. Below `md` the heading and body
- * stack in one column.
+ * Full-width media is 16:9 below `md` and 21:9 from `md` up, edge to edge,
+ * with the content row re-entering the page column. Contained media shares the
+ * grid and spans all eight columns at the editor-chosen aspect ratio.
+ *
+ * Content row placement: heading cluster in columns 1-3 and body in columns
+ * 4-6; columns 3-5 and 6-8 when `contentPosition` is `right`. Below `md` the
+ * cells stack in one column.
  *
  * `bare` skips the `Section` wrapper for callers that supply their own shell
  * (the work-page renderer wraps blocks in a full-viewport reveal section).
@@ -50,25 +53,27 @@ export const FullMedia = ({
     : 'aspect-16/9 md:aspect-21/9'
   const mediaFrame = (
     <div
-      className={cn('relative w-full overflow-hidden bg-muted', aspectClass)}
+      className={cn(
+        'relative w-full overflow-hidden bg-muted',
+        aspectClass,
+        contained && 'md:col-span-8',
+      )}
       data-reveal="media"
     >
       <Media fill htmlElement={null} imgClassName="object-cover" resource={media} size="100vw" />
     </div>
   )
-  const contentRow = showContent ? (
-    <div
-      className={cn(
-        'grid grid-cols-1 gap-4 md:grid-cols-[1fr_1fr_0.5fr] md:gap-8 lg:max-w-3xl lg:grid-cols-2',
-        contentRight && 'lg:ml-auto',
-      )}
-    >
-      <div className="text-stack" data-reveal>
+  const contentCells = showContent ? (
+    <>
+      <div className={cn('text-stack md:col-span-3', contentRight && 'md:col-start-3')} data-reveal>
         {block.eyebrow && <p className={eyebrowClassName}>{block.eyebrow}</p>}
         {block.heading && <h2 className="text-heading-3 text-balance">{block.heading}</h2>}
       </div>
       {content && (
-        <div data-reveal>
+        <div
+          className={cn('md:col-span-3', contentRight ? 'md:col-start-6' : 'md:col-start-4')}
+          data-reveal
+        >
           <RichText
             className="text-base/6 lg:text-lg/7"
             data={content}
@@ -77,19 +82,23 @@ export const FullMedia = ({
           />
         </div>
       )}
-    </div>
+    </>
   ) : null
   const inner = contained ? (
     <Container>
-      <div className="flex flex-col gap-8">
+      <BlockGrid>
         {mediaFrame}
-        {contentRow}
-      </div>
+        {contentCells}
+      </BlockGrid>
     </Container>
   ) : (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-grid">
       {mediaFrame}
-      {contentRow && <Container>{contentRow}</Container>}
+      {contentCells && (
+        <Container>
+          <BlockGrid>{contentCells}</BlockGrid>
+        </Container>
+      )}
     </div>
   )
   if (bare) return inner

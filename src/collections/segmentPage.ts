@@ -4,13 +4,13 @@ import type {
   CollectionConfig,
   CollectionSlug,
 } from 'payload'
-import { slugField } from '@/fields/slug'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { closingTab } from '@/fields/closing'
 import { editorialNotesField } from '@/fields/pageFields'
 import { segmentPageBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
+import { slugField } from '@/fields/slug'
 import { hero } from '@/heros/config'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { collectionPreview } from '@/utilities/generatePreviewPath'

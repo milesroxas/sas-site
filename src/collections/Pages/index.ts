@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
-import { slugField } from '@/fields/slug'
 import { closingTab } from '@/fields/closing'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
+import { slugField } from '@/fields/slug'
 import { hero } from '@/heros/config'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'

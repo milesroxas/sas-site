@@ -1,7 +1,7 @@
 import type { Access, CollectionConfig } from 'payload'
-import { slugField } from '@/fields/slug'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
+import { slugField } from '@/fields/slug'
 import { ensureLibraryRootFolder } from '@/hooks/assetLibraryFolders'
 
 const activeOrAuthenticated: Access = ({ req }) => {
