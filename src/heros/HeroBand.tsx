@@ -2,7 +2,8 @@
 
 import type React from 'react'
 import { createElement, type RefObject, useLayoutEffect, useRef } from 'react'
-import { CHROME_THEME_SITE, type ChromeTheme, useChromeTheme } from '@/providers/ChromeTheme'
+import { onChromeScroll, pageFrameFrozen } from '@/components/SiteChrome/chrome-scroll'
+import { CHROME_THEME_SITE, type ChromeBar, useChromeThemeStore } from '@/providers/ChromeTheme'
 import type { Theme } from '@/providers/Theme/types'
 
 /** The fixed bars the band can sit under. Both are outside the page frame. */
@@ -10,36 +11,56 @@ const SITE_HEADER_SELECTOR = '[data-site-header]'
 const SITE_FOOTER_SELECTOR = '[data-site-footer]'
 const PAGE_FRAME_SELECTOR = '[data-page-frame]'
 
-const sameChromeTheme = (a: ChromeTheme, b: ChromeTheme) =>
-  a.header === b.header && a.footer === b.footer
+/**
+ * The bars' heights once the page is scrolled (globals.css tokens). A pin
+ * releases well past the scroll threshold, so the shrunk height is the one
+ * the band's edge actually meets; reading the token keeps that one source.
+ */
+const SCROLLED_BAR_HEIGHT_TOKEN: Record<ChromeBar, string> = {
+  header: '--header-bar-height-scrolled',
+  footer: '--footer-bar-height-scrolled',
+}
+
+function scrolledBarHeight(bar: ChromeBar, element: HTMLElement): number {
+  const rootStyle = getComputedStyle(document.documentElement)
+  const value = rootStyle.getPropertyValue(SCROLLED_BAR_HEIGHT_TOKEN[bar]).trim()
+  if (value.endsWith('rem')) {
+    return Number.parseFloat(value) * Number.parseFloat(rootStyle.fontSize)
+  }
+  if (value.endsWith('px')) return Number.parseFloat(value)
+  // Token missing (a shell without globals.css): the bar as rendered.
+  return element.getBoundingClientRect().height
+}
 
 /**
  * Pins the site chrome to the band's palette for exactly as long as the band
- * is under it, and releases it as the band scrolls out.
+ * is entirely behind each bar, and releases it as the band scrolls out.
  *
- * Derived, never toggled: every scroll and resize recomputes both bars from
- * the band's live bottom edge against the bars' own rects, so a fast scroll,
- * a resize mid-scroll, or a route change cannot leave a stale pin behind.
- * The header lets go once the band's bottom edge rises above the header's
- * bottom edge; the footer as soon as the band's bottom edge rises above the
- * footer's top edge (earlier, since the footer sits at the bottom of the
- * viewport). Unmount releases both.
+ * A pinned bar lifts its plate so the band's media runs under it, which is
+ * only safe while nothing but the band shows through: any sliver of page
+ * would carry the wrong ink. So a bar is pinned while the band's document
+ * span contains the bar's, and on the site theme otherwise (a solid plate is
+ * always safe). The header lets go once the band's bottom edge rises above
+ * the header's bottom edge; the footer as soon as the band's bottom edge
+ * rises above the viewport bottom (earlier, since the footer sits there). A
+ * band that starts below the header's top edge is not behind the header at
+ * rest and pins it only once it has scrolled fully under.
  *
- * The takeover menu freezes the page frame (`inert`, `position: fixed`,
- * scaled) for the whole open: the document collapses, `scrollY` snaps to 0
- * and every rect inside the frame is scaled, so nothing is measured while
- * that attribute is present (the header's scrolled state skips the same
- * window, see docs/animations.md). A route that commits mid-dock (menu link,
- * hero handoff) mounts its band in that state; the attribute observer runs
- * the measurement once `restoreFrame` drops `inert`, which it does after the
- * scroll offset is final, so the first read is already correct.
+ * Geometry is measured once and refreshed only when something can move it
+ * (resize, the band's own box changing, the page frame thawing); a scroll is
+ * arithmetic against the cached edges, with no layout read. The chrome
+ * scroll subscription (`components/SiteChrome/chrome-scroll`) is the one
+ * `scroll` listener the chrome owns and the one place that knows when the
+ * frame is frozen by the takeover menu: nothing is measured or applied while
+ * it is docked, and the thaw runs the subscription once the frame is back in
+ * flow at its final scroll offset (docs/animations.md).
  *
- * A layout effect so the initial pin lands in the hydration commit, before
- * the first client paint: the bars go straight to the band's palette instead
+ * A layout effect so the initial pin lands in the same commit as the band,
+ * before the next paint: the bars go straight to the band's palette instead
  * of painting the site theme for a frame and then fading.
  */
 function useHeroChromeTheme(ref: RefObject<HTMLElement | null>, theme: Theme) {
-  const { setChromeTheme } = useChromeTheme()
+  const store = useChromeThemeStore()
 
   useLayoutEffect(() => {
     const band = ref.current
@@ -50,29 +71,65 @@ function useHeroChromeTheme(ref: RefObject<HTMLElement | null>, theme: Theme) {
     if (!header && !footer) return
     const frame = band.closest<HTMLElement>(PAGE_FRAME_SELECTOR)
 
+    // Document-space edges of the band; viewport-space edges of the fixed
+    // bars (constant between refreshes, so the sum is a document edge).
+    let measured = false
+    let bandTop = 0
+    let bandBottom = 0
+    let headerTop = 0
+    let headerBottom = 0
+    let footerTop = 0
+    let footerBottom = 0
+
+    const apply = (scrollY: number) => {
+      if (!measured) return
+      store.write({
+        header:
+          header && bandTop <= scrollY + headerTop && bandBottom >= scrollY + headerBottom
+            ? theme
+            : null,
+        footer:
+          footer && bandTop <= scrollY + footerTop && bandBottom >= scrollY + footerBottom
+            ? theme
+            : null,
+      })
+    }
+
     const measure = () => {
-      if (frame?.hasAttribute('inert')) return
-      const bandBottom = band.getBoundingClientRect().bottom
-      const next: ChromeTheme = {
-        header: header && bandBottom > header.getBoundingClientRect().bottom ? theme : null,
-        footer: footer && bandBottom > footer.getBoundingClientRect().top ? theme : null,
+      if (pageFrameFrozen()) return
+      const scrollY = window.scrollY
+      const rect = band.getBoundingClientRect()
+      bandTop = rect.top + scrollY
+      bandBottom = rect.bottom + scrollY
+      if (header) {
+        headerTop = header.getBoundingClientRect().top
+        headerBottom = headerTop + scrolledBarHeight('header', header)
       }
-      setChromeTheme((prev) => (sameChromeTheme(prev, next) ? prev : next))
+      if (footer) {
+        footerBottom = footer.getBoundingClientRect().bottom
+        footerTop = footerBottom - scrolledBarHeight('footer', footer)
+      }
+      measured = true
+      apply(scrollY)
     }
 
     measure()
-    window.addEventListener('scroll', measure, { passive: true })
+    const unsubscribe = onChromeScroll(apply)
     window.addEventListener('resize', measure)
+    const bandObserver = new ResizeObserver(measure)
+    bandObserver.observe(band)
+    // Every `inert` change lands here; `measure` ignores the freeze itself.
     const frameObserver = frame ? new MutationObserver(measure) : null
     if (frame) frameObserver?.observe(frame, { attributes: true, attributeFilter: ['inert'] })
 
     return () => {
-      window.removeEventListener('scroll', measure)
+      unsubscribe()
       window.removeEventListener('resize', measure)
+      bandObserver.disconnect()
       frameObserver?.disconnect()
-      setChromeTheme(CHROME_THEME_SITE)
+      store.write(CHROME_THEME_SITE)
     }
-  }, [ref, theme, setChromeTheme])
+  }, [ref, theme, store])
 }
 
 type HeroBandProps = React.HTMLAttributes<HTMLElement> & {
@@ -85,8 +142,8 @@ type HeroBandProps = React.HTMLAttributes<HTMLElement> & {
 /**
  * The root of a hero that paints its own palette: stamps `data-theme` on the
  * band (the same section-level pin every hero uses) and keeps the fixed
- * header and footer on that palette while they overlap it. One prop drives
- * both, so the band and the chrome over it can never disagree.
+ * header and footer on that palette while they sit fully over it. One prop
+ * drives both, so the band and the chrome over it can never disagree.
  */
 export const HeroBand: React.FC<HeroBandProps> = ({
   as = 'section',

@@ -1,7 +1,7 @@
 'use client'
 
 import type React from 'react'
-import { useChromeTheme } from '@/providers/ChromeTheme'
+import { useChromeBarTheme } from '@/providers/ChromeTheme'
 import { cn } from '@/utilities/ui'
 
 /**
@@ -14,10 +14,12 @@ import { cn } from '@/utilities/ui'
  * lifts the plate so the band's media runs under it; the palette swap and the
  * plate fade share one transition, so leaving the band is a single settle.
  * Children inherit `color` from here rather than restating `text-foreground`,
- * or they would snap to the new palette while the bar is still fading.
+ * or they would snap to the new palette while the bar is still fading. The
+ * subscription is to this bar's value alone: a header-only flip does not
+ * touch it.
  */
 export const FooterBar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const heroTheme = useChromeTheme().chromeTheme.footer
+  const heroTheme = useChromeBarTheme('footer')
   return (
     <footer
       data-site-footer

@@ -2,13 +2,13 @@
 import { IconMenu2, IconX } from '@tabler/icons-react'
 import Link from 'next/link'
 import type React from 'react'
-import { useEffect } from 'react'
 import { Container } from '@/components/Container'
+import { useScrolledChrome } from '@/components/SiteChrome/chrome-scroll'
 import type { Header } from '@/payload-types'
-import { useChromeTheme } from '@/providers/ChromeTheme'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import type { MenuContent } from './getMenuContent'
+import { HeaderBar } from './HeaderBar'
 import { TakeoverMenu } from './Menu'
 import { useTakeoverMenuState } from './Menu/useTakeoverMenuState'
 import { ThemeToggle } from './ThemeToggle'
@@ -26,56 +26,14 @@ interface HeaderClientProps {
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent, askHidden }) => {
   const { menuOpen, setMenuOpen, menuButtonRef } = useTakeoverMenuState()
-  const { chromeTheme } = useChromeTheme()
-  // A hero band under the bar pins it to the band's palette (HeroBand); the
-  // pin stands aside while the takeover overlay is up, since the bar then
-  // reads against the overlay's site-theme surface, not the page under it.
-  const heroTheme = menuOpen ? null : chromeTheme.header
 
-  // Past a small scroll threshold both fixed bars shrink (globals.css keys
-  // --header-bar-height/--footer-bar-height off this attribute) so more of
-  // the page shows.
-  //
-  // Frozen while the takeover menu holds the page frame: docking sets the
-  // frame fixed and locks html overflow, so the document collapses and
-  // scrollY snaps to 0 on the next frame. Reading that as "back at the top"
-  // grew the bar mid-dock (3rem to 4rem) and moved the preview slot the
-  // timeline had just measured, so the window landed 1rem above it. The
-  // frame's `inert` spans the whole open, dock through undock; `restoreFrame`
-  // drops it before restoring the scroll offset, so the next scroll event
-  // re-syncs with the real position.
-  useEffect(() => {
-    const onScroll = () => {
-      if (document.querySelector('[data-page-frame][inert]')) return
-      document.documentElement.toggleAttribute('data-scrolled', window.scrollY > 8)
-    }
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      // SiteChrome unmounts the header on demo routes with no other writer for
-      // this attribute; clear it so --header-bar-height consumers there (the
-      // demo shell's site-menu band) don't inherit the shrunk scrolled value.
-      document.documentElement.removeAttribute('data-scrolled')
-    }
-  }, [])
+  // Past a small scroll threshold both fixed bars shrink so more of the page
+  // shows; the header owns that flag for the whole chrome.
+  useScrolledChrome()
 
   return (
     <>
-      <header
-        data-site-header
-        data-theme={heroTheme ?? undefined}
-        className={cn(
-          'fixed inset-x-0 top-0 z-50 h-(--header-bar-height) text-foreground transition-[height,background-color,color] duration-300 motion-reduce:transition-none',
-          // Solid like the footer. Transparent over a hero band (its media
-          // runs under the bar) and under the open takeover overlay, so that
-          // surface reads through; the palette swap and the plate fade share
-          // one transition, so leaving the band is a single settle.
-          menuOpen || heroTheme ? 'bg-transparent' : 'bg-background',
-        )}
-        // Pull the header out of the page snapshot so it stays static during transitions.
-        style={{ viewTransitionName: 'site-header' }}
-      >
+      <HeaderBar menuOpen={menuOpen}>
         {/* One 3-col grid at every width; cells are placed per breakpoint.
             Phone: menu / close on the left, brand centered, theme toggle on
             the right (only while the menu is open, in the spot the close
@@ -145,7 +103,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent, a
             </span>
           </div>
         </Container>
-      </header>
+      </HeaderBar>
 
       <TakeoverMenu
         data={data}

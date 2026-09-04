@@ -1054,6 +1054,11 @@
      heights so page content never reflows when the bars shrink on scroll. */
   --header-bar-height: var(--header-height);
   --footer-bar-height: var(--footer-height);
+  /* The bars' heights past the scroll threshold (html[data-scrolled], below).
+     HeroBand reads these to place the chrome pin's release, so the bars and
+     the pin can never disagree about where a bar's edge sits. */
+  --header-bar-height-scrolled: 3rem;
+  --footer-bar-height-scrolled: 2.5rem;
   /* Fixed admin bar (components/AdminBar); footer + page frame offset by it. */
   --admin-bar-height: 2rem;
   --card: oklch(1 0 0);
@@ -1107,11 +1112,14 @@
   --active: oklch(0.52 0.14 150);
 }
 
-/* Header/Component.client.tsx toggles this attribute past a small scroll
-   threshold; both fixed bars shrink so more of the page shows. */
-html[data-scrolled] {
-  --header-bar-height: 3rem;
-  --footer-bar-height: 2.5rem;
+/* The site header toggles this attribute past a small scroll threshold
+   (components/SiteChrome/chrome-scroll.ts); both fixed bars shrink so more
+   of the page shows. Scoped to the bars rather than redefined on the root:
+   an inherited custom property changing on <html> restyles the whole
+   document, and the bars are the only consumers that move. */
+html[data-scrolled] :is([data-site-header], [data-site-footer]) {
+  --header-bar-height: var(--header-bar-height-scrolled);
+  --footer-bar-height: var(--footer-bar-height-scrolled);
 }
 
 /* Dark palette from the shadcn preset (b1ZzraCdE), keyed to the site's
