@@ -9868,6 +9868,48 @@ export interface TaskSchedulePublish {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextActionsBlock".
+ */
+export interface RichTextActionsBlock {
+  /**
+   * One or two links, set in a row. Default is the primary chip; Text is the underlined action beside it.
+   */
+  links: {
+    link: {
+      type?: ('reference' | 'site' | 'custom') | null;
+      newTab?: boolean | null;
+      reference?:
+        | ({
+            relationTo: 'pages';
+            value: number | Page;
+          } | null)
+        | ({
+            relationTo: 'posts';
+            value: number | Post;
+          } | null)
+        | ({
+            relationTo: 'contact-pages';
+            value: number | ContactPage;
+          } | null);
+      /**
+       * Home (/), Works Index (/works), or Insights Index (/insights).
+       */
+      sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+      url?: string | null;
+      label: string;
+      /**
+       * Choose how the link should be rendered.
+       */
+      appearance?: ('default' | 'text') | null;
+    };
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'actions';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "RichTextInsightsBlock".
  */
 export interface RichTextInsightsBlock {

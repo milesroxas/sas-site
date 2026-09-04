@@ -3,7 +3,8 @@ import type { Field, GroupField } from 'payload'
 import { SITE_PAGE_OPTIONS } from '@/fields/sitePages'
 import deepMerge from '@/utilities/deepMerge'
 
-export type LinkAppearances = 'default' | 'outline'
+/** Each value is a `Button` variant; CMSLink passes it through as `appearance`. */
+export type LinkAppearances = 'default' | 'outline' | 'text'
 
 export const appearanceOptions: Record<LinkAppearances, { label: string; value: string }> = {
   default: {
@@ -13,6 +14,11 @@ export const appearanceOptions: Record<LinkAppearances, { label: string; value: 
   outline: {
     label: 'Outline',
     value: 'outline',
+  },
+  // The underlined text action beside a primary chip (rich text Actions).
+  text: {
+    label: 'Text',
+    value: 'text',
   },
 }
 

@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { heading, paragraph, richText, TEXT_FORMAT_BOLD, text } from '@/blocks/fixtures'
+import {
+  contentColumnFixture,
+  heading,
+  paragraph,
+  richText,
+  TEXT_FORMAT_BOLD,
+  text,
+} from '@/blocks/fixtures'
 import RichText from './index'
 
 const proseFixture = richText(
@@ -53,4 +60,35 @@ export const Emphasis: Story = {
 
 export const WithoutGutter: Story = {
   args: { enableGutter: false },
+}
+
+/**
+ * Bare mode as the Split family renders it: the content-column editor's
+ * flow (kicker, h4 over a ruled list, small note, Actions) styled by the
+ * `.payload-richtext:not(.prose)` rules alone.
+ */
+export const ContentColumn: Story = {
+  args: {
+    data: contentColumnFixture,
+    enableGutter: false,
+    enableProse: false,
+    className: 'max-w-sm text-base',
+  },
+}
+
+/** A styled run inside a mixed paragraph falls back to an inline span. */
+export const InlineTextStyle: Story = {
+  args: {
+    data: richText(
+      paragraph(
+        text('Since 2014', 0, 'eyebrow'),
+        text('  we have worked with technical companies, and '),
+        text('still do', 0, 'small'),
+        text('.'),
+      ),
+    ),
+    enableGutter: false,
+    enableProse: false,
+    className: 'max-w-sm text-base',
+  },
 }

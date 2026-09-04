@@ -58,8 +58,8 @@ Consequence: the real migration surface is 18 block instances on 2 documents. Th
 | `labTransition` | Narrative / Rich transition | Section heading | Standard | Lab variant, same label |
 | `featureHeadingOffset` | Statements / Feature: heading offset | Section heading | Offset | gains Body size select |
 | `fullMedia` | Media / Full media | Media and content | Stacked | see D1: existing instances all become Stacked |
-| NEW `mediaContentSplit` | (new block) | Media and content | Split | net-new visual, additive |
-| `splitContentNarrow` | Split layouts / Split content (narrow) | Media and content | Split narrow | |
+| NEW `mediaContentSplit` | (new block) | Media and content | Split | net-new visual, additive. 2026-09-04: `body` uses the content-column editor `contentLexical` (`src/fields/contentLexical.ts`): h4 (muted), bulleted list (ruled), Eyebrow and Small text styles (TextStateFeature, classes in `components/RichText/text-styles.ts`), Actions toolbar block (`actions`, `RichTextActionsBlock`, one or two links as buttons, in the body JSON, no table), fixed and inline toolbars. Node treatment lives in `RichText` and the bare rich text rules in `globals.css` |
+| `splitContentNarrow` | Split layouts / Split content (narrow) | Media and content | Split narrow | 2026-09-04: `body` uses `contentLexical` (see Split) |
 | `imagePair` | Media / Image pair | Media and content | Pair | zero prod data |
 | `splitImageOffset` | Media / Split image offset | Media and content | Pair offset | |
 | `featureImageStatement` | Statements / Feature: image statement | Media | Statement | |

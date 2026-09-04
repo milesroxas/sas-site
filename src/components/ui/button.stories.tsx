@@ -26,6 +26,7 @@ const meta = {
         'mono',
         'glass',
         'underline',
+        'text',
       ],
     },
     size: {
@@ -139,6 +140,22 @@ export const Mono: Story = {
 
 export const Disabled: Story = {
   args: { disabled: true },
+}
+
+/**
+ * Content-column actions (rich text Actions block): the primary chip beside
+ * the text action, which owns its height and no side padding so the row's
+ * gap is the whole distance between them.
+ */
+export const ContentActions: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-center gap-6">
+      <Button size="action">Primary Action</Button>
+      <Button size="clear" variant="text">
+        Secondary Action
+      </Button>
+    </div>
+  ),
 }
 
 /** Hero actions over media: frosted primary chip beside an underlined text action. */

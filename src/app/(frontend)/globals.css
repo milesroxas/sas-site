@@ -994,14 +994,50 @@
   text-box-edge: cap alphabetic;
 }
 
-/* Vertical rhythm for bare (non-prose) Payload rich text — paragraph spacing
-   scales with the block's type size, so statement, body and caption blocks all
-   keep proportional rhythm without restating it. Call sites may tighten with a
-   utility ([&_p+p]:mt-4); utilities outrank this layer. Prose-enabled rich
-   text keeps Tailwind Typography's own margins. */
+/* Bare (non-prose) Payload rich text: the flow the content-column editor
+   (`fields/contentLexical.ts`) writes, styled once here so no block restates
+   it. Every gap is in the block's own em, so statement, body and caption
+   columns all keep proportional rhythm without restating it. Call sites may
+   tighten with a utility ([&_p+p]:mt-4); utilities outrank this layer.
+   Prose-enabled rich text keeps Tailwind Typography's own margins and
+   headings. */
 @layer components {
-  .payload-richtext:not(.prose) :where(p + p) {
-    margin-top: 1.25em;
+  .payload-richtext:not(.prose) {
+    /* Flow rhythm: one step between siblings, whatever they are (paragraph,
+       list, heading, a toolbar block such as Actions). */
+    > :where(*) + :where(*) {
+      margin-top: 1.25em;
+    }
+
+    /* A heading opens a run: more room above it than below, so it binds to
+       what follows. h4 is the one level the column offers; at body size,
+       ink rather than size carries its hierarchy, hence the muted label. */
+    > :where(*) + :where(h4) {
+      margin-top: 2em;
+    }
+    > :where(h4) + :where(*) {
+      margin-top: 0.75em;
+    }
+    > :where(h4) {
+      color: var(--muted-foreground);
+    }
+
+    /* Ruled list (Paper "list"): a hairline above every item and no marker,
+       items set a step apart on the spacing scale. `.list-bullet` is the
+       class the Lexical list converter writes; the Actions row is a list
+       too and must not take the rule. */
+    > :where(ul.list-bullet) {
+      display: flex;
+      flex-direction: column;
+      gap: --spacing(1);
+      padding: 0;
+      list-style: none;
+
+      > li {
+        border-top: 1px solid var(--border);
+        padding-top: --spacing(1);
+      }
+    }
   }
 }
 

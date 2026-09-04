@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { mediaFixture, paragraph, richText, text, videoFixture } from '../fixtures'
+import {
+  contentColumnFixture,
+  mediaFixture,
+  paragraph,
+  richText,
+  text,
+  videoFixture,
+} from '../fixtures'
 import { SplitContentNarrowBlock } from './Component'
 
 const body = richText(
@@ -51,4 +58,9 @@ export const WithHeading: Story = {
 
 export const Dark: Story = {
   args: { theme: 'dark' },
+}
+
+/** Everything the content-column editor offers, in the narrow column: the Actions row wraps. */
+export const Composed: Story = {
+  args: { body: contentColumnFixture, heading: 'A branding agency for complex offerings' },
 }

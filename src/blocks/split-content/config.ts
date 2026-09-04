@@ -2,11 +2,13 @@ import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { contentLexical } from '@/fields/contentLexical'
 
 /**
  * Split layout: a narrow text column beside a large image, with the image
  * arranged on the left or right. Self-contained by default (authors the body
- * inline), so it can be dropped into any collection's `blocks` field.
+ * inline), so it can be dropped into any collection's `blocks` field. The
+ * body is written in the content-column editor (`contentLexical`).
  *
  * On Work Pages the `source` select can pull canonical Case Study story
  * content instead; on collections without a related study it resolves to the
@@ -45,6 +47,7 @@ export const SplitContentNarrow: Block = {
     {
       name: 'body',
       type: 'richText',
+      editor: contentLexical,
       admin: {
         description:
           'Shown when source is "Custom", or as a Work Page override for canonical content.',

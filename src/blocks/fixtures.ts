@@ -6,12 +6,14 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import type { IndustryWorkPanel } from '@/blocks/IndustryWork/Component.client'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
+import { TEXT_STYLE_STATE_KEY, type TextStyle } from '@/components/RichText/text-styles'
 import type {
   CaseStudy,
   LabPage,
   LabProject,
   Media,
   Post,
+  RichTextActionsBlock,
   Testimonial,
   WorkPage,
 } from '@/payload-types'
@@ -20,13 +22,37 @@ type SerializedNode = Record<string, unknown>
 
 export const TEXT_FORMAT_BOLD = 1
 
-export const text = (content: string, format = 0): SerializedNode => ({
+/** `style` is a content-column text style (Eyebrow, Small), stored as node state. */
+export const text = (content: string, format = 0, style?: TextStyle): SerializedNode => ({
   type: 'text',
   detail: 0,
   format,
   mode: 'normal',
   style: '',
   text: content,
+  version: 1,
+  ...(style ? { $: { [TEXT_STYLE_STATE_KEY]: style } } : {}),
+})
+
+export const listItem = (...children: SerializedNode[]): SerializedNode => ({
+  type: 'listitem',
+  children,
+  direction: 'ltr',
+  format: '',
+  indent: 0,
+  value: 1,
+  version: 1,
+})
+
+export const unorderedList = (...items: SerializedNode[]): SerializedNode => ({
+  type: 'list',
+  listType: 'bullet',
+  tag: 'ul',
+  start: 1,
+  children: items.map((item, index) => ({ ...item, value: index + 1 })),
+  direction: 'ltr',
+  format: '',
+  indent: 0,
   version: 1,
 })
 
@@ -76,6 +102,41 @@ export const richText = (...children: SerializedNode[]): DefaultTypedEditorState
       version: 1,
     },
   }) as DefaultTypedEditorState
+
+/**
+ * A content-column body (Split, Split narrow) using everything the
+ * `contentLexical` editor offers: a kicker, copy, an h4 label over a ruled
+ * list, a small note, and an Actions row of the primary chip and text action.
+ */
+export const contentColumnFixture: DefaultTypedEditorState = richText(
+  paragraph(text('What we do', 0, 'eyebrow')),
+  paragraph(
+    text(
+      'Suits & Sandals is a B2B branding agency for technical companies, specialized service providers, and expert-led firms with complex offerings.',
+    ),
+  ),
+  heading('h4', text('Included')),
+  unorderedList(
+    listItem(text('Website strategy and UX')),
+    listItem(text('Website design and development')),
+    listItem(text('Sales and business-development materials')),
+  ),
+  paragraph(text('Engagements run from a focused sprint to a standing retainer.', 0, 'small')),
+  blockNode({
+    blockType: 'actions',
+    id: 'actions',
+    links: [
+      {
+        id: 'primary',
+        link: { type: 'custom', url: '/contact', label: 'Start a project', appearance: 'default' },
+      },
+      {
+        id: 'text',
+        link: { type: 'custom', url: '/works', label: 'See the work', appearance: 'text' },
+      },
+    ],
+  } satisfies RichTextActionsBlock),
+)
 
 /**
  * Absolute URL to a production media asset. Storybook resolves it either way;

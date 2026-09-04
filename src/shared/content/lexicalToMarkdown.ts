@@ -101,6 +101,23 @@ const blockToMarkdown = (node: LexicalNode): string | null => {
     return lexicalToMarkdownString(content)
   }
 
+  // Block links (Actions and similar): each link's label as a list entry,
+  // linked when the destination is a plain URL (references are bare ids here).
+  const links = fields.links
+  if (Array.isArray(links)) {
+    const entries = links
+      .map((entry) => {
+        const link =
+          entry && typeof entry === 'object' ? (entry as { link?: unknown }).link : undefined
+        if (!link || typeof link !== 'object') return ''
+        const { label, type, url } = link as { label?: unknown; type?: unknown; url?: unknown }
+        if (typeof label !== 'string' || !label.trim()) return ''
+        return type === 'custom' && typeof url === 'string' && url ? `[${label}](${url})` : label
+      })
+      .filter((entry) => entry)
+    if (entries.length) return entries.map((entry) => `- ${entry}`).join('\n')
+  }
+
   // Block items (Insights, Pill list, and similar): each item's label, title
   // and description. Single-line items read as a markdown list under the
   // block's eyebrow; multi-line items as paragraphs.

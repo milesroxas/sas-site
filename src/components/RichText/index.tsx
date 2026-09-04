@@ -6,8 +6,11 @@ import type {
 } from '@payloadcms/richtext-lexical'
 import {
   RichText as ConvertRichText,
+  type JSXConverter,
+  type JSXConverterArgs,
   type JSXConvertersFunction,
   LinkJSXConverter,
+  type SerializedLexicalNodeWithParent,
 } from '@payloadcms/richtext-lexical/react'
 import { BannerBlock } from '@/blocks/Banner/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
@@ -15,6 +18,7 @@ import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { CodeBlock, type CodeBlockProps } from '@/blocks/Code/Component'
 import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
+import { RichTextActions } from '@/blocks/rich-text/actions/Component'
 import { RichTextInsights } from '@/blocks/rich-text/insights/Component'
 import { RichTextPillList } from '@/blocks/rich-text/pill-list/Component'
 import type {
@@ -23,11 +27,13 @@ import type {
   CallToActionBlock as CTABlockProps,
   FeatureStatementLinksBlock as FeatureStatementLinksBlockProps,
   MediaBlock as MediaBlockProps,
+  RichTextActionsBlock as RichTextActionsBlockProps,
   RichTextInsightsBlock as RichTextInsightsBlockProps,
   RichTextPillListBlock as RichTextPillListBlockProps,
 } from '@/payload-types'
 import { surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
 import { cn } from '@/utilities/ui'
+import { isTextStyle, TEXT_STYLE_STATE_KEY, TEXT_STYLES, type TextStyle } from './text-styles'
 
 type NodeTypes =
   | DefaultNodeTypes
@@ -38,9 +44,47 @@ type NodeTypes =
       | CarouselBlockProps
       | CodeBlockProps
       | FeatureStatementLinksBlockProps
+      | RichTextActionsBlockProps
       | RichTextInsightsBlockProps
       | RichTextPillListBlockProps
     >
+
+type ParagraphNode = Extract<DefaultNodeTypes, { type: 'paragraph' }>
+type TextNode = Extract<DefaultNodeTypes, { type: 'text' }>
+
+/**
+ * The text style the content-column editor stored on a text node
+ * (`text-styles.ts`): Lexical node state, under the one key the styles share.
+ */
+const textStyleOf = (node: SerializedLexicalNodeWithParent | undefined): TextStyle | undefined => {
+  const value = (node as { $?: Record<string, unknown> } | undefined)?.$?.[TEXT_STYLE_STATE_KEY]
+  return isTextStyle(value) ? value : undefined
+}
+
+/**
+ * The one style every text child of a paragraph carries, if they all do.
+ * Line breaks and blank runs do not count; anything else without the style
+ * (a link, unstyled text) means the paragraph is mixed.
+ */
+const paragraphTextStyle = (node: ParagraphNode): TextStyle | undefined => {
+  let style: TextStyle | undefined
+  for (const child of node.children) {
+    if (child.type === 'linebreak') continue
+    if (child.type === 'text' && !(child as TextNode).text.trim()) continue
+    const own = child.type === 'text' ? textStyleOf(child) : undefined
+    if (!own || (style && own !== style)) return undefined
+    style = own
+  }
+  return style
+}
+
+const isParagraph = (node: SerializedLexicalNodeWithParent | undefined): node is ParagraphNode =>
+  node?.type === 'paragraph'
+
+const runConverter = <TNode extends SerializedLexicalNodeWithParent>(
+  converter: JSXConverter<TNode> | undefined,
+  args: JSXConverterArgs<TNode>,
+) => (typeof converter === 'function' ? converter(args) : converter)
 
 const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   const doc = linkNode.fields.doc
@@ -59,7 +103,30 @@ const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
 const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) => ({
   ...defaultConverters,
   ...LinkJSXConverter({ internalDocToHref }),
+  /**
+   * Text styles (`text-styles.ts`). A paragraph styled throughout carries the
+   * style itself, so its line-height and the flow rhythm around it follow
+   * the style; a styled run inside a mixed paragraph is a span. Neither is
+   * ever both.
+   */
+  paragraph: ({ node, nodesToJSX }) => {
+    const style = paragraphTextStyle(node)
+    const children = nodesToJSX({ nodes: node.children })
+    return (
+      <p className={style ? TEXT_STYLES[style].className : undefined}>
+        {children.length ? children : <br />}
+      </p>
+    )
+  },
+  text: (args) => {
+    const rendered = runConverter(defaultConverters.text, args)
+    const style = textStyleOf(args.node)
+    if (!style) return rendered
+    if (isParagraph(args.parent) && paragraphTextStyle(args.parent) === style) return rendered
+    return <span className={TEXT_STYLES[style].className}>{rendered}</span>
+  },
   blocks: {
+    actions: ({ node }) => <RichTextActions links={node.fields.links} />,
     banner: ({ node }) => <BannerBlock className="col-start-2 mb-4" {...node.fields} />,
     carousel: ({ node }) => (
       <CarouselBlock

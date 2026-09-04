@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { mediaFixture, paragraph, richText, text, videoFixture } from '../fixtures'
+import {
+  contentColumnFixture,
+  mediaFixture,
+  paragraph,
+  richText,
+  text,
+  videoFixture,
+} from '../fixtures'
 import { MediaContentSplitBlock } from './Component'
 
 const body = richText(
@@ -54,4 +61,13 @@ export const ThreeTwo: Story = {
 
 export const Dark: Story = {
   args: { theme: 'dark' },
+}
+
+/** Everything the content-column editor offers: kicker, h4 over a ruled list, small note, Actions. */
+export const Composed: Story = {
+  args: { body: contentColumnFixture },
+}
+
+export const ComposedDark: Story = {
+  args: { body: contentColumnFixture, theme: 'dark' },
 }

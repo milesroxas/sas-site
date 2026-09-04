@@ -30,14 +30,18 @@ const buttonVariants = cva(
         // a translucent tint of the band's foreground with a light backdrop
         // blur, so it reads on any photograph without a solid plate. The
         // hover deepens the tint on the `pressable` transition list. Pair
-        // with `size="action"`.
-        glass:
-          'bg-foreground/10 font-normal tracking-tight text-foreground backdrop-blur-xs hover:bg-foreground/15',
+        // with `size="action"`, which sets the label's weight and tracking.
+        glass: 'bg-foreground/10 text-foreground backdrop-blur-xs hover:bg-foreground/15',
         // Plain underlined label for the secondary action beside `glass`:
         // same metrics, no plate, so the pair aligns as one row. The hover
         // lifts the rule instead of changing color. Pair with `size="action"`.
-        underline:
-          'font-normal tracking-tight text-foreground underline underline-offset-2 hover:underline-offset-4',
+        underline: 'text-foreground underline underline-offset-2 hover:underline-offset-4',
+        // The text action beside a `default` chip in a content column (rich
+        // text Actions): the `action` label in primary ink on a hairline
+        // underline, no plate and no side padding so alone it sits flush with
+        // the copy. Owns the chip's 32px height so the pair rows up; pair with
+        // `size="clear"`. `underline` is its foreground-ink twin over media.
+        text: 'h-8 text-sm/4 font-normal tracking-tight text-primary underline decoration-1 underline-offset-2 hover:underline-offset-4',
       },
       size: {
         default:
@@ -56,11 +60,12 @@ const buttonVariants = cva(
         // Unpadded size for text-flow usage (e.g. nav links via CMSLink's
         // `link` appearance) where button chrome would break the text rhythm.
         clear: "gap-1 [&_svg:not([class*='size-'])]:size-3.5",
-        // Hero action: a 14px label on a 32px sharp-cornered chip, the one
-        // size sized to sit beside a display headline over media rather than
-        // inside form chrome.
+        // Page action: a 14px label at the body weight, tight-tracked, on a
+        // 32px sharp-cornered chip. The one size sized to sit beside a
+        // headline (hero over media, a content column's Actions) rather than
+        // inside form chrome, so it owns the label's weight and tracking too.
         action:
-          "h-8 gap-1 rounded-sm px-3 text-sm/4 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-4",
+          "h-8 gap-1 rounded-sm px-3 text-sm/4 font-normal tracking-tight has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-4",
         // Takeover-menu pill: letterspaced all-caps capsule (CLOSE / GET IN
         // TOUCH). Trailing letter-space is offset so the label reads centered.
         pill: "h-8 gap-1 rounded-full px-6 text-sm/none font-semibold tracking-widest uppercase [&>span]:mr-[-0.1em] [&_svg:not([class*='size-'])]:size-4",
