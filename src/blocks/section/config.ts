@@ -5,8 +5,8 @@ import { SECTION_SPACING_OPTIONS, SECTION_THEME_OPTIONS } from './shared'
 /**
  * The Section block: the structural wrapper editors add first in the
  * Composition tab, then fill with content blocks. The Section owns the band
- * (surface theme and vertical spacing) and its children render bare, so the
- * band is painted exactly once.
+ * (surface, band padding, and space between nested blocks) and its children
+ * render bare, so the band is painted exactly once.
  *
  * One factory, one slug, one table shape across every collection; only the
  * nested block list and the interface name differ per parent (the same
@@ -35,7 +35,7 @@ export const sectionBlock = ({
       defaultValue: false,
       admin: {
         description:
-          'Override the surface and vertical spacing of this section. Off uses the page surface and default rhythm.',
+          'Override the surface, band padding, and space between blocks. Off uses the page surface and default rhythm.',
       },
     },
     {
@@ -53,16 +53,35 @@ export const sectionBlock = ({
               'Surface within the visitor\'s site theme. "Inherit" is the page surface; "Inverted" is a contrasted band, not a forced dark mode.',
           },
         },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
         {
           name: 'spacing',
           type: 'select',
+          label: 'Band',
           defaultValue: 'default',
           options: [...SECTION_SPACING_OPTIONS],
           admin: {
             width: '50%',
             condition: (_, siblingData) => Boolean(siblingData?.customize),
             description:
-              'Vertical rhythm of the band. "None" is for a section whose content owns its shell.',
+              'Top and bottom padding of the section. "None" is for a section whose content owns its shell.',
+          },
+        },
+        {
+          name: 'stack',
+          type: 'select',
+          label: 'Between blocks',
+          defaultValue: 'default',
+          options: [...SECTION_SPACING_OPTIONS],
+          admin: {
+            width: '50%',
+            condition: (_, siblingData) => Boolean(siblingData?.customize),
+            description:
+              'Space between nested blocks. Independent of Band. "None" sits them flush.',
           },
         },
       ],

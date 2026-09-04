@@ -67,6 +67,7 @@ export const RenderBlocks: React.FC<{
                 customize={block.customize}
                 key={block.id ?? index}
                 spacing={block.spacing}
+                stack={block.stack}
                 theme={block.theme}
               >
                 {(block.blocks ?? []).map((child, childIndex) =>

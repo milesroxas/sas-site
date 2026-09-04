@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react'
-import { Section } from '@/blocks/shared/section'
+import { Section, STACK_SPACING } from '@/blocks/shared/section'
 import { cn } from '@/utilities/ui'
 import {
-  SECTION_CONTENT_CLASS,
-  SECTION_SPACING_TO_BAND,
+  resolveSectionSpacing,
   SECTION_THEME_TO_BAND,
   type SectionBlockSpacing,
   type SectionBlockTheme,
@@ -15,26 +14,28 @@ import {
  * place. Children are the section's nested blocks, each rendered `bare` by
  * its renderer: the band and its internal stack live here and nowhere else.
  *
- * `customize` off ignores any previously stored theme/spacing: unchecking the
- * box must restore the defaults even though the hidden fields keep their
- * values.
+ * `customize` off ignores any previously stored theme/spacing/stack:
+ * unchecking the box must restore the defaults even though the hidden fields
+ * keep their values.
  */
 export const SectionBand = ({
   children,
   className,
   customize,
   spacing,
+  stack,
   theme,
 }: {
   children: ReactNode
   className?: string
   customize?: boolean | null
   spacing?: SectionBlockSpacing | null
+  stack?: SectionBlockSpacing | null
   theme?: SectionBlockTheme | null
 }) => (
   <Section
-    className={cn(SECTION_CONTENT_CLASS, className)}
-    spacing={SECTION_SPACING_TO_BAND[(customize && spacing) || 'default']}
+    className={cn(STACK_SPACING[resolveSectionSpacing(customize, stack)], className)}
+    spacing={resolveSectionSpacing(customize, spacing)}
     theme={SECTION_THEME_TO_BAND[(customize && theme) || 'inherit']}
   >
     {children}

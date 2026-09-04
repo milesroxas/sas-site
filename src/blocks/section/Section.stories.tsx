@@ -81,7 +81,15 @@ export const LooseSpacing: Story = {
   args: { customize: true, spacing: 'loose' },
 }
 
+export const TightStack: Story = {
+  args: { customize: true, stack: 'tight' },
+}
+
+export const LooseStack: Story = {
+  args: { customize: true, stack: 'loose' },
+}
+
 /** Unchecking Customize must ignore whatever the hidden fields still store. */
 export const CustomizeOffIgnoresStoredValues: Story = {
-  args: { customize: false, theme: 'inverted', spacing: 'none' },
+  args: { customize: false, theme: 'inverted', spacing: 'none', stack: 'none' },
 }

@@ -1787,7 +1787,7 @@ export interface WorkIntro {
  */
 export interface WorkSectionBlock {
   /**
-   * Override the surface and vertical spacing of this section. Off uses the page surface and default rhythm.
+   * Override the surface, band padding, and space between blocks. Off uses the page surface and default rhythm.
    */
   customize?: boolean | null;
   /**
@@ -1795,9 +1795,13 @@ export interface WorkSectionBlock {
    */
   theme?: ('inherit' | 'secondary' | 'accent' | 'inverted') | null;
   /**
-   * Vertical rhythm of the band. "None" is for a section whose content owns its shell.
+   * Top and bottom padding of the section. "None" is for a section whose content owns its shell.
    */
   spacing?: ('default' | 'tight' | 'loose' | 'none') | null;
+  /**
+   * Space between nested blocks. Independent of Band. "None" sits them flush.
+   */
+  stack?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
         | WorkCaseStudyTransitionBlock
@@ -3605,7 +3609,7 @@ export interface PageClosing {
  */
 export interface PageSectionBlock {
   /**
-   * Override the surface and vertical spacing of this section. Off uses the page surface and default rhythm.
+   * Override the surface, band padding, and space between blocks. Off uses the page surface and default rhythm.
    */
   customize?: boolean | null;
   /**
@@ -3613,9 +3617,13 @@ export interface PageSectionBlock {
    */
   theme?: ('inherit' | 'secondary' | 'accent' | 'inverted') | null;
   /**
-   * Vertical rhythm of the band. "None" is for a section whose content owns its shell.
+   * Top and bottom padding of the section. "None" is for a section whose content owns its shell.
    */
   spacing?: ('default' | 'tight' | 'loose' | 'none') | null;
+  /**
+   * Space between nested blocks. Independent of Band. "None" sits them flush.
+   */
+  stack?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
         | RichTransitionBlock
@@ -4843,7 +4851,7 @@ export interface LabProject {
  */
 export interface LabSectionBlock {
   /**
-   * Override the surface and vertical spacing of this section. Off uses the page surface and default rhythm.
+   * Override the surface, band padding, and space between blocks. Off uses the page surface and default rhythm.
    */
   customize?: boolean | null;
   /**
@@ -4851,9 +4859,13 @@ export interface LabSectionBlock {
    */
   theme?: ('inherit' | 'secondary' | 'accent' | 'inverted') | null;
   /**
-   * Vertical rhythm of the band. "None" is for a section whose content owns its shell.
+   * Top and bottom padding of the section. "None" is for a section whose content owns its shell.
    */
   spacing?: ('default' | 'tight' | 'loose' | 'none') | null;
+  /**
+   * Space between nested blocks. Independent of Band. "None" sits them flush.
+   */
+  stack?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
         | RichTransitionBlock
@@ -5036,6 +5048,7 @@ export interface ExpertisePage {
    * Canonical capabilities this offering bundles. Drives automatic related-work matching.
    */
   capabilities: (number | Capability)[];
+  relatedWork?: SegmentRelatedWorkCopy;
   /**
    * Manual selection. Leave empty to match published work automatically by capability.
    */
@@ -5143,7 +5156,7 @@ export interface SegmentHero {
  */
 export interface SegmentSectionBlock {
   /**
-   * Override the surface and vertical spacing of this section. Off uses the page surface and default rhythm.
+   * Override the surface, band padding, and space between blocks. Off uses the page surface and default rhythm.
    */
   customize?: boolean | null;
   /**
@@ -5151,9 +5164,13 @@ export interface SegmentSectionBlock {
    */
   theme?: ('inherit' | 'secondary' | 'accent' | 'inverted') | null;
   /**
-   * Vertical rhythm of the band. "None" is for a section whose content owns its shell.
+   * Top and bottom padding of the section. "None" is for a section whose content owns its shell.
    */
   spacing?: ('default' | 'tight' | 'loose' | 'none') | null;
+  /**
+   * Space between nested blocks. Independent of Band. "None" sits them flush.
+   */
+  stack?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
         | RichTransitionBlock
@@ -5176,6 +5193,17 @@ export interface SegmentSectionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'section';
+}
+/**
+ * The text beside the related-work list at the foot of the page. Leave a field empty to use the standing line shown as its placeholder.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SegmentRelatedWorkCopy".
+ */
+export interface SegmentRelatedWorkCopy {
+  eyebrow?: string | null;
+  heading?: string | null;
+  description?: string | null;
 }
 /**
  * Who We Help segment pages published at /who-we-help/[slug]. The page defines the audience segment; industries drive automatic related-work matching.
@@ -5215,6 +5243,7 @@ export interface AudiencePage {
    * Industries this segment spans. Drives automatic related-work matching.
    */
   industries: (number | Industry)[];
+  relatedWork?: SegmentRelatedWorkCopy;
   /**
    * Manual selection. Leave empty to match published work automatically by industry.
    */
@@ -6209,6 +6238,7 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
   customize?: T;
   theme?: T;
   spacing?: T;
+  stack?: T;
   blocks?:
     | T
     | {
@@ -6926,6 +6956,7 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
   customize?: T;
   theme?: T;
   spacing?: T;
+  stack?: T;
   blocks?:
     | T
     | {
@@ -7346,6 +7377,7 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
   customize?: T;
   theme?: T;
   spacing?: T;
+  stack?: T;
   blocks?:
     | T
     | {
@@ -7459,6 +7491,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         content?: T | ContentBlockSelect<T>;
       };
   capabilities?: T;
+  relatedWork?: T | SegmentRelatedWorkCopySelect<T>;
   relatedWorkPages?: T;
   editorialNotes?: T;
   closing?: T | PageClosingSelect<T>;
@@ -7517,6 +7550,7 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
   customize?: T;
   theme?: T;
   spacing?: T;
+  stack?: T;
   blocks?:
     | T
     | {
@@ -7538,6 +7572,15 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
       };
   id?: T;
   blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SegmentRelatedWorkCopy_select".
+ */
+export interface SegmentRelatedWorkCopySelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  description?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7573,6 +7616,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         content?: T | ContentBlockSelect<T>;
       };
   industries?: T;
+  relatedWork?: T | SegmentRelatedWorkCopySelect<T>;
   relatedWorkPages?: T;
   editorialNotes?: T;
   closing?: T | PageClosingSelect<T>;

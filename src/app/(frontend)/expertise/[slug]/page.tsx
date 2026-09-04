@@ -50,6 +50,7 @@ export default async function ExpertisePageRoute({ params }: SlugRouteArgs) {
         <SegmentHero {...page.hero} />
         <RenderBlocks blocks={page.layout} />
         <RelatedWorkSection
+          copy={page.relatedWork}
           filter={{ kind: 'capabilities', terms: relatedWorkTerms(page.capabilities) }}
           items={relatedWork}
         />

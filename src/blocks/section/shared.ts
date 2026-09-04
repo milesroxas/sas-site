@@ -47,9 +47,11 @@ export const SECTION_SPACING_TO_BAND: Record<SectionBlockSpacing, BandSpacing> =
 }
 
 /**
- * Rhythm between blocks stacked inside one Section. Blocks render `bare` in a
- * Section (the band is painted once, here), so this stack owns the only gap
- * between them. Half the between-band rhythm on purpose: blocks grouped into
- * one Section read as one beat. Tune here, never per block.
+ * Resolve an editor Default/Tight/Loose/None value to a `SPACING_SCALE` key.
+ * Customize off (or a missing value) always returns Default → `normal`, even
+ * if the hidden field still stores something else.
  */
-export const SECTION_CONTENT_CLASS = 'space-y-16 md:space-y-24'
+export const resolveSectionSpacing = (
+  customize?: boolean | null,
+  value?: SectionBlockSpacing | null,
+): BandSpacing => SECTION_SPACING_TO_BAND[(customize && value) || 'default']

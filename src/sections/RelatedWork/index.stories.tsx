@@ -62,6 +62,20 @@ export const SeveralTerms: Story = {
   },
 }
 
+/**
+ * A page's own lines from its Positioning tab: each replaces the standing
+ * line it is set for, and a blank one (the body here) falls back.
+ */
+export const PageCopy: Story = {
+  args: {
+    copy: {
+      eyebrow: 'Selected work',
+      heading: 'Websites we have shipped for teams like yours.',
+      description: '',
+    },
+  },
+}
+
 /** Sole match: the list keeps its opening rule and closing hairline, and too few rows for a filter. */
 export const SingleProject: Story = {
   args: { items: byCapability.slice(0, 1) },

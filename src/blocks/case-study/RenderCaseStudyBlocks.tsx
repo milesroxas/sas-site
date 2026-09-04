@@ -595,6 +595,7 @@ const renderWorkBlock = (
           customize={block.customize}
           key={block.id}
           spacing={block.spacing}
+          stack={block.stack}
           theme={block.theme}
         >
           {(block.blocks ?? []).map((child) => renderWorkBlock(child, { ...ctx, bare: true }))}

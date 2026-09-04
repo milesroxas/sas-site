@@ -14,6 +14,7 @@ import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
 import { segmentHero } from '@/heros/SegmentHero/config'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
+import { RELATED_WORK_DEFAULT_COPY } from '@/sections/RelatedWork/copy'
 import { collectionPreview } from '@/utilities/generatePreviewPath'
 
 type SegmentPageSlug = 'audience-pages' | 'expertise-pages'
@@ -101,6 +102,36 @@ export const segmentPageCollection = <S extends SegmentPageSlug>({
               hasMany: true,
               required: true,
               admin: { description: taxonomy.description },
+            },
+            {
+              name: 'relatedWork',
+              type: 'group',
+              interfaceName: 'SegmentRelatedWorkCopy',
+              label: 'Related work copy',
+              admin: {
+                description:
+                  'The text beside the related-work list at the foot of the page. Leave a field empty to use the standing line shown as its placeholder.',
+              },
+              fields: [
+                {
+                  name: 'eyebrow',
+                  type: 'text',
+                  label: 'Eyebrow',
+                  admin: { placeholder: RELATED_WORK_DEFAULT_COPY.eyebrow },
+                },
+                {
+                  name: 'heading',
+                  type: 'text',
+                  label: 'Headline',
+                  admin: { placeholder: RELATED_WORK_DEFAULT_COPY.heading },
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  label: 'Body',
+                  admin: { placeholder: RELATED_WORK_DEFAULT_COPY.description },
+                },
+              ],
             },
             {
               name: 'relatedWorkPages',

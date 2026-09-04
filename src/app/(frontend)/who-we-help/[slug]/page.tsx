@@ -47,6 +47,7 @@ export default async function AudiencePageRoute({ params }: SlugRouteArgs) {
         <SegmentHero {...page.hero} />
         <RenderBlocks blocks={page.layout} />
         <RelatedWorkSection
+          copy={page.relatedWork}
           filter={{ kind: 'industries', terms: relatedWorkTerms(page.industries) }}
           items={relatedWork}
         />

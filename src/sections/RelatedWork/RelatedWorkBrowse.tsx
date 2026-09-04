@@ -18,6 +18,7 @@ import { cn } from '@/utilities/ui'
 export type RelatedWorkKind = keyof WorkRowHighlight
 
 export type RelatedWorkCopy = {
+  eyebrow: string
   heading: string
   description: string
   /** Names the control and the axis: `Filter by industry`. */
@@ -106,7 +107,7 @@ export const RelatedWorkBrowse: React.FC<{
       >
         {/* Grouped with the heading it labels: one thought, one beat. */}
         <div className="md:col-span-4 md:col-start-1" data-reveal data-reveal-group="related-intro">
-          <HeroEyebrow eyebrow="Related work" />
+          <HeroEyebrow eyebrow={copy.eyebrow} />
         </div>
         <h2
           className="text-heading-2 text-foreground md:col-span-4 md:col-start-1"

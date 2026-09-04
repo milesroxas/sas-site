@@ -37,13 +37,12 @@ export const themeClasses = {
 export type SectionTheme = keyof typeof themeClasses
 
 /**
- * Vertical rhythm of a composition band — the one place a block's outer
- * spacing is stated. Blocks never write their own `py-*`/`my-*`, and theme
- * never changes spacing: a band pads the same whether it paints a surface or
- * sits on the page.
+ * One rhythm. `band` is the outer `py-*` of a composition shell; `stack` is
+ * the `space-y-*` between nested blocks inside a Section. Full class strings
+ * live here so Tailwind can see them. Tune the steps here, never at a call site.
  *
  * Adjacent bands add (padding, so nothing collapses), which makes the gap
- * between two blocks' content the sum of the two steps:
+ * between two top-level blocks' content the sum of the two steps:
  *
  * - normal + normal → 8rem / 12rem — every text and contained block
  * - loose  + normal → 10rem / 14rem — full-bleed media next to copy
@@ -52,17 +51,31 @@ export type SectionTheme = keyof typeof themeClasses
  * `tight` is the editor-facing step below normal: a Section block holding a
  * short run of related blocks that should read as one beat.
  *
- * `none` is for blocks that own a pinned or self-sized shell (featured work),
- * where the band only supplies the surface.
+ * `none` is for a shell that owns its own size (featured work) or a Section
+ * whose nested blocks should sit flush.
  */
-export const BAND_SPACING = {
-  none: 'py-0',
-  tight: 'py-8 md:py-12',
-  normal: 'py-16 md:py-24',
-  loose: 'py-24 md:py-32',
+export const SPACING_SCALE = {
+  none: { band: 'py-0', stack: 'space-y-0' },
+  tight: { band: 'py-8 md:py-12', stack: 'space-y-8 md:space-y-12' },
+  normal: { band: 'py-16 md:py-24', stack: 'space-y-16 md:space-y-24' },
+  loose: { band: 'py-24 md:py-32', stack: 'space-y-24 md:space-y-32' },
 } as const
 
-export type BandSpacing = keyof typeof BAND_SPACING
+export type BandSpacing = keyof typeof SPACING_SCALE
+
+export const BAND_SPACING = {
+  none: SPACING_SCALE.none.band,
+  tight: SPACING_SCALE.tight.band,
+  normal: SPACING_SCALE.normal.band,
+  loose: SPACING_SCALE.loose.band,
+} as const
+
+export const STACK_SPACING = {
+  none: SPACING_SCALE.none.stack,
+  tight: SPACING_SCALE.tight.stack,
+  normal: SPACING_SCALE.normal.stack,
+  loose: SPACING_SCALE.loose.stack,
+} as const
 
 /**
  * Full-viewport band for **page-level** sections that centre one piece of
