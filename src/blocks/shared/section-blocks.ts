@@ -7,6 +7,7 @@ import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { ImagePair } from '@/blocks/image-pair/config'
+import { InsightList } from '@/blocks/insight-list/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { MediaContentSplit } from '@/blocks/media-content-split/config'
 import { RichTextBlock } from '@/blocks/rich-text/config'
@@ -46,6 +47,8 @@ export const sectionNestableBlocks: Block[] = [
   // Interactive
   Faq,
   Carousel,
+  // Lists
+  InsightList,
 ]
 
 /**

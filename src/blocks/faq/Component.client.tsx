@@ -4,6 +4,7 @@ import { Accordion as AccordionPrimitive } from 'radix-ui'
 import type React from 'react'
 import { useState } from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
+import { ordinalLabel } from '@/blocks/shared/numbering'
 import RichText from '@/components/RichText'
 import type { FaqBlock } from '@/payload-types'
 import { cn } from '@/utilities/ui'
@@ -17,8 +18,6 @@ const splitColumns = (items: FaqItem[]): [FaqItem[], FaqItem[]] => {
   const half = Math.ceil(items.length / 2)
   return [items.slice(0, half), items.slice(half)]
 }
-
-const numberOf = (index: number) => String(index + 1).padStart(2, '0')
 
 /**
  * Plus that becomes a minus: the vertical bar turns a quarter onto the
@@ -69,7 +68,7 @@ const FaqRow: React.FC<{ index: number; item: FaqItem; open: boolean }> = ({
           aria-hidden="true"
           className="w-8 shrink-0 pt-2 font-mono text-xs/none text-muted-foreground transition-colors group-hover:text-foreground"
         >
-          {numberOf(index)}
+          {ordinalLabel(index)}
         </span>
         <span className="min-w-0 grow">{item.question}</span>
         <PlusMinus />

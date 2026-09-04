@@ -33,7 +33,7 @@ export const PageSection = sectionBlock({
 export const pageLayoutBlocks: Block[] = [
   // Structure
   PageSection,
-  // Section heading / Media and content / Media / Text / Interactive: the Section-nestable run
+  // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
   ...sectionNestableBlocks,
   // Interactive (legacy, top-level only): kept beside the run's FAQ and Carousel
   FeatureTabs,
@@ -44,7 +44,7 @@ export const pageLayoutBlocks: Block[] = [
   // Statements
   FeatureStatementGrid,
   FeatureStatementLinks,
-  // Lists & grids
+  // Lists (legacy, top-level only)
   Archive,
   FeaturedWork,
   // Forms & CTAs
@@ -63,9 +63,9 @@ export const pageLayoutBlocks: Block[] = [
 export const postLayoutBlocks: Block[] = [
   // Structure
   PageSection,
-  // Section heading / Media and content / Media / Text / Interactive: the Section-nestable run
+  // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
   ...sectionNestableBlocks,
-  // Lists & grids
+  // Lists (legacy, top-level only)
   FeaturedWork,
 ]
 
@@ -102,14 +102,14 @@ export const SegmentSection = sectionBlock({
 export const segmentPageBlocks: Block[] = [
   // Structure
   SegmentSection,
-  // Section heading / Media and content / Media / Text / Interactive: the Section-nestable run
+  // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
   ...sectionNestableBlocks,
   // Interactive (legacy, top-level only): kept beside the run's FAQ and Carousel
   FeatureTabs,
   AudienceTabs,
   // Statements
   FeatureStatementGrid,
-  // Lists & grids
+  // Lists (legacy, top-level only)
   Archive,
   FeaturedWork,
   // Forms & CTAs

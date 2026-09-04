@@ -11,6 +11,7 @@ import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component
 import { FullMedia } from '@/blocks/full-media/FullMedia'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { ImagePair } from '@/blocks/image-pair/ImagePair'
+import { InsightListBlock } from '@/blocks/insight-list/Component'
 import { MediaBlock as MediaBlockComponent } from '@/blocks/MediaBlock/Component'
 import { MediaContentSplit } from '@/blocks/media-content-split/MediaContentSplit'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
@@ -681,6 +682,19 @@ const renderWorkBlock = (
           variant={blockRevealVariants.faq}
         >
           <FaqBlock {...block} bare />
+        </RevealSection>
+      )
+    case 'insightList':
+      // Insight copy is the block's own as well: same intro reveal and band
+      // as every other surface.
+      return (
+        <RevealSection
+          bare={bare}
+          key={block.id}
+          theme={block.theme}
+          variant={blockRevealVariants.insightList}
+        >
+          <InsightListBlock {...block} bare />
         </RevealSection>
       )
     default:

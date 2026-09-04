@@ -1,6 +1,7 @@
 import type { CheckboxField, FilterOptions, Where } from 'payload'
 
-const publicApproved: Where = { usageStatus: { equals: 'public-approved' } }
+/** Media the public read access will actually serve; every picker filter starts here. */
+export const publicApprovedMediaWhere: Where = { usageStatus: { equals: 'public-approved' } }
 
 const relationId = (value: unknown): number | undefined => {
   if (typeof value === 'number') return value
@@ -27,11 +28,11 @@ export const caseStudyScopedMediaFilter: FilterOptions = async ({
     (siblingData as { browseAllMedia?: boolean } | undefined)?.browseAllMedia ||
     (blockData as { browseAllMedia?: boolean } | undefined)?.browseAllMedia
   if (optedOut) {
-    return publicApproved
+    return publicApprovedMediaWhere
   }
 
   const caseStudyId = relationId((data as { caseStudy?: unknown } | undefined)?.caseStudy)
-  if (!caseStudyId) return publicApproved
+  if (!caseStudyId) return publicApprovedMediaWhere
 
   const caseStudy = await req.payload.findByID({
     collection: 'case-studies',
@@ -46,9 +47,9 @@ export const caseStudyScopedMediaFilter: FilterOptions = async ({
   const libraryIds = (caseStudy?.assetLibraries ?? [])
     .map(relationId)
     .filter((id): id is number => id !== undefined)
-  if (libraryIds.length === 0) return publicApproved
+  if (libraryIds.length === 0) return publicApprovedMediaWhere
 
-  return { and: [publicApproved, { assetLibrary: { in: libraryIds } }] }
+  return { and: [publicApprovedMediaWhere, { assetLibrary: { in: libraryIds } }] }
 }
 
 export const browseAllMediaField = (): CheckboxField => ({

@@ -105,6 +105,61 @@ export const videoFixture: Media = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 }
 
+/**
+ * A single-color SVG mark as the Insight list renders it (a mask over the
+ * text color), inlined as a data URL so the story needs no upload and Chromatic
+ * no network. `updatedAt` is empty on purpose: `getMediaUrl` appends it as a
+ * cache tag, and a query string after `</svg>` would break the data URL.
+ */
+const svgMarkFixture = (id: number, alt: string, body: string): Media => ({
+  id,
+  usageStatus: 'public-approved',
+  alt,
+  url: `data:image/svg+xml;utf8,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">${body}</svg>`,
+  )}`,
+  filename: `${id}.svg`,
+  mimeType: 'image/svg+xml',
+  width: 28,
+  height: 28,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '',
+})
+
+/** The six marks on the Paper frame ("featureStatementGrid v2 proposal"), in reading order. */
+export const insightMarkFixtures = {
+  twoCirclesDashed: svgMarkFixture(
+    20,
+    'Two overlapping circles, one dashed',
+    '<circle cx="9" cy="14" r="7" fill="none" stroke="currentColor" stroke-width="1.25"/><circle cx="19" cy="14" r="7" fill="none" stroke="currentColor" stroke-width="1.25" stroke-dasharray="2 3"/>',
+  ),
+  twoCircles: svgMarkFixture(
+    21,
+    'Two overlapping circles',
+    '<circle cx="11" cy="14" r="8" fill="none" stroke="currentColor" stroke-width="1.25"/><circle cx="17" cy="14" r="8" fill="none" stroke="currentColor" stroke-width="1.25"/>',
+  ),
+  nestedSquares: svgMarkFixture(
+    22,
+    'A square inside a dashed square',
+    '<rect x="3.5" y="3.5" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.25" stroke-dasharray="2 3"/><rect x="3.5" y="3.5" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.25"/>',
+  ),
+  threeLines: svgMarkFixture(
+    23,
+    'Three staggered lines',
+    '<path d="M3 8H19" stroke="currentColor" stroke-width="1.25"/><path d="M7 14H25" stroke="currentColor" stroke-width="1.25"/><path d="M3 20H15" stroke="currentColor" stroke-width="1.25"/>',
+  ),
+  halfCircle: svgMarkFixture(
+    24,
+    'A circle filled below its waterline',
+    '<circle cx="14" cy="14" r="10.5" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M3.5 17.5H24.5" stroke="currentColor" stroke-width="1.25"/><path d="M4.1 17.5A10.5 10.5 0 0 0 23.9 17.5Z" fill="currentColor"/>',
+  ),
+  expandArrow: svgMarkFixture(
+    25,
+    'An arrow expanding between two corners',
+    '<path d="M3.5 11.5V3.5H11.5" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M24.5 16.5V24.5H16.5" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M8 20L20 8" stroke="currentColor" stroke-width="1.25"/><path d="M14 8H20V14" fill="none" stroke="currentColor" stroke-width="1.25"/>',
+  ),
+} as const satisfies Record<string, Media>
+
 /** Hero image backgrounds — same placeholder still as `mediaFixture`, no caption. */
 export const heroImageFixture: Media = {
   ...mediaFixture,

@@ -13,6 +13,7 @@ import { FeaturedWork } from '@/blocks/featured-work/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
+import { InsightList } from '@/blocks/insight-list/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { MediaContentSplit } from '@/blocks/media-content-split/config'
 import { ScrollGallery } from '@/blocks/scroll-gallery/config'
@@ -253,6 +254,8 @@ const workSectionBlocks: Block[] = [
   // Carousel carries none, so neither takes the wrapper either.
   Faq,
   Carousel,
+  // Lists: insight copy is the block's own too.
+  InsightList,
 ]
 
 export const WorkSection = sectionBlock({
@@ -270,7 +273,7 @@ export const WorkSection = sectionBlock({
 export const caseStudyBlocks = [
   // Structure
   WorkSection,
-  // Section heading / Media and content / Media / Interactive: the Section-nestable run
+  // Section heading / Media and content / Media / Interactive / Lists: the Section-nestable run
   ...workSectionBlocks,
   // Interactive (legacy, top-level only): kept beside the run's FAQ and Carousel
   WorkFeatureTabs,
@@ -285,7 +288,7 @@ export const caseStudyBlocks = [
   WorkFeatureStatementGrid,
   FeatureStatementLinks,
   CaseStudyTestimonial,
-  // Lists & grids
+  // Lists (legacy, top-level only)
   CaseStudyKeyDecisions,
   CaseStudyMetrics,
   FeaturedWork,

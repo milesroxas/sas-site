@@ -10,7 +10,7 @@ import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 
 /**
  * Rich text: one Lexical body on a themed band, set on the composition grid
- * as a reading column (columns 2-4). The editor authors paragraphs plus
+ * as a reading column (columns 3-6). The editor authors paragraphs plus
  * section headings inline, so a short heading-and-body run needs no second
  * field; the surrounding band comes from `theme` or the parent Section.
  *

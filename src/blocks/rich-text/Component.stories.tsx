@@ -40,7 +40,7 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** The Paper frame: an inline heading over three paragraphs, columns 2-4. */
+/** The Paper frame: an inline heading over three paragraphs, columns 3-6. */
 export const Default: Story = {}
 
 /** Body copy only, no inline heading. */

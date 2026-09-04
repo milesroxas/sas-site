@@ -12,10 +12,35 @@ import { cn } from '@/utilities/ui'
  * mount breakpoint. Widths come from spanning columns, not `max-w-*`; offsets
  * come from starting columns, not spacer cells or padding.
  *
+ * `subgrid` is for a cell that holds a run of its own cells (a list of
+ * insights beside a heading): the cell adopts the columns it spans from the
+ * parent grid, so its children place on the same tracks with the same gap
+ * and nothing is restated. Below `md` it stacks like any other grid. A second
+ * eight-column grid inside a cell is never right: its columns would not line
+ * up with the page's.
+ *
  * The grid sits inside the page column (`container`), so column 1 starts at
  * the page gutter. Vertical rhythm inside a cell stays with `text-stack`;
  * rhythm between cells is the grid's row gap.
  */
-export const BlockGrid = ({ children, className }: { children: ReactNode; className?: string }) => (
-  <div className={cn('grid grid-cols-1 gap-grid md:grid-cols-8', className)}>{children}</div>
+export const BlockGrid = ({
+  as: Tag = 'div',
+  children,
+  className,
+  subgrid = false,
+}: {
+  as?: 'div' | 'ol' | 'ul'
+  children: ReactNode
+  className?: string
+  subgrid?: boolean
+}) => (
+  <Tag
+    className={cn(
+      'grid grid-cols-1 gap-grid',
+      subgrid ? 'md:grid-cols-subgrid' : 'md:grid-cols-8',
+      className,
+    )}
+  >
+    {children}
+  </Tag>
 )

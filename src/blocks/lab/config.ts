@@ -122,14 +122,14 @@ export const LabSection = sectionBlock({
 export const labBlocks = [
   // Structure
   LabSection,
-  // Section heading / Media and content / Media / Text / Interactive: the Section-nestable run
+  // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
   ...sectionNestableBlocks,
   // Media
   LabMediaShowcase,
   ScrollGallery,
   // Narrative
   LabStorySection,
-  // Lists & grids
+  // Lists (legacy, top-level only)
   LabFacts,
   LabRelatedProjects,
 ]

@@ -23,6 +23,7 @@ export const blockRevealVariants = {
   splitContentNarrow: 'underMedia',
   fullMedia: 'underMedia',
   imagePair: 'underMedia',
+  insightList: 'intro',
   mediaContentSplit: 'underMedia',
   richText: 'intro',
   richTransition: 'intro',

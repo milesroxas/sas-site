@@ -1,8 +1,8 @@
 # Block layout grid roadmap
 
-Status: contract defined, Phase 1 (Section heading) and Phase 2 (Media and content + Statement) shipped 2026-09-02. Rich text (2026-09-03) and FAQ (2026-09-03) were born on the contract. Phase 3 (Pair offset, Caption) pending. Zero schema: this is presentational only, no migrations, no admin changes. Chromatic baseline churn expected per phase. Agents: read this doc before any block layout/grid task instead of re-auditing the block system. Companion to [blocks-reorg-roadmap.md](blocks-reorg-roadmap.md), which owns taxonomy, Sections, and admin naming; this doc owns how the same blocks lay out horizontally.
+Status: contract defined, Phase 1 (Section heading) and Phase 2 (Media and content + Statement) shipped 2026-09-02. Rich text (2026-09-03), FAQ (2026-09-03) and Insight list (2026-09-04, the first block to use a `BlockGrid` subgrid) were born on the contract. Phase 3 (Pair offset, Caption) pending. Zero schema: this is presentational only, no migrations, no admin changes. Chromatic baseline churn expected per phase. Agents: read this doc before any block layout/grid task instead of re-auditing the block system. Companion to [blocks-reorg-roadmap.md](blocks-reorg-roadmap.md), which owns taxonomy, Sections, and admin naming; this doc owns how the same blocks lay out horizontally.
 
-Scope: the nine reorganized blocks (Section heading, Media and content, Media groups) plus Rich text (Text group, added 2026-09-03 straight onto the contract) and FAQ (Interactive group, 2026-09-03, likewise). Carousel entered the taxonomy with FAQ (reorg Phase B3) but is not a grid block: an embla track is a bespoke shell, so it keeps its own layout (G5). Blocks outside the reorg (heroes, featured work, galleries, forms) keep their bespoke layouts until they enter the taxonomy.
+Scope: the nine reorganized blocks (Section heading, Media and content, Media groups) plus Rich text (Text group, added 2026-09-03 straight onto the contract), FAQ (Interactive group, 2026-09-03, likewise) and Insight list (Lists group, 2026-09-04, likewise). Carousel entered the taxonomy with FAQ (reorg Phase B3) but is not a grid block: an embla track is a bespoke shell, so it keeps its own layout (G5). Blocks outside the reorg (heroes, featured work, galleries, forms) keep their bespoke layouts until they enter the taxonomy.
 
 ---
 
@@ -40,6 +40,7 @@ One grid, stated once, everywhere:
 - **One gap value**: `--spacing-grid` in `globals.css` `@theme` (currently `2rem`), consumed as the `gap-grid` utility. It is both the column gap and the row/stack gap. Tune the token, never a call site.
 - The grid sits **inside the page column** (`container`, 96rem + gutters), so column 1 begins at the page gutter. At the 1440px inner width a column is 152px.
 - Blocks place children with plain Tailwind utilities: `md:col-start-*` and `md:col-span-*`. That is the whole API.
+- A cell that holds a run of its own cells (a list beside a heading) is `<BlockGrid subgrid>`: it adopts the columns it spans from the parent, so its children place on the same tracks with the same gap and nothing is restated. Below `md` it stacks like any grid. `as` picks the element (`ol`/`ul` for lists).
 
 Division of labor (each concern has exactly one owner):
 
@@ -86,13 +87,16 @@ The default Standard arrangement (Layout: Left) on the 8-column grid:
 | Pair offset (`splitImageOffset`) | `split-image-offset/SplitImageOffset.tsx` | `px-gutter lg:pe-0` + `[1fr_0.5fr_0.25fr]` tracks + `w-4/5` | hardest: right-bleed is a container concern (`container-bleed-e` family), not a grid concern; separate the bleed shell from an inner 8-col placement | Phase 3 |
 | Statement | `feature/ImageStatement/Component.tsx` | flex `justify-start/end` + `max-w-2xl` | caption cols 1-4 (left) / 5-8 (right); contained media spans all 8 on the same grid, full-bleed media edge to edge with the caption re-entering the page column | DONE 2026-09-02 |
 | Caption (`mediaBlock`) | `MediaBlock/Component.tsx` | `mx-auto max-w-3xl` / `max-w-md` per `size` | candidate to stay measure-based (centered figure); decide with D7 of the reorg doc (its `size` field redesign) | Phase 3 |
-| Rich text (`richText`) | `rich-text/Component.tsx` | new block (2026-09-03) | body cols 2-4, the Standard Left body measure; prose mode, `text-base` stepping to `text-lg` from `xl` | DONE 2026-09-03 |
+| Rich text (`richText`) | `rich-text/Component.tsx` | new block (2026-09-03) | body cols 3-6; prose mode, `text-base` stepping to `text-lg` from `xl` | DONE 2026-09-03 |
 | FAQ (`faq`) | `faq/Component.tsx` + `Component.client.tsx` | new block (2026-09-03, Paper `Block=FAQ, Layout=Compact`) | header row: heading cluster cols 1-4, contact prompt + link cols 5-8 right-set (`justify-self-end`), bottoms aligned; question columns on a second `BlockGrid` as two span-4 cells (656px each at the design width, exactly the frame), `gap-y-0` so the two cells stack into one continuous list below `md` (the second drops its top rule there). Inside a row, the index lane and glyph are fixed-width flex slots (`w-8`, `w-5`), not tracks; the answer re-enters the question lane with scale padding (`ps-14 pe-11`) | DONE 2026-09-03 |
 | Carousel (`carousel`) | `Carousel/Component.tsx` | bespoke embla track, `Container` for the contained width | not a grid block; joined the Section run (reorg B3) via `bare` only | exempt (G5) |
+| Insight list (`insightList`) | `insight-list/Component.tsx` | new block (2026-09-04, Paper "featureStatementGrid v2 proposal", both frames) | one grid, two arrangements. The list is always a `BlockGrid subgrid` cell in columns 3-8 (an `ol`), so each insight spans real page columns. `side`: heading cluster cols 1-2, two insights per row at span 3 (484px at the design width against the frame's 477). `stacked`: heading cols 1-4, the list drops to the next row with three insights at span 2 (312px against 299). Insight rows are separated by the grid's row gap (the frame's 32px bottom padding is exactly the token, so the cell carries only `border-t pt-5`); mark and ordinal sit on one flex line with the mark box sized by `markSize` (`size-7`/`10`/`14`) | DONE 2026-09-04 |
 
 Phase 3 column proposals are starting points to be tuned visually per block, the same way Left was specified. The contract (section 2) is the fixed part; spans are art direction, and the shipped Phase 2 spans remain tunable per block.
 
 Placement gotcha learned in Phase 2: auto-placement only moves forward. In a mirrored layout the media cell stays first in source order (mobile stacks media first) but sits in later columns, so the following cell would wrap to the next row. Pin both cells with `md:row-start-1` whenever a later-column cell precedes an earlier-column one.
+
+Learned with Insight list: a heading beside a multi-row list cannot be one row of cells (the heading would size row 1) and cannot be a nested eight-column grid (its columns would not line up). `grid-cols-subgrid` on the list cell is the mechanism the contract wanted: the cell spans six columns and its children place on those same six tracks. Tailwind-merge lets `md:grid-cols-subgrid` replace `md:grid-cols-8`, which is what the `subgrid` prop does.
 
 Gotcha learned with FAQ: two cells that must read as one continuous stack below `md` (a list split across two columns) cannot share a grid with cells that need the row gap (the header row). Give them their own `BlockGrid` with `gap-y-0` and stack the grids with a scale `space-y-*` on the container; the row gap is moot from `md`, where they sit on one row. Independent columns of variable-height rows also cannot be placed cell-per-row, since a grid row sizes to its tallest cell and the columns would lock heights together.
 
@@ -144,7 +148,8 @@ Visual deltas accepted in Phase 2:
 | G3 | Should Centered/Statement snap to the grid (e.g. span 6 centered = cols 2-7)? | No for now: centered prose is measure-driven; a 6-column span at 2xl is wider than the reading measure. Revisit only if the two systems visibly disagree on a page |
 | G4 | Full-bleed media inside grid blocks (Stacked `width: full`, Statement `imageWidth: full`) | Bleed stays a container/shell concern; the grid only ever lives inside the page column. Media escapes the container, content re-enters it and the grid |
 | G5 | Do blocks outside the nine adopt `BlockGrid`? | Only when they enter the taxonomy (reorg Phase E), and only if their layout is placement, not a shell. Carousel entered the taxonomy in B3 and stays exempt: an embla track owns its own geometry. Do not migrate heroes/galleries opportunistically |
-| G6 | More than one `BlockGrid` in a block | Allowed when two regions need different row gaps (FAQ: header row on the token, list with `gap-y-0`). Stack them with a scale `space-y-*`; never nest a grid inside a cell of the same grid |
+| G6 | More than one `BlockGrid` in a block | Allowed when two regions need different row gaps (FAQ: header row on the token, list with `gap-y-0`). Stack them with a scale `space-y-*`; never nest a second eight-column grid inside a cell (see G7 for the one nesting that is right) |
+| G7 | A cell that is itself a run of cells | `<BlockGrid subgrid>` on the cell (Insight list). The subgrid adopts the parent's tracks and column gap, so spans inside it are page columns. Its row gap is the same token. This is the only grid a cell may contain |
 
 ---
 
@@ -165,5 +170,6 @@ import { BlockGrid } from '@/blocks/shared/grid'
 ```
 
 - Width = span. Offset = start. Nothing else.
+- A list beside a heading: `<BlockGrid as="ol" className="md:col-span-6 md:col-start-3" subgrid>` as the cell, items inside with `md:col-span-*` only.
 - Below `md` cells stack in source order with the same gap; order cells for the mobile reading order and use `md:order-*` only if the desktop placement must differ.
 - The block still owes its band to `Section` (spacing/theme) and its copy rhythm to `text-stack`; the grid owns only horizontal placement.

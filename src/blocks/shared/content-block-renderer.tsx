@@ -6,6 +6,7 @@ import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Compon
 import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Component'
 import { FullMediaBlock } from '@/blocks/full-media/Component'
 import { ImagePairBlock } from '@/blocks/image-pair/Component'
+import { InsightListBlock } from '@/blocks/insight-list/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { MediaContentSplitBlock } from '@/blocks/media-content-split/Component'
 import { RichTextBlock } from '@/blocks/rich-text/Component'
@@ -32,6 +33,7 @@ export const sectionChildComponents = {
   featureImageStatement: FeatureImageStatementBlock,
   fullMedia: FullMediaBlock,
   imagePair: ImagePairBlock,
+  insightList: InsightListBlock,
   mediaBlock: MediaBlock,
   mediaContentSplit: MediaContentSplitBlock,
   richText: RichTextBlock,

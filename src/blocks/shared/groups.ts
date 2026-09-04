@@ -24,8 +24,8 @@ export const BLOCK_GROUPS = {
   statements: 'Statements',
   /** Tabs, switchers, marquees, carousels, accordions (FAQ). */
   interactive: 'Interactive',
-  /** Card grids, listings, facts, metrics, related content. */
-  lists: 'Lists & grids',
+  /** Numbered runs, card grids, listings, facts, metrics, related content. */
+  lists: 'Lists',
   /** Forms, signups, calls to action. */
   forms: 'Forms & CTAs',
   /** Free-form escape hatch: column builders with no fixed pattern. */

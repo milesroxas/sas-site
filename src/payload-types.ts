@@ -310,6 +310,7 @@ export interface Page {
     | RichTextBlock
     | FaqBlock
     | CarouselBlock
+    | InsightListBlock
     | FeatureTabsBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
@@ -414,6 +415,7 @@ export interface Post {
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
+        | InsightListBlock
         | FeaturedWorkBlock
       )[]
     | null;
@@ -1670,6 +1672,7 @@ export interface WorkPage {
         | MediaBlock
         | FaqBlock
         | CarouselBlock
+        | InsightListBlock
         | WorkFeatureTabsBlock
         | AudienceTabsBlock
         | IndustryWorkBlock
@@ -1807,6 +1810,7 @@ export interface WorkSectionBlock {
         | MediaBlock
         | FaqBlock
         | CarouselBlock
+        | InsightListBlock
         | ContentBlock
       )[]
     | null;
@@ -2873,6 +2877,45 @@ export interface CarouselBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "InsightListBlock".
+ */
+export interface InsightListBlock {
+  /**
+   * Short kicker above the heading, e.g. "Where clarity breaks down".
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * Short supporting line under the heading.
+   */
+  summary?: string | null;
+  /**
+   * Side by side keeps the heading beside two insights per row. Stacked sets it above three per row.
+   */
+  layout?: ('side' | 'stacked') | null;
+  /**
+   * Size of the SVG mark on every insight.
+   */
+  markSize?: ('small' | 'medium' | 'large') | null;
+  items: {
+    /**
+     * An SVG mark. It renders in the text color of the band, so use a single-color line or fill mark.
+     */
+    media?: (number | null) | Media;
+    title: string;
+    description: string;
+    id?: string | null;
+  }[];
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'insightList';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ContentBlock".
  */
 export interface ContentBlock {
@@ -3585,6 +3628,7 @@ export interface PageSectionBlock {
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
+        | InsightListBlock
         | ContentBlock
       )[]
     | null;
@@ -4551,6 +4595,7 @@ export interface LabPage {
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
+        | InsightListBlock
         | LabMediaShowcaseBlock
         | ScrollGalleryBlock
         | LabStorySectionBlock
@@ -4819,6 +4864,7 @@ export interface LabSectionBlock {
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
+        | InsightListBlock
         | ContentBlock
       )[]
     | null;
@@ -4971,6 +5017,7 @@ export interface ExpertisePage {
     | RichTextBlock
     | FaqBlock
     | CarouselBlock
+    | InsightListBlock
     | FeatureTabsBlock
     | AudienceTabsBlock
     | FeatureStatementGridBlock
@@ -5116,6 +5163,7 @@ export interface SegmentSectionBlock {
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
+        | InsightListBlock
         | ContentBlock
       )[]
     | null;
@@ -5147,6 +5195,7 @@ export interface AudiencePage {
     | RichTextBlock
     | FaqBlock
     | CarouselBlock
+    | InsightListBlock
     | FeatureTabsBlock
     | AudienceTabsBlock
     | FeatureStatementGridBlock
@@ -6109,6 +6158,7 @@ export interface PagesSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
@@ -6168,6 +6218,7 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -6369,6 +6420,28 @@ export interface CarouselBlockSelect<T extends boolean = true> {
   width?: T;
   showArrows?: T;
   slideSize?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "InsightListBlock_select".
+ */
+export interface InsightListBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  summary?: T;
+  layout?: T;
+  markSize?: T;
+  items?:
+    | T
+    | {
+        media?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
   theme?: T;
   id?: T;
   blockName?: T;
@@ -6711,6 +6784,7 @@ export interface PostsSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
   relatedPosts?: T;
@@ -6783,6 +6857,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
@@ -6857,6 +6932,7 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -7220,6 +7296,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
         scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         labStorySection?: T | LabStorySectionBlockSelect<T>;
@@ -7274,6 +7351,7 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -7359,6 +7437,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
@@ -7442,6 +7521,7 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -7470,6 +7550,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
@@ -8834,6 +8915,7 @@ export interface Home {
     | RichTextBlock
     | FaqBlock
     | CarouselBlock
+    | InsightListBlock
     | FeatureTabsBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
@@ -9406,6 +9488,7 @@ export interface HomeSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
