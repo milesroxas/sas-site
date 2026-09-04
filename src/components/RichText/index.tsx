@@ -16,6 +16,7 @@ import { CodeBlock, type CodeBlockProps } from '@/blocks/Code/Component'
 import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { RichTextInsights } from '@/blocks/rich-text/insights/Component'
+import { RichTextPillList } from '@/blocks/rich-text/pill-list/Component'
 import type {
   BannerBlock as BannerBlockProps,
   CarouselBlock as CarouselBlockProps,
@@ -23,6 +24,7 @@ import type {
   FeatureStatementLinksBlock as FeatureStatementLinksBlockProps,
   MediaBlock as MediaBlockProps,
   RichTextInsightsBlock as RichTextInsightsBlockProps,
+  RichTextPillListBlock as RichTextPillListBlockProps,
 } from '@/payload-types'
 import { surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
 import { cn } from '@/utilities/ui'
@@ -37,6 +39,7 @@ type NodeTypes =
       | CodeBlockProps
       | FeatureStatementLinksBlockProps
       | RichTextInsightsBlockProps
+      | RichTextPillListBlockProps
     >
 
 const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
@@ -79,11 +82,14 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
     code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
     cta: ({ node }) => <CallToActionBlock {...node.fields} />,
     featureStatementLinks: ({ node }) => <FeatureStatementLinksBlock {...node.fields} />,
-    // The Rich text block splits Insights out onto its grid before converting
-    // (rich-text/Component.tsx); this converter is the inline fallback for any
-    // other editor that enables the block.
+    // The Rich text block splits its own blocks out onto its grid before
+    // converting (rich-text/Component.tsx); these converters are the inline
+    // fallback for any other editor that enables them.
     insights: ({ node }) => (
       <RichTextInsights group={node.fields.id ?? 'insights'} items={node.fields.items} />
+    ),
+    pillList: ({ node }) => (
+      <RichTextPillList eyebrow={node.fields.eyebrow} items={node.fields.items} />
     ),
   },
 })

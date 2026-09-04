@@ -7,8 +7,10 @@ import RichText from '@/components/RichText'
 import type {
   RichTextBlock as RichTextBlockData,
   RichTextInsightsBlock as RichTextInsightsBlockData,
+  RichTextPillListBlock as RichTextPillListBlockData,
 } from '@/payload-types'
 import { RichTextInsights } from './insights/Component'
+import { RichTextPillList } from './pill-list/Component'
 
 /**
  * `bare` skips the themed band for callers that supply their own shell (a
@@ -21,22 +23,29 @@ type RichTextBlockProps = Pick<RichTextBlockData, 'blockType' | 'body' | 'theme'
 type Body = NonNullable<RichTextBlockData['body']>
 type RootNode = Body['root']['children'][number]
 
-/**
- * The body, split at every Insights block: each run of prose nodes is one
- * cell, each Insights block is one cell, all placed on the composition grid
- * in document order. Insights are split out (not converted inline) because a
- * run of three or more spans two columns more than the prose does, and only
- * a grid cell can be wider than its neighbour.
- */
-type Segment =
-  | { kind: 'prose'; nodes: RootNode[] }
-  | { kind: 'insights'; fields: RichTextInsightsBlockData }
+/** The toolbar blocks this block lifts out of the prose onto its own grid. */
+type BodyBlock = RichTextInsightsBlockData | RichTextPillListBlockData
 
-const isInsightsNode = (node: RootNode): node is RootNode & { fields: RichTextInsightsBlockData } =>
+const BODY_BLOCK_TYPES: ReadonlySet<string> = new Set<BodyBlock['blockType']>([
+  'insights',
+  'pillList',
+])
+
+/**
+ * The body, split at every toolbar block: each run of prose nodes is one
+ * cell, each block is one cell, all placed on the composition grid in
+ * document order. Blocks are split out (not converted inline) so a run can
+ * be wider than the prose (three or more Insights span two columns more) and
+ * so each lands on its own reveal beat with the grid's row gap around it,
+ * rather than inheriting Tailwind Typography's margins.
+ */
+type Segment = { kind: 'prose'; nodes: RootNode[] } | { kind: 'block'; fields: BodyBlock }
+
+const isBodyBlockNode = (node: RootNode): node is RootNode & { fields: BodyBlock } =>
   node.type === 'block' &&
   typeof node.fields === 'object' &&
   node.fields !== null &&
-  (node.fields as { blockType?: unknown }).blockType === 'insights'
+  BODY_BLOCK_TYPES.has(String((node.fields as { blockType?: unknown }).blockType))
 
 const segmentBody = (nodes: RootNode[]): Segment[] => {
   const segments: Segment[] = []
@@ -46,9 +55,9 @@ const segmentBody = (nodes: RootNode[]): Segment[] => {
     prose = []
   }
   for (const node of nodes) {
-    if (isInsightsNode(node)) {
+    if (isBodyBlockNode(node)) {
       flush()
-      segments.push({ kind: 'insights', fields: node.fields })
+      segments.push({ kind: 'block', fields: node.fields })
     } else {
       prose.push(node)
     }
@@ -61,6 +70,31 @@ const segmentBody = (nodes: RootNode[]): Segment[] => {
 const proseState = (body: Body, nodes: RootNode[]): DefaultTypedEditorState =>
   ({ ...body, root: { ...body.root, children: nodes } }) as DefaultTypedEditorState
 
+/** One toolbar block as a grid cell. Insights place themselves by count. */
+const renderBlock = (fields: BodyBlock, index: number) => {
+  const key = fields.id ?? `${fields.blockType}-${index}`
+  switch (fields.blockType) {
+    case 'insights':
+      return (
+        <RichTextInsights
+          className="md:col-start-3"
+          group={`insights-${index}`}
+          items={fields.items}
+          key={key}
+        />
+      )
+    case 'pillList':
+      return (
+        <RichTextPillList
+          className="md:col-span-4 md:col-start-3"
+          eyebrow={fields.eyebrow}
+          items={fields.items}
+          key={key}
+        />
+      )
+  }
+}
+
 /**
  * A reading column on the composition grid: the body starts two columns in and
  * spans four (columns 3-6), a wider measure than the Standard heading body
@@ -71,12 +105,13 @@ const proseState = (body: Body, nodes: RootNode[]): DefaultTypedEditorState =>
  * normal desktop and steps up to `text-lg` from `xl`, where the four-column
  * measure is wide enough to carry it (the Paper frame is set at 1440).
  *
- * Insights the editor adds from the toolbar interrupt the column as their own
- * cells: one fills the column, two share it, three or more open out to
- * column 8 (`insights/Component.tsx`). The grid's row gap is the only space
- * between a run and the copy around it.
+ * Blocks the editor adds from the toolbar interrupt the column as their own
+ * cells. Insights: one fills the column, two share it, three or more open
+ * out to column 8 (`insights/Component.tsx`). A Pill list stays in the
+ * column (`pill-list/Component.tsx`). The grid's row gap is the only space
+ * between a block and the copy around it.
  *
- * Each prose run and each insight is a `data-reveal` marker for the shared
+ * Each prose run and each block is a `data-reveal` marker for the shared
  * intro reveal the renderer plays; the block itself never animates.
  */
 export const RichTextBlock: React.FC<RichTextBlockProps> = ({ bare, body, theme }) => (
@@ -94,12 +129,7 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = ({ bare, body, theme 
                   />
                 </div>
               ) : (
-                <RichTextInsights
-                  className="md:col-start-3"
-                  group={`insights-${index}`}
-                  items={segment.fields.items}
-                  key={segment.fields.id ?? `insights-${index}`}
-                />
+                renderBlock(segment.fields, index)
               ),
             )
           : null}

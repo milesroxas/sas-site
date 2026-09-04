@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import type { RichTextInsightsBlock } from '@/payload-types'
+import type { RichTextInsightsBlock, RichTextPillListBlock } from '@/payload-types'
 import { blockNode, heading, insightMarkFixtures, paragraph, richText, text } from '../fixtures'
 import { RichTextBlock } from './Component'
 
@@ -66,6 +66,22 @@ const insights = (count: number, id = 'insights') =>
     items: insightItems.slice(0, count),
   } satisfies RichTextInsightsBlock)
 
+/** The Paper "Chip List" frame: an inventory of what the business knows. */
+const pillList = (id = 'pills', eyebrow: string | null = 'What the business knows') =>
+  blockNode({
+    blockType: 'pillList',
+    id,
+    eyebrow,
+    items: [
+      'The full methodology',
+      'Every feature and capability',
+      'Years of accumulated expertise',
+      'Internal language and nuance',
+      'Every use case',
+      'Everything that makes the offering different',
+    ].map((label) => ({ id: label, label })),
+  } satisfies RichTextPillListBlock)
+
 const meta = {
   title: 'Blocks/Text/RichText',
   component: RichTextBlock,
@@ -126,9 +142,35 @@ export const InsightsBetweenCopy: Story = {
   },
 }
 
+/** The Paper frame: eyebrow over a wrapping cloud of pills in the reading column. */
+export const PillList: Story = {
+  args: {
+    body: richText(...body.root.children, pillList()),
+  },
+}
+
+/** Pills with no eyebrow: the cloud alone. */
+export const PillListNoEyebrow: Story = {
+  args: {
+    body: richText(...body.root.children, pillList('pills', null)),
+  },
+}
+
+/** Both toolbar blocks in one body, copy between them. */
+export const PillListWithInsights: Story = {
+  args: {
+    body: richText(
+      ...body.root.children,
+      pillList(),
+      paragraph(text('Each pattern has a different fix, and most companies show more than one.')),
+      insights(3),
+    ),
+  },
+}
+
 export const Dark: Story = {
   args: {
-    body: richText(...body.root.children, insights(3)),
+    body: richText(...body.root.children, pillList(), insights(3)),
     theme: 'dark',
   },
 }

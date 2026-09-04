@@ -101,19 +101,35 @@ const blockToMarkdown = (node: LexicalNode): string | null => {
     return lexicalToMarkdownString(content)
   }
 
-  // Insight runs (and similar) items: emit each title and description.
+  // Block items (Insights, Pill list, and similar): each item's label, title
+  // and description. Single-line items read as a markdown list under the
+  // block's eyebrow; multi-line items as paragraphs.
   const items = fields.items
   if (Array.isArray(items)) {
-    const lines = items
+    const entries = items
       .map((item) => {
         if (!item || typeof item !== 'object') return ''
-        const { title, description } = item as { title?: unknown; description?: unknown }
-        return [title, description]
+        const { label, title, description } = item as {
+          label?: unknown
+          title?: unknown
+          description?: unknown
+        }
+        return [label, title, description]
           .filter((value): value is string => typeof value === 'string' && value.trim() !== '')
           .join('\n')
       })
-      .filter((line) => line.trim())
-    if (lines.length) return lines.join('\n\n')
+      .filter((entry) => entry.trim())
+    if (entries.length) {
+      const eyebrow =
+        typeof fields.eyebrow === 'string' && fields.eyebrow.trim()
+          ? `${fields.eyebrow.trim()}\n\n`
+          : ''
+      const singleLine = entries.every((entry) => !entry.includes('\n'))
+      return (
+        eyebrow +
+        (singleLine ? entries.map((entry) => `- ${entry}`).join('\n') : entries.join('\n\n'))
+      )
+    }
   }
 
   // Carousel (and similar) slides: emit captions so they reach llms.txt / RAG.

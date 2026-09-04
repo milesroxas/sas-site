@@ -9874,6 +9874,23 @@ export interface RichTextInsightsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextPillListBlock".
+ */
+export interface RichTextPillListBlock {
+  /**
+   * Optional kicker above the pills.
+   */
+  eyebrow?: string | null;
+  items: {
+    label: string;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'pillList';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "BannerBlock".
  */
 export interface BannerBlock {
