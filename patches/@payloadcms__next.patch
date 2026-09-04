@@ -1,0 +1,29 @@
+diff --git a/dist/views/Version/RenderFieldsToDiff/fields/Upload/index.js b/dist/views/Version/RenderFieldsToDiff/fields/Upload/index.js
+index 1aa57d01e44a43afd3ad48e2e7c6c695e9db333e..796ee727d22e8af80eb8d362d171bb5fbe2a41dc 100644
+--- a/dist/views/Version/RenderFieldsToDiff/fields/Upload/index.js
++++ b/dist/views/Version/RenderFieldsToDiff/fields/Upload/index.js
+@@ -13,7 +13,12 @@ export const Upload = args => {
+     req,
+     versionValue: valueTo
+   } = args;
+-  const hasMany = 'hasMany' in field && field.hasMany && Array.isArray(valueTo);
++  // Patched: a version can hold a single id where the field is now hasMany
++  // (field changed shape, or the diff unions two block types' fields by name).
++  // Diff as hasMany whenever either side is an array and coerce both sides,
++  // instead of calling .map on a scalar.
++  const toArray = value => value === null || value === undefined ? [] : Array.isArray(value) ? value : [value];
++  const hasMany = 'hasMany' in field && field.hasMany || Array.isArray(valueFrom) || Array.isArray(valueTo);
+   const polymorphic = Array.isArray(field.relationTo);
+   if (hasMany) {
+     return /*#__PURE__*/_jsx(HasManyUploadDiff, {
+@@ -23,8 +28,8 @@ export const Upload = args => {
+       nestingLevel: nestingLevel,
+       polymorphic: polymorphic,
+       req: req,
+-      valueFrom: valueFrom,
+-      valueTo: valueTo
++      valueFrom: toArray(valueFrom),
++      valueTo: toArray(valueTo)
+     });
+   }
+   return /*#__PURE__*/_jsx(SingleUploadDiff, {
