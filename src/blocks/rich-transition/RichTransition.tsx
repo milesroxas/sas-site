@@ -31,11 +31,11 @@ const Body = ({ className, data }: { className?: string; data: DefaultTypedEdito
 )
 
 /**
- * Left: the heading cluster starts one column in (columns 2-5), with the body
- * on a narrower measure underneath (columns 2-4). The default section-heading
- * arrangement on the composition grid.
+ * Offset: the heading cluster starts one column in (columns 2-5), with the
+ * body on a narrower measure underneath (columns 2-4). The default
+ * section-heading arrangement on the composition grid.
  */
-const Left = ({ body, eyebrow, heading }: RichTransitionFields) => (
+const Offset = ({ body, eyebrow, heading }: RichTransitionFields) => (
   <Container>
     <BlockGrid>
       <div className="text-stack md:col-span-4 md:col-start-2">
@@ -50,6 +50,32 @@ const Left = ({ body, eyebrow, heading }: RichTransitionFields) => (
       </div>
       {body ? (
         <div className="md:col-span-3 md:col-start-2">
+          <Body className="text-lg" data={body} />
+        </div>
+      ) : null}
+    </BlockGrid>
+  </Container>
+)
+
+/**
+ * Left: the same stack as Offset, flush with the page column. Heading cluster
+ * in columns 1-4, body underneath in columns 1-3.
+ */
+const Left = ({ body, eyebrow, heading }: RichTransitionFields) => (
+  <Container>
+    <BlockGrid>
+      <div className="text-stack md:col-span-4">
+        {eyebrow ? (
+          <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
+            {eyebrow}
+          </p>
+        ) : null}
+        <h2 className="text-heading-1" data-reveal data-reveal-group="heading">
+          {heading}
+        </h2>
+      </div>
+      {body ? (
+        <div className="md:col-span-3">
           <Body className="text-lg" data={body} />
         </div>
       ) : null}
@@ -119,6 +145,7 @@ const Statement = ({ body, eyebrow, heading }: RichTransitionFields) => (
 )
 
 const layouts: Record<Layout, (props: RichTransitionFields) => ReactNode> = {
+  offset: Offset,
   left: Left,
   centered: Centered,
   split: Split,

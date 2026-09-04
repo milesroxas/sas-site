@@ -58,7 +58,7 @@ Consequence: the real migration surface is 18 block instances on 2 documents. Th
 | `labTransition` | Narrative / Rich transition | Section heading | Standard | Lab variant, same label |
 | `featureHeadingOffset` | Statements / Feature: heading offset | Section heading | Offset | gains Body size select |
 | `fullMedia` | Media / Full media | Media and content | Stacked | see D1: existing instances all become Stacked |
-| NEW `mediaContentSplit` | (new block) | Media and content | Split | net-new visual, additive. 2026-09-04: `body` uses the content-column editor `contentLexical` (`src/fields/contentLexical.ts`): h4 (muted), bulleted list (ruled), Eyebrow and Small text styles (TextStateFeature, classes in `components/RichText/text-styles.ts`), Actions toolbar block (`actions`, `RichTextActionsBlock`, one or two links as buttons, in the body JSON, no table), fixed and inline toolbars. Node treatment lives in `RichText` and the bare rich text rules in `globals.css` |
+| NEW `mediaContentSplit` | (new block) | Media and content | Split | net-new visual, additive. 2026-09-04: `body` uses the content-column editor `contentLexical` (`src/fields/contentLexical.ts`): h4 (muted), bulleted list (ruled), Eyebrow and Small text styles as rows of the format dropdown (in-repo `TextStyleFeature`, `src/fields/lexical/textStyle`, Lexical node state; classes in `components/RichText/text-styles.ts`), Actions toolbar block (`actions`, `RichTextActionsBlock`, one or two links as buttons, in the body JSON, no table), fixed and inline toolbars. Node treatment lives in `RichText` and the bare rich text rules in `globals.css` |
 | `splitContentNarrow` | Split layouts / Split content (narrow) | Media and content | Split narrow | 2026-09-04: `body` uses `contentLexical` (see Split) |
 | `imagePair` | Media / Image pair | Media and content | Pair | zero prod data |
 | `splitImageOffset` | Media / Split image offset | Media and content | Pair offset | |
@@ -110,7 +110,7 @@ Theme value mapping (Section stores the new values natively; existing block `the
 
 | Block | Field today | Admin label becomes | Values | Action |
 |---|---|---|---|---|
-| Standard (`*Transition`) | `layout` (left/centered/split/statement, default centered) | Layout | keep values, relabel; hide `split`/`statement` options from new picks in D | relabel now; default change to `left` is new-rows-only, safe |
+| Standard (`*Transition`) | `layout` (left/centered/split/statement, default centered) | Layout | keep values, relabel; hide `split`/`statement` options from new picks in D | relabel now; default change to `left` is new-rows-only, safe. 2026-09-04: `left` became `offset` (same rendering, rows migrated) and a new flush `left` was added, default `offset` |
 | Offset | (none) | Body size | small/medium/large, default medium | new field, additive |
 | Stacked (`fullMedia`) | `contentPosition` (left/right, default left) | Layout | keep | relabel |
 | Split (new) | new `layout` | Layout | left/right | new block, native values |

@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { slugField } from '@/fields/slug'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import {
@@ -354,5 +355,8 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
     afterChange: [revalidateCaseStudyConsumers],
     beforeDelete: [preventDeletingUsedCaseStudy],
   },
-  versions: { drafts: { autosave: { interval: 100 }, schedulePublish: true }, maxPerDoc: 50 },
+  versions: {
+    drafts: { autosave: { interval: AUTOSAVE_INTERVAL_MS }, schedulePublish: true },
+    maxPerDoc: 50,
+  },
 }

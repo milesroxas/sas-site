@@ -5,7 +5,7 @@ import { eyebrowClassName } from '@/blocks/shared/typography'
 import { Container } from '@/components/Container'
 import type { InsightListBlock as InsightListBlockData } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { Insight } from './Insight'
+import { hasInsightMarks, Insight } from './Insight'
 
 /**
  * `bare` skips the themed band for callers that supply their own shell (a
@@ -46,6 +46,7 @@ export const InsightListBlock: React.FC<InsightListBlockProps> = ({
 
   const arrangement = LAYOUT[layout ?? 'side']
   const size = markSize ?? 'medium'
+  const compact = !hasInsightMarks(insights)
 
   return (
     <Section bare={bare} theme={theme}>
@@ -78,6 +79,7 @@ export const InsightListBlock: React.FC<InsightListBlockProps> = ({
             {insights.map((item, index) => (
               <Insight
                 className={arrangement.item}
+                compact={compact}
                 group={`row-${Math.floor(index / arrangement.perRow)}`}
                 index={index}
                 item={item}

@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { link } from '@/fields/link'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
@@ -218,5 +219,8 @@ export const ContactPages: CollectionConfig<'contact-pages'> = {
     afterChange: [revalidateContactPage],
     afterDelete: [revalidateContactPageDelete],
   },
-  versions: { drafts: { autosave: { interval: 100 }, schedulePublish: true }, maxPerDoc: 50 },
+  versions: {
+    drafts: { autosave: { interval: AUTOSAVE_INTERVAL_MS }, schedulePublish: true },
+    maxPerDoc: 50,
+  },
 }

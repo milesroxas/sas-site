@@ -1023,14 +1023,18 @@
     }
 
     /* Ruled list (Paper "list"): a hairline above every item and no marker,
-       items set a step apart on the spacing scale. `.list-bullet` is the
-       class the Lexical list converter writes; the Actions row is a list
-       too and must not take the rule. */
+       items set a step apart on the spacing scale. Items read one type step
+       below the body (the sm:base ratio, in em so it follows whatever size
+       the column set) on the normal leading, since the inherited leading is
+       the body's. `.list-bullet` is the class the Lexical list converter
+       writes; the Actions row is a list too and must not take the rule. */
     > :where(ul.list-bullet) {
       display: flex;
       flex-direction: column;
       gap: --spacing(1);
       padding: 0;
+      font-size: 0.875em;
+      line-height: var(--leading-normal);
       list-style: none;
 
       > li {

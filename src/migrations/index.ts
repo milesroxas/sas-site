@@ -76,6 +76,7 @@ import * as migration_20260903_210428_content_in_sections from './20260903_21042
 import * as migration_20260904_012500_interactive_in_sections from './20260904_012500_interactive_in_sections';
 import * as migration_20260904_031350_insight_list from './20260904_031350_insight_list';
 import * as migration_20260904_132731_tabs_in_sections from './20260904_132731_tabs_in_sections';
+import * as migration_20260904_140858_transition_offset_layout from './20260904_140858_transition_offset_layout';
 
 export const migrations = [
   {
@@ -466,6 +467,11 @@ export const migrations = [
   {
     up: migration_20260904_132731_tabs_in_sections.up,
     down: migration_20260904_132731_tabs_in_sections.down,
-    name: '20260904_132731_tabs_in_sections'
+    name: '20260904_132731_tabs_in_sections',
+  },
+  {
+    up: migration_20260904_140858_transition_offset_layout.up,
+    down: migration_20260904_140858_transition_offset_layout.down,
+    name: '20260904_140858_transition_offset_layout'
   },
 ];

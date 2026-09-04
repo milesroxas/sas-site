@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
@@ -96,7 +97,7 @@ export const Pages: CollectionConfig<'pages'> = {
   versions: {
     drafts: {
       autosave: {
-        interval: 100, // We set this interval for optimal live preview
+        interval: AUTOSAVE_INTERVAL_MS,
       },
       schedulePublish: true,
     },

@@ -46,11 +46,17 @@ const TabPanel: React.FC<{ tab: FeatureTab }> = ({ tab }) => (
         ) : null}
       </div>
       {tab.items?.length ? (
-        <div className="text-stack">
-          {tab.subheading ? <h4 className="text-lg font-normal">{tab.subheading}</h4> : null}
-          <ul className="text-base/relaxed">
+        <div className="flex flex-col gap-3">
+          {tab.subheading ? (
+            <h4 className="font-mono text-sm font-normal text-muted-foreground">
+              {tab.subheading}
+            </h4>
+          ) : null}
+          <ul className="flex flex-col divide-y divide-border text-sm">
             {tab.items.map((item, itemIndex) => (
-              <li key={item.id ?? itemIndex}>{item.text}</li>
+              <li key={item.id ?? itemIndex} className="py-1 last:pb-0">
+                {item.text}
+              </li>
             ))}
           </ul>
         </div>

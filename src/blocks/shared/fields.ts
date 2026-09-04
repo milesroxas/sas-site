@@ -50,11 +50,14 @@ export const transitionFields = (): Field[] => [
         name: 'layout',
         type: 'select',
         label: 'Layout',
-        defaultValue: 'left',
-        // Stored values are live in production: relabel only. `centered` is
+        defaultValue: 'offset',
+        // `offset` is the arrangement that shipped as `left` (heading one
+        // column in); `left` now starts on column 1. Existing rows migrate
+        // `left` -> `offset` so their rendering does not change. `centered` is
         // labelled "Center"; retiring `split`/`statement` is a later contract
         // step (see docs/blocks-reorg-roadmap.md, Phase D).
         options: [
+          { label: 'Offset', value: 'offset' },
           { label: 'Left', value: 'left' },
           { label: 'Center', value: 'centered' },
           { label: 'Split', value: 'split' },

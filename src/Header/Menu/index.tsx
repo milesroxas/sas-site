@@ -1360,6 +1360,11 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     if (chatViewRef.current && exitChatViewRef.current) exitChatViewRef.current()
   }
 
+  // The closed overlay still intersects the viewport, so Next would prefetch every
+  // menu route on page load (and, in the live preview iframe, on every draft
+  // refresh). Prefetch only once the menu is open and the links are on screen.
+  const menuLinkPrefetch = open ? undefined : false
+
   return (
     <div
       ref={overlayRef}
@@ -1402,6 +1407,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                   <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
                     <Link
                       href={item.href}
+                      prefetch={menuLinkPrefetch}
                       className="text-sm text-card-foreground transition-colors hover:text-primary"
                     >
                       {item.title}
@@ -1421,6 +1427,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                   <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
                     <Link
                       href={item.href}
+                      prefetch={menuLinkPrefetch}
                       className="pressable block rounded-md bg-secondary p-3 text-sm text-secondary-foreground hover:text-primary"
                     >
                       {item.title}
@@ -1471,6 +1478,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                 <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
                   <Link
                     href={item.href}
+                    prefetch={menuLinkPrefetch}
                     className="group flex flex-col gap-3"
                     {...cursorTarget({ label: 'View work' })}
                   >
@@ -1614,6 +1622,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                         >
                           <Link
                             href={item.href}
+                            prefetch={menuLinkPrefetch}
                             className={cn(
                               SUB_VIEW_LINK,
                               SUB_VIEW_ROW,
@@ -1652,7 +1661,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             {...itemHandlers(pageMedia[ctaHref] ?? null)}
           >
             <Button asChild variant="default" size="pill">
-              <Link href={ctaHref} {...ctaLinkProps} {...cursorTarget()}>
+              <Link
+                href={ctaHref}
+                prefetch={menuLinkPrefetch}
+                {...ctaLinkProps}
+                {...cursorTarget()}
+              >
                 <span>{ctaLabel}</span>
               </Link>
             </Button>

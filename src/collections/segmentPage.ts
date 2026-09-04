@@ -6,6 +6,7 @@ import type {
 } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
 import { editorialNotesField } from '@/fields/pageFields'
 import { segmentPageBlocks } from '@/fields/pageLayoutBlocks'
@@ -123,5 +124,8 @@ export const segmentPageCollection = <S extends SegmentPageSlug>({
     afterChange: [revalidate],
     afterDelete: [revalidateDelete],
   },
-  versions: { drafts: { autosave: { interval: 100 }, schedulePublish: true }, maxPerDoc: 50 },
+  versions: {
+    drafts: { autosave: { interval: AUTOSAVE_INTERVAL_MS }, schedulePublish: true },
+    maxPerDoc: 50,
+  },
 })

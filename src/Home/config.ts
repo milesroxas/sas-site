@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
 import { homeLayoutBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
@@ -84,7 +85,7 @@ export const Home: GlobalConfig = {
   versions: {
     drafts: {
       autosave: {
-        interval: 100,
+        interval: AUTOSAVE_INTERVAL_MS,
       },
       schedulePublish: true,
     },

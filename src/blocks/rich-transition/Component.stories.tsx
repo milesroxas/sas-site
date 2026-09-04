@@ -20,7 +20,7 @@ const meta = {
     eyebrow: 'Part two',
     heading: 'A Visual Language Rooted in the Real World',
     body,
-    layout: 'left',
+    layout: 'offset',
     theme: 'light',
   },
 } satisfies Meta<typeof RichTransition>
@@ -29,7 +29,13 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Left: Story = {}
+export const Offset: Story = {}
+
+export const Left: Story = {
+  args: {
+    layout: 'left',
+  },
+}
 
 export const Centered: Story = {
   args: {

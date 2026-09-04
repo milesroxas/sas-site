@@ -7,6 +7,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
 import { editorialNotesField, relatedPagesField } from '@/fields/pageFields'
 import { postLayoutBlocks } from '@/fields/pageLayoutBlocks'
@@ -230,7 +231,7 @@ export const Posts: CollectionConfig<'posts'> = {
   versions: {
     drafts: {
       autosave: {
-        interval: 100, // We set this interval for optimal live preview
+        interval: AUTOSAVE_INTERVAL_MS,
       },
       schedulePublish: true,
     },

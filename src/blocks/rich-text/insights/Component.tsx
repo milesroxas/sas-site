@@ -1,5 +1,5 @@
 import type React from 'react'
-import { Insight } from '@/blocks/insight-list/Insight'
+import { hasInsightMarks, Insight } from '@/blocks/insight-list/Insight'
 import { BlockGrid } from '@/blocks/shared/grid'
 import type { RichTextInsightsBlock as RichTextInsightsBlockData } from '@/payload-types'
 import { cn } from '@/utilities/ui'
@@ -41,12 +41,14 @@ export const RichTextInsights: React.FC<RichTextInsightsProps & { className?: st
   if (insights.length === 0) return null
 
   const { item: itemClassName, list, perRow } = arrangement(insights.length)
+  const compact = !hasInsightMarks(insights)
 
   return (
     <BlockGrid as="ol" className={cn(list, className)} subgrid>
       {insights.map((item, index) => (
         <Insight
           className={itemClassName}
+          compact={compact}
           group={`${group}-row-${Math.floor(index / perRow)}`}
           index={index}
           item={item}

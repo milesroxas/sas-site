@@ -4,11 +4,10 @@ import {
   HeadingFeature,
   InlineToolbarFeature,
   lexicalEditor,
-  TextStateFeature,
   UnorderedListFeature,
 } from '@payloadcms/richtext-lexical'
 import { RichTextActions } from '@/blocks/rich-text/actions/config'
-import { TEXT_STYLE_STATE_KEY, textStyleState } from '@/components/RichText/text-styles'
+import { TextStyleFeature } from '@/fields/lexical/textStyle/feature.server'
 
 /**
  * The content-column editor: the body beside media in the Split family
@@ -18,9 +17,9 @@ import { TEXT_STYLE_STATE_KEY, textStyleState } from '@/components/RichText/text
  *
  * - `h4`, the one heading level below the block's own heading, muted.
  * - Bulleted lists, rendered as the ruled list (Paper "list").
- * - Text styles (Eyebrow, Small) in one toolbar dropdown, stored as node
- *   state rather than inline CSS so the site's classes stay the source of
- *   truth (`components/RichText/text-styles.ts`).
+ * - Text styles (Eyebrow, Small) as rows of the format dropdown, stored as
+ *   node state rather than inline CSS so the site's classes stay the source
+ *   of truth (`components/RichText/text-styles.ts`).
  * - Actions: one or two links set as buttons, a Lexical block in the body
  *   JSON (`blocks/rich-text/actions`), so no table and no migration.
  * - Fixed and inline toolbars.
@@ -35,7 +34,7 @@ export const contentLexical = lexicalEditor({
     ...rootFeatures,
     HeadingFeature({ enabledHeadingSizes: ['h4'] }),
     UnorderedListFeature(),
-    TextStateFeature({ state: { [TEXT_STYLE_STATE_KEY]: textStyleState() } }),
+    TextStyleFeature(),
     BlocksFeature({ blocks: [RichTextActions] }),
     FixedToolbarFeature(),
     InlineToolbarFeature(),

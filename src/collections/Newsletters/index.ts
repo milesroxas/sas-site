@@ -1,4 +1,5 @@
 import type { Access, CollectionConfig } from 'payload'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { newsletterTemplateOptions } from '@/shared/email/newsletter/registry'
 import { authenticated } from '../../access/authenticated'
 import { newsletterBlocks } from './blocks'
@@ -162,7 +163,7 @@ export const Newsletters: CollectionConfig<'newsletters'> = {
   versions: {
     drafts: {
       autosave: {
-        interval: 100, // Matches the site collections — keeps the email live preview responsive.
+        interval: AUTOSAVE_INTERVAL_MS,
       },
     },
     maxPerDoc: 50,

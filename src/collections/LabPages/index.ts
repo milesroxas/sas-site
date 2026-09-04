@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { labBlocks } from '@/blocks/lab/config'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/fields/pageFields'
 import { heroContentCollapsible, heroPresentationFields } from '@/fields/pageHero'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
@@ -144,5 +145,8 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
     afterChange: [revalidateLabPage],
     afterDelete: [revalidateLabPageDelete],
   },
-  versions: { drafts: { autosave: { interval: 100 }, schedulePublish: true }, maxPerDoc: 50 },
+  versions: {
+    drafts: { autosave: { interval: AUTOSAVE_INTERVAL_MS }, schedulePublish: true },
+    maxPerDoc: 50,
+  },
 }

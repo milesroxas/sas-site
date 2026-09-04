@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
 import { hero } from '@/heros/config'
 import { generateGlobalPreviewPath } from '@/utilities/generatePreviewPath'
@@ -72,7 +73,7 @@ const collectionIndexGlobal = ({
   versions: {
     drafts: {
       autosave: {
-        interval: 100,
+        interval: AUTOSAVE_INTERVAL_MS,
       },
       schedulePublish: true,
     },

@@ -1,6 +1,7 @@
 import type { Access, CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 
 const publicApprovedTestimonial: Access = ({ req }) => {
   if (req.user) return true
@@ -111,5 +112,8 @@ export const Testimonials: CollectionConfig<'testimonials'> = {
       admin: { description: 'Internal only. Never exposed to anonymous API consumers.' },
     },
   ],
-  versions: { drafts: { autosave: { interval: 100 }, schedulePublish: true }, maxPerDoc: 50 },
+  versions: {
+    drafts: { autosave: { interval: AUTOSAVE_INTERVAL_MS }, schedulePublish: true },
+    maxPerDoc: 50,
+  },
 }

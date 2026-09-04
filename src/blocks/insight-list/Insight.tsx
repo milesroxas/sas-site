@@ -29,11 +29,24 @@ const MARK_SIZE_CLASS: Record<InsightMarkSize, string> = {
  * The slot keeps its size when an insight has no mark, so titles stay on one
  * lane across a list where only some items carry one.
  */
+/** A resolved upload with a URL to mask; ids and empty relations carry none. */
+const markDoc = (media: InsightItem['media']) =>
+  media && typeof media === 'object' && media.url ? media : null
+
+/**
+ * Whether a run has any mark to show. A list where no insight carries one
+ * drops the mark lane entirely and sets the ordinal beside the title instead
+ * (`compact`), so the run reads as a tight numbered list rather than a grid
+ * of empty slots. Decided per run, not per item, so titles keep one lane.
+ */
+export const hasInsightMarks = (items: readonly InsightItem[]) =>
+  items.some((item) => markDoc(item.media) !== null)
+
 const Mark: React.FC<{ media: InsightItem['media']; size: InsightMarkSize }> = ({
   media,
   size,
 }) => {
-  const doc = media && typeof media === 'object' && media.url ? media : null
+  const doc = markDoc(media)
   return (
     <span
       aria-hidden="true"
@@ -47,33 +60,45 @@ const Mark: React.FC<{ media: InsightItem['media']; size: InsightMarkSize }> = (
   )
 }
 
+const ordinalClassName = 'font-mono text-xs/none tracking-widest text-muted-foreground'
+
 /**
  * One insight: a rule, then the mark and its ordinal on one line, then the
- * copy. `group` is the reveal beat the item shares (`data-reveal-group`
- * folds consecutive markers), so insights on one row land as one thought
- * rather than a cascade; a caller keys it by row and, where a page may hold
- * several runs, by run.
+ * copy. `compact` (a run with no marks, see `hasInsightMarks`) drops the mark
+ * line, leads the title with the ordinal, and closes the stack up. `group`
+ * is the reveal beat the item shares (`data-reveal-group` folds consecutive
+ * markers), so insights on one row land as one thought rather than a
+ * cascade; a caller keys it by row and, where a page may hold several runs,
+ * by run.
  */
 export const Insight: React.FC<{
   className?: string
+  compact?: boolean
   group: string
   index: number
   item: InsightItem
   markSize: InsightMarkSize
-}> = ({ className, group, index, item, markSize }) => (
+}> = ({ className, compact, group, index, item, markSize }) => (
   <li
-    className={cn('flex flex-col gap-5 border-t border-border pt-5', className)}
+    className={cn(
+      'flex flex-col border-t border-border',
+      compact ? 'gap-2 pt-4' : 'gap-5 pt-5',
+      className,
+    )}
     data-reveal
     data-reveal-group={group}
   >
-    <div className="flex items-center justify-between">
-      <Mark media={item.media} size={markSize} />
-      <span className="font-mono text-xs/none tracking-widest text-muted-foreground">
-        {ordinalLabel(index)}
-      </span>
-    </div>
-    <div className="flex flex-col gap-2">
-      <h3 className="text-xl/7 font-medium">{item.title}</h3>
+    {compact ? null : (
+      <div className="flex items-center justify-between">
+        <Mark media={item.media} size={markSize} />
+        <span className={ordinalClassName}>{ordinalLabel(index)}</span>
+      </div>
+    )}
+    <div className={cn('flex flex-col', compact ? 'gap-1' : 'gap-2')}>
+      <h3 className={cn('text-xl/7 font-medium', compact && 'flex items-baseline gap-3')}>
+        {compact ? <span className={ordinalClassName}>{ordinalLabel(index)}</span> : null}
+        {item.title}
+      </h3>
       <p className="text-base text-muted-foreground">{item.description}</p>
     </div>
   </li>

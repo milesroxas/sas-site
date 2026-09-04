@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { caseStudyBlocks } from '@/blocks/case-study/config'
+import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { closingTab } from '@/fields/closing'
 import { overridesVisible, showOverridesField } from '@/fields/overrides'
@@ -192,5 +193,8 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
     afterChange: [revalidateWorkPage],
     afterDelete: [revalidateWorkPageDelete],
   },
-  versions: { drafts: { autosave: { interval: 100 }, schedulePublish: true }, maxPerDoc: 50 },
+  versions: {
+    drafts: { autosave: { interval: AUTOSAVE_INTERVAL_MS }, schedulePublish: true },
+    maxPerDoc: 50,
+  },
 }
