@@ -539,13 +539,15 @@ const FeatureImageStatementSection = ({
 )
 
 const FeatureTabsSection = ({
+  bare,
   block,
   study,
 }: {
+  bare?: boolean
   block: WorkFeatureTabsBlock
   study: CaseStudy
 }) => (
-  <RevealSection theme={block.theme} variant={blockRevealVariants.featureTabs}>
+  <RevealSection bare={bare} theme={block.theme} variant={blockRevealVariants.featureTabs}>
     <FeatureTabs
       bare
       {...block}
@@ -660,7 +662,7 @@ const renderWorkBlock = (
       // Owns its own GSAP entrance + swap shell — do not wrap again.
       return <AudienceTabsBlock key={block.id} {...block} />
     case 'featureTabs':
-      return <FeatureTabsSection block={block} key={block.id} study={study} />
+      return <FeatureTabsSection bare={bare} block={block} key={block.id} study={study} />
     case 'carousel':
       // Same CSS entrance as Pages/Home — no data-reveal markers, and the
       // GSAP shell would put a transform on an ancestor of embla. The

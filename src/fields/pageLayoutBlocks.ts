@@ -8,7 +8,6 @@ import { DynamicAudience } from '@/blocks/DynamicAudience/config'
 import { FormBlock } from '@/blocks/Form/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
-import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { FeaturedWork } from '@/blocks/featured-work/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
@@ -35,8 +34,7 @@ export const pageLayoutBlocks: Block[] = [
   PageSection,
   // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
   ...sectionNestableBlocks,
-  // Interactive (legacy, top-level only): kept beside the run's FAQ and Carousel
-  FeatureTabs,
+  // Interactive (legacy, top-level only): kept beside the run's FAQ, Carousel and Tabs
   DynamicAudience,
   AudienceTabs,
   IndustryWork,
@@ -104,8 +102,7 @@ export const segmentPageBlocks: Block[] = [
   SegmentSection,
   // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
   ...sectionNestableBlocks,
-  // Interactive (legacy, top-level only): kept beside the run's FAQ and Carousel
-  FeatureTabs,
+  // Interactive (legacy, top-level only): kept beside the run's FAQ, Carousel and Tabs
   AudienceTabs,
   // Statements
   FeatureStatementGrid,

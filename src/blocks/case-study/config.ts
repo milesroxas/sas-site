@@ -251,9 +251,11 @@ const workSectionBlocks: Block[] = [
   // Caption carries no story copy, so it needs no story-beat wrapper.
   MediaBlock,
   // Interactive: FAQ copy is the block's own (questions, not story beats) and
-  // Carousel carries none, so neither takes the wrapper either.
+  // Carousel carries none, so neither takes the wrapper. Tabs pull story copy
+  // per tab, so they keep it.
   Faq,
   Carousel,
+  WorkFeatureTabs,
   // Lists: insight copy is the block's own too.
   InsightList,
 ]
@@ -275,8 +277,7 @@ export const caseStudyBlocks = [
   WorkSection,
   // Section heading / Media and content / Media / Interactive / Lists: the Section-nestable run
   ...workSectionBlocks,
-  // Interactive (legacy, top-level only): kept beside the run's FAQ and Carousel
-  WorkFeatureTabs,
+  // Interactive (legacy, top-level only): kept beside the run's FAQ, Carousel and Tabs
   AudienceTabs,
   IndustryWork,
   // Media

@@ -1,6 +1,6 @@
 # Blocks reorg and Sections roadmap
 
-Status: Phases A and B shipped to main (a06a1ea, 2026-09-02; CI applies migration `20260902_191423`). Phase B2 (collection coverage: the same run offered by all six composition surfaces, plus drawer group order) shipped 2026-09-02 (a472523, migration `20260902_201235_block_coverage`). The run then grew on 2026-09-03: the generic Standard (`richTransition`, replacing `labTransition`), Rich text (Text), Content nested in every Section, and Phase B3 (Interactive: the new FAQ block plus Carousel moved into the run; migration `20260904_012500_interactive_in_sections` committed with the code). Phase B4 (2026-09-04) opened the Lists group in the run with the new Insight list block (code done, migration pending, see Phase B4 below); the group label is now `Lists` (was `Lists & grids`). Phase C is being done MANUALLY in admin (cheat sheet below; the script remains as fallback). Phase D remains future work. Agents: read this doc before any block naming/organizing task instead of re-exploring the block system.
+Status: Phases A and B shipped to main (a06a1ea, 2026-09-02; CI applies migration `20260902_191423`). Phase B2 (collection coverage: the same run offered by all six composition surfaces, plus drawer group order) shipped 2026-09-02 (a472523, migration `20260902_201235_block_coverage`). The run then grew on 2026-09-03: the generic Standard (`richTransition`, replacing `labTransition`), Rich text (Text), Content nested in every Section, and Phase B3 (Interactive: the new FAQ block plus Carousel moved into the run; migration `20260904_012500_interactive_in_sections` committed with the code). Phase B4 (2026-09-04) opened the Lists group in the run with the new Insight list block (migration `20260904_031350_insight_list` committed with the code); the group label is now `Lists` (was `Lists & grids`). Phase B5 (2026-09-04) moved Tabs (`featureTabs`, was "Feature: tabs") into the run's Interactive group and onto the grid (code done, migration pending, see Phase B5 below). Phase C is being done MANUALLY in admin (cheat sheet below; the script remains as fallback). Phase D remains future work. Agents: read this doc before any block naming/organizing task instead of re-exploring the block system.
 
 Scope: Pages, Posts, WorkPages, LabPages, ExpertisePages, AudiencePages (Posts added in B2, 2026-09-02). Blocks not named below stay as they are for now. Home global is half in scope: it does not adopt Sections and never takes the case-study grammar it has never offered (Pair, Pair offset, the generic Standard), but it consumes the Pages list otherwise, so every other block that joins the run (Split, Rich text, FAQ) reaches Home too.
 
@@ -79,8 +79,9 @@ New `BLOCK_GROUPS` entries: `sectionHeading: 'Section heading'`, `mediaContent: 
 | NEW `faq` | Interactive / FAQ | 2026-09-03 (B3) | Two-column accordion from the Paper frame `Block=FAQ, Layout=Compact`; per-parent `*_faq` + `*_faq_items` tables |
 | `carousel` | Interactive / Carousel | 2026-09-03 (B3) | Moved from the legacy top-level lists into the run; keeps its bespoke embla layout and its existing tables (`*_blocks_carousel`), only Posts gains it as new |
 | NEW `insightList` | Lists / Insight list | 2026-09-04 (B4) | Numbered run of SVG-marked statements beside or above a heading, from the Paper frames "featureStatementGrid v2 proposal"; per-parent `*_insight_list` + `*_insight_list_items` tables |
+| `featureTabs` | Interactive / Tabs | 2026-09-04 (B5) | Moved from the legacy top-level Interactive list (label was "Feature: tabs"); keeps its default per-parent `*_blocks_feature_tabs` tables (+ `_tabs`, `_tabs_items`), only Posts and Lab gain it as new. Work nests the story-beat variant (`WorkFeatureTabsBlock`) since each tab pulls story copy |
 
-Interactive is the first legacy group to enter the run. The remaining Interactive blocks (tabs, audience and industry shells, marquee) stay top-level-only because they own pinned or full-viewport shells (D4). Lists followed in B4 with Insight list; the legacy Lists blocks (Archive, Featured work, the case-study and lab lists) stay top-level-only for now and share the group tab, which Payload assembles by label regardless of array position.
+Interactive is the first legacy group to enter the run. Tabs followed in B5 (it only needed `bare` and the grid). The remaining Interactive blocks (audience and industry shells, marquee) stay top-level-only because they own pinned or full-viewport shells (D4). Lists followed in B4 with Insight list; the legacy Lists blocks (Archive, Featured work, the case-study and lab lists) stay top-level-only for now and share the group tab, which Payload assembles by label regardless of array position.
 
 ### Standard select vocabulary
 
@@ -139,12 +140,13 @@ The Section-nestable run is defined once in `src/blocks/shared/section-blocks.ts
 | FAQ (`faq`) | yes | yes | yes (plain) | yes | yes | yes | yes |
 | Carousel (`carousel`) | yes | yes (new in B3) | yes (plain) | yes | yes | yes | yes |
 | Insight list (`insightList`) | yes | yes | yes (plain) | yes | yes | yes | yes |
+| Tabs (`featureTabs`) | yes | yes (new in B5) | yes (story variant) | yes (new in B5) | yes | yes | yes |
 | Content (`content`) | yes | nested only | nested only | nested only | yes | yes | yes |
 
 Two things stay collection-owned on purpose:
 
 - **Standard on Work** is its own block: `caseStudyTransition` (`wp_transition`, live in production) puts the same copy fields behind a canonical Case Study story picker. Everywhere else Standard is the generic `richTransition` (`src/blocks/rich-transition/config.ts`, per-parent `*_transition` tables) in the shared run, added 2026-09-03; it replaced the lab twin `labTransition` (`lp_transition`, zero production rows), which carried exactly these fields under a static `dbName`. Work builds its run by hand so it never offers both.
-- **Work variants** are the `withStoryBeatSource` wrappers: same slug and table, extra story-beat fields. Caption carries no copy fields, so Work offers the plain block; FAQ, Carousel and Insight list are offered plain too (their headings and items are the block's own copy, not story beats), so `RenderCaseStudyBlocks` renders them without resolving anything against the study.
+- **Work variants** are the `withStoryBeatSource` wrappers: same slug and table, extra story-beat fields. Caption carries no copy fields, so Work offers the plain block; FAQ, Carousel and Insight list are offered plain too (their headings and items are the block's own copy, not story beats), so `RenderCaseStudyBlocks` renders them without resolving anything against the study. Tabs is the exception in the Interactive group: every tab row carries a `source`, so Work nests `WorkFeatureTabs` and resolves each tab's heading and body against the study as before.
 
 ### Drawer group order
 
@@ -162,11 +164,11 @@ Every composition surface leads with the reorganized groups, then its legacy gro
 
 Lists moved up with B4: the run carries Insight list, so the group now appears at the run's position and the legacy list blocks (later in each array) join that tab. Payload groups the drawer by label, so a group's blocks need not be contiguous in the array; the convention below keeps them contiguous where it costs nothing.
 
-Interactive moved ahead of Statements in B3 because the run now carries FAQ and Carousel, and the run is spread before every legacy group; the legacy Interactive blocks sit directly after the run in each array so the group stays contiguous (FAQ, Carousel, then the bespoke shells).
+Interactive moved ahead of Statements in B3 because the run now carries FAQ and Carousel, and the run is spread before every legacy group; the legacy Interactive blocks sit directly after the run in each array so the group stays contiguous (FAQ, Carousel, Tabs since B5, then the bespoke shells).
 
 Order comes only from each block array (`admin.group`, first appearance wins), so keep each group's blocks contiguous: Narrative (the story-section blocks) sits after the run, the column-builder `content` block closes every top-level list and every Section's nested list under `Custom` (added 2026-09-03 via `sectionChildBlocks`; Text now holds only Rich text, inside the run), and the legacy Media blocks (`caseStudyMediaShowcase`, `labMediaShowcase`, `scrollGallery`) stay inside the Media group beside Statement and Caption. `Structure` is still the group label for the Section block itself. A block may appear only once per `blocks` field, so a block that joins the run must leave every top-level list that spreads the run (Carousel did in B3).
 
-Rendering follows the same single-definition rule: `src/blocks/shared/content-block-renderer.tsx` owns the slug-to-component map (`sectionChildComponents`, which since B3 also carries `carousel` and `faq`, and since B4 `insightList`) and the entrance rules for the run. `RenderBlocks` (Pages, Posts, Home, segment pages) spreads that map into its own; `RenderLabBlocks` delegates to it for any block in the run (its bespoke `carousel` case went with B3); `RenderCaseStudyBlocks` keeps its own cases because it resolves story copy first, and forwards `bare` to Carousel and FAQ like every other nested block. Entrances live once in `src/blocks/shared/reveal-variants.ts` (FAQ and Insight list play `intro`; Carousel carries no markers and takes the CSS block reveal).
+Rendering follows the same single-definition rule: `src/blocks/shared/content-block-renderer.tsx` owns the slug-to-component map (`sectionChildComponents`, which since B3 also carries `carousel` and `faq`, since B4 `insightList`, and since B5 `featureTabs`) and the entrance rules for the run. `RenderBlocks` (Pages, Posts, Home, segment pages) spreads that map into its own; `RenderLabBlocks` delegates to it for any block in the run (its bespoke `carousel` case went with B3); `RenderCaseStudyBlocks` keeps its own cases because it resolves story copy first, and forwards `bare` to Carousel and FAQ like every other nested block. Entrances live once in `src/blocks/shared/reveal-variants.ts` (FAQ, Insight list and Tabs play `intro`; Carousel carries no markers and takes the CSS block reveal).
 
 ---
 
@@ -204,7 +206,7 @@ export const sectionBlock = (blocks: Block[], interfaceName: string): Block => (
 
 Per-collection instances (same slug, different nested lists and interfaces, mirroring `withStoryBeatSource`): `PageSection`, `WorkSection`, `LabSection`, `SegmentSection`. All four table shapes are identical, and the function `dbName` is mandatory since the slug lives in five collections (see the shared-block dbName hazard).
 
-Initial nested `blocks` lists contained **only the nine reorganized blocks** (per collection availability). Rich text (`richText`, Text group, 2026-09-03) was the first block added to the run since: born on the Section and grid contracts, it joins `sectionNestableBlocks` directly, so every surface that spreads the run offers it (Work Pages build their run by hand and do not yet). The legacy `content` block joins the nested list on every Section (2026-09-03) through `sectionChildBlocks` = run + Content, kept out of the run so Custom closes the top-level drawer; on Posts, Lab, and Work it is nested-only. Phase B3 (2026-09-03) added the Interactive pair, FAQ (new, born on the contracts) and Carousel (moved; it keeps its own loose band at the top level and renders `bare` inside a Section), to the run and to the hand-built Work run. Everything else stays top-level for now; collections' top-level lists become `[Section, ...existing list unchanged]`. Full "sections only at top level" is a Phase E goal once every remaining block is section-ready (D4).
+Initial nested `blocks` lists contained **only the nine reorganized blocks** (per collection availability). Rich text (`richText`, Text group, 2026-09-03) was the first block added to the run since: born on the Section and grid contracts, it joins `sectionNestableBlocks` directly, so every surface that spreads the run offers it (Work Pages build their run by hand and do not yet). The legacy `content` block joins the nested list on every Section (2026-09-03) through `sectionChildBlocks` = run + Content, kept out of the run so Custom closes the top-level drawer; on Posts, Lab, and Work it is nested-only. Phase B3 (2026-09-03) added the Interactive pair, FAQ (new, born on the contracts) and Carousel (moved; it keeps its own loose band at the top level and renders `bare` inside a Section), to the run and to the hand-built Work run. B5 (2026-09-04) moved Tabs the same way. Everything else stays top-level for now; collections' top-level lists become `[Section, ...existing list unchanged]`. Full "sections only at top level" is a Phase E goal once every remaining block is section-ready (D4).
 
 ### Rendering contract
 
@@ -280,7 +282,7 @@ The first legacy group to enter the run, and the first new block designed straig
 - [x] `pnpm check:migrations:drift` previews the pending migration: 48 `CREATE TYPE`, 32 `CREATE TABLE`, 34 FK constraints, 82 indexes, **all additive**, no drop, no rename-shaped statement, no `ADD VALUE`. Tables: `{pages,posts,work_pages,lab_pages,expertise_pages,audience_pages,home}_faq` + `_faq_items` and their `_v` twins, plus `posts_blocks_carousel` + `_slides` (+ `_v`), the only surface that had never offered Carousel. Every existing Carousel table keeps its name, confirming again that moving a block into the run does not re-home rows.
 - [x] `pnpm migrate:create interactive-in-sections` generated `src/migrations/20260904_012500_interactive_in_sections.{ts,json}` with no create/rename prompts; committed with the code (44d76c7). CI applies it.
 
-### Phase B4: Lists joins the run (Insight list, additive schema): CODE DONE 2026-09-04, migration pending
+### Phase B4: Lists joins the run (Insight list, additive schema): DONE 2026-09-04
 
 The second legacy group to enter the run, with a new block designed straight onto both contracts and the first to use a `BlockGrid` subgrid (grid doc, G7).
 
@@ -291,7 +293,20 @@ The second legacy group to enter the run, with a new block designed straight ont
 - [x] `sectionNestableBlocks` gains `// Lists: InsightList`; `workSectionBlocks` gains it plain; `sectionChildComponents` maps `insightList`; `RenderCaseStudyBlocks` renders it through `RevealSection` with the shared `intro` variant; `blockRevealVariants.insightList = 'intro'`.
 - [x] `pnpm generate:types`, `pnpm generate:importmap` (no new imports), `tsc --noEmit`, `pnpm lint` clean.
 - [x] `pnpm check:migrations:drift` previews the pending migration: 42 `CREATE TYPE`, 28 `CREATE TABLE`, 42 FK constraints, 84 indexes, **all additive**, no drop, no rename-shaped statement, no `ADD VALUE`. Tables: `{pages,posts,work_pages,lab_pages,expertise_pages,audience_pages,home}_insight_list` + `_insight_list_items` and their `_v` twins.
-- [ ] `pnpm migrate:create insight-list` (ask first; answer sheet in Appendix A), then `pnpm check:migrations`, `pnpm check:migrations:drift`, commit code + migration together.
+- [x] `pnpm migrate:create insight-list` generated `src/migrations/20260904_031350_insight_list.{ts,json}` with no create/rename prompts; committed with the code. CI applies it.
+
+### Phase B5: Tabs joins the run (additive schema): CODE DONE 2026-09-04, migration pending
+
+The second legacy Interactive block to move (after Carousel in B3), and the first moved block to be rebuilt on `BlockGrid` in the same change (grid doc, migration map).
+
+- [x] `src/blocks/feature/Tabs/config.ts`: `labels` now `Tabs` (was `Feature: tabs`); slug, fields, group and default `dbName` untouched.
+- [x] `sectionNestableBlocks` gains `FeatureTabs` after Carousel; `workSectionBlocks` gains `WorkFeatureTabs` (the story-beat variant, since each tab row carries `source`); the standalone entries left `pageLayoutBlocks`, `segmentPageBlocks` and `caseStudyBlocks`. Home keeps it through the run (it was never in `homeExcludedBlocks`); Posts and Lab offer it for the first time.
+- [x] `sectionChildComponents` maps `featureTabs`; `RenderBlocks` dropped its own entry; `RenderCaseStudyBlocks` forwards `bare` into `FeatureTabsSection` like FAQ and Insight list. `blockRevealVariants.featureTabs` was already `intro`.
+- [x] `src/blocks/feature/Tabs/Component.tsx` rebuilt on the grid: from `lg` copy column cols 1-3 and media plate cols 4-8 at 16:9, both cells full-width and stacked at `md` with a 3:2 plate (was `lg:grid-cols-3` + `min-h-[390px]` fill); `Container` component; the strip and panels stack on `space-y-12 md:space-y-16`; the caption card's `max-w-[283px]` is now `max-w-72`.
+- [x] Storybook: retitled `Blocks/Interactive/Tabs` (Chromatic baseline reset for that story expected).
+- [x] `pnpm generate:types`, `pnpm generate:importmap` (no new imports), `tsc --noEmit`, `pnpm lint` clean.
+- [x] `pnpm check:migrations:drift` previews the pending migration: 8 `CREATE TYPE`, 12 `CREATE TABLE`, 16 FK constraints, 32 indexes, **all additive**, no drop, no rename-shaped statement, no `ADD VALUE`. Tables: `{posts,lab_pages}_blocks_feature_tabs` + `_tabs` + `_tabs_items` and their `_v` twins. Every existing `*_blocks_feature_tabs` table keeps its name.
+- [ ] `pnpm migrate:create tabs-in-sections` (ask first; answer sheet in Appendix A), then `pnpm check:migrations`, `pnpm check:migrations:drift`, commit code + migration together.
 
 ### Phase C: content migration (18 instances, 2 docs) — MANUAL in admin (decided 2026-09-02)
 
@@ -372,7 +387,7 @@ Sections-only top level per collection once every remaining block is nestable or
 | D1 | ~~Do all 7 `fullMedia` instances become **Stacked**?~~ | TAKEN: slug kept, relabeled Stacked, zero data movement. Split is net-new. Still review the 7 visually during the prod dry-run |
 | D2 | ~~Split block spec~~ | TAKEN: even `md:grid-cols-2` grid, media one column at an editor-chosen aspect (16:9 / 3:2 / 21:9), content stack the other; `layout: left/right`; same `source` pull as siblings |
 | D3 | ~~Rhythm inside one section~~ | TAKEN: `SECTION_CONTENT_CLASS = 'space-y-16 md:space-y-24'` in `src/blocks/section/shared.ts`; tune there only |
-| D4 | Which blocks are permanently top-level-only | Likely `scrollGallery`, `caseStudyMediaShowcase`, `featuredWork` (pinned/full-bleed shells), plus the Interactive shells that own a pin or a full viewport (`industryWork`, `audienceTabs`, `featuredWork`). Carousel proved nestable in B3 (it only needed `bare`). Decide the rest before Phase E |
+| D4 | Which blocks are permanently top-level-only | Likely `scrollGallery`, `caseStudyMediaShowcase`, `featuredWork` (pinned/full-bleed shells), plus the Interactive shells that own a pin or a full viewport (`industryWork`, `audienceTabs`, `featuredWork`). Carousel proved nestable in B3 (it only needed `bare`), Tabs in B5. Decide the rest before Phase E |
 | D5 | ~~Group name casing~~ | TAKEN: repo sentence case (`Section heading`, `Media and content`) |
 | D6 | Pair select semantics (`textPosition` under-portrait/under-landscape vs Left/Right) | Zero prod rows: redesign freely in D to `primaryPosition: left/right` + `contentPosition: left/right` |
 | D7 | Caption block: keep `size` (full/inset/small) or replace with Layout | Zero prod rows: replace with the standard vocabulary if the visual supports it, else keep `size` and skip Layout |
@@ -415,6 +430,12 @@ Additive only: 28 new tables (`*_insight_list`, `*_insight_list_items` and their
 
 If a prompt does appear offering "rename" against any existing table, stop: a `dbName` collided. Re-run `pnpm check:migrations:drift` and compare its table list against the one in Phase B4 before answering.
 
+### Phase B5: `pnpm migrate:create tabs-in-sections` (do not run without asking)
+
+Additive only: 12 new tables (`posts_blocks_feature_tabs`, `lab_pages_blocks_feature_tabs`, their `_tabs` and `_tabs_items` children, and the `_v` twins), 8 enums, 16 FK constraints, 32 indexes. Nothing is dropped, nothing changes shape, so **no create/rename prompt is expected**.
+
+If a prompt does appear offering "rename" against an existing `*_blocks_feature_tabs` table, stop: that means Tabs was re-homed rather than re-offered. Re-run `pnpm check:migrations:drift` and compare its table list against the one in Phase B5 before answering.
+
 ### Phase D (per-PR, examples)
 
 - Field rename `imagePosition -> layout` on `splitContentNarrow`: prompt "column renamed?": **rename** from `image_position` (preserve 5 rows).
@@ -429,6 +450,7 @@ If a prompt does appear offering "rename" against any existing table, stop: a `d
 | The run | `src/blocks/shared/section-blocks.ts` (`sectionNestableBlocks`, `sectionChildBlocks`), `src/blocks/shared/content-block-renderer.tsx` (`sectionChildComponents`), `src/blocks/shared/reveal-variants.ts` |
 | FAQ (B3) | `src/blocks/faq/{config,Component,Component.client,Component.stories}.tsx`, `disclosure-body` in `globals.css` |
 | Insight list (B4) | `src/blocks/insight-list/{config,Component,Component.stories}.tsx`, `src/blocks/shared/numbering.ts`, `src/blocks/shared/grid.tsx` (`subgrid`, `as`), `src/fields/caseStudyScopedMedia.ts` (`publicApprovedMediaWhere`), `insightMarkFixtures` in `src/blocks/fixtures.ts` |
+| Tabs in the run (B5) | `src/blocks/feature/Tabs/{config,Component,Component.stories}.tsx`, the run, the three block arrays and three renderers above |
 | Carousel in the run (B3) | `src/blocks/Carousel/Component.tsx` (`bare`), `Component.stories.tsx` (retitle), the five block arrays and three renderers above |
 | Drawer order | `src/fields/pageLayoutBlocks.ts`, `src/blocks/case-study/config.ts`, `src/blocks/lab/config.ts` |
 | Section | new `src/blocks/section/` (config, component, stories), `src/blocks/shared/section.tsx` (tight tier, theme map) |

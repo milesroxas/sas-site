@@ -4,6 +4,7 @@ import { ContentBlock } from '@/blocks/Content/Component'
 import { FaqBlock } from '@/blocks/faq/Component'
 import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Component'
+import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
 import { FullMediaBlock } from '@/blocks/full-media/Component'
 import { ImagePairBlock } from '@/blocks/image-pair/Component'
 import { InsightListBlock } from '@/blocks/insight-list/Component'
@@ -31,6 +32,7 @@ export const sectionChildComponents = {
   faq: FaqBlock,
   featureHeadingOffset: FeatureHeadingOffsetBlock,
   featureImageStatement: FeatureImageStatementBlock,
+  featureTabs: FeatureTabsBlock,
   fullMedia: FullMediaBlock,
   imagePair: ImagePairBlock,
   insightList: InsightListBlock,

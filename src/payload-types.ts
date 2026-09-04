@@ -310,8 +310,8 @@ export interface Page {
     | RichTextBlock
     | FaqBlock
     | CarouselBlock
-    | InsightListBlock
     | FeatureTabsBlock
+    | InsightListBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
     | IndustryWorkBlock
@@ -415,6 +415,7 @@ export interface Post {
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
+        | FeatureTabsBlock
         | InsightListBlock
         | FeaturedWorkBlock
       )[]
@@ -1672,8 +1673,8 @@ export interface WorkPage {
         | MediaBlock
         | FaqBlock
         | CarouselBlock
-        | InsightListBlock
         | WorkFeatureTabsBlock
+        | InsightListBlock
         | AudienceTabsBlock
         | IndustryWorkBlock
         | CaseStudyMediaShowcaseBlock
@@ -1810,6 +1811,7 @@ export interface WorkSectionBlock {
         | MediaBlock
         | FaqBlock
         | CarouselBlock
+        | WorkFeatureTabsBlock
         | InsightListBlock
         | ContentBlock
       )[]
@@ -2877,6 +2879,77 @@ export interface CarouselBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFeatureTabsBlock".
+ */
+export interface WorkFeatureTabsBlock {
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    heading?: string | null;
+    /**
+     * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+     */
+    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+    /**
+     * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+     */
+    storyScope?: ('overview' | 'section' | 'beat') | null;
+    /**
+     * Choose one reusable beat from the selected section.
+     */
+    storyBeatKey?: string | null;
+    /**
+     * Reveal the website-only override fields. Saved overrides still apply while hidden.
+     */
+    showOverrides?: boolean | null;
+    /**
+     * Tab body copy. Leave empty to pull the source.
+     */
+    description?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    subheading?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * Short note shown as a card over the media.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureTabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "InsightListBlock".
  */
 export interface InsightListBlock {
@@ -2975,77 +3048,6 @@ export interface ContentBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'content';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureTabsBlock".
- */
-export interface WorkFeatureTabsBlock {
-  tabs: {
-    title: string;
-    /**
-     * Lead statement for this tab.
-     */
-    heading?: string | null;
-    /**
-     * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
-     */
-    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-    /**
-     * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
-     */
-    storyScope?: ('overview' | 'section' | 'beat') | null;
-    /**
-     * Choose one reusable beat from the selected section.
-     */
-    storyBeatKey?: string | null;
-    /**
-     * Reveal the website-only override fields. Saved overrides still apply while hidden.
-     */
-    showOverrides?: boolean | null;
-    /**
-     * Tab body copy. Leave empty to pull the source.
-     */
-    description?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    subheading?: string | null;
-    items?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    media?: (number | null) | Media;
-    /**
-     * Short note shown as a card over the media.
-     */
-    caption?: string | null;
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureTabs';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3628,6 +3630,7 @@ export interface PageSectionBlock {
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
+        | FeatureTabsBlock
         | InsightListBlock
         | ContentBlock
       )[]
@@ -4074,6 +4077,65 @@ export interface RichTextBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureTabsBlock".
+ */
+export interface FeatureTabsBlock {
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    heading: string;
+    /**
+     * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+     */
+    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+    /**
+     * Tab body copy. Leave empty to pull the source.
+     */
+    description?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    subheading?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * Short note shown as a card over the media.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureTabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
 export interface Category {
@@ -4136,65 +4198,6 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureTabsBlock".
- */
-export interface FeatureTabsBlock {
-  tabs: {
-    title: string;
-    /**
-     * Lead statement for this tab.
-     */
-    heading: string;
-    /**
-     * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
-     */
-    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-    /**
-     * Tab body copy. Leave empty to pull the source.
-     */
-    description?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    subheading?: string | null;
-    items?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    media?: (number | null) | Media;
-    /**
-     * Short note shown as a card over the media.
-     */
-    caption?: string | null;
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureTabs';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4595,6 +4598,7 @@ export interface LabPage {
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
+        | FeatureTabsBlock
         | InsightListBlock
         | LabMediaShowcaseBlock
         | ScrollGalleryBlock
@@ -4864,6 +4868,7 @@ export interface LabSectionBlock {
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
+        | FeatureTabsBlock
         | InsightListBlock
         | ContentBlock
       )[]
@@ -5017,8 +5022,8 @@ export interface ExpertisePage {
     | RichTextBlock
     | FaqBlock
     | CarouselBlock
-    | InsightListBlock
     | FeatureTabsBlock
+    | InsightListBlock
     | AudienceTabsBlock
     | FeatureStatementGridBlock
     | ArchiveBlock
@@ -5163,6 +5168,7 @@ export interface SegmentSectionBlock {
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
+        | FeatureTabsBlock
         | InsightListBlock
         | ContentBlock
       )[]
@@ -5195,8 +5201,8 @@ export interface AudiencePage {
     | RichTextBlock
     | FaqBlock
     | CarouselBlock
-    | InsightListBlock
     | FeatureTabsBlock
+    | InsightListBlock
     | AudienceTabsBlock
     | FeatureStatementGridBlock
     | ArchiveBlock
@@ -6158,8 +6164,8 @@ export interface PagesSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        insightList?: T | InsightListBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
@@ -6218,6 +6224,7 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
@@ -6426,6 +6433,34 @@ export interface CarouselBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureTabsBlock_select".
+ */
+export interface FeatureTabsBlockSelect<T extends boolean = true> {
+  tabs?:
+    | T
+    | {
+        title?: T;
+        heading?: T;
+        source?: T;
+        description?: T;
+        subheading?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        media?: T;
+        caption?: T;
+        id?: T;
+      };
+  browseAllMedia?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "InsightListBlock_select".
  */
 export interface InsightListBlockSelect<T extends boolean = true> {
@@ -6470,34 +6505,6 @@ export interface ContentBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureTabsBlock_select".
- */
-export interface FeatureTabsBlockSelect<T extends boolean = true> {
-  tabs?:
-    | T
-    | {
-        title?: T;
-        heading?: T;
-        source?: T;
-        description?: T;
-        subheading?: T;
-        items?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-            };
-        media?: T;
-        caption?: T;
-        id?: T;
-      };
-  browseAllMedia?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -6784,6 +6791,7 @@ export interface PostsSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
@@ -6857,8 +6865,8 @@ export interface WorkPagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        insightList?: T | InsightListBlockSelect<T>;
         featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
@@ -6932,6 +6940,7 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
@@ -7296,6 +7305,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
         scrollGallery?: T | ScrollGalleryBlockSelect<T>;
@@ -7351,6 +7361,7 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
@@ -7437,8 +7448,8 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        insightList?: T | InsightListBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
@@ -7521,6 +7532,7 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
+        featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
@@ -7550,8 +7562,8 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        insightList?: T | InsightListBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
@@ -8915,8 +8927,8 @@ export interface Home {
     | RichTextBlock
     | FaqBlock
     | CarouselBlock
-    | InsightListBlock
     | FeatureTabsBlock
+    | InsightListBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
     | IndustryWorkBlock
@@ -9488,8 +9500,8 @@ export interface HomeSelect<T extends boolean = true> {
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        insightList?: T | InsightListBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
+        insightList?: T | InsightListBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;

@@ -9,7 +9,7 @@ export const FeatureTabs: Block = {
   slug: 'featureTabs',
   admin: { group: BLOCK_GROUPS.interactive },
   interfaceName: 'FeatureTabsBlock',
-  labels: { singular: 'Feature: tabs', plural: 'Feature: tabs' },
+  labels: { singular: 'Tabs', plural: 'Tabs' },
   fields: [
     {
       name: 'tabs',

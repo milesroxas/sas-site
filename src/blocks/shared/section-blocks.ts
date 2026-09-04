@@ -5,6 +5,7 @@ import { Content } from '@/blocks/Content/config'
 import { Faq } from '@/blocks/faq/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
+import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { ImagePair } from '@/blocks/image-pair/config'
 import { InsightList } from '@/blocks/insight-list/config'
@@ -47,6 +48,7 @@ export const sectionNestableBlocks: Block[] = [
   // Interactive
   Faq,
   Carousel,
+  FeatureTabs,
   // Lists
   InsightList,
 ]

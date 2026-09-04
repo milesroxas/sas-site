@@ -7,7 +7,6 @@ import { DynamicAudienceBlock } from '@/blocks/DynamicAudience/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
 import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
-import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
 import { FeaturedWorkBlock } from '@/blocks/featured-work/Component'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
@@ -28,7 +27,6 @@ const blockComponents = {
   dynamicAudience: DynamicAudienceBlock,
   featureStatementGrid: FeatureStatementGridBlock,
   featureStatementLinks: FeatureStatementLinksBlock,
-  featureTabs: FeatureTabsBlock,
   featuredWork: FeaturedWorkBlock,
   formBlock: FormBlock,
   industryWork: IndustryWorkBlock,

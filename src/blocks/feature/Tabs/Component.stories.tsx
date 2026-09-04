@@ -4,7 +4,7 @@ import { mediaFixture, videoFixture } from '../../fixtures'
 import { FeatureTabsBlock } from './Component'
 
 const meta = {
-  title: 'Blocks/Feature/Tabs',
+  title: 'Blocks/Interactive/Tabs',
   component: FeatureTabsBlock,
   parameters: {
     layout: 'padded',
