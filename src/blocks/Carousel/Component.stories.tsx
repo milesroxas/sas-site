@@ -9,7 +9,7 @@ const slides = Array.from({ length: 5 }, (_, i) => ({
 }))
 
 const meta = {
-  title: 'Blocks/Carousel',
+  title: 'Blocks/Interactive/Carousel',
   component: CarouselBlock,
   parameters: {
     layout: 'fullscreen',

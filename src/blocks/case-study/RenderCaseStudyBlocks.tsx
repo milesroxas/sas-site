@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
+import { FaqBlock } from '@/blocks/faq/Component'
 import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/feature/ImageStatement/Component'
 import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
@@ -662,11 +663,25 @@ const renderWorkBlock = (
     case 'carousel':
       // Same CSS entrance as Pages/Home — no data-reveal markers, and the
       // GSAP shell would put a transform on an ancestor of embla. The
-      // block paints its own band, so the wrapper only carries the entrance.
+      // block paints its own band (bare inside a Section), so the wrapper
+      // only carries the entrance.
       return (
         <CssRevealSection key={block.id}>
-          <CarouselBlock {...block} disableInnerContainer />
+          <CarouselBlock {...block} bare={bare} disableInnerContainer />
         </CssRevealSection>
+      )
+    case 'faq':
+      // FAQ copy is the block's own, so nothing resolves against the study:
+      // the same intro reveal and band it has on every other surface.
+      return (
+        <RevealSection
+          bare={bare}
+          key={block.id}
+          theme={block.theme}
+          variant={blockRevealVariants.faq}
+        >
+          <FaqBlock {...block} bare />
+        </RevealSection>
       )
     default:
       return null

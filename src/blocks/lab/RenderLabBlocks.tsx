@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
 import { SectionBand } from '@/blocks/section/SectionBand'
 import { renderContentBlock, sectionChildComponents } from '@/blocks/shared/content-block-renderer'
@@ -147,13 +146,6 @@ const renderLabBlock = (
     // Owns its own pinned full-viewport shell and section band — do not wrap again.
     return <ScrollGalleryBlock key={block.id} {...block} />
   }
-  if (block.blockType === 'carousel') {
-    return (
-      <RevealSection key={block.id}>
-        <CarouselBlock {...block} disableInnerContainer />
-      </RevealSection>
-    )
-  }
   const content = (() => {
     switch (block.blockType) {
       case 'labStorySection':
@@ -176,9 +168,8 @@ const renderLabBlock = (
  * Lab blocks enter like generic page blocks: the CSS block reveal wraps each
  * section, except the shared Section-nestable run, which enters through the
  * common content-block renderer (`data-reveal` markers play the shared GSAP
- * reveal, the same motion those blocks have on every other surface),
- * `carousel`, which matches Pages/Home (CSS reveal only, no GSAP shell — the
- * block paints its own band, so the wrapper never adds margin), and
+ * reveal, the same motion those blocks have on every other surface; the
+ * marker-less Carousel and Content take the CSS reveal there), and
  * `scrollGallery`, whose pinned shell must not sit under a transformed ancestor.
  */
 export const RenderLabBlocks = async ({

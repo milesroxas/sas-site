@@ -2,6 +2,7 @@ import type { Block } from 'payload'
 import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { Carousel } from '@/blocks/Carousel/config'
 import { Content } from '@/blocks/Content/config'
+import { Faq } from '@/blocks/faq/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
@@ -248,6 +249,10 @@ const workSectionBlocks: Block[] = [
   WorkFeatureImageStatement,
   // Caption carries no story copy, so it needs no story-beat wrapper.
   MediaBlock,
+  // Interactive: FAQ copy is the block's own (questions, not story beats) and
+  // Carousel carries none, so neither takes the wrapper either.
+  Faq,
+  Carousel,
 ]
 
 export const WorkSection = sectionBlock({
@@ -265,8 +270,12 @@ export const WorkSection = sectionBlock({
 export const caseStudyBlocks = [
   // Structure
   WorkSection,
-  // Section heading / Media and content / Media: the Section-nestable run
+  // Section heading / Media and content / Media / Interactive: the Section-nestable run
   ...workSectionBlocks,
+  // Interactive (legacy, top-level only): kept beside the run's FAQ and Carousel
+  WorkFeatureTabs,
+  AudienceTabs,
+  IndustryWork,
   // Media
   CaseStudyMediaShowcase,
   ScrollGallery,
@@ -276,11 +285,6 @@ export const caseStudyBlocks = [
   WorkFeatureStatementGrid,
   FeatureStatementLinks,
   CaseStudyTestimonial,
-  // Interactive
-  WorkFeatureTabs,
-  AudienceTabs,
-  IndustryWork,
-  Carousel,
   // Lists & grids
   CaseStudyKeyDecisions,
   CaseStudyMetrics,

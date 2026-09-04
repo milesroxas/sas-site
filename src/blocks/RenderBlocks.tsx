@@ -3,7 +3,6 @@ import { Fragment } from 'react'
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
-import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { DynamicAudienceBlock } from '@/blocks/DynamicAudience/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
@@ -25,7 +24,6 @@ const blockComponents = {
   ...sectionChildComponents,
   archive: ArchiveBlock,
   audienceTabs: AudienceTabsBlock,
-  carousel: CarouselBlock,
   cta: CallToActionBlock,
   dynamicAudience: DynamicAudienceBlock,
   featureStatementGrid: FeatureStatementGridBlock,

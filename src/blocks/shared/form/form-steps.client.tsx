@@ -199,7 +199,7 @@ function FormStepItem({
         <p className="truncate pt-2 pl-10 text-base/6 text-muted-foreground">{summary}</p>
       ) : null}
 
-      <div className="form-step-body" data-open={open || undefined} inert={!open}>
+      <div className="disclosure-body" data-open={open || undefined} inert={!open}>
         <div>
           <div className="flex flex-col gap-8 pt-6 pb-2 pl-10">{children}</div>
         </div>

@@ -98,7 +98,7 @@ dropped), and `FormBody` walks them:
   finished step, that step reopens with focus on the field.
 - Collapsed bodies stay mounted and `inert`, so answers survive a walk back
   through Edit with no bookkeeping. The body opens and closes as a grid track
-  (`.form-step-body` in `globals.css`); reduced motion switches instantly.
+  (`.disclosure-body` in `globals.css`, shared with the FAQ block); reduced motion switches instantly.
 - The copy (Continue, Edit, the note beside Continue, the estimate) lives in
   the form's **Steps** group, seeded from `FORM_STEP_COPY`, which the stepper
   also falls back to.

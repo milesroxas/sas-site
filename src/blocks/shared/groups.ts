@@ -22,7 +22,7 @@ export const BLOCK_GROUPS = {
   split: 'Split layouts',
   /** Large typographic statements, pull quotes, testimonials. */
   statements: 'Statements',
-  /** Tabs, switchers, marquees — and future carousels. */
+  /** Tabs, switchers, marquees, carousels, accordions (FAQ). */
   interactive: 'Interactive',
   /** Card grids, listings, facts, metrics, related content. */
   lists: 'Lists & grids',

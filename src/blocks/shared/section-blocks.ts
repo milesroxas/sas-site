@@ -1,6 +1,8 @@
 import type { Block } from 'payload'
 
+import { Carousel } from '@/blocks/Carousel/config'
 import { Content } from '@/blocks/Content/config'
+import { Faq } from '@/blocks/faq/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FullMedia } from '@/blocks/full-media/config'
@@ -41,6 +43,9 @@ export const sectionNestableBlocks: Block[] = [
   MediaBlock,
   // Text
   RichTextBlock,
+  // Interactive
+  Faq,
+  Carousel,
 ]
 
 /**

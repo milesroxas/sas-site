@@ -1,8 +1,8 @@
 # Block layout grid roadmap
 
-Status: contract defined, Phase 1 (Section heading) and Phase 2 (Media and content + Statement) shipped 2026-09-02. Phase 3 (Pair offset, Caption) pending. Zero schema: this is presentational only, no migrations, no admin changes. Chromatic baseline churn expected per phase. Agents: read this doc before any block layout/grid task instead of re-auditing the block system. Companion to [blocks-reorg-roadmap.md](blocks-reorg-roadmap.md), which owns taxonomy, Sections, and admin naming; this doc owns how the same blocks lay out horizontally.
+Status: contract defined, Phase 1 (Section heading) and Phase 2 (Media and content + Statement) shipped 2026-09-02. Rich text (2026-09-03) and FAQ (2026-09-03) were born on the contract. Phase 3 (Pair offset, Caption) pending. Zero schema: this is presentational only, no migrations, no admin changes. Chromatic baseline churn expected per phase. Agents: read this doc before any block layout/grid task instead of re-auditing the block system. Companion to [blocks-reorg-roadmap.md](blocks-reorg-roadmap.md), which owns taxonomy, Sections, and admin naming; this doc owns how the same blocks lay out horizontally.
 
-Scope: the nine reorganized blocks (Section heading, Media and content, Media groups) plus Rich text (Text group, added 2026-09-03 straight onto the contract). Blocks outside the reorg (heroes, featured work, galleries, forms) keep their bespoke layouts until they enter the taxonomy.
+Scope: the nine reorganized blocks (Section heading, Media and content, Media groups) plus Rich text (Text group, added 2026-09-03 straight onto the contract) and FAQ (Interactive group, 2026-09-03, likewise). Carousel entered the taxonomy with FAQ (reorg Phase B3) but is not a grid block: an embla track is a bespoke shell, so it keeps its own layout (G5). Blocks outside the reorg (heroes, featured work, galleries, forms) keep their bespoke layouts until they enter the taxonomy.
 
 ---
 
@@ -87,10 +87,14 @@ The default Standard arrangement (Layout: Left) on the 8-column grid:
 | Statement | `feature/ImageStatement/Component.tsx` | flex `justify-start/end` + `max-w-2xl` | caption cols 1-4 (left) / 5-8 (right); contained media spans all 8 on the same grid, full-bleed media edge to edge with the caption re-entering the page column | DONE 2026-09-02 |
 | Caption (`mediaBlock`) | `MediaBlock/Component.tsx` | `mx-auto max-w-3xl` / `max-w-md` per `size` | candidate to stay measure-based (centered figure); decide with D7 of the reorg doc (its `size` field redesign) | Phase 3 |
 | Rich text (`richText`) | `rich-text/Component.tsx` | new block (2026-09-03) | body cols 2-4, the Standard Left body measure; prose mode, `text-base` stepping to `text-lg` from `xl` | DONE 2026-09-03 |
+| FAQ (`faq`) | `faq/Component.tsx` + `Component.client.tsx` | new block (2026-09-03, Paper `Block=FAQ, Layout=Compact`) | header row: heading cluster cols 1-4, contact prompt + link cols 5-8 right-set (`justify-self-end`), bottoms aligned; question columns on a second `BlockGrid` as two span-4 cells (656px each at the design width, exactly the frame), `gap-y-0` so the two cells stack into one continuous list below `md` (the second drops its top rule there). Inside a row, the index lane and glyph are fixed-width flex slots (`w-8`, `w-5`), not tracks; the answer re-enters the question lane with scale padding (`ps-14 pe-11`) | DONE 2026-09-03 |
+| Carousel (`carousel`) | `Carousel/Component.tsx` | bespoke embla track, `Container` for the contained width | not a grid block; joined the Section run (reorg B3) via `bare` only | exempt (G5) |
 
 Phase 3 column proposals are starting points to be tuned visually per block, the same way Left was specified. The contract (section 2) is the fixed part; spans are art direction, and the shipped Phase 2 spans remain tunable per block.
 
 Placement gotcha learned in Phase 2: auto-placement only moves forward. In a mirrored layout the media cell stays first in source order (mobile stacks media first) but sits in later columns, so the following cell would wrap to the next row. Pin both cells with `md:row-start-1` whenever a later-column cell precedes an earlier-column one.
+
+Gotcha learned with FAQ: two cells that must read as one continuous stack below `md` (a list split across two columns) cannot share a grid with cells that need the row gap (the header row). Give them their own `BlockGrid` with `gap-y-0` and stack the grids with a scale `space-y-*` on the container; the row gap is moot from `md`, where they sit on one row. Independent columns of variable-height rows also cannot be placed cell-per-row, since a grid row sizes to its tallest cell and the columns would lock heights together.
 
 ---
 
@@ -139,7 +143,8 @@ Visual deltas accepted in Phase 2:
 | G2 | Row gap = column gap | Shipped as one token both axes. If media rows need more air than columns, add `gap-y-*` at the call site per block (art direction), not a second token |
 | G3 | Should Centered/Statement snap to the grid (e.g. span 6 centered = cols 2-7)? | No for now: centered prose is measure-driven; a 6-column span at 2xl is wider than the reading measure. Revisit only if the two systems visibly disagree on a page |
 | G4 | Full-bleed media inside grid blocks (Stacked `width: full`, Statement `imageWidth: full`) | Bleed stays a container/shell concern; the grid only ever lives inside the page column. Media escapes the container, content re-enters it and the grid |
-| G5 | Do blocks outside the nine adopt `BlockGrid`? | Only when they enter the taxonomy (reorg Phase E). Do not migrate heroes/galleries opportunistically |
+| G5 | Do blocks outside the nine adopt `BlockGrid`? | Only when they enter the taxonomy (reorg Phase E), and only if their layout is placement, not a shell. Carousel entered the taxonomy in B3 and stays exempt: an embla track owns its own geometry. Do not migrate heroes/galleries opportunistically |
+| G6 | More than one `BlockGrid` in a block | Allowed when two regions need different row gaps (FAQ: header row on the token, list with `gap-y-0`). Stack them with a scale `space-y-*`; never nest a grid inside a cell of the same grid |
 
 ---
 

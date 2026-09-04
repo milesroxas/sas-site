@@ -19,6 +19,8 @@ import { useCarouselEffects } from './use-carousel-effects'
 import { captionOpacity, restSignedDistance, slideVisualState } from './visual-state'
 
 type Props = CarouselBlockProps & {
+  /** Skip the band when the caller's shell owns it (the Section block). */
+  bare?: boolean
   className?: string
   enableGutter?: boolean
   disableInnerContainer?: boolean
@@ -226,7 +228,16 @@ const CarouselArrows: React.FC<{ isFullWidth: boolean }> = ({ isFullWidth }) => 
 )
 
 export const CarouselBlock: React.FC<Props> = (props) => {
-  const { className, enableGutter = true, showArrows, slides, slideSize, theme, width } = props
+  const {
+    bare,
+    className,
+    enableGutter = true,
+    showArrows,
+    slides,
+    slideSize,
+    theme,
+    width,
+  } = props
 
   const [api, setApi] = useState<CarouselApi>()
   const filterIdBase = useId()
@@ -266,7 +277,7 @@ export const CarouselBlock: React.FC<Props> = (props) => {
   )
 
   return (
-    <Section spacing="loose" theme={theme}>
+    <Section bare={bare} spacing="loose" theme={theme}>
       <div className={cn({ container: enableGutter && !isFullWidth }, className)}>
         <CarouselFilters
           caId={caId}

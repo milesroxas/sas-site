@@ -1,5 +1,7 @@
 import type React from 'react'
+import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
+import { FaqBlock } from '@/blocks/faq/Component'
 import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Component'
 import { FullMediaBlock } from '@/blocks/full-media/Component'
@@ -23,7 +25,9 @@ import { blockRevealVariants, type RevealMappedBlockSlug } from './reveal-varian
  * and render their own variants (`RenderCaseStudyBlocks`).
  */
 export const sectionChildComponents = {
+  carousel: CarouselBlock,
   content: ContentBlock,
+  faq: FaqBlock,
   featureHeadingOffset: FeatureHeadingOffsetBlock,
   featureImageStatement: FeatureImageStatementBlock,
   fullMedia: FullMediaBlock,

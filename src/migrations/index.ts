@@ -73,6 +73,7 @@ import * as migration_20260903_190809_contact_alt_cta_link from './20260903_1908
 import * as migration_20260903_200959_rich_transition_segment_hero from './20260903_200959_rich_transition_segment_hero';
 import * as migration_20260903_205728_segment_hero_lead from './20260903_205728_segment_hero_lead';
 import * as migration_20260903_210428_content_in_sections from './20260903_210428_content_in_sections';
+import * as migration_20260904_012500_interactive_in_sections from './20260904_012500_interactive_in_sections';
 
 export const migrations = [
   {
@@ -448,6 +449,11 @@ export const migrations = [
   {
     up: migration_20260903_210428_content_in_sections.up,
     down: migration_20260903_210428_content_in_sections.down,
-    name: '20260903_210428_content_in_sections'
+    name: '20260903_210428_content_in_sections',
+  },
+  {
+    up: migration_20260904_012500_interactive_in_sections.up,
+    down: migration_20260904_012500_interactive_in_sections.down,
+    name: '20260904_012500_interactive_in_sections'
   },
 ];

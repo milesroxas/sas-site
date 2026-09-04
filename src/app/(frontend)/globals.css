@@ -1364,19 +1364,21 @@ html {
   }
 }
 
-/* Stepped forms (blocks/shared/form/form-steps): a step's body opens and
-   closes as a grid track, 0fr ↔ 1fr, so height follows the content without
-   measuring it; the box inside fades with the track. Exit is shorter than
-   enter, and the incoming fade waits a beat so the fields arrive into space
-   that already exists. The clip box is inset by a spacing unit on each side
-   so a focus ring at the edge of a chip row survives the overflow clip. */
-.form-step-body {
+/* Disclosure body (stepped form steps in blocks/shared/form/form-steps, FAQ
+   answers in blocks/faq): a body opens and closes as a grid track, 0fr ↔ 1fr,
+   so height follows the content without measuring it; the box inside fades
+   with the track. Exit is shorter than enter, and the incoming fade waits a
+   beat so the content arrives into space that already exists. The clip box
+   is inset by a spacing unit on each side so a focus ring at the edge of a
+   chip row or an answer link survives the overflow clip. Consumers set
+   `data-open` and `inert` on the element; the one child is the clip box. */
+.disclosure-body {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.form-step-body > * {
+.disclosure-body > * {
   min-height: 0;
   overflow: hidden;
   margin-inline: calc(var(--spacing) * -1);
@@ -1385,20 +1387,20 @@ html {
   transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.form-step-body[data-open] {
+.disclosure-body[data-open] {
   grid-template-rows: 1fr;
   transition-duration: 250ms;
 }
 
-.form-step-body[data-open] > * {
+.disclosure-body[data-open] > * {
   opacity: 1;
   transition-duration: 200ms;
   transition-delay: 50ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .form-step-body,
-  .form-step-body > * {
+  .disclosure-body,
+  .disclosure-body > * {
     transition: none;
   }
 }

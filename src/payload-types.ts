@@ -308,14 +308,15 @@ export interface Page {
     | FeatureImageStatementBlock
     | MediaBlock
     | RichTextBlock
-    | FeatureStatementGridBlock
-    | FeatureStatementLinksBlock
+    | FaqBlock
+    | CarouselBlock
     | FeatureTabsBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
     | IndustryWorkBlock
     | TestimonialsMarqueeBlock
-    | CarouselBlock
+    | FeatureStatementGridBlock
+    | FeatureStatementLinksBlock
     | ArchiveBlock
     | FeaturedWorkBlock
     | CallToActionBlock
@@ -411,6 +412,8 @@ export interface Post {
         | FeatureImageStatementBlock
         | MediaBlock
         | RichTextBlock
+        | FaqBlock
+        | CarouselBlock
         | FeaturedWorkBlock
       )[]
     | null;
@@ -1665,16 +1668,17 @@ export interface WorkPage {
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
         | MediaBlock
+        | FaqBlock
+        | CarouselBlock
+        | WorkFeatureTabsBlock
+        | AudienceTabsBlock
+        | IndustryWorkBlock
         | CaseStudyMediaShowcaseBlock
         | ScrollGalleryBlock
         | WorkCaseStudyStorySectionBlock
         | WorkFeatureStatementGridBlock
         | FeatureStatementLinksBlock
         | CaseStudyTestimonialBlock
-        | WorkFeatureTabsBlock
-        | AudienceTabsBlock
-        | IndustryWorkBlock
-        | CarouselBlock
         | CaseStudyKeyDecisionsBlock
         | CaseStudyMetricsBlock
         | FeaturedWorkBlock
@@ -1801,6 +1805,8 @@ export interface WorkSectionBlock {
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
         | MediaBlock
+        | FaqBlock
+        | CarouselBlock
         | ContentBlock
       )[]
     | null;
@@ -2354,65 +2360,71 @@ export interface MediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContentBlock".
+ * via the `definition` "FaqBlock".
  */
-export interface ContentBlock {
-  columns?:
-    | {
-        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
-        richText?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
+export interface FaqBlock {
+  /**
+   * Short kicker above the heading, e.g. "Questions".
+   */
+  eyebrow?: string | null;
+  heading: string;
+  items: {
+    question: string;
+    /**
+     * Shown when the question is opened.
+     */
+    answer: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
           [k: string]: unknown;
-        } | null;
-        enableLink?: boolean | null;
-        link?: {
-          type?: ('reference' | 'site' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null)
-            | ({
-                relationTo: 'contact-pages';
-                value: number | ContactPage;
-              } | null);
-          /**
-           * Home (/), Works Index (/works), or Insights Index (/insights).
-           */
-          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    };
+    id?: string | null;
+  }[];
+  enableLink?: boolean | null;
+  /**
+   * Sits beside the link, e.g. "Did not find your answer?"
+   */
+  prompt?: string | null;
+  link?: {
+    type?: ('reference' | 'site' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'contact-pages';
+          value: number | ContactPage;
+        } | null);
+    /**
+     * Home (/), Works Index (/works), or Insights Index (/insights).
+     */
+    sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+    url?: string | null;
+    label: string;
+  };
   /**
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'content';
+  blockType: 'faq';
 }
 /**
  * Published at /contact/[slug], or at /contact for the page slugged "contact". The questions live on the linked form.
@@ -2828,6 +2840,251 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselBlock".
+ */
+export interface CarouselBlock {
+  slides: {
+    media: number | Media;
+    /**
+     * Optional. Renders below the slide.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Full width runs edge to edge of the browser window.
+   */
+  width?: ('contained' | 'full-width') | null;
+  /**
+   * Previous/next buttons. Contained places them beside the slides; full width overlays them on the slides.
+   */
+  showArrows?: boolean | null;
+  /**
+   * Slides visible at once from tablet up. Phones always show one slide plus a sliver of its neighbours, whichever size is picked.
+   */
+  slideSize?: ('full' | 'half' | 'third') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'carousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContentBlock".
+ */
+export interface ContentBlock {
+  columns?:
+    | {
+        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
+        richText?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        enableLink?: boolean | null;
+        link?: {
+          type?: ('reference' | 'site' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
+              } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'content';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFeatureTabsBlock".
+ */
+export interface WorkFeatureTabsBlock {
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    heading?: string | null;
+    /**
+     * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+     */
+    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+    /**
+     * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+     */
+    storyScope?: ('overview' | 'section' | 'beat') | null;
+    /**
+     * Choose one reusable beat from the selected section.
+     */
+    storyBeatKey?: string | null;
+    /**
+     * Reveal the website-only override fields. Saved overrides still apply while hidden.
+     */
+    showOverrides?: boolean | null;
+    /**
+     * Tab body copy. Leave empty to pull the source.
+     */
+    description?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    subheading?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * Short note shown as a card over the media.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureTabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AudienceTabsBlock".
+ */
+export interface AudienceTabsBlock {
+  /**
+   * Centered statement above the tab chips.
+   */
+  heading: string;
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    intro: string;
+    /**
+     * Supporting copy shown under the intro.
+     */
+    description?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media: number | Media;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'audienceTabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IndustryWorkBlock".
+ */
+export interface IndustryWorkBlock {
+  /**
+   * Static text before the industry dropdown.
+   */
+  heading: string;
+  /**
+   * Each row is a dropdown option: an industry, the sentence continuing the headline, and the work entry it features.
+   */
+  industries: {
+    /**
+     * Shown in the dropdown by name.
+     */
+    industry: number | Industry;
+    /**
+     * Continues the headline inline after the dropdown for this industry.
+     */
+    subheading: string;
+    /**
+     * Continues the headline in the same wrapping sentence. Leave empty to stop after the first continuation.
+     */
+    secondLine?: string | null;
+    /**
+     * Work page featured for this industry (list narrows to that industry once one is picked). Title, media, client, and capabilities come from it.
+     */
+    work: number | WorkPage;
+    id?: string | null;
+  }[];
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'industryWork';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyMediaShowcaseBlock".
  */
 export interface CaseStudyMediaShowcaseBlock {
@@ -3129,189 +3386,6 @@ export interface CaseStudyTestimonialBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureTabsBlock".
- */
-export interface WorkFeatureTabsBlock {
-  tabs: {
-    title: string;
-    /**
-     * Lead statement for this tab.
-     */
-    heading?: string | null;
-    /**
-     * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
-     */
-    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-    /**
-     * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
-     */
-    storyScope?: ('overview' | 'section' | 'beat') | null;
-    /**
-     * Choose one reusable beat from the selected section.
-     */
-    storyBeatKey?: string | null;
-    /**
-     * Reveal the website-only override fields. Saved overrides still apply while hidden.
-     */
-    showOverrides?: boolean | null;
-    /**
-     * Tab body copy. Leave empty to pull the source.
-     */
-    description?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    subheading?: string | null;
-    items?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    media?: (number | null) | Media;
-    /**
-     * Short note shown as a card over the media.
-     */
-    caption?: string | null;
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureTabs';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "AudienceTabsBlock".
- */
-export interface AudienceTabsBlock {
-  /**
-   * Centered statement above the tab chips.
-   */
-  heading: string;
-  tabs: {
-    title: string;
-    /**
-     * Lead statement for this tab.
-     */
-    intro: string;
-    /**
-     * Supporting copy shown under the intro.
-     */
-    description?: string | null;
-    items?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    media: number | Media;
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'audienceTabs';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "IndustryWorkBlock".
- */
-export interface IndustryWorkBlock {
-  /**
-   * Static text before the industry dropdown.
-   */
-  heading: string;
-  /**
-   * Each row is a dropdown option: an industry, the sentence continuing the headline, and the work entry it features.
-   */
-  industries: {
-    /**
-     * Shown in the dropdown by name.
-     */
-    industry: number | Industry;
-    /**
-     * Continues the headline inline after the dropdown for this industry.
-     */
-    subheading: string;
-    /**
-     * Continues the headline in the same wrapping sentence. Leave empty to stop after the first continuation.
-     */
-    secondLine?: string | null;
-    /**
-     * Work page featured for this industry (list narrows to that industry once one is picked). Title, media, client, and capabilities come from it.
-     */
-    work: number | WorkPage;
-    id?: string | null;
-  }[];
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'industryWork';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CarouselBlock".
- */
-export interface CarouselBlock {
-  slides: {
-    media: number | Media;
-    /**
-     * Optional. Renders below the slide.
-     */
-    caption?: string | null;
-    id?: string | null;
-  }[];
-  /**
-   * Full width runs edge to edge of the browser window.
-   */
-  width?: ('contained' | 'full-width') | null;
-  /**
-   * Previous/next buttons. Contained places them beside the slides; full width overlays them on the slides.
-   */
-  showArrows?: boolean | null;
-  /**
-   * Slides visible at once from tablet up. Phones always show one slide plus a sliver of its neighbours, whichever size is picked.
-   */
-  slideSize?: ('full' | 'half' | 'third') | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'carousel';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyKeyDecisionsBlock".
  */
 export interface CaseStudyKeyDecisionsBlock {
@@ -3509,6 +3583,8 @@ export interface PageSectionBlock {
         | FeatureImageStatementBlock
         | MediaBlock
         | RichTextBlock
+        | FaqBlock
+        | CarouselBlock
         | ContentBlock
       )[]
     | null;
@@ -4019,60 +4095,6 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementGridBlock".
- */
-export interface FeatureStatementGridBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading: string;
-  /**
-   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
-   */
-  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-  /**
-   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
-   */
-  statement?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Short supporting line pinned below the statement.
-   */
-  footnote?: string | null;
-  cards: {
-    media?: (number | null) | Media;
-    title: string;
-    description: string;
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
-   */
-  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureStatementGrid';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "FeatureTabsBlock".
  */
 export interface FeatureTabsBlock {
@@ -4241,6 +4263,60 @@ export interface TestimonialsMarqueeBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'testimonialsMarquee';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureStatementGridBlock".
+ */
+export interface FeatureStatementGridBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
+   */
+  statement?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Short supporting line pinned below the statement.
+   */
+  footnote?: string | null;
+  cards: {
+    media?: (number | null) | Media;
+    title: string;
+    description: string;
+    id?: string | null;
+  }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureStatementGrid';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4473,10 +4549,11 @@ export interface LabPage {
         | FeatureImageStatementBlock
         | MediaBlock
         | RichTextBlock
+        | FaqBlock
+        | CarouselBlock
         | LabMediaShowcaseBlock
         | ScrollGalleryBlock
         | LabStorySectionBlock
-        | CarouselBlock
         | LabFactsBlock
         | LabRelatedProjectsBlock
       )[]
@@ -4740,6 +4817,8 @@ export interface LabSectionBlock {
         | FeatureImageStatementBlock
         | MediaBlock
         | RichTextBlock
+        | FaqBlock
+        | CarouselBlock
         | ContentBlock
       )[]
     | null;
@@ -4890,10 +4969,11 @@ export interface ExpertisePage {
     | FeatureImageStatementBlock
     | MediaBlock
     | RichTextBlock
-    | FeatureStatementGridBlock
+    | FaqBlock
+    | CarouselBlock
     | FeatureTabsBlock
     | AudienceTabsBlock
-    | CarouselBlock
+    | FeatureStatementGridBlock
     | ArchiveBlock
     | FeaturedWorkBlock
     | CallToActionBlock
@@ -5034,6 +5114,8 @@ export interface SegmentSectionBlock {
         | FeatureImageStatementBlock
         | MediaBlock
         | RichTextBlock
+        | FaqBlock
+        | CarouselBlock
         | ContentBlock
       )[]
     | null;
@@ -5063,10 +5145,11 @@ export interface AudiencePage {
     | FeatureImageStatementBlock
     | MediaBlock
     | RichTextBlock
-    | FeatureStatementGridBlock
+    | FaqBlock
+    | CarouselBlock
     | FeatureTabsBlock
     | AudienceTabsBlock
-    | CarouselBlock
+    | FeatureStatementGridBlock
     | ArchiveBlock
     | FeaturedWorkBlock
     | CallToActionBlock
@@ -6024,14 +6107,15 @@ export interface PagesSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
-        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
-        featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
+        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
@@ -6082,6 +6166,8 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -6240,6 +6326,55 @@ export interface RichTextBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FaqBlock_select".
+ */
+export interface FaqBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
+  enableLink?: T;
+  prompt?: T;
+  link?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        sitePage?: T;
+        url?: T;
+        label?: T;
+      };
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselBlock_select".
+ */
+export interface CarouselBlockSelect<T extends boolean = true> {
+  slides?:
+    | T
+    | {
+        media?: T;
+        caption?: T;
+        id?: T;
+      };
+  width?: T;
+  showArrows?: T;
+  slideSize?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ContentBlock_select".
  */
 export interface ContentBlockSelect<T extends boolean = true> {
@@ -6259,54 +6394,6 @@ export interface ContentBlockSelect<T extends boolean = true> {
               url?: T;
               label?: T;
               appearance?: T;
-            };
-        id?: T;
-      };
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementGridBlock_select".
- */
-export interface FeatureStatementGridBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  heading?: T;
-  source?: T;
-  statement?: T;
-  footnote?: T;
-  cards?:
-    | T
-    | {
-        media?: T;
-        title?: T;
-        description?: T;
-        id?: T;
-      };
-  browseAllMedia?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementLinksBlock_select".
- */
-export interface FeatureStatementLinksBlockSelect<T extends boolean = true> {
-  statement?: T;
-  links?:
-    | T
-    | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              sitePage?: T;
-              url?: T;
-              label?: T;
             };
         id?: T;
       };
@@ -6441,19 +6528,48 @@ export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CarouselBlock_select".
+ * via the `definition` "FeatureStatementGridBlock_select".
  */
-export interface CarouselBlockSelect<T extends boolean = true> {
-  slides?:
+export interface FeatureStatementGridBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  source?: T;
+  statement?: T;
+  footnote?: T;
+  cards?:
     | T
     | {
         media?: T;
-        caption?: T;
+        title?: T;
+        description?: T;
         id?: T;
       };
-  width?: T;
-  showArrows?: T;
-  slideSize?: T;
+  browseAllMedia?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FeatureStatementLinksBlock_select".
+ */
+export interface FeatureStatementLinksBlockSelect<T extends boolean = true> {
+  statement?: T;
+  links?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              sitePage?: T;
+              url?: T;
+              label?: T;
+            };
+        id?: T;
+      };
   theme?: T;
   id?: T;
   blockName?: T;
@@ -6593,6 +6709,8 @@ export interface PostsSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
   relatedPosts?: T;
@@ -6663,16 +6781,17 @@ export interface WorkPagesSelect<T extends boolean = true> {
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
+        featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
+        audienceTabs?: T | AudienceTabsBlockSelect<T>;
+        industryWork?: T | IndustryWorkBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
         scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         caseStudyStorySection?: T | WorkCaseStudyStorySectionBlockSelect<T>;
         featureStatementGrid?: T | WorkFeatureStatementGridBlockSelect<T>;
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         caseStudyTestimonial?: T | CaseStudyTestimonialBlockSelect<T>;
-        featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
-        audienceTabs?: T | AudienceTabsBlockSelect<T>;
-        industryWork?: T | IndustryWorkBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
         caseStudyKeyDecisions?: T | CaseStudyKeyDecisionsBlockSelect<T>;
         caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
@@ -6736,6 +6855,8 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -6897,6 +7018,37 @@ export interface WorkFeatureImageStatementBlockSelect<T extends boolean = true> 
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkFeatureTabsBlock_select".
+ */
+export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
+  tabs?:
+    | T
+    | {
+        title?: T;
+        heading?: T;
+        source?: T;
+        storyScope?: T;
+        storyBeatKey?: T;
+        showOverrides?: T;
+        description?: T;
+        subheading?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        media?: T;
+        caption?: T;
+        id?: T;
+      };
+  browseAllMedia?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyMediaShowcaseBlock_select".
  */
 export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
@@ -6997,37 +7149,6 @@ export interface CaseStudyTestimonialBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureTabsBlock_select".
- */
-export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
-  tabs?:
-    | T
-    | {
-        title?: T;
-        heading?: T;
-        source?: T;
-        storyScope?: T;
-        storyBeatKey?: T;
-        showOverrides?: T;
-        description?: T;
-        subheading?: T;
-        items?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-            };
-        media?: T;
-        caption?: T;
-        id?: T;
-      };
-  browseAllMedia?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyKeyDecisionsBlock_select".
  */
 export interface CaseStudyKeyDecisionsBlockSelect<T extends boolean = true> {
@@ -7097,10 +7218,11 @@ export interface LabPagesSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
         scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         labStorySection?: T | LabStorySectionBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
         labFacts?: T | LabFactsBlockSelect<T>;
         labRelatedProjects?: T | LabRelatedProjectsBlockSelect<T>;
       };
@@ -7150,6 +7272,8 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -7233,10 +7357,11 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
-        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
+        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
@@ -7315,6 +7440,8 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -7341,10 +7468,11 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
-        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
+        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
@@ -8704,14 +8832,15 @@ export interface Home {
     | FeatureImageStatementBlock
     | MediaBlock
     | RichTextBlock
-    | FeatureStatementGridBlock
-    | FeatureStatementLinksBlock
+    | FaqBlock
+    | CarouselBlock
     | FeatureTabsBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
     | IndustryWorkBlock
     | TestimonialsMarqueeBlock
-    | CarouselBlock
+    | FeatureStatementGridBlock
+    | FeatureStatementLinksBlock
     | ArchiveBlock
     | CallToActionBlock
     | FormBlock
@@ -9275,14 +9404,15 @@ export interface HomeSelect<T extends boolean = true> {
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
-        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
-        featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
+        faq?: T | FaqBlockSelect<T>;
+        carousel?: T | CarouselBlockSelect<T>;
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
+        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
+        featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;

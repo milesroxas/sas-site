@@ -15,6 +15,7 @@ export const blockRevealVariants = {
   // shared values imported from the reveals and scramble defaults.
   audienceTabs: 'self',
   dynamicAudience: 'underMedia',
+  faq: 'intro',
   featureHeadingOffset: 'intro',
   featureStatementGrid: 'intro',
   featureTabs: 'intro',

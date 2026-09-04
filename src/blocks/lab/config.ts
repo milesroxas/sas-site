@@ -1,5 +1,4 @@
 import type { Block } from 'payload'
-import { Carousel } from '@/blocks/Carousel/config'
 import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import { sectionBlock } from '@/blocks/section/config'
 import { relatedSelectionFields, storySectionCopyFields, themeField } from '@/blocks/shared/fields'
@@ -123,15 +122,13 @@ export const LabSection = sectionBlock({
 export const labBlocks = [
   // Structure
   LabSection,
-  // Section heading / Media and content / Media / Text: the Section-nestable run
+  // Section heading / Media and content / Media / Text / Interactive: the Section-nestable run
   ...sectionNestableBlocks,
   // Media
   LabMediaShowcase,
   ScrollGallery,
   // Narrative
   LabStorySection,
-  // Interactive
-  Carousel,
   // Lists & grids
   LabFacts,
   LabRelatedProjects,
