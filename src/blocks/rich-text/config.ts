@@ -1,4 +1,5 @@
 import {
+  BlocksFeature,
   FixedToolbarFeature,
   HeadingFeature,
   InlineToolbarFeature,
@@ -7,12 +8,15 @@ import {
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
+import { RichTextInsights } from './insights/config'
 
 /**
  * Rich text: one Lexical body on a themed band, set on the composition grid
  * as a reading column (columns 3-6). The editor authors paragraphs plus
  * section headings inline, so a short heading-and-body run needs no second
  * field; the surrounding band comes from `theme` or the parent Section.
+ * The toolbar's block menu adds components between paragraphs (Insights so
+ * far); each is a Lexical block stored in the body, so none needs a table.
  *
  * Sits in the shared Section-nestable run (docs/blocks-reorg-roadmap.md),
  * grouped under Text with the legacy multi-column Content block.
@@ -34,6 +38,7 @@ export const RichTextBlock: Block = {
         features: ({ rootFeatures }) => [
           ...rootFeatures,
           HeadingFeature({ enabledHeadingSizes: ['h2', 'h3'] }),
+          BlocksFeature({ blocks: [RichTextInsights] }),
           FixedToolbarFeature(),
           InlineToolbarFeature(),
         ],

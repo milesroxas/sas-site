@@ -1,4 +1,4 @@
-import type { Block } from 'payload'
+import type { Block, Field } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
@@ -18,6 +18,31 @@ import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
  * `eyebrow`, `heading`, `summary`, `title` and `description` are TEXT_KEYS
  * names, so every insight reaches RAG and llms.txt.
  */
+/**
+ * One insight's fields, stated once: the Insight list block's `items` array
+ * and the Rich text editor's Insights block share them, so an insight is the
+ * same thing to author wherever it appears.
+ */
+export const insightItemFields: Field[] = [
+  {
+    name: 'media',
+    type: 'upload',
+    relationTo: 'media',
+    label: 'Mark',
+    // Marks are line art that takes the band's text color, so the picker
+    // offers SVGs only; the case-study library scope buys nothing here.
+    filterOptions: {
+      and: [publicApprovedMediaWhere, { mimeType: { equals: 'image/svg+xml' } }],
+    },
+    admin: {
+      description:
+        'An SVG mark. It renders in the text color of the band, so use a single-color line or fill mark.',
+    },
+  },
+  { name: 'title', type: 'text', required: true },
+  { name: 'description', type: 'textarea', required: true },
+]
+
 export const InsightList: Block = {
   slug: 'insightList',
   admin: { group: BLOCK_GROUPS.lists },
@@ -85,25 +110,7 @@ export const InsightList: Block = {
       minRows: 1,
       labels: { singular: 'Insight', plural: 'Insights' },
       admin: { initCollapsed: true },
-      fields: [
-        {
-          name: 'media',
-          type: 'upload',
-          relationTo: 'media',
-          label: 'Mark',
-          // Marks are line art that takes the band's text color, so the picker
-          // offers SVGs only; the case-study library scope buys nothing here.
-          filterOptions: {
-            and: [publicApprovedMediaWhere, { mimeType: { equals: 'image/svg+xml' } }],
-          },
-          admin: {
-            description:
-              'An SVG mark. It renders in the text color of the band, so use a single-color line or fill mark.',
-          },
-        },
-        { name: 'title', type: 'text', required: true },
-        { name: 'description', type: 'textarea', required: true },
-      ],
+      fields: insightItemFields,
     },
     themeField(),
   ],

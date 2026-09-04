@@ -101,6 +101,21 @@ const blockToMarkdown = (node: LexicalNode): string | null => {
     return lexicalToMarkdownString(content)
   }
 
+  // Insight runs (and similar) items: emit each title and description.
+  const items = fields.items
+  if (Array.isArray(items)) {
+    const lines = items
+      .map((item) => {
+        if (!item || typeof item !== 'object') return ''
+        const { title, description } = item as { title?: unknown; description?: unknown }
+        return [title, description]
+          .filter((value): value is string => typeof value === 'string' && value.trim() !== '')
+          .join('\n')
+      })
+      .filter((line) => line.trim())
+    if (lines.length) return lines.join('\n\n')
+  }
+
   // Carousel (and similar) slides: emit captions so they reach llms.txt / RAG.
   const slides = fields.slides
   if (Array.isArray(slides)) {

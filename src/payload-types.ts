@@ -9856,6 +9856,24 @@ export interface TaskSchedulePublish {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextInsightsBlock".
+ */
+export interface RichTextInsightsBlock {
+  items: {
+    /**
+     * An SVG mark. It renders in the text color of the band, so use a single-color line or fill mark.
+     */
+    media?: (number | null) | Media;
+    title: string;
+    description: string;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'insights';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "BannerBlock".
  */
 export interface BannerBlock {

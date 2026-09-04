@@ -54,6 +54,17 @@ export const heading = (
   version: 1,
 })
 
+/**
+ * A Lexical block node (a component the editor added from the toolbar).
+ * `fields` is the block's own document, `blockType` included.
+ */
+export const blockNode = (fields: Record<string, unknown>): SerializedNode => ({
+  type: 'block',
+  fields,
+  format: '',
+  version: 2,
+})
+
 export const richText = (...children: SerializedNode[]): DefaultTypedEditorState =>
   ({
     root: {

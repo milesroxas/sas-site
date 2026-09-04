@@ -74,7 +74,7 @@ New `BLOCK_GROUPS` entries: `sectionHeading: 'Section heading'`, `mediaContent: 
 | Slug | Group / label | Added | Notes |
 |---|---|---|---|
 | `richTransition` | Section heading / Standard | 2026-09-03 | Generic Standard for every surface but Work; replaced `labTransition` (zero rows) |
-| `richText` | Text / Rich text | 2026-09-03 | Born on the Section and grid contracts; Text now holds only this block |
+| `richText` | Text / Rich text | 2026-09-03 | Born on the Section and grid contracts; Text now holds only this block. 2026-09-04: the editor toolbar's block menu adds Insights (Lexical block `insights`, `RichTextInsightsBlock`, stored in the body JSON, no table); each item is the Insight list item (`insight-list/Insight.tsx`, `insightItemFields`) |
 | `content` | Custom / Content | 2026-09-03 | Nested in every Section via `sectionChildBlocks`; not in the run so Custom still closes the top-level drawer |
 | NEW `faq` | Interactive / FAQ | 2026-09-03 (B3) | Two-column accordion from the Paper frame `Block=FAQ, Layout=Compact`; per-parent `*_faq` + `*_faq_items` tables |
 | `carousel` | Interactive / Carousel | 2026-09-03 (B3) | Moved from the legacy top-level lists into the run; keeps its bespoke embla layout and its existing tables (`*_blocks_carousel`), only Posts gains it as new |
@@ -343,6 +343,7 @@ Sections-only top level per collection once every remaining block is nestable or
 - Phase A: retitle the eight existing story files to the new group taxonomy; no story logic changes.
 - Phase B adds: `Blocks/Section` (theme x spacing matrix, multi-child rhythm, customize on/off), `Blocks/Media And Content/Split`, Offset `bodySize` variants.
 - 2026-09-03 adds: `Blocks/Text/RichText`; B3 adds `Blocks/Interactive/FAQ` (Paper frame, no contact link, five questions, single question, dark) and retitles Carousel to `Blocks/Interactive/Carousel`.
+- 2026-09-04 adds to `Blocks/Text/RichText`: one insight, two insights, many insights, insights between copy, dark (the Paper one-, two- and many-insight frames).
 - B4 (2026-09-04) adds `Blocks/Lists/InsightList` (side by side, stacked, small and large marks, no marks, five insights, dark); the six Paper marks are data-URL SVG fixtures (`insightMarkFixtures`).
 - Fixtures: add `sectionFixture(blocks, overrides)` builder to `src/blocks/fixtures.ts`; regenerated payload-types will type it for free.
 - Chromatic: expect one baseline-reset PR (A) and one additive PR (B). TurboSnap runs on every push regardless.
