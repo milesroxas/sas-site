@@ -6,5 +6,6 @@ export const { afterChange: revalidateAudiencePage, afterDelete: revalidateAudie
     basePath: '/who-we-help',
     label: 'Audience Page',
     revalidateIndex: true,
+    revalidateMenu: true,
     sitemapTag: 'who-we-help-sitemap',
   })

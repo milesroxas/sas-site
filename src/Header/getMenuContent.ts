@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache.js'
 import { getPayload } from 'payload'
 import type { Media, WorkPage } from '@/payload-types'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
+import { MENU_CONTENT_TAG } from './menuCache'
 
 /** Hero media a menu link previews on hover (takeover-menu hover dissolve). */
 export type MenuMedia = { url: string; mime: string }
@@ -66,6 +67,7 @@ async function getMenuContent(): Promise<MenuContent> {
     payload.find({
       collection: 'expertise-pages',
       where: published,
+      sort: '_order',
       limit: 5,
       // Depth 1 populates hero.media for the hover preview.
       depth: 1,
@@ -74,6 +76,7 @@ async function getMenuContent(): Promise<MenuContent> {
     payload.find({
       collection: 'audience-pages',
       where: published,
+      sort: '_order',
       limit: 4,
       depth: 1,
       select: { title: true, slug: true, hero: true },
@@ -132,7 +135,7 @@ async function getMenuContent(): Promise<MenuContent> {
   }
 }
 
-export const getCachedMenuContent = unstable_cache(getMenuContent, ['takeover-menu-content'], {
+export const getCachedMenuContent = unstable_cache(getMenuContent, [MENU_CONTENT_TAG], {
   revalidate: 3600,
-  tags: ['takeover-menu-content'],
+  tags: [MENU_CONTENT_TAG],
 })

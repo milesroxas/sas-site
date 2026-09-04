@@ -1,5 +1,6 @@
 import { revalidatePath, revalidateTag } from 'next/cache.js'
 import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, TypeWithID } from 'payload'
+import { MENU_CONTENT_TAG } from '@/Header/menuCache'
 
 /** Shape every slug-addressed, draft-enabled website document shares. */
 type SlugPageDoc = TypeWithID & {
@@ -21,6 +22,7 @@ export function slugPageRevalidation<T extends SlugPageDoc>({
   basePath,
   label,
   revalidateIndex = false,
+  revalidateMenu = false,
   sitemapTag,
 }: {
   /** URL prefix for one document of this collection; `''` for root-level pages. */
@@ -29,12 +31,15 @@ export function slugPageRevalidation<T extends SlugPageDoc>({
   label: string
   /** Also purge `basePath` itself — set when an index page lists these documents. */
   revalidateIndex?: boolean
+  /** Also purge the takeover menu, which lists these documents in `_order`. */
+  revalidateMenu?: boolean
   /** Cache tag the sitemap route reads. */
   sitemapTag: string
 }) {
   const purge = (slug: string | null | undefined) => {
     revalidatePath(`${basePath}/${slug}`)
     if (revalidateIndex) revalidatePath(basePath)
+    if (revalidateMenu) revalidateTag(MENU_CONTENT_TAG, 'max')
     revalidateTag(sitemapTag, 'max')
   }
 

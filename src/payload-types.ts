@@ -5018,6 +5018,7 @@ export interface LabRelatedProjectsBlock {
  */
 export interface ExpertisePage {
   id: number;
+  _order?: string | null;
   title: string;
   hero: SegmentHero;
   layout: (
@@ -5213,6 +5214,7 @@ export interface SegmentRelatedWorkCopy {
  */
 export interface AudiencePage {
   id: number;
+  _order?: string | null;
   title: string;
   hero: SegmentHero;
   layout: (
@@ -7462,6 +7464,7 @@ export interface LabRelatedProjectsBlockSelect<T extends boolean = true> {
  * via the `definition` "expertise-pages_select".
  */
 export interface ExpertisePagesSelect<T extends boolean = true> {
+  _order?: T;
   title?: T;
   hero?: T | SegmentHeroSelect<T>;
   layout?:
@@ -7587,6 +7590,7 @@ export interface SegmentRelatedWorkCopySelect<T extends boolean = true> {
  * via the `definition` "audience-pages_select".
  */
 export interface AudiencePagesSelect<T extends boolean = true> {
+  _order?: T;
   title?: T;
   hero?: T | SegmentHeroSelect<T>;
   layout?:

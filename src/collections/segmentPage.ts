@@ -52,6 +52,9 @@ export const segmentPageCollection = <S extends SegmentPageSlug>({
 }): CollectionConfig<S> => ({
   slug,
   labels,
+  // Drag-to-reorder in the admin list; the takeover menu and index read this order.
+  orderable: true,
+  defaultSort: '_order',
   access: {
     create: authenticated,
     delete: authenticated,

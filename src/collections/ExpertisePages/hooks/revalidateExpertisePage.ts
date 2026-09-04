@@ -6,5 +6,6 @@ export const { afterChange: revalidateExpertisePage, afterDelete: revalidateExpe
     basePath: '/expertise',
     label: 'Expertise Page',
     revalidateIndex: true,
+    revalidateMenu: true,
     sitemapTag: 'expertise-sitemap',
   })
