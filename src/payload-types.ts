@@ -2967,9 +2967,9 @@ export interface InsightListBlock {
    */
   summary?: string | null;
   /**
-   * Side by side keeps the heading beside two insights per row. Stacked sets it above three per row.
+   * Side by side keeps the heading beside two insights per row. Stacked sets it above three per row. Ledger keeps the heading beside one ruled row per insight, title and description side by side.
    */
-  layout?: ('side' | 'stacked') | null;
+  layout?: ('side' | 'stacked' | 'ledger') | null;
   /**
    * Size of the SVG mark on every insight.
    */

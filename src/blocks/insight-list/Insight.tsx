@@ -1,4 +1,5 @@
 import type React from 'react'
+import { BlockGrid } from '@/blocks/shared/grid'
 import { ordinalLabel } from '@/blocks/shared/numbering'
 import type { InsightListBlock as InsightListBlockData } from '@/payload-types'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
@@ -13,11 +14,22 @@ import { cn } from '@/utilities/ui'
 export type InsightMarkSize = NonNullable<InsightListBlockData['markSize']>
 export type InsightItem = NonNullable<InsightListBlockData['items']>[number]
 
-/** Editor-chosen mark box; `medium` is the Paper frame's 40px slot. */
-const MARK_SIZE_CLASS: Record<InsightMarkSize, string> = {
-  small: 'size-7',
-  medium: 'size-10',
-  large: 'size-14',
+/**
+ * How one insight is built: `stack` (mark line, then copy, for a cell in a
+ * multi-column run) or `row` (title lane beside description lane, for a
+ * ledger where each insight takes the whole list width).
+ */
+export type InsightArrangement = 'row' | 'stack'
+
+/**
+ * Editor-chosen mark box (`medium` is the Paper frame's 40px slot) and, for
+ * the row arrangement, the matching minimum height of the title's line so a
+ * title beside a mark centers on it.
+ */
+const MARK_SIZE_CLASS: Record<InsightMarkSize, { box: string; line: string }> = {
+  small: { box: 'size-7', line: 'min-h-7' },
+  medium: { box: 'size-10', line: 'min-h-10' },
+  large: { box: 'size-14', line: 'min-h-14' },
 }
 
 /**
@@ -52,7 +64,7 @@ const Mark: React.FC<{ media: InsightItem['media']; size: InsightMarkSize }> = (
       aria-hidden="true"
       className={cn(
         'shrink-0',
-        MARK_SIZE_CLASS[size],
+        MARK_SIZE_CLASS[size].box,
         doc && 'bg-current mask-center mask-contain mask-no-repeat',
       )}
       style={doc ? { maskImage: `url("${getMediaUrl(doc.url, doc.updatedAt)}")` } : undefined}
@@ -61,24 +73,32 @@ const Mark: React.FC<{ media: InsightItem['media']; size: InsightMarkSize }> = (
 }
 
 const ordinalClassName = 'font-mono text-xs/none tracking-widest text-muted-foreground'
+const titleClassName = 'text-xl/7 font-medium'
+const descriptionClassName = 'text-base text-muted-foreground'
 
-/**
- * One insight: a rule, then the mark and its ordinal on one line, then the
- * copy. `compact` (a run with no marks, see `hasInsightMarks`) drops the mark
- * line, leads the title with the ordinal, and closes the stack up. `group`
- * is the reveal beat the item shares (`data-reveal-group` folds consecutive
- * markers), so insights on one row land as one thought rather than a
- * cascade; a caller keys it by row and, where a page may hold several runs,
- * by run.
- */
-export const Insight: React.FC<{
+type InsightProps = {
   className?: string
   compact?: boolean
   group: string
   index: number
   item: InsightItem
   markSize: InsightMarkSize
-}> = ({ className, compact, group, index, item, markSize }) => (
+}
+
+/**
+ * The stacked insight: a rule, then the mark and its ordinal on one line,
+ * then the copy. `compact` (a run with no marks, see `hasInsightMarks`)
+ * drops the mark line, leads the title with the ordinal, and closes the
+ * stack up.
+ */
+const InsightStack: React.FC<InsightProps> = ({
+  className,
+  compact,
+  group,
+  index,
+  item,
+  markSize,
+}) => (
   <li
     className={cn(
       'flex flex-col border-t border-border',
@@ -95,11 +115,71 @@ export const Insight: React.FC<{
       </div>
     )}
     <div className={cn('flex flex-col', compact ? 'gap-1' : 'gap-2')}>
-      <h3 className={cn('text-xl/7 font-medium', compact && 'flex items-baseline gap-3')}>
+      <h3 className={cn(titleClassName, compact && 'flex items-baseline gap-3')}>
         {compact ? <span className={ordinalClassName}>{ordinalLabel(index)}</span> : null}
         {item.title}
       </h3>
-      <p className="text-base text-muted-foreground">{item.description}</p>
+      <p className={descriptionClassName}>{item.description}</p>
     </div>
   </li>
 )
+
+/**
+ * The ledger row: the insight laid across the list's columns as two lanes,
+ * mark and title in the first half, description and ordinal in the second.
+ * The row is a subgrid of the list, so each lane is a span of page columns
+ * and the caller's `className` says how many the row takes. The lanes align
+ * on their first baselines, so the description's first line reads level
+ * with the title whatever the mark size. The title is the title lane's only
+ * baseline participant (`self-baseline`), which makes it the lane's
+ * baseline (an empty mark box has none to offer), and its line is at least
+ * as tall as the mark with the text centered in it, so a one-line title
+ * sits centered on the mark and a wrapped one hangs beside it. `compact`
+ * drops the mark. Below `md` the lanes stack, mark beside title, then the
+ * description with its ordinal.
+ */
+const InsightRow: React.FC<InsightProps> = ({
+  className,
+  compact,
+  group,
+  index,
+  item,
+  markSize,
+}) => (
+  <BlockGrid
+    as="li"
+    className={cn('items-baseline gap-y-2 border-t border-border py-5', className)}
+    data-reveal
+    data-reveal-group={group}
+    subgrid
+  >
+    <div className="flex items-start gap-6 md:col-span-3">
+      {compact ? null : <Mark media={item.media} size={markSize} />}
+      <h3
+        className={cn(
+          titleClassName,
+          'flex items-center self-baseline',
+          compact ? null : MARK_SIZE_CLASS[markSize].line,
+        )}
+      >
+        {item.title}
+      </h3>
+    </div>
+    <div className="flex items-baseline justify-between gap-6 md:col-span-3">
+      <p className={descriptionClassName}>{item.description}</p>
+      <span className={cn(ordinalClassName, 'w-6 shrink-0 text-end')}>{ordinalLabel(index)}</span>
+    </div>
+  </BlockGrid>
+)
+
+/**
+ * One insight in either arrangement (see `InsightArrangement`). `group` is
+ * the reveal beat the item shares (`data-reveal-group` folds consecutive
+ * markers), so insights on one row land as one thought rather than a
+ * cascade; a caller keys it by row and, where a page may hold several runs,
+ * by run.
+ */
+export const Insight: React.FC<InsightProps & { arrangement?: InsightArrangement }> = ({
+  arrangement = 'stack',
+  ...props
+}) => (arrangement === 'row' ? <InsightRow {...props} /> : <InsightStack {...props} />)

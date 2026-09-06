@@ -88,7 +88,7 @@ Interactive is the first legacy group to enter the run. Tabs followed in B5 (it 
 | Select | Options (stored value) | Default | Where |
 |---|---|---|---|
 | Layout | Left (`left`), Center (`center`, only where it exists), Right (`right`) | `left` | per block below |
-| Layout (arrangement) | Side by side (`side`), Stacked (`stacked`) | `side` | Insight list only, where the choice is heading beside vs above (D11) |
+| Layout (arrangement) | Side by side (`side`), Stacked (`stacked`), Ledger (`ledger`, 2026-09-06) | `side` | Insight list only, where the choice is heading beside vs above, or beside one ruled row per insight (D11) |
 | Mark size | Small (`small`), Medium (`medium`), Large (`large`) | `medium` | Insight list (`markSize`) |
 | Body size | Small (`small`), Medium (`medium`), Large (`large`) | `medium` | Section heading blocks |
 | Theme | Inherit (`inherit`), Secondary (`secondary`), Accent (`accent`), Inverted (`inverted`) | `inherit` | Section block only |

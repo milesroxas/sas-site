@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { HTMLAttributes } from 'react'
 import { cn } from '@/utilities/ui'
 
 /**
@@ -19,19 +19,21 @@ import { cn } from '@/utilities/ui'
  * eight-column grid inside a cell is never right: its columns would not line
  * up with the page's.
  *
+ * A subgrid may itself hold a subgrid when a cell of the run is a row of
+ * lanes on page columns (an Insight list ledger row: `li` inside the `ol`).
+ * Both adopt the page tracks, so nothing is restated at any depth.
+ *
  * The grid sits inside the page column (`container`), so column 1 starts at
  * the page gutter. Vertical rhythm inside a cell stays with `text-stack`;
  * rhythm between cells is the grid's row gap.
  */
 export const BlockGrid = ({
   as: Tag = 'div',
-  children,
   className,
   subgrid = false,
-}: {
-  as?: 'div' | 'ol' | 'ul'
-  children: ReactNode
-  className?: string
+  ...props
+}: HTMLAttributes<HTMLElement> & {
+  as?: 'div' | 'li' | 'ol' | 'ul'
   subgrid?: boolean
 }) => (
   <Tag
@@ -40,7 +42,6 @@ export const BlockGrid = ({
       subgrid ? 'md:grid-cols-subgrid' : 'md:grid-cols-8',
       className,
     )}
-  >
-    {children}
-  </Tag>
+    {...props}
+  />
 )

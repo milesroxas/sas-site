@@ -5,7 +5,7 @@ import { eyebrowClassName } from '@/blocks/shared/typography'
 import { Container } from '@/components/Container'
 import type { InsightListBlock as InsightListBlockData } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { hasInsightMarks, Insight } from './Insight'
+import { hasInsightMarks, Insight, type InsightArrangement } from './Insight'
 
 /**
  * `bare` skips the themed band for callers that supply their own shell (a
@@ -19,16 +19,29 @@ type InsightListBlockProps = Pick<
 type Layout = NonNullable<InsightListBlockData['layout']>
 
 /**
- * Where each arrangement puts the heading cluster and how many insights share
- * a row. The list itself always takes columns 3-8 as a subgrid of the
- * composition grid, so an insight's width is a span of the same tracks the
- * heading sits on: side by side, the heading holds columns 1-2 and two
- * insights split the six; stacked, the heading runs across columns 1-4 and
- * the list drops to the next row with three insights per row.
+ * Where each layout puts the heading cluster, how each insight is built, and
+ * how many share a row. The list itself always takes columns 3-8 as a
+ * subgrid of the composition grid, so an insight's width is a span of the
+ * same tracks the heading sits on: side by side, the heading holds columns
+ * 1-2 and two stacked insights split the six; stacked, the heading runs
+ * across columns 1-4 and the list drops to the next row with three per row;
+ * ledger, the heading holds columns 1-2 and each insight is a row across all
+ * six, rows meeting at their rules (`list` closes the row gap) so the run
+ * reads as one ruled table.
  */
-const LAYOUT: Record<Layout, { heading: string; item: string; perRow: number }> = {
-  side: { heading: 'md:col-span-2', item: 'md:col-span-3', perRow: 2 },
-  stacked: { heading: 'md:col-span-4', item: 'md:col-span-2', perRow: 3 },
+const LAYOUT: Record<
+  Layout,
+  { arrangement: InsightArrangement; heading: string; item: string; list?: string; perRow: number }
+> = {
+  side: { arrangement: 'stack', heading: 'md:col-span-2', item: 'md:col-span-3', perRow: 2 },
+  stacked: { arrangement: 'stack', heading: 'md:col-span-4', item: 'md:col-span-2', perRow: 3 },
+  ledger: {
+    arrangement: 'row',
+    heading: 'md:col-span-2',
+    item: 'md:col-span-6',
+    list: 'gap-y-0',
+    perRow: 1,
+  },
 }
 
 export const InsightListBlock: React.FC<InsightListBlockProps> = ({
@@ -75,9 +88,14 @@ export const InsightListBlock: React.FC<InsightListBlockProps> = ({
               </p>
             ) : null}
           </div>
-          <BlockGrid as="ol" className="md:col-span-6 md:col-start-3" subgrid>
+          <BlockGrid
+            as="ol"
+            className={cn('md:col-span-6 md:col-start-3', arrangement.list)}
+            subgrid
+          >
             {insights.map((item, index) => (
               <Insight
+                arrangement={arrangement.arrangement}
                 className={arrangement.item}
                 compact={compact}
                 group={`row-${Math.floor(index / arrangement.perRow)}`}

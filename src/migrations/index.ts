@@ -79,6 +79,7 @@ import * as migration_20260904_132731_tabs_in_sections from './20260904_132731_t
 import * as migration_20260904_140858_transition_offset_layout from './20260904_140858_transition_offset_layout';
 import * as migration_20260904_150056_section_stack_related_work_copy from './20260904_150056_section_stack_related_work_copy';
 import * as migration_20260904_155933_segment_pages_orderable from './20260904_155933_segment_pages_orderable';
+import * as migration_20260906_140224_insight_list_ledger from './20260906_140224_insight_list_ledger';
 
 export const migrations = [
   {
@@ -484,6 +485,11 @@ export const migrations = [
   {
     up: migration_20260904_155933_segment_pages_orderable.up,
     down: migration_20260904_155933_segment_pages_orderable.down,
-    name: '20260904_155933_segment_pages_orderable'
+    name: '20260904_155933_segment_pages_orderable',
+  },
+  {
+    up: migration_20260906_140224_insight_list_ledger.up,
+    down: migration_20260906_140224_insight_list_ledger.down,
+    name: '20260906_140224_insight_list_ledger'
   },
 ];

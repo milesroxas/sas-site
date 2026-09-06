@@ -74,6 +74,16 @@ export const Stacked: Story = {
   args: { layout: 'stacked' },
 }
 
+/** The compact ledger frame: heading beside one ruled row per insight, title and description as lanes. */
+export const Ledger: Story = {
+  args: { layout: 'ledger' },
+}
+
+/** A ledger with no marks: the title lane holds the title alone. */
+export const LedgerWithoutMarks: Story = {
+  args: { layout: 'ledger', items: items.map((item) => ({ ...item, media: null })) },
+}
+
 export const SmallMarks: Story = {
   args: { markSize: 'small' },
 }

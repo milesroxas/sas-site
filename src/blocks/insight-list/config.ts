@@ -6,10 +6,13 @@ import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 /**
  * Insight list: a heading cluster beside or above a numbered run of short
  * statements, each led by an SVG mark (Paper: "featureStatementGrid v2
- * proposal", both frames). Two arrangements on the composition grid:
+ * proposal", both frames, and "featureStatementGrid v2 compact ledger").
+ * Three arrangements on the composition grid:
  *
  * - `side`: heading in the first two columns, two insights per row beside it
  * - `stacked`: heading across four columns, three insights per row beneath
+ * - `ledger`: heading in the first two columns, one insight per ruled row
+ *   beside it, title and description as side-by-side lanes
  *
  * Sits in the shared Section-nestable run (docs/blocks-reorg-roadmap.md)
  * under Lists. Its copy is the block's own, not story copy, so Work Pages
@@ -82,11 +85,12 @@ export const InsightList: Block = {
           options: [
             { label: 'Side by side', value: 'side' },
             { label: 'Stacked', value: 'stacked' },
+            { label: 'Ledger', value: 'ledger' },
           ],
           admin: {
             width: '50%',
             description:
-              'Side by side keeps the heading beside two insights per row. Stacked sets it above three per row.',
+              'Side by side keeps the heading beside two insights per row. Stacked sets it above three per row. Ledger keeps the heading beside one ruled row per insight, title and description side by side.',
           },
         },
         {
