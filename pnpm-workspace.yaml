@@ -13,10 +13,6 @@ allowBuilds:
   core-js: false
   # Downloads the platform ffmpeg binary used to extract video poster frames.
   ffmpeg-static: true
-  # Transitive deps of @ai-stack/payloadcms (Google provider path). Postinstall
-  # scripts are version-stamp/telemetry only; deny until proven needed.
-  '@google/genai': false
-  protobufjs: false
 
 # Single source of truth for the Sentry SDK version — referenced from
 # package.json and the override below via the catalog: protocol.

@@ -11,7 +11,6 @@ import { authenticated } from '@/access/authenticated'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import type { AudiencePage, ExpertisePage, LabPage, Page, Post, WorkPage } from '@/payload-types'
 import { aeoPlugin } from '@/plugins/aeo'
-import { aiPlugin } from '@/plugins/ai'
 import { askIndexPlugin } from '@/plugins/ask-index'
 import { formBuilder } from '@/plugins/form-builder'
 import { mcp } from '@/plugins/mcp'
@@ -97,9 +96,6 @@ export const plugins: Plugin[] = [
     lightbox: true,
     edit: true,
   }),
-  // AI compose/rephrase/etc. in the admin editor. Full config (voice, per-field
-  // prompt seeds, context getters, action prompts) lives in ./ai.
-  aiPlugin,
   aeoPlugin(),
   askIndexPlugin(),
   // Internal-team MCP server at /api/mcp for agent-driven content authoring.

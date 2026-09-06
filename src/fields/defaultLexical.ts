@@ -1,4 +1,3 @@
-import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
 import {
   BoldFeature,
   ItalicFeature,
@@ -44,8 +43,5 @@ export const defaultLexical = lexicalEditor({
         ]
       },
     }),
-    // Renders nothing unless payloadAiPlugin seeded an instruction for the
-    // field's schema path, so this is inert outside AI-enabled collections.
-    PayloadAiPluginLexicalEditorFeature(),
   ],
 })
