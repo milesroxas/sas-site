@@ -1733,6 +1733,10 @@ export interface WorkPage {
   featured?: boolean | null;
   publishedAt?: string | null;
   /**
+   * Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the cover asset, then the Header's menu fallback.
+   */
+  menuPreview?: (number | null) | Media;
+  /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
@@ -2552,6 +2556,10 @@ export interface ContactPage {
     };
   };
   publishedAt?: string | null;
+  /**
+   * Shown in the site menu while this page's link is hovered. Leave empty to use the Header's menu fallback.
+   */
+  menuPreview?: (number | null) | Media;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -6853,6 +6861,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
       };
   featured?: T;
   publishedAt?: T;
+  menuPreview?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -7630,6 +7639,7 @@ export interface ContactPagesSelect<T extends boolean = true> {
             };
       };
   publishedAt?: T;
+  menuPreview?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -9010,6 +9020,10 @@ export interface InsightsIndex {
       image?: (number | null) | Media;
     };
   };
+  /**
+   * Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the Header's menu fallback.
+   */
+  menuPreview?: (number | null) | Media;
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -9114,6 +9128,10 @@ export interface WorksIndex {
       image?: (number | null) | Media;
     };
   };
+  /**
+   * Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the Header's menu fallback.
+   */
+  menuPreview?: (number | null) | Media;
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -9184,6 +9202,10 @@ export interface Header {
    * Case studies shown in the takeover menu, in this order (max 4). Unpublished picks are skipped. Leave empty to show the 4 most recent published.
    */
   featuredWork?: (number | WorkPage)[] | null;
+  /**
+   * Shown in the takeover menu while hovering any link whose page has neither a menu preview nor hero media. Leave empty to keep the docked page in view instead.
+   */
+  menuFallbackMedia?: (number | null) | Media;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -9491,6 +9513,7 @@ export interface InsightsIndexSelect<T extends boolean = true> {
               image?: T;
             };
       };
+  menuPreview?: T;
   _status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -9542,6 +9565,7 @@ export interface WorksIndexSelect<T extends boolean = true> {
               image?: T;
             };
       };
+  menuPreview?: T;
   _status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -9582,6 +9606,7 @@ export interface HeaderSelect<T extends boolean = true> {
             };
       };
   featuredWork?: T;
+  menuFallbackMedia?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

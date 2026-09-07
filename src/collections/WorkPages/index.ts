@@ -5,6 +5,7 @@ import { caseStudyBlocks } from '@/blocks/case-study/config'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { closingTab } from '@/fields/closing'
+import { menuPreviewField } from '@/fields/menuPreview'
 import { overridesVisible, showOverridesField } from '@/fields/overrides'
 import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/fields/pageFields'
 import { heroContentCollapsible, heroPresentationFields } from '@/fields/pageHero'
@@ -185,6 +186,13 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
       ],
     },
     ...pagePublishingFields(),
+    // Scoped like every other picker on the page; the Assets tab's
+    // `browseAllMedia` is a root-level sibling, so it opts this one out too.
+    menuPreviewField({
+      filterOptions: caseStudyScopedMediaFilter,
+      description:
+        "Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the cover asset, then the Header's menu fallback.",
+    }),
     slugField({ fieldToUse: 'title' }),
   ],
   hooks: {

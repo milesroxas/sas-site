@@ -1,5 +1,6 @@
 import { revalidatePath, revalidateTag } from 'next/cache.js'
 import type { GlobalAfterChangeHook } from 'payload'
+import { MENU_CONTENT_TAG } from '@/Header/menuCache'
 
 /**
  * Revalidates a collection index page when its global publishes or unpublishes.
@@ -23,6 +24,8 @@ export const revalidateCollectionIndex =
           }
         }
         revalidateTag(`global_${slug}`, 'max')
+        // The takeover menu previews this page from `menuPreview` / hero media.
+        revalidateTag(MENU_CONTENT_TAG, 'max')
       }
     }
 

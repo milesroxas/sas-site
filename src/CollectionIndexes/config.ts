@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
+import { menuPreviewField } from '@/fields/menuPreview'
 import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
 import { hero } from '@/heros/config'
 import { generateGlobalPreviewPath } from '@/utilities/generatePreviewPath'
@@ -66,6 +67,12 @@ const collectionIndexGlobal = ({
         },
       ],
     },
+    // The index pages render their hero as copy only, so this is the sole
+    // way an editor puts media behind the menu link.
+    menuPreviewField({
+      description:
+        "Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the Header's menu fallback.",
+    }),
   ],
   hooks: {
     afterChange: [revalidateCollectionIndex({ paths: [path, ...extraPaths], slug })],

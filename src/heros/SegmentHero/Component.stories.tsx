@@ -11,7 +11,7 @@ const headerData: Header = {
   navItems: [],
   cta: { label: 'Get in touch', link: { type: 'custom', url: '/contact', newTab: false } },
 }
-const menuContent = { expertise: [], audiences: [], works: [], pageMedia: {} }
+const menuContent = { expertise: [], audiences: [], works: [], pageMedia: {}, fallbackMedia: null }
 
 const meta = {
   title: 'Heroes/Segment',

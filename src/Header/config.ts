@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
+import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 import { link } from '@/fields/link'
 import { revalidateHeader } from './hooks/revalidateHeader'
 
@@ -60,6 +61,17 @@ export const Header: GlobalConfig = {
       admin: {
         description:
           'Case studies shown in the takeover menu, in this order (max 4). Unpublished picks are skipped. Leave empty to show the 4 most recent published.',
+      },
+    },
+    {
+      name: 'menuFallbackMedia',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Menu fallback media',
+      filterOptions: publicApprovedMediaWhere,
+      admin: {
+        description:
+          'Shown in the takeover menu while hovering any link whose page has neither a menu preview nor hero media. Leave empty to keep the docked page in view instead.',
       },
     },
   ],

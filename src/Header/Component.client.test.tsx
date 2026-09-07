@@ -51,7 +51,13 @@ const mockHeaderData: Header = {
   navItems: [],
   cta: { label: 'Get in touch', link: { type: 'custom', url: '/contact', newTab: false } },
 }
-const mockMenuContent = { expertise: [], audiences: [], works: [], pageMedia: {} }
+const mockMenuContent = {
+  expertise: [],
+  audiences: [],
+  works: [],
+  pageMedia: {},
+  fallbackMedia: null,
+}
 
 describe('HeaderClient', () => {
   beforeEach(() => {

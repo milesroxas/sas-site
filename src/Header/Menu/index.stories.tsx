@@ -31,7 +31,7 @@ const fixtureHero = (from: string, to: string, accent: string) =>
   )}`
 
 const heroMediaSrc = fixtureHero('#1e3a5f', '#7c3aed', '#f59e0b')
-const hoverMedia = (src: string) => ({ url: src, mime: 'image/svg+xml' })
+const hoverMedia = (src: string, hero = true) => ({ url: src, mime: 'image/svg+xml', hero })
 
 const menuContent: MenuContent = {
   expertise: [
@@ -88,9 +88,13 @@ const menuContent: MenuContent = {
     },
   ],
   pageMedia: {
-    '/works': hoverMedia(fixtureHero('#052e16', '#9333ea', '#fbbf24')),
+    // An editor's `menuPreview` pick: hover-only, the click takes the plain undock.
+    '/works': hoverMedia(fixtureHero('#052e16', '#9333ea', '#fbbf24'), false),
     '/about': hoverMedia(fixtureHero('#78350f', '#0891b2', '#e879f9')),
   },
+  // Header `menuFallbackMedia`: what /lab, /insights, the CTA and the
+  // media-less column items show instead of holding the docked page.
+  fallbackMedia: hoverMedia(fixtureHero('#0f172a', '#334155', '#94a3b8'), false),
 }
 
 /**

@@ -121,6 +121,7 @@ const mockMenuContent: MenuContent = {
     { title: 'Trialbee Hive', href: '/works/trialbee-hive', eyebrow: 'Healthcare', media: null },
   ],
   pageMedia: {},
+  fallbackMedia: null,
 }
 
 function renderMenu(open = true, props: { askHidden?: boolean } = {}) {
@@ -295,7 +296,7 @@ describe('TakeoverMenu', () => {
         {
           title: 'Clarifying Complex Stories',
           href: '/expertise/clarifying-complex-stories',
-          media: { url: '/media/hero.jpg', mime: 'image/jpeg' },
+          media: { url: '/media/hero.jpg', mime: 'image/jpeg', hero: true },
         },
       ],
     }

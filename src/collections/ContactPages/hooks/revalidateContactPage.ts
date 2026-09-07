@@ -5,6 +5,7 @@ export const { afterChange: revalidateContactPage, afterDelete: revalidateContac
   slugPageRevalidation<ContactPage>({
     basePath: '/contact',
     label: 'Contact Page',
+    revalidateMenu: true,
     revalidateIndex: false,
     sitemapTag: 'pages-sitemap',
   })

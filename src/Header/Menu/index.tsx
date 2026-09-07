@@ -491,7 +491,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   const scrollYRef = useRef(0)
   const openRef = useRef(open)
   const navItems = data?.navItems || []
-  const { expertise, audiences, works, pageMedia } = menuContent
+  const { expertise, audiences, works, pageMedia, fallbackMedia } = menuContent
+  /** What a link previews: its own media, else the Header's fallback (may still be none). */
+  const previewFor = useCallback(
+    (media: MenuMedia | null | undefined) => media ?? fallbackMedia,
+    [fallbackMedia],
+  )
   // CTA from the Header global; the original hardcoded button is the fallback
   // until an editor fills the field.
   const cta = data?.cta?.link
@@ -641,8 +646,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       const slotRect = overlay
         ?.querySelector<HTMLElement>(PREVIEW_SLOT_SELECTOR)
         ?.getBoundingClientRect()
+      // Hover-only media (a `menuPreview` pick, the Header fallback) has no
+      // hero on the destination to land on — see MenuMedia.
       const canHandoff =
-        media &&
+        media?.hero &&
         frame &&
         overlay &&
         slotRect &&
@@ -752,8 +759,9 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       if (item.media) byUrl.set(item.media.url, item.media)
     }
     for (const media of Object.values(pageMedia)) byUrl.set(media.url, media)
+    if (fallbackMedia) byUrl.set(fallbackMedia.url, fallbackMedia)
     return [...byUrl.values()]
-  }, [expertise, audiences, works, pageMedia])
+  }, [expertise, audiences, works, pageMedia, fallbackMedia])
 
   /**
    * Cache warming. Every surface below refuses to reveal media it cannot
@@ -1404,7 +1412,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               </h3>
               <ul className="flex flex-col gap-4">
                 {expertise.map((item) => (
-                  <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
+                  <li key={item.href} data-menu-item {...itemHandlers(previewFor(item.media))}>
                     <Link
                       href={item.href}
                       prefetch={menuLinkPrefetch}
@@ -1424,7 +1432,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               </h3>
               <ul className="flex flex-col gap-2">
                 {audiences.map((item) => (
-                  <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
+                  <li key={item.href} data-menu-item {...itemHandlers(previewFor(item.media))}>
                     <Link
                       href={item.href}
                       prefetch={menuLinkPrefetch}
@@ -1475,7 +1483,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           {works.length > 0 && (
             <ul className="hidden flex-col gap-6 md:flex">
               {works.map((item) => (
-                <li key={item.href} data-menu-item {...itemHandlers(item.media)}>
+                <li key={item.href} data-menu-item {...itemHandlers(previewFor(item.media))}>
                   <Link
                     href={item.href}
                     prefetch={menuLinkPrefetch}
@@ -1554,7 +1562,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                       key={i}
                       data-menu-item
                       style={subViewRowTiming(subViews.length + i, subView === null)}
-                      {...itemHandlers(href ? (pageMedia[href] ?? null) : null)}
+                      {...itemHandlers(previewFor(href ? pageMedia[href] : null))}
                     >
                       <CMSLink
                         {...link}
@@ -1618,7 +1626,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                           key={item.href}
                           data-menu-item
                           style={subViewRowTiming(i + 1, active)}
-                          {...itemHandlers(item.media)}
+                          {...itemHandlers(previewFor(item.media))}
                         >
                           <Link
                             href={item.href}
@@ -1658,7 +1666,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           <div
             data-menu-item
             className="md:col-start-2 md:row-start-3 md:justify-self-center"
-            {...itemHandlers(pageMedia[ctaHref] ?? null)}
+            {...itemHandlers(previewFor(pageMedia[ctaHref]))}
           >
             <Button asChild variant="default" size="pill">
               <Link

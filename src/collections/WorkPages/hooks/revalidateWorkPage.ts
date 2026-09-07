@@ -5,6 +5,7 @@ export const { afterChange: revalidateWorkPage, afterDelete: revalidateWorkPageD
   slugPageRevalidation<WorkPage>({
     basePath: '/works',
     label: 'Work Page',
+    revalidateMenu: true,
     revalidateIndex: true,
     sitemapTag: 'works-sitemap',
   })

@@ -94,7 +94,7 @@ describe('startHeroHandoff', () => {
   let restoreFrame: ReturnType<typeof vi.fn<(navigated: boolean) => void>>
   let onDone: ReturnType<typeof vi.fn<() => void>>
 
-  const start = (media = { url: '/media/hero.jpg', mime: 'image/jpeg' }) =>
+  const start = (media = { url: '/media/hero.jpg', mime: 'image/jpeg', hero: true }) =>
     startHeroHandoff({
       media,
       overlay,
