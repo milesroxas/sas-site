@@ -29,8 +29,12 @@ const publishedTime = (item: WorksBrowseItem) =>
  * The index's orderings, stated once: the strip renders these labels in
  * declaration order and the list sorts by the matching comparator, so adding
  * an ordering is one entry here.
+ *
+ * `listed` is a no-op: Array.sort is stable, so filtered rows keep the
+ * collection `_order` the query already applied.
  */
 const WORKS_SORTS = {
+  listed: { label: 'Default', compare: () => 0 },
   newest: { label: 'Newest', compare: (a, b) => publishedTime(b) - publishedTime(a) },
   oldest: { label: 'Oldest', compare: (a, b) => publishedTime(a) - publishedTime(b) },
   az: { label: 'A–Z', compare: (a, b) => a.title.localeCompare(b.title) },
@@ -50,7 +54,7 @@ const SORT_KEYS = Object.keys(WORKS_SORTS) as WorksSortKey[]
 
 type WorksQuery = { industry: string; capability: string; sort: WorksSortKey }
 
-const INITIAL_QUERY: WorksQuery = { industry: ALL, capability: ALL, sort: 'newest' }
+const INITIAL_QUERY: WorksQuery = { industry: ALL, capability: ALL, sort: 'listed' }
 
 const matchesSlug = (options: WorksBrowseFilterOption[], slug: string) =>
   slug === ALL || options.some((option) => option.slug === slug)

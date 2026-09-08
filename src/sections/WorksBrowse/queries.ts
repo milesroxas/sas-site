@@ -115,7 +115,7 @@ const collectOptions = (lists: WorksBrowseFilterOption[][]): WorksBrowseFilterOp
  */
 export const queryWorksBrowseData = async (): Promise<WorksBrowseData> => {
   const payload = await getPayload({ config: configPromise })
-  const { docs } = await payload.find({ ...WORKS_BROWSE_QUERY, limit: 100, sort: '-publishedAt' })
+  const { docs } = await payload.find({ ...WORKS_BROWSE_QUERY, limit: 100, sort: '_order' })
 
   const items = toWorksBrowseItems(docs)
 

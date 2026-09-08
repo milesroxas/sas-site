@@ -37,7 +37,6 @@ const item = (
   capabilities,
   media: heroImageFixture,
   featured: false,
-  // Descending, so the default Newest sort lists them in declaration order.
   publishedAt: `2026-0${6 - id}-01T00:00:00.000Z`,
   ...overrides,
 })
