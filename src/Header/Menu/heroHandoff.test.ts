@@ -1,7 +1,8 @@
+import gsap from 'gsap'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-
 import type { HeroHandoffOptions } from './heroHandoff'
 import { startHeroHandoff } from './heroHandoff'
+import { CARD_RADIUS_DESKTOP, getCardMotion } from './motion'
 
 /**
  * The controller's value is its sequencing under races (route commit vs menu
@@ -36,9 +37,12 @@ vi.mock('gsap', () => {
   const gsap = {
     set: vi.fn(),
     to: vi.fn((targets: unknown, vars: FakeTween['vars']) => make(targets, vars)),
+    fromTo: vi.fn((targets: unknown, _from: unknown, vars: FakeTween['vars']) =>
+      make(targets, vars),
+    ),
     timeline: vi.fn((vars: FakeTween['vars'] = {}) => {
-      const tl = make('timeline', vars) as FakeTween & { to: () => unknown }
-      tl.to = vi.fn(() => tl)
+      const tl = make('timeline', vars) as FakeTween & { fromTo: () => unknown }
+      tl.fromTo = vi.fn(() => tl)
       return tl
     }),
   }
@@ -158,18 +162,24 @@ describe('startHeroHandoff', () => {
     expect(timelineTween()).toBeUndefined()
 
     completeFullscreen()
-    const collapse = timelineTween() as (FakeTween & { to: ReturnType<typeof vi.fn> }) | undefined
+    const collapse = timelineTween() as
+      | (FakeTween & { fromTo: ReturnType<typeof vi.fn> })
+      | undefined
     expect(collapse).toBeDefined()
 
     // Clip-only, one axis per step: horizontal insets close first (top/bottom
     // stay 0), then vertical joins with the horizontal values already final.
-    const clipCalls = (collapse?.to.mock.calls ?? []).map(
-      (call) => (call[1] as { clipPath: string }).clipPath,
+    const clipCalls = (collapse?.fromTo.mock.calls ?? []).map(
+      (call) => (call[2] as { clipPath: string }).clipPath,
     )
     const vh = window.innerHeight
     expect(clipCalls).toEqual([
       'inset(0px 0px 0px 10px round 0px)',
       `inset(20px 0px ${vh - 470}px 10px round 0px)`,
+    ])
+    expect(collapse?.fromTo.mock.calls.map((call) => call[1])).toEqual([
+      { clipPath: 'inset(0px 0px 0px 0px round 0px)' },
+      { clipPath: clipCalls[0] },
     ])
 
     // Landing → settle. The image never fires `load` in jsdom, so the settle
@@ -198,6 +208,17 @@ describe('startHeroHandoff', () => {
     expect(restoreFrame).toHaveBeenCalledExactlyOnceWith(true)
     completeFullscreen()
     expect(timelineTween()).toBeDefined()
+  })
+
+  it('expands from an explicit four-edge mask instead of browser-serialized shorthand', () => {
+    const handoff = start()
+    completeTravelerFade()
+    expect(gsap.fromTo).toHaveBeenCalledWith(
+      getTraveler(),
+      { clipPath: getCardMotion(makeRect(400, 225), CARD_RADIUS_DESKTOP).clipPath },
+      expect.objectContaining({ clipPath: 'inset(0px 0px 0px 0px round 0px)' }),
+    )
+    handoff.abort()
   })
 
   it('waits for the route before collapsing, even when already at full screen', () => {

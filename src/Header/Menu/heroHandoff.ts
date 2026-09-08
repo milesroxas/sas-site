@@ -260,22 +260,28 @@ export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {
    *  uniform scale-up reads as pure expansion — no diagonal travel. */
   const goFullscreen = () => {
     track(
-      gsap.to(traveler, {
-        scale: 1,
-        x: 0,
-        y: 0,
-        clipPath: clipPathInset(0, 0, 0, 0, 0),
-        duration: FULLSCREEN_DURATION,
-        ease: MENU_EASE,
-        onComplete: () => {
-          if (finished) return
-          fullscreenReached = true
-          // The traveler covers the viewport — the overlay can vanish with a
-          // cut, and the collapse below reveals the destination page instead.
-          gsap.set(opts.overlay, { autoAlpha: 0 })
-          maybeCollapse()
+      // CSSOM shortens symmetric insets. Supply all four starting edges so
+      // GSAP cannot mistake the radius for an edge or drop the left crop.
+      gsap.fromTo(
+        traveler,
+        { clipPath: dock.clipPath },
+        {
+          scale: 1,
+          x: 0,
+          y: 0,
+          clipPath: clipPathInset(0, 0, 0, 0, 0),
+          duration: FULLSCREEN_DURATION,
+          ease: MENU_EASE,
+          onComplete: () => {
+            if (finished) return
+            fullscreenReached = true
+            // The traveler covers the viewport — the overlay can vanish with a
+            // cut, and the collapse below reveals the destination page instead.
+            gsap.set(opts.overlay, { autoAlpha: 0 })
+            maybeCollapse()
+          },
         },
-      }),
+      ),
     )
   }
 

@@ -157,12 +157,22 @@ export const runHeroLanding = (
   onComplete?: () => void,
 ) => {
   const timeline = gsap.timeline({ onComplete })
+  let from = plan.from
   for (const step of plan.steps) {
-    timeline.to(
+    // Keep every edge explicit across steps: CSSOM may serialize the
+    // previous mask as shorthand, which GSAP matches by numeric position.
+    timeline.fromTo(
       target,
-      { clipPath: step.clipPath, duration: step.duration, ease: step.ease },
+      { clipPath: from },
+      {
+        clipPath: step.clipPath,
+        duration: step.duration,
+        ease: step.ease,
+        immediateRender: false,
+      },
       step.at,
     )
+    from = step.clipPath
   }
   return timeline
 }
