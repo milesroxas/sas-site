@@ -46,9 +46,12 @@ sections.
 ## Stage 4 — Streaming and conversation ✅ shipped
 
 The endpoint streams via `streamText` + the UI-message protocol; the widget runs on `useChat`
-with full conversation history sent per request. Retrieval still embeds only the latest
-question — model-rewritten standalone queries remain open for when follow-ups like "what about
-for nonprofits?" start failing retrieval.
+with full conversation history sent per request. Retrieval embeds the previous user turn plus the
+current one on follow-ups (no rewrite call); model-rewritten standalone queries remain open if
+evals show multi-hop misses. Conversational behavior (2026-09-08): the prompt speaks as the
+studio, never cites inline (links render separately), and answers partially with one concrete
+next step instead of "browse the site". Source-less follow-up turns reach the model under a
+chat-only prompt with a 400-token cap; source-less first turns stay canned (no model call).
 
 ## Stage 5 — Production hardening
 

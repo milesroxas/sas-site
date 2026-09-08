@@ -71,7 +71,22 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
       }}
     >
       <Card className="relative gap-12 overflow-visible bg-card/75 backdrop-blur-md [--card-spacing:--spacing(6)]">
-        <div inert={open} className={cn('flex flex-col gap-12 px-6', open && 'invisible')}>
+        {/* Opening lifts the intro out (up, fading, lightly blurred) while the
+            compact header rides in on the panel from below: one directional
+            crossfade, so the big intro reads as condensing into the header
+            rather than being covered. Exit is quicker than the panel's entry;
+            closing reverses it along the same path. */}
+        <div
+          inert={open}
+          className={cn(
+            'flex flex-col gap-12 px-6',
+            'transition-[opacity,translate,filter] motion-reduce:transition-opacity',
+            open
+              ? 'opacity-0 -translate-y-1 blur-[2px] duration-150 ease-out motion-reduce:translate-y-0 motion-reduce:blur-none'
+              : 'opacity-100 translate-y-0 blur-none duration-250 ease-[cubic-bezier(0.19,1,0.22,1)]',
+            keyboard && 'transition-none',
+          )}
+        >
           {intro}
           <div className="flex flex-wrap gap-2">
             {suggestions.map((suggestion) => (
@@ -149,7 +164,7 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
           inert={!open}
           data-lenis-prevent
           className={cn(
-            'absolute inset-x-0 bottom-0 z-10 flex h-[max(30rem,100%)] origin-bottom flex-col gap-5 overflow-hidden rounded-lg bg-popover pb-40 pt-6 text-popover-foreground shadow-[0_32px_64px_-16px_#0a0a0a38] ring-1 ring-foreground/10 md:pb-36',
+            'absolute inset-x-0 bottom-0 z-10 flex h-[max(30rem,100%)] origin-bottom flex-col gap-4 overflow-hidden rounded-lg bg-popover pb-40 pt-4 text-popover-foreground shadow-[0_32px_64px_-16px_#0a0a0a38] ring-1 ring-foreground/10 md:pb-36',
             'transition-[transform,opacity,visibility] ease-[cubic-bezier(0.19,1,0.22,1)]',
             open
               ? 'visible transform-none opacity-100 duration-250'
@@ -158,16 +173,18 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
             keyboard && 'transition-none',
           )}
         >
-          <div className="flex shrink-0 items-center gap-3 border-b px-6 pb-5">
+          {/* Compact chat header: the intro's stand-in once messages begin,
+              sized so the transcript, not the chrome, owns the panel. */}
+          <div className="flex shrink-0 items-center gap-2.5 border-b px-6 pb-4">
             <div
               aria-hidden
-              className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+              className="relative flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"
             >
               S&S
-              <span className="absolute -right-px -bottom-px size-3 rounded-full border-2 border-popover bg-active" />
+              <span className="absolute -right-px -bottom-px size-2.5 rounded-full border-2 border-popover bg-active" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-base font-medium">Ask Suits &amp; Sandals</p>
+              <p className="text-sm/tight font-medium">Ask Suits &amp; Sandals</p>
               <p className="text-xs text-muted-foreground">Online</p>
             </div>
             <Button
@@ -188,7 +205,6 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
                     measure, anchor, and track it; a short transcript sits at the
                     composer end of the viewport rather than the header. */}
                 <MessageScrollerContent className="justify-end gap-4 px-6">
-                  <MessageScrollerItem messageId="intro">{intro}</MessageScrollerItem>
                   <TranscriptItems messages={messages} pending={status === 'submitted'} />
                   {error ? (
                     <MessageScrollerItem messageId="error">

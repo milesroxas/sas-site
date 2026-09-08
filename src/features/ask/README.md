@@ -14,7 +14,8 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
        │                      (chunks grouped into ≤4 doc sources); falls back to
        │                      keyword match over the search index when embeddings
        │                      are unavailable or empty
-       ├─ no sources?       → canned "couldn't find anything" answer streamed, no model call
+       ├─ no sources, first turn → canned "couldn't find anything" answer streamed, no model call
+       ├─ no sources, follow-up  → chat-only prompt (no new facts allowed), 400-token cap
        └─ streamText()      → source-url parts first, then the grounded answer streamed
 ```
 
@@ -30,7 +31,7 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 | [`../../plugins/ask-index.ts`](../../plugins/ask-index.ts) | Attaches the sync hooks to every surface collection (from the shared surface registry). |
 | [`model.ts`](./model.ts) | Provider seam: answer model (`gpt-5-mini`) and embedding model (`text-embedding-3-small`), both via the Vercel AI SDK. |
 | [`AskWidget.tsx`](./AskWidget.tsx) | Client component: `useChat` transcript, shimmer loading, streamed answers with source links. |
-| [`../../endpoints/ask.ts`](../../endpoints/ask.ts) | The `POST /api/ask` Payload endpoint — validation, rate limiting, prompt assembly. |
+| [`../../endpoints/ask.ts`](../../endpoints/ask.ts) | The `POST /api/ask` Payload endpoint — validation, rate limiting, prompt assembly. The system prompt sets the studio voice, forbids inline citations (links render separately), and defines the partial-answer mode: say what is published, then one next step with a page path from the source `url`. |
 | [`../../../scripts/backfill-ask-index.ts`](../../../scripts/backfill-ask-index.ts) | Rebuilds ask_embeddings from all published docs: `pnpm payload run scripts/backfill-ask-index.ts`. |
 
 ## The corpus
@@ -56,7 +57,9 @@ to the model as `[Heading > Path]` context and sources link to the parent docume
 
 ## Retrieval
 
-1. Embed the question (`text-embedding-3-small`, 1536 dims).
+1. Embed the retrieval query (`text-embedding-3-small`, 1536 dims). On follow-up turns the
+   query is the previous user turn plus the current one (capped at 700 chars), so "what about
+   for nonprofits?" carries its subject without a model rewrite call.
 2. `ORDER BY embedding <=> $q LIMIT 12` with a **0.3 cosine-similarity floor** — below it, a
    chunk is not evidence. Empty result = refuse (the canned answer), preserving the MVP's
    "refuse rather than guess" property.
@@ -130,5 +133,6 @@ the corpus is current the moment Ask comes back.
   not measured ones — stage 5 adds a question → expected-source fixture set.
 - **Answers are only as good as what's published.** Empty corpus = refusals; run the backfill
   after seeding content.
-- **No conversational query rewriting.** Retrieval embeds only the latest question; follow-ups
-  that depend on prior turns ("what about for nonprofits?") may under-retrieve.
+- **Follow-up retrieval is a concatenation, not a rewrite.** The previous user turn is
+  prepended to the query. Good enough for one-hop follow-ups; a model-written standalone
+  question is the next step if evals show multi-hop misses.

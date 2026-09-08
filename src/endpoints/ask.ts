@@ -15,12 +15,14 @@ import { retrieveSources } from '@/features/ask/retrieve'
  * Public RAG endpoint (mounted under /api by the Payload root config).
  *
  * Speaks the AI SDK UI-message-stream protocol so the widget drives it with
- * `useChat`: keyword retrieval over the search-plugin index → matched posts
+ * `useChat`: embedding retrieval over the content corpus → matched documents
  * streamed back as source-url parts, followed by a grounded answer from the
- * model with those posts as the only allowed context. The model is instructed
- * to refuse when the sources don't cover the question, and we skip the model
- * call entirely when retrieval comes back empty — no tokens spent inventing
- * an answer.
+ * model with those documents as the only allowed context. The model answers
+ * in the studio's voice, gives partial answers when the sources only half
+ * cover a question, and never invents facts. Token discipline: a first-turn
+ * question with no matching sources gets a canned answer with no model call;
+ * only follow-up turns reach the model source-less (so "thanks" or "say that
+ * again" stay conversational) and those run under a tight output cap.
  */
 
 const MIN_QUESTION_LENGTH = 3
@@ -28,18 +30,32 @@ const MAX_QUESTION_LENGTH = 500
 const MAX_MESSAGES = 30
 /** Cap on the combined text of the whole transcript — the history is client-supplied. */
 const MAX_TOTAL_CHARS = 8_000
-/** Output budget per answer; includes gpt-5 reasoning tokens, so leave headroom over the ~150-word answer. */
-const MAX_ANSWER_TOKENS = 1_500
+/** Output budget per answer; includes gpt-5 reasoning tokens, so leave headroom over the ~120-word answer. */
+const MAX_ANSWER_TOKENS = 1_200
+/** Source-less follow-up turns are conversational only (a thanks, a rephrase), so cap them hard. */
+const MAX_CHAT_ONLY_TOKENS = 400
+/** Cap on the retrieval query built from the last two user turns (embedding tokens, not model tokens). */
+const MAX_RETRIEVAL_QUERY_CHARS = 700
 
 const NO_SOURCES_ANSWER =
   "I couldn't find anything on this site that answers that. Try the search page, or browse the latest posts."
 
-const SYSTEM_PROMPT = `You answer questions for visitors of the Suits & Sandals website.
-Rules:
-- Answer ONLY from the provided sources. Never use outside knowledge.
-- If the sources don't answer the question, say so plainly and suggest browsing the site.
-- Be concise: a short paragraph, 150 words max.
-- Mention which source(s) the answer came from by title.`
+const SYSTEM_PROMPT = `You are the Ask assistant on the Suits & Sandals website. Speak as the studio ("we") in a warm, direct, plain voice. You are talking with a prospective client or a curious visitor.
+
+Grounding:
+- Use only the sources below. Never invent facts, numbers, names, dates, or prices.
+- Never mention "sources", "context", "documents", or that anything was "provided" to you. Do not cite titles inline; links are shown next to your answer.
+
+How to answer:
+- Lead with the most useful thing the sources say, in one or two sentences.
+- If the sources answer only part of the question, give that part confidently, then say in one short sentence what we don't publish and the single best next step, naming the page path from the matching source's url. Never say "browse the site".
+- If nothing relevant is in the sources, say so in one sentence and offer one next step. No apologies.
+- Answer follow-ups in the flow of the conversation; do not restate earlier answers.
+- Under 120 words. Plain text only: no markdown, no headers, no bullet lists unless the visitor asks for steps.`
+
+const CHAT_ONLY_PROMPT = `You are the Ask assistant on the Suits & Sandals website, mid-conversation. Speak as the studio ("we") in a warm, direct, plain voice.
+
+No site content matched this turn, so do not state any new facts about the studio, its work, people, or prices. Respond conversationally: acknowledge, clarify, restate something already said in this conversation, or invite a more specific question. One or two sentences, plain text.`
 
 const json = (body: unknown, status = 200) => Response.json(body, { status })
 
@@ -68,6 +84,26 @@ function messageText(message: UIMessage): string {
     .filter((part): part is Extract<typeof part, { type: 'text' }> => part.type === 'text')
     .map((part) => part.text)
     .join('')
+}
+
+/**
+ * Retrieval query for a turn. Follow-ups like "what about for nonprofits?"
+ * embed badly on their own, so the previous user turn is prepended: two
+ * user turns, no model rewrite (embedding tokens are the only cost).
+ */
+function retrievalQuery(messages: UIMessage[], question: string): string {
+  const previousUser = messages
+    .slice(0, -1)
+    .filter((message) => message.role === 'user')
+    .at(-1)
+  if (!previousUser) return question
+  const previous = messageText(previousUser).trim()
+  return `${previous}\n${question}`.slice(-MAX_RETRIEVAL_QUERY_CHARS)
+}
+
+/** Escapes the attribute values interpolated into the source tags. */
+function attr(value: string): string {
+  return value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;')
 }
 
 /**
@@ -153,24 +189,33 @@ const ask: Endpoint = {
       )
     }
 
-    const sources = await retrieveSources(req.payload, question)
+    const sources = await retrieveSources(req.payload, retrievalQuery(messages, question))
+    const isFollowUp = messages.length > 1
 
-    if (sources.length === 0) {
+    // First turn with nothing to ground on: canned answer, no tokens spent.
+    // Follow-ups still reach the model source-less so the conversation can
+    // carry ("thanks", "can you say that more simply?").
+    if (sources.length === 0 && !isFollowUp) {
       return staticAnswerResponse(NO_SOURCES_ANSWER)
     }
 
     const sourcesBlock = sources
       .map(
         (source, i) =>
-          `<source index="${i + 1}" title="${source.title}">\n${source.text}\n</source>`,
+          `<source index="${i + 1}" title="${attr(source.title)}" url="${attr(source.url)}">\n${source.text}\n</source>`,
       )
       .join('\n\n')
 
+    const system =
+      sources.length > 0
+        ? `${SYSTEM_PROMPT}\n\n<sources>\n${sourcesBlock}\n</sources>`
+        : CHAT_ONLY_PROMPT
+
     const result = streamText({
       model: askModel,
-      system: `${SYSTEM_PROMPT}\n\n<sources>\n${sourcesBlock}\n</sources>`,
+      system,
       messages: await convertToModelMessages(messages),
-      maxOutputTokens: MAX_ANSWER_TOKENS,
+      maxOutputTokens: sources.length > 0 ? MAX_ANSWER_TOKENS : MAX_CHAT_ONLY_TOKENS,
       // Extractive answers over provided sources don't need deep reasoning;
       // the default (medium) burns hidden reasoning tokens on every question.
       providerOptions: { openai: { reasoningEffort: 'low' } },

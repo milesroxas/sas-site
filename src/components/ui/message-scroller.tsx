@@ -41,7 +41,10 @@ function MessageScrollerViewport({
     <MessageScrollerPrimitive.Viewport
       data-slot="message-scroller-viewport"
       className={cn(
-        'size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent data-pending-scroll:invisible',
+        // Native thin scrollbar (the primitive owns the scrolling element, so
+        // ScrollArea cannot wrap it) painted with the same `border` token the
+        // ScrollArea thumb uses, so both scrollers read as one system.
+        'size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable scrollbar-thumb-border scrollbar-track-transparent overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent data-pending-scroll:invisible',
         className,
       )}
       {...props}
