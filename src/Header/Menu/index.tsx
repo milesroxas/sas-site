@@ -8,7 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import type React from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { CMSLink } from '@/components/Link'
 import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 import { Button } from '@/components/ui/button'
@@ -71,7 +71,9 @@ const PREVIEW_SLOT_SELECTOR = '[data-menu-preview-slot]'
  * exactly like the page — the cross-fade can never paint outside the
  * animating mask. The docking window dissolves from page to media; the
  * settled menu shows only the current page's media. Pages without hero media
- * keep the scaled page view.
+ * (the index pages, contact pages) dissolve to the media the menu previews
+ * for their route instead (see `mountHeroMedia`); only a page with neither
+ * keeps the scaled page view.
  *
  * The layer itself is always visible and always empty-safe: it is a
  * transparent, mask-cropped box, and what fades is whatever it holds (the
@@ -251,17 +253,51 @@ const clearFrameProps = (frame: HTMLElement) => {
 }
 
 /**
- * Inject the dissolve layer into the page frame: a viewport-box overlay
- * holding a clone of the current page's hero media. Living inside the frame
- * means the dock's scale + clip mask crop it exactly like the page, so the
- * cross-fade stays inside the animating window. Cloning (vs re-rendering from
- * data) guarantees the exact rendition already on screen — images paint
- * straight from cache, videos resume at the page's timestamp.
- * The layer mounts even on pages without hero media — the hover previews
- * (showHoverMedia) stack inside it and need the same mask-cropped home; an
- * empty layer paints nothing, so the settled menu keeps the scaled page view.
+ * Clone the page's own hero media for the dissolve layer. Cloning (vs
+ * re-rendering from data) guarantees the exact rendition already on screen:
+ * images paint straight from cache, videos resume at the page's timestamp.
  */
-const mountHeroMedia = (frame: HTMLElement, scrollTop: number) => {
+const cloneHeroSource = (source: HTMLImageElement | HTMLVideoElement) => {
+  const clone = source.cloneNode(true) as HTMLImageElement | HTMLVideoElement
+  clone.removeAttribute('id')
+  clone.removeAttribute('style')
+  clone.removeAttribute('class')
+  if (clone instanceof HTMLImageElement) {
+    // Pin to the rendition the page already resolved so no new request fires.
+    if (source instanceof HTMLImageElement && source.currentSrc) {
+      clone.src = source.currentSrc
+      clone.removeAttribute('srcset')
+      clone.removeAttribute('sizes')
+    }
+    clone.loading = 'eager'
+    clone.alt = ''
+  } else if (clone instanceof HTMLVideoElement) {
+    clone.muted = true
+    clone.loop = true
+    clone.playsInline = true
+    if (source instanceof HTMLVideoElement) clone.currentTime = source.currentTime
+  }
+  return clone
+}
+
+/**
+ * Inject the dissolve layer into the page frame: a viewport-box overlay
+ * holding the docked window's resting media. Living inside the frame means
+ * the dock's scale + clip mask crop it exactly like the page, so the
+ * cross-fade stays inside the animating window.
+ *
+ * The base is the page's own hero media when it mounts one (`cloneHeroSource`).
+ * A page that renders no hero media (the index pages, contact pages) takes
+ * `resting` instead, the media the menu previews for this route (its
+ * `menuPreview` pick, else the Header fallback), so the settled window reads
+ * as a preview on every page rather than a scaled copy of the page beneath.
+ * Either base starts invisible; the open timeline (or `revealLateHeroBase`)
+ * dissolves it in once it can paint. The layer mounts even when neither
+ * exists: the hover previews (showHoverMedia) stack inside it and need the
+ * same mask-cropped home, and an empty layer paints nothing, so the settled
+ * menu keeps the scaled page view.
+ */
+const mountHeroMedia = (frame: HTMLElement, scrollTop: number, resting: MenuMedia | null) => {
   frame.querySelector(HERO_LAYER_SELECTOR)?.remove()
 
   const layer = document.createElement('div')
@@ -283,28 +319,12 @@ const mountHeroMedia = (frame: HTMLElement, scrollTop: number) => {
   })
 
   const source = frame.querySelector<HTMLImageElement | HTMLVideoElement>(HERO_MEDIA_SELECTOR)
-  if (source) {
-    const clone = source.cloneNode(true) as HTMLImageElement | HTMLVideoElement
-    clone.removeAttribute('id')
-    clone.removeAttribute('style')
-    clone.removeAttribute('class')
-    if (clone instanceof HTMLImageElement) {
-      // Pin to the rendition the page already resolved so no new request fires.
-      if (source instanceof HTMLImageElement && source.currentSrc) {
-        clone.src = source.currentSrc
-        clone.removeAttribute('srcset')
-        clone.removeAttribute('sizes')
-      }
-      clone.loading = 'eager'
-      clone.alt = ''
-    } else if (clone instanceof HTMLVideoElement) {
-      clone.muted = true
-      clone.loop = true
-      clone.playsInline = true
-      if (source instanceof HTMLVideoElement) clone.currentTime = source.currentTime
-    }
-    clone.setAttribute('data-menu-hero-base', '')
-    gsap.set(clone, {
+  let base: HTMLImageElement | HTMLVideoElement | null = null
+  if (source) base = cloneHeroSource(source)
+  else if (resting) base = createMenuMediaElement(resting)
+  if (base) {
+    base.setAttribute('data-menu-hero-base', '')
+    gsap.set(base, {
       position: 'absolute',
       inset: 0,
       width: '100%',
@@ -313,7 +333,7 @@ const mountHeroMedia = (frame: HTMLElement, scrollTop: number) => {
       // The dissolve raises this, not the layer — see the layer's note above.
       autoAlpha: 0,
     })
-    layer.appendChild(clone)
+    layer.appendChild(base)
   }
 
   frame.appendChild(layer)
@@ -497,6 +517,13 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     (media: MenuMedia | null | undefined) => media ?? fallbackMedia,
     [fallbackMedia],
   )
+  /**
+   * The docked window's resting media when the current page mounts no hero
+   * of its own (see `mountHeroMedia`): what the menu previews for this route,
+   * else the Header fallback. An effect event, so the open effect reads the
+   * live menu content without re-running on it.
+   */
+  const restingMedia = useEffectEvent(() => previewFor(pageMedia[window.location.pathname]))
   // CTA from the Header global; the original hardcoded button is the fallback
   // until an editor fills the field.
   const cta = data?.cta?.link
@@ -852,8 +879,9 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
             // Dissolve layer — injected into the frame by mountHeroMedia at
             // open time (so the animating mask crops it). The open dissolve
-            // only wires up when the page contributed base media; a base-less
-            // layer stays as the empty home for hover previews.
+            // only wires up when the layer holds base media (the page's hero,
+            // else its menu preview); a base-less layer stays as the empty
+            // home for hover previews.
             const heroLayer = frame.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
             const heroBase = heroLayer?.querySelector<HTMLElement>(HERO_BASE_SELECTOR) ?? null
             // Only media that can paint *this frame* belongs in the timeline.
@@ -1096,9 +1124,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       // crop is off by however much innerHeight drifted (mobile URL bar).
       // Skip mid-reverse re-opens — the in-flight timeline already matches.
       if (tl.progress() === 0 && rebuildTimelineRef.current) {
-        // Inject this page's hero media into the frame first — the rebuilt
-        // timeline wires the dissolve only when the layer exists.
-        mountHeroMedia(frame, window.scrollY)
+        // Inject this page's resting media (its hero, else its menu preview)
+        // into the frame first: the rebuilt timeline wires the dissolve only
+        // when the layer exists.
+        mountHeroMedia(frame, window.scrollY, restingMedia())
         tl = rebuildTimelineRef.current()
         // Fresh layer: whatever the previous open arranged is gone.
         lateBaseRef.current = false

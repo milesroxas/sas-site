@@ -23,7 +23,10 @@ export type MenuContent = {
   works: MenuWorkItem[]
   /**
    * Preview media for primary-nav destinations (pages, home, the index
-   * globals, contact pages), keyed by href.
+   * globals, contact pages), keyed by href. Also the docked window's resting
+   * media when the current page mounts no hero of its own (the index pages,
+   * contact pages): the menu opens onto this route's entry instead of a scaled
+   * copy of the page.
    */
   pageMedia: Record<string, MenuMedia>
   /** Header `menuFallbackMedia`: hover media for any link that resolved none of its own. */

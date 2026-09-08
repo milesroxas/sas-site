@@ -93,7 +93,8 @@ const menuContent: MenuContent = {
     '/about': hoverMedia(fixtureHero('#78350f', '#0891b2', '#e879f9')),
   },
   // Header `menuFallbackMedia`: what /lab, /insights, the CTA and the
-  // media-less column items show instead of holding the docked page.
+  // media-less column items show instead of holding the docked page, and the
+  // window's resting state on a page with no hero media (MediaLessPage).
   fallbackMedia: hoverMedia(fixtureHero('#0f172a', '#334155', '#94a3b8'), false),
 }
 
@@ -119,7 +120,14 @@ const scriptedAsk = createChat()
     )
   })
 
-function TakeoverMenuDemo({ askHidden = false }: { askHidden?: boolean }) {
+function TakeoverMenuDemo({
+  askHidden = false,
+  heroMedia = true,
+}: {
+  askHidden?: boolean
+  /** Whether the fake page mounts a `data-hero-media` region for the menu to clone. */
+  heroMedia?: boolean
+}) {
   const [open, setOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -127,11 +135,13 @@ function TakeoverMenuDemo({ askHidden = false }: { askHidden?: boolean }) {
     <>
       {/* Stand-in for the (frontend)/layout.tsx page frame the menu docks. */}
       <div data-page-frame className="relative min-h-svh bg-background text-foreground">
-        {/* Marked like a real hero — the menu clones this into its dissolve layer. */}
-        <div data-hero-media className="absolute inset-x-0 top-0 h-svh overflow-hidden">
-          {/* biome-ignore lint/performance/noImgElement: the menu clones the raw img/video inside data-hero-media (HERO_MEDIA_SELECTOR); a next/image wrapper isn't what production heros render in Storybook */}
-          <img src={heroMediaSrc} alt="" className="size-full object-cover opacity-30" />
-        </div>
+        {heroMedia && (
+          /* Marked like a real hero — the menu clones this into its dissolve layer. */
+          <div data-hero-media className="absolute inset-x-0 top-0 h-svh overflow-hidden">
+            {/* biome-ignore lint/performance/noImgElement: the menu clones the raw img/video inside data-hero-media (HERO_MEDIA_SELECTOR); a next/image wrapper isn't what production heros render in Storybook */}
+            <img src={heroMediaSrc} alt="" className="size-full object-cover opacity-30" />
+          </div>
+        )}
         <div className="container relative flex min-h-svh flex-col justify-center gap-6 py-24">
           <p className="font-mono text-xs text-muted-foreground">Fake page frame</p>
           <h1 className="max-w-2xl font-heading text-5xl font-medium tracking-tight">
@@ -207,6 +217,17 @@ export const Default: Story = {
 export const AskHidden: Story = {
   args: { ...Default.args, askHidden: true },
   render: () => <TakeoverMenuDemo askHidden />,
+}
+
+/**
+ * A page that mounts no hero media (the index pages, contact pages): the
+ * docked window dissolves to the menu's preview for the route instead of
+ * holding a scaled copy of the page. Storybook's pathname matches no
+ * `pageMedia` entry, so the resting state here is the Header fallback.
+ */
+export const MediaLessPage: Story = {
+  ...Default,
+  render: () => <TakeoverMenuDemo heroMedia={false} />,
 }
 
 /**
