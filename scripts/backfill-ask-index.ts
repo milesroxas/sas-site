@@ -1,13 +1,16 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
-import { syncSurfaceDoc } from '@/features/ask/indexSync'
+import { syncGlobal, syncSurfaceDoc } from '@/features/ask/indexSync'
 import { ASK_MODEL_API_KEY_VAR } from '@/features/ask/model'
-import { CONTENT_SURFACES } from '@/shared/content/surfaces'
+import { CONTENT_SURFACES, GLOBAL_SURFACES } from '@/shared/content/surfaces'
 
 /**
  * Rebuilds the ask_embeddings index from every published document on every
- * content surface. Run after enabling embeddings, changing the embedding
- * model or chunker, or whenever hook-driven sync may have drifted:
+ * content surface plus the global surfaces (home, index heroes, site info).
+ * Chunks whose text is already stored keep their vectors, so a re-run after
+ * an extractor change only embeds what actually changed. Run after enabling
+ * embeddings, changing the embedding model or chunker, or whenever
+ * hook-driven sync may have drifted:
  *
  *   pnpm payload run scripts/backfill-ask-index.ts
  *
@@ -42,6 +45,11 @@ for (const surface of CONTENT_SURFACES) {
     surface: surface.collection,
     docs: docs.length,
   })
+}
+
+for (const surface of GLOBAL_SURFACES) {
+  await syncGlobal(payload, surface)
+  total += 1
 }
 
 payload.logger.info({ msg: 'ask backfill complete', docs: total })

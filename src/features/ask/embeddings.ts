@@ -40,35 +40,82 @@ export async function embedQuestion(question: string): Promise<number[]> {
   return embedding
 }
 
+/**
+ * Replaces a document's rows with the given chunks. Chunk text that is
+ * already in the table keeps its stored vector, so re-publishing a document
+ * whose copy did not change (an SEO tweak, a media swap, a canonical record
+ * re-syncing its dependents) costs no embedding tokens, and an edit to one
+ * section embeds only that section. Delete + insert beats upsert: chunk
+ * counts shrink when docs shrink, and stale tail chunks must not survive.
+ */
 export async function replaceDocEmbeddings(
   payload: Payload,
   doc: DocRef,
   chunks: MarkdownChunk[],
-): Promise<void> {
+): Promise<{ embedded: number }> {
   const db = drizzle(payload)
 
   if (chunks.length === 0) {
     await deleteDocEmbeddings(payload, doc.collection, doc.docId)
-    return
+    return { embedded: 0 }
   }
 
-  const { embeddings } = await embedMany({
-    model: askEmbeddingModel,
-    values: chunks.map((chunk) => chunk.text),
-  })
+  const { rows: existing } = await db.execute(sql`
+    SELECT chunk_index, title, slug, heading_path, text, embedding::text AS embedding
+    FROM ask_embeddings
+    WHERE collection = ${doc.collection} AND doc_id = ${doc.docId}
+    ORDER BY chunk_index
+  `)
+  const stored = existing as {
+    chunk_index: number
+    title: string
+    slug: string
+    heading_path: string | null
+    text: string
+    embedding: string
+  }[]
 
-  // Delete + insert beats upsert here: chunk counts shrink when docs shrink,
-  // and stale tail chunks must not survive a re-embed.
+  const headingPath = (chunk: MarkdownChunk): string | null => chunk.headingPath.join(' > ') || null
+
+  // Nothing changed at all: leave the rows (and their updated_at) alone.
+  const unchanged =
+    stored.length === chunks.length &&
+    stored.every(
+      (row, i) =>
+        row.text === chunks[i].text &&
+        row.heading_path === headingPath(chunks[i]) &&
+        row.title === doc.title &&
+        row.slug === doc.slug,
+    )
+  if (unchanged) return { embedded: 0 }
+
+  const vectorByText = new Map(stored.map((row) => [row.text, row.embedding]))
+  const missing = chunks.filter((chunk) => !vectorByText.has(chunk.text))
+  if (missing.length > 0) {
+    const { embeddings } = await embedMany({
+      model: askEmbeddingModel,
+      values: missing.map((chunk) => chunk.text),
+    })
+    for (const [i, chunk] of missing.entries()) {
+      vectorByText.set(chunk.text, toVectorLiteral(embeddings[i]))
+    }
+  }
+
+  const values = chunks.map(
+    (chunk) =>
+      sql`(${doc.collection}, ${doc.docId}, ${chunk.index}, ${doc.title}, ${doc.slug},
+          ${headingPath(chunk)}, ${chunk.text}, ${vectorByText.get(chunk.text)}::vector)`,
+  )
+
   await db.execute(
     sql`DELETE FROM ask_embeddings WHERE collection = ${doc.collection} AND doc_id = ${doc.docId}`,
   )
-  for (const [i, chunk] of chunks.entries()) {
-    await db.execute(sql`
-      INSERT INTO ask_embeddings (collection, doc_id, chunk_index, title, slug, heading_path, text, embedding)
-      VALUES (${doc.collection}, ${doc.docId}, ${chunk.index}, ${doc.title}, ${doc.slug},
-              ${chunk.headingPath.join(' > ') || null}, ${chunk.text}, ${toVectorLiteral(embeddings[i])}::vector)
-    `)
-  }
+  await db.execute(sql`
+    INSERT INTO ask_embeddings (collection, doc_id, chunk_index, title, slug, heading_path, text, embedding)
+    VALUES ${sql.join(values, sql`, `)}
+  `)
+
+  return { embedded: missing.length }
 }
 
 export async function deleteDocEmbeddings(

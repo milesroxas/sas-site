@@ -1,17 +1,23 @@
-import type { CollectionConfig, Plugin } from 'payload'
+import type { CollectionConfig, GlobalConfig, Plugin } from 'payload'
 import {
   askIndexAfterChange,
   askIndexAfterDelete,
   askIndexCanonicalAfterChange,
+  askIndexGlobalAfterChange,
 } from '@/features/ask/indexSync'
-import { CONTENT_SURFACES, surfaceByCollection } from '@/shared/content/surfaces'
+import {
+  CONTENT_SURFACES,
+  globalSurfaceBySlug,
+  surfaceByCollection,
+} from '@/shared/content/surfaces'
 
 /**
  * Attaches the Ask RAG embedding-sync hooks to every public content surface,
- * plus the canonical Content Hub collections their pages render (work-pages →
- * case-studies, lab-pages → lab-projects). Which collections participate is
- * decided by the shared surface registry — adding a surface there wires it
- * into the embedding index automatically.
+ * the canonical Content Hub collections their pages render (work-pages →
+ * case-studies, lab-pages → lab-projects), and the global surfaces (home,
+ * index heroes, site info). Which documents participate is decided by the
+ * shared surface registry — adding a surface there wires it into the
+ * embedding index automatically.
  */
 export const askIndexPlugin = (): Plugin => (config) => {
   const canonicalHooks = new Map<string, ReturnType<typeof askIndexCanonicalAfterChange>>()
@@ -51,8 +57,21 @@ export const askIndexPlugin = (): Plugin => (config) => {
     return collection
   }
 
+  const withGlobalHooks = (global: GlobalConfig): GlobalConfig => {
+    const surface = globalSurfaceBySlug.get(global.slug)
+    if (!surface) return global
+    return {
+      ...global,
+      hooks: {
+        ...global.hooks,
+        afterChange: [...(global.hooks?.afterChange ?? []), askIndexGlobalAfterChange(surface)],
+      },
+    }
+  }
+
   return {
     ...config,
     collections: (config.collections ?? []).map(withHooks),
+    globals: (config.globals ?? []).map(withGlobalHooks),
   }
 }

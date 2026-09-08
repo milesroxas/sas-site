@@ -1,7 +1,7 @@
 import type { Payload, Where } from 'payload'
 import type { Search } from '@/payload-types'
-import { extractDocMarkdown } from '@/shared/content/extract'
-import { type ContentSurface, surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
+import { extractDocMarkdown, readPublicDoc } from '@/shared/content/extract'
+import { indexedSourcePath, surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
 import { embedQuestion, type NearestChunk, queryNearestChunks } from './embeddings'
 import { ASK_MODEL_API_KEY_VAR } from './model'
 
@@ -98,29 +98,31 @@ function scoreDoc(doc: Search, terms: string[]): number {
 
 /** Group nearest chunks into per-document sources, best match first. */
 function chunksToSources(chunks: NearestChunk[]): RetrievedSource[] {
-  const byDoc = new Map<string, { surface: ContentSurface; chunks: NearestChunk[] }>()
+  const byDoc = new Map<string, { url: string; chunks: NearestChunk[] }>()
 
   for (const chunk of chunks) {
-    const surface = surfaceByCollection.get(chunk.collection)
-    if (!surface) continue
+    // Rows are keyed by collection or global slug; a row from a surface that
+    // has since left the registry has no page to link and is not evidence.
+    const url = indexedSourcePath(chunk.collection, chunk.slug)
+    if (!url) continue
 
     const key = `${chunk.collection}:${chunk.docId}`
     const entry = byDoc.get(key)
     if (entry) {
       if (entry.chunks.length < MAX_CHUNKS_PER_SOURCE) entry.chunks.push(chunk)
     } else if (byDoc.size < TOP_SOURCES) {
-      byDoc.set(key, { surface, chunks: [chunk] })
+      byDoc.set(key, { url, chunks: [chunk] })
     }
   }
 
-  return [...byDoc.values()].map(({ surface, chunks: docChunks }) => {
-    const { title, slug } = docChunks[0]
+  return [...byDoc.values()].map(({ url, chunks: docChunks }) => {
+    const { title } = docChunks[0]
     const text = docChunks
       .sort((a, b) => a.chunkIndex - b.chunkIndex)
       .map((chunk) => (chunk.headingPath ? `[${chunk.headingPath}]\n${chunk.text}` : chunk.text))
       .join('\n\n')
 
-    return { title, url: surfaceDocPath(surface, slug), text }
+    return { title, url, text }
   })
 }
 
@@ -164,12 +166,12 @@ async function retrieveByKeywords(payload: Payload, question: string): Promise<R
     const surface = surfaceByCollection.get(relationTo)
     if (!surface) continue
 
-    const sourceDoc = await payload.findByID({
-      collection: relationTo,
-      id,
-      depth: 0,
-      disableErrors: true,
-    })
+    // Read as the public does: the search index can lag an unpublish, and
+    // the extractor must only see fields an anonymous visitor can.
+    const sourceDoc = (await readPublicDoc(payload, relationTo, id)) as {
+      slug?: string | null
+      title?: string | null
+    } | null
     if (!sourceDoc?.slug || !sourceDoc?.title) continue
 
     const markdown = await extractDocMarkdown(payload, surface, sourceDoc)

@@ -40,22 +40,40 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 
 What gets embedded is decided by the shared surface registry
 ([`src/shared/content/surfaces.ts`](../../shared/content/surfaces.ts)) — the same registry that
-drives llms.txt, plugin-seo URLs, and the search index. All six public surfaces participate:
-pages, posts, work-pages, lab-pages, expertise-pages, audience-pages.
+drives llms.txt, plugin-seo URLs, and the search index. Every public collection participates
+(pages, posts, work-pages, lab-pages, expertise-pages, audience-pages, contact-pages), plus the
+global surfaces in `GLOBAL_SURFACES`: the homepage (`home`), the `/insights` and `/works` heroes,
+and Site Info (name, tagline, description, founding year, address, contact email, inquiry
+response time, social profiles) so "where are you", "how do I reach you", and "who are you"
+questions have evidence.
 
 Per document, [`extractDocMarkdown`](../../shared/content/extract.ts) produces markdown:
 
-- **posts** — the `content` richText field, via the shared Lexical JSON walker.
-- **layout surfaces** — a generic walker over hero groups and layout blocks: Lexical states plus
-  an allowlist of content-bearing string keys (title, description, summary, …). Select/enum
-  values, URLs, and `internal*` fields never reach the corpus.
-- **work-pages / lab-pages** — additionally hydrate their canonical Content Hub record
+- **Every surface is walked**: a generic walker over hero groups, layout blocks, and nested
+  arrays collects Lexical states plus an allowlist of content-bearing string keys (title,
+  description, summary, standfirst, lead, …). Select/enum values, URLs, and `internal*` fields
+  never reach the corpus.
+- **work-pages / lab-pages** additionally hydrate their canonical Content Hub record
   (case-studies / lab-projects) and walk its narrative fields; editing the canonical record
   re-embeds every published page that renders it.
+- **Relationships resolve to substance.** Allowlisted relationship keys hydrate in one batched
+  query per collection: testimonials (quote and speaker), the case study's project (client
+  organization, public title and summary, industries, capabilities, platforms, deliverables),
+  and taxonomy terms on segment pages and lab projects. Other relationships (featured work,
+  related pages, authors) stay bare ids: their targets are indexed on their own.
+- **Structured arrays** render as compact lines: case-study metrics (only `approvedForPublic`
+  rows) and contact-page details (`term: value`).
+- **Access control decides visibility.** Every read the indexer makes (the surface document
+  itself, canonical records, relationships) goes through the Local API with
+  `overrideAccess: false` and no user, so collection read rules (published only, approved-public
+  testimonials) and field-level rules (`authenticatedField`, e.g. the case-study claim log) apply
+  exactly as they do for an anonymous visitor. The hook's own `doc` is never embedded directly:
+  it is the editor's view.
 
 The markdown is chunked (heading-aware, ~500 tokens), embedded with `embedMany`, and written to
 `ask_embeddings` (delete + insert per doc). Chunks keep their heading trail; retrieval feeds it
-to the model as `[Heading > Path]` context and sources link to the parent document.
+to the model as `[Heading > Path]` context and sources link to the parent document (globals link
+to their fixed path).
 
 ## Retrieval
 
@@ -72,9 +90,13 @@ to the model as `[Heading > Path]` context and sources link to the parent docume
 ## Keeping the index in sync
 
 - Publish/update → re-embed (hooks from the ask-index plugin; failures log, never block saves).
+  Chunk text already stored keeps its vector, so a publish that changes no copy (SEO, media, a
+  canonical record re-syncing its dependents) costs no embedding tokens, and editing one section
+  embeds only that section.
 - Draft-over-published keeps the published version's embeddings (they re-sync from the published
   version); true unpublish or delete removes rows.
 - Canonical record edits re-embed dependent published pages.
+- Globals: a drafts global (home, index heroes) re-embeds on publish; Site Info on every save.
 - Drift repair / first run: `pnpm payload run scripts/backfill-ask-index.ts`.
 - The **search-plugin index** (keyword fallback + /search page) has its own rebuild: the Reindex
   button on the Search collection (admin → System), or re-save documents.

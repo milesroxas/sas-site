@@ -23,6 +23,15 @@ so website layouts do not become the retrieval source of truth. The search plugi
 collection's URL. Rebuild the search index with the admin Reindex button (Search collection,
 System group).
 
+Coverage pass (2026-09-08): globals joined the corpus via `GLOBAL_SURFACES` (home, the
+`/insights` and `/works` heroes, Site Info as company facts); relationships hydrate to substance
+(testimonials, client organization and project facts, taxonomy terms) in batched public reads;
+case-study metrics render when `approvedForPublic`; posts walk whole (standfirst, layout blocks).
+Every indexer read runs with `overrideAccess: false` so access control, not the walker's
+allowlist, decides what the corpus may hold (the case-study claim log was leaking before).
+Unchanged chunk text reuses its stored vector on re-publish, so syncs cost embedding tokens only
+for copy that changed. After deploying, run the backfill once to pick up the new surfaces.
+
 ## Stage 2 — Embedding retrieval (pgvector) ✅ shipped
 
 `ask_embeddings` (drizzle table registered via `beforeSchemaInit`, HNSW index, 1536-dim

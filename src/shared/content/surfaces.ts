@@ -1,4 +1,4 @@
-import type { CollectionSlug } from 'payload'
+import type { CollectionSlug, GlobalSlug } from 'payload'
 import { CONTACT_INDEX_SLUG } from '@/collections/ContactPages/constants'
 
 /**
@@ -12,10 +12,16 @@ import { CONTACT_INDEX_SLUG } from '@/collections/ContactPages/constants'
  * - `features/ask` — retrieval corpus (search index + embeddings)
  *
  * Adding a new public collection here puts it on every surface at once.
+ * Singleton pages (globals) live in `GLOBAL_SURFACES` below: they have no
+ * search-plugin or llms.txt listing, but the Ask corpus embeds them.
  */
 
 export type SurfaceBody =
-  /** Substance is one richText field on the doc (e.g. Posts `content`). */
+  /**
+   * One richText field carries the body (Posts `content`). AEO serves that
+   * field as the document's markdown alternate; the Ask corpus still walks the
+   * whole document so standfirsts and layout blocks are not lost.
+   */
   | { kind: 'richText'; field: string }
   /**
    * Substance is spread across layout blocks / groups — extracted by the
@@ -92,9 +98,48 @@ export const surfaceByCollection: ReadonlyMap<string, ContentSurface> = new Map(
 /** Collections synced into the `search` index (and the RAG corpus). */
 export const SEARCH_COLLECTIONS = CONTENT_SURFACES.map((surface) => surface.collection)
 
+/**
+ * Singleton public pages and site-wide facts that live in globals. They are
+ * not listed by the search plugin or llms.txt sections (those are
+ * per-document), but the Ask corpus embeds them so the homepage, the index
+ * heroes, and company facts (address, contact, response time) can answer
+ * questions.
+ */
+export type GlobalSurface = {
+  global: GlobalSlug
+  /** Human title used for the retrieved source when the global has no `title`. */
+  title: string
+  /** Site-relative path the global publishes at (or the best page to link for it). */
+  path: string
+  /** True when the global has `versions.drafts` — only the published version is embedded. */
+  drafts: boolean
+}
+
+export const GLOBAL_SURFACES: GlobalSurface[] = [
+  { global: 'home', title: 'Home', path: '/', drafts: true },
+  { global: 'insights-index', title: 'Insights', path: '/insights', drafts: true },
+  { global: 'works-index', title: 'Work', path: '/works', drafts: true },
+  { global: 'site-info', title: 'About Suits & Sandals', path: '/contact', drafts: false },
+]
+
+export const globalSurfaceBySlug: ReadonlyMap<string, GlobalSurface> = new Map(
+  GLOBAL_SURFACES.map((surface) => [surface.global as string, surface]),
+)
+
 /** Site-relative path for a surface document, honoring the home-slug → root mapping. */
 export const surfaceDocPath = (surface: ContentSurface, slug: string): string => {
   if (surface.homeSlug && slug === surface.homeSlug) return '/'
   if (surface.indexSlug && slug === surface.indexSlug) return surface.urlPrefix
   return `${surface.urlPrefix}/${slug}`
+}
+
+/**
+ * Where an indexed row points on the site. Rows are keyed by the collection or
+ * global slug they came from; collections resolve through the document slug,
+ * globals through their fixed path.
+ */
+export const indexedSourcePath = (key: string, slug: string): string | null => {
+  const surface = surfaceByCollection.get(key)
+  if (surface) return surfaceDocPath(surface, slug)
+  return globalSurfaceBySlug.get(key)?.path ?? null
 }
