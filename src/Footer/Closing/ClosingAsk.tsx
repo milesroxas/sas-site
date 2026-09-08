@@ -75,7 +75,19 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
         }
       }}
     >
-      <Card className="relative gap-12 overflow-visible bg-card/75 backdrop-blur-md [--card-spacing:--spacing(6)]">
+      {/* The panel outgrows the card (min 30rem, bottom-anchored), so its ring
+          is the only edge while it is open: the card's own ring would stack
+          under it from the card's top edge down (a brighter run of line, with
+          the card's corner arc showing at the seam). It fades on the panel's
+          timing so the two edges hand over instead of popping. */}
+      <Card
+        className={cn(
+          'relative gap-12 overflow-visible bg-card/75 backdrop-blur-md [--card-spacing:--spacing(6)]',
+          'transition-shadow ease-[cubic-bezier(0.19,1,0.22,1)]',
+          open ? 'ring-transparent duration-250' : 'duration-150',
+          keyboard && 'transition-none',
+        )}
+      >
         {/* Opening lifts the intro out (up, fading, lightly blurred) while the
             compact header rides in on the panel from below: one directional
             crossfade, so the big intro reads as condensing into the header
