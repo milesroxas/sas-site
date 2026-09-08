@@ -2,13 +2,13 @@ import type { ChatTransport, UIMessage } from 'ai'
 import { fullViewportSectionClassName } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { CMSLink } from '@/components/Link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AskWidget } from '@/features/ask/AskWidget'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { leakExcite } from '@/features/immersive'
 import type { Footer, Media } from '@/payload-types'
 import { SCROLL_REVEAL_CURTAIN_ENTER_OFFSET, ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { populatedDoc } from '@/utilities/relationshipId'
 import { cn } from '@/utilities/ui'
+import { ClosingAsk } from './ClosingAsk'
 import { ClosingLightLeak } from './ClosingLightLeak'
 import { ClosingMedia } from './ClosingMedia'
 import { FOOTER_CLOSING_GATE_SELECTOR } from './curtain'
@@ -23,7 +23,7 @@ type FooterClosingProps = {
   /** Postal lines from Site Info › Address (see `./address`). */
   address?: string[]
   /**
-   * Chat transport passthrough to the embedded AskWidget — Storybook and tests
+   * Chat transport passthrough to ClosingAsk. Storybook and tests
    * inject a scripted transport; real pages omit it and POST /api/ask.
    */
   askTransport?: ChatTransport<UIMessage>
@@ -32,13 +32,13 @@ type FooterClosingProps = {
 /**
  * Panel height on `lg`, published as a variable because the copy column
  * reads it too: its bottom padding lifts the button row so it lands just past
- * the panel's top edge, per the design. The ask card holds room for the
- * transcript the widget mounts above its composer; the address panel is a
+ * the panel's top edge, per the design. The ask transcript overlays its
+ * preview without shifting the copy; the address panel is a
  * note over a postal block and sits lower, so a shorter card reads as sized
  * to its content rather than emptied of a composer.
  */
 const panelMinHeight = {
-  ask: 'lg:[--closing-panel-min-h:26rem]',
+  ask: 'lg:[--closing-panel-min-h:23.9375rem]',
   address: 'lg:[--closing-panel-min-h:14rem]',
 } as const
 
@@ -71,32 +71,6 @@ const ClosingCopy = ({ closing }: { closing: Footer['closing'] }) => {
     </div>
   )
 }
-
-const ClosingAskPanel = ({
-  ask,
-  askTransport,
-}: {
-  ask: NonNullable<Footer['closing']>['ask']
-  askTransport?: ChatTransport<UIMessage>
-}) => (
-  <Card
-    className="gap-10 bg-card/75 backdrop-blur-md lg:min-h-(--closing-panel-min-h) [--card-spacing:--spacing(6)]"
-    data-reveal="panel"
-    {...leakExcite()}
-  >
-    {ask?.title || ask?.body ? (
-      <CardHeader className="gap-4">
-        {ask?.title ? <CardTitle className="text-base font-normal">{ask.title}</CardTitle> : null}
-        {ask?.body ? (
-          <CardDescription className="text-base/relaxed">{ask.body}</CardDescription>
-        ) : null}
-      </CardHeader>
-    ) : null}
-    <CardContent className="mt-auto">
-      <AskWidget placeholder="Ask anything…" transport={askTransport} />
-    </CardContent>
-  </Card>
-)
 
 /**
  * The composer's stand-in while Ask is hidden: the same translucent card, so
@@ -213,13 +187,12 @@ export const FooterClosing = ({
               row lands just past the panel's top edge, per the design. */}
           <ClosingCopy closing={closing} />
 
-          {/* Right-hand panel from the design, translucent so the background
-              media reads through. Ask: intro copy over the site's ask
-              composer, with the min-height holding the composer low in the
-              card and leaving room for the transcript the widget mounts above
-              it. Ask hidden: the studio's address panel in the same place. */}
+          {/* The preview opens a bottom-anchored transcript without moving
+              the closing copy. Hidden Ask uses the address panel instead. */}
           {panel === 'ask' ? (
-            <ClosingAskPanel ask={closing?.ask} askTransport={askTransport} />
+            <div data-reveal="panel" className="min-w-0">
+              <ClosingAsk ask={closing?.ask} transport={askTransport} />
+            </div>
           ) : null}
           {panel === 'address' ? <ClosingAddressPanel lines={address} note={note} /> : null}
         </Container>

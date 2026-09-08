@@ -83,3 +83,14 @@ export const AddressPanel: Story = {
     },
   },
 }
+
+/** Paper preview on the plain closing surface. */
+export const AskPreview: Story = {
+  args: {
+    closing: {
+      ...closing,
+      media: null,
+      ask: { title: 'Ask us anything.', body: 'Work, process, pricing, fit. Answered in seconds.' },
+    },
+  },
+}

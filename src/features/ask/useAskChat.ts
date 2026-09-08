@@ -34,14 +34,29 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
   const busy = status === 'submitted' || status === 'streaming'
   const canSend = !busy && question.trim().length >= MIN_QUESTION_LENGTH
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const trimmed = question.trim()
+  function sendQuestion(text: string) {
+    const trimmed = text.trim()
     if (trimmed.length < MIN_QUESTION_LENGTH || busy) return
     void sendMessage({ text: trimmed })
     setQuestion('')
     onSend?.()
   }
 
-  return { question, setQuestion, messages, setMessages, status, error, busy, canSend, submit }
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    sendQuestion(question)
+  }
+
+  return {
+    question,
+    setQuestion,
+    messages,
+    setMessages,
+    status,
+    error,
+    busy,
+    canSend,
+    submit,
+    sendQuestion,
+  }
 }
