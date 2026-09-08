@@ -14,7 +14,7 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller'
-import { errorText, TranscriptItems } from '@/features/ask/messages'
+import { errorText, TranscriptItems, transcriptItemEnter } from '@/features/ask/messages'
 import { AskSubmitButton } from '@/features/ask/SubmitButton'
 import { useAskChat } from '@/features/ask/useAskChat'
 import { leakExcite } from '@/features/immersive'
@@ -140,7 +140,11 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
                 <Button
                   type="button"
                   variant="ghost"
-                  className="text-xs"
+                  // Lands after the panel's 150ms exit so one thing leaves,
+                  // then one thing arrives. Arbitrary animation-delay on
+                  // purpose: the `delay-*` utility also sets transition-delay
+                  // here, which would hold back `pressable`'s press feedback.
+                  className="text-xs motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:fill-mode-backwards motion-safe:[animation-delay:150ms]"
                   onClick={() => {
                     setOpen(true)
                     inputRef.current?.focus({ preventScroll: true })
@@ -209,7 +213,7 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
                   <TranscriptItems messages={messages} status={status} />
                   {error ? (
                     <MessageScrollerItem messageId="error">
-                      <p role="alert" className="text-sm text-destructive">
+                      <p role="alert" className={`text-sm text-destructive ${transcriptItemEnter}`}>
                         {errorText(error)}
                       </p>
                     </MessageScrollerItem>
