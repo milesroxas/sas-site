@@ -2947,6 +2947,10 @@ export interface WorkFeatureTabsBlock {
     id?: string | null;
   }[];
   /**
+   * Default sets heading-sized tab labels that wrap onto a second row. Small steps them down one type size and keeps them on one row that pans sideways, for five or more tabs.
+   */
+  tabSize?: ('default' | 'small') | null;
+  /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
   browseAllMedia?: boolean | null;
@@ -4136,6 +4140,10 @@ export interface FeatureTabsBlock {
     caption?: string | null;
     id?: string | null;
   }[];
+  /**
+   * Default sets heading-sized tab labels that wrap onto a second row. Small steps them down one type size and keeps them on one row that pans sideways, for five or more tabs.
+   */
+  tabSize?: ('default' | 'small') | null;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
@@ -6413,6 +6421,7 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
         caption?: T;
         id?: T;
       };
+  tabSize?: T;
   browseAllMedia?: T;
   theme?: T;
   id?: T;
@@ -7088,6 +7097,7 @@ export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
         caption?: T;
         id?: T;
       };
+  tabSize?: T;
   browseAllMedia?: T;
   theme?: T;
   id?: T;

@@ -8,6 +8,7 @@ import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { FeatureTabsBlock as FeatureTabsBlockData } from '@/payload-types'
+import { cn } from '@/utilities/ui'
 
 type FeatureTab = Omit<NonNullable<FeatureTabsBlockData['tabs']>[number], 'source'>
 
@@ -19,8 +20,36 @@ type FeatureTabsBlockProps = {
   bare?: boolean
   blockType?: FeatureTabsBlockData['blockType']
   tabs: FeatureTab[]
+  tabSize?: FeatureTabsBlockData['tabSize']
   theme?: FeatureTabsBlockData['theme']
 }
+
+/**
+ * Default strip: heading-sized triggers that wrap onto a second row once the
+ * labels outgrow the container (fine up to four tabs).
+ *
+ * Small strip: one type step down (`text-lead`, the same step Image statement
+ * takes) and never wraps. Past the container it pans instead, the same rail
+ * AudienceTabs uses below `md`: the strip bleeds to the page gutter so a
+ * half-cut tab, not a scrollbar, is the affordance, and `scroll-fade-x` dims
+ * only the edge with tabs still behind it. `justify-center-safe` keeps the
+ * row centered while it fits and falls back to start alignment once it
+ * overflows, so the first tab can never be scrolled out of reach.
+ *
+ * `-my-1 / py-1` is layout-neutral padding, not spacing: `overflow-x-auto`
+ * clips on the block axis too, and without the room the triggers' focus ring
+ * would be cropped.
+ */
+const TAB_STRIP = {
+  default: 'flex flex-wrap items-center justify-center gap-8 md:gap-24',
+  small:
+    'no-scrollbar scroll-fade-x scroll-fade-8 -mx-gutter -my-1 flex items-center justify-center-safe gap-6 overflow-x-auto overscroll-x-contain py-1 pe-gutter ps-gutter md:gap-12',
+} as const
+
+const TAB_TRIGGER = {
+  default: 'text-heading-3',
+  small: 'shrink-0 text-lead whitespace-nowrap',
+} as const
 
 /**
  * One tab's panel on the composition grid. From `lg` the copy column (lead
@@ -82,34 +111,42 @@ const TabPanel: React.FC<{ tab: FeatureTab }> = ({ tab }) => (
 )
 
 /**
- * The tab strip is a centered row of heading-sized triggers; each panel is
- * its own `BlockGrid` below it (one grid per tab, only the active one
- * painted). The strip and the panels stack on a scale `space-y-*` (grid doc,
- * G6): the panels sit in one wrapper so only the strip carries the step.
+ * The tab strip is a centered row of triggers; each panel is its own
+ * `BlockGrid` below it (one grid per tab, only the active one painted). The
+ * strip and the panels stack on a scale step (grid doc, G6) carried by a flex
+ * column `gap` rather than `space-y-*`: `space-y` is a margin on the strip,
+ * which the small rail's layout-neutral `-my-1` would override. The panels
+ * sit in one wrapper so the step is taken once.
  */
-export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({ bare, tabs, theme }) => {
+export const FeatureTabsBlock: React.FC<FeatureTabsBlockProps> = ({
+  bare,
+  tabs,
+  tabSize,
+  theme,
+}) => {
   const panels = tabs ?? []
   if (panels.length === 0) return null
 
+  const size = tabSize === 'small' ? 'small' : 'default'
   const valueFor = (index: number) => panels[index]?.id ?? String(index)
 
   return (
     <Section bare={bare} theme={theme}>
       <Container>
         <TabsPrimitive.Root
-          className="space-y-12 md:space-y-16"
+          className="flex flex-col gap-12 md:gap-16"
           data-reveal
           defaultValue={valueFor(0)}
         >
-          <TabsPrimitive.List
-            aria-label="Feature tabs"
-            className="flex flex-wrap items-center justify-center gap-8 md:gap-24"
-          >
+          <TabsPrimitive.List aria-label="Feature tabs" className={TAB_STRIP[size]}>
             {panels.map((tab, index) => (
               <TabsPrimitive.Trigger
                 key={tab.id ?? index}
                 value={valueFor(index)}
-                className="text-heading-3 text-muted-foreground transition-colors hover:text-foreground data-[state=active]:text-primary"
+                className={cn(
+                  'text-muted-foreground transition-colors hover:text-foreground data-[state=active]:text-primary',
+                  TAB_TRIGGER[size],
+                )}
               >
                 {tab.title}
               </TabsPrimitive.Trigger>

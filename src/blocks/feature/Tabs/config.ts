@@ -16,7 +16,7 @@ export const FeatureTabs: Block = {
       type: 'array',
       required: true,
       minRows: 2,
-      maxRows: 4,
+      maxRows: 8,
       labels: { singular: 'Tab', plural: 'Tabs' },
       admin: { initCollapsed: true },
       fields: [
@@ -58,6 +58,17 @@ export const FeatureTabs: Block = {
           admin: { description: 'Short note shown as a card over the media.' },
         },
       ],
+    },
+    {
+      name: 'tabSize',
+      type: 'select',
+      label: 'Tab size',
+      defaultValue: 'default',
+      options: ['default', 'small'],
+      admin: {
+        description:
+          'Default sets heading-sized tab labels that wrap onto a second row. Small steps them down one type size and keeps them on one row that pans sideways, for five or more tabs.',
+      },
     },
     browseAllMediaField(),
     themeField(),

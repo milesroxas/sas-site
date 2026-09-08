@@ -86,6 +86,23 @@ export const TwoTabs: Story = {
   },
 }
 
+/**
+ * Five tabs at the small size: the strip stays on one row and pans past the
+ * container instead of wrapping. Narrow the viewport to see the rail.
+ */
+export const Small: Story = {
+  args: {
+    tabSize: 'small',
+    tabs: ['Discovery', 'Content & IA', 'UX & design', 'Development', 'Ongoing support'].map(
+      (title, index) => ({
+        ...meta.args.tabs[index % meta.args.tabs.length],
+        id: title.toLowerCase().replace(/[^a-z]+/g, '-'),
+        title,
+      }),
+    ),
+  },
+}
+
 export const Dark: Story = {
   args: { theme: 'dark' },
 }
