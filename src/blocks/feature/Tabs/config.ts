@@ -2,7 +2,7 @@ import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 import { featureSourceField } from '../shared'
 
 export const FeatureTabs: Block = {
@@ -49,7 +49,7 @@ export const FeatureTabs: Block = {
           name: 'media',
           type: 'upload',
           relationTo: 'media',
-          filterOptions: caseStudyScopedMediaFilter,
+          filterOptions: publicApprovedMediaWhere,
         },
         {
           name: 'caption',
@@ -70,7 +70,6 @@ export const FeatureTabs: Block = {
           'Default sets heading-sized tab labels that wrap onto a second row. Small steps them down one type size and keeps them on one row that pans sideways, for five or more tabs.',
       },
     },
-    browseAllMediaField(),
     themeField(),
   ],
 }

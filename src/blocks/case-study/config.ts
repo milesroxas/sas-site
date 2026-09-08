@@ -27,7 +27,7 @@ import {
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
-import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { publicApprovedMediaWhere, withCaseStudyScopedMedia } from '@/fields/caseStudyScopedMedia'
 import { withStoryBeatSource } from '@/fields/storyBeatSource'
 
 export const CaseStudyStorySection: Block = {
@@ -58,9 +58,8 @@ export const CaseStudyStorySection: Block = {
       name: 'media',
       type: 'upload',
       relationTo: 'media',
-      filterOptions: caseStudyScopedMediaFilter,
+      filterOptions: publicApprovedMediaWhere,
     },
-    browseAllMediaField(),
     {
       name: 'layout',
       type: 'select',
@@ -92,9 +91,8 @@ export const CaseStudyMediaShowcase: Block = {
       relationTo: 'media',
       hasMany: true,
       required: true,
-      filterOptions: caseStudyScopedMediaFilter,
+      filterOptions: publicApprovedMediaWhere,
     },
-    browseAllMediaField(),
     {
       name: 'layout',
       type: 'select',
@@ -201,35 +199,53 @@ export const CaseStudyRelatedWork: Block = {
   ],
 }
 
-const WorkCaseStudyStorySection = withStoryBeatSource(
+/**
+ * Work variants of the shared blocks. Every media picker is scoped to the
+ * related case study's asset libraries (`withCaseStudyScopedMedia`), and the
+ * blocks that pull canonical story copy also take `withStoryBeatSource`.
+ * Same slug and table as the shared block; only the interface differs.
+ */
+const workStoryMediaBlock = (block: Block, interfaceName: string) =>
+  withCaseStudyScopedMedia(withStoryBeatSource(block, interfaceName), interfaceName)
+
+const WorkCaseStudyStorySection = workStoryMediaBlock(
   CaseStudyStorySection,
   'WorkCaseStudyStorySectionBlock',
 )
-const WorkSplitContentNarrow = withStoryBeatSource(
+const WorkCaseStudyMediaShowcase = withCaseStudyScopedMedia(
+  CaseStudyMediaShowcase,
+  'CaseStudyMediaShowcaseBlock',
+)
+const WorkSplitContentNarrow = workStoryMediaBlock(
   SplitContentNarrow,
   'WorkSplitContentNarrowBlock',
 )
-const WorkFullMedia = withStoryBeatSource(FullMedia, 'WorkFullMediaBlock')
-const WorkImagePair = withStoryBeatSource(ImagePair, 'WorkImagePairBlock')
-const WorkSplitImageOffset = withStoryBeatSource(SplitImageOffset, 'WorkSplitImageOffsetBlock')
+const WorkFullMedia = workStoryMediaBlock(FullMedia, 'WorkFullMediaBlock')
+const WorkImagePair = workStoryMediaBlock(ImagePair, 'WorkImagePairBlock')
+const WorkSplitImageOffset = workStoryMediaBlock(SplitImageOffset, 'WorkSplitImageOffsetBlock')
 const WorkFeatureHeadingOffset = withStoryBeatSource(
   FeatureHeadingOffset,
   'WorkFeatureHeadingOffsetBlock',
 )
-const WorkFeatureStatementGrid = withStoryBeatSource(
+const WorkFeatureStatementGrid = workStoryMediaBlock(
   FeatureStatementGrid,
   'WorkFeatureStatementGridBlock',
 )
-const WorkFeatureImageStatement = withStoryBeatSource(
+const WorkFeatureImageStatement = workStoryMediaBlock(
   FeatureImageStatement,
   'WorkFeatureImageStatementBlock',
 )
-const WorkFeatureTabs = withStoryBeatSource(FeatureTabs, 'WorkFeatureTabsBlock')
+const WorkFeatureTabs = workStoryMediaBlock(FeatureTabs, 'WorkFeatureTabsBlock')
 const WorkCaseStudyTransition = withStoryBeatSource(
   CaseStudyTransition,
   'WorkCaseStudyTransitionBlock',
 )
-const WorkMediaContentSplit = withStoryBeatSource(MediaContentSplit, 'WorkMediaContentSplitBlock')
+const WorkMediaContentSplit = workStoryMediaBlock(MediaContentSplit, 'WorkMediaContentSplitBlock')
+// Media-only variants: no story copy, so only the picker scope changes.
+const WorkMediaBlock = withCaseStudyScopedMedia(MediaBlock, 'WorkMediaBlock')
+const WorkCarousel = withCaseStudyScopedMedia(Carousel, 'WorkCarouselBlock')
+const WorkAudienceTabs = withCaseStudyScopedMedia(AudienceTabs, 'WorkAudienceTabsBlock')
+const WorkScrollGallery = withCaseStudyScopedMedia(ScrollGallery, 'WorkScrollGalleryBlock')
 
 /**
  * Blocks a Work Page Section can nest, and the same run offered at the top
@@ -248,13 +264,14 @@ const workSectionBlocks: Block[] = [
   WorkSplitImageOffset,
   // Media
   WorkFeatureImageStatement,
-  // Caption carries no story copy, so it needs no story-beat wrapper.
-  MediaBlock,
+  // Caption carries no story copy, so it takes the picker scope only.
+  WorkMediaBlock,
   // Interactive: FAQ copy is the block's own (questions, not story beats) and
-  // Carousel carries none, so neither takes the wrapper. Tabs pull story copy
-  // per tab, so they keep it.
+  // it has no media, so it is offered plain. Carousel carries no story copy
+  // either, so it takes the picker scope only. Tabs pull story copy per tab,
+  // so they keep both.
   Faq,
-  Carousel,
+  WorkCarousel,
   WorkFeatureTabs,
   // Lists: insight copy is the block's own too.
   InsightList,
@@ -278,11 +295,11 @@ export const caseStudyBlocks = [
   // Section heading / Media and content / Media / Interactive / Lists: the Section-nestable run
   ...workSectionBlocks,
   // Interactive (legacy, top-level only): kept beside the run's FAQ, Carousel and Tabs
-  AudienceTabs,
+  WorkAudienceTabs,
   IndustryWork,
   // Media
-  CaseStudyMediaShowcase,
-  ScrollGallery,
+  WorkCaseStudyMediaShowcase,
+  WorkScrollGallery,
   // Narrative
   WorkCaseStudyStorySection,
   // Statements

@@ -2,6 +2,7 @@ import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
+import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 
 export const MediaBlock: Block = {
   slug: 'mediaBlock',
@@ -14,6 +15,7 @@ export const MediaBlock: Block = {
       type: 'upload',
       relationTo: 'media',
       required: true,
+      filterOptions: publicApprovedMediaWhere,
     },
     {
       name: 'size',

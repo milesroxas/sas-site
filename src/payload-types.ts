@@ -1668,15 +1668,15 @@ export interface WorkPage {
         | WorkImagePairBlock
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
-        | MediaBlock
+        | WorkMediaBlock
         | FaqBlock
-        | CarouselBlock
+        | WorkCarouselBlock
         | WorkFeatureTabsBlock
         | InsightListBlock
-        | AudienceTabsBlock
+        | WorkAudienceTabsBlock
         | IndustryWorkBlock
         | CaseStudyMediaShowcaseBlock
-        | ScrollGalleryBlock
+        | WorkScrollGalleryBlock
         | WorkCaseStudyStorySectionBlock
         | WorkFeatureStatementGridBlock
         | FeatureStatementLinksBlock
@@ -1814,9 +1814,9 @@ export interface WorkSectionBlock {
         | WorkImagePairBlock
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
-        | MediaBlock
+        | WorkMediaBlock
         | FaqBlock
-        | CarouselBlock
+        | WorkCarouselBlock
         | WorkFeatureTabsBlock
         | InsightListBlock
         | ContentBlock
@@ -2336,10 +2336,14 @@ export interface WorkFeatureImageStatementBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
+ * via the `definition` "WorkMediaBlock".
  */
-export interface MediaBlock {
+export interface WorkMediaBlock {
   media: number | Media;
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
   /**
    * Presentation for this placement only; the media document itself stays layout-neutral.
    */
@@ -2856,9 +2860,9 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CarouselBlock".
+ * via the `definition` "WorkCarouselBlock".
  */
-export interface CarouselBlock {
+export interface WorkCarouselBlock {
   slides: {
     media: number | Media;
     /**
@@ -2867,6 +2871,10 @@ export interface CarouselBlock {
     caption?: string | null;
     id?: string | null;
   }[];
+  /**
+   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
+   */
+  browseAllMedia?: boolean | null;
   /**
    * Full width runs edge to edge of the browser window.
    */
@@ -2947,13 +2955,13 @@ export interface WorkFeatureTabsBlock {
     id?: string | null;
   }[];
   /**
-   * Default sets heading-sized tab labels that wrap onto a second row. Small steps them down one type size and keeps them on one row that pans sideways, for five or more tabs.
-   */
-  tabSize?: ('default' | 'small') | null;
-  /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
   browseAllMedia?: boolean | null;
+  /**
+   * Default sets heading-sized tab labels that wrap onto a second row. Small steps them down one type size and keeps them on one row that pans sideways, for five or more tabs.
+   */
+  tabSize?: ('default' | 'small') | null;
   /**
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */
@@ -3065,9 +3073,9 @@ export interface ContentBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "AudienceTabsBlock".
+ * via the `definition` "WorkAudienceTabsBlock".
  */
-export interface AudienceTabsBlock {
+export interface WorkAudienceTabsBlock {
   /**
    * Centered statement above the tab chips.
    */
@@ -3181,9 +3189,9 @@ export interface CaseStudyMediaShowcaseBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ScrollGalleryBlock".
+ * via the `definition` "WorkScrollGalleryBlock".
  */
-export interface ScrollGalleryBlock {
+export interface WorkScrollGalleryBlock {
   /**
    * Small label pinned at the top of the gallery. Leave empty to hide.
    */
@@ -3776,10 +3784,6 @@ export interface FullMediaBlock {
    */
   media: number | Media;
   /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
    * Contained keeps the media in the page column. Full width bleeds edge to edge.
    */
   width?: ('contained' | 'full-width') | null;
@@ -3833,10 +3837,6 @@ export interface MediaContentSplitBlock {
   } | null;
   media: number | Media;
   /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
    * Arrange the media on the left or the right of the content.
    */
   layout?: ('left' | 'right') | null;
@@ -3886,10 +3886,6 @@ export interface SplitContentNarrowBlock {
   } | null;
   media: number | Media;
   /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
    * Arrange the image on the left or the right of the text.
    */
   imagePosition?: ('left' | 'right') | null;
@@ -3937,10 +3933,6 @@ export interface ImagePairBlock {
    * Cropped to 16:10.
    */
   landscapeMedia: number | Media;
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
   /**
    * Arrange the portrait on the left or the right; the landscape fills the other column. On small screens the left image stacks first.
    */
@@ -3994,10 +3986,6 @@ export interface SplitImageOffsetBlock {
    */
   smallMedia: number | Media;
   /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
    * Place the small image and caption on the left or the right of the large image.
    */
   captionPosition?: ('left' | 'right') | null;
@@ -4015,10 +4003,6 @@ export interface SplitImageOffsetBlock {
  */
 export interface FeatureImageStatementBlock {
   media: number | Media;
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
   /**
    * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
    */
@@ -4067,6 +4051,42 @@ export interface FeatureImageStatementBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  media: number | Media;
+  /**
+   * Presentation for this placement only; the media document itself stays layout-neutral.
+   */
+  size?: ('full' | 'inset' | 'small') | null;
+  /**
+   * Optional. Replaces the media document's canonical caption for this placement only.
+   */
+  captionOverride?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "RichTextBlock".
  */
 export interface RichTextBlock {
@@ -4092,6 +4112,39 @@ export interface RichTextBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'richText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselBlock".
+ */
+export interface CarouselBlock {
+  slides: {
+    media: number | Media;
+    /**
+     * Optional. Renders below the slide.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Full width runs edge to edge of the browser window.
+   */
+  width?: ('contained' | 'full-width') | null;
+  /**
+   * Previous/next buttons. Contained places them beside the slides; full width overlays them on the slides.
+   */
+  showArrows?: boolean | null;
+  /**
+   * Slides visible at once from tablet up. Phones always show one slide plus a sliver of its neighbours, whichever size is picked.
+   */
+  slideSize?: ('full' | 'half' | 'third') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'carousel';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4144,10 +4197,6 @@ export interface FeatureTabsBlock {
    * Default sets heading-sized tab labels that wrap onto a second row. Small steps them down one type size and keeps them on one row that pans sideways, for five or more tabs.
    */
   tabSize?: ('default' | 'small') | null;
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
   /**
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */
@@ -4268,6 +4317,42 @@ export interface DynamicAudienceBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AudienceTabsBlock".
+ */
+export interface AudienceTabsBlock {
+  /**
+   * Centered statement above the tab chips.
+   */
+  heading: string;
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    intro: string;
+    /**
+     * Supporting copy shown under the intro.
+     */
+    description?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media: number | Media;
+    id?: string | null;
+  }[];
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'audienceTabs';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TestimonialsMarqueeBlock".
  */
 export interface TestimonialsMarqueeBlock {
@@ -4375,10 +4460,6 @@ export interface FeatureStatementGridBlock {
     description: string;
     id?: string | null;
   }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
   /**
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */
@@ -4935,6 +5016,51 @@ export interface LabMediaShowcaseBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'labMediaShowcase';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ScrollGalleryBlock".
+ */
+export interface ScrollGalleryBlock {
+  /**
+   * Small label pinned at the top of the gallery. Leave empty to hide.
+   */
+  eyebrow?: string | null;
+  /**
+   * Statement pinned under the eyebrow. Leave empty to hide.
+   */
+  heading?: string | null;
+  /**
+   * Each item is one plane in depth, in order. The caption shown while an item is in focus is the media document’s caption.
+   */
+  items: {
+    media: number | Media;
+    /**
+     * Background palette while this item is in focus.
+     */
+    mood?: {
+      /**
+       * The ground behind the planes. Hex, e.g. #1f4a40. Leave empty for the default.
+       */
+      background?: string | null;
+      /**
+       * Primary soft glow. Hex, e.g. #1f4a40. Leave empty for the default.
+       */
+      blob1?: string | null;
+      /**
+       * Secondary soft glow. Hex, e.g. #1f4a40. Leave empty for the default.
+       */
+      blob2?: string | null;
+    };
+    id?: string | null;
+  }[];
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'scrollGallery';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -6236,7 +6362,6 @@ export interface FullMediaBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
-  browseAllMedia?: T;
   width?: T;
   aspectRatio?: T;
   contentPosition?: T;
@@ -6254,7 +6379,6 @@ export interface MediaContentSplitBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
-  browseAllMedia?: T;
   layout?: T;
   aspectRatio?: T;
   theme?: T;
@@ -6271,7 +6395,6 @@ export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
-  browseAllMedia?: T;
   imagePosition?: T;
   theme?: T;
   id?: T;
@@ -6287,7 +6410,6 @@ export interface ImagePairBlockSelect<T extends boolean = true> {
   body?: T;
   portraitMedia?: T;
   landscapeMedia?: T;
-  browseAllMedia?: T;
   portraitPosition?: T;
   textPosition?: T;
   theme?: T;
@@ -6304,7 +6426,6 @@ export interface SplitImageOffsetBlockSelect<T extends boolean = true> {
   body?: T;
   largeMedia?: T;
   smallMedia?: T;
-  browseAllMedia?: T;
   captionPosition?: T;
   theme?: T;
   id?: T;
@@ -6316,7 +6437,6 @@ export interface SplitImageOffsetBlockSelect<T extends boolean = true> {
  */
 export interface FeatureImageStatementBlockSelect<T extends boolean = true> {
   media?: T;
-  browseAllMedia?: T;
   source?: T;
   caption?: T;
   textPosition?: T;
@@ -6422,7 +6542,6 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
         id?: T;
       };
   tabSize?: T;
-  browseAllMedia?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -6523,7 +6642,6 @@ export interface AudienceTabsBlockSelect<T extends boolean = true> {
         media?: T;
         id?: T;
       };
-  browseAllMedia?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -6592,7 +6710,6 @@ export interface FeatureStatementGridBlockSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
-  browseAllMedia?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -6830,15 +6947,15 @@ export interface WorkPagesSelect<T extends boolean = true> {
         imagePair?: T | WorkImagePairBlockSelect<T>;
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
+        mediaBlock?: T | WorkMediaBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
+        carousel?: T | WorkCarouselBlockSelect<T>;
         featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
-        audienceTabs?: T | AudienceTabsBlockSelect<T>;
+        audienceTabs?: T | WorkAudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
-        scrollGallery?: T | ScrollGalleryBlockSelect<T>;
+        scrollGallery?: T | WorkScrollGalleryBlockSelect<T>;
         caseStudyStorySection?: T | WorkCaseStudyStorySectionBlockSelect<T>;
         featureStatementGrid?: T | WorkFeatureStatementGridBlockSelect<T>;
         featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
@@ -6907,9 +7024,9 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         imagePair?: T | WorkImagePairBlockSelect<T>;
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
+        mediaBlock?: T | WorkMediaBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
+        carousel?: T | WorkCarouselBlockSelect<T>;
         featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
@@ -7073,6 +7190,39 @@ export interface WorkFeatureImageStatementBlockSelect<T extends boolean = true> 
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkMediaBlock_select".
+ */
+export interface WorkMediaBlockSelect<T extends boolean = true> {
+  media?: T;
+  browseAllMedia?: T;
+  size?: T;
+  captionOverride?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkCarouselBlock_select".
+ */
+export interface WorkCarouselBlockSelect<T extends boolean = true> {
+  slides?:
+    | T
+    | {
+        media?: T;
+        caption?: T;
+        id?: T;
+      };
+  browseAllMedia?: T;
+  width?: T;
+  showArrows?: T;
+  slideSize?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "WorkFeatureTabsBlock_select".
  */
 export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
@@ -7097,7 +7247,33 @@ export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
         caption?: T;
         id?: T;
       };
+  browseAllMedia?: T;
   tabSize?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkAudienceTabsBlock_select".
+ */
+export interface WorkAudienceTabsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  tabs?:
+    | T
+    | {
+        title?: T;
+        intro?: T;
+        description?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        media?: T;
+        id?: T;
+      };
   browseAllMedia?: T;
   theme?: T;
   id?: T;
@@ -7121,9 +7297,9 @@ export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ScrollGalleryBlock_select".
+ * via the `definition` "WorkScrollGalleryBlock_select".
  */
-export interface ScrollGalleryBlockSelect<T extends boolean = true> {
+export interface WorkScrollGalleryBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
   items?:
@@ -7352,6 +7528,30 @@ export interface LabMediaShowcaseBlockSelect<T extends boolean = true> {
   theme?: T;
   showCaptions?: T;
   showCredits?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ScrollGalleryBlock_select".
+ */
+export interface ScrollGalleryBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  items?:
+    | T
+    | {
+        media?: T;
+        mood?:
+          | T
+          | {
+              background?: T;
+              blob1?: T;
+              blob2?: T;
+            };
+        id?: T;
+      };
+  theme?: T;
   id?: T;
   blockName?: T;
 }

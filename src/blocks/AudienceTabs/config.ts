@@ -1,7 +1,7 @@
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 
 export const AudienceTabs: Block = {
   slug: 'audienceTabs',
@@ -51,11 +51,10 @@ export const AudienceTabs: Block = {
           type: 'upload',
           relationTo: 'media',
           required: true,
-          filterOptions: caseStudyScopedMediaFilter,
+          filterOptions: publicApprovedMediaWhere,
         },
       ],
     },
-    browseAllMediaField(),
     { ...themeField(), defaultValue: 'dark' },
   ],
 }

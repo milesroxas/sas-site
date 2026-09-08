@@ -2,7 +2,7 @@ import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 import { featureHeaderFields, featureSourceField } from '../shared'
 
 export const FeatureStatementGrid: Block = {
@@ -39,13 +39,12 @@ export const FeatureStatementGrid: Block = {
           name: 'media',
           type: 'upload',
           relationTo: 'media',
-          filterOptions: caseStudyScopedMediaFilter,
+          filterOptions: publicApprovedMediaWhere,
         },
         { name: 'title', type: 'text', required: true },
         { name: 'description', type: 'textarea', required: true },
       ],
     },
-    browseAllMediaField(),
     themeField(),
   ],
 }

@@ -1,7 +1,7 @@
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 
 /**
  * Media, optionally over a two-column content row (eyebrow + heading beside the
@@ -89,9 +89,8 @@ export const FullMedia: Block = {
         description:
           'Contained uses the aspect ratio below. Full width crops to 16:9 on small screens and 21:9 from md up.',
       },
-      filterOptions: caseStudyScopedMediaFilter,
+      filterOptions: publicApprovedMediaWhere,
     },
-    browseAllMediaField(),
     {
       name: 'width',
       type: 'select',

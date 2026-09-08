@@ -1,7 +1,7 @@
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 
 /**
  * A large 5:4 image beside a narrower column holding a 3:2 image with caption
@@ -57,7 +57,7 @@ export const SplitImageOffset: Block = {
       relationTo: 'media',
       required: true,
       admin: { description: 'Cropped to 5:4.' },
-      filterOptions: caseStudyScopedMediaFilter,
+      filterOptions: publicApprovedMediaWhere,
     },
     {
       name: 'smallMedia',
@@ -65,9 +65,8 @@ export const SplitImageOffset: Block = {
       relationTo: 'media',
       required: true,
       admin: { description: 'Cropped to 3:2. Shown above the caption.' },
-      filterOptions: caseStudyScopedMediaFilter,
+      filterOptions: publicApprovedMediaWhere,
     },
-    browseAllMediaField(),
     {
       name: 'captionPosition',
       type: 'select',

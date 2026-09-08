@@ -1,7 +1,7 @@
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 
 /**
  * Two images side by side — a 4:5 portrait beside a 16:10 landscape on a 1:2
@@ -56,7 +56,7 @@ export const ImagePair: Block = {
       relationTo: 'media',
       required: true,
       admin: { description: 'Cropped to 4:5.' },
-      filterOptions: caseStudyScopedMediaFilter,
+      filterOptions: publicApprovedMediaWhere,
     },
     {
       name: 'landscapeMedia',
@@ -64,9 +64,8 @@ export const ImagePair: Block = {
       relationTo: 'media',
       required: true,
       admin: { description: 'Cropped to 16:10.' },
-      filterOptions: caseStudyScopedMediaFilter,
+      filterOptions: publicApprovedMediaWhere,
     },
-    browseAllMediaField(),
     {
       name: 'portraitPosition',
       type: 'select',

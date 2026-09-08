@@ -1,7 +1,7 @@
 import type { Block, Field } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
+import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 
 const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i
 
@@ -19,9 +19,10 @@ const moodColorField = (name: string, label: string, description: string): Field
  * Full-screen scroll gallery: media planes staggered into depth, the camera
  * dollying through them as the visitor scrolls, and a mood background that
  * blends each item's palette as it comes into focus. The block owns a pinned
- * full-viewport shell — one screenful of scroll per item. Collection-agnostic:
- * on a Work Page the media pickers default to the case study's asset
- * libraries; elsewhere they browse the public media library.
+ * full-viewport shell, one screenful of scroll per item. Collection-agnostic:
+ * Work Pages wrap it with `withCaseStudyScopedMedia` so the pickers default
+ * to the case study's asset libraries; elsewhere they browse the public
+ * media library.
  */
 export const ScrollGallery: Block = {
   slug: 'scrollGallery',
@@ -58,7 +59,7 @@ export const ScrollGallery: Block = {
           type: 'upload',
           relationTo: 'media',
           required: true,
-          filterOptions: caseStudyScopedMediaFilter,
+          filterOptions: publicApprovedMediaWhere,
         },
         {
           name: 'mood',
@@ -78,15 +79,6 @@ export const ScrollGallery: Block = {
           ],
         },
       ],
-    },
-    {
-      ...browseAllMediaField(),
-      admin: {
-        ...browseAllMediaField().admin,
-        // Only a Work Page scopes its pickers to a case study; elsewhere the
-        // pickers already browse the whole public library.
-        condition: (data) => Boolean(data?.caseStudy),
-      },
     },
     { ...themeField(), defaultValue: 'dark' },
   ],
