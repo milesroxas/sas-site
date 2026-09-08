@@ -36,6 +36,8 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 | [`../../endpoints/ask.ts`](../../endpoints/ask.ts) | The `POST /api/ask` Payload endpoint — validation, rate limiting, prompt assembly. The system prompt sets the studio voice, forbids inline citations (links render separately), and defines the partial-answer mode: say what is published, then one next step with a page path from the source `url`. |
 | [`backfill.ts`](./backfill.ts) | One full pass over every surface and global with a per-instance run lock; shared by the CLI script and the admin rebuild. |
 | [`admin/RebuildIndexPanel.tsx`](./admin/RebuildIndexPanel.tsx) | Site Info › Ask action panel: "Rebuild index" button, progress note, result summary. |
+| [`usage.ts`](./usage.ts) | OpenAI spend (Costs API) and tokens per model (Usage API) over the last 30 days, month-to-date split out. Needs `OPENAI_ADMIN_API_KEY` (an Admin key, not the project key); `OPENAI_PROJECT_ID` optionally scopes it. Cached 5 minutes per instance. OpenAI exposes no remaining-credit balance over the API. |
+| [`admin/UsagePanel.tsx`](./admin/UsagePanel.tsx) | Site Info › Ask usage panel: spend tiles, cost by line item, tokens by model, refresh. Served by `GET /api/ask/usage` (team-only). |
 | [`../../../scripts/backfill-ask-index.ts`](../../../scripts/backfill-ask-index.ts) | CLI entry for the same pass: `pnpm exec tsx --env-file=.env scripts/backfill-ask-index.ts`. |
 
 ## The corpus

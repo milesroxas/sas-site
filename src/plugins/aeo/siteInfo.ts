@@ -126,6 +126,15 @@ export const SiteInfo: GlobalConfig = {
             components: { Field: '@/features/ask/admin/RebuildIndexPanel#RebuildIndexPanel' },
           },
         },
+        {
+          // Read-only panel, no stored value. OpenAI spend and tokens for the
+          // answer and embedding models (src/features/ask/usage.ts).
+          name: 'usage',
+          type: 'ui',
+          admin: {
+            components: { Field: '@/features/ask/admin/UsagePanel#UsagePanel' },
+          },
+        },
       ],
     },
     {

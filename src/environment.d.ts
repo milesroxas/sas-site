@@ -33,6 +33,10 @@ declare global {
       CRON_SECRET: string
       /** Answer model for the /api/ask RAG endpoint (Vercel AI SDK, OpenAI provider). Optional — endpoint returns 503 when unset. */
       OPENAI_API_KEY?: string
+      /** OpenAI Admin key (Settings › Organization › Admin keys) for the Site Info › Ask usage panel. Optional — panel explains setup when unset. */
+      OPENAI_ADMIN_API_KEY?: string
+      /** Scopes the usage panel to one OpenAI project; unset reports the whole organization. */
+      OPENAI_PROJECT_ID?: string
       /** c15t consent backend URL (https://<instance>.c15t.dev from consent.io). Optional — offline mode (browser-only consent storage) when unset. */
       NEXT_PUBLIC_C15T_URL?: string
       /** Vercel system env var: 'production' | 'preview' | 'development'. Exposed to the browser; separates analytics/error streams per environment. */

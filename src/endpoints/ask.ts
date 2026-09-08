@@ -11,6 +11,7 @@ import type { Endpoint } from 'payload'
 import { backfillAskIndex, isBackfillRunning } from '@/features/ask/backfill'
 import { ASK_MODEL_API_KEY_VAR, askModel } from '@/features/ask/model'
 import { retrieveSources } from '@/features/ask/retrieve'
+import { fetchUsageReport, OPENAI_ADMIN_KEY_VAR, OpenAIAdminError } from '@/features/ask/usage'
 
 /**
  * Public RAG endpoint (mounted under /api by the Payload root config).
@@ -283,4 +284,36 @@ const reindex: Endpoint = {
   },
 }
 
-export const askEndpoints: Endpoint[] = [ask, reindex]
+/**
+ * Team-only: OpenAI spend and token usage for the "Usage" panel in Site Info ›
+ * Ask. Proxies the organization Costs and Usage APIs so the Admin key never
+ * leaves the server; `?refresh=1` skips the short cache.
+ */
+const usage: Endpoint = {
+  path: '/ask/usage',
+  method: 'get',
+  handler: async (req) => {
+    if (req.user?.collection !== 'users') return json({ error: 'Unauthorized' }, 401)
+
+    if (!process.env[OPENAI_ADMIN_KEY_VAR]) {
+      return json({ error: `${OPENAI_ADMIN_KEY_VAR} is not set.`, configured: false }, 503)
+    }
+
+    const refresh = req.url ? new URL(req.url).searchParams.get('refresh') === '1' : false
+    try {
+      return json(await fetchUsageReport({ refresh }))
+    } catch (err) {
+      if (err instanceof OpenAIAdminError) {
+        req.payload.logger.error({ msg: 'ask usage fetch failed', err })
+        const hint =
+          err.status === 401
+            ? `OpenAI rejected the key. ${OPENAI_ADMIN_KEY_VAR} must be an Admin key (Settings › Organization › Admin keys), not a project key.`
+            : err.message
+        return json({ error: hint }, 502)
+      }
+      throw err
+    }
+  },
+}
+
+export const askEndpoints: Endpoint[] = [ask, reindex, usage]

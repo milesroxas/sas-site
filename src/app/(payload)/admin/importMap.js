@@ -35,6 +35,7 @@ import { SectionToggleAll as SectionToggleAll_1ba37f1a47d78984fe73dea23b65dbc9 }
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RebuildIndexPanel as RebuildIndexPanel_2fbb0093563e2d7bb244051223c34ed2 } from '@/features/ask/admin/RebuildIndexPanel'
+import { UsagePanel as UsagePanel_8416b95f0a2679127501c530bbbd092d } from '@/features/ask/admin/UsagePanel'
 import { AdminIcon as AdminIcon_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
 import { AdminLogo as AdminLogo_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { InquiriesDashboard as InquiriesDashboard_ef92ef0a0367c0619848229c330ca202 } from '@/collections/Inquiries/components/InquiriesDashboard'
@@ -84,6 +85,7 @@ export const importMap = {
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/features/ask/admin/RebuildIndexPanel#RebuildIndexPanel": RebuildIndexPanel_2fbb0093563e2d7bb244051223c34ed2,
+  "@/features/ask/admin/UsagePanel#UsagePanel": UsagePanel_8416b95f0a2679127501c530bbbd092d,
   "@/components/AdminIcon#AdminIcon": AdminIcon_c1363893506d7ed29a71d1a4da01ddb5,
   "@/components/AdminLogo#AdminLogo": AdminLogo_aa0a2d19d38a4839dbd373417e210b89,
   "@/collections/Inquiries/components/InquiriesDashboard#InquiriesDashboard": InquiriesDashboard_ef92ef0a0367c0619848229c330ca202,
