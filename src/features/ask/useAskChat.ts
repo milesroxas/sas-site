@@ -18,7 +18,8 @@ type UseAskChatOptions = {
 /**
  * Chat wiring shared by every Ask surface (the /ask page widget and the
  * takeover-menu composer): the /api/ask transport default, busy state, and
- * the min-length-guarded submit that clears the composer.
+ * the min-length-guarded submit that clears the composer, and `stop` for the
+ * composer's in-flight Stop button.
  */
 export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOptions) {
   const [question, setQuestion] = useState('')
@@ -26,7 +27,7 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     () => transport ?? new DefaultChatTransport<UIMessage>({ api: '/api/ask' }),
     [transport],
   )
-  const { messages, sendMessage, status, error, setMessages } = useChat({
+  const { messages, sendMessage, status, error, setMessages, stop } = useChat({
     transport: chatTransport,
     messages: initialMessages,
   })
@@ -58,5 +59,6 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     canSend,
     submit,
     sendQuestion,
+    stop,
   }
 }

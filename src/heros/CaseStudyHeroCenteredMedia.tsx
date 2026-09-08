@@ -100,7 +100,7 @@ export const CaseStudyHeroCenteredMedia = ({
               <Media
                 priority
                 resource={media}
-                className="lg:mx-auto lg:w-4/9"
+                className="lg:mx-auto lg:w-1/2"
                 imgClassName="aspect-8/5 w-full object-cover"
                 videoClassName="aspect-8/5 w-full object-cover"
               />

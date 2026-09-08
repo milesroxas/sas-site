@@ -29,7 +29,8 @@ type Story = StoryObj<typeof meta>
 /**
  * Assistant-only script: whatever the user types, the next scripted reply
  * streams back — sources first, then the grounded answer, mirroring what
- * /api/ask emits.
+ * /api/ask emits. The sleep between them is the real retrieval-to-first-token
+ * gap: the shimmer must hold through it and the sources land after the answer.
  */
 const scriptedAnswers = createChat()
   .assistant(({ writer }) => {
@@ -44,6 +45,7 @@ const scriptedAnswers = createChat()
         title: 'Websites that sell the way you do',
         url: '/posts/websites-that-sell',
       })
+      .sleep(1_200)
       .text(
         'Suits & Sandals focuses on brand strategy, identity systems, and web design for growing companies. "Beyond the logo" walks through how the identity work scales past launch, and "Websites that sell the way you do" covers how the sites are built to carry that positioning.',
       )
@@ -98,6 +100,32 @@ const noSourcesChat = createChat().assistant(
 export const NoSources: Story = {
   args: {
     transport: noSourcesChat.transport(),
+  },
+}
+
+/**
+ * Sources in, first token still far off: pins the state /api/ask spends
+ * retrieval-to-first-token in. Must read as Thinking (no empty bubble, no
+ * source list) with the composer's button as Stop.
+ */
+const sourcesOnlyChat = createChat().assistant(({ writer }) => {
+  writer
+    .sourceUrl({
+      sourceId: '/posts/positioning-first',
+      title: 'Positioning first, pixels second',
+      url: '/posts/positioning-first',
+    })
+    .sleep(300_000)
+    .text('This reply never arrives in the demo.')
+})
+
+export const AwaitingFirstToken: Story = {
+  args: {
+    transport: sourcesOnlyChat.transport(),
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.type(canvas.getByRole('textbox'), 'What does an engagement look like?')
+    await userEvent.keyboard('{Enter}')
   },
 }
 

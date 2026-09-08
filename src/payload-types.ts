@@ -1733,7 +1733,7 @@ export interface WorkPage {
   featured?: boolean | null;
   publishedAt?: string | null;
   /**
-   * Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the cover asset, then the Header's menu fallback.
+   * Shown in the site menu while this page's link is hovered, and by the Industry work block when it features this page. Leave empty to use the hero media, then the cover asset, then the Header's menu fallback (the block falls back to the cover asset, then hero media).
    */
   menuPreview?: (number | null) | Media;
   /**
@@ -3129,7 +3129,7 @@ export interface IndustryWorkBlock {
      */
     secondLine?: string | null;
     /**
-     * Work page featured for this industry (list narrows to that industry once one is picked). Title, media, client, and capabilities come from it.
+     * Work page featured for this industry (list narrows to that industry once one is picked). Title, client, and capabilities come from it; media is its menu preview when set, else its cover asset, else its hero media.
      */
     work: number | WorkPage;
     id?: string | null;

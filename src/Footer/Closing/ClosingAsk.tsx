@@ -1,16 +1,11 @@
 'use client'
 
-import { IconArrowUp, IconX } from '@tabler/icons-react'
+import { IconX } from '@tabler/icons-react'
 import type { ChatTransport, UIMessage } from 'ai'
 import { useId, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupTextarea,
-} from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupTextarea } from '@/components/ui/input-group'
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -19,8 +14,8 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller'
-import { Spinner } from '@/components/ui/spinner'
 import { errorText, TranscriptItems } from '@/features/ask/messages'
+import { AskSubmitButton } from '@/features/ask/SubmitButton'
 import { useAskChat } from '@/features/ask/useAskChat'
 import { leakExcite } from '@/features/immersive'
 import type { Footer } from '@/payload-types'
@@ -39,8 +34,18 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
   const [keyboard, setKeyboard] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const panelId = useId()
-  const { question, setQuestion, messages, status, error, busy, canSend, submit, sendQuestion } =
-    useAskChat({ transport, initialMessages, onSend: () => setOpen(true) })
+  const {
+    question,
+    setQuestion,
+    messages,
+    status,
+    error,
+    busy,
+    canSend,
+    submit,
+    sendQuestion,
+    stop,
+  } = useAskChat({ transport, initialMessages, onSend: () => setOpen(true) })
   const title = ask?.title || 'Ask us anything.'
   const body = ask?.body || 'Work, process, pricing, fit. Answered in seconds.'
 
@@ -144,16 +149,12 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
                   Resume conversation
                 </Button>
               ) : null}
-              <InputGroupButton
-                type="submit"
-                variant="default"
-                size="icon-sm"
+              <AskSubmitButton
+                busy={busy}
+                canSend={canSend}
+                onStop={stop}
                 className="relative ml-auto size-11 md:size-6 md:after:absolute md:after:-inset-2.5"
-                disabled={!canSend}
-                aria-label="Ask"
-              >
-                {busy ? <Spinner /> : <IconArrowUp />}
-              </InputGroupButton>
+              />
             </InputGroupAddon>
           </InputGroup>
         </form>
@@ -205,7 +206,7 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
                     measure, anchor, and track it; a short transcript sits at the
                     composer end of the viewport rather than the header. */}
                 <MessageScrollerContent className="justify-end gap-4 px-6">
-                  <TranscriptItems messages={messages} pending={status === 'submitted'} />
+                  <TranscriptItems messages={messages} status={status} />
                   {error ? (
                     <MessageScrollerItem messageId="error">
                       <p role="alert" className="text-sm text-destructive">

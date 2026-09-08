@@ -1,15 +1,9 @@
 'use client'
 
-import { IconArrowUp } from '@tabler/icons-react'
 import type { ChatTransport, UIMessage } from 'ai'
 import { useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupTextarea,
-} from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupTextarea } from '@/components/ui/input-group'
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -17,8 +11,8 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller'
-import { Spinner } from '@/components/ui/spinner'
-import { errorText, TranscriptItems } from './messages'
+import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
+import { AskSubmitButton } from './SubmitButton'
 import { useAskChat } from './useAskChat'
 
 type AskWidgetProps = {
@@ -38,10 +32,11 @@ export function AskWidget({
   initialMessages,
   placeholder = 'Ask something about our work, services, or insights…',
 }: AskWidgetProps) {
-  const { question, setQuestion, messages, status, error, busy, canSend, submit } = useAskChat({
-    transport,
-    initialMessages,
-  })
+  const { question, setQuestion, messages, status, error, busy, canSend, submit, stop } =
+    useAskChat({
+      transport,
+      initialMessages,
+    })
   const hasTranscript = messages.length > 0
 
   // The transcript card mounts above the composer and can push it below the
@@ -54,13 +49,13 @@ export function AskWidget({
   return (
     <div className="flex flex-col gap-4">
       {hasTranscript && (
-        <Card className="h-[min(60svh,32rem)] gap-0 py-0">
+        <Card className={`h-[min(60svh,32rem)] gap-0 py-0 ${transcriptItemEnter}`}>
           <CardContent className="min-h-0 flex-1 overflow-hidden p-0">
             <MessageScrollerProvider autoScroll>
               <MessageScroller>
                 <MessageScrollerViewport>
                   <MessageScrollerContent className="p-(--card-spacing)">
-                    <TranscriptItems messages={messages} pending={status === 'submitted'} />
+                    <TranscriptItems messages={messages} status={status} />
                   </MessageScrollerContent>
                 </MessageScrollerViewport>
                 <MessageScrollerButton />
@@ -70,7 +65,11 @@ export function AskWidget({
         </Card>
       )}
 
-      {error && <p className="text-destructive text-sm">{errorText(error)}</p>}
+      {error && (
+        <p role="alert" className={`text-destructive text-sm ${transcriptItemEnter}`}>
+          {errorText(error)}
+        </p>
+      )}
 
       <form ref={formRef} onSubmit={submit} className="scroll-mb-8">
         <InputGroup>
@@ -78,7 +77,7 @@ export function AskWidget({
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' && !event.shiftKey) {
+              if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
                 event.preventDefault()
                 event.currentTarget.form?.requestSubmit()
               }
@@ -89,16 +88,7 @@ export function AskWidget({
             required
           />
           <InputGroupAddon align="block-end">
-            <InputGroupButton
-              type="submit"
-              variant="default"
-              size="icon-sm"
-              className="ml-auto"
-              disabled={!canSend}
-            >
-              {busy ? <Spinner /> : <IconArrowUp />}
-              <span className="sr-only">Ask</span>
-            </InputGroupButton>
+            <AskSubmitButton busy={busy} canSend={canSend} onStop={stop} className="ml-auto" />
           </InputGroupAddon>
         </InputGroup>
       </form>

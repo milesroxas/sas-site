@@ -170,16 +170,22 @@ export const HeadingDropdown = ({
         <DropdownMenuTrigger
           className={cn(
             'group inline-flex items-center justify-center gap-1.5 rounded-md px-2 py-1',
-            // Chip ink uses the popover pair so it stays independent of the
-            // section remapping `--foreground` → tertiary (dark bands would
-            // otherwise paint light type on `bg-muted`).
-            // leading-none keeps the chip shorter than the line box so it
-            // rides the text baseline without stretching wrapped lines.
-            'bg-muted align-baseline text-xl md:text-3xl leading-none font-mono text-popover-foreground',
-            'outline-none transition-colors hover:bg-accent hover:text-accent-foreground',
+            // The chip is the sentence's one action, so it takes the primary
+            // pair. Bands never remap `--primary`, so the chip reads the same
+            // on light, dark and neutral sections. leading-none keeps it
+            // shorter than the line box so it rides the text baseline
+            // without stretching wrapped lines.
+            'bg-primary align-baseline text-xl md:text-3xl leading-none font-mono text-primary-foreground',
+            // `pressable` owns the transition list (color, background, scale):
+            // 150ms ease-out compress on press, springy release. Hover and
+            // open lift the plate toward its ink (same mix the secondary
+            // button uses) rather than fading it, so the chip never goes
+            // translucent over a band.
+            'pressable outline-none select-none',
+            'hover:bg-[color-mix(in_oklch,var(--primary),var(--primary-foreground)_12%)]',
+            'data-[state=open]:bg-[color-mix(in_oklch,var(--primary),var(--primary-foreground)_12%)]',
             'focus:outline-none focus:ring-0',
             'focus-visible:ring-2 focus-visible:ring-ring/30',
-            'data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
             lowercase && 'lowercase',
           )}
           onPointerDown={() => {
@@ -190,7 +196,7 @@ export const HeadingDropdown = ({
           }}
         >
           {current}
-          <IconChevronDown className="size-6 shrink-0 transition-transform duration-200 ease-out group-data-[state=open]:rotate-180" />
+          <IconChevronDown className="size-6 shrink-0 transition-transform duration-200 ease-(--ease-out-quint) group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
@@ -198,6 +204,19 @@ export const HeadingDropdown = ({
           className={cn(
             'w-max min-w-(--radix-dropdown-menu-trigger-width) rounded-md bg-popover p-3 pr-14',
             'flex flex-col gap-2 md:gap-6 text-popover-foreground',
+            // A big-type menu is heavier than the primitive's 100ms chrome
+            // popover: it settles over 200ms on the site's ease-out and starts
+            // at 0.98 (almost its full size, never from nothing) from the
+            // trigger's corner, the origin the primitive already sets. Exit
+            // is shorter since the user has already decided. The retunes
+            // carry the primitive's own variants so they replace its values
+            // (`cn` merges tw-animate groups) instead of losing to the
+            // variant's specificity. Reduced motion keeps the fade and drops
+            // the scale and travel.
+            'duration-200 ease-(--ease-out-quint) data-open:zoom-in-98 data-closed:zoom-out-98',
+            'data-closed:duration-150',
+            'motion-reduce:data-open:zoom-in-100 motion-reduce:data-closed:zoom-out-100',
+            'motion-reduce:data-[side=bottom]:slide-in-from-top-0',
           )}
           onCloseAutoFocus={(event) => {
             if (openedWithPointerRef.current) {
@@ -212,8 +231,19 @@ export const HeadingDropdown = ({
               <DropdownMenuItem
                 key={`${index}-${option}`}
                 className={cn(
-                  'min-h-0 cursor-pointer rounded-none p-0 font-mono text-base md:text-heading-3 whitespace-nowrap text-popover-foreground',
-                  'focus:bg-transparent focus:text-popover-foreground',
+                  'group/option min-h-0 cursor-pointer rounded-none p-0 font-mono text-base md:text-heading-3 whitespace-nowrap text-popover-foreground',
+                  // Radix moves focus with the pointer, so `focus:` is the
+                  // hover state too (and the keyboard one). Rows are bare
+                  // type on the popover plate: highlight is an ink shift to
+                  // primary, no fill. The descendant rule retunes the
+                  // primitive's own (which would paint the label span in
+                  // accent ink over the row's color) rather than adding to it.
+                  'focus:bg-transparent focus:text-primary',
+                  'not-data-[variant=destructive]:focus:**:text-primary',
+                  // Press compresses the row on the shared recipe. The
+                  // subtle token and a left origin keep the wide row's
+                  // leading edge pinned so it reads as a press, not a slide.
+                  'pressable pressable-subtle origin-left',
                   lowercase && 'lowercase',
                   selected && 'opacity-50',
                 )}
@@ -222,7 +252,12 @@ export const HeadingDropdown = ({
                   onSelect(index)
                 }}
               >
-                {option}
+                {/* The nudge lives on a child, never the hover target: moving
+                    the row itself would pull it out from under the cursor and
+                    flicker. Reduced motion keeps the ink shift only. */}
+                <span className="inline-block transition-transform duration-150 ease-(--ease-out-quint) motion-safe:group-focus/option:translate-x-1 motion-reduce:transition-none">
+                  {option}
+                </span>
               </DropdownMenuItem>
             )
           })}

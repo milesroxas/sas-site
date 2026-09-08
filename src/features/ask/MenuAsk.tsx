@@ -1,16 +1,11 @@
 'use client'
 
-import { IconArrowDown, IconArrowUp, IconRefresh, IconX } from '@tabler/icons-react'
+import { IconArrowDown, IconRefresh, IconX } from '@tabler/icons-react'
 import type { ChatTransport, UIMessage } from 'ai'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { CardAction, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -19,7 +14,6 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller'
-import { Spinner } from '@/components/ui/spinner'
 import {
   CHAT_EXIT_RELEASE_MS,
   CHAT_PANEL_EXIT_MS,
@@ -30,6 +24,7 @@ import { MenuPreviewSlot } from '@/Header/Menu/PreviewSlot'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
 import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
+import { AskSubmitButton } from './SubmitButton'
 import { useAskChat } from './useAskChat'
 
 /**
@@ -160,13 +155,23 @@ export function MenuAsk({
     return () => window.clearTimeout(timer)
   }, [chatView, open, reducedMotion])
 
-  const { question, setQuestion, messages, setMessages, status, error, busy, canSend, submit } =
-    useAskChat({
-      transport,
-      initialMessages,
-      // Submitting swaps the preview window for the transcript panel.
-      onSend: showTranscript,
-    })
+  const {
+    question,
+    setQuestion,
+    messages,
+    setMessages,
+    status,
+    error,
+    busy,
+    canSend,
+    submit,
+    stop,
+  } = useAskChat({
+    transport,
+    initialMessages,
+    // Submitting swaps the preview window for the transcript panel.
+    onSend: showTranscript,
+  })
 
   // Closing the menu hands the window back to the page preview.
   useEffect(() => {
@@ -280,7 +285,7 @@ export function MenuAsk({
             >
               <MessageScrollerViewport className="overscroll-contain">
                 <MessageScrollerContent className="p-4">
-                  <TranscriptItems messages={messages} pending={status === 'submitted'} />
+                  <TranscriptItems messages={messages} status={status} />
                   {error && (
                     <MessageScrollerItem messageId="error">
                       <p
@@ -327,20 +332,13 @@ export function MenuAsk({
             required
           />
           <InputGroupAddon align="inline-end">
-            <InputGroupButton
-              type="submit"
-              variant="default"
-              size="icon-sm"
+            <AskSubmitButton
+              busy={busy}
+              canSend={canSend}
+              onStop={stop}
               className={composerButton}
-              disabled={!canSend}
-            >
-              {busy ? (
-                <Spinner className={composerIcon} />
-              ) : (
-                <IconArrowUp className={composerIcon} />
-              )}
-              <span className="sr-only">Ask</span>
-            </InputGroupButton>
+              iconClassName={composerIcon}
+            />
           </InputGroupAddon>
         </InputGroup>
       </form>
