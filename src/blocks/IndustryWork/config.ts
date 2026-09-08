@@ -74,7 +74,7 @@ export const IndustryWork: Block = {
           },
           admin: {
             description:
-              'Work page featured for this industry (list narrows to that industry once one is picked). Title, media, client, and capabilities come from it.',
+              'Work page featured for this industry (list narrows to that industry once one is picked). Title, client, and capabilities come from it; media is its menu preview when set, else its cover asset, else its hero media.',
           },
         },
       ],

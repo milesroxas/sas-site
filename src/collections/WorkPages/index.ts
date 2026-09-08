@@ -191,7 +191,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
     menuPreviewField({
       filterOptions: caseStudyScopedMediaFilter,
       description:
-        "Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the cover asset, then the Header's menu fallback.",
+        "Shown in the site menu while this page's link is hovered, and by the Industry work block when it features this page. Leave empty to use the hero media, then the cover asset, then the Header's menu fallback (the block falls back to the cover asset, then hero media).",
     }),
     slugField({ fieldToUse: 'title' }),
   ],
