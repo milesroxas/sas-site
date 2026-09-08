@@ -5,6 +5,8 @@ import {
   HorizontalRuleFeature,
   InlineToolbarFeature,
   lexicalEditor,
+  OrderedListFeature,
+  UnorderedListFeature,
 } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
@@ -99,6 +101,8 @@ export const Posts: CollectionConfig<'posts'> = {
                   return [
                     ...rootFeatures,
                     HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+                    UnorderedListFeature(),
+                    OrderedListFeature(),
                     BlocksFeature({
                       blocks: [Banner, Carousel, Code, FeatureStatementLinks, MediaBlock],
                     }),
