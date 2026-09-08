@@ -116,6 +116,16 @@ export const SiteInfo: GlobalConfig = {
               'Turn on to remove Ask from the site: the composer leaves the menu and the closing band, and /ask returns not found. The closing band shows the address panel from Footer › Closing instead.',
           },
         },
+        {
+          // Action panel, no stored value. Rebuilds the embedding index that
+          // Ask answers from (src/features/ask/README.md, "Keeping the index
+          // in sync").
+          name: 'rebuildIndex',
+          type: 'ui',
+          admin: {
+            components: { Field: '@/features/ask/admin/RebuildIndexPanel#RebuildIndexPanel' },
+          },
+        },
       ],
     },
     {

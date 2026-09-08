@@ -30,7 +30,7 @@ import { Subscribers } from './collections/Subscribers'
 import { Testimonials } from './collections/Testimonials'
 import { Users } from './collections/Users'
 import { WorkPages } from './collections/WorkPages'
-import { askPublicEndpoints } from './endpoints/ask'
+import { askEndpoints } from './endpoints/ask'
 import { newsletterPublicEndpoints } from './endpoints/newsletter'
 import { Footer } from './Footer/config'
 import { askEmbeddingsTable } from './features/ask/schema'
@@ -154,7 +154,7 @@ export default buildConfig({
     Users,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  endpoints: [...newsletterPublicEndpoints, ...askPublicEndpoints],
+  endpoints: [...newsletterPublicEndpoints, ...askEndpoints],
   plugins: [
     ...plugins,
     s3Storage({

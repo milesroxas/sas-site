@@ -34,7 +34,9 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 | [`messages.tsx`](./messages.tsx) | Transcript body shared by every surface. Holds the shimmer until the first token (an assistant message with only source parts stays unmounted) and renders source links only once the answer has settled, staggered in. |
 | [`SubmitButton.tsx`](./SubmitButton.tsx) | The composer button shared by every surface: submit when idle, an enabled Stop while a reply is in flight. |
 | [`../../endpoints/ask.ts`](../../endpoints/ask.ts) | The `POST /api/ask` Payload endpoint — validation, rate limiting, prompt assembly. The system prompt sets the studio voice, forbids inline citations (links render separately), and defines the partial-answer mode: say what is published, then one next step with a page path from the source `url`. |
-| [`../../../scripts/backfill-ask-index.ts`](../../../scripts/backfill-ask-index.ts) | Rebuilds ask_embeddings from all published docs: `pnpm payload run scripts/backfill-ask-index.ts`. |
+| [`backfill.ts`](./backfill.ts) | One full pass over every surface and global with a per-instance run lock; shared by the CLI script and the admin rebuild. |
+| [`admin/RebuildIndexPanel.tsx`](./admin/RebuildIndexPanel.tsx) | Site Info › Ask action panel: "Rebuild index" button, progress note, result summary. |
+| [`../../../scripts/backfill-ask-index.ts`](../../../scripts/backfill-ask-index.ts) | CLI entry for the same pass: `pnpm exec tsx --env-file=.env scripts/backfill-ask-index.ts`. |
 
 ## The corpus
 
@@ -97,7 +99,11 @@ to their fixed path).
   version); true unpublish or delete removes rows.
 - Canonical record edits re-embed dependent published pages.
 - Globals: a drafts global (home, index heroes) re-embeds on publish; Site Info on every save.
-- Drift repair / first run: `pnpm payload run scripts/backfill-ask-index.ts`.
+- Drift repair / first run: **Site Info › Ask › Rebuild index** in the admin (team only; calls
+  `POST /api/ask/reindex`, runs inline, reports documents / passages / newly embedded). From a
+  shell: `pnpm exec tsx --env-file=.env scripts/backfill-ask-index.ts`; against production,
+  override `POSTGRES_URL` from `.env.production.pulled` and set `PAYLOAD_DB_PUSH=false`. Both
+  paths run the same `backfillAskIndex` pass (`backfill.ts`).
 - The **search-plugin index** (keyword fallback + /search page) has its own rebuild: the Reindex
   button on the Search collection (admin → System), or re-save documents.
 
@@ -121,6 +127,10 @@ retrieved docs, then streamed `text` parts. Model failures surface as an `error`
 | 400 | `{ error }` | No user message last, or question under 3 / over 500 chars, or over 30 messages |
 | 429 | `{ error }` | More than 10 requests/min from one IP |
 | 503 | `{ error }` | `OPENAI_API_KEY` not configured |
+
+`POST /api/ask/reindex` (team members only, admin cookie): rebuilds the index and returns
+`{ documents, chunks, embedded, failures, durationMs }`. 401 for anonymous or MCP-key callers,
+409 while a rebuild is already running on that instance, 503 without the API key.
 
 ## Configuration
 

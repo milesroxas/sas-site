@@ -1,13 +1,14 @@
 import { getPayload, type Payload, type PayloadRequest } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { askPublicEndpoints } from '@/endpoints/ask'
+import { askEndpoints } from '@/endpoints/ask'
 import { extractTerms, retrieveSources } from '@/features/ask/retrieve'
 import config from '@/payload.config'
 
 let payload: Payload
 const originalApiKey = process.env.OPENAI_API_KEY
 
-const askHandler = askPublicEndpoints[0].handler
+const askHandler = askEndpoints[0].handler
+const reindexHandler = askEndpoints[1].handler
 
 type UserTurn = { id: string; role: string; parts: { type: string; text: string }[] }
 
@@ -104,6 +105,28 @@ describe('Ask (RAG)', () => {
         lastStatus = res.status
       }
       expect(lastStatus).toBe(429)
+    })
+  })
+
+  describe('POST /api/ask/reindex handler', () => {
+    const withUser = (user: unknown) => ({ ...makeReq({}), user }) as unknown as PayloadRequest
+
+    it('rejects anonymous callers', async () => {
+      process.env.OPENAI_API_KEY = 'sk-int-test-not-real'
+      const res = await reindexHandler(withUser(undefined))
+      expect(res.status).toBe(401)
+    })
+
+    it('rejects MCP API-key users, which also arrive as req.user', async () => {
+      process.env.OPENAI_API_KEY = 'sk-int-test-not-real'
+      const res = await reindexHandler(withUser({ id: 1, collection: 'mcp-api-keys' }))
+      expect(res.status).toBe(401)
+    })
+
+    it('returns 503 for a team member when the API key is not configured', async () => {
+      delete process.env.OPENAI_API_KEY
+      const res = await reindexHandler(withUser({ id: 1, collection: 'users' }))
+      expect(res.status).toBe(503)
     })
   })
 })

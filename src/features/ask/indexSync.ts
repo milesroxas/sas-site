@@ -31,6 +31,9 @@ type SurfaceDoc = {
   _status?: string | null
 }
 
+/** What one sync wrote; null when the document is not public and its rows were removed. */
+export type SyncResult = { chunks: number; embedded: number } | null
+
 let warnedMissingKey = false
 
 function embeddingsConfigured(payload: Payload): boolean {
@@ -55,11 +58,11 @@ export async function syncSurfaceDoc(
   payload: Payload,
   surface: ContentSurface,
   ref: Pick<SurfaceDoc, 'id'>,
-): Promise<void> {
+): Promise<SyncResult> {
   const doc = (await readPublicDoc(payload, surface.collection, ref.id)) as SurfaceDoc | null
   if (doc?._status !== 'published' || !doc.slug || !doc.title) {
     await deleteDocEmbeddings(payload, surface.collection, ref.id)
-    return
+    return null
   }
 
   const markdown = await extractDocMarkdown(payload, surface, doc)
@@ -76,15 +79,16 @@ export async function syncSurfaceDoc(
     chunks: chunks.length,
     embedded: result.embedded,
   })
+  return { chunks: chunks.length, embedded: result.embedded }
 }
 
 /** Same pipeline for a global surface; a never-published drafts global has no rows. */
-export async function syncGlobal(payload: Payload, surface: GlobalSurface): Promise<void> {
+export async function syncGlobal(payload: Payload, surface: GlobalSurface): Promise<SyncResult> {
   const doc = await readPublicGlobal(payload, surface)
   const docId = typeof doc?.id === 'number' ? doc.id : 1
   if (!doc) {
     await deleteDocEmbeddings(payload, surface.global, docId)
-    return
+    return null
   }
 
   const markdown = await extractGlobalMarkdown(payload, surface, doc)
@@ -101,6 +105,7 @@ export async function syncGlobal(payload: Payload, surface: GlobalSurface): Prom
     chunks: chunks.length,
     embedded: result.embedded,
   })
+  return { chunks: chunks.length, embedded: result.embedded }
 }
 
 export const askIndexAfterChange =

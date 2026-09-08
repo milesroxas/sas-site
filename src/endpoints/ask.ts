@@ -8,6 +8,7 @@ import {
   type UIMessage,
 } from 'ai'
 import type { Endpoint } from 'payload'
+import { backfillAskIndex, isBackfillRunning } from '@/features/ask/backfill'
 import { ASK_MODEL_API_KEY_VAR, askModel } from '@/features/ask/model'
 import { retrieveSources } from '@/features/ask/retrieve'
 
@@ -252,4 +253,34 @@ const ask: Endpoint = {
   },
 }
 
-export const askPublicEndpoints: Endpoint[] = [ask]
+/**
+ * Team-only: rebuilds the embedding index from every published document and
+ * global, the same pass as `scripts/backfill-ask-index.ts`. Wired to the
+ * "Rebuild index" panel in Site Info › Ask. Runs inline (the jobs cron fires
+ * once a day, too slow for a button); unchanged chunks reuse their vectors so
+ * a rebuild over a corpus that has not changed costs no embedding tokens.
+ */
+const reindex: Endpoint = {
+  path: '/ask/reindex',
+  method: 'post',
+  handler: async (req) => {
+    // `req.user` is also set for MCP API keys; only team members may rebuild.
+    if (req.user?.collection !== 'users') return json({ error: 'Unauthorized' }, 401)
+
+    if (!process.env[ASK_MODEL_API_KEY_VAR]) {
+      return json(
+        { error: `${ASK_MODEL_API_KEY_VAR} is not set, so nothing can be embedded.` },
+        503,
+      )
+    }
+    if (isBackfillRunning()) {
+      return json({ error: 'A rebuild is already running. Try again in a minute.' }, 409)
+    }
+
+    const summary = await backfillAskIndex(req.payload)
+    req.payload.logger.info({ msg: 'ask index rebuilt from admin', user: req.user.id, ...summary })
+    return json(summary)
+  },
+}
+
+export const askEndpoints: Endpoint[] = [ask, reindex]

@@ -1,8 +1,7 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
-import { syncGlobal, syncSurfaceDoc } from '@/features/ask/indexSync'
+import { backfillAskIndex } from '@/features/ask/backfill'
 import { ASK_MODEL_API_KEY_VAR } from '@/features/ask/model'
-import { CONTENT_SURFACES, GLOBAL_SURFACES } from '@/shared/content/surfaces'
 
 /**
  * Rebuilds the ask_embeddings index from every published document on every
@@ -12,7 +11,11 @@ import { CONTENT_SURFACES, GLOBAL_SURFACES } from '@/shared/content/surfaces'
  * embeddings, changing the embedding model or chunker, or whenever
  * hook-driven sync may have drifted:
  *
- *   pnpm payload run scripts/backfill-ask-index.ts
+ *   pnpm exec tsx --env-file=.env scripts/backfill-ask-index.ts
+ *
+ * Against production, override POSTGRES_URL from the pulled prod env and
+ * keep schema push off (see src/features/ask/README.md). The same pass runs
+ * from the admin: Site Info › Ask › Rebuild index.
  *
  * (The search-plugin index has its own rebuild: the Reindex button on the
  * Search collection in the admin, under System.)
@@ -24,33 +27,5 @@ if (!process.env[ASK_MODEL_API_KEY_VAR]) {
 }
 
 const payload = await getPayload({ config })
-
-let total = 0
-for (const surface of CONTENT_SURFACES) {
-  const { docs } = await payload.find({
-    collection: surface.collection,
-    depth: 0,
-    draft: false,
-    limit: 500,
-    pagination: false,
-    where: { _status: { equals: 'published' } },
-  })
-
-  for (const doc of docs) {
-    await syncSurfaceDoc(payload, surface, doc)
-    total += 1
-  }
-  payload.logger.info({
-    msg: 'ask backfill: surface done',
-    surface: surface.collection,
-    docs: docs.length,
-  })
-}
-
-for (const surface of GLOBAL_SURFACES) {
-  await syncGlobal(payload, surface)
-  total += 1
-}
-
-payload.logger.info({ msg: 'ask backfill complete', docs: total })
-process.exit(0)
+const summary = await backfillAskIndex(payload)
+process.exit(summary.failures.length > 0 ? 1 : 0)
