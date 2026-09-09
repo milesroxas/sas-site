@@ -4,6 +4,7 @@ import type { Metadata } from 'next/types'
 import { getPayload } from 'payload'
 import { InsightsBrowse } from '@/sections/InsightsBrowse'
 import { queryInsightsBrowseData } from '@/sections/InsightsBrowse/queries'
+import { queryInsightsIndexHero } from '../InsightsIndexView'
 
 export const dynamic = 'force-static'
 export const revalidate = 600
@@ -39,15 +40,23 @@ export default async function InsightsTopicPage({ params }: Args) {
   const category = await queryTopicBySlug(decodedTopic)
   if (!category) notFound()
 
-  const { topics, posts } = await queryInsightsBrowseData()
+  const [hero, { topics, posts }] = await Promise.all([
+    queryInsightsIndexHero(),
+    queryInsightsBrowseData(),
+  ])
 
+  // The same index as /insights with the topic filter set: the strip filters
+  // in place, so the page keeps the index's own heading rather than the topic's.
   return (
-    <div className="pt-24 pb-24">
-      {/* The sidebar filters in place (no page heading there); keep an h1 for
-          document semantics on this deep-linked topic route. */}
-      <h1 className="sr-only">{category.title}</h1>
-      <InsightsBrowse initialTopicSlug={category.slug} posts={posts} topics={topics} />
-    </div>
+    <main>
+      <InsightsBrowse
+        eyebrow={hero.eyebrow}
+        initialTopicSlug={category.slug}
+        posts={posts}
+        title={hero.title}
+        topics={topics}
+      />
+    </main>
   )
 }
 

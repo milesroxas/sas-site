@@ -1,9 +1,10 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import type { Media, WorkPage } from '@/payload-types'
+import type { IndexFilterOption } from '@/sections/Browse'
 import { populatedDoc } from '@/utilities/relationshipId'
 
-export type WorksBrowseFilterOption = { slug: string; label: string }
+export type WorksBrowseFilterOption = IndexFilterOption
 
 export type WorksBrowseItem = {
   id: number

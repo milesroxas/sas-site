@@ -1375,9 +1375,10 @@ html {
   }
 }
 
-/* Client-side filter swaps (sections/InsightsBrowse): the outgoing grid fades
-   fast, the incoming set re-staggers in — exit stays shorter than enter. The
-   swap flip waits out this exit (GRID_EXIT_MS in the section must match). */
+/* Client-side filter swaps (the browse indexes, via shared/ui/filter-swap):
+   the outgoing set fades fast, the incoming set re-staggers in — exit stays
+   shorter than enter. The swap flip waits out this exit (FILTER_SWAP_EXIT_MS
+   in the hook must match). */
 .filter-swap {
   transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
 }

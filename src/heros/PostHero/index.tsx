@@ -3,8 +3,9 @@ import { ViewTransition } from 'react'
 import { Media } from '@/components/Media'
 import type { Media as MediaDoc, Post } from '@/payload-types'
 import { readingTimeMinutes } from '@/shared/content/reading-time'
-import { postImageShare, postImageVtName } from '@/shared/lib/view-transition'
+import { POST_IMAGE_FRAME, postImageShare, postImageVtName } from '@/shared/lib/view-transition'
 import { formatAuthors } from '@/utilities/formatAuthors'
+import { cn } from '@/utilities/ui'
 
 /**
  * The hero's furniture voice: the kicker and both meta rows are the same
@@ -82,14 +83,17 @@ export const PostHero: React.FC<{
 
       {/* data-hero-media: takeover-menu dissolve source (src/Header/Menu). */}
       <div
-        className="relative aspect-4/5 w-full select-none overflow-hidden bg-muted lg:w-5/12 lg:shrink-0"
+        className={cn(
+          POST_IMAGE_FRAME,
+          'relative w-full select-none overflow-hidden bg-muted lg:w-5/12 lg:shrink-0',
+        )}
         data-hero-media
       >
         {media &&
           (slug ? (
             // Shared element: receives the morph from the clicked post card's
-            // image (matching `name` in `Card`). Both sides are a 4:5 frame, so
-            // the pair morphs without a crop change.
+            // image (matching `name` in `Card`). Both sides paint into
+            // `POST_IMAGE_FRAME`, so the pair morphs without a crop change.
             <ViewTransition default="none" name={postImageVtName(slug)} share={postImageShare}>
               {media}
             </ViewTransition>

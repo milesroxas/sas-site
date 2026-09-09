@@ -15,6 +15,7 @@ import { ProgressiveBlur } from '@/components/ui/progressive-blur'
 import type { Post } from '@/payload-types'
 import {
   forwardNavTransitionTypes,
+  POST_IMAGE_FRAME,
   postImageShare,
   postImageVtName,
 } from '@/shared/lib/view-transition'
@@ -33,7 +34,7 @@ const variantClassNames: Record<CardVariant, string> = {
   // Split renders its own layout branch; no CardUi chrome to override.
   split: '',
   overlay: 'relative min-h-80 justify-end bg-muted ring-0 text-white',
-  backdrop: 'relative isolate aspect-4/3 sm:aspect-3/2 justify-end bg-muted ring-0 text-white',
+  backdrop: cn(POST_IMAGE_FRAME, 'relative isolate justify-end bg-muted ring-0 text-white'),
 }
 
 export const Card: React.FC<{
@@ -140,7 +141,7 @@ export const Card: React.FC<{
             the title needs the wider half to stay above two lines in the rail. */}
         <div className="min-w-0 max-w-64 shrink-0 basis-5/12">
           <div
-            className="relative aspect-4/5 overflow-hidden rounded-xs bg-muted"
+            className={cn(POST_IMAGE_FRAME, 'relative overflow-hidden rounded-xs bg-muted')}
             data-reveal="media"
           >
             {splitMedia &&
@@ -162,7 +163,8 @@ export const Card: React.FC<{
       fill={isMediaBackground}
       imgClassName={isMediaBackground ? 'object-cover' : undefined}
       resource={metaImage}
-      size={isBackdrop ? '(min-width: 64rem) 45vw, 100vw' : '33vw'}
+      // Backdrop fills a cell of the insights index grid: three across from `lg`, two from `sm`.
+      size={isBackdrop ? '(min-width: 64rem) 33vw, (min-width: 40rem) 50vw, 100vw' : '33vw'}
     />
   )
 

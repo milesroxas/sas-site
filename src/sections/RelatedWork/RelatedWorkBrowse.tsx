@@ -6,8 +6,8 @@ import type React from 'react'
 import { type CSSProperties, useMemo } from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
 import { HeroEyebrow } from '@/heros/shared'
+import { LABEL } from '@/sections/Browse/registers'
 import type { WorksBrowseFilterOption, WorksBrowseItem } from '@/sections/WorksBrowse/queries'
-import { LABEL } from '@/sections/WorksBrowse/registers'
 import { WorkRow, type WorkRowHighlight } from '@/sections/WorksBrowse/WorkRow'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
 import { FILTER_SWAP_MAX_STAGGER_STEPS, useFilterSwap } from '@/shared/ui/filter-swap'
@@ -125,11 +125,10 @@ export const RelatedWorkBrowse: React.FC<{
         {filters.length > 0 && (
           <div className="flex w-full flex-col pt-6 md:col-span-8 md:col-start-1" data-reveal>
             <p className={cn(LABEL, 'pb-2 text-muted-foreground 2xl:pb-4')}>{copy.filterLabel}</p>
-            {/* The Insights sidebar's row, one per page term, and it turns
-                where this aside turns: while the aside sits above the list
-                the terms run inline and the active marker is the rule under
-                the label, as on the Insights rail; once the aside is a
-                sidebar at `2xl` they stack on hairlines and the marker
+            {/* One row per page term, and it turns where this aside turns:
+                while the aside sits above the list the terms run inline and
+                the active marker is the rule under the label; once the aside
+                is a sidebar at `2xl` they stack on hairlines and the marker
                 returns to the leading edge, the label sliding off it. Inline
                 terms wrap rather than pan: a page carries a handful, not a
                 rail's worth. */}

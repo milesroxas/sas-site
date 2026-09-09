@@ -40,6 +40,13 @@ export const postImageVtName = (slug: string) =>
   `post-image-${slug.replace(/[^a-zA-Z0-9_-]/g, '_')}`
 
 /**
+ * The frame both ends of that pair paint into. The card and the post hero
+ * crop to the same ratio so the morph never changes crop mid-flight; state a
+ * post image frame anywhere else and the pair drifts.
+ */
+export const POST_IMAGE_FRAME = 'aspect-4/5'
+
+/**
  * Shared-element name bridging a work entry's featured media (IndustryWork
  * spotlight) and its case-study hero media. Both sides pair via `morph-hero`
  * (see `view-transition.css`): the old page fades, the media centers

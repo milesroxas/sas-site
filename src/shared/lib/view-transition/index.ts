@@ -8,6 +8,7 @@ export {
   NAV_BACK,
   NAV_FORWARD,
   NAV_LATERAL,
+  POST_IMAGE_FRAME,
   postImageShare,
   postImageVtName,
   WORK_OPEN,

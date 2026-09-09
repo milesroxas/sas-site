@@ -5,10 +5,10 @@ import { Fragment } from 'react'
 import { Media } from '@/components/Media'
 import { Badge } from '@/components/ui/badge'
 import { cursorTarget } from '@/features/cursor'
+import { FIGURE, LABEL, padIndex } from '@/sections/Browse/registers'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import type { WorksBrowseItem } from './queries'
-import { FIGURE, LABEL, padIndex } from './registers'
 
 /**
  * Taxonomy terms the row is being read against, by slug. A capability chip
