@@ -8,10 +8,16 @@ import {
   type UIMessage,
 } from 'ai'
 import type { Endpoint } from 'payload'
-import { backfillAskIndex, isBackfillRunning } from '@/features/ask/backfill'
+import { backfillAskIndex, isBackfillRunning, readLastIndexRebuild } from '@/features/ask/backfill'
 import { ASK_MODEL_API_KEY_VAR, askModel } from '@/features/ask/model'
 import { retrieveSources } from '@/features/ask/retrieve'
-import { fetchUsageReport, OPENAI_ADMIN_KEY_VAR, OpenAIAdminError } from '@/features/ask/usage'
+import {
+  isUsageConfigured,
+  OPENAI_ADMIN_KEY_VAR,
+  OpenAIAdminError,
+  readUsageReport,
+  refreshUsageReport,
+} from '@/features/ask/usage'
 
 /**
  * Public RAG endpoint (mounted under /api by the Payload root config).
@@ -285,23 +291,49 @@ const reindex: Endpoint = {
 }
 
 /**
- * Team-only: OpenAI spend and token usage for the "Usage" panel in Site Info ›
- * Ask. Proxies the organization Costs and Usage APIs so the Admin key never
- * leaves the server; `?refresh=1` skips the short cache.
+ * Team-only: when the Ask index was last rebuilt, for the "Rebuild index"
+ * panel. Reads the summary the last pass stored; nothing is recomputed.
+ */
+const indexStatus: Endpoint = {
+  path: '/ask/reindex',
+  method: 'get',
+  handler: async (req) => {
+    if (req.user?.collection !== 'users') return json({ error: 'Unauthorized' }, 401)
+    return json({ lastRebuild: await readLastIndexRebuild(req.payload) })
+  },
+}
+
+/**
+ * Team-only: the last OpenAI usage report someone refreshed, for the "Usage"
+ * panel in Site Info › Ask. Served from KV, so opening the panel never calls
+ * OpenAI; `report` is null until the first refresh.
  */
 const usage: Endpoint = {
   path: '/ask/usage',
   method: 'get',
   handler: async (req) => {
     if (req.user?.collection !== 'users') return json({ error: 'Unauthorized' }, 401)
+    return json({ configured: isUsageConfigured(), report: await readUsageReport(req.payload) })
+  },
+}
 
-    if (!process.env[OPENAI_ADMIN_KEY_VAR]) {
+/**
+ * Team-only: fetch a fresh usage report from OpenAI and store it. Only the
+ * panel's Refresh button calls this; the Admin API allows 30 requests a
+ * minute and each refresh spends three of them.
+ */
+const usageRefresh: Endpoint = {
+  path: '/ask/usage',
+  method: 'post',
+  handler: async (req) => {
+    if (req.user?.collection !== 'users') return json({ error: 'Unauthorized' }, 401)
+
+    if (!isUsageConfigured()) {
       return json({ error: `${OPENAI_ADMIN_KEY_VAR} is not set.`, configured: false }, 503)
     }
 
-    const refresh = req.url ? new URL(req.url).searchParams.get('refresh') === '1' : false
     try {
-      return json(await fetchUsageReport({ refresh }))
+      return json({ configured: true, report: await refreshUsageReport(req.payload) })
     } catch (err) {
       if (err instanceof OpenAIAdminError) {
         req.payload.logger.error({ msg: 'ask usage fetch failed', err })
@@ -316,4 +348,4 @@ const usage: Endpoint = {
   },
 }
 
-export const askEndpoints: Endpoint[] = [ask, reindex, usage]
+export const askEndpoints: Endpoint[] = [ask, reindex, indexStatus, usage, usageRefresh]

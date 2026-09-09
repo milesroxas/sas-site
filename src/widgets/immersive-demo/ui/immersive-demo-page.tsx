@@ -114,13 +114,13 @@ const SECTIONS: DemoShellSection[] = [
     label: 'Streak field',
     title: 'Streak field particles',
     description:
-      'Thousands of horizontal light streaks on a fine row grid, each a GPU particle drifting along its row at its own pace, breathing in and out over its own lifetime and shimmering on its own phase. One instanced draw, nothing stepped on the CPU. Tune density, row pitch, length spread, drift and tail here; the ground beneath stays with the caller.',
+      'Thousands of horizontal light streaks on a fine row grid, each a GPU particle drifting along its row at its own pace, breathing in and out over its own lifetime and shimmering on its own phase. One instanced draw, nothing stepped on the CPU. A noise field bends the rows into flows, turns each dash to its direction and shades the field as a height map: pick the formula (value, simplex, fbm, ridged, curl for contours, gradient for slopes), then displace, orient or light the relief. Switch the layout to a grid for a tick plot and the motion to flow to simulate the particles streaming through the field; the load buttons write the topography and depth-map presets into the panel. Move the pointer over the window to push, swirl, drag and lift the field. The window\u2019s theme button flips the stage between dark and light; the streaks crossfade from light to ink rather than pop.',
     icon: IconLineDashed,
     paste: {
       file: 'src/features/immersive/ui/streak-field.tsx',
       symbol: 'StreakField',
       format: 'props',
-      note: 'Layout, motion, life and look settings. Placement and the ground colour stay at the call site.',
+      note: 'Layout, motion, flow, relief, pointer, life and look settings. Placement stays at the call site; pass surface from the site theme.',
     },
     content: StreakFieldPlayground,
   },

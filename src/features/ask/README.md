@@ -34,10 +34,10 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 | [`messages.tsx`](./messages.tsx) | Transcript body shared by every surface. Holds the shimmer until the first token (an assistant message with only source parts stays unmounted) and renders source links only once the answer has settled, staggered in. |
 | [`SubmitButton.tsx`](./SubmitButton.tsx) | The composer button shared by every surface: submit when idle, an enabled Stop while a reply is in flight. |
 | [`../../endpoints/ask.ts`](../../endpoints/ask.ts) | The `POST /api/ask` Payload endpoint — validation, rate limiting, prompt assembly. The system prompt sets the studio voice, forbids inline citations (links render separately), and defines the partial-answer mode: say what is published, then one next step with a page path from the source `url`. |
-| [`backfill.ts`](./backfill.ts) | One full pass over every surface and global with a per-instance run lock; shared by the CLI script and the admin rebuild. |
-| [`admin/RebuildIndexPanel.tsx`](./admin/RebuildIndexPanel.tsx) | Site Info › Ask action panel: "Rebuild index" button, progress note, result summary. |
-| [`usage.ts`](./usage.ts) | OpenAI spend (Costs API) and tokens per model (Usage API) over the last 30 days, month-to-date split out. Needs `OPENAI_ADMIN_API_KEY` (an Admin key, not the project key); `OPENAI_PROJECT_ID` optionally scopes it. Cached 5 minutes per instance. OpenAI exposes no remaining-credit balance over the API. |
-| [`admin/UsagePanel.tsx`](./admin/UsagePanel.tsx) | Site Info › Ask usage panel: spend tiles, cost by line item, tokens by model, refresh. Served by `GET /api/ask/usage` (team-only). |
+| [`backfill.ts`](./backfill.ts) | One full pass over every surface and global with a per-instance run lock; shared by the CLI script and the admin rebuild. Stores the summary of the last pass in Payload KV (`ask:index-last-rebuild`). |
+| [`admin/RebuildIndexPanel.tsx`](./admin/RebuildIndexPanel.tsx) | Site Info › Ask action panel: "Rebuild index" button, progress note, and when the index was last rebuilt (from `GET /api/ask/reindex`). |
+| [`usage.ts`](./usage.ts) | OpenAI spend (Costs API) and tokens per model (Usage API) over the last 30 days, month-to-date split out. Needs `OPENAI_ADMIN_API_KEY` (an Admin key, not the project key); `OPENAI_PROJECT_ID` optionally scopes it. OpenAI is called only on an explicit refresh (its Admin API allows 30 requests a minute); the last report lives in Payload KV (`ask:usage-report`). OpenAI exposes no remaining-credit balance over the API. |
+| [`admin/UsagePanel.tsx`](./admin/UsagePanel.tsx) | Site Info › Ask usage panel: spend tiles, cost by line item, tokens by model, "last refreshed" note. Opens from the stored report (`GET /api/ask/usage`); only the Refresh button fetches from OpenAI (`POST /api/ask/usage`). Both team-only. |
 | [`../../../scripts/backfill-ask-index.ts`](../../../scripts/backfill-ask-index.ts) | CLI entry for the same pass: `pnpm exec tsx --env-file=.env scripts/backfill-ask-index.ts`. |
 
 ## The corpus
@@ -131,8 +131,15 @@ retrieved docs, then streamed `text` parts. Model failures surface as an `error`
 | 503 | `{ error }` | `OPENAI_API_KEY` not configured |
 
 `POST /api/ask/reindex` (team members only, admin cookie): rebuilds the index and returns
-`{ documents, chunks, embedded, failures, durationMs }`. 401 for anonymous or MCP-key callers,
-409 while a rebuild is already running on that instance, 503 without the API key.
+`{ finishedAt, documents, chunks, embedded, failures, durationMs }`. 401 for anonymous or MCP-key
+callers, 409 while a rebuild is already running on that instance, 503 without the API key.
+`GET /api/ask/reindex` returns `{ lastRebuild }`: that same summary from the last completed pass
+(admin or CLI), or null.
+
+`GET /api/ask/usage` (team only): `{ configured, report }`, the last stored OpenAI usage report
+or null; never calls OpenAI. `POST /api/ask/usage` fetches a fresh report from OpenAI, stores it,
+and returns the same shape. 503 with `configured: false` when `OPENAI_ADMIN_API_KEY` is unset,
+502 with OpenAI's message when the Admin API rejects the call.
 
 ## Configuration
 

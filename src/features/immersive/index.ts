@@ -4,7 +4,15 @@
  */
 export { ImmersiveShell, type ImmersiveShellProps } from '@/lib/interactions/immersive-shell'
 export { WebGLTunnel } from '@/lib/webgl/components/tunnel'
-export { HERO_LENS, INDUSTRY_WORK_MEDIA, LIGHT_LEAK_AMBER, LIGHT_LEAK_PAPER } from './presets'
+export {
+  HERO_LENS,
+  INDUSTRY_WORK_MEDIA,
+  LIGHT_LEAK_AMBER,
+  LIGHT_LEAK_PAPER,
+  STREAK_FIELD_DEPTH_MAP,
+  STREAK_FIELD_PAPER,
+  STREAK_FIELD_TOPOGRAPHY,
+} from './presets'
 export {
   CHROMA_SPLIT_TEXT_DEFAULTS,
   ChromaSplitText,
@@ -50,9 +58,14 @@ export {
 } from './ui/scroll-gallery'
 export {
   STREAK_FIELD_DEFAULTS,
+  STREAK_FIELD_NOISES,
   StreakField,
   type StreakFieldInk,
+  type StreakFieldLayout,
+  type StreakFieldMotion,
+  type StreakFieldNoise,
   type StreakFieldProps,
+  type StreakFieldSurface,
 } from './ui/streak-field'
 export { TEXT_LOAD_IN_DEFAULTS, TextLoadIn, type TextLoadInProps } from './ui/text-load-in'
 export {

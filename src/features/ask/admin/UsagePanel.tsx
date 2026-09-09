@@ -3,14 +3,20 @@
 import { Button, FieldLabel, useConfig } from '@payloadcms/ui'
 import { useCallback, useEffect, useState } from 'react'
 import type { UsageReport } from '@/features/ask/usage'
+import { formatWhen } from './formatWhen'
 
 /**
  * Site Info › Ask usage panel: what the Ask feature is costing at OpenAI.
- * Reads GET /api/ask/usage (team-only), which proxies the organization Costs
- * and Usage APIs with an Admin key. Spend is the figure OpenAI bills; tokens
- * are split by model so answer traffic (gpt-5-mini) and index rebuilds
- * (text-embedding-3-small) stay distinguishable. OpenAI has no API for the
- * remaining prepaid balance, so the panel links to Billing for that.
+ *
+ * Opening the panel reads the last stored report (GET /api/ask/usage, team-
+ * only) and never touches OpenAI. Only the Refresh button does (POST), because
+ * the OpenAI Admin API allows 30 requests a minute and each refresh spends
+ * three. The note beside the button says when the figures were last fetched.
+ *
+ * Spend is the figure OpenAI bills; tokens are split by model so answer
+ * traffic (gpt-5-mini) and index rebuilds (text-embedding-3-small) stay
+ * distinguishable. OpenAI has no API for the remaining prepaid balance, so the
+ * panel links to Billing for that.
  */
 
 const BILLING_URL = 'https://platform.openai.com/settings/organization/billing/overview'
@@ -19,8 +25,10 @@ const ADMIN_KEYS_URL = 'https://platform.openai.com/settings/organization/admin-
 type State =
   | { kind: 'loading' }
   | { kind: 'unconfigured' }
-  | { kind: 'error'; message: string }
-  | { kind: 'ready'; report: UsageReport }
+  /** Configured; `report` is null until the first refresh. */
+  | { kind: 'ready'; report: UsageReport | null; error: string | null }
+
+type UsageResponse = { configured?: boolean; report?: UsageReport | null; error?: string }
 
 const noteStyle: React.CSSProperties = { margin: 0, fontSize: 12 }
 
@@ -87,9 +95,6 @@ const formatMoney = (amount: number, currency: string) =>
     maximumFractionDigits: amount < 1 ? 4 : 2,
   }).format(amount)
 
-const formatTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
-
 export function UsagePanel() {
   const {
     config: {
@@ -100,62 +105,93 @@ export function UsagePanel() {
   const [state, setState] = useState<State>({ kind: 'loading' })
   const [refreshing, setRefreshing] = useState(false)
 
-  const load = useCallback(
-    async (refresh: boolean) => {
-      if (refresh) setRefreshing(true)
+  // The stored snapshot: one DB read, no OpenAI call.
+  useEffect(() => {
+    const controller = new AbortController()
+    const load = async () => {
       try {
-        const res = await fetch(`${api}/ask/usage${refresh ? '?refresh=1' : ''}`, {
+        const res = await fetch(`${api}/ask/usage`, {
           credentials: 'include',
+          signal: controller.signal,
         })
-        const body = (await res.json().catch(() => ({}))) as Partial<UsageReport> & {
-          error?: string
-          configured?: boolean
-        }
-        if (res.status === 503 && body.configured === false) {
+        const body = (await res.json().catch(() => ({}))) as UsageResponse
+        if (!res.ok) {
+          setState({ kind: 'ready', report: null, error: body.error ?? 'Could not load usage.' })
+        } else if (body.configured === false) {
           setState({ kind: 'unconfigured' })
-        } else if (!res.ok) {
-          setState({ kind: 'error', message: body.error ?? 'The usage request failed.' })
         } else {
-          setState({ kind: 'ready', report: body as UsageReport })
+          setState({ kind: 'ready', report: body.report ?? null, error: null })
         }
       } catch {
-        setState({ kind: 'error', message: 'Network error. Try again.' })
-      } finally {
-        setRefreshing(false)
+        if (controller.signal.aborted) return
+        setState({ kind: 'ready', report: null, error: 'Network error. Try again.' })
       }
-    },
-    [api],
-  )
+    }
+    void load()
+    return () => controller.abort()
+  }, [api])
 
-  useEffect(() => {
-    void load(false)
-  }, [load])
+  // The only path that reaches OpenAI. A failed refresh keeps the last report on screen.
+  const refresh = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      const res = await fetch(`${api}/ask/usage`, { method: 'POST', credentials: 'include' })
+      const body = (await res.json().catch(() => ({}))) as UsageResponse
+      if (res.status === 503 && body.configured === false) {
+        setState({ kind: 'unconfigured' })
+      } else if (!res.ok || !body.report) {
+        setState((prev) => ({
+          kind: 'ready',
+          report: prev.kind === 'ready' ? prev.report : null,
+          error: body.error ?? 'The usage request failed.',
+        }))
+      } else {
+        setState({ kind: 'ready', report: body.report, error: null })
+      }
+    } catch {
+      setState((prev) => ({
+        kind: 'ready',
+        report: prev.kind === 'ready' ? prev.report : null,
+        error: 'Network error. Try again.',
+      }))
+    } finally {
+      setRefreshing(false)
+    }
+  }, [api])
 
   return (
     <div className="field-type" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <FieldLabel label="OpenAI usage" />
-      {state.kind === 'loading' ? <p style={noteStyle}>Loading usage from OpenAI…</p> : null}
+      {state.kind === 'loading' ? <p style={noteStyle}>Loading the last report…</p> : null}
       {state.kind === 'unconfigured' ? <Unconfigured /> : null}
-      {state.kind === 'error' ? (
-        <p style={{ ...noteStyle, color: 'var(--theme-error-500)' }}>{state.message}</p>
-      ) : null}
-      {state.kind === 'ready' ? <Report report={state.report} /> : null}
-      {state.kind === 'ready' || state.kind === 'error' ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Button
-            buttonStyle="secondary"
-            size="small"
-            disabled={refreshing}
-            onClick={() => void load(true)}
-          >
-            {refreshing ? 'Refreshing…' : 'Refresh'}
-          </Button>
-          {state.kind === 'ready' ? (
-            <span style={{ ...noteStyle, color: 'var(--theme-elevation-500)' }}>
-              As of {formatTime(state.report.fetchedAt)}. Figures lag OpenAI by a few minutes.
-            </span>
+      {state.kind === 'ready' ? (
+        <>
+          {state.error ? (
+            <p style={{ ...noteStyle, color: 'var(--theme-error-500)' }}>{state.error}</p>
           ) : null}
-        </div>
+          {state.report ? (
+            <Report report={state.report} />
+          ) : (
+            <p style={noteStyle}>
+              No figures fetched yet. Refresh pulls the latest spend and tokens from OpenAI.
+            </p>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Button
+              buttonStyle="secondary"
+              size="small"
+              disabled={refreshing}
+              onClick={() => void refresh()}
+            >
+              {refreshing ? 'Refreshing…' : 'Refresh'}
+            </Button>
+            <span style={{ ...noteStyle, color: 'var(--theme-elevation-500)' }}>
+              {state.report
+                ? `Last refreshed ${formatWhen(state.report.fetchedAt)}. Figures only update when you refresh, and lag OpenAI by a few minutes.`
+                : 'Figures only update when you refresh.'}
+            </span>
+          </div>
+        </>
       ) : null}
     </div>
   )

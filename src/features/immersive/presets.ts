@@ -1,5 +1,6 @@
 import type { LightLeakProps } from './ui/light-leak'
 import type { RefractionMediaProps } from './ui/refraction-media'
+import type { StreakFieldProps } from './ui/streak-field'
 
 /**
  * Named, shipped looks for the immersive effects — the single source of truth
@@ -162,3 +163,87 @@ export const LIGHT_LEAK_PAPER = {
   blobCool: 0.4,
   slats: 0.34,
 } as const satisfies Partial<LightLeakProps>
+
+/**
+ * The streak field over a light ground: the same field printed as ink. Only
+ * the polarity and what paper changes about the read: a slightly denser
+ * stroke, because thin ink on white needs more coverage than thin light on
+ * black needs brightness, and less shimmer, which reads as print flicker
+ * rather than signal once the streaks are dark. Pair with the site theme:
+ * `<StreakField {...(theme === 'light' ? STREAK_FIELD_PAPER : {})} />`, or
+ * pass `surface={theme}` alone to keep the dark tuning and only flip polarity.
+ */
+export const STREAK_FIELD_PAPER = {
+  surface: 'light',
+  brightness: 1.3,
+  flicker: 0.15,
+} as const satisfies Partial<StreakFieldProps>
+
+/**
+ * The streak field as a topography: a tick grid where every dash streams
+ * along the contours of an fbm height map (curl of the potential runs along
+ * its level lines) and brightens with altitude, so ridges read as lit relief
+ * and valleys fall below the floor into black. The particles are simulated:
+ * each leaves its cell along the flow, fades, and is reborn in its cell, so
+ * the grid reads as the source the flow pours out of. The terrain itself
+ * morphs slowly, and the pointer lifts the ground it crosses. Uniform short
+ * ticks so the orientation, not the length, carries the shape. `count` is
+ * set high enough to fill the grid on a large display.
+ */
+export const STREAK_FIELD_TOPOGRAPHY = {
+  count: 12000,
+  layout: 'grid',
+  columnPitch: 18,
+  rowPitch: 14,
+  thickness: 1.5,
+  minLength: 9,
+  maxLength: 9,
+  motion: 'flow',
+  flowSpeed: 20,
+  drift: 0,
+  driftSpread: 0.3,
+  lifetime: 3.5,
+  lifeSpread: 0.5,
+  fadeIn: 0.15,
+  fadeOut: 0.3,
+  noise: 'curl',
+  noiseScale: 640,
+  noiseSpeed: 0.03,
+  orient: 1,
+  relief: 1,
+  reliefFloor: 0.25,
+  reliefContrast: 1.4,
+  reliefLength: 0.3,
+  pointerPush: 0,
+  pointerSwirl: 0,
+  pointerWake: 0,
+  pointerAgitate: 0,
+  pointerGlow: 0.4,
+  pointerLift: 0.35,
+  pointerRadius: 240,
+  brightness: 1.4,
+  brightnessSpread: 0.25,
+  flicker: 0.12,
+  tail: 0,
+} as const satisfies Partial<StreakFieldProps>
+
+/**
+ * The topography read as a depth map: the same grid, but the dashes lean up
+ * the slope (`gradient`) rather than along the contours, the height map is
+ * broader and the floor sits high, so only the crests surface out of black
+ * as one soft lit form and the rest of the frame is empty. The lean is
+ * partial, a tilt rather than a full turn, so the grid still reads as rows.
+ */
+export const STREAK_FIELD_DEPTH_MAP = {
+  ...STREAK_FIELD_TOPOGRAPHY,
+  noise: 'gradient',
+  noiseScale: 900,
+  noiseOctaves: 2,
+  orient: 0.6,
+  reliefFloor: 0.45,
+  reliefContrast: 2,
+  reliefLength: 0.4,
+  minLength: 11,
+  maxLength: 11,
+  brightnessSpread: 0.15,
+} as const satisfies Partial<StreakFieldProps>

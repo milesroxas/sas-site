@@ -16,3 +16,4 @@ export {
   workImageVtName,
   workOpenTransitionTypes,
 } from './constants'
+export { rootMs } from './root-ms'

@@ -76,6 +76,28 @@
   }
 }
 
+/*
+ * Takeover-menu navigation curtain (`Menu/navCurtain.ts`). A menu link whose
+ * destination has no hero to hand off to closes with the plain undock, and
+ * the media the docked window was showing rides that undock to full screen
+ * instead of fading out over the old page. Once the new route has painted
+ * beneath, the curtain lifts with the site's default reveal: the same
+ * top-down mask, duration and ease as `.reveal-down`, so a menu navigation
+ * and a lateral link navigation land on the page the same way. Not a view
+ * transition (the platform one is suppressed for the flight), so it sits
+ * outside the `@supports` block and works wherever clip-path animates.
+ */
+@keyframes vt-curtain-lift {
+  to {
+    clip-path: inset(100% 0 0 0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-menu-nav-curtain][data-lift] {
+    animation: var(--vt-duration-reveal) var(--vt-ease-reveal) both vt-curtain-lift;
+  }
+}
+
 @supports (view-transition-name: none) {
   /*
    * Active animations are gated behind `no-preference` so reduced-motion users

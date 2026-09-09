@@ -8,9 +8,17 @@
  * OpenAI exposes no remaining-credit balance over the API, so the panel links
  * to Billing for that.
  *
+ * OpenAI is only called when someone presses Refresh. The Admin API allows
+ * 30 requests a minute across the organization, and a panel that fetched on
+ * every mount (three calls each, from every warm serverless instance) ran
+ * straight into that. The last report lives in Payload KV, so every reader on
+ * every instance sees the same snapshot and its `fetchedAt`.
+ *
  * Nothing here is a model call; the aggregation is pure so it can be tested
  * against fixture buckets without a key.
  */
+
+import type { Payload } from 'payload'
 
 export const OPENAI_ADMIN_KEY_VAR = 'OPENAI_ADMIN_API_KEY'
 export const OPENAI_PROJECT_ID_VAR = 'OPENAI_PROJECT_ID'
@@ -19,8 +27,9 @@ const OPENAI_API_URL = 'https://api.openai.com/v1'
 /** Daily buckets; the usage endpoints cap `limit` at 31 for `1d`. */
 const MAX_DAILY_BUCKETS = 31
 const WINDOW_DAYS = 30
-const CACHE_TTL_MS = 5 * 60_000
 const DAY_MS = 86_400_000
+/** KV key holding the last report fetched; shared by every instance. */
+const USAGE_REPORT_KV_KEY = 'ask:usage-report'
 
 export type UsageReport = {
   fetchedAt: string
@@ -249,16 +258,20 @@ async function fetchAllBuckets<T>(
   return buckets
 }
 
-let cached: { report: UsageReport; expiresAt: number } | null = null
+/** True when the Admin key is set, so a refresh can be attempted. */
+export const isUsageConfigured = (): boolean => Boolean(process.env[OPENAI_ADMIN_KEY_VAR])
+
+/** The last report someone refreshed, or `null` before the first refresh. Never calls OpenAI. */
+export function readUsageReport(payload: Payload): Promise<UsageReport | null> {
+  return payload.kv.get<UsageReport>(USAGE_REPORT_KV_KEY)
+}
 
 /**
- * Fetches (or serves from a short per-instance cache) the report. Three
- * Admin API calls per refresh; the cache keeps a panel that is left open
- * from hammering them.
+ * Fetches a fresh report from OpenAI (three Admin API calls) and stores it
+ * for every later reader. Only the Refresh button reaches this.
  */
-export async function fetchUsageReport(options: { refresh?: boolean } = {}): Promise<UsageReport> {
+export async function refreshUsageReport(payload: Payload): Promise<UsageReport> {
   const nowMs = Date.now()
-  if (!options.refresh && cached && cached.expiresAt > nowMs) return cached.report
 
   const adminKey = process.env[OPENAI_ADMIN_KEY_VAR]
   if (!adminKey) throw new OpenAIAdminError(`${OPENAI_ADMIN_KEY_VAR} is not set.`, 503)
@@ -290,6 +303,6 @@ export async function fetchUsageReport(options: { refresh?: boolean } = {}): Pro
   ])
 
   const report = buildUsageReport({ nowMs, projectId, costs, completions, embeddings })
-  cached = { report, expiresAt: nowMs + CACHE_TTL_MS }
+  await payload.kv.set(USAGE_REPORT_KV_KEY, report)
   return report
 }

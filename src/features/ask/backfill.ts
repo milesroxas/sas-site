@@ -8,9 +8,17 @@ import { syncGlobal, syncSurfaceDoc } from './indexSync'
  * team-only reindex endpoint behind the Site Info › Ask panel. Per-document
  * failures are collected, not thrown, so one bad document cannot leave the
  * rest of the index stale.
+ *
+ * The summary of the last pass is kept in Payload KV so the admin panel can
+ * say when the index was last rebuilt, whichever instance (or the CLI) ran it.
  */
 
+/** KV key holding the summary of the last completed pass. */
+const LAST_REBUILD_KV_KEY = 'ask:index-last-rebuild'
+
 export type BackfillSummary = {
+  /** When the pass finished, ISO 8601. */
+  finishedAt: string
   /** Documents (and globals) that are public and now have rows. */
   documents: number
   /** Rows written across those documents. */
@@ -27,6 +35,11 @@ let running: Promise<BackfillSummary> | null = null
 /** True while a pass is in flight on this instance. */
 export const isBackfillRunning = (): boolean => running !== null
 
+/** The last completed pass, or `null` if the index has never been rebuilt this way. */
+export function readLastIndexRebuild(payload: Payload): Promise<BackfillSummary | null> {
+  return payload.kv.get<BackfillSummary>(LAST_REBUILD_KV_KEY)
+}
+
 export async function backfillAskIndex(payload: Payload): Promise<BackfillSummary> {
   if (running) return running
   running = run(payload).finally(() => {
@@ -38,6 +51,7 @@ export async function backfillAskIndex(payload: Payload): Promise<BackfillSummar
 async function run(payload: Payload): Promise<BackfillSummary> {
   const startedAt = Date.now()
   const summary: BackfillSummary = {
+    finishedAt: '',
     documents: 0,
     chunks: 0,
     embedded: 0,
@@ -89,6 +103,13 @@ async function run(payload: Payload): Promise<BackfillSummary> {
   }
 
   summary.durationMs = Date.now() - startedAt
+  summary.finishedAt = new Date().toISOString()
   payload.logger.info({ msg: 'ask backfill complete', ...summary })
+  try {
+    await payload.kv.set(LAST_REBUILD_KV_KEY, summary)
+  } catch (err) {
+    // The index is already rebuilt; only the "last rebuilt" note is lost.
+    payload.logger.error({ msg: 'ask backfill: could not record last rebuild', err })
+  }
   return summary
 }

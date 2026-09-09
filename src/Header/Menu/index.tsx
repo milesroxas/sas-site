@@ -49,6 +49,7 @@ import {
   MOBILE_CARD_SHADOW,
   onMediaReady,
 } from './motion'
+import { collectHeldMedia, type NavCurtain, startNavCurtain } from './navCurtain'
 import { MenuPreviewSlot, PREVIEW_WINDOW_SELECTOR } from './PreviewSlot'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger)
@@ -543,6 +544,13 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   /** In-flight hero handoff (see ./heroHandoff) — owns the exit while active. */
   const handoffRef = useRef<HeroHandoff | null>(null)
   /**
+   * In-flight navigation curtain (see ./navCurtain): the plain-close
+   * navigation holds the docked window's media through the undock and masks
+   * the new page in over it. Owns the media stack from the click until the
+   * lift is done.
+   */
+  const curtainRef = useRef<NavCurtain | null>(null)
+  /**
    * Held while the plain undock close carries a navigation. React starts a
    * view transition on every route commit whatever the tagging says, and its
    * capture suspends rendering (and rAF) for as long as React holds the
@@ -695,6 +703,26 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         // `restoreFrame`, at the end of the reverse).
         releaseViewTransitionsRef.current?.()
         releaseViewTransitionsRef.current = suppressViewTransitions()
+        // Hold whatever the window is showing through the undock and mask
+        // the new page in over it (navCurtain), instead of letting the
+        // reverse fade it out over the old page and cut. Only a real route
+        // change can lift it (the pathname effect is the commit signal), and
+        // reduced motion keeps the snap it already has.
+        const layer = frame?.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
+        const held = layer && !prefersReducedMotion() ? collectHeldMedia(layer) : []
+        if (frame && held.length > 0 && anchor.pathname !== window.location.pathname) {
+          window.clearTimeout(hoverClearTimer.current)
+          curtainRef.current?.abort()
+          const footer = getSiteFooter()
+          curtainRef.current = startNavCurtain({
+            media: held,
+            frame,
+            chrome: footer ? [footer] : [],
+            onDone: () => {
+              curtainRef.current = null
+            },
+          })
+        }
         router.push(anchor.pathname + anchor.search + anchor.hash)
         onClose()
         return
@@ -741,6 +769,9 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       handoffRef.current.routeChanged()
       return
     }
+    // The curtain lifts once the new page has painted beneath it; the frame
+    // re-pin below still applies while the undock is in flight.
+    curtainRef.current?.routeChanged()
     const frame = getPageFrame()
     if (!frame?.hasAttribute('inert')) return
     scrollYRef.current = 0
@@ -755,11 +786,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     (media: MenuMedia | null) => ({
       onPointerEnter: (event: React.PointerEvent) => {
         if (event.pointerType !== 'mouse') return
+        // The click already decided what the window holds (curtain/handoff).
+        if (pendingNavRef.current) return
         window.clearTimeout(hoverClearTimer.current)
         showHoverMedia(media)
       },
       onPointerLeave: (event: React.PointerEvent) => {
         if (event.pointerType !== 'mouse') return
+        if (pendingNavRef.current) return
         window.clearTimeout(hoverClearTimer.current)
         hoverClearTimer.current = window.setTimeout(
           () => showHoverMedia(null),
@@ -1114,6 +1148,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
     if (open) {
       pendingNavRef.current = false
+      // Reopened while a navigation curtain is up (or still riding the
+      // undock): drop it. A fresh open rebuilds the layer; a mid-reverse
+      // reopen keeps the held stack, whose base the timeline no longer owns,
+      // so the next close has to dissolve it out by hand.
+      if (curtainRef.current?.active) {
+        curtainRef.current.abort()
+        if (tl.progress() > 0) lateBaseRef.current = true
+      }
       // Insurance: a close that never reached `restoreFrame` (no timeline, no
       // frame) must not leave the document without view transitions.
       releaseViewTransitionsRef.current?.()
@@ -1170,14 +1212,18 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       })
       tl.play()
     } else if (tl.progress() > 0) {
+      // A navigation curtain holds the whole media stack through the undock
+      // (it already pinned the stack and took it out of the timeline), so
+      // nothing below may dissolve it.
+      const holding = !!curtainRef.current?.active
       // Dissolve any hover preview back to the resting state before undocking —
       // on media-less pages the layer sits outside the timeline, so a preview
       // left behind (Escape while hovering) would ride the reverse and pop off.
       window.clearTimeout(hoverClearTimer.current)
-      showHoverMedia(null)
+      if (!holding) showHoverMedia(null)
       // A base the timeline never owned has to be dissolved back out by hand,
       // over the beat the reverse would have given it.
-      if (lateBaseRef.current) {
+      if (lateBaseRef.current && !holding) {
         lateBaseRef.current = false
         const base = frame.querySelector<HTMLElement>(
           `${HERO_LAYER_SELECTOR} ${HERO_BASE_SELECTOR}`,
@@ -1199,6 +1245,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         // committed, LenisRouteReset put the page at the top (or its anchor) —
         // restoreFrame honors that instead of stamping a stale offset.
         restoreFrame(pendingNavRef.current)
+        // The held media moves from the dropped layer into the curtain in
+        // this same task, so nothing paints a frame without cover; after the
+        // restore, so the footer's lift outlives clearFrameProps.
+        curtainRef.current?.raise()
         // Drop every GSAP inline style so the class-driven closed state
         // (invisible / opacity-0 / pointer-events-none) is the single source
         // of truth, and the next timeline records pristine start values.
@@ -1280,6 +1330,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       window.clearTimeout(hoverClearTimer.current)
       // Unmount mid-handoff: drop the traveler and restore the frame now.
       handoffRef.current?.abort()
+      curtainRef.current?.abort()
       // …and never leave the document without view transitions.
       releaseViewTransitionsRef.current?.()
       releaseViewTransitionsRef.current = null
