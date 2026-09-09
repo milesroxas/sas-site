@@ -92,27 +92,27 @@ export function StreakFieldPlayground() {
     layout: { value: DEFAULTS.layout as StreakFieldLayout, options: LAYOUTS },
     columnPitch: {
       value: DEFAULTS.columnPitch,
-      min: 4,
+      min: 1,
       max: 64,
-      step: 1,
+      step: 0.5,
       label: 'column pitch',
     },
-    rowPitch: { value: DEFAULTS.rowPitch, min: 4, max: 48, step: 1, label: 'row pitch' },
+    rowPitch: { value: DEFAULTS.rowPitch, min: 1, max: 48, step: 0.5, label: 'row pitch' },
     rowJitter: { value: DEFAULTS.rowJitter, min: 0, max: 1, step: 0.01, label: 'row jitter' },
-    thickness: { value: DEFAULTS.thickness, min: 0.5, max: 6, step: 0.1 },
-    minLength: { value: DEFAULTS.minLength, min: 1, max: 100, step: 1, label: 'min length' },
-    maxLength: { value: DEFAULTS.maxLength, min: 1, max: 600, step: 1, label: 'max length' },
-    lengthBias: { value: DEFAULTS.lengthBias, min: 0.3, max: 6, step: 0.1, label: 'length bias' },
+    thickness: { value: DEFAULTS.thickness, min: 0.25, max: 6, step: 0.05 },
+    minLength: { value: DEFAULTS.minLength, min: 1, max: 60, step: 0.5, label: 'min length' },
+    maxLength: { value: DEFAULTS.maxLength, min: 1, max: 200, step: 0.5, label: 'max length' },
+    lengthBias: { value: DEFAULTS.lengthBias, min: 0.3, max: 12, step: 0.1, label: 'length bias' },
   })
 
   const [{ motion, flowSpeed, drift, driftSpread, timeScale }, setMotion] = useSettableDemoControls(
     'Motion',
     {
       motion: { value: DEFAULTS.motion as StreakFieldMotion, options: MOTIONS },
-      flowSpeed: { value: DEFAULTS.flowSpeed, min: 0, max: 400, step: 1, label: 'flow speed' },
-      drift: { value: DEFAULTS.drift, min: -300, max: 300, step: 1 },
+      flowSpeed: { value: DEFAULTS.flowSpeed, min: 0, max: 120, step: 0.5, label: 'flow speed' },
+      drift: { value: DEFAULTS.drift, min: -60, max: 60, step: 0.25 },
       driftSpread: { value: DEFAULTS.driftSpread, min: 0, max: 1, step: 0.01, label: 'spread' },
-      timeScale: { value: DEFAULTS.timeScale, min: 0, max: 3, step: 0.05, label: 'time scale' },
+      timeScale: { value: DEFAULTS.timeScale, min: 0, max: 3, step: 0.01, label: 'time scale' },
     },
   )
 
@@ -121,15 +121,15 @@ export function StreakFieldPlayground() {
     setFlow,
   ] = useSettableDemoControls('Flow', {
     noise: { value: DEFAULTS.noise as StreakFieldNoise, options: [...STREAK_FIELD_NOISES] },
-    noiseScale: { value: DEFAULTS.noiseScale, min: 20, max: 2000, step: 10, label: 'scale' },
+    noiseScale: { value: DEFAULTS.noiseScale, min: 20, max: 3000, step: 10, label: 'scale' },
     noiseStrength: {
       value: DEFAULTS.noiseStrength,
       min: 0,
-      max: 200,
-      step: 1,
+      max: 100,
+      step: 0.25,
       label: 'strength',
     },
-    noiseSpeed: { value: DEFAULTS.noiseSpeed, min: 0, max: 1, step: 0.005, label: 'speed' },
+    noiseSpeed: { value: DEFAULTS.noiseSpeed, min: 0, max: 0.5, step: 0.001, label: 'speed' },
     noiseOctaves: { value: DEFAULTS.noiseOctaves, min: 1, max: 6, step: 1, label: 'octaves' },
     noiseGain: { value: DEFAULTS.noiseGain, min: 0, max: 1, step: 0.01, label: 'gain' },
     noiseAxis: { value: DEFAULTS.noiseAxis, min: 0, max: 1, step: 0.01, label: 'axis' },
@@ -144,7 +144,7 @@ export function StreakFieldPlayground() {
         value: DEFAULTS.reliefContrast,
         min: 0.2,
         max: 6,
-        step: 0.05,
+        step: 0.01,
         label: 'contrast',
       },
       reliefLength: { value: DEFAULTS.reliefLength, min: 0, max: 1, step: 0.01, label: 'length' },
@@ -164,26 +164,26 @@ export function StreakFieldPlayground() {
     setPointer,
   ] = useSettableDemoControls('Pointer', {
     pointerRadius: { value: DEFAULTS.pointerRadius, min: 0, max: 600, step: 5, label: 'radius' },
-    pointerPush: { value: DEFAULTS.pointerPush, min: -200, max: 200, step: 1, label: 'push' },
-    pointerSwirl: { value: DEFAULTS.pointerSwirl, min: -200, max: 200, step: 1, label: 'swirl' },
-    pointerWake: { value: DEFAULTS.pointerWake, min: 0, max: 0.2, step: 0.005, label: 'wake' },
+    pointerPush: { value: DEFAULTS.pointerPush, min: -100, max: 100, step: 0.5, label: 'push' },
+    pointerSwirl: { value: DEFAULTS.pointerSwirl, min: -100, max: 100, step: 0.5, label: 'swirl' },
+    pointerWake: { value: DEFAULTS.pointerWake, min: 0, max: 0.5, step: 0.005, label: 'wake' },
     pointerAgitate: {
       value: DEFAULTS.pointerAgitate,
       min: 0,
-      max: 6,
+      max: 10,
       step: 0.05,
       label: 'agitate',
     },
     pointerGlow: { value: DEFAULTS.pointerGlow, min: 0, max: 3, step: 0.05, label: 'glow' },
     pointerLift: { value: DEFAULTS.pointerLift, min: -1, max: 1, step: 0.01, label: 'lift' },
-    pointerEase: { value: DEFAULTS.pointerEase, min: 0.5, max: 30, step: 0.5, label: 'ease' },
+    pointerEase: { value: DEFAULTS.pointerEase, min: 0.1, max: 20, step: 0.1, label: 'ease' },
   })
 
   const [{ lifetime, lifeSpread, fadeIn, fadeOut }, setLife] = useSettableDemoControls('Life', {
-    lifetime: { value: DEFAULTS.lifetime, min: 0.5, max: 20, step: 0.1 },
+    lifetime: { value: DEFAULTS.lifetime, min: 0.5, max: 40, step: 0.1 },
     lifeSpread: { value: DEFAULTS.lifeSpread, min: 0, max: 1, step: 0.01, label: 'spread' },
-    fadeIn: { value: DEFAULTS.fadeIn, min: 0, max: 0.5, step: 0.01, label: 'fade in' },
-    fadeOut: { value: DEFAULTS.fadeOut, min: 0, max: 0.5, step: 0.01, label: 'fade out' },
+    fadeIn: { value: DEFAULTS.fadeIn, min: 0, max: 0.5, step: 0.005, label: 'fade in' },
+    fadeOut: { value: DEFAULTS.fadeOut, min: 0, max: 0.5, step: 0.005, label: 'fade out' },
   })
 
   const [
@@ -204,12 +204,12 @@ export function StreakFieldPlayground() {
     flickerRate: {
       value: DEFAULTS.flickerRate,
       min: 0,
-      max: 8,
-      step: 0.05,
+      max: 4,
+      step: 0.01,
       label: 'flicker rate',
     },
     tail: { value: DEFAULTS.tail, min: 0, max: 1, step: 0.01 },
-    cap: { value: DEFAULTS.cap, min: 0, max: 20, step: 0.5 },
+    cap: { value: DEFAULTS.cap, min: 0, max: 10, step: 0.1 },
   })
 
   // Every panel key, pointing at the folder that holds it. `Record<PanelKey,
