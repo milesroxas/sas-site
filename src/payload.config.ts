@@ -102,6 +102,13 @@ export default buildConfig({
   db: vercelPostgresAdapter({
     pool: {
       connectionString: process.env.POSTGRES_URL || '',
+      // `next build` prerenders with several worker processes, each holding
+      // its own pool (pg default: 10). Every backend on Neon caches the
+      // relcache for the ~470 Payload tables it touches, so dozens of build
+      // connections exhaust the compute's RAM and Postgres answers
+      // `out of memory` (53200) mid-prerender. Cap the pool per build worker;
+      // runtime (Fluid Compute) keeps the pg default.
+      max: process.env.NEXT_PHASE === 'phase-production-build' ? 2 : undefined,
     },
     // Drizzle push is ON by default (local dev iterates against the Docker DB
     // via push — never migrations; Payload forbids mixing the two on one DB).
