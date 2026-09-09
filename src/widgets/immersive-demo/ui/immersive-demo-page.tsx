@@ -6,6 +6,7 @@ import {
   IconCards,
   IconDiamond,
   IconInfoCircle,
+  IconLineDashed,
   IconPerspective,
   IconPrism,
   IconSunHigh,
@@ -20,6 +21,7 @@ import { ImmersiveOverview } from './overview'
 import { RefractionPlayground } from './refraction-playground'
 import { ScramblePlayground } from './scramble-playground'
 import { ScrollGalleryPlayground } from './scroll-gallery-playground'
+import { StreakFieldPlayground } from './streak-field-playground'
 
 /** Single source of truth for the route: sidebar entries, stage, and controls. */
 const SECTIONS: DemoShellSection[] = [
@@ -106,6 +108,21 @@ const SECTIONS: DemoShellSection[] = [
       note: 'Look and scroll-response settings. Placement and the scroll source stay at the call site.',
     },
     content: LightLeakPlayground,
+  },
+  {
+    id: 'streak-field',
+    label: 'Streak field',
+    title: 'Streak field particles',
+    description:
+      'Thousands of horizontal light streaks on a fine row grid, each a GPU particle drifting along its row at its own pace, breathing in and out over its own lifetime and shimmering on its own phase. One instanced draw, nothing stepped on the CPU. Tune density, row pitch, length spread, drift and tail here; the ground beneath stays with the caller.',
+    icon: IconLineDashed,
+    paste: {
+      file: 'src/features/immersive/ui/streak-field.tsx',
+      symbol: 'StreakField',
+      format: 'props',
+      note: 'Layout, motion, life and look settings. Placement and the ground colour stay at the call site.',
+    },
+    content: StreakFieldPlayground,
   },
   {
     id: 'floating-cards',

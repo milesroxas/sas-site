@@ -48,6 +48,12 @@ export {
   type ScrollGalleryMood,
   type ScrollGalleryProps,
 } from './ui/scroll-gallery'
+export {
+  STREAK_FIELD_DEFAULTS,
+  StreakField,
+  type StreakFieldInk,
+  type StreakFieldProps,
+} from './ui/streak-field'
 export { TEXT_LOAD_IN_DEFAULTS, TextLoadIn, type TextLoadInProps } from './ui/text-load-in'
 export {
   TEXT_LOAD_IN_RAYMARCHED_DEFAULTS,
