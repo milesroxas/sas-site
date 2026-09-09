@@ -34,9 +34,9 @@ import { useAskChat } from './useAskChat'
  * chat-view handler, `CHAT_WIPE_*`): the panel here sits beneath the frame's
  * z-index and is occluded until an opaque cover has wiped over the media and
  * the frame hides, a same-color switch to this panel, already fully drawn.
- * The panel never animates its entry; only its content stages in, and it
- * starts before the handoff under that occlusion (free motion: the content
- * is already drawn when the switch happens and the press settles sooner).
+ * The panel never animates its entry; its content arrives on the handoff
+ * frame, the first frame it can be seen, and rises from the composer's edge
+ * as the wipe's continuation (CHAT_STAGE_*).
  * The exit mirrors it. On desktop the window shrinks back to 16:9 in view
  * (`CHAT_WINDOW_RESIZE_MS`, center-origin: the slot centers it), the panel
  * still opaque, and the frame returns under the cover only once it lands,
@@ -45,9 +45,22 @@ import { useAskChat } from './useAskChat'
  * is the column it borrowed released (`CHAT_EXIT_RELEASE_MS`), so content
  * leaves first and the nav returns into freed space.
  */
+
+/**
+ * Content arrival. The transcript rises from the composer's direction; the
+ * header fades in place (it sits where the wipe just landed, and chrome is
+ * the least important thing on the surface, so it gets the least motion).
+ * Both share one start (the handoff frame) and one curve so they read as a
+ * single beat. Exits keep the shorter 150ms ease-in the rest of the swap's
+ * exit uses.
+ */
 const panelContent = {
   open: 'translate-y-0 opacity-100 ease-[cubic-bezier(0.22,1,0.36,1)]',
   closed: 'translate-y-2 opacity-0 duration-150 ease-in',
+}
+const panelChrome = {
+  open: 'opacity-100 ease-[cubic-bezier(0.22,1,0.36,1)]',
+  closed: 'opacity-0 duration-150 ease-in',
 }
 
 /**
@@ -256,16 +269,16 @@ export function MenuAsk({
             } as React.CSSProperties
           }
         >
-          {/* Header stages in alongside the transcript, landing at the wipe's
-              end. The X steps back to the preview, the same exit the menu's
+          {/* Header fades in place on the handoff beat while the transcript
+              rises. The X steps back to the preview, the same exit the menu's
               Escape/backdrop layers trigger via exitChatViewRef. Title and
               description read one step up below `md` (16 / 14px, as the
               transcript body does): the registry's 14 / 12px is caption scale
               on a phone. */}
           <CardHeader
             className={cn(
-              'border-b pt-(--card-spacing) motion-safe:transition-[opacity,translate]',
-              chatView ? panelContent.open : panelContent.closed,
+              'border-b pt-(--card-spacing) motion-safe:transition-opacity',
+              chatView ? panelChrome.open : panelChrome.closed,
             )}
             style={panelContentStyle(chatView)}
           >

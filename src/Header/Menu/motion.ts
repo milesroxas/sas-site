@@ -37,12 +37,16 @@ export const CHAT_UNWIPE_EASE = 'power1.in'
 export const CHAT_COVER_HIDDEN = 'inset(100% 0% 0% 0%)'
 export const CHAT_COVER_FULL = 'inset(0% 0% 0% 0%)'
 /**
- * Panel content staging. The panel is occluded for the whole wipe, so its
- * content starts before the handoff for free: at 200ms + 300ms on a strong
- * ease-out it is ~95% drawn when the switch happens (the switch stays
- * invisible) and settles at 500ms rather than 640ms.
+ * Panel content staging. The cover is opaque and sits above the panel, so
+ * nothing that happens under it is seen: the content's rise has to start on
+ * the handoff frame or the user gets a blank wipe followed by a snap. It
+ * starts exactly when the wipe ends and reads as the wipe continuing into
+ * the panel: the transcript rises from the composer's edge while the
+ * header, where the wipe just landed, fades in place. The window grows on
+ * the same beat (CHAT_WINDOW_RESIZE_MS), so surface and content arrive
+ * together and the press settles at 640ms.
  */
-export const CHAT_STAGE_DELAY_MS = 200
+export const CHAT_STAGE_DELAY_MS = CHAT_WIPE_DURATION * 1000
 export const CHAT_STAGE_DURATION_MS = 300
 
 /**

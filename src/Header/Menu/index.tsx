@@ -1399,8 +1399,9 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
    * handleChatViewChange) and the chrome fades in from `@starting-style`.
    * Desktop keeps its three columns.
    */
-  // Fade duration matches CHAT_STAGE_DELAY_MS (Menu/motion.ts): the space this
-  // releases is the space the transcript panel starts growing into.
+  // Fades out in 200ms, well inside the wipe (CHAT_WIPE_DURATION), so the
+  // column is already released when the slot grows into it on the handoff
+  // beat (CHAT_STAGE_DELAY_MS, Menu/motion.ts).
   const chatHideable = (extra?: string) =>
     cn(
       'max-md:transition-[opacity,display] max-md:transition-discrete max-md:duration-200 max-md:ease-out max-md:starting:opacity-0',
