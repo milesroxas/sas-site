@@ -1,10 +1,87 @@
 'use client'
 
 import type React from 'react'
-import { createElement, type RefObject, useLayoutEffect, useRef } from 'react'
+import {
+  createContext,
+  createElement,
+  type RefObject,
+  use,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { onChromeScroll, pageFrameFrozen } from '@/components/SiteChrome/chrome-scroll'
 import { CHROME_THEME_SITE, type ChromeBar, useChromeThemeStore } from '@/providers/ChromeTheme'
 import type { Theme } from '@/providers/Theme/types'
+
+/** How a band plays the page intro (globals.css "Page intro"). */
+export type HeroIntroMode = 'auto' | 'cold' | 'warm'
+type HeroIntroPhase = 'cold' | 'warm' | 'settled'
+
+/**
+ * True once any intro band has mounted in this document: the first mount is
+ * a real page load, every later one a client navigation. Never mutated on
+ * the server (effects do not run there), so SSR always renders `cold`,
+ * which is also what the client's first render computes, so hydration
+ * matches.
+ */
+let documentIntroPlayed = false
+
+const HeroIntroSettledContext = createContext(true)
+
+/**
+ * `false` while the enclosing band's page intro is still playing, `true`
+ * otherwise (no intro, settled, reduced motion, or no band at all). Gate
+ * work that must not composite under the intro (a WebGL canvas) on it.
+ */
+export const useHeroIntroSettled = (): boolean => use(HeroIntroSettledContext)
+
+/**
+ * The band's intro phase. Cold or warm is decided in the state initializer,
+ * so it is in the server markup and the hydration render; `settled` lands
+ * when every `intro-*` CSS animation inside the band has finished. Reading
+ * them through `getAnimations` rather than a timer keeps the tokens in
+ * globals.css as the only timing source, and a mount that arrives after the
+ * animations already ended (slow hydration) settles at once because nothing
+ * is left to wait for.
+ */
+function useHeroIntro(
+  ref: RefObject<HTMLElement | null>,
+  intro: HeroIntroMode | undefined,
+): HeroIntroPhase | undefined {
+  const [phase, setPhase] = useState<HeroIntroPhase | undefined>(() => {
+    if (!intro) return undefined
+    if (intro !== 'auto') return intro
+    return documentIntroPlayed ? 'warm' : 'cold'
+  })
+
+  useEffect(() => {
+    if (!intro) return
+    documentIntroPlayed = true
+    const band = ref.current
+    // No Web Animations (jsdom, very old engines): nothing to wait for.
+    if (!band || typeof band.getAnimations !== 'function') {
+      setPhase('settled')
+      return
+    }
+    const intros = band
+      .getAnimations({ subtree: true })
+      .filter(
+        (animation) =>
+          animation instanceof CSSAnimation && animation.animationName.startsWith('intro-'),
+      )
+    let cancelled = false
+    Promise.allSettled(intros.map((animation) => animation.finished)).then(() => {
+      if (!cancelled) setPhase('settled')
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [intro, ref])
+
+  return phase
+}
 
 /** The fixed bars the band can sit under. Both are outside the page frame. */
 const SITE_HEADER_SELECTOR = '[data-site-header]'
@@ -147,6 +224,14 @@ type HeroBandProps = React.HTMLAttributes<HTMLElement> & {
    * page carries the wrong ink.
    */
   pinsChromeAtLoad?: boolean
+  /**
+   * Play the page intro (globals.css "Page intro"): `auto` plays the cold
+   * choreography on the document's first intro band and the warm one on
+   * later mounts; `cold` / `warm` force a phase (stories, demos). Stamps
+   * `data-page-intro`; descendants mark their copy with `data-intro` plus an
+   * inline `--intro-slot`, and a cold band renders a `data-intro-cover`.
+   */
+  intro?: HeroIntroMode
 }
 
 /**
@@ -159,19 +244,24 @@ export const HeroBand: React.FC<HeroBandProps> = ({
   as = 'section',
   theme = 'dark',
   pinsChromeAtLoad = false,
+  intro,
   children,
   ...props
 }) => {
   const ref = useRef<HTMLElement>(null)
   useHeroChromeTheme(ref, theme)
+  const phase = useHeroIntro(ref, intro)
   return createElement(
     as,
     {
       ...props,
       'data-theme': theme,
       ...(pinsChromeAtLoad ? { 'data-hero-band-pin': theme } : {}),
+      ...(phase ? { 'data-page-intro': phase } : {}),
       ref,
     },
-    children,
+    <HeroIntroSettledContext value={phase === undefined || phase === 'settled'}>
+      {children}
+    </HeroIntroSettledContext>,
   )
 }

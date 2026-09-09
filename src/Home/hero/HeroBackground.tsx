@@ -3,6 +3,7 @@
 import type React from 'react'
 import { Media } from '@/components/Media'
 import { HERO_LENS, RefractionMedia, useWebglMediaLayer } from '@/features/immersive'
+import { useHeroIntroSettled } from '@/heros/HeroBand'
 import type { Media as MediaType } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { webglMediaSrc } from '@/utilities/webglMediaSrc'
@@ -22,7 +23,12 @@ import { webglMediaSrc } from '@/utilities/webglMediaSrc'
 export const HeroBackground: React.FC<{ media: MediaType }> = ({ media }) => {
   const isVideo = Boolean(media.mimeType?.includes('video'))
   const src = webglMediaSrc(media) || undefined
-  const { enabled, ready, handleReady } = useWebglMediaLayer(src)
+  // The lens canvas waits for the page intro to settle (HeroBand): it must
+  // not be created, nor upload its texture, while the cover and the copy are
+  // still compositing, and its arrival becomes the entrance's last beat, a
+  // same-media dissolve once its first frame is on the GPU.
+  const introSettled = useHeroIntroSettled()
+  const { enabled, ready, handleReady } = useWebglMediaLayer(src, introSettled)
 
   return (
     <div

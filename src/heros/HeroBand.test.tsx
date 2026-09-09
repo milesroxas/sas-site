@@ -3,7 +3,7 @@ import type React from 'react'
 import { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ChromeThemeProvider, useChromeBarTheme } from '@/providers/ChromeTheme'
-import { HeroBand } from './HeroBand'
+import { HeroBand, type HeroIntroMode, useHeroIntroSettled } from './HeroBand'
 
 /**
  * A 900px viewport. The bars measure at their resting sizes (4rem / 3.5rem);
@@ -212,6 +212,89 @@ describe('HeroBand', () => {
     it('stamps a light palette when the band is light', () => {
       const { getByText } = mountBand({ pinsChromeAtLoad: true, theme: 'light' })
       expect(getByText('band').getAttribute('data-hero-band-pin')).toBe('light')
+    })
+  })
+
+  describe('page intro', () => {
+    /** jsdom has no Web Animations: a fake pending `intro-*` CSS animation holds the phase. */
+    class FakeCSSAnimation {
+      animationName = 'intro-copy'
+      resolve!: () => void
+      finished = new Promise<void>((resolve) => {
+        this.resolve = resolve
+      })
+    }
+
+    const stubAnimations = (animations: FakeCSSAnimation[] | undefined) => {
+      if (animations) {
+        HTMLElement.prototype.getAnimations = () => animations as unknown as Animation[]
+      } else {
+        delete (HTMLElement.prototype as { getAnimations?: unknown }).getAnimations
+      }
+    }
+
+    const SettledProbe = () => (
+      <output data-testid="settled">{String(useHeroIntroSettled())}</output>
+    )
+
+    const mountIntro = (intro?: HeroIntroMode) =>
+      render(
+        <ChromeThemeProvider>
+          <HeroBand data-testid="band" intro={intro}>
+            band
+            <SettledProbe />
+          </HeroBand>
+        </ChromeThemeProvider>,
+      )
+
+    let pending: FakeCSSAnimation
+
+    beforeEach(() => {
+      pending = new FakeCSSAnimation()
+      vi.stubGlobal('CSSAnimation', FakeCSSAnimation)
+      stubAnimations([pending])
+    })
+
+    afterEach(() => {
+      stubAnimations(undefined)
+      vi.unstubAllGlobals()
+    })
+
+    it('stamps no phase and reads settled without the prop', () => {
+      const { getByTestId } = mountIntro()
+      expect(getByTestId('band').hasAttribute('data-page-intro')).toBe(false)
+      expect(getByTestId('settled').textContent).toBe('true')
+    })
+
+    it('plays cold on the first intro band, settles once its animations finish, then warm', async () => {
+      const first = mountIntro('auto')
+      expect(first.getByTestId('band').getAttribute('data-page-intro')).toBe('cold')
+      expect(first.getByTestId('settled').textContent).toBe('false')
+
+      await act(async () => {
+        pending.resolve()
+      })
+      expect(first.getByTestId('band').getAttribute('data-page-intro')).toBe('settled')
+      expect(first.getByTestId('settled').textContent).toBe('true')
+
+      first.unmount()
+      const second = mountIntro('auto')
+      expect(second.getByTestId('band').getAttribute('data-page-intro')).toBe('warm')
+    })
+
+    it('forces a phase with cold or warm', () => {
+      const cold = mountIntro('cold')
+      expect(cold.getByTestId('band').getAttribute('data-page-intro')).toBe('cold')
+      cold.unmount()
+      const warm = mountIntro('warm')
+      expect(warm.getByTestId('band').getAttribute('data-page-intro')).toBe('warm')
+    })
+
+    it('settles on mount without Web Animations', () => {
+      stubAnimations(undefined)
+      const { getByTestId } = mountIntro('auto')
+      expect(getByTestId('band').getAttribute('data-page-intro')).toBe('settled')
+      expect(getByTestId('settled').textContent).toBe('true')
     })
   })
 })

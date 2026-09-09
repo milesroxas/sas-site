@@ -1468,6 +1468,103 @@ html {
   }
 }
 
+/* Page intro (docs/animations.md "Page intro (CSS)"): the entrance a hero
+   band plays on the document's first paint, owned in CSS from the
+   server-rendered markup so it starts the moment the page paints and never
+   waits on the bundle. The band stamps `data-page-intro` (HeroBand `intro`,
+   src/heros/HeroBand.tsx): `cold` on the document's first intro band (a real
+   page load), `warm` on later mounts (client navigations, where the route
+   transition already brings the page in), `settled` once every intro
+   animation has finished, which releases the fills below. The GSAP scroll
+   reveal cannot own this beat: it hides its targets only once the bundle
+   runs, which on a cold load re-hides copy the reader was already looking
+   at and replays the entrance late.
+
+   Cold: the band's ground is on screen from the first frame; a solid cover
+   (`data-intro-cover`, the band's own background) retracts downward at the
+   site reveal's duration and ease (`--vt-duration-reveal` / `--vt-ease-reveal`,
+   view-transition.css), so the first page enters the way every lateral
+   navigation after it does; the copy (`data-intro`) drops in with the scroll
+   reveal's intro language (SCROLL_REVEAL_INTRO's drop, blur, duration and
+   stagger, stated here because this system is CSS), the first line starting
+   a third of the way into the wipe; the fixed bars' contents fade in as the
+   wipe lands, opacity only, so the frame closes around the statement while
+   it settles. Warm plays the copy alone. The cover animates `transform` and
+   the copy `opacity` / `transform` / `filter`, all compositor-driven as CSS
+   animations, so nothing here repaints per frame or competes with hydration
+   on the main thread; no `will-change` is needed for that. Reduced motion
+   renders the final state, like every other system. */
+:root {
+  --intro-copy-y: 28px;
+  --intro-copy-blur: 6px;
+  --intro-copy-duration: 900ms;
+  --intro-copy-stagger: 120ms;
+  /* First copy beat starts a third of the way into the 480ms wipe. */
+  --intro-copy-delay: 160ms;
+  --intro-chrome-duration: 400ms;
+}
+
+@keyframes intro-cover {
+  to {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes intro-copy {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--intro-copy-y)));
+    filter: blur(var(--intro-copy-blur));
+  }
+}
+
+/* Same beat without the blur, for a target whose descendants use
+   backdrop-filter: a filter on an ancestor would cut them off from the page
+   behind them for as long as the fill holds. */
+@keyframes intro-copy-panel {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--intro-copy-y)));
+  }
+}
+
+@keyframes intro-chrome {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The cover exists only while a cold intro plays. */
+[data-intro-cover] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-page-intro="cold"] [data-intro-cover] {
+    display: block;
+    transform-origin: bottom;
+    animation: intro-cover var(--vt-duration-reveal) var(--vt-ease-reveal) both;
+  }
+
+  /* `--intro-slot` is set inline per target (0, 1, 2 in reading order). */
+  :is([data-page-intro="cold"], [data-page-intro="warm"]) [data-intro] {
+    animation: intro-copy var(--intro-copy-duration) var(--ease-out-quint)
+      calc(var(--intro-copy-delay) + var(--intro-copy-stagger) * var(--intro-slot, 0)) both;
+  }
+
+  :is([data-page-intro="cold"], [data-page-intro="warm"]) [data-intro="panel"] {
+    animation-name: intro-copy-panel;
+  }
+
+  /* The bars live outside the band; the root-level `:has` reaches them for
+     exactly as long as a cold intro is playing. `> *` is each bar's single
+     Container child, so the plate itself (plan 009's pin) never fades. */
+  :root:has([data-page-intro="cold"]) :is([data-site-header], [data-site-footer]) > * {
+    animation: intro-chrome var(--intro-chrome-duration) var(--ease-out-quint)
+      var(--vt-duration-reveal) both;
+  }
+}
+
 /* Admin bar (components/AdminBar) is fixed to the viewport bottom; lift the
    fixed footer above it and give the page frame matching extra room. The bar
    hides below Payload's small breakpoint, so scope both rules to match. */

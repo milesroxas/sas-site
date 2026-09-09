@@ -1,8 +1,8 @@
 import type React from 'react'
+import type { CSSProperties } from 'react'
 import { Container } from '@/components/Container'
-import { HeroBand } from '@/heros/HeroBand'
+import { HeroBand, type HeroIntroMode } from '@/heros/HeroBand'
 import type { Home, Media, Post } from '@/payload-types'
-import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { populatedDoc } from '@/utilities/relationshipId'
 import { cn } from '@/utilities/ui'
 import { FeaturedCard } from './FeaturedCard'
@@ -10,6 +10,11 @@ import { HeroBackground } from './HeroBackground'
 
 type HomeHeroData = Home['hero']
 type HeroLayout = HomeHeroData['type']
+
+type HomeHeroProps = HomeHeroData & {
+  /** Page-intro override for stories and demos; the page leaves it on `auto`. */
+  intro?: HeroIntroMode
+}
 
 const descriptionClassName =
   'max-w-[30rem] text-sm leading-relaxed text-muted-foreground md:max-w-[23.375rem] lg:text-base'
@@ -32,6 +37,9 @@ const footerRowClassName: Record<HeroLayout, string> = {
   left: 'items-center justify-center md:justify-end',
 }
 
+/** Inline stagger slot for a page-intro copy target (globals.css `--intro-slot`, reading order). */
+const introSlot = (slot: number) => ({ '--intro-slot': slot }) as CSSProperties
+
 /**
  * The screen's bottom row. Only the centered layout keeps it without a
  * featured post — the left layout has nothing to put there, and the row's own
@@ -41,11 +49,13 @@ const HeroFooterRow = ({
   description,
   featuredLabel,
   post,
+  slot,
   type,
 }: {
   description: HomeHeroData['description']
   featuredLabel: HomeHeroData['featuredLabel']
   post: Post | null
+  slot: number
   type: HeroLayout
 }) => {
   const isCenter = type === 'center'
@@ -53,7 +63,8 @@ const HeroFooterRow = ({
 
   return (
     <div
-      data-reveal
+      data-intro="panel"
+      style={introSlot(slot)}
       className={cn(
         'flex w-full shrink-0 self-stretch',
         footerRowClassName[type],
@@ -79,16 +90,17 @@ const HeroFooterRow = ({
   )
 }
 
-export const RenderHomeHero: React.FC<HomeHeroData> = (props) => {
+export const RenderHomeHero: React.FC<HomeHeroProps> = (props) => {
   const { type } = props || {}
   if (!type) return null
   return <HomeHero {...props} />
 }
 
-const HomeHero: React.FC<HomeHeroData> = ({
+const HomeHero: React.FC<HomeHeroProps> = ({
   description,
   featuredLabel,
   featuredPost,
+  intro = 'auto',
   media,
   title,
   type,
@@ -102,16 +114,20 @@ const HomeHero: React.FC<HomeHeroData> = ({
       // Pull under the fixed header; stop at the fixed footer so the first
       // screen is exactly header + hero + footer (page frame already pads the bottom).
       className="relative isolate -mt-(--header-height) flex h-[calc(100svh-var(--footer-height))] flex-col overflow-clip bg-background text-foreground"
+      intro={intro}
       pinsChromeAtLoad
     >
       {backgroundMedia && <HeroBackground media={backgroundMedia} />}
+      {/* Cold page intro only (globals.css "Page intro"): the band's own
+          ground, retracting downward to uncover the media at the site
+          reveal's tempo. Same negative z as the media group and a later
+          sibling, so it paints over the media and under the copy. */}
+      {backgroundMedia && (
+        <div aria-hidden className="absolute inset-0 -z-10 bg-background" data-intro-cover />
+      )}
 
-      {/* Header inset only — section height already ends at the footer. */}
-      <ScrollReveal
-        as="div"
-        className="relative z-10 flex min-h-0 flex-1 flex-col self-stretch pt-(--header-height)"
-        variant="intro"
-      >
+      {/* Header inset only: section height already ends at the footer. */}
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col self-stretch pt-(--header-height)">
         <Container className="flex min-h-0 flex-1 flex-col py-8 sm:py-12">
           <div
             className={cn(
@@ -120,13 +136,17 @@ const HomeHero: React.FC<HomeHeroData> = ({
             )}
           >
             {title && (
-              <h1 data-reveal className={cn('font-light text-foreground', titleClassName[type])}>
+              <h1
+                className={cn('font-light text-foreground', titleClassName[type])}
+                data-intro="copy"
+                style={introSlot(0)}
+              >
                 {title}
               </h1>
             )}
 
             {!isCenter && description && (
-              <p className={descriptionClassName} data-reveal>
+              <p className={descriptionClassName} data-intro="copy" style={introSlot(1)}>
                 {description}
               </p>
             )}
@@ -136,10 +156,11 @@ const HomeHero: React.FC<HomeHeroData> = ({
             description={description}
             featuredLabel={featuredLabel}
             post={post}
+            slot={isCenter ? 1 : 2}
             type={type}
           />
         </Container>
-      </ScrollReveal>
+      </div>
     </HeroBand>
   )
 }
