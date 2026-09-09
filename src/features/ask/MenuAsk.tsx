@@ -19,6 +19,8 @@ import {
   CHAT_PANEL_EXIT_MS,
   CHAT_STAGE_DELAY_MS,
   CHAT_STAGE_DURATION_MS,
+  CHAT_WINDOW_RESIZE_MS,
+  isDesktop,
 } from '@/Header/Menu/motion'
 import { MenuPreviewSlot } from '@/Header/Menu/PreviewSlot'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
@@ -35,10 +37,13 @@ import { useAskChat } from './useAskChat'
  * The panel never animates its entry; only its content stages in, and it
  * starts before the handoff under that occlusion (free motion: the content
  * is already drawn when the switch happens and the press settles sooner).
- * The exit mirrors it. The frame returns at once under the still-full cover,
+ * The exit mirrors it. On desktop the window shrinks back to 16:9 in view
+ * (`CHAT_WINDOW_RESIZE_MS`, center-origin: the slot centers it), the panel
+ * still opaque, and the frame returns under the cover only once it lands,
+ * so the panel switches off unseen. On a phone the frame returns at once,
  * the panel fades in place beneath it (`CHAT_PANEL_EXIT_MS`), and only then
- * is the column it borrowed on a phone released (`CHAT_EXIT_RELEASE_MS`), so
- * content leaves first and the nav returns into freed space.
+ * is the column it borrowed released (`CHAT_EXIT_RELEASE_MS`), so content
+ * leaves first and the nav returns into freed space.
  */
 const panelContent = {
   open: 'translate-y-0 opacity-100 ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -127,11 +132,14 @@ export function MenuAsk({
   }
 
   /**
-   * Mobile only: the transcript claims the column the nav and CTA release,
-   * but the panel has to stay coincident with the docked window until the
+   * The transcript claims more than the preview window (the column the nav
+   * and CTA release on a phone, the rest of the slot on desktop), but the
+   * panel has to stay coincident with the docked window until the
    * cover has painted that window's lower edge (the cover rises from that
    * edge, and the nav finishes yielding its space, on this same beat). The
-   * exit holds the column while the panel fades and collapses on the release
+   * desktop exit drops it at once: the shrink is the visible half of the
+   * exit (PreviewSlot animates it, the menu waits for it). The phone exit
+   * holds the column while the panel fades and collapses on the release
    * beat, when nothing is left to see. Closing the whole menu collapses at
    * once, under the menu's own close fade; reduced motion has no wipe or
    * fade to wait for, so both directions flip immediately.
@@ -147,7 +155,7 @@ export function MenuAsk({
       const timer = window.setTimeout(() => setExpanded(true), CHAT_STAGE_DELAY_MS)
       return () => window.clearTimeout(timer)
     }
-    if (!open || reducedMotion) {
+    if (!open || reducedMotion || isDesktop()) {
       setExpanded(false)
       return
     }
@@ -200,9 +208,12 @@ export function MenuAsk({
 
   return (
     <>
-      {/* The docked page frame lands exactly on this slot (measured by the
-          menu's GSAP timeline); the transcript replaces it in place. */}
+      {/* The docked page frame lands exactly on the slot's window (measured
+          by the menu's GSAP timeline); the transcript replaces it in place.
+          On desktop `expanded` grows the window out of its 16:9 box to fill
+          the slot, on the same beat as the mobile grow below. */}
       <MenuPreviewSlot
+        expanded={expanded}
         className={cn(
           // Mobile chat view grows the 16:9 preview box into the column the nav
           // and CTA release, so the transcript reads as a full chat surface and
@@ -227,14 +238,23 @@ export function MenuAsk({
             'bg-popover text-popover-foreground shadow-2xl pointer-events-auto absolute inset-0 flex flex-col overflow-hidden rounded-[20px] md:rounded-3xl [--card-spacing:--spacing(4)]',
             // Entry has no transition: the frame occludes this panel until the
             // handoff, and it must be fully drawn when the switch happens. The
-            // exit fades in place (duration inline, from the chat-swap module):
-            // the part under the window is occluded by the restored frame from
-            // the first frame; the part below it, on a phone, fades against the
+            // exit timing comes from the chat-swap module (custom properties
+            // below). Desktop: the panel stays opaque while the window shrinks
+            // and switches off on the frame's return, occluded. Phone: it fades
+            // in place; the part under the window is occluded by the restored
+            // frame from the first frame, the part below it fades against the
             // menu background before the column it borrowed is released.
             'motion-safe:transition-opacity motion-safe:ease-in',
-            chatView ? 'opacity-100' : 'opacity-0',
+            chatView
+              ? 'opacity-100 duration-0'
+              : 'opacity-0 max-md:duration-(--chat-panel-exit) md:delay-(--chat-window-resize) md:duration-0',
           )}
-          style={{ transitionDuration: chatView ? '0ms' : `${CHAT_PANEL_EXIT_MS}ms` }}
+          style={
+            {
+              '--chat-panel-exit': `${CHAT_PANEL_EXIT_MS}ms`,
+              '--chat-window-resize': `${CHAT_WINDOW_RESIZE_MS}ms`,
+            } as React.CSSProperties
+          }
         >
           {/* Header stages in alongside the transcript, landing at the wipe's
               end. The X steps back to the preview, the same exit the menu's
@@ -313,7 +333,7 @@ export function MenuAsk({
         // Focusable, not tabbable: `leaveTranscript` parks focus here.
         tabIndex={-1}
         data-menu-item
-        className="w-full self-center justify-self-center outline-none md:w-auto md:col-start-2 md:row-start-2"
+        className="w-full self-center outline-none md:w-auto"
         onSubmit={submit}
       >
         <InputGroup variant="pill">

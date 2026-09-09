@@ -30,31 +30,34 @@ import {
   CHAT_EXIT_RELEASE_MS,
   CHAT_UNWIPE_DURATION,
   CHAT_UNWIPE_EASE,
+  CHAT_WINDOW_RESIZE_MS,
   CHAT_WIPE_DURATION,
   CHAT_WIPE_EASE,
   canStartHeroHandoff,
   DESKTOP_CARD_SHADOW,
+  DESKTOP_MEDIA_QUERY,
   DISSOLVE_DURATION,
   DISSOLVE_EASE,
   FRAME_Z,
   getCardMotion,
   getViewportWidth,
   HERO_MEDIA_SELECTOR,
+  isDesktop,
   isInAppNavClick,
   isMediaReady,
   MENU_EASE,
   MOBILE_CARD_SHADOW,
   onMediaReady,
 } from './motion'
-import { MenuPreviewSlot } from './PreviewSlot'
+import { MenuPreviewSlot, PREVIEW_WINDOW_SELECTOR } from './PreviewSlot'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 /**
  * The takeover menu animates the element carrying this attribute — the
  * page-frame wrapper in (frontend)/layout.tsx — into a preview window that
- * docks onto the menu's center slot (`[data-menu-preview-slot]`, rendered by
- * MenuAsk). Scale + clip-path run together (transform only — page layout stays
+ * docks onto the menu's preview window (`[data-menu-preview-window]`, the
+ * 16:9 box inside the center slot MenuAsk renders). Scale + clip-path run together (transform only — page layout stays
  * intact), with a slight timing offset so the crop lags the shrink and reads
  * as a parallax window sliding over the page.
  *
@@ -63,7 +66,6 @@ gsap.registerPlugin(useGSAP, ScrollTrigger)
  */
 const PAGE_FRAME_SELECTOR = '[data-page-frame]'
 const SITE_FOOTER_SELECTOR = '[data-site-footer]'
-const PREVIEW_SLOT_SELECTOR = '[data-menu-preview-slot]'
 /**
  * On open, the first img/video inside the hero's `data-hero-media` region
  * (HERO_MEDIA_SELECTOR — see ./motion) is cloned into a dissolve layer
@@ -119,9 +121,6 @@ const HERO_DISSOLVE_EASE = 'power1.inOut'
 /** Grace before dissolving back to base — lets the pointer travel between
  *  adjacent links without flashing the resting state. */
 const HOVER_CLEAR_DELAY_MS = 80
-
-/** Breakpoint where the phone stack becomes the three-column layout. */
-const DESKTOP_MEDIA_QUERY = '(min-width: 768px)'
 
 /* Phone sub-views. Below `md` the editorial columns are hidden, so the primary
    nav carries a drill-in row per column (Expertise, Who We Help) whose list
@@ -671,7 +670,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       const frame = getPageFrame()
       const overlay = overlayRef.current
       const slotRect = overlay
-        ?.querySelector<HTMLElement>(PREVIEW_SLOT_SELECTOR)
+        ?.querySelector<HTMLElement>(PREVIEW_WINDOW_SELECTOR)
         ?.getBoundingClientRect()
       // Hover-only media (a `menuPreview` pick, the Header fallback) has no
       // hero on the destination to land on — see MenuMedia.
@@ -861,11 +860,11 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           }
 
           const buildTimeline = () => {
-            const slotEl = overlay.querySelector<HTMLElement>(PREVIEW_SLOT_SELECTOR)
+            const slotEl = overlay.querySelector<HTMLElement>(PREVIEW_WINDOW_SELECTOR)
             const borderRadius = desktop ? CARD_RADIUS_DESKTOP : CARD_RADIUS_MOBILE
             const boxShadow = desktop ? DESKTOP_CARD_SHADOW : MOBILE_CARD_SHADOW
             // Overlay is visibility:hidden while closed but still laid out, so
-            // the slot measures at its final open-state position.
+            // the window measures at its final open-state position.
             const slotRect = slotEl?.getBoundingClientRect()
             if (!slotRect || slotRect.width === 0 || slotRect.height === 0) {
               // No usable slot (e.g. detached render) — content-only fallback.
@@ -1308,10 +1307,22 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   // once: the close fade (resp. no fade at all) covers the change.
   const layoutReleaseRef = useRef<number | null>(null)
   useEffect(() => () => window.clearTimeout(layoutReleaseRef.current ?? undefined), [])
+  // The desktop exit waits for the window to shrink before it returns the
+  // frame; a re-entry inside that wait must cancel the pending return, or
+  // the frame would flash back in over the panel mid-wipe.
+  const chatExitRef = useRef<gsap.core.Timeline | null>(null)
+  useEffect(
+    () => () => {
+      chatExitRef.current?.kill()
+    },
+    [],
+  )
   const handleChatViewChange = useCallback((next: boolean) => {
     chatViewRef.current = next
     window.clearTimeout(layoutReleaseRef.current ?? undefined)
     layoutReleaseRef.current = null
+    chatExitRef.current?.kill()
+    chatExitRef.current = null
     if (next || !openRef.current || prefersReducedMotion()) {
       setChatView(next)
     } else {
@@ -1329,15 +1340,24 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       // No cover means no swap ever ran this open (e.g. the mount-time
       // effect) — nothing to restore.
       if (!existing) return
-      // Restore the frame even mid-close: the undock reverse needs the page
-      // visible, and the still-full cover makes the switch invisible.
-      gsap.set(frame, { autoAlpha: 1 })
-      gsap.to(existing, {
-        clipPath: CHAT_COVER_HIDDEN,
-        duration: prefersReducedMotion() ? 0 : CHAT_UNWIPE_DURATION,
-        ease: CHAT_UNWIPE_EASE,
-        overwrite: 'auto',
-      })
+      // Desktop, while the menu stays open: the window shrinks back to 16:9
+      // in view first (MenuAsk drops `expanded` at once; CHAT_WINDOW_RESIZE_MS
+      // in PreviewSlot), and only then does the frame return under the
+      // still-full cover, which retracts to unmask the media: the entry in
+      // reverse. A phone, a mid-close exit (the undock reverse needs the page
+      // visible now), and reduced motion return the frame at once; the
+      // still-full cover makes that switch invisible either way.
+      const reduced = prefersReducedMotion()
+      const shrinkFirst = openRef.current && isDesktop() && !reduced
+      chatExitRef.current = gsap
+        .timeline({ delay: shrinkFirst ? CHAT_WINDOW_RESIZE_MS / 1000 : 0 })
+        .set(frame, { autoAlpha: 1 })
+        .to(existing, {
+          clipPath: CHAT_COVER_HIDDEN,
+          duration: reduced ? 0 : CHAT_UNWIPE_DURATION,
+          ease: CHAT_UNWIPE_EASE,
+          overwrite: 'auto',
+        })
       return
     }
 
@@ -1422,8 +1442,11 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         // (clock + CTA, thumb zone), so any spare height reads as a deliberate
         // break between the modules rather than a void above the strip.
         // Desktop: three columns — editorial lists, centered window, nav.
-        // Rows pin the side columns to the preview slot; ask + CTA sit below.
-        className="absolute inset-0 flex flex-col gap-6 px-gutter pt-[calc(var(--header-bar-height)+0.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] md:grid md:grid-cols-[1fr_minmax(18rem,28rem)_1fr] md:grid-rows-[minmax(0,1fr)_auto_auto] md:gap-x-12 md:gap-y-6 md:pt-[calc(var(--header-height)+2.5rem)] md:pb-10"
+        // The center column is 36vw capped at 32rem (518px at 1440, the
+        // design's preview width). Row 1 is shared by the side columns and
+        // the center cell (preview window centered above the composer); the
+        // CTA sits below in row 2, past the design's 8rem break.
+        className="absolute inset-0 flex flex-col gap-6 px-gutter pt-[calc(var(--header-bar-height)+0.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] md:grid md:grid-cols-[1fr_minmax(18rem,min(32rem,36vw))_1fr] md:grid-rows-[minmax(0,1fr)_auto] md:gap-x-12 md:gap-y-32 md:pt-[calc(var(--header-height)+2.5rem)] md:pb-10"
       >
         {/* Left column — editorial lists (desktop only). */}
         <div
@@ -1476,25 +1499,28 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           )}
         </div>
 
-        {/* Center column: slot + form are MenuAsk fragment children, so they
-            sit on this grid (row 1 + 2). The CTA (row 3) renders after the
-            right column, inside the utility strip, so the mobile flex stack
-            pins it to the bottom.
+        {/* Center cell: slot + form are MenuAsk fragment children. On desktop
+            this wrapper stacks them in row 1 (the slot takes the height left
+            above the composer and centers the window in it); on a phone it is
+            `contents`, so both stay direct children of the flex stack. The
+            CTA (row 2) renders after the right column, inside the utility
+            strip, so the mobile flex stack pins it to the bottom.
             With Ask hidden only the slot renders: the frame still docks onto
-            it, and row 2 stays empty on purpose, so the CTA keeps its place
-            and the composer's absence reads as air under the window rather
-            than a re-flow. */}
-        {askHidden ? (
-          <MenuPreviewSlot />
-        ) : (
-          <MenuAsk
-            open={open}
-            onViewChange={handleChatViewChange}
-            exitChatViewRef={exitChatViewRef}
-            transport={askTransport}
-            initialMessages={askInitialMessages}
-          />
-        )}
+            its window, and the composer's absence reads as air under the
+            window rather than a re-flow. */}
+        <div className="max-md:contents md:col-start-2 md:row-start-1 md:flex md:min-h-0 md:flex-col md:items-center md:gap-6">
+          {askHidden ? (
+            <MenuPreviewSlot />
+          ) : (
+            <MenuAsk
+              open={open}
+              onViewChange={handleChatViewChange}
+              exitChatViewRef={exitChatViewRef}
+              transport={askTransport}
+              initialMessages={askInitialMessages}
+            />
+          )}
+        </div>
 
         {/* Right column — recent work (desktop) + primary nav. Right-aligned to
             the outer gutter so it mirrors the left column instead of hugging
@@ -1694,7 +1720,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           </div>
           <div
             data-menu-item
-            className="md:col-start-2 md:row-start-3 md:justify-self-center"
+            className="md:col-start-2 md:row-start-2 md:justify-self-center"
             {...itemHandlers(previewFor(pageMedia[ctaHref]))}
           >
             <Button asChild variant="default" size="pill">

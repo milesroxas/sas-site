@@ -171,11 +171,11 @@ describe('TakeoverMenu', () => {
     expect(screen.queryByRole('button', { name: /switch to (dark|light) theme/i })).toBeNull()
 
     // The CTA closes the strip; its wrapper dissolves from md so the CTA
-    // becomes a grid item under the composer (row 3) and the clock hides.
+    // becomes a grid item under the center cell (row 2) and the clock hides.
     const cta = screen.getByRole('link', { name: /Get in touch/i })
     const ctaItem = cta.closest('[data-menu-item]') as HTMLElement
     expect(ctaItem.className).toContain('md:col-start-2')
-    expect(ctaItem.className).toContain('md:row-start-3')
+    expect(ctaItem.className).toContain('md:row-start-2')
     const strip = ctaItem.parentElement as HTMLElement
     expect(strip.className).toContain('justify-between')
     expect(strip.className).toContain('md:contents')

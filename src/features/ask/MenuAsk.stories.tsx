@@ -20,9 +20,10 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      // Mirrors the menu's center column: the slot flexes, the pill hangs below.
-      // `max-w-full` lets the phone story shrink it to the padded viewport.
-      <div className="flex h-[36rem] w-[28rem] max-w-full flex-col items-center gap-6 [&>[data-menu-preview-slot]]:min-h-0 [&>[data-menu-preview-slot]]:flex-1 [&>[data-menu-preview-slot]]:aspect-auto">
+      // Mirrors the menu's center cell: the slot takes the height above the
+      // pill and centers the 16:9 window in it. `max-w-full` lets the phone
+      // story shrink it to the padded viewport.
+      <div className="flex h-[36rem] w-[32rem] max-w-full flex-col items-center gap-6">
         <Story />
       </div>
     ),

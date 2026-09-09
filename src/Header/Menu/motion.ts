@@ -46,17 +46,32 @@ export const CHAT_STAGE_DELAY_MS = 200
 export const CHAT_STAGE_DURATION_MS = 300
 
 /**
- * Panel exit. The frame comes back at once under the still-full cover, so
- * the transcript's top is occluded from the first frame while the cover
- * retracts (CHAT_UNWIPE_DURATION). The part of the panel below the window,
- * on a phone where it had grown into the nav's column, fades in place
+ * Desktop window resize (Menu/PreviewSlot): the transcript grows the 16:9
+ * window to the full slot on the staging beat and shrinks it back on exit.
+ * The slot centers the window, so a height change moves top and bottom
+ * edges together: the panel scales from the window's center both ways.
+ * The exit runs it first, then returns the frame under the still-full cover
+ * and retracts the cover: the entry (wipe, then grow) in reverse.
+ */
+export const CHAT_WINDOW_RESIZE_MS = CHAT_STAGE_DURATION_MS
+
+/**
+ * Panel exit on a phone. The frame comes back at once under the still-full
+ * cover, so the transcript's top is occluded from the first frame while the
+ * cover retracts (CHAT_UNWIPE_DURATION). The part of the panel below the
+ * window, where it had grown into the nav's column, fades in place
  * (CHAT_PANEL_EXIT_MS); the column is released on the cover's beat
  * (CHAT_EXIT_RELEASE_MS), after the fade: the slot collapses, unseen, and
  * the nav fades back into the freed space. Content leaves, then chrome
- * returns: the entry in reverse.
+ * returns: the entry in reverse. (Desktop shrinks the window in view
+ * instead: CHAT_WINDOW_RESIZE_MS.)
  */
 export const CHAT_PANEL_EXIT_MS = 150
 export const CHAT_EXIT_RELEASE_MS = CHAT_UNWIPE_DURATION * 1000
+
+/** Breakpoint where the phone stack becomes the three-column layout (Tailwind `md`). */
+export const DESKTOP_MEDIA_QUERY = '(min-width: 768px)'
+export const isDesktop = () => window.matchMedia(DESKTOP_MEDIA_QUERY).matches
 
 /** Docked-window card chrome, per breakpoint. */
 export const CARD_RADIUS_DESKTOP = 24
