@@ -331,7 +331,8 @@ attribute float aIndex;
 ${FIELD_GLSL}
 ${LAYOUT_GLSL}
 
-uniform float uThickness;      // CSS px
+uniform int   uShape;          // 0 dash, 1 dot
+uniform float uThickness;      // CSS px, dash only
 uniform float uMinLength;      // CSS px
 uniform float uMaxLength;      // CSS px
 uniform float uLengthBias;     // >1 skews the population toward short streaks
@@ -472,21 +473,32 @@ void main() {
   lengthPx *= mix(1.0, reliefTerm, uReliefLength);
 
   // Strip. The unit plane spans -0.5..0.5 on both axes; x runs along the
-  // streak, y across it. Each vertex sits on the displaced centreline and is
-  // pushed across it along the local normal, so a bent streak keeps its
-  // thickness instead of thinning where it tilts.
-  float t = position.x + 0.5;
+  // streak, y across it.
+  vec2 px;
   float prox;
-  vec2 c0 = centreline(centre, along, lengthPx, t, prox);
-  vec2 normal = vec2(-along.y, along.x);
-  if ((uNoiseMode != 0 && uNoiseStrength != 0.0) || uPointerAmt > 0.0) {
-    float prox1;
-    vec2 c1 = centreline(centre, along, lengthPx, t + 0.05, prox1);
-    vec2 tangent = c1 - c0;
-    float tl = length(tangent);
-    if (tl > 1e-4) normal = vec2(-tangent.y, tangent.x) / tl;
+  if (uShape == 1) {
+    // Dot: a rigid square of side lengthPx around the displaced centre, so
+    // the disc the fragment cuts out of it never warps however the field
+    // bends the strip. The length is the diameter; thickness is unused.
+    vec2 c = centreline(centre, along, lengthPx, 0.5, prox);
+    vec2 normal = vec2(-along.y, along.x);
+    px = c + (along * position.x + normal * position.y) * lengthPx;
+  } else {
+    // Dash: each vertex sits on the displaced centreline and is pushed
+    // across it along the local normal, so a bent streak keeps its
+    // thickness instead of thinning where it tilts.
+    float t = position.x + 0.5;
+    vec2 c0 = centreline(centre, along, lengthPx, t, prox);
+    vec2 normal = vec2(-along.y, along.x);
+    if ((uNoiseMode != 0 && uNoiseStrength != 0.0) || uPointerAmt > 0.0) {
+      float prox1;
+      vec2 c1 = centreline(centre, along, lengthPx, t + 0.05, prox1);
+      vec2 tangent = c1 - c0;
+      float tl = length(tangent);
+      if (tl > 1e-4) normal = vec2(-tangent.y, tangent.x) / tl;
+    }
+    px = c0 + normal * position.y * uThickness * uDpr;
   }
-  vec2 px = c0 + normal * position.y * uThickness * uDpr;
 
   // Brightness. A per-particle level, plus a slow shimmer whose rate and
   // phase are also per particle so the field never pulses in unison, plus
@@ -511,8 +523,9 @@ uniform vec3  uPaperInk;  // ink on a pale ground
 uniform float uDensity;   // absorptive only: brightness as coverage
 uniform float uAbsorb;    // 0 emissive .. 1 absorptive, eased
 uniform float uTail;      // 0 is a flat dash; 1 fades fully from head to tail
-uniform float uCap;       // CSS px of softening at each end
+uniform float uCap;       // CSS px of softening at each end, or around a dot's rim
 uniform float uDpr;
+uniform int   uShape;     // 0 dash, 1 dot
 
 varying vec2  vUv;
 varying float vAlpha;
@@ -520,20 +533,30 @@ varying float vLengthPx;
 varying float vHeadSign;  // +1 when the head (bright end) is on the right, -1 on the left
 
 void main() {
-  // Soft caps, in uv units so they stay the same size on screen for any length.
-  float capUv = clamp(uCap * uDpr / vLengthPx, 1e-3, 0.5);
-  float ends = smoothstep(0.0, capUv, vUv.x) * smoothstep(0.0, capUv, 1.0 - vUv.x);
-
   // Tail: brightest at the head, falling off behind it.
   float along = vHeadSign > 0.0 ? vUv.x : 1.0 - vUv.x;
   float tail = mix(1.0, along, uTail);
 
-  // Vertical profile: a tent rather than a hard bar, so a 1.5 px streak
-  // reads as a line of light and not an aliased rectangle, while the core
-  // still reaches full brightness.
-  float ridge = 1.0 - abs(vUv.y * 2.0 - 1.0);
+  float profile;
+  if (uShape == 1) {
+    // Disc: radius in diameters from the quad's centre, the rim softened
+    // over the cap so a cap the size of the radius reads as a glow.
+    float r = length(vUv - 0.5) * 2.0;
+    float rim = clamp(2.0 * uCap * uDpr / vLengthPx, 0.02, 1.0);
+    profile = 1.0 - smoothstep(1.0 - rim, 1.0, r);
+  } else {
+    // Soft caps, in uv units so they stay the same size on screen for any length.
+    float capUv = clamp(uCap * uDpr / vLengthPx, 1e-3, 0.5);
+    float ends = smoothstep(0.0, capUv, vUv.x) * smoothstep(0.0, capUv, 1.0 - vUv.x);
 
-  float a = ends * tail * ridge * vAlpha;
+    // Vertical profile: a tent rather than a hard bar, so a 1.5 px streak
+    // reads as a line of light and not an aliased rectangle, while the core
+    // still reaches full brightness.
+    float ridge = 1.0 - abs(vUv.y * 2.0 - 1.0);
+    profile = ends * ridge;
+  }
+
+  float a = profile * tail * vAlpha;
 
   // Both polarities are premultiplied for source-over. Emissive: the ink is
   // light and its brightness may run past 1, so it lives in the colour.

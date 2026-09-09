@@ -8,6 +8,7 @@ import type {
   StreakFieldMotion,
   StreakFieldNoise,
   StreakFieldProps,
+  StreakFieldShape,
   StreakFieldSurface,
 } from '@/features/immersive'
 import {
@@ -64,6 +65,7 @@ type Preset = Partial<PanelValues>
 
 const SURFACES = ['dark', 'light'] satisfies StreakFieldSurface[]
 const LAYOUTS = ['rows', 'grid'] satisfies StreakFieldLayout[]
+const SHAPES = ['dash', 'dot'] satisfies StreakFieldShape[]
 const MOTIONS = ['drift', 'flow'] satisfies StreakFieldMotion[]
 
 export function StreakFieldPlayground() {
@@ -86,10 +88,21 @@ export function StreakFieldPlayground() {
   )
 
   const [
-    { layout, columnPitch, rowPitch, rowJitter, thickness, minLength, maxLength, lengthBias },
+    {
+      layout,
+      shape,
+      columnPitch,
+      rowPitch,
+      rowJitter,
+      thickness,
+      minLength,
+      maxLength,
+      lengthBias,
+    },
     setLayout,
   ] = useSettableDemoControls('Layout', {
     layout: { value: DEFAULTS.layout as StreakFieldLayout, options: LAYOUTS },
+    shape: { value: DEFAULTS.shape as StreakFieldShape, options: SHAPES },
     columnPitch: {
       value: DEFAULTS.columnPitch,
       min: 1,
@@ -224,6 +237,7 @@ export function StreakFieldPlayground() {
     surface: widen(setCanvas),
     surfaceEase: widen(setCanvas),
     layout: widen(setLayout),
+    shape: widen(setLayout),
     columnPitch: widen(setLayout),
     rowPitch: widen(setLayout),
     rowJitter: widen(setLayout),
@@ -310,6 +324,7 @@ export function StreakFieldPlayground() {
     surface: surface as StreakFieldSurface,
     surfaceEase,
     layout: layout as StreakFieldLayout,
+    shape: shape as StreakFieldShape,
     columnPitch,
     rowPitch,
     rowJitter,

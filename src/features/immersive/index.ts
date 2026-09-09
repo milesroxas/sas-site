@@ -65,6 +65,7 @@ export {
   type StreakFieldMotion,
   type StreakFieldNoise,
   type StreakFieldProps,
+  type StreakFieldShape,
   type StreakFieldSurface,
 } from './ui/streak-field'
 export { TEXT_LOAD_IN_DEFAULTS, TextLoadIn, type TextLoadInProps } from './ui/text-load-in'

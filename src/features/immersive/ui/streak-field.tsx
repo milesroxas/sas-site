@@ -67,6 +67,15 @@ export type StreakFieldNoise = (typeof STREAK_FIELD_NOISES)[number]
 export type StreakFieldLayout = 'rows' | 'grid'
 
 /**
+ * What each particle is drawn as. `dash` is the streak: a line `thickness`
+ * high and between `minLength` and `maxLength` long, that bends with the
+ * field. `dot` is a disc: the same length knobs give its diameter (so
+ * `lengthBias` and `reliefLength` still size the population), `thickness`
+ * is unused, `cap` softens the rim, and it stays rigid under the field.
+ */
+export type StreakFieldShape = 'dash' | 'dot'
+
+/**
  * How streaks move. `drift` slides them along their rows while the field
  * morphs under them, stateless and deterministic. `flow` advects them
  * through the field: a GPU simulation integrates every particle along the
@@ -120,6 +129,8 @@ export type StreakFieldProps = {
   // Layout
   /** Random phases along rows, or a fixed row and column grid. */
   layout?: StreakFieldLayout
+  /** Streaks, or discs sized by the length knobs. */
+  shape?: StreakFieldShape
   /** Horizontal distance between grid columns, in CSS px. `grid` only. */
   columnPitch?: number
   /** Vertical distance between rows, in CSS px. */
@@ -246,6 +257,7 @@ export const STREAK_FIELD_DEFAULTS = {
   surfaceEase: 15.5,
 
   layout: 'rows',
+  shape: 'dash',
   columnPitch: 4,
   rowPitch: 4,
   rowJitter: 0,
@@ -485,6 +497,7 @@ function FieldScene({ rootRef, inputRef, tuning }: FieldSceneProps) {
     surface,
     surfaceEase,
     layout,
+    shape,
     columnPitch,
     rowPitch,
     rowJitter,
@@ -607,6 +620,7 @@ function FieldScene({ rootRef, inputRef, tuning }: FieldSceneProps) {
   const uniforms = useMemo(
     () => ({
       ...createSharedUniforms(),
+      uShape: { value: 0 },
       uThickness: { value: 1 },
       uMinLength: { value: 1 },
       uMaxLength: { value: 1 },
@@ -744,6 +758,7 @@ function FieldScene({ rootRef, inputRef, tuning }: FieldSceneProps) {
     }
 
     // Render-only look.
+    u.uShape.value = shape === 'dot' ? 1 : 0
     u.uThickness.value = thickness
     u.uMinLength.value = minLength
     u.uMaxLength.value = Math.max(minLength, maxLength)

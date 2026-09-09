@@ -58,6 +58,18 @@ export const AsABackdrop: Story = {
   ),
 }
 
+/** The same field as discs on a grid: the length knobs size them, the cap softens their rims. */
+export const Dots: Story = {
+  args: {
+    shape: 'dot',
+    layout: 'grid',
+    columnPitch: 8,
+    rowPitch: 8,
+    minLength: 2,
+    maxLength: 5,
+  },
+}
+
 /** Long trails at speed, fading hard behind the head: rain in a headlight. */
 export const Rain: Story = {
   args: {
