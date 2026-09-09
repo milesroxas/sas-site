@@ -9581,6 +9581,10 @@ export interface SiteInfo {
    * Used as the Organization logo in structured data.
    */
   logo?: (number | null) | Media;
+  /**
+   * Used for search and social share cards when a page has no SEO or Open Graph image. Landscape, at least 1200×630px.
+   */
+  ogImage?: (number | null) | Media;
   address?: {
     streetAddress?: string | null;
     city?: string | null;
@@ -9898,6 +9902,7 @@ export interface SiteInfoSelect<T extends boolean = true> {
         hidden?: T;
       };
   logo?: T;
+  ogImage?: T;
   address?:
     | T
     | {

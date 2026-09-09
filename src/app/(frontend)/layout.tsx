@@ -13,6 +13,7 @@ import { Header } from '@/Header/Component'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import { getCachedGlobal } from '@/utilities/getGlobals'
+import { getFallbackOgImageURL } from '@/utilities/generateMeta'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { organizationSchema, webSiteSchema } from '@/utilities/schema'
 import { cn } from '@/utilities/ui'
@@ -69,10 +70,20 @@ export const viewport: Viewport = {
   interactiveWidget: 'resizes-content',
 }
 
-export const metadata: Metadata = {
-  metadataBase: new URL(getServerSideURL()),
-  openGraph: mergeOpenGraph(),
-  twitter: {
-    card: 'summary_large_image',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const ogImage = await getFallbackOgImageURL()
+
+  return {
+    metadataBase: new URL(getServerSideURL()),
+    openGraph: mergeOpenGraph(
+      ogImage
+        ? {
+            images: [{ url: ogImage }],
+          }
+        : undefined,
+    ),
+    twitter: {
+      card: 'summary_large_image',
+    },
+  }
 }

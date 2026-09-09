@@ -13,21 +13,24 @@ import type {
   WorkPage,
   WorksIndex,
 } from '../payload-types'
+import { getCachedGlobal } from './getGlobals'
 import { getServerSideURL } from './getURL'
 import { mergeOpenGraph } from './mergeOpenGraph'
 
 const getImageURL = (image?: Media | Config['db']['defaultIDType'] | null) => {
-  const serverUrl = getServerSideURL()
-
-  let url = `${serverUrl}/website-template-OG.webp`
-
-  if (image && typeof image === 'object' && 'url' in image) {
+  if (image && typeof image === 'object' && 'url' in image && image.url) {
     const ogUrl = image.sizes?.og?.url
-
-    url = ogUrl ? serverUrl + ogUrl : serverUrl + image.url
+    const serverUrl = getServerSideURL()
+    return ogUrl ? serverUrl + ogUrl : serverUrl + image.url
   }
 
-  return url
+  return undefined
+}
+
+/** Site Info › Default preview image. Used when a page has no SEO or OG image. */
+export const getFallbackOgImageURL = async () => {
+  const siteInfo = await getCachedGlobal('site-info', 1)()
+  return getImageURL(siteInfo?.ogImage)
 }
 
 export const generateMeta = async (args: {
@@ -49,7 +52,8 @@ export const generateMeta = async (args: {
 
   // OG fields override the base SEO fields when set; each falls back independently.
   const og = doc?.meta?.og
-  const ogImage = getImageURL(og?.image || doc?.meta?.image)
+  const ogImage =
+    getImageURL(og?.image || doc?.meta?.image) ?? (await getFallbackOgImageURL())
 
   const title = doc?.meta?.title ? `${doc?.meta?.title} | Suits & Sandals` : 'Suits & Sandals'
 

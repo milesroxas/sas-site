@@ -144,6 +144,16 @@ export const SiteInfo: GlobalConfig = {
       admin: { description: 'Used as the Organization logo in structured data.' },
     },
     {
+      name: 'ogImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Default preview image',
+      admin: {
+        description:
+          'Used for search and social share cards when a page has no SEO or Open Graph image. Landscape, at least 1200×630px.',
+      },
+    },
+    {
       name: 'address',
       type: 'group',
       fields: [
