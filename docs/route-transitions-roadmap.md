@@ -8,7 +8,7 @@ Working doc for the navigation-experience overhaul, started **2026-08-31**. This
 
 ## 1. What exists (audit, 2026-08-31)
 
-One engine for route transitions: React's experimental `<ViewTransition>` (Next `experimental.viewTransition: true`, [next.config.ts:26](../next.config.ts)). No transition library, no GSAP page-transition provider. GSAP touches navigation in exactly two places, both deliberate: the menu hero handoff (runs *instead of* a view transition, over an untagged push) and the `work-open` landing plan (GSAP-authored curves sampled into WAAPI).
+One engine for route transitions: React's `<ViewTransition>`, which Next integrates with navigations out of the box since 16.3 (the `experimental.viewTransition` flag it needed before was removed in that release). No transition library, no GSAP page-transition provider. GSAP touches navigation in exactly two places, both deliberate: the menu hero handoff (runs *instead of* a view transition, over an untagged push) and the `work-open` landing plan (GSAP-authored curves sampled into WAAPI).
 
 | Piece | File | Role |
 |---|---|---|

@@ -61,16 +61,23 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/api/**': ['./node_modules/.pnpm/ffmpeg-static@*/node_modules/ffmpeg-static/ffmpeg'],
   },
-  experimental: {
-    viewTransition: true,
-  },
   images: {
+    // Dev fallback when NEXT_PUBLIC_MEDIA_URL is unset; production media
+    // resolves to the R2 host below (see ImageMedia).
     localPatterns: [
       {
         pathname: '/api/media/file/**',
       },
     ],
-    qualities: [100],
+    // Media URLs carry `?<updatedAt>`, so a transform can live as long as the
+    // object. Without this the optimizer inherits Payload's `max-age=0` and
+    // re-transforms (and re-fetches from the origin function) every minute.
+    minimumCacheTTL: 31536000,
+    // 3840 only serves 4K monitors at 1x; every extra width is another
+    // transform and cache entry per image.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2560],
+    // ImageMedia defaults to 90; 75 is available for inline imagery.
+    qualities: [75, 90],
     remotePatterns: [
       {
         hostname: 'raw.githubusercontent.com',

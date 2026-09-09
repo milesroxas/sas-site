@@ -2,6 +2,16 @@
 
 Date: 2026-09-03. Deployment audited: `57f6f47` on the production alias `preview.suits-sandals.com` (also `sas-site-sas-team.vercel.app`). Scope: the case-study route, its shared layout, and everything a work page ships to the browser. Documentation only, no code changes were made.
 
+## 0. Status
+
+2026-09-09, branch `perf/cold-start-1-3` (preview deploy first). A prod re-check that day found that none of the tier 1 items below had shipped except the menu `prefetch={false}`, and added two cold-path findings the original audit missed: every `/_next/static` URL carries `?dpl=<deployment>`, so the browser cache is empty after each deploy, and `<Image>` sources go through the Payload file route (a function answering `max-age=0`), so the optimizer serves `max-age=60` to browsers and re-fetches the origin per variant. Shipped in that branch:
+
+- Next 16.3.4: immutable content-addressed static assets (`/_next/static/immutable/*`, no `dpl` query) so chunks and fonts survive redeploys in the browser cache. The `experimental.viewTransition` flag no longer exists in 16.3; the integration is built in.
+- `ImageMedia` resolves its source from the R2 host (`getCdnMediaUrl`, shared with `VideoMedia`) and falls back to the Payload route only when `NEXT_PUBLIC_MEDIA_URL` is unset. `images.minimumCacheTTL` is one year (URLs carry `?updatedAt`), `qualities` is `[75, 90]` with `ImageMedia` at 90, `deviceSizes` stops at 2560, and the default `sizes` is a valid `100vw`.
+- `AdminBar` renders only in draft mode (preview links, admin live preview), so anonymous visitors on prerendered pages no longer call `/api/users/me`.
+
+Still open from tier 1: video gating (P0-1), the bundle diet (P0-2), hero `fetchpriority` and `preconnect` (P1-4), posters through `next/image`, `Critical-CH` scoping (P1-8), the theme bootstrap guard (P1-9).
+
 ## 1. Summary
 
 The work pages are not slow because of rendering or interaction. TTFB (0.45s), INP (56ms), CLS (0.01) and FID (4ms) are all green. The pages are slow because of what they ask the browser to download in the first two seconds. Field P75 on desktop is FCP 4.65s and LCP 4.86s, and those two numbers being almost equal is the tell: first paint itself is being starved, and the hero paints as soon as anything paints.
