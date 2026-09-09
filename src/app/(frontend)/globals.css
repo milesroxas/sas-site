@@ -103,8 +103,9 @@
    merge these timings into their own transition lists (see Home FeaturedCard). */
 :root {
   --press-scale: 0.97;
-  /* Gentler compress for large surfaces (full-width rows, media tiles) where
-     0.97 would translate edges by tens of pixels. Applied via `pressable-subtle`. */
+  /* Gentler compress for large surfaces (full-width rows, media tiles, heading
+     chips) where 0.97 would translate edges by tens of pixels. Applied via
+     `pressable-subtle`. */
   --press-scale-subtle: 0.985;
   --press-duration: 150ms;
   --press-ease: cubic-bezier(0, 0, 0.2, 1);

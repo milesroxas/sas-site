@@ -177,11 +177,13 @@ export const HeadingDropdown = ({
             // without stretching wrapped lines.
             'bg-primary align-baseline text-xl md:text-3xl leading-none font-mono text-primary-foreground',
             // `pressable` owns the transition list (color, background, scale):
-            // 150ms ease-out compress on press, springy release. Hover and
-            // open lift the plate toward its ink (same mix the secondary
-            // button uses) rather than fading it, so the chip never goes
-            // translucent over a band.
-            'pressable outline-none select-none',
+            // 150ms ease-out compress on press, springy release. The chip is
+            // heading-sized (`text-3xl` from md), so 0.97 would be a visible
+            // shrink; `pressable-subtle` (0.985) keeps it felt, not seen.
+            // Hover and open lift the plate toward its ink (same mix the
+            // secondary button uses) rather than fading it, so the chip never
+            // goes translucent over a band.
+            'pressable pressable-subtle outline-none select-none',
             'hover:bg-[color-mix(in_oklch,var(--primary),var(--primary-foreground)_12%)]',
             'data-[state=open]:bg-[color-mix(in_oklch,var(--primary),var(--primary-foreground)_12%)]',
             'focus:outline-none focus:ring-0',
