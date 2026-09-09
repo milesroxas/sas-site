@@ -12,11 +12,13 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | [docs/editorial/content-hub.md](docs/editorial/content-hub.md) | Editors | Creating clients, projects, case study content, testimonials, assets |
 | [docs/editorial/website.md](docs/editorial/website.md) | Editors | Website surfaces, composing work pages, preview and publishing |
 | [docs/editorial/editorial-guide.md](docs/editorial/editorial-guide.md) | Editors | Voice, structure, and writing standards for published content |
+| [docs/inquiries.md](docs/inquiries.md) | Developers, Editors | Contact templates, the inquiries inbox, email notification |
 | [docs/cms-naming.md](docs/cms-naming.md) | Developers, Editors | Admin naming conventions: tabs, groups, field labels, block names |
 | [docs/aeo.md](docs/aeo.md) | Developers, Editors | Answer-engine optimization: llms.txt, IndexNow, JSON-LD, editorial guidance |
 | [docs/mcp.md](docs/mcp.md) | Developers | Internal MCP server at `/api/mcp`: API keys, capabilities, security model |
 | [docs/animations.md](docs/animations.md) | Developers | Route transitions, scroll reveals, marquee; tuning workflow |
 | [docs/immersive-effects.md](docs/immersive-effects.md) | Developers | WebGL effects: architecture, defaults/presets contract, playground workflow |
+| [docs/conductor.md](docs/conductor.md) | Developers | Parallel Conductor workspaces, per-workspace DBs, migration files across branches |
 | [docs/prds/content-hub.md](docs/prds/content-hub.md) | Reference | Original PRD and architecture amendment |
 | [docs/ask-rag-roadmap.md](docs/ask-rag-roadmap.md) | Reference | Roadmap for the `/ask` retrieval-augmented answering feature |
 | [AGENTS.md](AGENTS.md) | Agents (Cursor / Claude / Codex) | Slim always-on contract: DB, security, tooling; Payload how-to in `.agents/skills/payload` |
@@ -26,7 +28,7 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | Layer | Technologies |
 | --- | --- |
 | App | Next.js 16 (App Router), React 19, TypeScript 6 |
-| CMS | Payload 3.85, Lexical rich text, Postgres (`@payloadcms/db-vercel-postgres`) |
+| CMS | Payload 3.88, Lexical rich text, Postgres (`@payloadcms/db-vercel-postgres`) |
 | Storage | Cloudflare R2, S3-compatible (`@payloadcms/storage-s3`) |
 | Email | Resend (`@payloadcms/email-resend`), React Email |
 | UI | Tailwind CSS 4, shadcn/ui, Radix UI, Geist |
@@ -46,15 +48,17 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 
 **Website** (publishing surfaces)
 
-- Pages (layout builder), Posts with Insights topic hubs, Work Pages (`/works`), Lab Pages (`/lab`), Expertise Pages (`/expertise`), Audience Pages (`/who-we-help`)
+- Pages (layout builder), Posts with Insights topic hubs, Work Pages (`/works`), Lab Pages (`/lab`), Expertise Pages (`/expertise`), Audience Pages (`/who-we-help`), Contact Pages (`/contact`)
 - Work Pages compose case-study content through typed blocks with override-then-canonical resolution
-- Draft preview, live preview, on-demand revalidation, per-surface sitemaps, SEO, search, redirects
+- Contact form submissions land in the Inquiries inbox (team-only), with email notification ([docs/inquiries.md](docs/inquiries.md))
+- Draft preview, live preview, on-demand revalidation, sitemaps for listing surfaces, SEO, search, redirects
 - Newsletter sends through Resend, queued as Payload jobs, with double opt-in and bounce handling
 
 **Motion stack** (custom)
 
 - Global WebGL canvas mounted once in the root layout; tunnel pattern for DOM ↔ WebGL composition
 - `ImmersiveShell` for opt-in GPU layers; site-wide Lenis smooth scroll; React View Transitions
+- Custom cursor on fine pointers (`CustomCursorProvider`)
 - GSAP scroll reveals and marquee under a shared defaults contract ([docs/animations.md](docs/animations.md))
 - Demo pages at `/demo/immersive` and `/demo/transitions`
 
@@ -105,6 +109,8 @@ Optional — each feature is disabled when its variable is unset:
 | Variable | Purpose |
 | --- | --- |
 | `OPENAI_API_KEY` | `/api/ask` answer model and content embeddings; the endpoint returns 503 without it |
+| `OPENAI_ADMIN_API_KEY` | Read-only spend/usage panel in Site Info → Ask; the panel explains setup when unset |
+| `OPENAI_PROJECT_ID` | Optional OpenAI project id (`proj_...`) to scope that usage panel |
 | `RESEND_WEBHOOK_SECRET` | Svix signing secret for the Resend bounce/complaint webhook |
 | `NEWSLETTER_FROM_ADDRESS`, `NEWSLETTER_FROM_NAME` | Newsletter-specific sender; falls back to `RESEND_FROM_*` |
 | `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | Sentry monitoring; the DSN enables the SDK, the rest enable build-time source map upload |
@@ -153,6 +159,8 @@ pnpm generate:importmap
 
   Most of the wall-clock is pg_dump's per-object catalog round-trips to Neon (~90s of a ~110s pull, measured 2026-09-01), which scales with the ~470 tables / ~1700 indexes this schema generates, not with the ~15 MB of data. The restore itself is ~1s.
 
+**Database…** also has seed / seed:drop against the local Docker DB, plus start/stop/backup.
+
 Both production-DB options pull `.env.production.pulled` automatically when it is missing (needs the `vercel` CLI), so no separate step is required. They never refresh an existing file — use **Database… → Pull Vercel production env** to force a re-pull after credentials rotate.
 
 | File | Role |
@@ -168,29 +176,31 @@ Deliberately not `.env.production.local` / `.env.local`: Next.js auto-loads thos
 ```
 src/
 ├── app/
-│   ├── (frontend)/          # Public site, /ask, /demo, sitemaps, llms.txt
+│   ├── (frontend)/          # Public site, /ask, /contact, /demo, sitemaps, llms.txt
 │   └── (payload)/           # Admin panel + REST/GraphQL API
 ├── access/                  # Access control helpers (document and field level)
 ├── blocks/                  # Generic page blocks + case-study/ and lab/ block sets
-├── collections/             # 21 collections — see Content model
+├── collections/             # 23 collections — see Content model
+├── CollectionIndexes/       # insights-index and works-index globals
 ├── components/              # Shared React components (Link, Media, Card, RichText, …)
-├── endpoints/               # Custom endpoints: seed/, ask, newsletter
-├── features/                # ask/ (RAG index) and immersive/ (WebGL scenes)
+├── endpoints/               # Custom endpoints: ask, newsletter
+├── features/                # ask/ (RAG index), immersive/ (WebGL), cursor/
 ├── fields/                  # Reusable field definitions and overrides
 ├── heros/                   # Page hero variants + CaseStudyHero
 ├── hooks/                   # Payload collection hooks + React client hooks
 ├── jobs/                    # Payload job tasks (newsletter send)
 ├── lib/                     # interactions/ (ImmersiveShell, Lenis) and webgl/ (canvas, tunnels)
-├── plugins/                 # SEO, redirects, search, forms, nested docs, AEO, ask-index, MCP, Sentry
-├── providers/               # Theme, consent, analytics, smooth scroll
+├── plugins/                 # SEO, redirects, search, forms, nested docs, media gallery, AEO, ask-index, MCP, Sentry
+├── providers/               # Theme, consent, analytics, smooth scroll, custom cursor
 ├── search/                  # Search plugin sync + field overrides
+├── sections/                # Shared page sections (WorksBrowse, InsightsBrowse, …)
 ├── shared/                  # View transitions, scroll reveal, demo kit, email templates
 ├── utilities/               # Framework-agnostic helpers
 ├── widgets/                 # Demo playgrounds (transition-demo, immersive-demo)
 ├── Header/, Footer/, Home/  # Global configs and their components
 ├── migrations/              # Postgres migrations
 └── payload.config.ts
-scripts/                     # Dev TUI, migration checks, ask-index backfill
+scripts/                     # Dev TUI, migration checks, seed, ask-index backfill
 tests/                       # Vitest integration + Playwright E2E
 docs/                        # Architecture, editorial, and system documentation
 ```
@@ -201,20 +211,21 @@ Path alias: `@/*` → `src/*`. Payload config: `@payload-config`.
 
 Full detail in [docs/architecture.md](docs/architecture.md).
 
-21 collections are defined in `src/collections/`:
+23 collections are defined in `src/collections/`:
 
 | Group | Collections | Purpose |
 | --- | --- | --- |
-| Website | `pages`, `posts`, `work-pages`, `lab-pages`, `expertise-pages`, `audience-pages` | Publishing surfaces with public URLs |
+| Website | `pages`, `posts`, `work-pages`, `lab-pages`, `expertise-pages`, `audience-pages`, `contact-pages` | Publishing surfaces with public URLs |
 | Content Hub | `organizations` (Clients), `projects`, `case-studies` (Case Study Content), `lab-projects`, `testimonials` | Canonical, channel-agnostic source material |
 | Assets | `media`, `asset-libraries` | Uploads with approval status; project-scoped libraries |
 | Taxonomy | `capabilities`, `industries`, `platforms`, `categories` | Shared vocabulary |
+| Inbox | `inquiries` | Contact-form submissions; team-only (PII) |
 | Newsletter | `newsletters`, `audiences`, `subscribers` | Email sends via Resend; team-only access |
 | System | `users` | Admin auth |
 
 Plugins add `redirects`, `forms`, `form-submissions`, `search`, and `payload-mcp-api-keys` ([docs/mcp.md](docs/mcp.md)).
 
-Globals: `home`, `header`, `footer`, and `site-info` (added by the AEO plugin). Each Work Page presents exactly one Case Study (unique relationship); canonical narrative sections contain optional section bodies plus reusable Story Beats, and Work blocks resolve either a full section or one stable beat at render time without copying it.
+Globals: `home`, `insights-index`, `works-index`, `header`, `footer`, and `site-info` (added by the AEO plugin). Each Work Page presents exactly one Case Study (unique relationship); canonical narrative sections contain optional section bodies plus reusable Story Beats, and Work blocks resolve either a full section or one stable beat at render time without copying it.
 
 ## Scripts
 
@@ -230,8 +241,10 @@ Globals: `home`, `header`, `footer`, and `site-info` (added by the AEO plugin). 
 | `pnpm generate:types` | Regenerate `payload-types.ts` |
 | `pnpm generate:importmap` | Regenerate admin `importMap.js` |
 | `pnpm migrate:create` | Generate a migration file from the schema diff (review + commit) |
-| `pnpm check:migrations` | Static check — fails if a migration `ADD VALUE`s an enum label and uses it in the same `up()` |
+| `pnpm check:migrations` | Static check — fails if a migration `ADD VALUE`s an enum label and uses it in the same `up()`, or casts text→enum without a prior normalizing `UPDATE` |
+| `pnpm check:migrations:drift` | Static check — newest migration snapshot vs current Payload config (no DB) |
 | `pnpm migrate:status` | Read-only — reports the **production** migration ledger |
+| `pnpm seed` / `pnpm seed:drop` | Upsert placeholder review content into the local Docker DB / wipe content collections then seed |
 | `pnpm payload` | Payload CLI (e.g. `pnpm payload generate:db-schema`) |
 | `pnpm lint` / `pnpm lint:fix` | Biome check / fix |
 | `pnpm test:int` / `pnpm test:e2e` / `pnpm test` | Vitest integration / Playwright E2E / both |
@@ -249,8 +262,9 @@ The workflow follows Payload's recommended split: **push in dev, migrations in C
 
 ```bash
 pnpm migrate:create     # after schema changes — generates a migration file to review + commit
-pnpm check:migrations   # after migrate:create — catches unsafe enum ADD VALUE + use in one up()
-pnpm migrate:status     # read-only — reports the PRODUCTION ledger (see note below)
+pnpm check:migrations         # after migrate:create — enum ADD VALUE + use, and unguarded text→enum casts
+pnpm check:migrations:drift   # newest snapshot vs current config (no DB)
+pnpm migrate:status           # read-only — reports the PRODUCTION ledger (see note below)
 # `payload migrate` is run only by `pnpm ci` in the deploy pipeline — do not run it by hand.
 ```
 
@@ -290,13 +304,21 @@ pnpm db:reset   # destroy the volume, start a fresh container (initdb creates pg
 pnpm dev        # Drizzle push rebuilds the full current schema
 ```
 
-Irreversible — deletes all local pages/posts/media records. **Local only; production is untouched.** Reseed sample content from `/admin` → **Seed the database** afterward. The pgvector extension is recreated automatically on fresh init via the inline `initdb-extensions` config in `docker-compose.yml`, so no manual `CREATE EXTENSION` is needed.
+Irreversible — deletes all local pages/posts/media records. **Local only; production is untouched.** Reseed with `pnpm seed` afterward (and `scripts/seed-contact-page.ts` for `/contact`). The pgvector extension is recreated automatically on fresh init via the inline `initdb-extensions` config in `docker-compose.yml`, so no manual `CREATE EXTENSION` is needed.
 
 ### Seed
 
-From `/admin`, **Seed the database** loads sample template content (pages, posts, categories, media, a contact form) and overwrites the `home`, `header`, and `footer` globals. Demo user: `demo-author@example.com` / `password`.
+`pnpm seed` upserts placeholder review content into the local Docker DB: taxonomy, clients → projects → case studies → work pages, posts, layout-review pages, lab / expertise / who-we-help pages, and the Home global. Existing media is reused, not uploaded. It refuses to run unless `POSTGRES_URL` looks local (`127.0.0.1` / `localhost`); pass `--allow-remote` to override.
 
-> **Warning:** seeding is destructive — it wipes `pages`, `posts`, `categories`, `media`, `forms`, `form-submissions`, and `search`, along with their versions. Content Hub collections are not seeded, but deleting media breaks any Content Hub records that reference it. Use on fresh environments only.
+`pnpm seed:drop` wipes content collections first (pages, posts, work/lab/expertise/audience pages, testimonials, case studies, lab projects, asset libraries, projects, organizations, categories, newsletter audiences, forms, form-submissions), then seeds. Users, media, newsletters, subscribers, and redirects are never touched.
+
+The contact surface (`/contact` and the project-inquiry form) is bootstrapped separately:
+
+```bash
+pnpm exec tsx --env-file=.env scripts/seed-contact-page.ts
+```
+
+> **Warning:** `seed:drop` is destructive on those collections. Local Docker only.
 
 ## Deployment
 
@@ -309,7 +331,7 @@ Required Vercel env vars: `PAYLOAD_SECRET`, `CRON_SECRET`, `PREVIEW_SECRET`, Res
 ## Testing
 
 ```bash
-pnpm test:int    # Vitest — content-hub access rules, website structure, ask/RAG, lab, newsletter, WebGL store
+pnpm test:int    # Vitest — API smoke, content-hub access rules, website structure, ask/RAG, lab, newsletter, WebGL store
 pnpm test:e2e    # Playwright — admin panel, frontend rendering, content-hub work-page flows
 pnpm test        # both
 ```
