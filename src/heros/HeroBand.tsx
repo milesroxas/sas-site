@@ -137,6 +137,16 @@ type HeroBandProps = React.HTMLAttributes<HTMLElement> & {
   as?: 'div' | 'header' | 'section'
   /** The band's own palette. Pinned on the element and mirrored onto the chrome above it. */
   theme?: Theme
+  /**
+   * The band sits under both fixed bars at rest (it pulls under the header
+   * and fills the first screen), so the bars should already be on its
+   * palette at first paint: stamps `data-hero-band-pin`, which globals.css
+   * uses to paint the bars before the ChromeTheme store can (the store is
+   * written from this band's effect, after hydration). Never set it on a
+   * band that starts below the header: a pinned plate over any sliver of
+   * page carries the wrong ink.
+   */
+  pinsChromeAtLoad?: boolean
 }
 
 /**
@@ -148,10 +158,20 @@ type HeroBandProps = React.HTMLAttributes<HTMLElement> & {
 export const HeroBand: React.FC<HeroBandProps> = ({
   as = 'section',
   theme = 'dark',
+  pinsChromeAtLoad = false,
   children,
   ...props
 }) => {
   const ref = useRef<HTMLElement>(null)
   useHeroChromeTheme(ref, theme)
-  return createElement(as, { ...props, 'data-theme': theme, ref }, children)
+  return createElement(
+    as,
+    {
+      ...props,
+      'data-theme': theme,
+      ...(pinsChromeAtLoad ? { 'data-hero-band-pin': theme } : {}),
+      ref,
+    },
+    children,
+  )
 }

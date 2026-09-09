@@ -102,6 +102,7 @@ const HomeHero: React.FC<HomeHeroData> = ({
       // Pull under the fixed header; stop at the fixed footer so the first
       // screen is exactly header + hero + footer (page frame already pads the bottom).
       className="relative isolate -mt-(--header-height) flex h-[calc(100svh-var(--footer-height))] flex-col overflow-clip bg-background text-foreground"
+      pinsChromeAtLoad
     >
       {backgroundMedia && <HeroBackground media={backgroundMedia} />}
 

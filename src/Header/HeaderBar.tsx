@@ -1,6 +1,7 @@
 'use client'
 
 import type React from 'react'
+import { useHydrated } from '@/hooks/use-hydrated'
 import { useChromeBarTheme } from '@/providers/ChromeTheme'
 import { cn } from '@/utilities/ui'
 
@@ -22,10 +23,14 @@ export const HeaderBar: React.FC<{ menuOpen: boolean; children: React.ReactNode 
   children,
 }) => {
   const heroTheme = useChromeBarTheme('header')
+  // Until this is set, globals.css paints the bar on a hero band's palette
+  // (`data-hero-band-pin`); after it, the store above is the only writer.
+  const live = useHydrated()
   const pinned = menuOpen ? null : heroTheme
   return (
     <header
       data-site-header
+      data-chrome-live={live ? '' : undefined}
       data-theme={pinned ?? undefined}
       className={cn(
         'fixed inset-x-0 top-0 z-50 h-(--header-bar-height) text-foreground transition-[height,background-color,color] duration-300 motion-reduce:transition-none',

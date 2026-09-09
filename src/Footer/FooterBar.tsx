@@ -1,6 +1,7 @@
 'use client'
 
 import type React from 'react'
+import { useHydrated } from '@/hooks/use-hydrated'
 import { useChromeBarTheme } from '@/providers/ChromeTheme'
 import { cn } from '@/utilities/ui'
 
@@ -20,9 +21,13 @@ import { cn } from '@/utilities/ui'
  */
 export const FooterBar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const heroTheme = useChromeBarTheme('footer')
+  // Until this is set, globals.css paints the bar on a hero band's palette
+  // (`data-hero-band-pin`); after it, the store above is the only writer.
+  const live = useHydrated()
   return (
     <footer
       data-site-footer
+      data-chrome-live={live ? '' : undefined}
       data-theme={heroTheme ?? undefined}
       className={cn(
         'fixed inset-x-0 bottom-0 z-30 h-(--footer-bar-height) text-foreground transition-[height,background-color,color] duration-300 motion-reduce:transition-none',

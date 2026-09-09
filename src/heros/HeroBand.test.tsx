@@ -1,4 +1,5 @@
 import { cleanup, render } from '@testing-library/react'
+import type React from 'react'
 import { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ChromeThemeProvider, useChromeBarTheme } from '@/providers/ChromeTheme'
@@ -188,5 +189,29 @@ describe('HeroBand', () => {
       await Promise.resolve()
     })
     expect(getByTestId('probe').textContent).toBe('dark/dark')
+  })
+
+  describe('pinsChromeAtLoad', () => {
+    const mountBand = (props: React.ComponentProps<typeof HeroBand> = {}) =>
+      render(
+        <ChromeThemeProvider>
+          <HeroBand {...props}>band</HeroBand>
+        </ChromeThemeProvider>,
+      )
+
+    it('stamps nothing without the prop', () => {
+      const { getByText } = mountBand()
+      expect(getByText('band').hasAttribute('data-hero-band-pin')).toBe(false)
+    })
+
+    it('stamps the band palette, dark by default', () => {
+      const { getByText } = mountBand({ pinsChromeAtLoad: true })
+      expect(getByText('band').getAttribute('data-hero-band-pin')).toBe('dark')
+    })
+
+    it('stamps a light palette when the band is light', () => {
+      const { getByText } = mountBand({ pinsChromeAtLoad: true, theme: 'light' })
+      expect(getByText('band').getAttribute('data-hero-band-pin')).toBe('light')
+    })
   })
 })

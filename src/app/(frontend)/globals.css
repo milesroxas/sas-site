@@ -1164,8 +1164,20 @@ html[data-scrolled] :is([data-site-header], [data-site-footer]) {
 }
 
 /* Dark palette from the shadcn preset (b1ZzraCdE), keyed to the site's
-   data-theme mechanism instead of the stock `.dark` class. */
-[data-theme="dark"] {
+   data-theme mechanism instead of the stock `.dark` class.
+
+   The second selector paints the same palette onto the fixed bars before
+   hydration while a hero band that sits under them at rest asks for it
+   (`pinsChromeAtLoad`, src/heros/HeroBand.tsx). The ChromeTheme store that
+   pins the bars cannot write until that band's effect runs, so the
+   server-rendered bars would otherwise carry the site theme's ink and plate
+   over the band for the whole pre-hydration window and then fade. This puts
+   them on the band's palette from the first frame; `data-chrome-live`
+   (HeaderBar / FooterBar, stamped once hydrated) hands them to the store
+   with nothing left to change. The plate half is the rule after the block. */
+[data-theme="dark"],
+:root:has([data-hero-band-pin="dark"])
+  :is([data-site-header], [data-site-footer]):not([data-chrome-live]) {
   --background: oklch(0.145 0 0);
   /* Soften near-white ink: light glyphs bloom on dark grounds and read heavier
      than the same weight in light mode. */
@@ -1212,6 +1224,15 @@ html[data-scrolled] :is([data-site-header], [data-site-footer]) {
   --brand: oklch(0.5 0.12 75);
   --brand-foreground: oklch(0.94 0.01 95);
   --active: oklch(0.75 0.16 150);
+}
+
+/* Pre-hydration chrome pin, plate half: the store's pinned state is a
+   transparent plate (`bg-transparent` in HeaderBar / FooterBar) so the band's
+   media runs under the bar. Match it for the same window. Unlayered on
+   purpose: it has to beat the `bg-background` utility the bars render with. */
+:root:has([data-hero-band-pin])
+  :is([data-site-header], [data-site-footer]):not([data-chrome-live]) {
+  background-color: transparent;
 }
 
 /* Surface set for the `dark` composition band (blocks/shared/section.tsx
