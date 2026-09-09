@@ -35,6 +35,7 @@ Standard tab set for website page collections (in order; omit tabs a collection 
 - **Composition** — the `layout` blocks field. Website composition only; canonical narrative stays in the hub.
 - **Closing** — the full-screen band above the footer bar. Inherits the Footer global; the page may hide it or override fields. Never copy Footer content onto the page.
 - Content Hub collections name tabs by content role instead. Case Studies use `Overview`, `Narrative`, `Objectives & Decisions`, `Evidence`, and `Asset Libraries`; don't force the website tab set onto hub collections.
+- Contact Pages are a fixed template, not a composition: `Intro` → `Form` → `After sending` → `SEO`. Do not force Opening / Composition onto them.
 - Tabs are label-only unless they have a `name` — keep them unnamed so labels can change freely without schema impact.
 
 ## Groups and collapsibles
@@ -72,6 +73,7 @@ One pattern everywhere (`src/fields/overrides.ts`):
 | `Website: Pages` | Publishing surfaces with public URLs (Pages, Posts, Work, Lab, Expertise, Who We Help, Contact) |
 | `Website: Landing` | Editor-configured entry points (Home, Insights Index, Works Index) |
 | `Website: Globals` | Site-wide chrome and identity (Header, Footer, Site Info) |
+| `Inbox` | Inquiries (contact-form submissions; PII, team-only) |
 
 Ordering rule: groups appear in first-appearance order over `[...collections, ...globals]`, so a group holding only globals always sits below every collection-only group. Renaming a group label resets each user's collapsed state for it once (preferences are keyed by label).
 

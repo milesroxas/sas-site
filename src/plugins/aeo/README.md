@@ -89,7 +89,7 @@ type, extend the walker.
 ## Operational setup (one-time, manual)
 
 1. Set `INDEXNOW_KEY` in Vercel production env (`openssl rand -hex 16`).
-2. Fill the **Site Info** global in `/admin` — social profile URLs especially: the `sameAs`
+2. Fill the **Site Info** global in `/admin` (Website: Globals) — social profile URLs especially: the `sameAs`
    array is the entity anchor AI engines use to reconcile the brand across the web.
 3. Verify the site in Bing Webmaster Tools (one-click Google Search Console import) and submit
    the sitemap. The **AI Performance** report there is the only first-party AI-citation

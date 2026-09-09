@@ -5,7 +5,7 @@ at **`/api/mcp`** so agents (Claude Code, Claude Desktop, custom tooling) can au
 CMS content through Payload's access-control layer instead of raw REST calls.
 
 Implementation: [`src/plugins/mcp.ts`](../src/plugins/mcp.ts), built on
-`@payloadcms/plugin-mcp` (pinned to the Payload release line, currently `3.85.1`).
+`@payloadcms/plugin-mcp` (pinned to the Payload release line, currently `3.88.0`).
 It is registered in [`src/plugins/index.ts`](../src/plugins/index.ts).
 
 ## Authentication and the capability model
@@ -36,21 +36,23 @@ Local dev serves the same endpoint at `http://localhost:3001/api/mcp`.
 
 | Group | Collections / globals | Capabilities offered |
 | --- | --- | --- |
-| Website surfaces | `pages`, `posts`, `work-pages`, `expertise-pages`, `audience-pages`, `lab-pages` (from `CONTENT_SURFACES`) | Full authoring (find, create, update, delete) |
+| Website surfaces | Every `CONTENT_SURFACES` collection: `pages`, `posts`, `work-pages`, `lab-pages`, `expertise-pages`, `audience-pages`, `contact-pages` | Full authoring (find, create, update, delete) |
 | Content Hub | `case-studies`, `lab-projects`, `organizations`, `projects`, `testimonials` | Full authoring |
 | Taxonomy | `capabilities`, `categories`, `industries`, `platforms` | Full authoring |
 | Assets | `asset-libraries` | Full authoring (find, create, update, delete) |
 | Assets | `media` | **Read-only** (find) |
-| Globals | `header`, `footer`, `site-info` | Find + update |
+| Globals | `home`, `header`, `footer`, `site-info` | Find + update |
 
 "Offered" means the checkbox exists on the key — each key still gets only what an admin turns on.
+
+`insights-index` and `works-index` are not exposed over MCP (hero/SEO only; lists are code-owned).
 
 Media is read-only by design: MCP tools cannot send binary uploads, and new media defaults to
 the internal `usageStatus` gate anyway (see [architecture.md](architecture.md) access rules).
 Agents reference existing media documents by id. Asset libraries are metadata (name, organization,
 project, status) — creating one also creates its root folder via the collection hook.
 
-**Deliberately excluded** (no MCP tools at all): `users`, `subscribers`, `newsletters`
+**Deliberately excluded** (no MCP tools at all): `users`, `inquiries`, `subscribers`, `newsletters`
 (accounts, PII, send machinery), `forms` / `form-submissions`, `redirects`, `search` (derived
 index), and `payload-mcp-api-keys` itself.
 
@@ -88,7 +90,7 @@ check), never `Boolean(req.user)`.
 
 ## Vendored patch (remove when upstream fixes)
 
-`@payloadcms/plugin-mcp@3.85.1` ships broken: `convertCollectionSchemaToZod` ran the generated
+`@payloadcms/plugin-mcp@3.88.0` still needs the vendored patch: `convertCollectionSchemaToZod` ran the generated
 Zod code through `ts.transpileModule` (CommonJS), whose `"use strict";` prologue made the
 `new Function` eval return the string `"use strict"` instead of a Zod schema — then
 `.partial()` on that string threw inside handler setup and **every POST to `/api/mcp` hung

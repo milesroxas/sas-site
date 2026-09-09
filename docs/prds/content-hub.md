@@ -2,7 +2,7 @@
 
 ## Document status
 
-**Status:** Ready for technical planning and implementation
+**Status:** Shipped. Kept as the original PRD and the architecture amendments below. The live model is [docs/architecture.md](../architecture.md).
 **Repository:** `milesroxas/sas-site`
 **Primary application:** Suits & Sandals website and Payload CMS
 **Target public route:** `/works/[slug]`

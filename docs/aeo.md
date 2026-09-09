@@ -35,8 +35,8 @@ Ranked by evidence strength:
 
 ## What is automated (per collection, no per-page work)
 
-For every collection listed in `AEO_CONTENT_SECTIONS` (pages, posts, work-pages,
-expertise-pages, audience-pages, lab-pages):
+For every collection in `CONTENT_SURFACES` / `AEO_CONTENT_SECTIONS` (pages, posts, work-pages,
+lab-pages, expertise-pages, audience-pages, contact-pages):
 
 - Published docs appear in **/llms.txt** (and posts' full bodies in **/llms-full.txt**).
 - Publish/unpublish/delete/slug-change triggers cache revalidation and an **IndexNow** ping
@@ -75,7 +75,7 @@ One-time setup:
 
 1. `INDEXNOW_KEY` in Vercel production env (`openssl rand -hex 16`). Key is served at
    `/indexnow.txt`; pings only fire on production deployments.
-2. Fill the **Site Info** global in `/admin` (Website group).
+2. Fill the **Site Info** global in `/admin` (Website: Globals).
 3. Verify the site in **Bing Webmaster Tools** (one-click GSC import) + submit sitemap. Bing's
    index gates Copilot entirely, and BWT's **AI Performance** report (2026) is the only
    first-party dashboard of AI citations — track Citation Share there.

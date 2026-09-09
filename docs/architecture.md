@@ -38,23 +38,28 @@ Website (presentation)                Content Hub (canonical)
 ├── work-pages ─────── /works/[slug] ──→ case-studies ──→ projects
 ├── lab-pages ──────── /lab/[slug] ──→ lab-projects (R&D narratives)
 ├── expertise-pages ── /expertise/[slug]  ├── testimonials ──→ organizations, projects
-└── audience-pages ─── /who-we-help/[slug]└── (metrics, decisions, outcomes live on case-studies)
+├── audience-pages ─── /who-we-help/[slug]└── (metrics, decisions, outcomes live on case-studies)
+└── contact-pages ──── /contact, /contact/[slug]
 
 Assets                                Taxonomy
 ├── media (usageStatus gates reads)   ├── capabilities (expertise vocabulary)
 └── asset-libraries ──→ projects      ├── industries (audience vocabulary)
     (scope approved media)            ├── platforms (delivery platforms/products)
                                       └── categories (post topics → /insights)
+
+Inbox                                 Newsletter
+└── inquiries (team-only PII)         └── newsletters, audiences, subscribers
 ```
 
 | Group | Collection | Notes |
 | --- | --- | --- |
-| Website | `pages` | Generic layout-builder pages (CTA, Content, Media, Archive, Form blocks) |
+| Website | `pages` | Generic layout-builder pages (hero + composition blocks) |
 | Website | `posts` | Blog; categories power `/insights/[topic]` hubs |
 | Website | `work-pages` | Case-study presentation; blocks resolve canonical content at render time |
 | Website | `lab-pages` | Lab-project presentation (`/lab`); same override-then-canonical model |
 | Website | `expertise-pages` | Positioning by `capabilities`; auto-matches related work |
 | Website | `audience-pages` | Positioning by `industries`; auto-matches related work |
+| Website | `contact-pages` | Fixed contact template (intro + form + receipt), not a block composition. Index slug `contact` publishes at `/contact`. See [inquiries.md](inquiries.md) |
 | Content Hub | `organizations` | Clients; public description vs. auth-only `internalNotes` |
 | Content Hub | `projects` | Factual engagement record; no layout fields |
 | Content Hub | `case-studies` | Canonical narrative + evidence (tabs: Overview, Narrative, Objectives & Decisions, Evidence, Asset Libraries) |
@@ -63,11 +68,12 @@ Assets                                Taxonomy
 | Assets | `media` | Uploads; `usageStatus` + `approvedChannels` govern reuse |
 | Assets | `asset-libraries` | Per-project groupings of approved media |
 | Taxonomy | `capabilities`, `industries`, `platforms`, `categories` | Fully public read |
+| Inbox | `inquiries` | Contact-form submissions; team-only (PII). Public create is `POST /api/inquiries/submit` only |
 | Newsletter | `newsletters`, `audiences`, `subscribers` | Email sends via Resend; team-only access (subscribers hold PII) |
 | System | `users` | Admin auth |
 | System | `payload-mcp-api-keys` | Per-key capabilities for the `/api/mcp` agent server — see [mcp.md](mcp.md) |
 
-Globals: `home`, `header`, `footer`, and `site-info` (added by the AEO plugin).
+Globals: `home` (`/`), `insights-index` (`/insights`), `works-index` (`/works`), `header`, `footer`, and `site-info` (added by the AEO plugin).
 
 ## How a Work Page resolves content
 
@@ -94,11 +100,12 @@ Three base helpers (`src/access/`), plus per-collection refinements:
 
 | Rule | Applies to |
 | --- | --- |
-| Write requires auth; anonymous reads published only (`authenticatedOrPublished`) | All Website collections, organizations, projects, case-studies, lab-projects |
+| Write requires auth; anonymous reads published only (`authenticatedOrPublished`) | All Website collections (including contact-pages), organizations, projects, case-studies, lab-projects |
 | Anonymous reads require published **and** `approvalStatus = approved-public` | testimonials |
 | Anonymous reads require `usageStatus = public-approved` | media |
 | Anonymous reads require `libraryStatus = active` | asset-libraries |
 | Fully public read (`anyone`) | capabilities, industries, platforms, categories |
+| Team-only (`authenticated`) | inquiries, newsletters, audiences, subscribers, users |
 
 Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `approvedClaims` are readable only by authenticated users — they never appear in anonymous API responses.
 
@@ -108,28 +115,31 @@ Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `ap
 
 ## Publishing pipeline
 
-- **Drafts & versions** — Website collections and Content Hub narrative collections use drafts with autosave, version history (max 50), and scheduled publishing (jobs run via Vercel cron, daily, authenticated by `CRON_SECRET`).
-- **Preview** — `generatePreviewPath` maps collections to URL prefixes (`work-pages` → `/works`, `lab-pages` → `/lab`, `expertise-pages` → `/expertise`, `audience-pages` → `/who-we-help`, `posts` → `/posts`, `pages` → `/`). Draft preview and live preview (mobile/tablet/desktop breakpoints) use `/next/preview` guarded by `PREVIEW_SECRET`.
+- **Drafts & versions** — Website collections and Content Hub narrative collections use drafts with autosave, version history (max 50), and scheduled publishing. The jobs runner hits `/api/payload-jobs/run` every 10 minutes from GitHub Actions (`.github/workflows/payload-jobs.yml`), with a daily Vercel cron as backstop; both authenticate with `CRON_SECRET`.
+- **Preview** — `generatePreviewPath` maps collections to URL prefixes (`work-pages` → `/works`, `lab-pages` → `/lab`, `expertise-pages` → `/expertise`, `audience-pages` → `/who-we-help`, `posts` → `/posts`, `pages` → `/`). Globals use `generateGlobalPreviewPath` (`home` → `/`, `insights-index` → `/insights`, `works-index` → `/works`). Draft preview and live preview (mobile/tablet/desktop breakpoints) use `/next/preview` guarded by `PREVIEW_SECRET`.
 - **Revalidation** — `afterChange`/`afterDelete` hooks revalidate the document's path, its index page, and its sitemap tag. Case Study edits revalidate every published Work Page that consumes them (`revalidateCaseStudyConsumers`).
-- **Sitemaps** — one route handler per surface (`pages`, `posts`, `works`, `lab`, `expertise`, `who-we-help`), stitched together by `next-sitemap` in `postbuild`, which also generates robots.txt.
-- **SEO** — plugin generates titles (`{title} | Suits & Sandals`) and per-collection URLs.
-- **Redirects** — managed in admin (System group) for all six Website collections.
-- **Search** — plugin indexes all `CONTENT_SURFACES` collections (pages, posts, work/lab/expertise/audience pages); served at `/search`.
+- **Sitemaps** — one route handler per listing surface (`pages`, `posts`, `works`, `lab`, `expertise`, `who-we-help`), stitched together by `next-sitemap` in `postbuild`, which also generates robots.txt. Contact pages are not a listing sitemap.
+- **SEO** — plugin generates titles (`{title} | Suits & Sandals`) and per-collection URLs from `CONTENT_SURFACES`.
+- **Redirects** — managed in admin (System group) for pages, posts, work/lab/expertise/audience pages. Contact pages are not in that plugin list.
+- **Search** — plugin indexes every `CONTENT_SURFACES` collection (pages, posts, work/lab/expertise/audience/contact pages); served at `/search`.
 - **MCP** — internal agent authoring server at `/api/mcp`; Bearer API keys with per-key capabilities, all operations run through the access rules above (`overrideAccess: false`). Details in [mcp.md](mcp.md).
 
 ## Frontend routes
 
 | Route | Collection | Renderer |
 | --- | --- | --- |
-| `/`, `/[slug]` | `pages` | `RenderHero` + `RenderBlocks` |
+| `/` | `home` global | Home hero + statement + `RenderBlocks` |
+| `/[slug]` | `pages` | `RenderHero` + `RenderBlocks` |
 | `/posts`, `/posts/[slug]` | `posts` | Archive / `PostHero` + rich text |
-| `/insights`, `/insights/[topic]` | `categories` + `posts` | Topic hubs |
-| `/works`, `/works/[slug]` | `work-pages` (+ `case-studies`) | Card grid / `CaseStudyHero` + `RenderCaseStudyBlocks` |
+| `/insights`, `/insights/[topic]` | `insights-index` global + `categories` + `posts` | Topic hubs |
+| `/works`, `/works/[slug]` | `works-index` global / `work-pages` (+ `case-studies`) | Browse grid / `CaseStudyHero` + `RenderCaseStudyBlocks` |
 | `/lab`, `/lab/[slug]` | `lab-pages` (+ `lab-projects`) | Lab index / lab detail resolving canonical R&D content |
 | `/expertise`, `/expertise/[slug]` | `expertise-pages` | `RenderBlocks` + related work by capability |
 | `/who-we-help`, `/who-we-help/[slug]` | `audience-pages` | `RenderBlocks` + related work by industry |
+| `/contact`, `/contact/[slug]` | `contact-pages` | Contact template (form → in-place receipt) |
 | `/search` | search index | Search + archive |
-| `/demo/immersive` | — | WebGL demo (noindex) |
+| `/ask` | — | RAG widget over published content |
+| `/demo/immersive`, `/demo/transitions` | — | WebGL / route-transition demos (noindex) |
 
 All dynamic routes use `generateStaticParams`, React `cache()` on queries, draft-mode gating, and `PayloadRedirects` fallback.
 

@@ -4,20 +4,25 @@ The website is a presentation layer. Website collections decide *how* content ap
 
 ## The surfaces
 
-| Admin section (Website) | URL | Purpose |
+| Admin section | URL | Purpose |
 | --- | --- | --- |
-| Pages | `/[slug]` | General pages (home, contact, about) built with layout blocks |
-| Posts | `/posts/[slug]` | Blog articles; topic hubs at `/insights/[topic]` |
-| Work Pages | `/works/[slug]` | Public case studies, composed from Case Study Content |
-| Lab Pages | `/lab/[slug]` | Public lab write-ups, composed from Lab Projects (works like Work Pages) |
-| Expertise Pages | `/expertise/[slug]` | What we do, organized by capability |
-| Audience Pages | `/who-we-help/[slug]` | Who we serve, organized by industry |
+| Website: Landing → **Home** | `/` | Homepage (hero + composition). Not a Pages document. |
+| Website: Landing → **Insights Index** / **Works Index** | `/insights`, `/works` | Hero and SEO for those indexes; the lists themselves are automatic |
+| Website: Pages → **Pages** | `/[slug]` | General pages built with layout blocks |
+| Website: Pages → **Posts** | `/posts/[slug]` | Blog articles; topic hubs at `/insights/[topic]` |
+| Website: Pages → **Work Pages** | `/works/[slug]` | Public case studies, composed from Case Study Content |
+| Website: Pages → **Lab Pages** | `/lab/[slug]` | Public lab write-ups, composed from Lab Projects (works like Work Pages) |
+| Website: Pages → **Expertise Pages** | `/expertise/[slug]` | What we do, organized by capability |
+| Website: Pages → **Audience Pages** | `/who-we-help/[slug]` | Who we serve, organized by industry |
+| Website: Pages → **Contact** | `/contact`, `/contact/[slug]` | Contact templates (intro + form + receipt). Not a block composition. See [inquiries.md](../inquiries.md) |
 
-Site navigation is edited under Website → **Header** and **Footer**.
+Site navigation is edited under Website: Globals → **Header** and **Footer**. Company facts (address, response time, booking link) live on **Site Info**.
+
+Visitor messages land in **Inbox → Inquiries**. That collection is team-only.
 
 ## Pages
 
-Build with a hero (none / low / medium / high impact — high impact uses the WebGL backdrop) and layout blocks: Call to Action, Content, Media, Archive, Form, Newsletter Signup.
+Build with a hero (none / low / medium / high impact; high impact uses the WebGL backdrop) and composition blocks (sections, media, statements, forms, and the rest of the shared run). Newsletter Signup is offered on Pages, not on Expertise or Audience pages.
 
 ## Posts and Insights
 
@@ -78,15 +83,19 @@ Lab Pages work exactly like Work Pages, but present a **Lab Project** (Content H
 
 ## Expertise and Audience Pages
 
-Both work like Pages (hero + the same layout blocks, minus Newsletter Signup) plus a **Positioning** tab:
+Both work like Pages (hero + composition blocks, minus Newsletter Signup) plus a **Positioning** tab:
 
 - Expertise Pages require **capabilities**; Audience Pages require **industries**.
 - Related work: pick Work Pages manually, or leave empty to auto-match published work sharing the same capability/industry.
+
+## Contact Pages
+
+Contact is a fixed template, not a layout of blocks. Edit **Intro** (the column beside the form), pick the **Form** (questions live on Forms), and write **After sending** (the in-place receipt). The page slugged `contact` is `/contact`; every other slug is `/contact/[slug]`. Response-time copy and the default booking link come from Site Info → Inquiries. Full detail: [inquiries.md](../inquiries.md).
 
 ## Previewing and publishing
 
 - **Autosave** runs continuously while you edit; drafts are invisible to the public.
 - **Preview / Live Preview** — use the admin preview to see the real page at mobile, tablet, and desktop widths, including unpublished changes.
 - **Publish** makes the page live and refreshes it, its index page where one exists (`/works`, `/lab`, `/expertise`, `/who-we-help`), the sitemap, and search engines' view within moments. Scheduled publishing is available on every surface.
-- **Slug changes** — the old URL stops working. Add a redirect (System → Redirects) from the old path to the new one whenever you change a published slug.
+- **Slug changes** — the old URL stops working. Add a redirect (System → Redirects) from the old path to the new one whenever you change a published slug. Redirects cover Pages, Posts, Work, Lab, Expertise, and Audience; Contact slug changes need a manual redirect if you still want the old URL.
 - **Version history** keeps the last 50 versions of each document; you can restore any of them.

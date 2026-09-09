@@ -43,7 +43,6 @@ const nextConfig: NextConfig = {
       './src/migrations/**',
       './public/**',
       './docs/**',
-      './plans/**',
       './scripts/**',
       './tests/**',
       './patches/**',
