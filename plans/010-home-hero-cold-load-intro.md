@@ -1,6 +1,6 @@
 # 010 — Give the homepage a CSS-driven cold-load intro and stop re-hiding the hero at hydration
 
-- **Status**: DONE on branch `worktree-agent-a44361c3bdc46f548` (commit f11e657, 2026-09-09); tsc, lint and vitest green; Storybook frame-verified (h1 0 to 1 monotonic by 1050ms, row by 1292ms, cover home at 483ms, settled at 1320ms, lens only after settle, reduced motion final state at frame 0); the in-app checks below are pending merge
+- **Status**: DONE, merged to `main` as 957a9e6 and deployed 2026-09-09; production frame check passed in light and dark (copy at opacity 0 with blur from the first frame and monotonic to 1 by ~1.29s, zero `visibility: hidden` frames, cover home at ~480ms, settled at ~1.5s, lens only after settle; reduced motion renders the final state at frame 0). Still to feel-check by hand: warm mount via the menu and via Back, the throttled profile, fonts on a cold cache
 - **Commit**: ea73161
 - **Severity**: HIGH
 - **Category**: Performance (rAF/JS-driven motion during page load) and Cohesion (a first frame that contradicts the entrance)

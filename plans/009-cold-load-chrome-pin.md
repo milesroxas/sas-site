@@ -1,6 +1,6 @@
 # 009 — Paint the fixed bars on the hero band's palette before hydration
 
-- **Status**: DONE on branch `worktree-agent-a44361c3bdc46f548` (commit 3b172c9, 2026-09-09); tsc, lint and vitest green; the in-app frame check (sampler) is pending merge
+- **Status**: DONE, merged to `main` as c777a15 and deployed 2026-09-09; production frame check passed (header `transparent=true` from the first frame in light and dark, no opaque frame across the hydration handover)
 - **Commit**: ea73161
 - **Severity**: HIGH on the light site theme, MEDIUM on dark
 - **Category**: Cohesion, hierarchy & spatial consistency (a state that arrives from nowhere)

@@ -13,8 +13,8 @@ executable by any agent with zero conversation context.
 | [006](006-card-drag-intent.md) | Decide card navigation by movement, not by elapsed time | HIGH | DONE |
 | [007](007-post-rail-bleed-and-edge-fade.md) | Bleed the post rail to the screen edge and fade the edge it clips | MEDIUM | DONE |
 | [008](008-chat-content-arrives-after-handoff.md) | Let the Ask transcript's content arrive after the handoff | HIGH | DONE (frame-verified 2026-09-09; real-device feel-check pending) |
-| [009](009-cold-load-chrome-pin.md) | Paint the fixed bars on the hero band's palette before hydration | HIGH (light theme) | DONE on branch `worktree-agent-a44361c3bdc46f548` (3b172c9); in-app frame check pending merge |
-| [010](010-home-hero-cold-load-intro.md) | Give the homepage a CSS-driven cold-load intro and stop re-hiding the hero at hydration | HIGH | DONE on branch `worktree-agent-a44361c3bdc46f548` (f11e657); Storybook frame-verified 2026-09-09; in-app checks pending merge |
+| [009](009-cold-load-chrome-pin.md) | Paint the fixed bars on the hero band's palette before hydration | HIGH (light theme) | DONE (main c777a15, deployed and production frame-verified 2026-09-09) |
+| [010](010-home-hero-cold-load-intro.md) | Give the homepage a CSS-driven cold-load intro and stop re-hiding the hero at hydration | HIGH | DONE (main 957a9e6, deployed and production frame-verified 2026-09-09; hand feel-checks of warm mounts and throttled loads still open) |
 
 ## Execution order
 
@@ -36,13 +36,11 @@ executable by any agent with zero conversation context.
   `docs/animations.md`; 010's excerpts show the post-009 state.
 - Neither plan touches `view-transition.css`, the takeover menu or the hero
   handoff, where uncommitted work was in flight when they were written.
-- Both were executed on 2026-09-09 in the worktree
-  `.claude/worktrees/agent-a44361c3bdc46f548` (branch
-  `worktree-agent-a44361c3bdc46f548`, two commits on top of `ea73161`). The
-  branch fast-forwards onto `main`; commit or park the in-flight WIP first
-  because both touch `docs/animations.md`. After merging, run plan 010's
-  dev-server sampler and its app-level checklist (warm mount via the menu
-  and via Back, reduced motion, throttled profile).
+- Both were executed on 2026-09-09, rebased onto `9c9caa4` and pushed to
+  `main` as `c777a15` (009) and `957a9e6` (010); Vercel deployed them and
+  the production cold-load sampler confirmed both fixes in light, dark and
+  reduced-motion runs. What remains is by hand: warm mounts via the menu
+  and via Back, a throttled cold load, fonts on a cold cache.
 
 - **008** touches only the chat-swap staging constants in
   `src/Header/Menu/motion.ts`, the two content class maps in
