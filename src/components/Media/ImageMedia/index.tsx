@@ -3,12 +3,14 @@
 import type { StaticImageData } from 'next/image'
 import NextImage from 'next/image'
 import type React from 'react'
-import { cssVariables } from '@/cssVariables'
-import { getMediaUrl } from '@/utilities/getMediaUrl'
+import { getCdnMediaUrl, getMediaUrl } from '@/utilities/getMediaUrl'
 import { cn } from '@/utilities/ui'
 import type { Props as MediaProps } from '../types'
 
-const { breakpoints } = cssVariables
+// Highest entry in `images.qualities` (next.config.ts). Photography and UI
+// mockups stay visually lossless here at retina densities; q100 spent a large
+// share of every candidate's bytes on detail no screen shows.
+const IMAGE_QUALITY = 90
 
 // A base64 encoded image to use as a placeholder while the image is loading
 const placeholderBlur =
@@ -17,31 +19,16 @@ const placeholderBlur =
 /**
  * ImageMedia
  *
- * This component passes a **relative** `src` (e.g. `/media/...`) to Next.js Image.
- * The `getMediaUrl` utility constructs the full URL by prepending the base URL from env vars
- * (NEXT_PUBLIC_SERVER_URL). Next.js then optimizes this using `remotePatterns` configured
- * in next.config.js — no custom `loader` needed.
- *
- * Flow:
- *   1. Resource URL from Payload: `/media/image-123.jpg`
- *   2. getMediaUrl() adds base URL: `https://yourdomain.com/media/image-123.jpg`
- *   3. Next.js Image optimizes via remotePatterns: `/_next/image?url=...&w=1200&q=75`
- *
- * If your storage/plugin returns **external CDN URLs** (e.g. `https://cdn.example.com/...`),
- * choose ONE of the following:
- *   A) Allow the remote host in next.config.js:
- *      images: { remotePatterns: [{ protocol: 'https', hostname: 'cdn.example.com' }] }
- *   B) Provide a **custom loader** for CDN-specific transforms:
- *      const imageLoader: ImageLoader = ({ src, width, quality }) =>
- *        `https://cdn.example.com${src}?w=${width}&q=${quality ?? 75}`
- *      <Image loader={imageLoader} src="/media/hero.jpg" width={1200} height={600} alt="" />
- *   C) Skip optimization:
- *      <Image unoptimized src="https://cdn.example.com/hero.jpg" width={1200} height={600} alt="" />
- *
- * TL;DR: Template uses relative URLs + getMediaUrl() to construct full URLs, then relies on
- * remotePatterns for optimization. Only add `loader` if using external CDNs with custom transforms.
+ * Source resolution, in order:
+ *   1. `src` prop (static import).
+ *   2. The R2 CDN URL for the media doc (`getCdnMediaUrl`, absolute, allowed
+ *      by `images.remotePatterns`). The optimizer fetches the object straight
+ *      from the edge cache, and its own cache is keyed on that URL plus the
+ *      `?updatedAt` tag, so a transform lives until the asset is replaced.
+ *   3. Payload's `url` (`/api/media/file/...`, `images.localPatterns`) when no
+ *      CDN host is configured. This route is a function in front of the same
+ *      bytes and answers `max-age=0`, so it is the dev fallback only.
  */
-
 export const ImageMedia: React.FC<MediaProps> = (props) => {
   const {
     alt: altFromProps,
@@ -62,7 +49,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
   let src: StaticImageData | string | undefined = srcFromProps
 
   if (!src && resource && typeof resource === 'object') {
-    const { alt: altFromResource, height: fullHeight, url, width: fullWidth } = resource
+    const { alt: altFromResource, filename, height: fullHeight, url, width: fullWidth } = resource
 
     if (fullWidth != null && fullHeight != null) {
       width = fullWidth
@@ -72,7 +59,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
 
     const cacheTag = resource.updatedAt
 
-    src = getMediaUrl(url, cacheTag) || undefined
+    src = getCdnMediaUrl(filename, cacheTag) || getMediaUrl(url, cacheTag) || undefined
   }
 
   // Avoid Next/img empty-string src (re-downloads the page). Unpopulated
@@ -83,12 +70,10 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
 
   const loading = loadingFromProps || (!priority ? 'lazy' : undefined)
 
-  // NOTE: this is used by the browser to determine which image to download at different screen sizes
-  const sizes = sizeFromProps
-    ? sizeFromProps
-    : Object.entries(breakpoints)
-        .map(([, value]) => `(max-width: ${value}px) ${value * 2}w`)
-        .join(', ')
+  // Which srcset candidate the browser picks per viewport. Callers that know
+  // their column pass a real `size`; the default is the full viewport, which is
+  // what the previous (invalid, `Nw`-based) string fell back to anyway.
+  const sizes = sizeFromProps || '100vw'
 
   // `fill` images position against their direct parent (next/image requires it be
   // positioned). The <picture> must therefore be the containing block, spanning the
@@ -104,7 +89,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         placeholder="blur"
         blurDataURL={placeholderBlur}
         priority={priority}
-        quality={100}
+        quality={IMAGE_QUALITY}
         loading={loading}
         sizes={sizes}
         src={src}

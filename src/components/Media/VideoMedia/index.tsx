@@ -1,31 +1,16 @@
 'use client'
 
 import type React from 'react'
-import { getMediaUrl } from '@/utilities/getMediaUrl'
+import { getCdnMediaUrl, getMediaUrl } from '@/utilities/getMediaUrl'
 import { cn } from '@/utilities/ui'
 import type { Props as MediaProps } from '../types'
-
-// Prefer the R2 custom domain (edge-cached, zero egress) when configured.
-// Fall back to Payload's `url` (usually `/api/media/file/...`) so local/dev
-// still plays when the CDN host is unset.
-const MEDIA_URL = (process.env.NEXT_PUBLIC_MEDIA_URL || '').replace(/\/$/, '')
-
-const cdnSrc = (filename: string | null | undefined, cacheTag?: string | null): string => {
-  if (!MEDIA_URL || !filename) return ''
-  // Object keys may contain spaces; encode each path segment.
-  const path = filename
-    .split('/')
-    .map((segment) => encodeURIComponent(segment))
-    .join('/')
-  return getMediaUrl(`${MEDIA_URL}/${path}`, cacheTag)
-}
 
 /** Resolve a video media doc's poster image URL (populated relation only). */
 export const getVideoPosterUrl = (resource: MediaProps['resource']): string | undefined => {
   if (!resource || typeof resource !== 'object') return undefined
   const posterDoc = resource.poster
   if (!posterDoc || typeof posterDoc !== 'object') return undefined
-  const cdn = cdnSrc(posterDoc.filename, posterDoc.updatedAt)
+  const cdn = getCdnMediaUrl(posterDoc.filename, posterDoc.updatedAt)
   if (cdn) return cdn
   if (!posterDoc.url) return undefined
   return getMediaUrl(posterDoc.url, posterDoc.updatedAt)
@@ -47,7 +32,7 @@ export const VideoMedia: React.FC<MediaProps> = (props) => {
   }
 
   const { filename, mimeType, updatedAt, url } = resource
-  const src = cdnSrc(filename, updatedAt) || getMediaUrl(url, updatedAt)
+  const src = getCdnMediaUrl(filename, updatedAt) || getMediaUrl(url, updatedAt)
 
   if (!src) {
     return null

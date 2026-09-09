@@ -12,8 +12,8 @@ import { Footer } from '@/Footer/Component'
 import { Header } from '@/Header/Component'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
-import { getCachedGlobal } from '@/utilities/getGlobals'
 import { getFallbackOgImageURL } from '@/utilities/generateMeta'
+import { getCachedGlobal } from '@/utilities/getGlobals'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { organizationSchema, webSiteSchema } from '@/utilities/schema'
 import { cn } from '@/utilities/ui'
@@ -36,11 +36,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <SpeedInsights />
         <Providers>
-          <AdminBar
-            adminBarProps={{
-              preview: isEnabled,
-            }}
-          />
+          {/* Draft mode only (preview links, admin live preview): the bar's
+              auth check is a function call, and the prerendered page must not
+              wake one for anonymous visitors. */}
+          {isEnabled ? (
+            <AdminBar
+              adminBarProps={{
+                preview: isEnabled,
+              }}
+            />
+          ) : null}
 
           {/* Demo routes swap the fixed header/footer for the DemoShell sidebar. */}
           <SiteChrome
