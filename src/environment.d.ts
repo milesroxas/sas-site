@@ -55,6 +55,8 @@ declare global {
       NEXT_PUBLIC_POSTHOG_HOST?: string
       /** GA4 measurement ID (G-...). Optional — Google Analytics disabled when unset. */
       NEXT_PUBLIC_GA_MEASUREMENT_ID?: string
+      /** Reb2b account key. Optional — B2B identification disabled when unset. */
+      NEXT_PUBLIC_REB2B_KEY?: string
     }
   }
 }
