@@ -142,6 +142,18 @@ describe('HeaderClient', () => {
     expect(screen.getByTestId('takeover-menu').getAttribute('data-open')).toBe('false')
   })
 
+  it('closes the menu when the brand link is clicked, even without a route change', () => {
+    render(<HeaderClient data={mockHeaderData} menuContent={mockMenuContent} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+    expect(screen.getByTestId('takeover-menu').getAttribute('data-open')).toBe('true')
+
+    fireEvent.click(screen.getByRole('link', { name: 'SUITS & SANDALS' }))
+
+    expect(screen.getByRole('button', { name: 'Open menu' })).not.toBeNull()
+    expect(screen.getByTestId('takeover-menu').getAttribute('data-open')).toBe('false')
+  })
+
   it('closes the menu when the takeover menu invokes its onClose callback', () => {
     render(<HeaderClient data={mockHeaderData} menuContent={mockMenuContent} />)
 

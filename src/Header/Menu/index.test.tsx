@@ -55,7 +55,9 @@ vi.mock('@/features/ask/MenuAsk', async () => {
     })
     return (
       <>
-        <div data-menu-preview-slot data-open={open} data-chat-view={chatView} />
+        <div data-menu-preview-slot data-open={open} data-chat-view={chatView}>
+          <div data-menu-preview-window />
+        </div>
         <form data-menu-item>
           <input placeholder="Ask anything…" />
           <button type="button" onClick={() => setChatView(true)}>
@@ -69,8 +71,9 @@ vi.mock('@/features/ask/MenuAsk', async () => {
 })
 
 const routerPush = vi.fn()
+const { pathnameMock } = vi.hoisted(() => ({ pathnameMock: vi.fn(() => '/') }))
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/',
+  usePathname: () => pathnameMock(),
   useRouter: () => ({ push: routerPush }),
 }))
 
@@ -94,6 +97,10 @@ vi.mock('next/link', () => ({
 const mockHeaderData: HeaderType = {
   id: 1,
   navItems: [
+    {
+      id: 'nav-0',
+      link: { type: 'custom', label: 'Case Studies', url: '/works', newTab: false },
+    },
     {
       id: 'nav-1',
       link: { type: 'custom', label: 'About', url: '/about', newTab: false },
@@ -157,6 +164,7 @@ const subView = (key: 'expertise' | 'audiences') =>
 
 describe('TakeoverMenu', () => {
   afterEach(() => {
+    pathnameMock.mockReturnValue('/')
     cleanup()
   })
 
@@ -216,6 +224,35 @@ describe('TakeoverMenu', () => {
     fireEvent.click(screen.getByRole('navigation', { name: 'Site menu' }))
 
     expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it('closes when the docked preview window is clicked', () => {
+    const { onClose, container } = renderMenu()
+
+    fireEvent.click(container.querySelector('[data-menu-preview-window]') as HTMLElement)
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('closes on a window click with Ask hidden too (the bare slot)', () => {
+    const { onClose, container } = renderMenu(true, { askHidden: true })
+
+    fireEvent.click(container.querySelector('[data-menu-preview-window]') as HTMLElement)
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('leaves the menu open on a window click while the transcript holds the window', () => {
+    const { onClose, container } = renderMenu()
+    const slot = () => container.querySelector('[data-menu-preview-slot]') as HTMLElement
+
+    fireEvent.click(screen.getByRole('button', { name: 'show transcript' }))
+    expect(slot().getAttribute('data-chat-view')).toBe('true')
+
+    fireEvent.click(container.querySelector('[data-menu-preview-window]') as HTMLElement)
+
+    expect(onClose).not.toHaveBeenCalled()
+    expect(slot().getAttribute('data-chat-view')).toBe('true')
   })
 
   it('steps back from the chat view on backdrop click, and later clicks stay inert', () => {
@@ -388,5 +425,87 @@ describe('TakeoverMenu', () => {
         'false',
       )
     })
+  })
+})
+
+describe('current page', () => {
+  afterEach(() => {
+    cleanup()
+    pathnameMock.mockReturnValue('/')
+  })
+
+  const current = (name: string | RegExp) =>
+    screen.getByRole('link', { name }).getAttribute('aria-current')
+
+  it('marks the row for the page itself, not the section above it too', () => {
+    pathnameMock.mockReturnValue('/works/trialbee-hive')
+    renderMenu()
+    expect(current(/Trialbee Hive/)).toBe('page')
+    expect(current('Case Studies')).toBeNull()
+    expect(current('About')).toBeNull()
+  })
+
+  it('marks the section row when the menu does not list the page', () => {
+    pathnameMock.mockReturnValue('/works/unlisted')
+    renderMenu()
+    expect(current('Case Studies')).toBe('true')
+    expect(current(/Trialbee Hive/)).toBeNull()
+  })
+
+  it('marks a column page in both columns and its drill-in row', () => {
+    pathnameMock.mockReturnValue('/expertise/clarifying-complex-stories')
+    renderMenu()
+    expect(columnLink('Clarifying Complex Stories').getAttribute('aria-current')).toBe('page')
+    expect(subViewLink('Clarifying Complex Stories').getAttribute('aria-current')).toBe('page')
+    expect(screen.getByRole('button', { name: 'Expertise' }).getAttribute('aria-current')).toBe(
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Who We Help' }).hasAttribute('aria-current')).toBe(
+      false,
+    )
+  })
+
+  it('marks the drill-in row on its section index, where no row is the page', () => {
+    pathnameMock.mockReturnValue('/who-we-help')
+    renderMenu()
+    expect(screen.getByRole('button', { name: 'Who We Help' }).getAttribute('aria-current')).toBe(
+      'true',
+    )
+    expect(document.querySelectorAll('[aria-current]')).toHaveLength(1)
+  })
+
+  it('marks a nav row and the CTA on the same route', () => {
+    pathnameMock.mockReturnValue('/contact')
+    renderMenu()
+    expect(current('Contact')).toBe('page')
+    expect(current('Get in touch')).toBe('page')
+  })
+
+  it('takes the row that is the page out of play, and leaves a section row live', () => {
+    pathnameMock.mockReturnValue('/works/trialbee-hive')
+    const { onClose } = renderMenu()
+    const page = screen.getByRole('link', { name: /Trialbee Hive/ })
+    expect(page.getAttribute('aria-disabled')).toBe('true')
+    expect(page.getAttribute('tabindex')).toBe('-1')
+    fireEvent.click(page)
+    expect(onClose).not.toHaveBeenCalled()
+
+    const section = screen.getByRole('link', { name: 'Case Studies' })
+    expect(section.hasAttribute('aria-disabled')).toBe(false)
+    expect(section.hasAttribute('tabindex')).toBe(false)
+  })
+
+  it('keeps a section row live when it carries the mark', () => {
+    pathnameMock.mockReturnValue('/works/unlisted')
+    renderMenu()
+    const section = screen.getByRole('link', { name: 'Case Studies' })
+    expect(section.getAttribute('aria-current')).toBe('true')
+    expect(section.hasAttribute('aria-disabled')).toBe(false)
+  })
+
+  it('marks nothing away from every row', () => {
+    pathnameMock.mockReturnValue('/lab')
+    renderMenu()
+    expect(document.querySelector('[aria-current]')).toBeNull()
   })
 })

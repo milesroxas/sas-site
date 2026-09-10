@@ -22,6 +22,11 @@ type ButtonVariants = VariantProps<typeof buttonVariants>
 
 type CMSLinkType = {
   appearance?: 'inline' | ButtonVariants['variant']
+  /** Marks the link's destination as the current page or its section. */
+  'aria-current'?: React.AriaAttributes['aria-current']
+  /** A link to the page itself is out of play; see the takeover menu's currentProps. */
+  'aria-disabled'?: React.AriaAttributes['aria-disabled']
+  tabIndex?: number
   children?: React.ReactNode
   className?: string
   label?: string | null
@@ -42,6 +47,9 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
   const {
     type,
     appearance = 'inline',
+    'aria-current': ariaCurrent,
+    'aria-disabled': ariaDisabled,
+    tabIndex,
     children,
     className,
     label,
@@ -67,8 +75,11 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
   if (appearance === 'inline') {
     return (
       <Link
+        aria-current={ariaCurrent}
+        aria-disabled={ariaDisabled}
         className={cn(className)}
         href={href || url || ''}
+        tabIndex={tabIndex}
         {...newTabProps}
         {...transitionProps}
       >
@@ -81,8 +92,11 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
   return (
     <Button asChild className={className} size={size} variant={appearance}>
       <Link
+        aria-current={ariaCurrent}
+        aria-disabled={ariaDisabled}
         className={cn(className)}
         href={href || url || ''}
+        tabIndex={tabIndex}
         {...newTabProps}
         {...transitionProps}
       >

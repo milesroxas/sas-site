@@ -231,6 +231,32 @@ export const MediaLessPage: Story = {
 }
 
 /**
+ * Opened from a work page the menu lists: the page's own row steps back to
+ * the secondary ink, and the section above it (Case Studies) stays as it
+ * is, since the deepest row wins. Any pathname the fixtures list works; see
+ * `menuCurrent` in ./current.
+ */
+export const CurrentPage: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    nextjs: { appDirectory: true, navigation: { pathname: '/works/adacore' } },
+  },
+}
+
+/**
+ * Opened from a work page the menu does not list: nothing is the page, so
+ * the section row (Case Studies) carries the mark instead.
+ */
+export const CurrentSection: Story = {
+  ...Default,
+  parameters: {
+    ...Default.parameters,
+    nextjs: { appDirectory: true, navigation: { pathname: '/works/unlisted' } },
+  },
+}
+
+/**
  * Phone width: the editorial columns fold into two drill-in rows at the head
  * of the nav (Expertise, Who We Help). Tap one and its list swaps in over the
  * nav; the mirrored row (‹ Expertise) steps back.
@@ -243,5 +269,18 @@ export const Mobile: Story = {
   parameters: {
     // Chromatic snapshots at phone width so the drill-in rows are regression-covered.
     chromatic: { viewports: [390] },
+  },
+}
+
+/**
+ * Phone width, opened from an expertise page: the Expertise drill-in row
+ * carries the current step (the row that is the page sits behind the swap),
+ * and drilling in shows that row stepped back too.
+ */
+export const MobileCurrentPage: Story = {
+  ...Mobile,
+  parameters: {
+    ...Mobile.parameters,
+    nextjs: { appDirectory: true, navigation: { pathname: '/expertise/website-strategy' } },
   },
 }

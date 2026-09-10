@@ -1,4 +1,5 @@
 import type React from 'react'
+import { cursorTarget } from '@/features/cursor'
 import { cn } from '@/utilities/ui'
 import { CHAT_WINDOW_RESIZE_MS } from './motion'
 
@@ -27,6 +28,13 @@ type MenuPreviewSlotProps = React.ComponentProps<'div'> & {
  * exactly on the window (`data-menu-preview-window`), so it renders whether
  * or not the Ask composer is on the site: MenuAsk mounts the transcript
  * panel inside it, with Ask hidden the menu renders the bare slot.
+ *
+ * The window is the one hit-testable part of the slot: the docked frame
+ * above it is inert, so a click on the preview lands here and the menu
+ * (which delegates from its overlay) closes on it. The slot around the
+ * window stays transparent to the pointer. Chat view claims the window for
+ * the transcript, so the close affordance (the cursor label) steps aside
+ * with `expanded`; the menu gates the click on the same state.
  */
 export const MenuPreviewSlot = ({
   expanded = false,
@@ -50,10 +58,11 @@ export const MenuPreviewSlot = ({
         // to and from the full slot is a plain length transition, and the
         // slot's centering keeps both edges moving together. Grow eases out,
         // shrink eases in: the same beat read in reverse.
-        'relative size-full md:max-h-full md:motion-safe:transition-[height]',
+        'pointer-events-auto relative size-full md:max-h-full md:motion-safe:transition-[height]',
         expanded ? 'md:h-full md:ease-out' : 'md:h-[calc(100cqw*9/16)] md:ease-in',
       )}
       style={{ transitionDuration: `${CHAT_WINDOW_RESIZE_MS}ms` }}
+      {...(expanded ? {} : cursorTarget({ label: 'Close' }))}
     >
       {children}
     </div>
