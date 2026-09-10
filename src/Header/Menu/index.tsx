@@ -628,6 +628,8 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   )
   const router = useRouter()
   const hoverTimer = useRef(0)
+  /** A show is armed but has not fired: the pointer is on a row inside HOVER_SHOW_DELAY_MS. */
+  const hoverShowPendingRef = useRef(false)
 
   /** Unfreeze the frozen page frame. `navigated`: land on the new route's
    *  top/anchor; otherwise restore the offset frozen at open. */
@@ -746,6 +748,15 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       }
       pendingNavRef.current = true
 
+      // A click inside HOVER_SHOW_DELAY_MS is the intent the delay was waiting
+      // on: mount the preview now, so the readiness check below sees a cached
+      // clip's pixels (videos are never warmed) instead of an empty layer.
+      if (hoverShowPendingRef.current && media) {
+        window.clearTimeout(hoverTimer.current)
+        hoverShowPendingRef.current = false
+        showHoverMedia(media)
+      }
+
       const frame = getPageFrame()
       const overlay = overlayRef.current
       const slotRect = overlay
@@ -862,23 +873,32 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         // The click already decided what the window holds (curtain/handoff).
         if (pendingNavRef.current) return
         window.clearTimeout(hoverTimer.current)
-        hoverTimer.current = window.setTimeout(() => showHoverMedia(media), HOVER_SHOW_DELAY_MS)
+        hoverShowPendingRef.current = true
+        hoverTimer.current = window.setTimeout(() => {
+          hoverShowPendingRef.current = false
+          showHoverMedia(media)
+        }, HOVER_SHOW_DELAY_MS)
       },
       onPointerLeave: (event: React.PointerEvent) => {
         if (event.pointerType !== 'mouse') return
         if (pendingNavRef.current) return
         window.clearTimeout(hoverTimer.current)
+        hoverShowPendingRef.current = false
         hoverTimer.current = window.setTimeout(() => showHoverMedia(null), HOVER_CLEAR_DELAY_MS)
       },
     }),
     [],
   )
 
-  /** Click + hover wiring for a menu item, keyed to one media source. */
+  /**
+   * Click + hover wiring for a menu item, keyed to one media source. The row
+   * that is the page keeps the click (onNavItemClick swallows it) and drops
+   * the hover: a row out of play drives no preview.
+   */
   const itemHandlers = useCallback(
-    (media: MenuMedia | null) => ({
+    (media: MenuMedia | null, mark?: ReturnType<typeof ariaCurrent>) => ({
       onClickCapture: onNavItemClick(media),
-      ...hoverHandlers(media),
+      ...(mark === 'page' ? {} : hoverHandlers(media)),
     }),
     [onNavItemClick, hoverHandlers],
   )
@@ -1267,11 +1287,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
       tl.eventCallback('onComplete', () => {
         // Keyboard users land on the first *visible* menu control: a link, or
-        // a phone drill-in row (never the composer's submit). The editorial
-        // columns are hidden on mobile, the drill-in rows from md. Pointer
-        // users keep the header button (see ./focus).
+        // a phone drill-in row (never the composer's submit, never the row
+        // that is the page: currentProps took it out of the tab order). The
+        // editorial columns are hidden on mobile, the drill-in rows from md.
+        // Pointer users keep the header button (see ./focus).
         const candidates = overlay.querySelectorAll<HTMLElement>(
-          '[data-menu-item] :is(a, button[aria-controls])',
+          '[data-menu-item] :is(a:not([aria-disabled="true"]), button[aria-controls])',
         )
         for (const el of candidates) {
           if (el.checkVisibility?.() ?? true) {
@@ -1606,7 +1627,11 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               </h3>
               <ul className="flex flex-col gap-4">
                 {expertise.map((item) => (
-                  <li key={item.href} data-menu-item {...itemHandlers(previewFor(item.media))}>
+                  <li
+                    key={item.href}
+                    data-menu-item
+                    {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
+                  >
                     <Link
                       href={item.href}
                       prefetch={menuLinkPrefetch}
@@ -1630,7 +1655,11 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               </h3>
               <ul className="flex flex-col gap-2">
                 {audiences.map((item) => (
-                  <li key={item.href} data-menu-item {...itemHandlers(previewFor(item.media))}>
+                  <li
+                    key={item.href}
+                    data-menu-item
+                    {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
+                  >
                     <Link
                       href={item.href}
                       prefetch={menuLinkPrefetch}
@@ -1695,7 +1724,11 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               {works.map((item) => {
                 const mark = isCurrent(item.href)
                 return (
-                  <li key={item.href} data-menu-item {...itemHandlers(previewFor(item.media))}>
+                  <li
+                    key={item.href}
+                    data-menu-item
+                    {...itemHandlers(previewFor(item.media), mark)}
+                  >
                     <Link
                       href={item.href}
                       prefetch={menuLinkPrefetch}
@@ -1789,7 +1822,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                       key={i}
                       data-menu-item
                       style={subViewRowTiming(subViews.length + i, subView === null)}
-                      {...itemHandlers(previewFor(href ? pageMedia[href] : null))}
+                      {...itemHandlers(previewFor(href ? pageMedia[href] : null), isCurrent(href))}
                     >
                       <CMSLink
                         {...link}
@@ -1854,7 +1887,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                           key={item.href}
                           data-menu-item
                           style={subViewRowTiming(i + 1, active)}
-                          {...itemHandlers(previewFor(item.media))}
+                          {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
                         >
                           <Link
                             href={item.href}
@@ -1895,7 +1928,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           <div
             data-menu-item
             className="md:col-start-2 md:row-start-2 md:justify-self-center"
-            {...itemHandlers(previewFor(pageMedia[ctaHref]))}
+            {...itemHandlers(previewFor(pageMedia[ctaHref]), isCurrent(ctaHref))}
           >
             <Button asChild variant="default" size="pill">
               <Link

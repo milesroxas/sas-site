@@ -73,7 +73,7 @@ export const SegmentHero: React.FC<SegmentHeroData> = ({
             <div className="flex flex-col items-start gap-4 md:col-span-4">
               {eyebrow && (
                 <p
-                  className="font-heading text-sm/none tracking-tight text-accent-foreground"
+                  className="font-heading text-sm/none tracking-tight text-secondary-foreground"
                   data-reveal
                   data-reveal-group="hero-title"
                 >

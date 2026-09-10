@@ -19,7 +19,7 @@ export const MediumImpactHero: React.FC<Page['hero']> = ({
     >
       <Container className="relative z-10 flex w-full flex-1 flex-col items-start justify-between gap-6">
         {eyebrow && (
-          <p className="font-heading text-sm font-normal tracking-tight text-accent-foreground">
+          <p className="font-heading text-sm font-normal tracking-tight text-secondary-foreground">
             {eyebrow}
           </p>
         )}

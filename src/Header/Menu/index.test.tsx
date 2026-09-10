@@ -131,7 +131,7 @@ const mockMenuContent: MenuContent = {
   fallbackMedia: null,
 }
 
-function renderMenu(open = true, props: { askHidden?: boolean } = {}) {
+function renderMenu(open = true, props: { askHidden?: boolean; menuContent?: MenuContent } = {}) {
   const onClose = vi.fn()
   const menuButtonRef: React.RefObject<HTMLButtonElement | null> = { current: null }
   const utils = render(
@@ -493,6 +493,82 @@ describe('current page', () => {
     const section = screen.getByRole('link', { name: 'Case Studies' })
     expect(section.hasAttribute('aria-disabled')).toBe(false)
     expect(section.hasAttribute('tabindex')).toBe(false)
+  })
+
+  it('drives no hover preview from the row that is the page', () => {
+    // The preview lands in the page frame's hero layer, which the test DOM
+    // does not ship; a bare one is enough to see what a hover appends.
+    const frame = document.createElement('div')
+    frame.setAttribute('data-page-frame', '')
+    const layer = document.createElement('div')
+    layer.setAttribute('data-menu-hero-media', '')
+    frame.append(layer)
+    document.body.append(frame)
+    vi.useFakeTimers()
+    try {
+      const media = { url: '/hive.jpg', mime: 'image/jpeg', hero: true }
+      pathnameMock.mockReturnValue('/works/trialbee-hive')
+      renderMenu(true, {
+        menuContent: {
+          ...mockMenuContent,
+          works: [{ ...mockMenuContent.works[0], media }],
+          pageMedia: { '/about': { ...media, url: '/about.jpg' } },
+        },
+      })
+
+      const pageRow = screen
+        .getByRole('link', { name: /Trialbee Hive/ })
+        .closest('li') as HTMLElement
+      fireEvent.pointerEnter(pageRow, { pointerType: 'mouse' })
+      vi.advanceTimersByTime(1000)
+      expect(layer.querySelector('[data-menu-hover-item]')).toBeNull()
+
+      const liveRow = screen.getByRole('link', { name: 'About' }).closest('li') as HTMLElement
+      fireEvent.pointerEnter(liveRow, { pointerType: 'mouse' })
+      vi.advanceTimersByTime(1000)
+      expect(
+        layer.querySelector('[data-menu-hover-item]')?.getAttribute('data-menu-hover-item'),
+      ).toBe('/about.jpg')
+    } finally {
+      vi.useRealTimers()
+      frame.remove()
+    }
+  })
+
+  it('mounts the preview a fast click did not wait for, so the handoff can test it', () => {
+    const frame = document.createElement('div')
+    frame.setAttribute('data-page-frame', '')
+    const layer = document.createElement('div')
+    layer.setAttribute('data-menu-hero-media', '')
+    frame.append(layer)
+    document.body.append(frame)
+    // jsdom's play() returns undefined; the mount expects a promise.
+    const play = vi
+      .spyOn(HTMLMediaElement.prototype, 'play')
+      .mockImplementation(() => Promise.resolve())
+    vi.useFakeTimers()
+    try {
+      const media = { url: '/hive.mp4', mime: 'video/mp4', hero: true }
+      const { onClose } = renderMenu(true, {
+        menuContent: { ...mockMenuContent, works: [{ ...mockMenuContent.works[0], media }] },
+      })
+
+      const link = screen.getByRole('link', { name: /Trialbee Hive/ })
+      fireEvent.pointerEnter(link.closest('li') as HTMLElement, { pointerType: 'mouse' })
+      // Inside HOVER_SHOW_DELAY_MS: the show timer has not fired yet.
+      vi.advanceTimersByTime(10)
+      expect(layer.querySelector('[data-menu-hover-item]')).toBeNull()
+      fireEvent.click(link)
+
+      expect(
+        layer.querySelector('[data-menu-hover-item]')?.getAttribute('data-menu-hover-item'),
+      ).toBe('/hive.mp4')
+      expect(onClose).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.useRealTimers()
+      play.mockRestore()
+      frame.remove()
+    }
   })
 
   it('keeps a section row live when it carries the mark', () => {
