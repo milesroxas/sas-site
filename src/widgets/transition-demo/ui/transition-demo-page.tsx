@@ -34,13 +34,13 @@ const SECTIONS: DemoShellSection[] = [
     label: 'Route simulator',
     title: 'Route transition simulator',
     description:
-      'A miniature of the site in a browser frame: cards tag nav-forward (title and body alike), menu links tag nav-lateral, pagination tags by direction, post images morph into their hero — and the frame’s browser-back button reproduces the untagged hard cut. Set the network conditions in the GUI, then navigate.',
+      'A miniature of the site in a browser frame, one surface per navigation the site ships: insight cards and work rows tag nav-forward, the brand and CMS-style links tag nav-lateral, back links tag nav-back, pagination tags by direction, post images morph into their hero inside the same frame, the Industry work spotlight opens its case study by takeover (the window fills the viewport for that run), and the frame’s browser-back button reproduces the untagged hard cut. Every :root variable is live; set the network conditions, then navigate.',
     icon: IconAppWindow,
     paste: {
       file: 'src/shared/ui/view-transition/view-transition.css',
       symbol: ':root',
       format: 'css-vars',
-      note: 'Site-wide transition timing. Every tagged navigation reads these variables.',
+      note: 'The whole :root block. Every tagged navigation, the takeover beats and the menu curtain read these.',
     },
     content: TransitionSimulator,
   },
@@ -127,5 +127,5 @@ const SECTIONS: DemoShellSection[] = [
  * sidebar layout.
  */
 export function TransitionDemoPage() {
-  return <DemoShell title="Page transitions" sections={SECTIONS} />
+  return <DemoShell playground="/demo/transitions" sections={SECTIONS} />
 }

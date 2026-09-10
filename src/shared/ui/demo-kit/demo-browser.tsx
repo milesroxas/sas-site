@@ -95,6 +95,8 @@ export type DemoBrowserFrameProps = {
   /** Chrome right of the address bar — a status readout or a window control, say. */
   trailing?: ReactNode
   className?: string
+  /** Classes for the chrome bar itself (the row holding the address bar). */
+  barClassName?: string
 }
 
 /**
@@ -109,13 +111,22 @@ export function DemoBrowserFrame({
   leading,
   trailing,
   className,
+  barClassName,
 }: DemoBrowserFrameProps) {
   return (
     <div
       data-lenis-prevent
       className={cn('overflow-hidden rounded-lg border border-border bg-background', className)}
     >
-      <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-3 py-2">
+      <div
+        className={cn(
+          // Opaque on purpose: the bar's own snapshot has to hide whatever
+          // flies under it during a view transition (see transition-demo.css).
+          // Same tint as `bg-muted/40` over the frame's background, flattened.
+          'flex items-center gap-2 border-b border-border bg-[color-mix(in_oklab,var(--muted)_40%,var(--background))] px-3 py-2',
+          barClassName,
+        )}
+      >
         {leading}
         <div className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-xs text-muted-foreground">
           {loading ? (

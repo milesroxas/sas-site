@@ -12,3 +12,34 @@
 html.vt-sim-clip::view-transition-image-pair(*) {
   overflow: clip;
 }
+
+/*
+ * The mock browser's chrome bar (back button, address bar, phase readout,
+ * window toggle) is the demo's own UI, not part of the simulated page, so it
+ * must stay put and on top for every run, the way the real browser's chrome
+ * sits above any page. Named here (the frame passes the class through) and
+ * held steady above everything the production sheet layers: the media
+ * takeover at 50 and site-header at 100. Matters most full screen, where the
+ * takeover expands to the whole viewport and would otherwise cover the
+ * restore control.
+ */
+.vt-sim-chrome {
+  view-transition-name: sim-browser-chrome;
+}
+::view-transition-group(sim-browser-chrome) {
+  animation: none;
+  z-index: 200;
+}
+
+/*
+ * Proposed fix preview (Post morph -> "above page" in the simulator GUI).
+ * The pseudo-tree paints old page, then the post-image morph group, then the
+ * new page, so today the incoming page's opaque snapshot covers the morph
+ * for most of its flight and the image only reappears in the hero's hole.
+ * Raising the group above the page groups (still under site-header at 100,
+ * the same idea as morph-hero's 50) keeps it visible end to end. Demo-only:
+ * production ships whatever view-transition.css says.
+ */
+html.vt-sim-morph-raise::view-transition-group(.morph) {
+  z-index: 1;
+}

@@ -4,7 +4,6 @@ import { IconMail, IconMenu2, IconSparkles, IconTransitionRight } from '@tabler/
 import { LevaPanel, LevaStoreProvider, useCreateStore } from 'leva'
 import type { StoreType } from 'leva/dist/declarations/src/types'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import type { ComponentProps, ComponentType, CSSProperties, ReactNode, RefObject } from 'react'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -22,12 +21,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { Clock } from '@/Footer/Clock'
 import { TakeoverMenu } from '@/Header/Menu'
 import { useTakeoverMenuState } from '@/Header/Menu/useTakeoverMenuState'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition/constants'
@@ -64,33 +67,39 @@ export type DemoShellSection = {
 }
 
 export type DemoShellProps = {
-  title: string
+  /** Which playground this route is — selects the expanded node in the sidebar tree. */
+  playground: DemoPlaygroundHref
   sections: DemoShellSection[]
 }
 
 /**
- * Every demo playground route. The shell shows them on all demo views, so
- * adding a route here is the single step to list it everywhere.
+ * Every demo playground route. The sidebar tree lists them all on every demo
+ * view, so adding a route here is the single step to list it everywhere.
  */
-const DEMO_NAV = [
+const DEMO_PLAYGROUNDS = [
   { href: '/demo/immersive', label: 'Micro interactions', icon: IconSparkles },
   { href: '/demo/transitions', label: 'Transitions', icon: IconTransitionRight },
 ] as const
 
+export type DemoPlaygroundHref = (typeof DEMO_PLAYGROUNDS)[number]['href']
+
 /**
- * Sidebar-pattern playground shell: a left sidebar listing the demo sections,
- * the active demo on the main stage, and a right panel holding that demo's
- * GUI and copy/paste controls. One section is live at a time, so only one
- * leva store — and at most one WebGL canvas — is ever mounted.
+ * Sidebar-pattern playground shell: a left sidebar holding the demo tree
+ * (playground routes at the top level, the current playground's sections
+ * nested beneath it), the active demo on the main stage under a
+ * playground › section breadcrumb, and a right panel holding that demo's GUI
+ * and copy/paste controls. One section is live at a time, so only one leva
+ * store — and at most one WebGL canvas — is ever mounted.
  *
  * Demo routes hide the fixed site chrome (components/SiteChrome): the shell
  * owns the full viewport and its sidebar re-homes the chrome's content —
  * brand + site menu in the header, footer content in the sidebar footer.
  */
-export function DemoShell({ title, sections }: DemoShellProps) {
+export function DemoShell({ playground, sections }: DemoShellProps) {
   const [activeId, setActiveId] = useState(sections[0]?.id ?? '')
   const active = sections.find((section) => section.id === activeId) ?? sections[0]
   const site = useDemoSiteChrome()
+  const current = DEMO_PLAYGROUNDS.find((entry) => entry.href === playground) ?? DEMO_PLAYGROUNDS[0]
 
   // Site-menu state lives here, not in the sidebar: on mobile the sidebar
   // renders inside a sheet that unmounts on close, which would tear an open
@@ -123,7 +132,7 @@ export function DemoShell({ title, sections }: DemoShellProps) {
         }
       >
         <ShellSidebar
-          title={title}
+          playground={current.href}
           sections={sections}
           activeId={active.id}
           onSelect={select}
@@ -131,7 +140,7 @@ export function DemoShell({ title, sections }: DemoShellProps) {
           onMenuOpen={() => setMenuOpen(true)}
         />
         <SidebarInset>
-          <ShellHeader title={active.title} />
+          <ShellHeader playground={current} section={active} />
           {/* Keyed so switching sections tears the previous demo down whole:
               fresh leva store, fresh playground state, no canvas left behind. */}
           <SectionStage key={active.id} section={active} />
@@ -147,14 +156,14 @@ export function DemoShell({ title, sections }: DemoShellProps) {
 }
 
 function ShellSidebar({
-  title,
+  playground,
   sections,
   activeId,
   onSelect,
   menuButtonRef,
   onMenuOpen,
 }: {
-  title: string
+  playground: DemoPlaygroundHref
   sections: DemoShellSection[]
   activeId: string
   onSelect: (id: string) => void
@@ -162,55 +171,66 @@ function ShellSidebar({
   onMenuOpen: () => void
 }) {
   const { setOpenMobile } = useSidebar()
-  const pathname = usePathname()
 
   return (
     <Sidebar>
       <SidebarHeader>
-        <ShellBrand title={title} menuButtonRef={menuButtonRef} onMenuOpen={onMenuOpen} />
+        <ShellBrand menuButtonRef={menuButtonRef} onMenuOpen={onMenuOpen} />
       </SidebarHeader>
       {/* data-lenis-prevent: root Lenis stays mounted on demo routes and would
           otherwise consume wheel input over this nested scroll container. */}
       <SidebarContent data-lenis-prevent>
         <SidebarGroup>
-          <SidebarGroupLabel>Sections</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {sections.map((section) => {
-                const Icon = section.icon
-                return (
-                  <SidebarMenuItem key={section.id}>
-                    <SidebarMenuButton
-                      isActive={section.id === activeId}
-                      onClick={() => {
-                        onSelect(section.id)
-                        setOpenMobile(false)
-                      }}
-                    >
-                      <Icon aria-hidden />
-                      <span>{section.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
           <SidebarGroupLabel>Playgrounds</SidebarGroupLabel>
           <SidebarGroupContent>
+            {/* One tree: playground routes at the top level, sections nested
+                under the playground you are on. Only the current playground
+                expands — its sections are what this route renders; a sibling
+                is a plain link whose sections appear once you arrive. The
+                current-state pill marks the deepest row only (the section),
+                so the expanded parent reads as structure, not selection. */}
             <SidebarMenu>
-              {DEMO_NAV.map((link) => {
-                const Icon = link.icon
+              {DEMO_PLAYGROUNDS.map((entry) => {
+                const Icon = entry.icon
+                const expanded = entry.href === playground
                 return (
-                  <SidebarMenuItem key={link.href}>
-                    <SidebarMenuButton asChild isActive={pathname === link.href}>
+                  <SidebarMenuItem key={entry.href}>
+                    <SidebarMenuButton
+                      asChild
+                      aria-current={expanded ? 'location' : undefined}
+                      className="aria-[current]:font-medium"
+                    >
                       {/* Sibling playground moves, so nav-lateral. */}
-                      <Link href={link.href} transitionTypes={[...lateralNavTransitionTypes]}>
+                      <Link href={entry.href} transitionTypes={[...lateralNavTransitionTypes]}>
                         <Icon aria-hidden />
-                        <span>{link.label}</span>
+                        <span>{entry.label}</span>
                       </Link>
                     </SidebarMenuButton>
+                    {expanded ? (
+                      <SidebarMenuSub>
+                        {sections.map((section) => {
+                          const isActive = section.id === activeId
+                          return (
+                            <SidebarMenuSubItem key={section.id}>
+                              <SidebarMenuSubButton
+                                href={`#${section.id}`}
+                                isActive={isActive}
+                                aria-current={isActive ? 'page' : undefined}
+                                onClick={(event) => {
+                                  // The shell owns the hash (replaceState) so
+                                  // section hops never stack history entries.
+                                  event.preventDefault()
+                                  onSelect(section.id)
+                                  setOpenMobile(false)
+                                }}
+                              >
+                                <span>{section.label}</span>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )
+                        })}
+                      </SidebarMenuSub>
+                    ) : null}
                   </SidebarMenuItem>
                 )
               })}
@@ -248,14 +268,13 @@ function SiteLink({
  * Brand row re-homing the hidden site header: the wordmark linking home plus
  * the MENU trigger for the takeover site menu — the same menu the fixed
  * header opens on every other route. The trigger hides when no site chrome
- * is provided (stories, tests).
+ * is provided (stories, tests). The row carries no playground caption: the
+ * tree below marks the playground, and the stage breadcrumb names it.
  */
 function ShellBrand({
-  title,
   menuButtonRef,
   onMenuOpen,
 }: {
-  title: string
   menuButtonRef: RefObject<HTMLButtonElement | null>
   onMenuOpen: () => void
 }) {
@@ -263,8 +282,8 @@ function ShellBrand({
   const { setOpenMobile } = useSidebar()
 
   return (
-    <div className="flex flex-col gap-0.5 px-2 pt-1">
-      <div className="flex items-center justify-between gap-2">
+    <div className="px-2 pt-1 pb-0.5">
+      <div className="flex h-7 items-center justify-between gap-2">
         <Link
           href="/"
           transitionTypes={[...lateralNavTransitionTypes]}
@@ -291,7 +310,6 @@ function ShellBrand({
           </Button>
         ) : null}
       </div>
-      <span className="text-xs text-sidebar-foreground/60">{title}</span>
     </div>
   )
 }
@@ -376,20 +394,51 @@ function ShellFooter() {
         <span className="font-mono text-[0.625rem]/relaxed uppercase tracking-widest text-sidebar-foreground/60">
           {site.location}
         </span>
-        {site.clock}
+        <Clock className="text-[0.625rem] text-sidebar-foreground/60" />
       </div>
     </SidebarFooter>
   )
 }
 
-function ShellHeader({ title }: { title: string }) {
+/**
+ * Stage bar with a two-level breadcrumb mirroring the sidebar tree: the
+ * playground (a link back to its first section) then the section you are on.
+ * The playground crumb steps aside on narrow screens so the section title,
+ * the more specific of the two, always has the room.
+ */
+function ShellHeader({
+  playground,
+  section,
+}: {
+  playground: (typeof DEMO_PLAYGROUNDS)[number]
+  section: DemoShellSection
+}) {
   return (
     <header className="sticky top-0 z-10 flex h-(--demo-shell-bar-height) shrink-0 items-center gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-sm">
       <SidebarTrigger />
       {/* data-vertical: — the component's own self-stretch is variant-scoped,
           so the overrides must ride the same variant to replace it. */}
       <Separator orientation="vertical" className="data-vertical:h-4 data-vertical:self-center" />
-      <span className="truncate text-sm font-medium">{title}</span>
+      <nav aria-label="Breadcrumb" className="min-w-0">
+        <ol className="flex min-w-0 items-center gap-1.5 text-sm">
+          <li className="hidden min-w-0 items-center gap-1.5 sm:flex">
+            <Link
+              href={playground.href}
+              className="truncate text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {playground.label}
+            </Link>
+            <span aria-hidden className="text-muted-foreground/60">
+              /
+            </span>
+          </li>
+          <li className="min-w-0">
+            <span aria-current="page" className="block truncate font-medium">
+              {section.title}
+            </span>
+          </li>
+        </ol>
+      </nav>
       <div className="ml-auto">
         <DemoSettingsMenu />
       </div>
@@ -406,13 +455,19 @@ function SectionStage({ section }: { section: DemoShellSection }) {
   const store = useCreateStore()
   const snippetCopy = useSnippetCopy(section.paste)
   const Content = section.content
+  const Icon = section.icon
 
   return (
     <div className="flex flex-1 flex-col lg:flex-row">
       <div className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <div className="mx-auto w-full max-w-3xl space-y-6">
           <header className="space-y-2">
-            <h1 className="text-balance text-heading-3">{section.title}</h1>
+            {/* The section's icon lives here, not on its sidebar row: nested
+                rows stay text-only so the tree's two levels read apart. */}
+            <h1 className="flex items-center gap-2.5 text-balance text-heading-3">
+              <Icon aria-hidden className="size-5 shrink-0 text-muted-foreground" />
+              {section.title}
+            </h1>
             <p className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">
               {section.description}
             </p>

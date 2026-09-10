@@ -164,7 +164,7 @@ const SECTIONS: DemoShellSection[] = [
 export function ImmersiveDemoPage() {
   return (
     <ImmersiveShell webgl>
-      <DemoShell title="Micro interactions" sections={SECTIONS} />
+      <DemoShell playground="/demo/immersive" sections={SECTIONS} />
     </ImmersiveShell>
   )
 }

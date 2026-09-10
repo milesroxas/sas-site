@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers'
 import type React from 'react'
-import { Clock } from '@/Footer/Clock'
 import { getCachedMenuContent } from '@/Header/getMenuContent'
 import type { Footer, Header } from '@/payload-types'
 import { DemoSiteProvider, toSiteLink } from '@/shared/ui/demo-kit'
@@ -29,7 +28,6 @@ export default async function DemoLayout({ children }: { children: React.ReactNo
         menuContent,
         location: footer.location,
         getInTouch: toSiteLink(footer.getInTouch),
-        clock: <Clock className="text-[0.625rem] text-sidebar-foreground/60" />,
         sidebarDefaultOpen: sidebarState ? sidebarState === 'true' : true,
       }}
     >
