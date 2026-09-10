@@ -15,7 +15,7 @@ export type DemoSiteLink = {
  * Site chrome content for the demo shell sidebar. The demo routes hide the
  * fixed site header/footer bars, so the shell re-homes their content: the
  * brand wordmark with the takeover site menu, and the footer's
- * CTA/location/clock.
+ * CTA and location (the shell renders the live clock itself).
  */
 export type DemoSiteChrome = {
   /** Header global — nav items for the takeover site menu. */
@@ -25,8 +25,6 @@ export type DemoSiteChrome = {
   /** Site footer fields (Footer global). */
   location: string
   getInTouch: DemoSiteLink | null
-  /** Live-clock slot — the site footer's Clock, rendered by the demo layout. */
-  clock?: ReactNode
   /**
    * Initial expanded state for the shell sidebar, read back from the shadcn
    * `sidebar_state` cookie SidebarProvider writes — without this the cookie is

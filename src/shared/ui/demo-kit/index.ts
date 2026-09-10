@@ -6,7 +6,7 @@ export {
 } from './demo-browser'
 export { useDemoAction, useDemoControls, useSettableDemoControls } from './demo-controls'
 export { DEMO_IMAGE_SRC, DEMO_VIDEO_SRC } from './demo-media'
-export { DemoShell, type DemoShellSection } from './demo-shell'
+export { type DemoPlaygroundHref, DemoShell, type DemoShellSection } from './demo-shell'
 export { DemoSiteProvider } from './demo-site'
 export { useDemoSnippet } from './demo-snippet'
 export { toSiteLink } from './site-link'
