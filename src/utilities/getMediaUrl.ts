@@ -18,9 +18,13 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
   return cacheTag ? `${url}?${cacheTag}` : url
 }
 
-// R2 custom domain (edge-cached, one-year Cache-Control, zero egress). Empty
-// when unset so callers fall back to Payload's `/api/media/file/...` route.
-const MEDIA_URL = (process.env.NEXT_PUBLIC_MEDIA_URL || '').replace(/\/$/, '')
+/**
+ * R2 custom domain (edge-cached, one-year Cache-Control, zero egress). Empty
+ * when unset so callers fall back to Payload's `/api/media/file/...` route.
+ * Exported for the root layout's `preconnect`; media components should go
+ * through `getCdnMediaUrl`.
+ */
+export const MEDIA_URL = (process.env.NEXT_PUBLIC_MEDIA_URL || '').replace(/\/$/, '')
 
 /**
  * Public CDN URL for a media object key, or `''` when no CDN host is configured.
