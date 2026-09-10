@@ -1,23 +1,35 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import type React from 'react'
 import { ViewTransition } from 'react'
 
 import './view-transition.css'
 
 /**
- * Page-level transition wrapper. Rendered from `(frontend)/template.tsx` so it
- * unmounts/remounts on every navigation — that is what lets `enter`/`exit` fire
- * (a layout would persist and never animate route changes).
+ * Page-level transition wrapper, rendered from `(frontend)/template.tsx`.
+ *
+ * The boundary has to be placed anew on every navigation: that is what lets
+ * `enter`/`exit` fire, and what makes React start the platform transition at
+ * all (a persisting boundary is a hard cut, see
+ * `shared/lib/view-transition/suppress.ts`). A template only remounts when the
+ * segment directly below it changes (`works` -> `insights`); a navigation that
+ * changes a deeper segment, `/works/a` -> `/works/b`, keeps the template's
+ * instance mounted. So the boundary is keyed on the pathname instead: every
+ * pathname change is a fresh `<ViewTransition>`. Search-param and hash changes
+ * keep the pathname and animate nothing, by design (URL sync is not
+ * navigation).
  *
  * Each navigation tags itself with a transition type (see
  * `shared/lib/view-transition/constants.ts`); this maps the type to a CSS class.
  * `default: 'none'` keeps unrelated transitions (Suspense reveals,
- * revalidations) silent — only tagged navigations animate.
+ * revalidations) silent: only tagged navigations animate.
  */
 export function DirectionalTransition({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
   return (
     <ViewTransition
+      key={pathname}
       // The default is a mask reveal (brand grammar — no page crossfades,
       // docs/route-transitions-roadmap.md §4): the old page holds static
       // (`reveal-hold`) while the new page's snapshot clips open over it.

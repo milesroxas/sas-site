@@ -4,7 +4,7 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Link from 'next/link'
-import { useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
@@ -370,78 +370,107 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
         once: true,
         onEnter: () => entrance.play(),
       })
-
-      let timeline: gsap.core.Timeline | null = null
-      if (count > 1) {
-        const { snapDuration, snapDelay, snapAdvanceFraction, entranceHoldSvh, stepSvh } =
-          FEATURED_WORK_PIN
-        // Timeline time in step units; the hold is a fraction of a step.
-        const hold = entranceHoldSvh / stepSvh
-        const total = hold + count - 1
-        // Item i rests centered at time `hold + i`. The glide commits to the
-        // next item only past `snapAdvanceFraction` of a step in the scroll
-        // direction — a flick advances, but arrival overshoot (which lands in
-        // the hold or barely past it) always settles back on item one.
-        const snapToItem = (value: number, self?: ScrollTrigger) => {
-          const step = gsap.utils.clamp(0, count - 1, value * total - hold)
-          const fraction = step - Math.floor(step)
-          const threshold =
-            (self?.direction ?? 1) < 0 ? 1 - snapAdvanceFraction : snapAdvanceFraction
-          const index = fraction >= threshold ? Math.ceil(step) : Math.floor(step)
-          return (hold + index) / total
-        }
-        timeline = gsap.timeline({
-          defaults: { ease: 'none' },
-          scrollTrigger: {
-            trigger: root,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: true,
-            snap: {
-              snapTo: snapToItem,
-              duration: snapDuration,
-              ease: activateEase,
-              delay: snapDelay,
-              // Judge from position, not projected momentum — a hard flick
-              // must not overshoot items the eye never saw.
-              inertia: false,
-            },
-            invalidateOnRefresh: true,
-            onUpdate(self) {
-              const time = self.progress * total
-              activate(gsap.utils.clamp(0, count - 1, Math.round(time - hold)))
-            },
-            onRefresh(self) {
-              // Function-based tween values re-measure themselves; the resting
-              // start state is owned here.
-              if (self.progress === 0) gsap.set(list, { y: -centers()[0] })
-            },
-          },
-        })
-        // The hold, then one unit of timeline time per transition, continuous
-        // to the end — the snap glide, not a plateau, owns the centered rest.
-        timeline.to({}, { duration: hold }, 0)
-        for (let index = 1; index < count; index++) {
-          timeline.fromTo(
-            list,
-            { y: () => -centers()[index - 1] },
-            { y: () => -centers()[index], duration: 1, immediateRender: false },
-            hold + index - 1,
-          )
-        }
-      }
-
-      // Content-size changes inside the list (font swap, wrapping) re-derive
-      // the centering; window resizes already refresh ScrollTrigger itself.
-      const observer = new ResizeObserver(() => {
-        if (timeline) ScrollTrigger.refresh()
-        else gsap.set(list, { y: -centers()[0] })
-      })
-      observer.observe(list)
-      return () => observer.disconnect()
     },
     { scope: rootRef, dependencies: [prefersReducedMotion, count], revertOnUpdate: true },
   )
+
+  // The scroll-driven roll: scrub walks the list, the snap glide settles it on
+  // the nearest item. The glide moves the page (ScrollTrigger tweens the
+  // scroll position, routed through the Lenis proxy), and a scroll tween is
+  // not element state: `useGSAP` reverts its context on teardown, a revert
+  // rewinds every tween it recorded to its start, and GSAP re-enters a tween's
+  // context inside that tween's callbacks, so a glide created inside the
+  // context would be rewound to where it began at the moment the roll
+  // unmounts. Mid-navigation that is a stale scroll write landing between the
+  // route swap and the route reset. So the roll timeline lives outside the
+  // context, owned here, and is killed on teardown, never reverted. Runs after
+  // `useGSAP` (declaration order), which has settled the resting frame and
+  // published `activateRef`.
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    if (!root || prefersReducedMotion || count === 0) return
+    const list = root.querySelector<HTMLElement>('[data-work-list]')
+    if (!list) return
+    const items = Array.from(list.querySelectorAll<HTMLElement>('[data-work-item]'))
+    const centers = () => items.map((item) => item.offsetTop + item.offsetHeight / 2)
+
+    let timeline: gsap.core.Timeline | null = null
+    if (count > 1) {
+      const {
+        activateEase,
+        snapDuration,
+        snapDelay,
+        snapAdvanceFraction,
+        entranceHoldSvh,
+        stepSvh,
+      } = FEATURED_WORK_PIN
+      // Timeline time in step units; the hold is a fraction of a step.
+      const hold = entranceHoldSvh / stepSvh
+      const total = hold + count - 1
+      // Item i rests centered at time `hold + i`. The glide commits to the
+      // next item only past `snapAdvanceFraction` of a step in the scroll
+      // direction — a flick advances, but arrival overshoot (which lands in
+      // the hold or barely past it) always settles back on item one.
+      const snapToItem = (value: number, self?: ScrollTrigger) => {
+        const step = gsap.utils.clamp(0, count - 1, value * total - hold)
+        const fraction = step - Math.floor(step)
+        const threshold = (self?.direction ?? 1) < 0 ? 1 - snapAdvanceFraction : snapAdvanceFraction
+        const index = fraction >= threshold ? Math.ceil(step) : Math.floor(step)
+        return (hold + index) / total
+      }
+      timeline = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: {
+          trigger: root,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: true,
+          snap: {
+            snapTo: snapToItem,
+            duration: snapDuration,
+            ease: activateEase,
+            delay: snapDelay,
+            // Judge from position, not projected momentum — a hard flick
+            // must not overshoot items the eye never saw.
+            inertia: false,
+          },
+          invalidateOnRefresh: true,
+          onUpdate(self) {
+            const time = self.progress * total
+            activateRef.current?.(gsap.utils.clamp(0, count - 1, Math.round(time - hold)))
+          },
+          onRefresh(self) {
+            // Function-based tween values re-measure themselves; the resting
+            // start state is owned here.
+            if (self.progress === 0) gsap.set(list, { y: -centers()[0] })
+          },
+        },
+      })
+      // The hold, then one unit of timeline time per transition, continuous
+      // to the end — the snap glide, not a plateau, owns the centered rest.
+      timeline.to({}, { duration: hold }, 0)
+      for (let index = 1; index < count; index++) {
+        timeline.fromTo(
+          list,
+          { y: () => -centers()[index - 1] },
+          { y: () => -centers()[index], duration: 1, immediateRender: false },
+          hold + index - 1,
+        )
+      }
+    }
+
+    // Content-size changes inside the list (font swap, wrapping) re-derive
+    // the centering; window resizes already refresh ScrollTrigger itself.
+    const observer = new ResizeObserver(() => {
+      if (timeline) ScrollTrigger.refresh()
+      else gsap.set(list, { y: -centers()[0] })
+    })
+    observer.observe(list)
+    return () => {
+      observer.disconnect()
+      timeline?.kill()
+    }
+  }, [prefersReducedMotion, count])
 
   if (count === 0) return null
   if (prefersReducedMotion) return <StaticList entries={entries} eyebrow={eyebrow} />

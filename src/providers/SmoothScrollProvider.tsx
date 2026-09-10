@@ -30,6 +30,11 @@ import { SmoothScroll } from '@/lib/interactions/smooth-scroll'
  * Registered at module level, like `gsap.registerPlugin`: a trigger captures
  * its scroll functions when it is created, and page effects run before this
  * provider's, so the proxy has to exist before the first trigger does.
+ *
+ * The proxy also makes a GSAP revert able to move the page: reverting a snap
+ * tween rewinds the scroll to where the glide began. A scroll tween is
+ * therefore killed, never reverted, by the consumer that owns it (the roll's
+ * teardown in `FeaturedWorkList.client.tsx`).
  */
 let rootLenis: Lenis | null = null
 
