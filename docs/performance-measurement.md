@@ -31,11 +31,11 @@ Always the same three URLs, so runs compare:
 
 Hosts:
 
-- `prod` = `https://preview.suits-sandals.com` (the production alias; `www` is still Webflow).
-- `preview` = the Vercel preview URL for the branch under test (`vercel ls`, or the PR check).
+- `prod` = `https://www.suits-sandals.com` (Vercel Production target, built from `main`; the apex 301s here). Cut over from Webflow on 2026-09-09; runs before that used `preview.suits-sandals.com`.
+- `preview` = the Vercel preview URL for the branch under test (`vercel ls`, or the PR check). `preview.suits-sandals.com` is the `preview` git branch's domain and lags production by that branch's deployment, so do not use it as a stand-in for prod.
 - `local` = `http://localhost:3001`, smoke only, never for numbers (no CDN, dev bundles, no Brotli).
 
-Both hosts answer `x-robots-tag: noindex`; no auth needed.
+Preview deployments answer `x-robots-tag: noindex`; production is indexable. No auth needed on either.
 
 ## 2. Setup (once per machine)
 
@@ -57,7 +57,7 @@ full origin.
 ```bash
 cd /Users/milesroxas/SITES/sas-site
 LABEL=before-video-gating
-HOST=https://preview.suits-sandals.com
+HOST=https://www.suits-sandals.com
 OUT=docs/perf/$LABEL && mkdir -p "$OUT"
 ```
 
@@ -158,8 +158,9 @@ Paste both tables into the audit doc's status section when a phase closes.
 
 Seven days after prod. Vercel dashboard, project `sas-site`, Speed Insights,
 route filter `/works/[slug]`, P75. Record LCP, FCP, INP and the LCP element
-attribution. Until `www.suits-sandals.com` cuts over from Webflow the samples are
-team and client traffic, so weight lab over field.
+attribution. `www.suits-sandals.com` has served the Next site since 2026-09-09, so
+field samples are public traffic from that date; anything earlier was team and
+client traffic on the Vercel alias and is not comparable.
 
 ## 6. Script sources
 

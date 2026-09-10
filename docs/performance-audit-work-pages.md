@@ -316,10 +316,10 @@ Real metrics will improve with the fixes above. These are the choices that make 
 
 Repeatable lab captures (Lighthouse medians, cold-cache media capture, theme guard) are scripted in [performance-measurement.md](performance-measurement.md); results live under `docs/perf/<label>/`. Baseline `before-video-gating` was taken against prod on 2026-09-09.
 
-- Lab, before and after each phase: Lighthouse desktop and mobile against `preview.suits-sandals.com/works/vault-workforce-screening` (the heaviest page) and `/works/adacore` (image hero). Targets for the Vault page after phase 2: under 5 MB transferred at load, under 60 requests, under 400 KB gzipped of script, LCP under 2.0 s in the desktop preset, no forced reflow attributed to hydration.
+- Lab, before and after each phase: Lighthouse desktop and mobile against `www.suits-sandals.com/works/vault-workforce-screening` (production since 2026-09-09; earlier runs used the `preview.suits-sandals.com` alias) (the heaviest page) and `/works/adacore` (image hero). Targets for the Vault page after phase 2: under 5 MB transferred at load, under 60 requests, under 400 KB gzipped of script, LCP under 2.0 s in the desktop preset, no forced reflow attributed to hydration.
 - WebPageTest with a 4G profile and a mid-range laptop CPU profile, filmstrip on, to confirm the poster-first hero paints before 1.5 s.
 - Field: Speed Insights per route after seven days of traffic on the same domain. Watch the LCP element attribution flip from `<video>` to the poster image.
-- Measurement hygiene: do not render `SpeedInsights` in draft mode (live preview loads should not sample), and filter internal traffic with the component's `beforeSend`. Once `www.suits-sandals.com` cuts over from Webflow, re-baseline; the current numbers describe internal and client traffic on the Vercel alias.
+- Measurement hygiene: do not render `SpeedInsights` in draft mode (live preview loads should not sample), and filter internal traffic with the component's `beforeSend`. `www.suits-sandals.com` cut over from Webflow on 2026-09-09; field numbers before that date describe internal and client traffic on the Vercel alias and need a fresh baseline.
 - Storybook: a video-gating story for `VideoMedia` (poster only, then playing on intersection) and a reduced-motion pass on the reveal shells, per the existing visual-verify workflow.
 
 ## 8. Lowest-risk first pass

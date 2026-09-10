@@ -1,6 +1,6 @@
 # before-video-gating: capture notes
 
-Host `https://preview.suits-sandals.com` (prod alias), 2026-09-09, commit `ff16495` deployed. Lighthouse 13.4.1, Chrome desktop app, headless.
+Host `https://preview.suits-sandals.com` (the public alias at the time; `www` cut over from Webflow later the same day), 2026-09-09, commit `ff16495` deployed. Lighthouse 13.4.1, Chrome desktop app, headless.
 
 ## Cold-cache media capture (Playwright, 1280x800)
 
