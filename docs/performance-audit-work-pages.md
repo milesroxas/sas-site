@@ -10,7 +10,14 @@ Date: 2026-09-03. Deployment audited: `57f6f47` on the production alias `preview
 - `ImageMedia` resolves its source from the R2 host (`getCdnMediaUrl`, shared with `VideoMedia`) and falls back to the Payload route only when `NEXT_PUBLIC_MEDIA_URL` is unset. `images.minimumCacheTTL` is one year (URLs carry `?updatedAt`), `qualities` is `[75, 90]` with `ImageMedia` at 90, `deviceSizes` stops at 2560, and the default `sizes` is a valid `100vw`.
 - `AdminBar` renders only in draft mode (preview links, admin live preview), so anonymous visitors on prerendered pages no longer call `/api/users/me`.
 
-Still open from tier 1: video gating (P0-1), the bundle diet (P0-2), hero `fetchpriority` and `preconnect` (P1-4), posters through `next/image`, `Critical-CH` scoping (P1-8), the theme bootstrap guard (P1-9).
+Branch `perf/video-gating-hero-priority` (2026-09-09) ships the next slice, verified in Chromium against the `Components/Media` stories and measured before and after on the Vault, Adacore and home pages (`docs/perf/before-video-gating`, `docs/perf/after-video-gating`): Vault load drops from 23.3 MB to 4.1 MB and from 10 video objects to 2, Adacore mobile LCP from 9.7 s to 4.3 s. Vault and home mobile LCP stay near 9.3 s because Lighthouse's simulated 4G is dominated by the 1.78 MB hero mp4 (phase 5) and the 1.1 MB of script (P0-2).
+
+- Video gating (P0-1): `VideoMedia` has three modes. `priority` (every hero) keeps the source in the HTML with `preload="auto"` and preloads the poster at `fetchpriority="high"` through React's `preload()`. The default self-playing loop renders poster only, attaches its `<source>` two screens ahead (one-shot, so scrolling back never re-downloads) and plays or pauses with its own box. `autoPlay={false}` (Carousel) keeps the eager metadata source because its controller owns `play()` and reads `readyState`. The hero handoff is untouched: it clones `[data-hero-media] video`, which is always the priority path.
+- `preconnect` to the media host from the root layout head (P1-4). There is no `fetchpriority` for `<video>` itself; the poster preload is the equivalent for the LCP frame.
+- Theme bootstrap guard (P1-9): the storage and `matchMedia` reads sit in a `try`, so a blocked-storage browser still gets `data-theme` and the `html { opacity: 0 }` rule releases.
+- `videoFixture` now carries its real poster (`mediaFixture`), so Storybook video stories paint what production paints.
+
+Still open from tier 1: the bundle diet (P0-2), posters through `next/image` and real `sizes` on the blocks that pass none (P1-5), `Critical-CH` scoping (P1-8), Speed Insights draft-mode and internal-traffic filtering (section 7).
 
 ## 1. Summary
 
@@ -306,6 +313,8 @@ Real metrics will improve with the fixes above. These are the choices that make 
 | 5. Video encoding and editorial budget | Re-encode inline loops at 720p with AV1 or HEVC alternates, trim to 4 to 6 s, per-page media guideline in the CMS | ongoing | Halves media bytes again for the heaviest pages; keeps the score stable as content grows |
 
 ## 7. Verification
+
+Repeatable lab captures (Lighthouse medians, cold-cache media capture, theme guard) are scripted in [performance-measurement.md](performance-measurement.md); results live under `docs/perf/<label>/`. Baseline `before-video-gating` was taken against prod on 2026-09-09.
 
 - Lab, before and after each phase: Lighthouse desktop and mobile against `preview.suits-sandals.com/works/vault-workforce-screening` (the heaviest page) and `/works/adacore` (image hero). Targets for the Vault page after phase 2: under 5 MB transferred at load, under 60 requests, under 400 KB gzipped of script, LCP under 2.0 s in the desktop preset, no forced reflow attributed to hydration.
 - WebPageTest with a 4G profile and a mid-range laptop CPU profile, filmstrip on, to confirm the poster-first hero paints before 1.5 s.

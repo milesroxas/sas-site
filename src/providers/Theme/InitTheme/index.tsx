@@ -29,17 +29,24 @@ const THEME_INIT_SCRIPT = `
     }
 
     var themeToSet = '${defaultTheme}'
-    var preference = window.localStorage.getItem('${themeLocalStorageKey}')
 
-    if (themeIsValid(preference)) {
-      themeToSet = preference
-    } else {
-      var implicitPreference = getImplicitPreference()
+    // The stylesheet holds \`html { opacity: 0 }\` until this attribute lands,
+    // so the page must get a theme even when storage is blocked (private
+    // windows, embedded webviews, site-data restrictions throw on access) or
+    // matchMedia is missing. Any failure falls through to the default.
+    try {
+      var preference = window.localStorage.getItem('${themeLocalStorageKey}')
 
-      if (implicitPreference) {
-        themeToSet = implicitPreference
+      if (themeIsValid(preference)) {
+        themeToSet = preference
+      } else {
+        var implicitPreference = getImplicitPreference()
+
+        if (implicitPreference) {
+          themeToSet = implicitPreference
+        }
       }
-    }
+    } catch (_) {}
 
     document.documentElement.setAttribute('data-theme', themeToSet)
   })();

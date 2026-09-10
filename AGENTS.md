@@ -90,6 +90,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | WebGL / shaders / R3F / TSL / motion physics | `.agents/skills/creative-webgl-shaders` — use the **creative-webgl-shaders** skill |
 | Immersive effects — usage, defaults/presets contract | [docs/immersive-effects.md](docs/immersive-effects.md); Cursor rule `.cursor/rules/immersive-effects.mdc` |
 | Animations — reveals, route transitions, tuning workflow | [docs/animations.md](docs/animations.md) |
+| Performance — audit findings, before/after capture runbook | [docs/performance-audit-work-pages.md](docs/performance-audit-work-pages.md); [docs/performance-measurement.md](docs/performance-measurement.md) |
 | Contact forms, the inquiries inbox, notification | [docs/inquiries.md](docs/inquiries.md) |
 | CMS admin naming (tabs, groups, overrides, blocks) | [docs/cms-naming.md](docs/cms-naming.md) |
 | Blocks reorg + Sections (taxonomy, phases, Section contract) | [docs/blocks-reorg-roadmap.md](docs/blocks-reorg-roadmap.md) |

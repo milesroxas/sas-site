@@ -52,8 +52,7 @@ export const generateMeta = async (args: {
 
   // OG fields override the base SEO fields when set; each falls back independently.
   const og = doc?.meta?.og
-  const ogImage =
-    getImageURL(og?.image || doc?.meta?.image) ?? (await getFallbackOgImageURL())
+  const ogImage = getImageURL(og?.image || doc?.meta?.image) ?? (await getFallbackOgImageURL())
 
   const title = doc?.meta?.title ? `${doc?.meta?.title} | Suits & Sandals` : 'Suits & Sandals'
 

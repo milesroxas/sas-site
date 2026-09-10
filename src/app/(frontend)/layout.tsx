@@ -14,6 +14,7 @@ import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import { getFallbackOgImageURL } from '@/utilities/generateMeta'
 import { getCachedGlobal } from '@/utilities/getGlobals'
+import { MEDIA_URL } from '@/utilities/getMediaUrl'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { organizationSchema, webSiteSchema } from '@/utilities/schema'
 import { cn } from '@/utilities/ui'
@@ -29,6 +30,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
       <head>
         <InitTheme />
+        {/* Hero posters and videos fetch straight from the media CDN (images
+            go through /_next/image on this origin). Open the connection while
+            the head parses instead of at the first <video poster> request. */}
+        {MEDIA_URL ? <link href={MEDIA_URL} rel="preconnect" /> : null}
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
         <JsonLd data={[organizationSchema(siteInfo), webSiteSchema(siteInfo)]} />

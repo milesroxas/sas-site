@@ -172,6 +172,10 @@ export const videoFixture: Media = {
   mimeType: 'video/mp4',
   width: 1920,
   height: 1080,
+  // Production uploads carry a generated poster (Media `generateVideoPoster`
+  // hook); `mediaFixture` is this loop's real poster. Gated videos paint it
+  // until their source attaches.
+  poster: mediaFixture,
   caption: richText(paragraph(text('A caption for a video media document.'))),
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',

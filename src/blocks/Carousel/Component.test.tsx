@@ -28,6 +28,13 @@ const slides = [
   { id: 'slide-2', media: videoFixture, caption: null },
 ]
 
+/**
+ * Slide media only. A video slide with a poster also renders the poster as a
+ * second `Media` inside `[data-carousel-poster]` (melted away on activation).
+ */
+const slideMedia = () =>
+  screen.getAllByTestId('media').filter((el) => el.closest('[data-carousel-poster]') === null)
+
 const baseProps = {
   blockType: 'carousel' as const,
   slides,
@@ -42,8 +49,11 @@ describe('CarouselBlock', () => {
   })
 
   it('renders a slide per populated media doc, with captions', () => {
-    render(<CarouselBlock {...baseProps} />)
-    expect(screen.getAllByTestId('media')).toHaveLength(2)
+    const { container } = render(<CarouselBlock {...baseProps} />)
+    expect(slideMedia()).toHaveLength(2)
+    expect(container.querySelectorAll('[data-carousel-poster] [data-testid="media"]')).toHaveLength(
+      1,
+    )
     expect(screen.getByText('First caption')).toBeDefined()
   })
 
@@ -54,7 +64,7 @@ describe('CarouselBlock', () => {
         slides={[...slides, { id: 'slide-3', media: 99, caption: 'Orphan' }]}
       />,
     )
-    expect(screen.getAllByTestId('media')).toHaveLength(2)
+    expect(slideMedia()).toHaveLength(2)
     expect(screen.queryByText('Orphan')).toBeNull()
   })
 

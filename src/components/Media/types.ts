@@ -22,7 +22,12 @@ export interface Props {
   onClick?: () => void
   onLoad?: () => void
   loading?: 'lazy' | 'eager' // for NextImage only
-  priority?: boolean // for NextImage only
+  /**
+   * Above-the-fold media (heroes). Images: next/image `priority`. Videos: the
+   * source ships in the HTML with `preload="auto"` and the poster is
+   * preloaded; without it a self-playing video is viewport gated.
+   */
+  priority?: boolean
   ref?: Ref<HTMLImageElement | HTMLVideoElement | null>
   resource?: MediaType | string | number | null // for Payload media
   size?: string // for NextImage only
