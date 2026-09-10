@@ -20,6 +20,7 @@ import type { Header as HeaderType } from '@/payload-types'
 import { suppressViewTransitions } from '@/shared/lib/view-transition/suppress'
 import { cn } from '@/utilities/ui'
 import type { MenuContent, MenuLink, MenuMedia } from '../getMenuContent'
+import { ariaCurrent, menuCurrent } from './current'
 import { focusForKeyboard, trackInputModality } from './focus'
 import { createMenuMediaElement, type HeroHandoff, startHeroHandoff } from './heroHandoff'
 import {
@@ -119,9 +120,19 @@ const FOOTER_TIMELINE_Z = FRAME_Z + 1
 const HERO_DISSOLVE_START = ITEMS_START
 const HERO_DISSOLVE_END = CLIP_LAG + FRAME_DURATION
 const HERO_DISSOLVE_EASE = 'power1.inOut'
-/** Grace before dissolving back to base — lets the pointer travel between
- *  adjacent links without flashing the resting state. */
-const HOVER_CLEAR_DELAY_MS = 80
+/* Hover intent. One timer carries both ends of a hover, since only one row
+   is under the pointer at a time and the two waits can never overlap. */
+/** How long the pointer rests on a row before its preview shows. Skimming
+ *  down a list passes each row in well under this, so the window holds
+ *  where it was instead of dissolving to every row on the way; a deliberate
+ *  hover never notices it (a tooltip gates at ten times this). */
+const HOVER_SHOW_DELAY_MS = 50
+/** Grace before dissolving back to the resting state once the pointer has
+ *  left every row. Covers the travel across a row gap, the wider break
+ *  between two sections, and the beat a pointer takes to change its mind,
+ *  so the base never flashes through between two rows. Radix hover surfaces
+ *  hold for 300ms; below that, the wide-spaced left column still flashed. */
+const HOVER_CLEAR_DELAY_MS = 250
 
 /* Phone sub-views. Below `md` the editorial columns are hidden, so the primary
    nav carries a drill-in row per column (Expertise, Who We Help) whose list
@@ -153,9 +164,51 @@ const subViewId = (view: SubView) => `site-menu-${view}`
  */
 const ROW_FOCUS =
   'rounded-xs outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-4 focus-visible:ring-offset-background'
+/**
+ * The current page's row (`aria-current`, see ./current) steps back to a
+ * tertiary ink (the secondary ink at 60%, the HIG's tertiary label) and
+ * keeps it on hover: a link to the page you are on goes nowhere, and the
+ * HIG shows an unavailable control at reduced emphasis rather than lit. A
+ * step below the secondary ink, since the eyebrows already sit there and
+ * the row has to read as one step further back than a label. No fill and
+ * no rule: the menu's rows are type on the page, and a highlight there
+ * outshouted the CTA, the only filled control. Color, not opacity: the
+ * phone rows swap on their own opacity (see subViewRowHidden), which a
+ * current-only opacity would override. Forced colors drop the step;
+ * `aria-current` still names the row.
+ */
+/**
+ * The row that is the page itself leaves the pointer as well (see
+ * currentProps): no hover, no press, the arrow cursor. Its click lands on
+ * the row instead, which onNavItemClick lets be. A section row stays live.
+ *
+ * Whole class strings, never composed: Tailwind reads candidates off the
+ * source text, so a variant joined to a token at runtime gets no rule.
+ */
+const CURRENT_PAGE_OUT = 'aria-[current=page]:pointer-events-none'
+const CURRENT_ROW =
+  'aria-[current]:text-muted-foreground/60 aria-[current]:hover:text-muted-foreground/60 aria-[current=page]:pointer-events-none'
+/** A card row's plate fades toward the page by the same step as its ink. */
+const CURRENT_CARD =
+  'aria-[current]:bg-secondary/50 aria-[current]:text-muted-foreground/60 aria-[current]:hover:text-muted-foreground/60 aria-[current=page]:pointer-events-none'
+/** A work row steps back as one block: the eyebrow and the title both take the ink. */
+const CURRENT_WORK_TEXT =
+  'group-aria-[current]:text-muted-foreground/60 group-aria-[current]:group-hover:text-muted-foreground/60'
+/**
+ * A row's current attributes. The row that is the page itself is out of
+ * play, the disabled-link recipe: `aria-disabled` says it goes nowhere,
+ * `tabIndex` -1 takes it out of the tab order, and CURRENT_PAGE_OUT takes
+ * it off the pointer. `aria-current` still says where. A section row (the
+ * page sits under it) keeps only the mark: it is a way out, not the page.
+ */
+const currentProps = (mark: ReturnType<typeof ariaCurrent>) =>
+  mark === 'page'
+    ? ({ 'aria-current': 'page', 'aria-disabled': true, tabIndex: -1 } as const)
+    : { 'aria-current': mark }
 const NAV_ROW = cn(
   'font-heading text-base/none font-light tracking-widest text-foreground transition-colors hover:text-primary md:text-lg/none',
   ROW_FOCUS,
+  CURRENT_ROW,
 )
 const TOUCH_ROW = 'max-md:relative max-md:before:absolute max-md:before:inset-x-0'
 const TOUCH_ROW_HIT = cn(TOUCH_ROW, 'max-md:before:-inset-y-3')
@@ -165,6 +218,7 @@ const NAV_LINK = cn(NAV_ROW, TOUCH_ROW_HIT, 'max-md:inline-block')
 const SUB_VIEW_LINK = cn(
   'text-sm/snug text-foreground transition-colors hover:text-primary max-md:inline-block',
   ROW_FOCUS,
+  CURRENT_ROW,
   TOUCH_ROW,
   'max-md:before:-inset-y-2.5',
 )
@@ -561,8 +615,21 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   const releaseViewTransitionsRef = useRef<(() => void) | null>(null)
   const pathname = usePathname()
   const lastPathnameRef = useRef(pathname)
+  /** The row's `aria-current`, decided across every row the menu renders. */
+  const isCurrent = menuCurrent(
+    [
+      ...expertise.map((item) => item.href),
+      ...audiences.map((item) => item.href),
+      ...works.map((item) => item.href),
+      ...navItems.map(({ link }) => navItemHref(link)),
+      ctaHref,
+    ],
+    pathname,
+  )
   const router = useRouter()
-  const hoverClearTimer = useRef(0)
+  const hoverTimer = useRef(0)
+  /** A show is armed but has not fired: the pointer is on a row inside HOVER_SHOW_DELAY_MS. */
+  const hoverShowPendingRef = useRef(false)
 
   /** Unfreeze the frozen page frame. `navigated`: land on the new route's
    *  top/anchor; otherwise restore the offset frozen at open. */
@@ -668,12 +735,27 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
    */
   const onNavItemClick = useCallback(
     (media: MenuMedia | null) => (event: React.MouseEvent) => {
+      // The row that is the page: its link is out of play (currentProps), so
+      // the click lands on the row. Not a navigation and not a backdrop click.
+      if ((event.currentTarget as HTMLElement).querySelector('a[aria-disabled="true"]')) {
+        event.preventDefault()
+        return
+      }
       const anchor = (event.target as HTMLElement).closest('a')
       if (!isInAppNavClick(anchor, event)) {
         onClose()
         return
       }
       pendingNavRef.current = true
+
+      // A click inside HOVER_SHOW_DELAY_MS is the intent the delay was waiting
+      // on: mount the preview now, so the readiness check below sees a cached
+      // clip's pixels (videos are never warmed) instead of an empty layer.
+      if (hoverShowPendingRef.current && media) {
+        window.clearTimeout(hoverTimer.current)
+        hoverShowPendingRef.current = false
+        showHoverMedia(media)
+      }
 
       const frame = getPageFrame()
       const overlay = overlayRef.current
@@ -711,7 +793,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         const layer = frame?.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
         const held = layer && !prefersReducedMotion() ? collectHeldMedia(layer) : []
         if (frame && held.length > 0 && anchor.pathname !== window.location.pathname) {
-          window.clearTimeout(hoverClearTimer.current)
+          window.clearTimeout(hoverTimer.current)
           curtainRef.current?.abort()
           const footer = getSiteFooter()
           curtainRef.current = startNavCurtain({
@@ -729,7 +811,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       }
 
       event.preventDefault()
-      window.clearTimeout(hoverClearTimer.current)
+      window.clearTimeout(hoverTimer.current)
       // The handoff replaces both the open timeline's end state and its
       // reverse — freeze it so nothing else mutates the overlay or frame.
       tlRef.current?.kill()
@@ -780,35 +862,43 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     if (heroLayer) gsap.set(heroLayer, { top: 0 })
   }, [pathname])
 
-  // Hover preview wiring: entering a link dissolves the docked window to that
-  // page's hero media; leaving all links dissolves back after a short grace.
+  // Hover preview wiring: resting on a link dissolves the docked window to
+  // that page's hero media; leaving every link dissolves back after a grace.
+  // Entering cancels a pending clear (the pointer crossed a gap and landed),
+  // leaving cancels a pending show (the pointer was only passing through).
   const hoverHandlers = useCallback(
     (media: MenuMedia | null) => ({
       onPointerEnter: (event: React.PointerEvent) => {
         if (event.pointerType !== 'mouse') return
         // The click already decided what the window holds (curtain/handoff).
         if (pendingNavRef.current) return
-        window.clearTimeout(hoverClearTimer.current)
-        showHoverMedia(media)
+        window.clearTimeout(hoverTimer.current)
+        hoverShowPendingRef.current = true
+        hoverTimer.current = window.setTimeout(() => {
+          hoverShowPendingRef.current = false
+          showHoverMedia(media)
+        }, HOVER_SHOW_DELAY_MS)
       },
       onPointerLeave: (event: React.PointerEvent) => {
         if (event.pointerType !== 'mouse') return
         if (pendingNavRef.current) return
-        window.clearTimeout(hoverClearTimer.current)
-        hoverClearTimer.current = window.setTimeout(
-          () => showHoverMedia(null),
-          HOVER_CLEAR_DELAY_MS,
-        )
+        window.clearTimeout(hoverTimer.current)
+        hoverShowPendingRef.current = false
+        hoverTimer.current = window.setTimeout(() => showHoverMedia(null), HOVER_CLEAR_DELAY_MS)
       },
     }),
     [],
   )
 
-  /** Click + hover wiring for a menu item, keyed to one media source. */
+  /**
+   * Click + hover wiring for a menu item, keyed to one media source. The row
+   * that is the page keeps the click (onNavItemClick swallows it) and drops
+   * the hover: a row out of play drives no preview.
+   */
   const itemHandlers = useCallback(
-    (media: MenuMedia | null) => ({
+    (media: MenuMedia | null, mark?: ReturnType<typeof ariaCurrent>) => ({
       onClickCapture: onNavItemClick(media),
-      ...hoverHandlers(media),
+      ...(mark === 'page' ? {} : hoverHandlers(media)),
     }),
     [onNavItemClick, hoverHandlers],
   )
@@ -1197,11 +1287,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
       tl.eventCallback('onComplete', () => {
         // Keyboard users land on the first *visible* menu control: a link, or
-        // a phone drill-in row (never the composer's submit). The editorial
-        // columns are hidden on mobile, the drill-in rows from md. Pointer
-        // users keep the header button (see ./focus).
+        // a phone drill-in row (never the composer's submit, never the row
+        // that is the page: currentProps took it out of the tab order). The
+        // editorial columns are hidden on mobile, the drill-in rows from md.
+        // Pointer users keep the header button (see ./focus).
         const candidates = overlay.querySelectorAll<HTMLElement>(
-          '[data-menu-item] :is(a, button[aria-controls])',
+          '[data-menu-item] :is(a:not([aria-disabled="true"]), button[aria-controls])',
         )
         for (const el of candidates) {
           if (el.checkVisibility?.() ?? true) {
@@ -1219,7 +1310,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       // Dissolve any hover preview back to the resting state before undocking —
       // on media-less pages the layer sits outside the timeline, so a preview
       // left behind (Escape while hovering) would ride the reverse and pop off.
-      window.clearTimeout(hoverClearTimer.current)
+      window.clearTimeout(hoverTimer.current)
       if (!holding) showHoverMedia(null)
       // A base the timeline never owned has to be dissolved back out by hand,
       // over the beat the reverse would have given it.
@@ -1303,10 +1394,16 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       focusForKeyboard(subViewTriggerRefs.current[previous], { preventScroll: true })
   }, [subView])
 
-  /** Phone drill-in views, one per editorial column; an empty column gets no row. */
-  const subViewDefs: { key: SubView; title: string; items: MenuLink[] }[] = [
-    { key: 'expertise', title: 'Expertise', items: expertise },
-    { key: 'audiences', title: 'Who We Help', items: audiences },
+  /**
+   * Phone drill-in views, one per editorial column; an empty column gets no
+   * row. `href` is the section the column's pages sit under (the index
+   * routes; getMenuContent builds the item hrefs from the same paths): the
+   * drill-in row is marked current whenever the page is in its section,
+   * since the row that is the page sits behind the swap.
+   */
+  const subViewDefs: { key: SubView; title: string; href: string; items: MenuLink[] }[] = [
+    { key: 'expertise', title: 'Expertise', href: '/expertise', items: expertise },
+    { key: 'audiences', title: 'Who We Help', href: '/who-we-help', items: audiences },
   ]
   const subViews = subViewDefs.filter((view) => view.items.length > 0)
 
@@ -1327,7 +1424,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
 
   useEffect(
     () => () => {
-      window.clearTimeout(hoverClearTimer.current)
+      window.clearTimeout(hoverTimer.current)
       // Unmount mid-handoff: drop the traveler and restore the frame now.
       handoffRef.current?.abort()
       curtainRef.current?.abort()
@@ -1460,12 +1557,22 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       extra,
     )
 
-  // Clicks on structural empty space (columns, the docked window over the
-  // inert frame) collapse the transcript back to the preview — and nothing
-  // more. They must NEVER close the menu itself: that happens only via the
-  // header CLOSE button, Escape, or navigating a link (onClickCapture).
-  const onBackdropClick = (event: React.MouseEvent) => {
-    if ((event.target as HTMLElement).dataset.menuBackdrop === undefined) return
+  // Clicks on structural empty space (columns, the gaps around the window)
+  // collapse the transcript back to the preview, and nothing more. They
+  // must NEVER close the menu itself: that happens only via the header CLOSE
+  // button, Escape, navigating a link (onClickCapture), or the docked
+  // window. The window is the page itself, so a click on it reads as "back
+  // to the page": the frame above it is inert, so the click lands on the
+  // window beneath (the one hit-testable part of the slot, see PreviewSlot).
+  // In chat view the window holds the transcript, whose clicks are its own.
+  const onOverlayClick = (event: React.MouseEvent) => {
+    const target = event.target as HTMLElement
+    if (target.closest(PREVIEW_WINDOW_SELECTOR)) {
+      if (chatViewRef.current || pendingNavRef.current) return
+      onClose()
+      return
+    }
+    if (target.dataset.menuBackdrop === undefined) return
     if (chatViewRef.current && exitChatViewRef.current) exitChatViewRef.current()
   }
 
@@ -1484,7 +1591,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       // never paints over the open menu; the docked frame sits at FRAME_Z (45),
       // the header stays on top at z-50.
       className="invisible fixed inset-0 z-40 bg-background text-foreground opacity-0 pointer-events-none"
-      onClick={onBackdropClick}
+      onClick={onOverlayClick}
     >
       <nav
         aria-label="Site menu"
@@ -1495,9 +1602,13 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         // break between the modules rather than a void above the strip.
         // Desktop: three columns — editorial lists, centered window, nav.
         // The center column is 36vw capped at 32rem (518px at 1440, the
-        // design's preview width). Row 1 is shared by the side columns and
-        // the center cell (preview window centered above the composer); the
-        // CTA sits below in row 2, past the design's 8rem break.
+        // design's preview width). Each side column is a 20rem stack centered
+        // in its track: the column gap equals the gutter (3rem from md), so
+        // the air between a side column and the window is the air between it
+        // and the viewport edge at any width, instead of the columns drifting
+        // to the edges as the tracks grow. Row 1 is shared by the side
+        // columns and the center cell (preview window centered above the
+        // composer); the CTA sits below in row 2, past the design's 8rem break.
         className="absolute inset-0 flex flex-col gap-6 px-gutter pt-[calc(var(--header-bar-height)+0.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] md:grid md:grid-cols-[1fr_minmax(18rem,min(32rem,36vw))_1fr] md:grid-rows-[minmax(0,1fr)_auto] md:gap-x-12 md:gap-y-32 md:pt-[calc(var(--header-height)+2.5rem)] md:pb-10"
       >
         {/* Left column — editorial lists (desktop only). */}
@@ -1505,22 +1616,30 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           data-menu-backdrop
           data-lenis-prevent
           className={cn(
-            'no-scrollbar hidden min-h-0 flex-col gap-12 overflow-y-auto overscroll-contain md:col-start-1 md:row-start-1 md:flex',
+            'no-scrollbar hidden min-h-0 w-full max-w-xs flex-col gap-12 overflow-y-auto overscroll-contain md:col-start-1 md:row-start-1 md:flex md:justify-self-center',
             SCROLL_RING_ROOM,
           )}
         >
           {expertise.length > 0 && (
-            <section className="flex max-w-xs flex-col gap-6">
+            <section className="flex flex-col gap-6">
               <h3 data-menu-item className="font-mono text-xs/none text-muted-foreground">
                 Expertise
               </h3>
               <ul className="flex flex-col gap-4">
                 {expertise.map((item) => (
-                  <li key={item.href} data-menu-item {...itemHandlers(previewFor(item.media))}>
+                  <li
+                    key={item.href}
+                    data-menu-item
+                    {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
+                  >
                     <Link
                       href={item.href}
                       prefetch={menuLinkPrefetch}
-                      className="text-sm text-card-foreground transition-colors hover:text-primary"
+                      {...currentProps(isCurrent(item.href))}
+                      className={cn(
+                        'text-sm text-card-foreground transition-colors hover:text-primary',
+                        CURRENT_ROW,
+                      )}
                     >
                       {item.title}
                     </Link>
@@ -1530,17 +1649,25 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             </section>
           )}
           {audiences.length > 0 && (
-            <section className="flex max-w-xs flex-col gap-6">
+            <section className="flex flex-col gap-6">
               <h3 data-menu-item className="font-mono text-xs/none text-muted-foreground">
                 Who We Help
               </h3>
               <ul className="flex flex-col gap-2">
                 {audiences.map((item) => (
-                  <li key={item.href} data-menu-item {...itemHandlers(previewFor(item.media))}>
+                  <li
+                    key={item.href}
+                    data-menu-item
+                    {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
+                  >
                     <Link
                       href={item.href}
                       prefetch={menuLinkPrefetch}
-                      className="pressable block rounded-md bg-secondary p-3 text-sm text-secondary-foreground hover:text-primary"
+                      {...currentProps(isCurrent(item.href))}
+                      className={cn(
+                        'pressable block rounded-md bg-secondary p-3 text-sm text-secondary-foreground hover:text-primary',
+                        CURRENT_CARD,
+                      )}
                     >
                       {item.title}
                     </Link>
@@ -1574,38 +1701,63 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           )}
         </div>
 
-        {/* Right column — recent work (desktop) + primary nav. Right-aligned to
-            the outer gutter so it mirrors the left column instead of hugging
-            the window (design: side columns sit at the gutters, window centered). */}
+        {/* Right column: recent work (desktop) + primary nav, one stack from
+            the top like the left column: the work list, a short rule, the nav.
+            The rule sits on gap-12 either side, twice the gap-6 inside each
+            list and the left column's section break, so the two groups read
+            as two groups and not one list with a mark in it. Nothing is
+            pinned to the bottom, so a tall viewport adds air below the nav,
+            not a void between the groups. Centered in its track like the left
+            column (see the grid note above). */}
         <div
           data-menu-backdrop
           data-lenis-prevent
           className={chatHideable(
             cn(
-              'no-scrollbar flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:max-w-xs md:flex-none md:justify-self-end md:justify-between',
+              'no-scrollbar flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:w-full md:max-w-xs md:flex-none md:gap-12 md:justify-self-center',
               SCROLL_RING_ROOM,
             ),
           )}
         >
           {works.length > 0 && (
             <ul className="hidden flex-col gap-6 md:flex">
-              {works.map((item) => (
-                <li key={item.href} data-menu-item {...itemHandlers(previewFor(item.media))}>
-                  <Link
-                    href={item.href}
-                    prefetch={menuLinkPrefetch}
-                    className="group flex flex-col gap-3"
-                    {...cursorTarget({ label: 'View work' })}
+              {works.map((item) => {
+                const mark = isCurrent(item.href)
+                return (
+                  <li
+                    key={item.href}
+                    data-menu-item
+                    {...itemHandlers(previewFor(item.media), mark)}
                   >
-                    {item.eyebrow && (
-                      <span className="text-sm/none text-muted-foreground">{item.eyebrow}</span>
-                    )}
-                    <span className="text-lg/none text-foreground transition-colors group-hover:text-primary">
-                      {item.title}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+                    <Link
+                      href={item.href}
+                      prefetch={menuLinkPrefetch}
+                      {...currentProps(mark)}
+                      className={cn('group flex flex-col gap-3', CURRENT_PAGE_OUT)}
+                      {...(mark === 'page' ? {} : cursorTarget({ label: 'View work' }))}
+                    >
+                      {item.eyebrow && (
+                        <span
+                          className={cn(
+                            'font-mono text-xs/none text-muted-foreground',
+                            CURRENT_WORK_TEXT,
+                          )}
+                        >
+                          {item.eyebrow}
+                        </span>
+                      )}
+                      <span
+                        className={cn(
+                          'text-lg/none text-foreground transition-colors group-hover:text-primary',
+                          CURRENT_WORK_TEXT,
+                        )}
+                      >
+                        {item.title}
+                      </span>
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           )}
 
@@ -1634,7 +1786,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               <ul className="flex flex-col items-start gap-4 max-md:mt-auto md:gap-6">
                 {/* Drill-in rows lead the nav (the offer, then the proof). The
                     chevron marks a deeper level; destinations carry none. */}
-                {subViews.map(({ key, title }, index) => (
+                {subViews.map(({ key, title, href }, index) => (
                   <li
                     key={key}
                     data-menu-item
@@ -1646,6 +1798,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                         subViewTriggerRefs.current[key] = el
                       }}
                       type="button"
+                      aria-current={ariaCurrent(href, pathname) && 'true'}
                       aria-expanded={subView === key}
                       aria-controls={subViewId(key)}
                       onClick={() => setSubView(key)}
@@ -1669,11 +1822,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                       key={i}
                       data-menu-item
                       style={subViewRowTiming(subViews.length + i, subView === null)}
-                      {...itemHandlers(previewFor(href ? pageMedia[href] : null))}
+                      {...itemHandlers(previewFor(href ? pageMedia[href] : null), isCurrent(href))}
                     >
                       <CMSLink
                         {...link}
                         appearance="inline"
+                        {...currentProps(isCurrent(href))}
                         className={cn(
                           NAV_LINK,
                           SUB_VIEW_ROW,
@@ -1733,11 +1887,12 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                           key={item.href}
                           data-menu-item
                           style={subViewRowTiming(i + 1, active)}
-                          {...itemHandlers(previewFor(item.media))}
+                          {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
                         >
                           <Link
                             href={item.href}
                             prefetch={menuLinkPrefetch}
+                            {...currentProps(isCurrent(item.href))}
                             className={cn(
                               SUB_VIEW_LINK,
                               SUB_VIEW_ROW,
@@ -1773,12 +1928,14 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
           <div
             data-menu-item
             className="md:col-start-2 md:row-start-2 md:justify-self-center"
-            {...itemHandlers(previewFor(pageMedia[ctaHref]))}
+            {...itemHandlers(previewFor(pageMedia[ctaHref]), isCurrent(ctaHref))}
           >
             <Button asChild variant="default" size="pill">
               <Link
                 href={ctaHref}
                 prefetch={menuLinkPrefetch}
+                {...currentProps(isCurrent(ctaHref))}
+                className={cn('aria-disabled:opacity-50', CURRENT_PAGE_OUT)}
                 {...ctaLinkProps}
                 {...cursorTarget()}
               >

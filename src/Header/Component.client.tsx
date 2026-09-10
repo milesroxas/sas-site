@@ -47,9 +47,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent, a
               menuOpen ? 'max-w-[47rem]' : 'max-w-full',
             )}
           >
+            {/* Closes the open menu itself: the pathname auto-close never
+                fires for a push to the page already shown (home on home). */}
             <Link
               href="/"
               transitionTypes={[...lateralNavTransitionTypes]}
+              onClick={() => setMenuOpen(false)}
               className="col-start-2 row-start-1 justify-self-center whitespace-nowrap text-base font-medium tracking-[0.19em] md:col-start-1 md:justify-self-start"
             >
               SUITS &amp; SANDALS
