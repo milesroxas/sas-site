@@ -1,0 +1,935 @@
+{
+  "summary": {
+    "key": "vault",
+    "atLoad": {
+      "requests": 89,
+      "mp4": 2,
+      "posters": 10,
+      "posterPriority": "High",
+      "preloadLink": true
+    },
+    "firstR2ConnectionReused": true,
+    "afterScroll": {
+      "mp4": 10,
+      "attachedAtScrollY": [
+        1800,
+        1800,
+        3000,
+        4200,
+        4800,
+        7800,
+        9600,
+        10200
+      ],
+      "videos": 10,
+      "withSource": 10,
+      "playing": 10
+    },
+    "refetchOnReturn": 1
+  },
+  "requests": [
+    {
+      "url": "https://preview.suits-sandals.com/works/vault-workforce-screening",
+      "type": "Document",
+      "priority": "VeryHigh",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works/vault-workforce-screening",
+      "type": "Document",
+      "priority": "VeryHigh",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/media/GeistMono_Variable.p.0b02cdm7g7y6h.woff2",
+      "type": "Font",
+      "priority": "High",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/media/Geist_Variable-s.p.2-i4fw5gbtlb7.woff2",
+      "type": "Font",
+      "priority": "High",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Hero-poster.jpg?2026-08-13T17%3A10%3A20.873Z",
+      "type": "Image",
+      "priority": "High",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/23t71k8xv3t5_.css",
+      "type": "Stylesheet",
+      "priority": "VeryHigh",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/1alip52lq634w.css",
+      "type": "Stylesheet",
+      "priority": "VeryHigh",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/03a4e40mtgj2l.css",
+      "type": "Stylesheet",
+      "priority": "VeryHigh",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/23nl_33tl4vzq.css",
+      "type": "Stylesheet",
+      "priority": "VeryHigh",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/10oy3w-30vwty.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/3zzb0r62a_6wr.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/0a6kutm-jxvdk.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/3d-ax_e7928ze.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/1ybhz87a0ii75.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/0rfv63b_nwm0s.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/turbopack-44qjrvu8pla54.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/3d56zr4f58lpu.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/10s184iazmwwr.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/3-2a9k177oill.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/2uw3o2nin9jbi.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/2eg7ssb70h4xy.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/13hjtb8cv6a02.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/040bksjyynbbe.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/1wz22jd3l-mzh.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/2uxszjjqtg5v2.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/2cj_5sofamblu.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/1rzg5995j7uai.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/2i6mhbl5ga8u8.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/0pydogk2f74on.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/0dj0m8tdp0mx3.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/414qtv9mdf2c8.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/0maohbessf_hg.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/30hg22e2kqx43.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/1q19e1e4wttcc.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/02n0v3z571ik2.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/1mzd6g5uz4c0r.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/237hq1l0zjvlu.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/2fayqoahg2u27.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/3140p8g9mxswy.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Competitive%20Research%20Logos-poster.jpg?2026-08-13T17%3A27%3A30.736Z",
+      "type": "Image",
+      "priority": "Medium",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-worker-walking-poster.jpg?2026-08-13T17%3A11%3A30.728Z",
+      "type": "Image",
+      "priority": "Medium",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Miles%20Working%20on%20Shape%20Language%20in%20Figma-poster.jpg?2026-08-13T17%3A43%3A26.881Z",
+      "type": "Image",
+      "priority": "Medium",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-shape-language-reference-poster.jpg?2026-08-26T19%3A24%3A32.773Z",
+      "type": "Image",
+      "priority": "Medium",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Typography%20Exploration-poster.jpg?2026-08-13T17%3A36%3A20.405Z",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Miles%20working%20on%20Motion%20Epxloration-poster.jpg?2026-08-13T17%3A42%3A56.483Z",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-social-media-poster.jpg?2026-08-27T20%3A59%3A55.403Z",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-website-scroll-data-poster.jpg?2026-08-27T20%3A19%3A15.573Z",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/arturo-logo-cover-poster.jpg?2026-08-28T03%3A33%3A26.452Z",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Hero?2026-08-13T17%3A10%3A21.223Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' %3E%3Cfilter id='b' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3CfeColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1' result='s'/%3E%3CfeFlood x='0' y='0' width='100%25' height='100%25'/%3E%3CfeComposite operator='out' in='s'/%3E%3CfeComposite in2='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3C/filter%3E%3Cimage width='100%25' height='100%25' x='0' y='0' preserveAspectRatio='none' style='filter: url(%23b);' href='data:image/png;base64,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'/%3E%3C/svg%3E",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2560 1440'%3E%3Cfilter id='b' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3CfeColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1' result='s'/%3E%3CfeFlood x='0' y='0' width='100%25' height='100%25'/%3E%3CfeComposite operator='out' in='s'/%3E%3CfeComposite in2='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3C/filter%3E%3Cimage width='100%25' height='100%25' x='0' y='0' preserveAspectRatio='none' style='filter: url(%23b);' href='data:image/png;base64,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'/%3E%3C/svg%3E",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1335'%3E%3Cfilter id='b' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3CfeColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1' result='s'/%3E%3CfeFlood x='0' y='0' width='100%25' height='100%25'/%3E%3CfeComposite operator='out' in='s'/%3E%3CfeComposite in2='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3C/filter%3E%3Cimage width='100%25' height='100%25' x='0' y='0' preserveAspectRatio='none' style='filter: url(%23b);' href='data:image/png;base64,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'/%3E%3C/svg%3E",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1280'%3E%3Cfilter id='b' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3CfeColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1' result='s'/%3E%3CfeFlood x='0' y='0' width='100%25' height='100%25'/%3E%3CfeComposite operator='out' in='s'/%3E%3CfeComposite in2='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3C/filter%3E%3Cimage width='100%25' height='100%25' x='0' y='0' preserveAspectRatio='none' style='filter: url(%23b);' href='data:image/png;base64,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'/%3E%3C/svg%3E",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Cfilter id='b' color-interpolation-filters='sRGB'%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3CfeColorMatrix values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 100 -1' result='s'/%3E%3CfeFlood x='0' y='0' width='100%25' height='100%25'/%3E%3CfeComposite operator='out' in='s'/%3E%3CfeComposite in2='SourceGraphic'/%3E%3CfeGaussianBlur stdDeviation='20'/%3E%3C/filter%3E%3Cimage width='100%25' height='100%25' x='0' y='0' preserveAspectRatio='none' style='filter: url(%23b);' href='data:image/png;base64,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'/%3E%3C/svg%3E",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/image?url=https%3A%2F%2Fmedia.suits-sandals.com%2Fvault-fpo-comp-sample.jpg%3F2026-08-27T17%253A43%253A30.778Z&w=1080&q=90",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "blob:https://preview.suits-sandals.com/c60bdf0a-4408-4313-8b45-a4ef88528acb",
+      "type": "Script",
+      "priority": "VeryLow",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://vercel.live/_next-live/feedback/feedback.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/monitoring?o=248430&p=4511734596829184&r=us",
+      "type": "Fetch",
+      "priority": "High",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/monitoring?o=248430&p=4511734596829184&r=us",
+      "type": "Fetch",
+      "priority": "High",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/05898650b8d04014/script.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/insights?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/demo/immersive?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Competitive%20Research%20Logos?2026-08-13T17%3A36%3A29.840Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/about-us?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/contact?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/contact/project-inquiry?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/?_rsc=bB6VCDBpVrAi2oHT",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/?_rsc=dWqI-JTPGUkPnAD0",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works?_rsc=tK6E10o1Kkz1eWa1",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/44l6vlp19278t.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/0t3z1_c5_jnci.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/0sc0is1wcyo65.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/41z5kwd4y1hug.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/2xabms8en54ji.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/insights?_rsc=AjTMdzidtFF2K29-",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/about-us?_rsc=phBk6PScxZ1XfQyL",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/38geh16h9duoz.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/contact?_rsc=DUNNTbkzlMjYK70w",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/1i_a9o3cqj1nx.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/3ymx651b5fbpd.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/contact/project-inquiry?_rsc=of7rR0EizdWOaRQY",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/3xu69k2_0aghj.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/3glcytt5mu4qf.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/1yn7d6szcl28b.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/static/immutable/chunks/3krog4znae-qo.js",
+      "type": "Script",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/demo/immersive?_rsc=-qg31JZmnwwz2arn",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://preview.suits-sandals.com/monitoring?o=248430&p=4511734596829184&r=us",
+      "type": "Fetch",
+      "priority": "High",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-worker-walking.mp4?2026-08-13T17%3A11%3A31.277Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 1800
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Miles%20Working%20on%20Shape%20Language%20in%20Figma?2026-08-13T17%3A43%3A27.545Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 1800
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-shape-language-reference.mp4?2026-08-26T19%3A34%3A05.062Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 3000
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-shape-language-reference.mp4?2026-08-26T19%3A34%3A05.062Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 3000
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-shape-language-reference.mp4?2026-08-26T19%3A34%3A05.062Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 3000
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Typography%20Exploration?2026-08-13T17%3A36%3A20.817Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 4200
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/image?url=https%3A%2F%2Fmedia.suits-sandals.com%2Fvault-doctors-logo.jpg%3F2026-08-27T18%253A50%253A27.794Z&w=1920&q=90",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 4800
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Miles%20working%20on%20Motion%20Epxloration?2026-08-13T17%3A42%3A56.853Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 4800
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/image?url=https%3A%2F%2Fmedia.suits-sandals.com%2Fvault-Stage-Screen-Mockup.webp%3F2026-08-27T16%253A40%253A15.144Z&w=1920&q=90",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 5400
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/image?url=https%3A%2F%2Fmedia.suits-sandals.com%2Fvault-subway-poster.avif%3F2026-08-27T16%253A41%253A46.674Z&w=1920&q=90",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 5400
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/image?url=https%3A%2F%2Fmedia.suits-sandals.com%2Fvault-banner.avif%3F2026-08-27T16%253A39%253A19.623Z&w=1920&q=90",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 5400
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/image?url=https%3A%2F%2Fmedia.suits-sandals.com%2Fvault_logo_sign_mockup.avif%3F2026-08-27T16%253A33%253A24.508Z&w=1920&q=90",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 5400
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/image?url=https%3A%2F%2Fmedia.suits-sandals.com%2Fvault-home-mockup-display.webp%3F2026-08-27T20%253A48%253A15.745Z&w=1080&q=90",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 7200
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-social-media.mp4?2026-08-27T20%3A59%3A56.184Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 7800
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/image?url=https%3A%2F%2Fmedia.suits-sandals.com%2Feclinical-Studio-Display-LUX-25-L.jpg%3F2026-09-08T16%253A51%253A07.360Z&w=750&q=90",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 9000
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/image?url=https%3A%2F%2Fmedia.suits-sandals.com%2Fhome-hero-cinema-display-mockup.avif%3F2026-08-28T18%253A26%253A43.832Z&w=750&q=90",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 9000
+    },
+    {
+      "url": "https://preview.suits-sandals.com/_next/image?url=https%3A%2F%2Fmedia.suits-sandals.com%2Fgentlebeast-pdp-page.png%3F2026-08-28T03%253A01%253A25.021Z&w=750&q=90",
+      "type": "Image",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 9000
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-website-scroll-data.mp4?2026-08-27T20%3A19%3A16.384Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 9600
+    },
+    {
+      "url": "https://media.suits-sandals.com/arturo-logo-cover.mp4?2026-08-28T03%3A33%3A27.231Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 10200
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-website-scroll-data.mp4?2026-08-27T20%3A19%3A16.384Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 10800
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works/eclinical-solutions?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 12000
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works/interchecks?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 12000
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works/arturo?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 12000
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works/gentlebeast?_rsc=w13oM2JxtUhyGkek",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 12000
+    },
+    {
+      "url": "https://media.suits-sandals.com/arturo-logo-cover.mp4?2026-08-28T03%3A33%3A27.231Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 12000
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works/interchecks?_rsc=x3KVTDpYK1nzuQRu",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 12000
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works/arturo?_rsc=x3KVTDpYK1nzuQRu",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 12000
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works/gentlebeast?_rsc=x3KVTDpYK1nzuQRu",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 12000
+    },
+    {
+      "url": "https://preview.suits-sandals.com/works/eclinical-solutions?_rsc=x3KVTDpYK1nzuQRu",
+      "type": "Fetch",
+      "priority": "Low",
+      "phase": "scroll",
+      "scrollY": 12000
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Hero?2026-08-13T17%3A10%3A21.223Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Competitive%20Research%20Logos?2026-08-13T17%3A36%3A29.840Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-worker-walking.mp4?2026-08-13T17%3A11%3A31.277Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Miles%20Working%20on%20Shape%20Language%20in%20Figma?2026-08-13T17%3A43%3A27.545Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-shape-language-reference.mp4?2026-08-26T19%3A34%3A05.062Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Typography%20Exploration?2026-08-13T17%3A36%3A20.817Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Miles%20working%20on%20Motion%20Epxloration?2026-08-13T17%3A42%3A56.853Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-social-media.mp4?2026-08-27T20%3A59%3A56.184Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/vault-website-scroll-data.mp4?2026-08-27T20%3A19%3A16.384Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/arturo-logo-cover.mp4?2026-08-28T03%3A33%3A27.231Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    },
+    {
+      "url": "https://media.suits-sandals.com/Vault%20Hero?2026-08-13T17%3A10%3A21.223Z",
+      "type": "Media",
+      "priority": "Low",
+      "phase": "load",
+      "scrollY": 0
+    }
+  ]
+}
