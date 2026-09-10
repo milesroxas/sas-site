@@ -12,7 +12,7 @@ a "before" survives until its "after" exists.
 
 | Question | Tool | Numbers kept |
 |---|---|---|
-| Bytes and requests at load, and what the LCP element is | Lighthouse desktop + mobile, 3 runs, median | transfer total, request count, script bytes, media bytes, LCP ms, LCP element, TBT, CLS |
+| Bytes and requests at load, and what the LCP element is | Lighthouse desktop + mobile, 3 runs, median | transfer total, request count, script bytes, media bytes, LCP ms, LCP element, TBT, CLS (object counts come from the capture) |
 | Does media actually gate | Playwright cold-cache capture with a scroll timeline | mp4 requests at load vs after scroll, poster priority, first R2 connection reuse, refetch on scroll back |
 | Does the theme bootstrap survive blocked storage | Playwright with `localStorage` throwing | `data-theme` present, `html` opacity |
 
@@ -147,7 +147,7 @@ diff <(sed -n '/^| page/,$p' docs/perf/before-X/summary.md) <(sed -n '/^| page/,
 
 Lab noise is about 10% on LCP and 3 points on the score. What counts as real:
 
-- `mediaKb` and `mp4` at load: an order of magnitude on `vault`.
+- `mediaKb` (Lighthouse) and `mp4` at load (capture): an order of magnitude on `vault`.
 - `lcp`: 1 to 2 s on `vault` mobile after gating. The rest of the gap is script (`scriptKb`) and waits for the bundle diet.
 - `lcpEl`: stays the hero. If it flips to a body image, the hero poster preload is not firing.
 - `kb` on `adacore` and `home`: small change expected; a large one means something unrelated shipped.
@@ -174,10 +174,12 @@ const { chromium } = createRequire('/Users/milesroxas/SITES/sas-site/package.jso
 
 const [host, outDir] = process.argv.slice(2)
 const pages = { vault: '/works/vault-workforce-screening', adacore: '/works/adacore', home: '/' }
-const isMp4 = (r) => /\.mp4/.test(r.url)
+// Video objects by CDP resource type, not URL: some uploads have no
+// extension (`Vault Hero`), and range requests re-hit the same object, so
+// count distinct objects.
+const isMp4 = (r) => r.type === 'Media'
 const isPoster = (r) => /poster/.test(r.url)
-// Range requests re-hit the same object; count objects, not requests.
-const uniqueMp4 = (rs) => new Set(rs.filter(isMp4).map((r) => r.url)).size
+const uniqueMp4 = (rs) => new Set(rs.filter(isMp4).map((r) => r.url.split('?')[0])).size
 const browser = await chromium.launch()
 
 for (const [key, p] of Object.entries(pages)) {
@@ -189,7 +191,7 @@ for (const [key, p] of Object.entries(pages)) {
   const reqs = []
   const r2 = []
   cdp.on('Network.requestWillBeSent', (e) => {
-    reqs.push({ url: e.request.url, priority: e.request.initialPriority, phase: 'load', scrollY: 0 })
+    reqs.push({ url: e.request.url, type: e.type, priority: e.request.initialPriority, phase: 'load', scrollY: 0 })
   })
   cdp.on('Network.responseReceived', (e) => {
     if (/media\.suits-sandals\.com/.test(e.response.url)) {
@@ -213,10 +215,15 @@ for (const [key, p] of Object.entries(pages)) {
     const before = reqs.length
     await page.evaluate((y) => window.scrollTo(0, y), y)
     await page.waitForTimeout(700)
+    const seenBefore = new Set(reqs.slice(0, before).filter(isMp4).map((r) => r.url.split('?')[0]))
     for (const r of reqs.slice(before)) {
       r.phase = 'scroll'
       r.scrollY = y
-      if (isMp4(r)) attachedAt.push(y)
+      const obj = r.url.split('?')[0]
+      if (isMp4(r) && !seenBefore.has(obj)) {
+        attachedAt.push(y)
+        seenBefore.add(obj)
+      }
     }
   }
   // Chromium pauses muted autoplay loops that are off screen, so "plays when
@@ -332,14 +339,13 @@ for (const f of fs.readdirSync(dir).filter((f) => /-\d\.json$/.test(f))) {
     kb: Math.round(a['total-byte-weight'].numericValue / 1024),
     scriptKb: Math.round(sum(items, (i) => i.resourceType === 'Script') / 1024),
     mediaKb: Math.round(sum(items, (i) => i.resourceType === 'Media') / 1024),
-    mp4: items.filter((i) => /\.mp4/.test(i.url)).length,
     requests: items.length,
     lcpEl: (lcpNode?.selector || lcpNode?.nodeLabel || '').slice(0, 48),
   })
 }
 
 const median = (xs) => xs.slice().sort((a, b) => a - b)[Math.floor(xs.length / 2)]
-const cols = ['perf', 'lcp', 'fcp', 'tbt', 'cls', 'kb', 'scriptKb', 'mediaKb', 'mp4', 'requests']
+const cols = ['perf', 'lcp', 'fcp', 'tbt', 'cls', 'kb', 'scriptKb', 'mediaKb', 'requests']
 let md = `| page | ${cols.join(' | ')} | lcp element |\n|---|${cols.map(() => '---:').join('|')}|---|\n`
 for (const [k, runs] of Object.entries(rows).sort()) {
   md += `| ${k} | ${cols.map((c) => median(runs.map((r) => r[c]))).join(' | ')} | ${runs[0].lcpEl} |\n`
