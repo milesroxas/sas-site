@@ -6,8 +6,9 @@
 export const ASK_QUESTION_RETENTION_DAYS = 90
 
 /**
- * Shown at every Ask composer. Covers the EU AI Act transparency duty (visitors
- * are told the answers come from an AI) and says, at the point of collection,
- * that questions are kept.
+ * The first line of every Ask transcript. Covers the EU AI Act transparency
+ * duty (visitors are told the answers come from an AI) and says that questions
+ * are kept. Not part of cookie consent: it is about what visitors type, which
+ * is stored whatever they chose on the banner.
  */
-export const ASK_NOTICE = `AI answers about our work, services, and insights. We keep questions for ${ASK_QUESTION_RETENTION_DAYS} days, so leave out personal details.`
+export const ASK_NOTICE = `Answers are AI-generated. We keep questions for ${ASK_QUESTION_RETENTION_DAYS} days, so leave out personal details.`

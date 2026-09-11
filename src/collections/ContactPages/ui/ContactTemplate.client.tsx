@@ -1,7 +1,7 @@
 'use client'
 
 import { IconExclamationCircle } from '@tabler/icons-react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FieldValues } from 'react-hook-form'
 import { FormProvider, useForm } from 'react-hook-form'
 import { answered, isQuestion, readable } from '@/blocks/shared/form/answers'
@@ -19,6 +19,7 @@ import { CMSLink } from '@/components/Link'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { DetailList, DetailRow } from '@/components/ui/detail-list'
+import { clearAskHandoff, readAskHandoff } from '@/features/ask/handoff'
 import { useRevealSwap } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
@@ -113,6 +114,22 @@ export function ContactTemplate({
   const [isSending, setIsSending] = useState(false)
 
   const formMethods = useForm()
+  const { getValues, setValue } = formMethods
+
+  // Arriving from Ask's "Talk to the team": the visitor's questions open the
+  // message (still theirs to edit), and the inquiry is tagged so sales can see
+  // which leads Ask produced. Cleared once the inquiry is sent.
+  const fromAskRef = useRef(false)
+  useEffect(() => {
+    const prefill = readAskHandoff()
+    if (!prefill) return
+    const message = fields.find((field) => isQuestion(field) && field.mapsTo === 'message')
+    if (!message?.name) return
+    const current = getValues(message.name)
+    if (typeof current === 'string' && current.trim().length > 0) return
+    setValue(message.name, prefill.slice(0, message.maxLength ?? undefined), { shouldDirty: true })
+    fromAskRef.current = true
+  }, [fields, getValues, setValue])
 
   const swapTo = useRevealSwap({
     rootRef,
@@ -126,7 +143,15 @@ export function ContactTemplate({
       setError(undefined)
       setIsSending(true)
       try {
-        const result = await submitForm({ delivery, fields, formId, inquiryType, values })
+        const result = await submitForm({
+          delivery,
+          fields,
+          formId,
+          inquiryType,
+          values,
+          fromAsk: fromAskRef.current,
+        })
+        if (fromAskRef.current) clearAskHandoff()
         setReceipt({ ...result, values })
         swapTo(1)
       } catch (err) {

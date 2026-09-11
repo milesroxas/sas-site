@@ -10,6 +10,8 @@ export type SubmitArgs = {
   formId: number | string
   /** What the inquiry is filed as. The form declares this; see `inquiryType` in Forms. */
   inquiryType?: FormInquiryType
+  /** The message was opened from Ask's "Talk to the team" (see features/ask/handoff). */
+  fromAsk?: boolean
   values: Record<string, unknown>
 }
 
@@ -66,6 +68,7 @@ export async function submitForm({
   formId,
   inquiryType,
   values,
+  fromAsk,
 }: SubmitArgs): Promise<SubmitResult> {
   const base = getClientSideURL()
   const sourceUrl = typeof window === 'undefined' ? undefined : window.location.href
@@ -80,6 +83,7 @@ export async function submitForm({
         // the project template, so that stays their meaning.
         type: inquiryType ?? 'project',
         sourceUrl,
+        fromAsk: fromAsk || undefined,
         // Honeypot — a human never sees this field, so it is always empty.
         role: values.role,
       }),

@@ -171,6 +171,8 @@ const submit: Endpoint = {
         event: 'inquiry_submitted',
         properties: {
           inquiry_type: type,
+          // Opened from Ask's "Talk to the team": which leads Ask produced.
+          from_ask: body?.fromAsk === true,
           capability_count: isProject
             ? Array.isArray(created.capabilities)
               ? created.capabilities.length

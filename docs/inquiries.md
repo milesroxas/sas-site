@@ -59,6 +59,12 @@ just sent, on the shared panel choreography (`useRevealSwap`), and **Edit and
 resend** swaps back with every value intact. The receipt's rows are the form's
 own field labels, so renaming a question renames it there too.
 
+Arriving from Ask's **Talk to the team** (see `src/features/ask/README.md`,
+"Reaching a person"), the message opens prefilled with the visitor's Ask
+questions, and the submission carries `fromAsk`. That flag becomes `from_ask`
+on the `inquiry_submitted` PostHog event; the inquiry itself shows where it
+came from in its message, so no schema change was needed.
+
 ## Forms, and where answers go
 
 A form's `Delivery` decides what a submission becomes:

@@ -35,7 +35,9 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 | [`messages.tsx`](./messages.tsx) | Transcript body shared by every surface. Holds the shimmer until the first token (an assistant message with only source parts stays unmounted) and renders source links only once the answer has settled, staggered in. |
 | [`questions.ts`](./questions.ts) | `recordAskQuestion()`: stores each question for the team after the response, redacted, with the page it was asked on and the chat id. No IP, no analytics id. |
 | [`redact.ts`](./redact.ts) | `redactFreeText()`: strips emails, phone and card numbers, URL query strings, and key-shaped strings before storage. Keeps budgets, years, dates, and page slugs. Tested in `redact.test.ts`. |
-| [`retention.ts`](./retention.ts) | `ASK_QUESTION_RETENTION_DAYS` and `ASK_NOTICE`, the line under every composer. One constant, so the promise and the deletion job cannot drift. Client-safe. |
+| [`retention.ts`](./retention.ts) | `ASK_QUESTION_RETENTION_DAYS` and `ASK_NOTICE`, the first line of every transcript. One constant, so the promise and the deletion job cannot drift. Client-safe. |
+| [`handoff.ts`](./handoff.ts) | Carries the visitor's questions to the contact form in sessionStorage: `saveAskHandoff`, `readAskHandoff`, `clearAskHandoff`. Tested in `handoff.test.ts`. |
+| [`TalkToTeam.tsx`](./TalkToTeam.tsx) | The "Talk to the team" link under a finished answer, on every surface. |
 | [`../../collections/AskQuestions.ts`](../../collections/AskQuestions.ts) | Admin › Inbox › Ask questions. Team-only read and delete; nobody creates or edits through the API. |
 | [`../../jobs/askQuestionRetention.ts`](../../jobs/askQuestionRetention.ts) | Daily Payload task that deletes questions past the retention window, run by the existing `/api/payload-jobs/run` cron. |
 | [`SubmitButton.tsx`](./SubmitButton.tsx) | The composer button shared by every surface: submit when idle, an enabled Stop while a reply is in flight. |
@@ -160,10 +162,20 @@ backfill script.
 ## What we keep
 
 - **Questions, for the team.** Every accepted question lands in `ask-questions` (Admin › Inbox › Ask questions) after the response has gone out, so storage never adds latency. Filter `Answered` to No for the content-gap list: questions the site had nothing to ground an answer on. `Asked on` is the page path, and `Chat` groups one conversation. Team agents can read it over MCP when a key is granted the capability.
-- **Redacted before it lands.** `redactFreeText()` is one layer, not a guarantee: a name or employer in plain words survives. The notice under every composer (`ASK_NOTICE`) asks people to leave personal details out, and tells them the answers are AI-generated (EU AI Act transparency).
+- **Redacted before it lands.** `redactFreeText()` is one layer, not a guarantee: a name or employer in plain words survives. The first line of every transcript (`ASK_NOTICE`) asks people to leave personal details out, and tells them the answers are AI-generated (EU AI Act transparency). It is not part of cookie consent: it covers what people type, which is stored whatever they chose on the banner.
 - **Deleted on schedule.** `askQuestionRetention` removes rows older than `ASK_QUESTION_RETENTION_DAYS`. It is queued by Payload's scheduler from the daily cron, so the first run lands a day after deploy and a row can outlive the window by up to a day.
 - **Nothing at OpenAI.** `store: false` stops the Responses API keeping each exchange for 30 days in the dashboard logs. The client resends the transcript every turn, and for reasoning models the SDK asks for encrypted reasoning instead of server-side item references. `sendReasoning: false` keeps that encrypted blob out of the browser.
 - **Metadata only in PostHog.** `ask_questioned` carries length, source count, and the follow-up flag. Question text never goes to analytics: it could not be held to the retention window there, and it would sit next to a visitor id.
+
+## Reaching a person
+
+Ask cannot take contact details, and should not: its log is anonymous and expires. Leads belong in Inquiries, which is owned and notifies the team. So every surface (the `/ask` page, the menu, and the footer's closing band) ends a finished answer with **Talk to the team**, rendered once in `TranscriptItems` so no surface can miss it.
+
+- The link opens `/contact` and prefills its message with the visitor's latest questions (`From my Ask conversation:`), still theirs to edit. The questions travel in this tab's sessionStorage, never the URL, so they stay out of PostHog's captured URLs and server logs, and the contact page stays static.
+- The handoff is read without being cleared: on a full page load the contact page remounts its form just after hydration, and a one-shot read would be spent on the first mount. It is cleared once the inquiry is sent, and ignored after 30 minutes.
+- On `/contact` itself a push to the same path does nothing, so the link reloads the page to pick the handoff up.
+- The inquiry carries `fromAsk`, and `inquiry_submitted` in PostHog carries `from_ask`, so sales can count the leads Ask produced.
+- The prompts tell the model to offer the button for starting a project, pricing, availability, or wanting a person, and never to repeat an email, phone number, or name back.
 
 ## Turning Ask off
 

@@ -15,7 +15,6 @@ import {
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
 import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
-import { ASK_NOTICE } from './retention'
 import { AskSubmitButton } from './SubmitButton'
 import { useAskChat } from './useAskChat'
 
@@ -146,7 +145,6 @@ export function AskWidget({
             <AskSubmitButton busy={busy} canSend={canSend} onStop={stop} className="ml-auto" />
           </InputGroupAddon>
         </InputGroup>
-        <p className="mt-3 text-muted-foreground text-xs/relaxed">{ASK_NOTICE}</p>
       </form>
     </div>
   )

@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { Bubble, BubbleContent } from '@/components/ui/bubble'
 import { Message, MessageContent } from '@/components/ui/message'
 import { MessageScrollerItem } from '@/components/ui/message-scroller'
+import { ASK_NOTICE } from './retention'
+import { TalkToTeam } from './TalkToTeam'
 
 /**
  * Entrance for anything that joins the transcript (messages, the Thinking
@@ -102,9 +104,21 @@ export function TranscriptItems({
   const emptyAssistant = last?.role === 'assistant' && messageText(last) === ''
   const visible = emptyAssistant ? messages.slice(0, -1) : messages
   const pending = status === 'submitted' || (status === 'streaming' && emptyAssistant)
+  // The way to a person waits for a finished answer: offering it mid-stream
+  // would pull the eye off the reply being read.
+  const settled = status === 'ready' && last?.role === 'assistant' && !emptyAssistant
 
   return (
     <>
+      {visible.length > 0 && (
+        <MessageScrollerItem messageId="ask-notice">
+          <p
+            className={`text-balance text-center text-muted-foreground text-xs/relaxed ${transcriptItemEnter}`}
+          >
+            {ASK_NOTICE}
+          </p>
+        </MessageScrollerItem>
+      )}
       {visible.map((message, index) => (
         <MessageScrollerItem
           key={message.id}
@@ -125,6 +139,13 @@ export function TranscriptItems({
           >
             Thinking…
           </p>
+        </MessageScrollerItem>
+      )}
+      {settled && (
+        <MessageScrollerItem messageId="ask-handoff">
+          <div className={transcriptItemEnter}>
+            <TalkToTeam messages={messages} />
+          </div>
         </MessageScrollerItem>
       )}
     </>
