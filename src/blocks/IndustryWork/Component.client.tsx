@@ -3,7 +3,7 @@
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import Link from 'next/link'
-import { useEffect, useRef, useState, ViewTransition } from 'react'
+import { type MouseEvent, useEffect, useRef, useState, ViewTransition } from 'react'
 import { HeadingDropdown } from '@/blocks/shared/heading-dropdown'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import {
@@ -187,6 +187,19 @@ const IndustryWorkMedia = ({
   )
 }
 
+/**
+ * A click Next's `Link` will turn into an in-app navigation: primary button,
+ * no modifier (those open a new tab / window and never leave this page).
+ * Mirrors `isModifiedEvent` in `next/link`.
+ */
+const isPlainNavigationClick = (event: MouseEvent<HTMLAnchorElement>) =>
+  event.button === 0 &&
+  !event.metaKey &&
+  !event.ctrlKey &&
+  !event.shiftKey &&
+  !event.altKey &&
+  !event.defaultPrevented
+
 const MetaGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-2">
     <dt className="font-mono text-xs/none font-medium text-muted-foreground">{label}</dt>
@@ -305,11 +318,27 @@ export const IndustryWorkClient = ({
   const mediaLinkRef = useRef<HTMLAnchorElement>(null)
   const mediaProximity = useCursorProximitySource(mediaLinkRef)
 
+  // The shared-element name is assigned only in the click that opens the
+  // takeover, and stays on this boundary until the page unmounts. At rest
+  // the boundary is `auto`-named: React's dev registry of named
+  // `ViewTransition`s records a name on mount but only forgets it on
+  // unmount, so a boundary whose `name` changed in place (an industry swap)
+  // would leave its old name registered — and the case-study hero mounting
+  // that name later (via the menu, back/forward) trips the duplicate-name
+  // warning. Keying the boundary instead would remount the WebGL layer on
+  // every swap. `onClick` runs before `Link`'s navigation handler, outside
+  // its transition, so the name commits before the takeover snapshots.
+  const [opening, setOpening] = useState(false)
+  const armTakeover = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (isPlainNavigationClick(event)) setOpening(true)
+  }
+
   const textPanel = panels[textIndex] ?? panels[0]
   const mediaPanel = panels[active] ?? panels[0]
   if (!textPanel || !mediaPanel) return null
   const { work } = textPanel
   const mediaWork = mediaPanel.work
+  const vtName = opening ? workImageVtName(mediaWork.slug) : 'auto'
 
   return (
     <ScrollReveal
@@ -355,6 +384,7 @@ export const IndustryWorkClient = ({
               className="text-sm font-medium text-foreground underline-offset-4 hover:underline lg:pointer-events-auto"
               data-swap="text"
               href={work.href}
+              onClick={armTakeover}
               // Tags the navigation `work-open`: the root fades, the media
               // below centers vertically and expands to full screen, then
               // lands on the case-study hero the way every takeover does —
@@ -372,7 +402,8 @@ export const IndustryWorkClient = ({
               collapse, dissolve (`sequenceWorkImageMorph` +
               `@/shared/ui/hero-landing`, the same landing the takeover
               menu's handoff plays; React fires `onShare` on this, the
-              unmounting, side). Matching `name` in `CaseStudyHero*`.
+              unmounting, side). Matching `name` in `CaseStudyHero*`, armed
+              by the opening click (see `armTakeover`).
               `share` is type-gated: the pair also forms on navigations that
               are NOT the takeover (a menu hero-handoff push, browser
               back/forward) whenever this spotlight and the case-study hero
@@ -381,11 +412,9 @@ export const IndustryWorkClient = ({
               navigation's motion. */}
           <ViewTransition
             default="none"
-            name={workImageVtName(mediaWork.slug)}
+            name={vtName}
             onShare={(_instance, types) =>
-              types.includes(WORK_OPEN)
-                ? sequenceWorkImageMorph(workImageVtName(mediaWork.slug))
-                : undefined
+              types.includes(WORK_OPEN) ? sequenceWorkImageMorph(vtName) : undefined
             }
             share={workImageShare}
           >
@@ -415,6 +444,7 @@ export const IndustryWorkClient = ({
                 aria-label={`View case study: ${mediaWork.title}`}
                 className="pointer-coarse:pressable pointer-coarse:pressable-subtle absolute inset-0 block"
                 href={mediaWork.href}
+                onClick={armTakeover}
                 ref={mediaLinkRef}
                 transitionTypes={[...workOpenTransitionTypes]}
                 {...cursorTarget({ variant: 'view' })}
