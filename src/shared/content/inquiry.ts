@@ -7,6 +7,8 @@
  * `capabilities` taxonomy, so the studio's service list is edited once and the
  * form follows.
  */
+import type { SiteInfo } from '@/payload-types'
+
 export type InquiryOption = { label: string; value: string }
 
 /**
@@ -90,6 +92,15 @@ export const INQUIRY_MESSAGE_MAX_LENGTH = 1200
 
 export type InquiryType = (typeof INQUIRY_TYPES)[number]['value']
 export type InquiryStatus = (typeof INQUIRY_STATUSES)[number]['value']
+
+/**
+ * The reply promise, completing "you'll hear back ___". Stated once in Site
+ * Info › Inquiries; the contact page and Ask's handoff card both read it
+ * through here, so they fall back the same way when it is left empty.
+ */
+export const inquiryResponseTime = (
+  siteInfo: Pick<SiteInfo, 'inquiries'> | null | undefined,
+): string => siteInfo?.inquiries?.responseTime || 'shortly'
 
 /** Human label for a stored value, for emails and read-only summaries. */
 export const inquiryOptionLabel = (

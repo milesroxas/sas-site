@@ -1,16 +1,17 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { type ChatTransport, DefaultChatTransport, type UIMessage } from 'ai'
+import { type ChatTransport, DefaultChatTransport } from 'ai'
 import { useMemo, useState } from 'react'
+import type { AskUIMessage } from './handoff'
 
 export const MIN_QUESTION_LENGTH = 3
 
 type UseAskChatOptions = {
-  /** Transport override — stories/tests script the chat without /api/ask. */
-  transport?: ChatTransport<UIMessage>
+  /** Transport override: stories and tests script the chat without /api/ask. */
+  transport?: ChatTransport<AskUIMessage>
   /** Seed the transcript, e.g. for stories or resuming a conversation. */
-  initialMessages?: UIMessage[]
+  initialMessages?: AskUIMessage[]
   /** Runs after a question is accepted and sent (e.g. reveal the transcript). */
   onSend?: () => void
 }
@@ -26,7 +27,7 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
   const chatTransport = useMemo(
     () =>
       transport ??
-      new DefaultChatTransport<UIMessage>({
+      new DefaultChatTransport<AskUIMessage>({
         api: '/api/ask',
         // Resolved per request, so it is the page the question was asked on
         // even after client-side navigation. Stored with the question.
@@ -34,7 +35,7 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
       }),
     [transport],
   )
-  const { messages, sendMessage, status, error, setMessages, stop } = useChat({
+  const { messages, sendMessage, status, error, setMessages, stop } = useChat<AskUIMessage>({
     transport: chatTransport,
     messages: initialMessages,
   })

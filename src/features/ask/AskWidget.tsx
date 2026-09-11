@@ -1,6 +1,6 @@
 'use client'
 
-import type { ChatTransport, UIMessage } from 'ai'
+import type { ChatTransport } from 'ai'
 import { useLenis } from 'lenis/react'
 import { useCallback, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/message-scroller'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
+import type { AskUIMessage } from './handoff'
 import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
 import { AskSubmitButton } from './SubmitButton'
 import { useAskChat } from './useAskChat'
@@ -23,12 +24,12 @@ const COMPOSER_REVEAL_MARGIN = 32
 
 type AskWidgetProps = {
   /**
-   * Chat transport override — Storybook and tests inject a scripted transport
+   * Chat transport override: Storybook and tests inject a scripted transport
    * here; the real widget defaults to POSTing /api/ask.
    */
-  transport?: ChatTransport<UIMessage>
+  transport?: ChatTransport<AskUIMessage>
   /** Seed the transcript, e.g. for stories or resuming a conversation. */
-  initialMessages?: UIMessage[]
+  initialMessages?: AskUIMessage[]
   /** Composer placeholder override, e.g. the footer closing band's shorter prompt. */
   placeholder?: string
 }
@@ -87,7 +88,7 @@ export function AskWidget({
           own scroller instead of the page. */}
       <div
         className={cn(
-          'grid motion-safe:transition-[grid-template-rows] motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]',
+          'grid motion-safe:transition-[grid-template-rows] motion-safe:duration-300 motion-safe:ease-out-quint',
           hasTranscript ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
         )}
         onTransitionEnd={(event) => {

@@ -1,7 +1,7 @@
 'use client'
 
 import { IconArrowDown, IconRefresh, IconX } from '@tabler/icons-react'
-import type { ChatTransport, UIMessage } from 'ai'
+import type { ChatTransport } from 'ai'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { CardAction, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,6 +25,7 @@ import {
 import { MenuPreviewSlot } from '@/Header/Menu/PreviewSlot'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
+import type { AskUIMessage } from './handoff'
 import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
 import { AskSubmitButton } from './SubmitButton'
 import { useAskChat } from './useAskChat'
@@ -112,8 +113,8 @@ type MenuAskProps = {
    */
   exitChatViewRef?: React.RefObject<(() => void) | null>
   /** Transport override for stories/tests, same seam as AskWidget. */
-  transport?: ChatTransport<UIMessage>
-  initialMessages?: UIMessage[]
+  transport?: ChatTransport<AskUIMessage>
+  initialMessages?: AskUIMessage[]
 }
 
 /**

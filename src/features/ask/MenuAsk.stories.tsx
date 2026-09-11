@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
-import { createChat } from '@/shared/testing/shadcn-helpers/ai-sdk'
+import { askHandoffFixture, createAskChat } from './fixtures'
 import { MenuAsk } from './MenuAsk'
 
 /**
@@ -34,7 +34,7 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-const scriptedAnswers = createChat().assistant(({ writer }) => {
+const scriptedAnswers = createAskChat().assistant(({ writer }) => {
   writer
     .sourceUrl({
       sourceId: '/posts/beyond-the-logo',
@@ -56,7 +56,7 @@ export const Default: Story = {
 }
 
 /** Seeded conversation: focus the pill to bring the transcript back. */
-const answeredChat = createChat()
+const answeredChat = createAskChat()
   .user('What does Suits & Sandals do?')
   .assistant(({ writer }) => {
     writer
@@ -97,8 +97,34 @@ export const Mobile: Story = {
   },
 }
 
+/**
+ * Phone, handoff card as the whole reply: the two actions wrap under each
+ * other when the column is too narrow for both, each still a 44px target.
+ */
+const handoffChat = createAskChat()
+  .user('Can you start on a new website next month?')
+  .assistant(({ writer }) => {
+    writer.tool('handoff', { input: { reason: 'estimate' }, output: askHandoffFixture('estimate') })
+  })
+
+export const MobileHandoff: Story = {
+  args: {
+    transport: handoffChat.transport(),
+    initialMessages: handoffChat.get(),
+  },
+  globals: { viewport: { value: 'iphone12', isRotated: false } },
+  parameters: {
+    layout: 'padded',
+    viewport: { options: INITIAL_VIEWPORTS },
+    chromatic: { viewports: [390] },
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole('textbox', { name: 'Ask a question' }))
+  },
+}
+
 /** Transport streams an error chunk, e.g. the rate limiter pushing back. */
-const errorChat = createChat().error('Too many questions. Try again in a minute.')
+const errorChat = createAskChat().error('Too many questions, try again in a minute.')
 
 export const ErrorState: Story = {
   args: {

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { IconMail } from '@tabler/icons-react'
+import { IconArrowRight, IconMail } from '@tabler/icons-react'
 import { Button } from './button'
 import { Spinner } from './spinner'
 
@@ -43,6 +43,7 @@ const meta = {
         'clear',
         'action',
         'pill',
+        'chat',
       ],
     },
     asChild: {
@@ -96,6 +97,23 @@ export const Pill: Story = {
 
 export const PillSecondary: Story = {
   args: { size: 'pill', variant: 'secondary', children: <span>Close</span> },
+}
+
+/** Conversation action: Ask's suggestion chips and handoff card buttons. */
+export const Chat: Story = {
+  args: {
+    size: 'chat',
+    children: (
+      <>
+        Request an estimate
+        <IconArrowRight data-icon="inline-end" />
+      </>
+    ),
+  },
+}
+
+export const ChatOutline: Story = {
+  args: { size: 'chat', variant: 'outline', children: 'What does it cost?' },
 }
 
 export const Icon: Story = {

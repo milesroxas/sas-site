@@ -5,6 +5,7 @@ import {
   INQUIRY_OPEN_STATUSES,
   INQUIRY_STATUSES,
   inquiryOptionLabel,
+  inquiryResponseTime,
 } from './inquiry'
 
 describe('generateInquiryReference', () => {
@@ -44,5 +45,18 @@ describe('INQUIRY_OPEN_STATUSES', () => {
     for (const status of INQUIRY_OPEN_STATUSES) {
       expect(known.has(status)).toBe(true)
     }
+  })
+})
+
+describe('inquiryResponseTime', () => {
+  it('completes "you\'ll hear back ___" from Site Info', () => {
+    expect(inquiryResponseTime({ inquiries: { responseTime: 'within 3 business days' } })).toBe(
+      'within 3 business days',
+    )
+  })
+
+  it('still makes a promise when the field is left empty', () => {
+    expect(inquiryResponseTime({ inquiries: { responseTime: '' } })).toBe('shortly')
+    expect(inquiryResponseTime(null)).toBe('shortly')
   })
 })

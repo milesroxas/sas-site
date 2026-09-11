@@ -1,6 +1,13 @@
 import type { UIMessage } from 'ai'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { clearAskHandoff, readAskHandoff, saveAskHandoff } from './handoff'
+import { askHandoffFixture } from './fixtures'
+import {
+  type AskUIMessage,
+  clearAskHandoff,
+  handoffOf,
+  readAskHandoff,
+  saveAskHandoff,
+} from './handoff'
 
 const user = (id: string, text: string): UIMessage => ({
   id,
@@ -71,5 +78,56 @@ describe('Ask handoff', () => {
       throw new Error('blocked')
     })
     expect(readAskHandoff()).toBeNull()
+  })
+})
+
+describe('handoffOf', () => {
+  const reply = (parts: AskUIMessage['parts']): AskUIMessage => ({
+    id: 'a',
+    role: 'assistant',
+    parts,
+  })
+
+  it('reads the card once the server has resolved it', () => {
+    const output = askHandoffFixture('estimate')
+    const message = reply([
+      { type: 'text', text: 'We price per project.' },
+      {
+        type: 'tool-handoff',
+        toolCallId: 'call-1',
+        state: 'output-available',
+        input: { reason: 'estimate' },
+        output,
+      },
+    ])
+    expect(handoffOf(message)).toEqual(output)
+  })
+
+  it('shows nothing while the call is still resolving', () => {
+    const message = reply([
+      {
+        type: 'tool-handoff',
+        toolCallId: 'call-1',
+        state: 'input-available',
+        input: { reason: 'estimate' },
+      },
+    ])
+    expect(handoffOf(message)).toBeNull()
+  })
+
+  it('shows nothing for a reason this build has no card for', () => {
+    const output = { ...askHandoffFixture('person'), reason: 'retired' } as unknown as ReturnType<
+      typeof askHandoffFixture
+    >
+    const message = reply([
+      {
+        type: 'tool-handoff',
+        toolCallId: 'call-1',
+        state: 'output-available',
+        input: { reason: 'person' },
+        output,
+      },
+    ])
+    expect(handoffOf(message)).toBeNull()
   })
 })

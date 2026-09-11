@@ -1,6 +1,7 @@
 import { resolveFormFields } from '@/blocks/shared/form/resolve-form'
 import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 import type { ContactPage, Form as FormDoc } from '@/payload-types'
+import { inquiryResponseTime } from '@/shared/content/inquiry'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 import { ContactTemplate, type ContactTemplateContent } from './ContactTemplate.client'
 
@@ -61,7 +62,7 @@ export async function ContactPageTemplate({ page }: { page: ContactPage }) {
     sentSummaryTitle: page.sentSummaryTitle ?? 'What you sent',
     sentEditLabel: page.sentEditLabel ?? 'Edit and resend',
     sentAltBody: page.sentAltBody,
-    responseTime: siteInfo?.inquiries?.responseTime ?? 'shortly',
+    responseTime: inquiryResponseTime(siteInfo),
   }
 
   return (

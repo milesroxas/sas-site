@@ -1,8 +1,9 @@
-import type { ChatTransport, UIMessage } from 'ai'
+import type { ChatTransport } from 'ai'
 import { fullViewportSectionClassName } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { CMSLink } from '@/components/Link'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
+import type { AskUIMessage } from '@/features/ask/handoff'
 import { leakExcite } from '@/features/immersive'
 import type { Footer, Media } from '@/payload-types'
 import { SCROLL_REVEAL_CURTAIN_ENTER_OFFSET, ScrollReveal } from '@/shared/ui/scroll-reveal'
@@ -26,7 +27,7 @@ type FooterClosingProps = {
    * Chat transport passthrough to ClosingAsk. Storybook and tests
    * inject a scripted transport; real pages omit it and POST /api/ask.
    */
-  askTransport?: ChatTransport<UIMessage>
+  askTransport?: ChatTransport<AskUIMessage>
 }
 
 /**

@@ -80,7 +80,7 @@ describe('Ask (RAG)', () => {
       expect(tooLong.status).toBe(400)
     })
 
-    it('streams the canned no-sources answer without calling the model', async () => {
+    it('streams the no-answer handoff card without calling the model', async () => {
       // A fake key proves no model call happens: an OpenAI request would 401.
       process.env.OPENAI_API_KEY = 'sk-int-test-not-real'
       const res = await askHandler(
@@ -89,8 +89,15 @@ describe('Ask (RAG)', () => {
       expect(res.status).toBe(200)
       expect(res.headers.get('content-type')).toContain('text/event-stream')
 
+      // The same `tool-handoff` part a model tool call produces: input first,
+      // then the resolved card, and no text or sources around it.
       const streamText = await res.text()
-      expect(streamText).toContain("couldn't find anything")
+      expect(streamText).toContain('"type":"tool-input-available"')
+      expect(streamText).toContain('"toolName":"handoff"')
+      expect(streamText).toContain('"type":"tool-output-available"')
+      expect(streamText).toContain('"reason":"no_answer"')
+      expect(streamText).toMatch(/"href":"\/contact/)
+      expect(streamText).not.toContain('text-delta')
       expect(streamText).not.toContain('source-url')
     })
 

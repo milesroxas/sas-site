@@ -134,6 +134,22 @@ export const surfaceDocPath = (surface: ContentSurface, slug: string): string =>
 }
 
 /**
+ * The content surface a site path sits under, by URL prefix; the longest
+ * prefix wins, so a shallow prefix never shadows a deeper one. Root-level
+ * pages, and globals that publish outside every prefix, have none. Lets a bare
+ * link (an Ask source) say which section of the site it opens.
+ */
+export const surfaceForPath = (path: string): ContentSurface | null => {
+  let match: ContentSurface | null = null
+  for (const surface of CONTENT_SURFACES) {
+    const { urlPrefix } = surface
+    if (!urlPrefix || (path !== urlPrefix && !path.startsWith(`${urlPrefix}/`))) continue
+    if (!match || urlPrefix.length > match.urlPrefix.length) match = surface
+  }
+  return match
+}
+
+/**
  * Where an indexed row points on the site. Rows are keyed by the collection or
  * global slug they came from; collections resolve through the document slug,
  * globals through their fixed path.

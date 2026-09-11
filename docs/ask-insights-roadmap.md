@@ -17,6 +17,8 @@ Status: proposed 2026-09-11, not started. Companion to [ask-rag-roadmap.md](ask-
 
 Everything is read-only, team-only, deleted after `ASK_QUESTION_RETENTION_DAYS` (90) by the `askQuestionRetention` job. Read-only over MCP when a key is granted.
 
+Since 2026-09-11 a reply can end in a **handoff card**: the model calls the `handoff` tool with a reason from `ASK_HANDOFF_REASONS` (`src/features/ask/handoff.ts`), and the no-match first turn is that card with `no_answer`. The reason is not stored on the row yet; it reaches PostHog as `handoff_reason` on `ask_questioned` (null when no card was shown). No schema changed for it.
+
 ### What that gives each team, and what it does not
 
 | Team | Can answer today | Cannot answer today |
@@ -49,11 +51,12 @@ Visitor / system fields (readOnly, `access.update: () => false`):
 | `answer` | textarea | Streamed reply text from `onFinish` (`text`), passed through `redactFreeText` |
 | `sources` | array of `{ title, url, similarity }` | `RetrievedSource` plus best chunk similarity. `chunksToSources()` in `retrieve.ts` must carry `similarity` through from `NearestChunk` (keyword fallback stores `null`) |
 | `retrieval` | select `embedding` / `keyword` / `none` | Which path in `retrieveSources()` produced the sources. Requires the function to return the path alongside the sources |
-| `outcome` | select `answered` / `partial` / `no_sources` / `chat_only` / `error` | Replaces the binary `answered`. `no_sources` = first-turn canned reply; `chat_only` = source-less follow-up under `CHAT_ONLY_PROMPT`; `error` = `onError` fired; `partial` = see below |
+| `outcome` | select `answered` / `partial` / `no_sources` / `chat_only` / `error` | Replaces the binary `answered`. `no_sources` = first-turn `no_answer` card; `chat_only` = source-less follow-up under `CHAT_ONLY_PROMPT`; `error` = `onError` fired; `partial` = see below |
+| `handoffReason` | select, options from `ASK_HANDOFF_REASONS`, sidebar | The card the reply ended in, from `staticToolCalls` in `onFinish` (already read there for PostHog). Empty when no card was shown |
 | `latencyMs` | number, sidebar | Time from request to `onFinish` |
 | `inputTokens`, `outputTokens` | number, sidebar | From `usage` in `onFinish` |
 
-`partial` detection, cheapest first: the system prompt asks the model to say what "we don't publish" when coverage is partial, so a phrase match on the answer is a workable v1. If evals show it is unreliable, switch to a one-field `generateObject` classification on the finished answer (one extra small call, off by default).
+`partial` detection, cheapest first: a reply with text *and* a handoff card is a partial answer by construction (the prompt sends the unpublishable rest of a question to the card), so `text !== '' && handoffReason` is the v1, with no phrase match. The prompt still asks for a "we don't publish" sentence when the rest is a page-path next step rather than a person; match that phrase for the remainder. If evals show either is unreliable, switch to a one-field `generateObject` classification on the finished answer (one extra small call, off by default).
 
 Keep `answered` for one release as a derived value (`outcome === 'answered' || outcome === 'partial'`), then drop it in a later migration once the dashboard reads `outcome`.
 
@@ -93,13 +96,14 @@ Goal: labelled data for the AI team, and a funnel for product and sales: asked, 
 
 ### Handoff outcome
 
-- `TalkToTeam` click also calls `/api/ask/feedback` with `{ conversation, turn, handoff: 'clicked' }`. Field `handoff` (select `clicked` / `inquiry_sent`, sidebar).
+- A handoff click also calls `/api/ask/feedback` with `{ conversation, turn, handoff: 'clicked' }`. Wire it once in `HandoffLink` (`src/features/ask/TalkToTeam.tsx`): the quiet row and the handoff card's primary action both go through it. "Book a call" leaves the site and is not a handoff click. Field `handoff` (select `clicked` / `inquiry_sent`, sidebar).
 - `saveAskHandoff()` in `handoff.ts` stores the `conversation` id with the questions. The contact form (`ContactTemplate.client.tsx`, `submit.ts`) forwards it with `fromAsk`. `/api/inquiries` sets `askConversation` (text, indexed) on the inquiry and calls the same feedback path to mark the latest turn `inquiry_sent`.
 - Inquiry document view gets a "From Ask" sidebar link: `Inbox > Ask questions?where[conversation][equals]=...`. The question rows never point at the inquiry.
 
 ### Deliverables
 
 - Fields `rating`, `ratingReason`, `handoff` on `ask-questions`; `askConversation` on `inquiries`. One migration (`pnpm migrate:create ask-feedback`, additive, no prompts expected).
+- The rating control sits after `AskSources` and before the handoff card or the quiet row, whichever closes the reply.
 - Storybook: rating control state in `AskWidget.stories.tsx` and `MenuAsk.stories.tsx`.
 - Tests: feedback endpoint rejects a second rating, ignores malformed ids, respects the rate limit.
 - Docs: `docs/inquiries.md` gains the Ask link; feature README funnel section.

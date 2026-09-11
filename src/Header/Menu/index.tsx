@@ -2,7 +2,7 @@
 
 import { useGSAP } from '@gsap/react'
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
-import type { ChatTransport, UIMessage } from 'ai'
+import type { ChatTransport } from 'ai'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Link from 'next/link'
@@ -13,6 +13,7 @@ import { CMSLink } from '@/components/Link'
 import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 import { Button } from '@/components/ui/button'
 import { Clock } from '@/Footer/Clock'
+import type { AskUIMessage } from '@/features/ask/handoff'
 import { MenuAsk } from '@/features/ask/MenuAsk'
 import { cursorTarget } from '@/features/cursor'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -537,8 +538,8 @@ type TakeoverMenuProps = {
    */
   askHidden?: boolean
   /** Ask transport override — stories/tests script the chat without /api/ask. */
-  askTransport?: ChatTransport<UIMessage>
-  askInitialMessages?: UIMessage[]
+  askTransport?: ChatTransport<AskUIMessage>
+  askInitialMessages?: AskUIMessage[]
 }
 
 export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({

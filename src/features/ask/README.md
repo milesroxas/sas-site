@@ -15,9 +15,10 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
        │                      keyword match over the search index when embeddings
        │                      are unavailable or empty
        ├─ recordAskQuestion() → redacted row in `ask-questions`, written after the response
-       ├─ no sources, first turn → canned "couldn't find anything" answer streamed, no model call
+       ├─ no sources, first turn → the handoff card (`no_answer`) streamed, no model call
        ├─ no sources, follow-up  → chat-only prompt (no new facts allowed), 400-token cap
-       └─ streamText()      → source-url parts first, then the grounded answer streamed
+       └─ streamText()      → source-url parts first, then the grounded answer streamed,
+                              ending in a `handoff` tool call when a person is the next step
 ```
 
 ## Files
@@ -32,12 +33,16 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 | [`../../plugins/ask-index.ts`](../../plugins/ask-index.ts) | Attaches the sync hooks to every surface collection (from the shared surface registry). |
 | [`model.ts`](./model.ts) | Provider seam: answer model (`gpt-5-mini`) and embedding model (`text-embedding-3-small`), both via the Vercel AI SDK. |
 | [`AskWidget.tsx`](./AskWidget.tsx) | Client component: `useChat` transcript, shimmer loading, streamed answers with source links. |
-| [`messages.tsx`](./messages.tsx) | Transcript body shared by every surface. Holds the shimmer until the first token (an assistant message with only source parts stays unmounted) and renders source links only once the answer has settled, staggered in. |
+| [`messages.tsx`](./messages.tsx) | Transcript body shared by every surface. Holds the shimmer until there is something to read (an assistant message with only source parts stays unmounted), renders sources only once the answer has settled, gives a handoff card its own item after the answer, and closes a settled reply with the quiet "Talk to the team" row unless it already ended in a card. |
+| [`Sources.tsx`](./Sources.tsx) | An answer's sources as a disclosure group: one "Sources" row with the count, a leading chevron that turns down, and inset rows (surface glyph, title, section from the surface registry, → arrow) on the shared `.disclosure-body` track. Collapsed by default. |
+| [`HandoffCard.tsx`](./HandoffCard.tsx) | The card a reply ends with when a person should take it from here: title and reply promise per reason, the primary action to the right contact form (questions carried), "Book a call" when Site Info has a booking link. |
+| [`handoffTool.ts`](./handoffTool.ts) | Server side of the handoff: the `handoff` tool the model can call with a reason, and `resolveAskHandoff`, which fills the card from the CMS (contact page by form inquiry type, Site Info reply time and booking link). Tested in `handoffTool.test.ts`. |
 | [`questions.ts`](./questions.ts) | `recordAskQuestion()`: stores each question for the team after the response, redacted, with the page it was asked on and the chat id. No IP, no analytics id. |
 | [`redact.ts`](./redact.ts) | `redactFreeText()`: strips emails, phone and card numbers, URL query strings, and key-shaped strings before storage. Keeps budgets, years, dates, and page slugs. Tested in `redact.test.ts`. |
 | [`retention.ts`](./retention.ts) | `ASK_QUESTION_RETENTION_DAYS` and `ASK_NOTICE`, the first line of every transcript. One constant, so the promise and the deletion job cannot drift. Client-safe. |
-| [`handoff.ts`](./handoff.ts) | Carries the visitor's questions to the contact form in sessionStorage: `saveAskHandoff`, `readAskHandoff`, `clearAskHandoff`. Tested in `handoff.test.ts`. |
-| [`TalkToTeam.tsx`](./TalkToTeam.tsx) | The "Talk to the team" link under a finished answer, on every surface. |
+| [`handoff.ts`](./handoff.ts) | The handoff contract, client-safe: the reasons, each reason's card copy and destination form (`ASK_HANDOFFS`), the typed transcript message (`AskUIMessage`, with the `tool-handoff` part), `handoffOf`, and the sessionStorage carry to the contact form (`saveAskHandoff`, `readAskHandoff`, `clearAskHandoff`). Tested in `handoff.test.ts`. |
+| [`TalkToTeam.tsx`](./TalkToTeam.tsx) | `HandoffLink`, the one link out of Ask to a contact page (saves the questions, reloads when already there), and the quiet "Talk to the team" row under a finished answer that did not end in a card. |
+| [`fixtures.ts`](./fixtures.ts) | Story fixtures shared by every surface's stories: a scripted chat typed with the handoff tool, a resolved handoff, two sources. |
 | [`../../collections/AskQuestions.ts`](../../collections/AskQuestions.ts) | Admin › Inbox › Ask questions. Team-only read and delete; nobody creates or edits through the API. |
 | [`../../jobs/askQuestionRetention.ts`](../../jobs/askQuestionRetention.ts) | Daily Payload task that deletes questions past the retention window, run by the existing `/api/payload-jobs/run` cron. |
 | [`SubmitButton.tsx`](./SubmitButton.tsx) | The composer button shared by every surface: submit when idle, an enabled Stop while a reply is in flight. |
@@ -129,11 +134,14 @@ to their fixed path).
 
 `POST /api/ask` with `{ "messages": UIMessage[] }` (what `useChat` + `DefaultChatTransport`
 sends). Success responses are AI SDK UI-message SSE streams: `source-url` parts for the
-retrieved docs, then streamed `text` parts. Model failures surface as an `error` part.
+retrieved docs, then streamed `text` parts, then optionally one `tool-handoff` part whose
+output is the resolved card (`AskHandoff`: `reason`, `href`, `responseTime`, `scheduleUrl`).
+Model failures surface as an `error` part. Incoming history keeps text parts only: a tool
+part is never replayed to the model, and a turn left with no text is dropped.
 
 | Status | Body | When |
 | --- | --- | --- |
-| 200 | UI-message stream (`source-url` parts + `text`) | Answered (no `source-url` parts for the canned no-match answer) |
+| 200 | UI-message stream (`source-url` parts + `text`, optional `tool-handoff`) | Answered; the no-match first turn is a `tool-handoff` part (`no_answer`) alone |
 | 400 | `{ error }` | No user message last, or question under 3 / over 500 chars, or over 30 messages |
 | 429 | `{ error }` | More than 10 requests/min from one IP |
 | 503 | `{ error }` | `OPENAI_API_KEY` not configured |
@@ -169,13 +177,19 @@ backfill script.
 
 ## Reaching a person
 
-Ask cannot take contact details, and should not: its log is anonymous and expires. Leads belong in Inquiries, which is owned and notifies the team. So every surface (the `/ask` page, the menu, and the footer's closing band) ends a finished answer with **Talk to the team**, rendered once in `TranscriptItems` so no surface can miss it.
+Ask cannot take contact details, and should not: its log is anonymous and expires. Leads belong in Inquiries, which is owned and notifies the team. Every surface (the `/ask` page, the menu, and the footer's closing band) renders the way to a person in `TranscriptItems`, so no surface can miss it. There are two forms of it:
 
-- The link opens `/contact` and prefills its message with the visitor's latest questions (`From my Ask conversation:`), still theirs to edit. The questions travel in this tab's sessionStorage, never the URL, so they stay out of PostHog's captured URLs and server logs, and the contact page stays static.
+- **The handoff card**, when a person is the next step. The model calls the `handoff` tool with a reason: `estimate` (what their own project would cost, how long, when we could start), `project` (they want to start one), `person` (they asked for one), `contact_details` (they typed an email, phone number, or name), `no_answer` (nothing on the site answers it; also the no-match first turn, with no model call). The model only decides *that* and *why*. The card's words live in code per reason (`ASK_HANDOFFS`), and its links and promise come from the CMS: the contact page whose form files that inquiry type (project inquiry for `estimate` and `project`, the general form otherwise), Site Info's reply time, and Site Info's booking link (no link, no "Book a call"). A question only about price, timing, or availability gets the card as the whole reply. When the model also answers part of a question, its words and sources come first and the card lands once the reply settles (in practice gpt-5-mini usually lets the card stand alone, so each card's copy is written to read as a complete reply).
+- **The quiet row**, "Want a person to reply? Talk to the team", under any other finished answer, and in place of a reply that settled with nothing to read.
+
+Both go through `HandoffLink`:
+
+- The link prefills the contact form's message with the visitor's latest questions (`From my Ask conversation:`), still theirs to edit. The questions travel in this tab's sessionStorage, never the URL, so they stay out of PostHog's captured URLs and server logs, and the contact page stays static.
 - The handoff is read without being cleared: on a full page load the contact page remounts its form just after hydration, and a one-shot read would be spent on the first mount. It is cleared once the inquiry is sent, and ignored after 30 minutes.
-- On `/contact` itself a push to the same path does nothing, so the link reloads the page to pick the handoff up.
-- The inquiry carries `fromAsk`, and `inquiry_submitted` in PostHog carries `from_ask`, so sales can count the leads Ask produced.
-- The prompts tell the model to offer the button for starting a project, pricing, availability, or wanting a person, and never to repeat an email, phone number, or name back.
+- Already on the destination, a push to the same path does nothing, so the link reloads the page to pick the handoff up.
+- The inquiry carries `fromAsk`, and `inquiry_submitted` in PostHog carries `from_ask`, so sales can count the leads Ask produced. `ask_questioned` carries `handoff_reason` (null when no card was shown).
+- Arrows follow one rule across Ask: → stays on the site (source rows, the card's primary action), ↗ leaves it ("Book a call", which opens in a new tab so the conversation survives).
+- The prompts never let the model describe the card or restate the reply time, and never repeat an email, phone number, or name back.
 
 ## Turning Ask off
 

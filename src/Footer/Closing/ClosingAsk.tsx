@@ -1,7 +1,7 @@
 'use client'
 
 import { IconX } from '@tabler/icons-react'
-import type { ChatTransport, UIMessage } from 'ai'
+import type { ChatTransport } from 'ai'
 import { useId, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -14,6 +14,7 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller'
+import type { AskUIMessage } from '@/features/ask/handoff'
 import { errorText, TranscriptItems, transcriptItemEnter } from '@/features/ask/messages'
 import { AskSubmitButton } from '@/features/ask/SubmitButton'
 import { useAskChat } from '@/features/ask/useAskChat'
@@ -25,8 +26,8 @@ const suggestions = ['How do we start?', 'What does it cost?', 'Who have you wor
 
 type ClosingAskProps = {
   ask?: NonNullable<Footer['closing']>['ask']
-  transport?: ChatTransport<UIMessage>
-  initialMessages?: UIMessage[]
+  transport?: ChatTransport<AskUIMessage>
+  initialMessages?: AskUIMessage[]
 }
 
 export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps) {
@@ -111,7 +112,8 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
                 key={suggestion}
                 type="button"
                 variant="outline"
-                className="min-h-11 rounded-full px-3.5 text-sm font-normal md:min-h-9 motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.25,0.46,0.45,0.94)] pointer-fine:active:scale-[0.97] motion-reduce:transform-none"
+                size="chat"
+                className="font-normal motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-[cubic-bezier(0.25,0.46,0.45,0.94)] pointer-fine:active:scale-[0.97] motion-reduce:transform-none"
                 aria-controls={panelId}
                 aria-expanded={open}
                 disabled={busy}
