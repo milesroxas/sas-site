@@ -1,53 +1,12 @@
 import { jsonSchema, tool } from 'ai'
-import type { Payload } from 'payload'
 import type { SiteInfo } from '@/payload-types'
-import { type InquiryType, inquiryResponseTime } from '@/shared/content/inquiry'
-import { surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
-import {
-  ASK_HANDOFF_HREF,
-  ASK_HANDOFF_REASONS,
-  ASK_HANDOFFS,
-  type AskHandoff,
-  type AskHandoffReason,
-} from './handoff'
+import { inquiryResponseTime } from '@/shared/content/inquiry'
+import { ASK_HANDOFF_REASONS, type AskHandoff, type AskHandoffReason } from './handoff'
 
-/**
- * The published contact page whose form files `type` inquiries, as a site
- * path. Found by what the form does rather than by slug, so renaming a
- * contact page never strands the card. Read as an anonymous visitor
- * (published pages only); a miss or a failed read falls back to the general
- * contact page, which is always there.
- */
-async function contactPathFor(payload: Payload, type: InquiryType): Promise<string> {
-  const surface = surfaceByCollection.get('contact-pages')
-  try {
-    const { docs } = await payload.find({
-      collection: 'contact-pages',
-      depth: 0,
-      limit: 1,
-      overrideAccess: false,
-      pagination: false,
-      select: { slug: true },
-      sort: 'createdAt',
-      where: { 'form.inquiryType': { equals: type } },
-    })
-    const slug = docs[0]?.slug
-    if (surface && slug) return surfaceDocPath(surface, slug)
-  } catch (err) {
-    payload.logger.error({ msg: 'ask handoff: contact page lookup failed', err })
-  }
-  return ASK_HANDOFF_HREF
-}
-
-/** A handoff reason resolved into the card: its contact page and Site Info's promise. */
-export async function resolveAskHandoff(
-  payload: Payload,
-  siteInfo: SiteInfo,
-  reason: AskHandoffReason,
-): Promise<AskHandoff> {
+/** A handoff reason resolved into the card: Site Info's promise and booking link. */
+export function resolveAskHandoff(siteInfo: SiteInfo, reason: AskHandoffReason): AskHandoff {
   return {
     reason,
-    href: await contactPathFor(payload, ASK_HANDOFFS[reason].form),
     responseTime: inquiryResponseTime(siteInfo),
     scheduleUrl: siteInfo.inquiries?.scheduleUrl || null,
   }
@@ -55,18 +14,18 @@ export async function resolveAskHandoff(
 
 /**
  * The one tool the Ask model has. It decides that a person should take it
- * from here and why; the card's words, links and reply time are resolved
- * here from the CMS, so the model can offer a handoff but never invent a
- * promise. One step, like every Ask reply (streamText's default): the
- * card lands after the answer's words, or alone. A second, tool-free step to
- * write around a card-only reply was tried and dropped: the model restated
- * the card and invented reply times, the exact promise the card exists to
- * keep out of its mouth.
+ * from here and why; the card's words and promise come from code and Site
+ * Info, so the model can offer a handoff but never invent a promise. One
+ * step, like every Ask reply (streamText's default): the card lands after the
+ * answer's words, or alone. A second, tool-free step to write around a
+ * card-only reply was tried and dropped: the model restated the card and
+ * invented reply times, the exact promise the card exists to keep out of its
+ * mouth.
  */
-export function askHandoffTool(payload: Payload, siteInfo: SiteInfo) {
+export function askHandoffTool(siteInfo: SiteInfo) {
   return tool({
     description:
-      'Shows the visitor a card under your reply that hands them to a person: a button to our contact form with their questions carried over, when we reply, and a link to book a call. Call it at most once, after any text. Most answers need no card.',
+      'Shows the visitor a card under your reply where they can send their question to the team: their name and email go straight to our inbox, and the card says when we reply. Call it at most once, after any text. Most answers need no card.',
     inputSchema: jsonSchema<{ reason: AskHandoffReason }>(
       {
         type: 'object',
@@ -93,6 +52,6 @@ export function askHandoffTool(payload: Payload, siteInfo: SiteInfo) {
         },
       },
     ),
-    execute: ({ reason }) => resolveAskHandoff(payload, siteInfo, reason),
+    execute: ({ reason }) => resolveAskHandoff(siteInfo, reason),
   })
 }

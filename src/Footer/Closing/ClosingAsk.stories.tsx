@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { askHandoffFixture, askSourcesFixture, createAskChat } from '@/features/ask/fixtures'
+import { askHandoffChat, askSourcesFixture, createAskChat } from '@/features/ask/fixtures'
 import { ClosingAsk } from './ClosingAsk'
 
 const reply = createAskChat().assistant(
@@ -52,14 +52,9 @@ export const SourcesOpen: Story = {
   },
 }
 
-/** A pricing question: the handoff card is the whole reply (Paper "Ask handoff - A"). */
-const handoff = createAskChat()
-  .user('What does a website cost, and when can you start?')
-  .assistant(({ writer }) => {
-    writer.tool('handoff', { input: { reason: 'estimate' }, output: askHandoffFixture('estimate') })
-  })
+/** A pricing question: the handoff card is the whole reply (Paper "Ask handoff - C1"). */
 export const Handoff: Story = {
-  args: { initialMessages: handoff.get(), transport: handoff.transport() },
+  args: { initialMessages: askHandoffChat.get(), transport: askHandoffChat.transport() },
 }
 
 export const Thinking: Story = {

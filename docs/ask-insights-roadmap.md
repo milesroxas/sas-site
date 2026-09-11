@@ -96,14 +96,14 @@ Goal: labelled data for the AI team, and a funnel for product and sales: asked, 
 
 ### Handoff outcome
 
-- A handoff click also calls `/api/ask/feedback` with `{ conversation, turn, handoff: 'clicked' }`. Wire it once in `HandoffLink` (`src/features/ask/TalkToTeam.tsx`): the quiet row and the handoff card's primary action both go through it. "Book a call" leaves the site and is not a handoff click. Field `handoff` (select `clicked` / `inquiry_sent`, sidebar).
+- Two ways out, two signals. The quiet row's click (`HandoffLink`, `src/features/ask/TalkToTeam.tsx`) calls `/api/ask/feedback` with `{ conversation, turn, handoff: 'clicked' }`. The handoff card sends the inquiry itself (`postInquiry` from `HandoffCard`), so it can pass the `conversation` id with `fromAsk` and the intake marks the turn `inquiry_sent` directly, no click event needed. "Book a call" leaves the site and is not a handoff. Field `handoff` (select `clicked` / `inquiry_sent`, sidebar).
 - `saveAskHandoff()` in `handoff.ts` stores the `conversation` id with the questions. The contact form (`ContactTemplate.client.tsx`, `submit.ts`) forwards it with `fromAsk`. `/api/inquiries` sets `askConversation` (text, indexed) on the inquiry and calls the same feedback path to mark the latest turn `inquiry_sent`.
 - Inquiry document view gets a "From Ask" sidebar link: `Inbox > Ask questions?where[conversation][equals]=...`. The question rows never point at the inquiry.
 
 ### Deliverables
 
 - Fields `rating`, `ratingReason`, `handoff` on `ask-questions`; `askConversation` on `inquiries`. One migration (`pnpm migrate:create ask-feedback`, additive, no prompts expected).
-- The rating control sits after `AskSources` and before the handoff card or the quiet row, whichever closes the reply.
+- The rating control sits after `AskSources` and before the handoff card or the quiet row, whichever closes the reply (not after a sent receipt: the visitor has already said what they needed).
 - Storybook: rating control state in `AskWidget.stories.tsx` and `MenuAsk.stories.tsx`.
 - Tests: feedback endpoint rejects a second rating, ignores malformed ids, respects the rate limit.
 - Docs: `docs/inquiries.md` gains the Ask link; feature README funnel section.

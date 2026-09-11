@@ -11,6 +11,7 @@ import type { Endpoint } from 'payload'
 import { backfillAskIndex, isBackfillRunning, readLastIndexRebuild } from '@/features/ask/backfill'
 import type { AskHandoff, AskUIMessage } from '@/features/ask/handoff'
 import { askHandoffTool, resolveAskHandoff } from '@/features/ask/handoffTool'
+import { messageText } from '@/features/ask/messageText'
 import { ASK_MODEL_API_KEY_VAR, askModel } from '@/features/ask/model'
 import { recordAskQuestion } from '@/features/ask/questions'
 import { retrieveSources } from '@/features/ask/retrieve'
@@ -33,7 +34,7 @@ import { captureServerEvent } from '@/utilities/posthog'
  * in the studio's voice, gives partial answers when the sources only half
  * cover a question, and never invents facts. When a person is the better next
  * step it calls the `handoff` tool, and the card it shows is worded in code
- * and filled from the CMS (src/features/ask/handoffTool.ts). Token
+ * and filled from Site Info (src/features/ask/handoffTool.ts). Token
  * discipline: a first-turn question with no matching sources gets that card
  * (`no_answer`) with no model call; only follow-up turns reach the model
  * source-less (so "thanks" or "say that again" stay conversational) and those
@@ -66,11 +67,11 @@ How to answer:
 - Under 120 words. Plain text only: no markdown, no headers, no bullet lists unless the visitor asks for steps. No em dashes: use a comma, colon, or period.
 
 Reaching a person:
-- The handoff tool shows a card under your reply with a button to our contact form (the visitor's questions are carried over), when we reply, and a link to book a call. Use it only when a person is the best next step.
+- The handoff tool shows a card under your reply where the visitor can send their question to the team: their name and email go straight to our inbox, and the card says when we reply. Use it only when a person is the best next step.
 - Call it when the visitor asks what their own project would cost or how long it would take, or when we could start ("estimate"); wants to start or discuss a project with us ("project"); asks for a person, or for something only a person can answer ("person"); or shares an email address, phone number, or name ("contact_details").
 - When there is nothing else to answer (a question only about price, timing, or availability, a request for a person, or shared contact details), the card is the whole reply: call the tool without writing anything.
-- Never describe the card, its buttons, or our reply time; the card says all of that.
-- This chat cannot pass anything on to the team. Never repeat an email address, phone number, or name back.`
+- Never describe the card, its fields, or our reply time; the card says all of that.
+- Never repeat an email address, phone number, or name back. Only the card passes anything to the team; this chat cannot.`
 
 const CHAT_ONLY_PROMPT = `You are the Ask assistant on the Suits & Sandals website, mid-conversation. Speak as the studio ("we") in a warm, direct, plain voice.
 
@@ -98,13 +99,6 @@ function isRateLimited(ip: string): boolean {
   }
   entry.count += 1
   return entry.count > RATE_LIMIT
-}
-
-function messageText(message: UIMessage): string {
-  return message.parts
-    .filter((part): part is Extract<typeof part, { type: 'text' }> => part.type === 'text')
-    .map((part) => part.text)
-    .join('')
 }
 
 /**
@@ -253,7 +247,7 @@ const ask: Endpoint = {
           handoff_reason: 'no_answer',
         },
       })
-      return handoffResponse(await resolveAskHandoff(req.payload, siteInfo, 'no_answer'))
+      return handoffResponse(resolveAskHandoff(siteInfo, 'no_answer'))
     }
 
     const sourcesBlock = sources
@@ -272,7 +266,7 @@ const ask: Endpoint = {
       model: askModel,
       system,
       messages: await convertToModelMessages(messages),
-      tools: { handoff: askHandoffTool(req.payload, siteInfo) },
+      tools: { handoff: askHandoffTool(siteInfo) },
       maxOutputTokens: sources.length > 0 ? MAX_ANSWER_TOKENS : MAX_CHAT_ONLY_TOKENS,
       // Extractive answers over provided sources don't need deep reasoning;
       // the default (medium) burns hidden reasoning tokens on every question.

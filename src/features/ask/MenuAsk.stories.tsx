@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
-import { askHandoffFixture, createAskChat } from './fixtures'
+import { askHandoffChat, createAskChat } from './fixtures'
 import { MenuAsk } from './MenuAsk'
 
 /**
@@ -98,28 +98,14 @@ export const Mobile: Story = {
 }
 
 /**
- * Phone, handoff card as the whole reply: the two actions wrap under each
- * other when the column is too narrow for both, each still a 44px target.
+ * Phone, handoff card as the whole reply: the inset rows and the send action
+ * are 44px targets, and the field labels keep one lane on the narrow column.
  */
-const handoffChat = createAskChat()
-  .user('Can you start on a new website next month?')
-  .assistant(({ writer }) => {
-    writer.tool('handoff', { input: { reason: 'estimate' }, output: askHandoffFixture('estimate') })
-  })
-
 export const MobileHandoff: Story = {
+  ...Mobile,
   args: {
-    transport: handoffChat.transport(),
-    initialMessages: handoffChat.get(),
-  },
-  globals: { viewport: { value: 'iphone12', isRotated: false } },
-  parameters: {
-    layout: 'padded',
-    viewport: { options: INITIAL_VIEWPORTS },
-    chromatic: { viewports: [390] },
-  },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole('textbox', { name: 'Ask a question' }))
+    transport: askHandoffChat.transport(),
+    initialMessages: askHandoffChat.get(),
   },
 }
 

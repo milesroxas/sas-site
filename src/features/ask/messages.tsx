@@ -7,6 +7,7 @@ import { Message, MessageContent } from '@/components/ui/message'
 import { MessageScrollerItem } from '@/components/ui/message-scroller'
 import { HandoffCard } from './HandoffCard'
 import { type AskUIMessage, handoffOf } from './handoff'
+import { messageText } from './messageText'
 import { ASK_NOTICE } from './retention'
 import { AskSources } from './Sources'
 import { TalkToTeam } from './TalkToTeam'
@@ -34,13 +35,6 @@ export function errorText(error: Error): string {
     // not a JSON error body; fall through
   }
   return error.message || 'Something went wrong. Try again.'
-}
-
-function messageText(message: AskUIMessage): string {
-  return message.parts
-    .filter((part): part is Extract<typeof part, { type: 'text' }> => part.type === 'text')
-    .map((part) => part.text)
-    .join('')
 }
 
 /**

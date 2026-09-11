@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { AskWidget } from './AskWidget'
-import { askHandoffFixture, askSourcesFixture, createAskChat } from './fixtures'
+import { askHandoffChat, askHandoffFixture, askSourcesFixture, createAskChat } from './fixtures'
 
 /**
  * All stories drive the real `useChat` lifecycle through a scripted transport
@@ -121,18 +121,62 @@ export const SourcesOpen: Story = {
 
 /**
  * A pricing question: nothing to publish, so the handoff card is the whole
- * reply, with the booking link beside the estimate.
+ * reply. Send stays off until both fields hold something.
  */
-const handoffChat = createAskChat()
-  .user('What does a website cost, and when can you start?')
-  .assistant(({ writer }) => {
-    writer.tool('handoff', { input: { reason: 'estimate' }, output: askHandoffFixture('estimate') })
-  })
-
 export const Handoff: Story = {
   args: {
-    transport: handoffChat.transport(),
-    initialMessages: handoffChat.get(),
+    transport: askHandoffChat.transport(),
+    initialMessages: askHandoffChat.get(),
+  },
+}
+
+/** The visitor already wrote their address: it starts the email field, marked "From your message". */
+const handoffEmailChat = createAskChat()
+  .user("Can you send me a quote? I'm at jordan@northwind.co")
+  .assistant(({ writer }) => {
+    writer.tool('handoff', {
+      input: { reason: 'contact_details' },
+      output: askHandoffFixture('contact_details'),
+    })
+  })
+
+export const HandoffFromMessage: Story = {
+  args: {
+    transport: handoffEmailChat.transport(),
+    initialMessages: handoffEmailChat.get(),
+  },
+}
+
+/** A malformed address is caught before anything is posted, in the endpoint's own words. */
+export const HandoffInvalidEmail: Story = {
+  args: Handoff.args,
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.type(canvas.getByLabelText('Name'), 'Jordan Lee')
+    await userEvent.type(canvas.getByLabelText('Email'), 'jordan@northwind')
+    await userEvent.click(canvas.getByRole('button', { name: 'Send to the team' }))
+  },
+}
+
+/**
+ * Sent: the intake is stubbed to answer like /api/inquiries/submit, and the
+ * card becomes its receipt in place.
+ */
+export const HandoffSent: Story = {
+  args: Handoff.args,
+  beforeEach: () => {
+    const fetch = window.fetch
+    window.fetch = async (input, init) =>
+      String(input).endsWith('/api/inquiries/submit')
+        ? Response.json({ reference: 'SS-7K2Q', submittedAt: new Date().toISOString() })
+        : fetch(input, init)
+    return () => {
+      window.fetch = fetch
+    }
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.type(canvas.getByLabelText('Name'), 'Jordan Lee')
+    await userEvent.type(canvas.getByLabelText('Email'), 'jordan@northwind.co')
+    await userEvent.click(canvas.getByRole('button', { name: 'Send to the team' }))
   },
 }
 

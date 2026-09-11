@@ -1,5 +1,7 @@
 import type { UIDataTypes, UIMessage } from 'ai'
 import type { InquiryType } from '@/shared/content/inquiry'
+import { findEmailAddress } from '@/utilities/emailAddress'
+import { messageText } from './messageText'
 
 /** Where "Talk to the team" sends the visitor: the general contact form. */
 export const ASK_HANDOFF_HREF = '/contact'
@@ -20,14 +22,12 @@ export const ASK_HANDOFF_REASONS = [
 
 export type AskHandoffReason = (typeof ASK_HANDOFF_REASONS)[number]
 
-/** The handoff as the server resolves it: where the card leads and what it promises. */
+/** The handoff as the server resolves it: what the card promises, from Site Info. */
 export type AskHandoff = {
   reason: AskHandoffReason
-  /** Contact page the primary action opens, found by its form's inquiry type. */
-  href: string
   /** Site Info › Inquiries › Response time, completing "you'll hear back ___". */
   responseTime: string
-  /** Site Info's booking link, or null to leave "Book a call" out. */
+  /** Site Info's booking link, or null to leave "Book a call" off the receipt. */
   scheduleUrl: string | null
 }
 
@@ -40,54 +40,29 @@ export type AskUITools = {
 export type AskUIMessage = UIMessage<unknown, UIDataTypes, AskUITools>
 
 type AskHandoffCard = {
-  /** Which contact form the primary action opens. */
+  /** What the inquiry is filed as, which decides who in the studio is notified. */
   form: InquiryType
+  /** The answer the card gives in place of a reply. */
   title: string
-  /** Completed with the reply promise from Site Info. */
-  body: (responseTime: string) => string
-  action: string
 }
 
 /**
- * The card per reason. Plain claims only: every promise is backed by Site
- * Info (the reply time, the booking link) or by how the handoff works (the
- * questions travel to the form). An estimate or a new project goes to the
- * project form, which asks about budget and timing; everything else goes to
- * the general form "Talk to the team" has always opened.
+ * The card per reason. The title answers; the rest of the card is the same
+ * for every reason (`askHandoffPromise`, the send action), so a visitor who
+ * meets it twice finds it where it was. An estimate or a new project is filed
+ * as a project inquiry; everything else as a general message.
  */
 export const ASK_HANDOFFS: Record<AskHandoffReason, AskHandoffCard> = {
-  estimate: {
-    form: 'project',
-    title: 'Priced and scheduled per project',
-    body: (responseTime) => `Share a few details and you'll hear back ${responseTime}.`,
-    action: 'Request an estimate',
-  },
-  project: {
-    form: 'project',
-    title: 'Tell us about your project',
-    body: (responseTime) => `Share what you're planning and you'll hear back ${responseTime}.`,
-    action: 'Start a project',
-  },
-  person: {
-    form: 'general',
-    title: 'A partner can take it from here',
-    body: (responseTime) => `Send a note and you'll hear back ${responseTime}.`,
-    action: 'Talk to the team',
-  },
-  contact_details: {
-    form: 'general',
-    title: 'Send your details to the team',
-    body: (responseTime) =>
-      `This chat can't pass them on. Send them in a note and you'll hear back ${responseTime}.`,
-    action: 'Talk to the team',
-  },
-  no_answer: {
-    form: 'general',
-    title: "The site doesn't cover that yet",
-    body: (responseTime) => `A partner can answer it directly. You'll hear back ${responseTime}.`,
-    action: 'Talk to the team',
-  },
+  estimate: { form: 'project', title: 'Priced and scheduled per project' },
+  project: { form: 'project', title: 'Tell us about your project' },
+  person: { form: 'general', title: 'A partner can take it from here' },
+  contact_details: { form: 'general', title: 'Send your details to the team' },
+  no_answer: { form: 'general', title: "The site doesn't cover that yet" },
 }
+
+/** The card's promise: a person, by email, on Site Info's clock. */
+export const askHandoffPromise = (responseTime: string) =>
+  `A partner will reply by email ${responseTime}.`
 
 /**
  * The handoff a reply ends with, once the server has resolved it. A reason
@@ -117,18 +92,41 @@ const MAX_PREFILL_CHARS = 600
 
 const PREFILL_HEADING = 'From my Ask conversation:'
 
-function userQuestions(messages: UIMessage[]): string[] {
+/** What the visitor asked, oldest first, capped to the latest few. */
+export function userQuestions(messages: UIMessage[]): string[] {
   return messages
     .filter((message) => message.role === 'user')
-    .map((message) =>
-      message.parts
-        .filter((part): part is Extract<typeof part, { type: 'text' }> => part.type === 'text')
-        .map((part) => part.text)
-        .join('')
-        .trim(),
-    )
+    .map((message) => messageText(message).trim())
     .filter(Boolean)
     .slice(-MAX_QUESTIONS)
+}
+
+/**
+ * The visitor's questions as an inquiry's message, in their own words: what
+ * the contact form opens with after "Talk to the team", and what the handoff
+ * card sends.
+ */
+function questionsMessage(questions: string[]): string {
+  const text = `${PREFILL_HEADING}\n${questions.map((question) => `- ${question}`).join('\n')}`
+  return text.slice(0, MAX_PREFILL_CHARS)
+}
+
+/** The message the handoff card sends, or null before anything was asked. */
+export function askHandoffMessage(messages: UIMessage[]): string | null {
+  const questions = userQuestions(messages)
+  return questions.length > 0 ? questionsMessage(questions) : null
+}
+
+/**
+ * An address the visitor already wrote in the chat, latest first, to start
+ * the card's email field with. It never leaves the browser until they send.
+ */
+export function askHandoffEmail(messages: UIMessage[]): string | null {
+  for (const question of userQuestions(messages).reverse()) {
+    const email = findEmailAddress(question)
+    if (email) return email
+  }
+  return null
 }
 
 /**
@@ -167,8 +165,7 @@ export function readAskHandoff(): string | null {
       : []
     if (lines.length === 0) return null
 
-    const text = `${PREFILL_HEADING}\n${lines.map((line) => `- ${line}`).join('\n')}`
-    return `${text.slice(0, MAX_PREFILL_CHARS)}\n\n`
+    return `${questionsMessage(lines)}\n\n`
   } catch {
     return null
   }

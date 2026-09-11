@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { askHandoffFixture } from './fixtures'
 import {
   type AskUIMessage,
+  askHandoffEmail,
+  askHandoffMessage,
   clearAskHandoff,
   handoffOf,
   readAskHandoff,
@@ -129,5 +131,29 @@ describe('handoffOf', () => {
       },
     ])
     expect(handoffOf(message)).toBeNull()
+  })
+})
+
+describe('the card sends', () => {
+  it("the visitor's questions in their own words, the same text the contact form opens with", () => {
+    const messages = [user('1', 'How do we start?'), assistant('2', 'With a call.')]
+    saveAskHandoff(messages)
+    expect(askHandoffMessage(messages)).toBe('From my Ask conversation:\n- How do we start?')
+    expect(readAskHandoff()).toBe(`${askHandoffMessage(messages)}\n\n`)
+  })
+
+  it('nothing before a question was asked', () => {
+    expect(askHandoffMessage([assistant('1', 'Hello')])).toBeNull()
+  })
+
+  it('starts the email field with an address written in the chat, latest first', () => {
+    expect(
+      askHandoffEmail([
+        user('1', 'Try old@northwind.co'),
+        assistant('2', 'Noted.'),
+        user('3', "Actually I'm at jordan@northwind.co."),
+      ]),
+    ).toBe('jordan@northwind.co')
+    expect(askHandoffEmail([user('1', 'What does it cost?')])).toBeNull()
   })
 })

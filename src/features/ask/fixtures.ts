@@ -1,6 +1,6 @@
 import type { UIDataTypes } from 'ai'
 import { createChat } from '@/shared/testing/shadcn-helpers/ai-sdk'
-import { ASK_HANDOFFS, type AskHandoff, type AskHandoffReason, type AskUITools } from './handoff'
+import type { AskHandoff, AskHandoffReason, AskUITools } from './handoff'
 
 /**
  * Story fixtures for every Ask surface (the /ask widget, the menu, the
@@ -13,10 +13,16 @@ export const createAskChat = () => createChat<unknown, UIDataTypes, AskUITools>(
 /** A handoff as /api/ask resolves it, against the production Site Info values. */
 export const askHandoffFixture = (reason: AskHandoffReason): AskHandoff => ({
   reason,
-  href: ASK_HANDOFFS[reason].form === 'project' ? '/contact/project-inquiry' : '/contact',
   responseTime: 'within 3 business days',
   scheduleUrl: 'https://calendar.app.google/example',
 })
+
+/** A pricing question answered with the handoff card alone: the design's first card state. */
+export const askHandoffChat = createAskChat()
+  .user('What does a website cost, and when can you start?')
+  .assistant(({ writer }) => {
+    writer.tool('handoff', { input: { reason: 'estimate' }, output: askHandoffFixture('estimate') })
+  })
 
 /** Two source links spanning two surfaces, as a grounded answer carries them. */
 export const askSourcesFixture = [
