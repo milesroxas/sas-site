@@ -115,6 +115,7 @@ Optional — each feature is disabled when its variable is unset:
 | `NEWSLETTER_FROM_ADDRESS`, `NEWSLETTER_FROM_NAME` | Newsletter-specific sender; falls back to `RESEND_FROM_*` |
 | `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | Sentry monitoring; the DSN enables the SDK, the rest enable build-time source map upload |
 | `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` | PostHog analytics (host defaults to US cloud) |
+| `NEXT_PUBLIC_POSTHOG_CAPTURE_DEV` | `true` lets local dev send to PostHog; off by default. Team browsers opt out with `?internal=on` |
 | `NEXT_PUBLIC_REB2B_KEY` | Reb2b B2B visitor identification |
 | `NEXT_PUBLIC_C15T_URL` | c15t consent backend; unset = consent stored in the browser only |
 | `INDEXNOW_KEY` | Served at `/indexnow.txt`; pings only fire in production |

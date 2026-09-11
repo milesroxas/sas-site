@@ -1,5 +1,10 @@
 import { PostHog } from 'posthog-node'
 import { afterResponse } from './afterResponse'
+import {
+  analyticsCaptureEnabled,
+  analyticsEnvironment,
+  hasInternalTrafficCookie,
+} from './analyticsScope'
 
 type HeaderReader = { get(name: string): string | null }
 
@@ -18,7 +23,7 @@ function getPostHogClient(): PostHog | null {
   if (client !== undefined) return client
 
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-  if (!key) {
+  if (!key || !analyticsCaptureEnabled()) {
     client = null
     return null
   }
@@ -32,19 +37,17 @@ function getPostHogClient(): PostHog | null {
 }
 
 /**
- * The browser injects `X-POSTHOG-DISTINCT-ID` on same-origin requests
- * (`tracing_headers` in the client provider), which is what ties a conversion
- * back to the session that produced it. Email links and server-to-server calls
- * carry no such header.
+ * The browser injects `X-POSTHOG-DISTINCT-ID` and `X-POSTHOG-SESSION-ID` on
+ * same-origin requests (`tracing_headers` in the client provider). The distinct
+ * id ties a conversion to the visitor; the session id ties it to the session,
+ * which is what session funnels, channel attribution and "recordings with this
+ * event" all join on. Email links and server-to-server calls carry neither.
  */
-function clientDistinctId(headers: HeaderReader): string | null {
-  const value = headers.get('x-posthog-distinct-id')
+function tracingHeader(headers: HeaderReader, name: string): string | null {
+  const value = headers.get(name)
   if (!value || value === 'undefined' || value === 'null') return null
   return value
 }
-
-const environment = () =>
-  process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV ?? 'development'
 
 /**
  * Record one conversion without making the visitor wait for it. The flush runs
@@ -65,8 +68,10 @@ export function captureServerEvent({
 }): void {
   const posthog = getPostHogClient()
   if (!posthog) return
+  if (hasInternalTrafficCookie(headers.get('cookie'))) return
 
-  const distinctId = clientDistinctId(headers)
+  const distinctId = tracingHeader(headers, 'x-posthog-distinct-id')
+  const sessionId = tracingHeader(headers, 'x-posthog-session-id')
 
   const send = async () => {
     try {
@@ -75,7 +80,8 @@ export function captureServerEvent({
         event,
         properties: {
           ...properties,
-          environment: environment(),
+          environment: analyticsEnvironment(),
+          ...(sessionId ? { $session_id: sessionId } : {}),
           // With no client id there is no visitor to attach to, so skip the
           // person profile rather than minting a throwaway one per submission.
           // Mirrors `person_profiles: 'identified_only'` on the browser side.

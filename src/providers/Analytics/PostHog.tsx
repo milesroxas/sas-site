@@ -3,6 +3,13 @@
 import { useConsentManager } from '@c15t/nextjs'
 import type React from 'react'
 import { useEffect, useRef } from 'react'
+import {
+  analyticsCaptureEnabled,
+  analyticsEnvironment,
+  hasInternalTrafficCookie,
+  INTERNAL_TRAFFIC_COOKIE,
+  INTERNAL_TRAFFIC_PARAM,
+} from '@/utilities/analyticsScope'
 
 const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
 const ingestHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com'
@@ -24,6 +31,46 @@ function whenIdle(run: () => void): () => void {
   return () => window.cancelIdleCallback(handle)
 }
 
+const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
+
+/**
+ * Whether this browser is the team's. `?internal=on` marks it for a year and
+ * `?internal=off` clears it. The flag is a cookie rather than PostHog's own
+ * opt-out so server capture sees it too, and so a consent change can't opt the
+ * browser back in. The param is stripped so a shared link never opts out
+ * whoever opens it.
+ *
+ * The answer comes from the param itself on the page that carries it, because
+ * the cookie write is async and init must not race it.
+ */
+function isInternalTraffic(): boolean {
+  const url = new URL(window.location.href)
+  const value = url.searchParams.get(INTERNAL_TRAFFIC_PARAM)
+  if (value !== 'on' && value !== 'off') {
+    return hasInternalTrafficCookie(document.cookie)
+  }
+
+  if ('cookieStore' in window) {
+    const write =
+      value === 'on'
+        ? window.cookieStore.set({
+            name: INTERNAL_TRAFFIC_COOKIE,
+            value: '1',
+            path: '/',
+            sameSite: 'lax',
+            expires: Date.now() + ONE_YEAR_MS,
+          })
+        : window.cookieStore.delete({ name: INTERNAL_TRAFFIC_COOKIE, path: '/' })
+    // Best-effort, like the rest of analytics: a failed write leaves the
+    // browser captured, which is the pre-existing behavior.
+    write.catch(() => {})
+  }
+
+  url.searchParams.delete(INTERNAL_TRAFFIC_PARAM)
+  window.history.replaceState(null, '', url)
+  return value === 'on'
+}
+
 /**
  * Consent-gated PostHog: product analytics, session replay and the conversion
  * funnel. The SDK is imported only after the c15t `measurement` category is
@@ -41,6 +88,9 @@ export const PostHogProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const measurementAllowed = has('measurement')
   const initialized = useRef(false)
   const missingKeyWarned = useRef(false)
+  // Decided once per page load: the param is gone after the first read, and a
+  // re-run (consent change, Strict Mode) must not re-read a pending cookie.
+  const internalTraffic = useRef<boolean | null>(null)
 
   useEffect(() => {
     if (!key) {
@@ -50,6 +100,12 @@ export const PostHogProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
       return
     }
+
+    // Checked before consent so the team flag is honored (and the param
+    // stripped) even on a visit that never grants measurement.
+    if (!analyticsCaptureEnabled()) return
+    internalTraffic.current ??= isInternalTraffic()
+    if (internalTraffic.current) return
 
     // Do not download the SDK until measurement is granted. Returning visitors
     // who already consented still load it after hydration, not in the first
@@ -95,9 +151,7 @@ export const PostHogProvider: React.FC<{ children: React.ReactNode }> = ({ child
             // person (see src/utilities/posthog.ts).
             tracing_headers: [window.location.hostname],
           })
-          posthog.register({
-            environment: process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
-          })
+          posthog.register({ environment: analyticsEnvironment() })
           return
         }
 
