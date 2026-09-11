@@ -1,6 +1,7 @@
 import { type MCPPluginConfig, mcpPlugin } from '@payloadcms/plugin-mcp'
 import type { CollectionSlug, Field, GroupField, Plugin } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { ASK_QUESTION_RETENTION_DAYS } from '@/features/ask/retention'
 import { CONTENT_SURFACES } from '@/shared/content/surfaces'
 
 /**
@@ -13,8 +14,14 @@ import { CONTENT_SURFACES } from '@/shared/content/surfaces'
  * nothing until an admin grants it capabilities.
  *
  * Deliberately excluded: `users`, `subscribers`, `newsletters` (accounts, PII,
- * and send machinery), `forms` / `form-submissions`, `redirects`, `search`
- * (derived index), and the API-keys collection itself.
+ * and send machinery), `inquiries`, `forms` / `form-submissions`, `redirects`,
+ * `search` (derived index), and the API-keys collection itself.
+ *
+ * `ask-questions` is the one visitor-sourced collection exposed, read-only: its
+ * text is redacted on write and rows carry no IP or visitor id, and analysing
+ * it (what prospects ask, what the site cannot answer) is exactly the job a
+ * team agent is for. Like everything here, a key still needs the capability
+ * ticked before it can read it.
  */
 
 type McpCollectionEntry = NonNullable<NonNullable<MCPPluginConfig['collections']>[CollectionSlug]>
@@ -73,6 +80,12 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
     {
       media:
         'Uploaded media. Read-only over MCP — reference existing documents by id; only `public-approved` items render publicly',
+    },
+    READ_ONLY,
+  ),
+  ...entries(
+    {
+      'ask-questions': `Questions visitors typed into the site Ask box (redacted, no visitor ids, deleted after ${ASK_QUESTION_RETENTION_DAYS} days). \`answered: false\` marks questions the site had no content for. Read-only`,
     },
     READ_ONLY,
   ),

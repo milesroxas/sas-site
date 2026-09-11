@@ -26,6 +26,7 @@ import { MenuPreviewSlot } from '@/Header/Menu/PreviewSlot'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
 import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
+import { ASK_NOTICE } from './retention'
 import { AskSubmitButton } from './SubmitButton'
 import { useAskChat } from './useAskChat'
 
@@ -284,7 +285,7 @@ export function MenuAsk({
           >
             <CardTitle className="text-base md:text-sm">Ask</CardTitle>
             <CardDescription className="text-sm/relaxed md:text-xs/relaxed">
-              Answers about our work, services, and insights
+              {ASK_NOTICE}
             </CardDescription>
             <CardAction className={iconActions}>
               <Button

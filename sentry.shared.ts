@@ -22,4 +22,4 @@ export const sentryBaseOptions = (vercelEnv: string | undefined) => {
 }
 
 /** Whether this runtime is the production deployment, not a preview or local run. */
-export const isSentryProduction = (vercelEnv: string | undefined) => vercelEnv === 'production'
+const isSentryProduction = (vercelEnv: string | undefined) => vercelEnv === 'production'

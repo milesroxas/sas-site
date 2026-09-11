@@ -7,6 +7,7 @@ import { buildConfig, type PayloadRequest } from 'payload'
 import sharp from 'sharp'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { InsightsIndex, WorksIndex } from './CollectionIndexes/config'
+import { AskQuestions } from './collections/AskQuestions'
 import { AssetLibraries } from './collections/AssetLibraries'
 import { AudiencePages } from './collections/AudiencePages'
 import { Audiences } from './collections/Audiences'
@@ -31,11 +32,13 @@ import { Testimonials } from './collections/Testimonials'
 import { Users } from './collections/Users'
 import { WorkPages } from './collections/WorkPages'
 import { askEndpoints } from './endpoints/ask'
+import { geoEndpoint } from './endpoints/geo'
 import { newsletterPublicEndpoints } from './endpoints/newsletter'
 import { Footer } from './Footer/config'
 import { askEmbeddingsTable } from './features/ask/schema'
 import { Header } from './Header/config'
 import { Home } from './Home/config'
+import { askQuestionRetentionTask } from './jobs/askQuestionRetention'
 import { newsletterSendTask } from './jobs/newsletterSend'
 import { plugins } from './plugins'
 import { getServerSideURL } from './utilities/getURL'
@@ -153,6 +156,7 @@ export default buildConfig({
     Categories,
     // Inbox
     Inquiries,
+    AskQuestions,
     // Newsletter
     Newsletters,
     Audiences,
@@ -161,7 +165,7 @@ export default buildConfig({
     Users,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  endpoints: [...newsletterPublicEndpoints, ...askEndpoints],
+  endpoints: [...newsletterPublicEndpoints, ...askEndpoints, geoEndpoint],
   plugins: [
     ...plugins,
     s3Storage({
@@ -204,6 +208,6 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
-    tasks: [newsletterSendTask],
+    tasks: [newsletterSendTask, askQuestionRetentionTask],
   },
 })

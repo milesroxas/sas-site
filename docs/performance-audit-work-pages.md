@@ -17,16 +17,25 @@ Branch `perf/video-gating-hero-priority` (2026-09-09) ships the next slice, veri
 - Theme bootstrap guard (P1-9): the storage and `matchMedia` reads sit in a `try`, so a blocked-storage browser still gets `data-theme` and the `html { opacity: 0 }` rule releases.
 - `videoFixture` now carries its real poster (`mediaFixture`), so Storybook video stories paint what production paints.
 
-2026-09-10: the PostHog slice of P0-2 is done, and Google Analytics is gone.
+2026-09-10: the PostHog slice of P0-2 is done, Sentry Replay is gone, and Google Analytics is gone.
 
-- `src/providers/Analytics/PostHog.tsx` imports `posthog-js` dynamically inside the consent effect and waits for idle time before doing so. The 216 KB SDK chunk is absent from the initial HTML (verified against a prerendered page in `.next/server/app`); only the provider component ships, and it carries no SDK code. Initial script count on a prerendered page is unchanged at 29.
-- GA4 and `@next/third-parties` are removed. The provider was a second consent-gated tracker duplicating PostHog pageviews with every ads signal denied, so it bought nothing. The initial shared chunk drops from 179 KB to 172 KB. `AnalyticsProvider` collapsed into `PostHogProvider`, since it no longer had a second child to compose.
-- Session replay is **on**, because it is the UX team's tool and Sentry's replay masks all text and blocks all media. It costs 33 KB gzipped (`recorder.js`), fetched through the proxy after consent and after idle, on sampled sessions only. That is outside the first-paint path this audit is about. Sampling lives in PostHog project settings so the rate changes without a deploy.
-- Canvas recording is forced off via `session_recording.captureCanvas.recordCanvas`, the local override that beats the project-level remote config. Heroes tunnel a WebGL scene into a persistent canvas, and canvas capture would re-encode and upload those frames several times a second, against the media budget P0-1 just bought back.
+- `src/providers/Analytics/PostHog.tsx` imports `posthog-js` dynamically inside the consent effect and waits for idle time before doing so. The 216 KB SDK chunk is absent from the initial HTML (verified against a prerendered page in `.next/server/app`); only the provider component ships, and it carries no SDK code.
+- GA4 and `@next/third-parties` are removed. The provider was a second consent-gated tracker duplicating PostHog pageviews with every ads signal denied, so it bought nothing. `AnalyticsProvider` now composes PostHog and Reb2b.
+- Sentry Replay is removed from `src/instrumentation-client.ts`. It recorded every visitor in buffer mode before any consent, which the CNIL's draft recommendation on session replay (February 2026) says needs consent even for debugging, and it ran a second DOM recorder beside PostHog's. Sentry keeps error monitoring, which is its job. Initial JS per prerendered page, measured as `gzip -9` of every chunk the HTML references in a local build (compare the deltas, not the absolutes, with the transfer figures in section 2):
+
+  | Page | Before | After |
+  |---|---|---|
+  | `/post` | 842 KB | 803 KB |
+  | `/` | 971 KB | 932 KB |
+  | `/works/vault-workforce-screening` | 938 KB | 900 KB |
+
+- Session replay runs in PostHog only, for the UX team, behind the `measurement` category. The recorder (33 KB gzipped, `recorder.js`) is fetched through the proxy after consent and after idle, and it runs for every consenting visitor. PostHog's project-level sample rate only decides which recordings upload, so it controls quota, not browser cost: in posthog-js 1.399.2, `_startRecorder` runs after the sampling decision whatever the outcome. If browser cost ever matters, decide sampling in code before init.
+- Canvas recording is forced off via `session_recording.captureCanvas.recordCanvas`, the local override that beats the project-level remote config. With canvas recording on, rrweb forces `preserveDrawingBuffer` on every WebGL context and re-encodes frames several times a second, against the media budget P0-1 just bought back.
 - Errors stay with Sentry on both client and server. PostHog exception autocapture is off, so no second autocapture script loads and no exception is billed twice.
-- Server-side conversion events use `posthog-node` behind `after()`, so no flush lands in a request path or inside a Payload transaction.
+- Server-side conversion events use `posthog-node` behind `afterResponse` (`next/server` `after()`), so no flush lands in a request path or inside a Payload transaction.
+- Pending: posthog-js 1.429.5 stops a looping background video from emitting a recording event on every autoplay toggle, and every case study has those. The pnpm 24-hour release cooldown blocks it until 2026-09-11 18:22 UTC.
 
-Still open from tier 1: the rest of the bundle diet (P0-2, mainly the WebGL split, the Ask composer and Sentry Replay), posters through `next/image` and real `sizes` on the blocks that pass none (P1-5), `Critical-CH` scoping (P1-8), Speed Insights draft-mode and internal-traffic filtering (section 7).
+Still open from tier 1: the rest of the bundle diet (P0-2, mainly the WebGL split, the Ask composer, and Sentry console logging in production), posters through `next/image` and real `sizes` on the blocks that pass none (P1-5), `Critical-CH` scoping (P1-8), Speed Insights draft-mode and internal-traffic filtering (section 7).
 
 ## 1. Summary
 
@@ -159,14 +168,14 @@ Root causes
 - `src/lib/webgl/components/global-canvas/index.tsx` exports `LazyGlobalCanvas = dynamic(() => Promise.resolve({ default: GlobalCanvas }), { ssr: false })`. The module statically imports `@react-three/fiber`, `@react-three/drei`, the renderer factory and the store, so `Promise.resolve` of an already-imported component is not a code split. The root layout mounts it on every page. The canvas only activates behind `ImmersiveShell webgl`. Today that is the `/demo/immersive` playground and the `HighImpactHero` (`src/heros/HighImpact/index.tsx`), which tunnels `WebGlBackdropScene` (the original spinning torus knot) into the persistent canvas. The CMS still has that hero type live on all five expertise pages and three of the four audience pages, which is why `/expertise/[slug]` is the worst route on the site (RES 32). On a work page the canvas renders `null` after downloading and parsing about 1 MB raw of three.js.
 - `src/Footer/Closing/FooterClosing.tsx` renders `ClosingLightLeak`, which statically imports `LightLeak` from `@/features/immersive`. That file imports `@react-three/fiber` and `three` and mounts its own `<Canvas>` (a second WebGL context) when the closing band is uncovered. It is on every page that renders the closing band, which is every work page.
 - `src/Header/Component.client.tsx` statically imports the `TakeoverMenu`, which imports `MenuAsk`, which imports `useAskChat` (`@ai-sdk/react`, `ai`). `FooterClosing` does the same through `AskWidget`. The AI SDK pulls the full zod runtime. That is about 120 KB gzipped for a composer that is behind a closed menu and below the closing band.
-- `src/instrumentation-client.ts` registers `Sentry.replayIntegration()` and `consoleLoggingIntegration` eagerly, with `enableLogs`. Replay is the heaviest Sentry integration and can be lazy-loaded; the SDK supports loading it after `init`.
+- `src/instrumentation-client.ts` registers `consoleLoggingIntegration` eagerly, with `enableLogs`. ~~It also registered `Sentry.replayIntegration()`, the heaviest Sentry integration.~~ Replay removed 2026-09-10, see section 0.
 - ~~`src/providers/Analytics/PostHog.tsx` imports `posthog-js` statically. Initialization is correctly gated on consent, but the SDK bytes are not.~~ Fixed 2026-09-10, see section 0.
 - The `@c15t/nextjs` consent manager is bundled with its full UI and its global stylesheet.
 
 Recommendation
 - Make the WebGL layer a real split: keep `GlobalCanvasRoot` in the layout as a thin client shell that only subscribes to `isActivated`, and dynamically import the R3F canvas module (and drei) when activation happens. The same applies to `LightLeak` and the scroll gallery: import the effect module inside the intersection or `onComplete` callback that already gates when they mount. Target: no `three` bytes on a page that never activates a canvas.
 - Split the Ask composer out of the header and footer bundles: render a static placeholder in the menu and closing card, and load the chat module on first intent (menu open, composer focus). The existing `warmMedia` intent hook on the menu button is the right trigger. This also removes zod from the page.
-- Lazy-load Sentry Replay after `init` (the SDK's `lazyLoadIntegration` or a dynamic import in an idle callback), drop console logging in production, and consider a lower `tracesSampleRate`. Keep error capture eager.
+- ~~Lazy-load Sentry Replay after `init`.~~ Removed instead on 2026-09-10; replay lives in PostHog behind consent. Still open: drop console logging in production, and consider a lower `tracesSampleRate`. Keep error capture eager.
 - Dynamically import `posthog-js` inside the consent effect, so the SDK downloads only when measurement is granted.
 - After the four items above, the remaining floor is react-dom, the Next runtime, GSAP and ScrollTrigger, lenis, radix, and page code: roughly 350 to 400 KB gzipped. That is still generous for a portfolio; a later pass can look at whether GSAP core plus ScrollTrigger and Lenis are both needed on pages without pinned shells.
 - Guardrail: add a bundle size check to CI (`next build` output or a size-limit action) with a per-route budget so the split does not regress.
@@ -285,7 +294,7 @@ Both variable fonts are preloaded, immutable, and `swap`. Two things are worth a
 
 ### P2-13. Sentry and analytics at load
 
-Sentry sends the session and the pageload transaction at ~500 ms (three `/monitoring` requests), Replay records at 10% of sessions in production (a second, 100 KB worker script), and the Speed Insights script is a separate request. PostHog and GA are correctly gated on consent. Lower the trace sample, lazy-load Replay (P0-2), and flush on idle.
+Sentry sends the session and the pageload transaction at ~500 ms (three `/monitoring` requests), and the Speed Insights script is a separate request. ~~Replay records at 10% of sessions in production (a second, 100 KB worker script).~~ Removed 2026-09-10. PostHog is correctly gated on consent; GA is gone. Lower the trace sample and flush on idle.
 
 ### Observations that are fine, and should stay that way
 

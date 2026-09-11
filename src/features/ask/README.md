@@ -6,7 +6,7 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 
 ```
 /ask page (AskWidget, useChat)
-  └─ POST /api/ask { messages } (AI SDK UI-message protocol)
+  └─ POST /api/ask { id, messages, pagePath } (AI SDK UI-message protocol)
        ├─ config check      → 503 if OPENAI_API_KEY unset
        ├─ rate limit        → 429 (10 req/min per IP, per warm instance)
        ├─ validation        → 400 (last message must be a user question, 3–500 chars)
@@ -14,6 +14,7 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
        │                      (chunks grouped into ≤4 doc sources); falls back to
        │                      keyword match over the search index when embeddings
        │                      are unavailable or empty
+       ├─ recordAskQuestion() → redacted row in `ask-questions`, written after the response
        ├─ no sources, first turn → canned "couldn't find anything" answer streamed, no model call
        ├─ no sources, follow-up  → chat-only prompt (no new facts allowed), 400-token cap
        └─ streamText()      → source-url parts first, then the grounded answer streamed
@@ -32,6 +33,11 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 | [`model.ts`](./model.ts) | Provider seam: answer model (`gpt-5-mini`) and embedding model (`text-embedding-3-small`), both via the Vercel AI SDK. |
 | [`AskWidget.tsx`](./AskWidget.tsx) | Client component: `useChat` transcript, shimmer loading, streamed answers with source links. |
 | [`messages.tsx`](./messages.tsx) | Transcript body shared by every surface. Holds the shimmer until the first token (an assistant message with only source parts stays unmounted) and renders source links only once the answer has settled, staggered in. |
+| [`questions.ts`](./questions.ts) | `recordAskQuestion()`: stores each question for the team after the response, redacted, with the page it was asked on and the chat id. No IP, no analytics id. |
+| [`redact.ts`](./redact.ts) | `redactFreeText()`: strips emails, phone and card numbers, URL query strings, and key-shaped strings before storage. Keeps budgets, years, dates, and page slugs. Tested in `redact.test.ts`. |
+| [`retention.ts`](./retention.ts) | `ASK_QUESTION_RETENTION_DAYS` and `ASK_NOTICE`, the line under every composer. One constant, so the promise and the deletion job cannot drift. Client-safe. |
+| [`../../collections/AskQuestions.ts`](../../collections/AskQuestions.ts) | Admin › Inbox › Ask questions. Team-only read and delete; nobody creates or edits through the API. |
+| [`../../jobs/askQuestionRetention.ts`](../../jobs/askQuestionRetention.ts) | Daily Payload task that deletes questions past the retention window, run by the existing `/api/payload-jobs/run` cron. |
 | [`SubmitButton.tsx`](./SubmitButton.tsx) | The composer button shared by every surface: submit when idle, an enabled Stop while a reply is in flight. |
 | [`../../endpoints/ask.ts`](../../endpoints/ask.ts) | The `POST /api/ask` Payload endpoint — validation, rate limiting, prompt assembly. The system prompt sets the studio voice, forbids inline citations (links render separately), and defines the partial-answer mode: say what is published, then one next step with a page path from the source `url`. |
 | [`backfill.ts`](./backfill.ts) | One full pass over every surface and global with a per-instance run lock; shared by the CLI script and the admin rebuild. Stores the summary of the last pass in Payload KV (`ask:index-last-rebuild`). |
@@ -150,6 +156,14 @@ and returns the same shape. 503 with `configured: false` when `OPENAI_ADMIN_API_
 Models live in `model.ts`. Changing the **embedding** model or provider means re-embedding the
 corpus: update `EMBEDDING_DIMENSIONS` in `schema.ts` if the size differs, migrate, and run the
 backfill script.
+
+## What we keep
+
+- **Questions, for the team.** Every accepted question lands in `ask-questions` (Admin › Inbox › Ask questions) after the response has gone out, so storage never adds latency. Filter `Answered` to No for the content-gap list: questions the site had nothing to ground an answer on. `Asked on` is the page path, and `Chat` groups one conversation. Team agents can read it over MCP when a key is granted the capability.
+- **Redacted before it lands.** `redactFreeText()` is one layer, not a guarantee: a name or employer in plain words survives. The notice under every composer (`ASK_NOTICE`) asks people to leave personal details out, and tells them the answers are AI-generated (EU AI Act transparency).
+- **Deleted on schedule.** `askQuestionRetention` removes rows older than `ASK_QUESTION_RETENTION_DAYS`. It is queued by Payload's scheduler from the daily cron, so the first run lands a day after deploy and a row can outlive the window by up to a day.
+- **Nothing at OpenAI.** `store: false` stops the Responses API keeping each exchange for 30 days in the dashboard logs. The client resends the transcript every turn, and for reasoning models the SDK asks for encrypted reasoning instead of server-side item references. `sendReasoning: false` keeps that encrypted blob out of the browser.
+- **Metadata only in PostHog.** `ask_questioned` carries length, source count, and the follow-up flag. Question text never goes to analytics: it could not be held to the retention window there, and it would sit next to a visitor id.
 
 ## Turning Ask off
 

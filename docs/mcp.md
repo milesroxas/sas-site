@@ -41,6 +41,7 @@ Local dev serves the same endpoint at `http://localhost:3001/api/mcp`.
 | Taxonomy | `capabilities`, `categories`, `industries`, `platforms` | Full authoring |
 | Assets | `asset-libraries` | Full authoring (find, create, update, delete) |
 | Assets | `media` | **Read-only** (find) |
+| Inbox | `ask-questions` | **Read-only** (find) |
 | Globals | `home`, `header`, `footer`, `site-info` | Find + update |
 
 "Offered" means the checkbox exists on the key — each key still gets only what an admin turns on.
@@ -51,6 +52,10 @@ Media is read-only by design: MCP tools cannot send binary uploads, and new medi
 the internal `usageStatus` gate anyway (see [architecture.md](architecture.md) access rules).
 Agents reference existing media documents by id. Asset libraries are metadata (name, organization,
 project, status) — creating one also creates its root folder via the collection hook.
+
+`ask-questions` is the one visitor-sourced collection exposed. Its text is redacted on write and rows
+carry no IP or visitor id, and reading it (what prospects ask, what the site cannot answer) is the
+analysis a team agent is for. Read-only, and off on every key until an admin grants it.
 
 **Deliberately excluded** (no MCP tools at all): `users`, `inquiries`, `subscribers`, `newsletters`
 (accounts, PII, send machinery), `forms` / `form-submissions`, `redirects`, `search` (derived

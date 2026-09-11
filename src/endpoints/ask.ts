@@ -10,6 +10,7 @@ import {
 import type { Endpoint } from 'payload'
 import { backfillAskIndex, isBackfillRunning, readLastIndexRebuild } from '@/features/ask/backfill'
 import { ASK_MODEL_API_KEY_VAR, askModel } from '@/features/ask/model'
+import { recordAskQuestion } from '@/features/ask/questions'
 import { retrieveSources } from '@/features/ask/retrieve'
 import {
   isUsageConfigured,
@@ -179,7 +180,13 @@ const ask: Endpoint = {
       return json({ error: 'Too many questions — try again in a minute.' }, 429)
     }
 
-    const body = (await req.json?.().catch(() => null)) as { messages?: unknown } | null
+    // `id` is the AI SDK chat id and `pagePath` the page the composer sits on
+    // (see useAskChat); both are only kept by `recordAskQuestion` if well formed.
+    const body = (await req.json?.().catch(() => null)) as {
+      messages?: unknown
+      id?: unknown
+      pagePath?: unknown
+    } | null
     const rawMessages = Array.isArray(body?.messages) ? (body.messages as UIMessage[]) : []
     const messages = rawMessages.length <= MAX_MESSAGES ? sanitizeMessages(rawMessages) : null
     const lastMessage = messages?.at(-1)
@@ -200,6 +207,15 @@ const ask: Endpoint = {
 
     const sources = await retrieveSources(req.payload, retrievalQuery(messages, question))
     const isFollowUp = messages.length > 1
+
+    recordAskQuestion(req, {
+      question,
+      answered: sources.length > 0,
+      followUp: isFollowUp,
+      sourceCount: sources.length,
+      pagePath: body?.pagePath,
+      conversation: body?.id,
+    })
 
     // First turn with nothing to ground on: canned answer, no tokens spent.
     // Follow-ups still reach the model source-less so the conversation can
@@ -237,7 +253,11 @@ const ask: Endpoint = {
       maxOutputTokens: sources.length > 0 ? MAX_ANSWER_TOKENS : MAX_CHAT_ONLY_TOKENS,
       // Extractive answers over provided sources don't need deep reasoning;
       // the default (medium) burns hidden reasoning tokens on every question.
-      providerOptions: { openai: { reasoningEffort: 'low' } },
+      // `store: false`: OpenAI's Responses API otherwise keeps every exchange
+      // for 30 days in the dashboard logs. Nothing here needs that: the client
+      // resends the transcript each turn, and for reasoning models the SDK asks
+      // for encrypted reasoning instead of server-side item references.
+      providerOptions: { openai: { reasoningEffort: 'low', store: false } },
       onFinish: ({ usage }) => {
         req.payload.logger.info({
           msg: 'ask answered',
@@ -269,7 +289,11 @@ const ask: Endpoint = {
             title: source.title,
           })
         }
-        writer.merge(toUIMessageStream({ stream: result.fullStream, sendStart: false }))
+        // The Ask UI renders text and sources only. Reasoning parts would carry
+        // the encrypted reasoning blob to the browser and back on every turn.
+        writer.merge(
+          toUIMessageStream({ stream: result.fullStream, sendStart: false, sendReasoning: false }),
+        )
       },
       onError: (err) => {
         req.payload.logger.error({ msg: 'ask model call failed', err })

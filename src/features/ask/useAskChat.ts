@@ -24,7 +24,14 @@ type UseAskChatOptions = {
 export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOptions) {
   const [question, setQuestion] = useState('')
   const chatTransport = useMemo(
-    () => transport ?? new DefaultChatTransport<UIMessage>({ api: '/api/ask' }),
+    () =>
+      transport ??
+      new DefaultChatTransport<UIMessage>({
+        api: '/api/ask',
+        // Resolved per request, so it is the page the question was asked on
+        // even after client-side navigation. Stored with the question.
+        body: () => ({ pagePath: window.location.pathname }),
+      }),
     [transport],
   )
   const { messages, sendMessage, status, error, setMessages, stop } = useChat({

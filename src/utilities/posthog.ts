@@ -1,5 +1,5 @@
-import { after } from 'next/server'
 import { PostHog } from 'posthog-node'
+import { afterResponse } from './afterResponse'
 
 type HeaderReader = { get(name: string): string | null }
 
@@ -47,13 +47,10 @@ const environment = () =>
   process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.VERCEL_ENV ?? 'development'
 
 /**
- * Record one conversion without making the visitor wait for it.
- *
- * `after()` extends the function lifetime past the response on Vercel, so the
- * flush never lands in the request path or, worse, inside an open Payload
- * transaction. Outside a Next request scope (CLI, jobs, tests) it throws and
- * the send runs inline, un-awaited. Returns void by design: no call site
- * should have a reason to await analytics.
+ * Record one conversion without making the visitor wait for it. The flush runs
+ * after the response (see `afterResponse`), so it never lands in the request
+ * path or inside an open Payload transaction. Returns void by design: no call
+ * site should have a reason to await analytics.
  */
 export function captureServerEvent({
   event,
@@ -91,9 +88,5 @@ export function captureServerEvent({
     }
   }
 
-  try {
-    after(send)
-  } catch {
-    void send()
-  }
+  afterResponse(send)
 }

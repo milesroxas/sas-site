@@ -87,6 +87,7 @@ export interface Config {
     platforms: Platform;
     categories: Category;
     inquiries: Inquiry;
+    'ask-questions': AskQuestion;
     newsletters: Newsletter;
     audiences: Audience;
     subscribers: Subscriber;
@@ -138,6 +139,7 @@ export interface Config {
     platforms: PlatformsSelect<false> | PlatformsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
+    'ask-questions': AskQuestionsSelect<false> | AskQuestionsSelect<true>;
     newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
     audiences: AudiencesSelect<false> | AudiencesSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
@@ -165,6 +167,7 @@ export interface Config {
     header: Header;
     footer: Footer;
     'site-info': SiteInfo;
+    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     home: HomeSelect<false> | HomeSelect<true>;
@@ -173,6 +176,7 @@ export interface Config {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-info': SiteInfoSelect<false> | SiteInfoSelect<true>;
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -182,6 +186,7 @@ export interface Config {
   jobs: {
     tasks: {
       newsletterSend: TaskNewsletterSend;
+      askQuestionRetention: TaskAskQuestionRetention;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -5487,6 +5492,35 @@ export interface Inquiry {
   createdAt: string;
 }
 /**
+ * What visitors asked Ask, with emails, phone numbers and keys removed. Filter Answered to "No" for the questions the site could not answer: that is the content-gap list. Rows delete themselves after 90 days.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ask-questions".
+ */
+export interface AskQuestion {
+  id: number;
+  question: string;
+  /**
+   * Site content matched the question. Unchecked means Ask had nothing to ground an answer on.
+   */
+  answered?: boolean | null;
+  /**
+   * The page the visitor was on.
+   */
+  pagePath?: string | null;
+  /**
+   * Asked after an earlier question in the same chat.
+   */
+  followUp?: boolean | null;
+  sourceCount?: number | null;
+  /**
+   * Shared by every question from one open Ask box. Filter by it to read a conversation in order.
+   */
+  conversation?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "newsletters".
  */
@@ -5901,6 +5935,9 @@ export interface PayloadMcpApiKey {
   media?: {
     find?: boolean | null;
   };
+  askQuestions?: {
+    find?: boolean | null;
+  };
   footer?: {
     find?: boolean | null;
     update?: boolean | null;
@@ -5993,7 +6030,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'newsletterSend' | 'schedulePublish';
+        taskSlug: 'inline' | 'newsletterSend' | 'askQuestionRetention' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -6026,10 +6063,19 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'newsletterSend' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'newsletterSend' | 'askQuestionRetention' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -6115,6 +6161,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'inquiries';
         value: number | Inquiry;
+      } | null)
+    | ({
+        relationTo: 'ask-questions';
+        value: number | AskQuestion;
       } | null)
     | ({
         relationTo: 'newsletters';
@@ -8372,6 +8422,20 @@ export interface InquiriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ask-questions_select".
+ */
+export interface AskQuestionsSelect<T extends boolean = true> {
+  question?: T;
+  answered?: T;
+  pagePath?: T;
+  followUp?: T;
+  sourceCount?: T;
+  conversation?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "newsletters_select".
  */
 export interface NewslettersSelect<T extends boolean = true> {
@@ -8896,6 +8960,11 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
     | {
         find?: T;
       };
+  askQuestions?:
+    | T
+    | {
+        find?: T;
+      };
   footer?:
     | T
     | {
@@ -8962,6 +9031,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  meta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -9611,6 +9681,24 @@ export interface SiteInfo {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: number;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home_select".
  */
 export interface HomeSelect<T extends boolean = true> {
@@ -9926,6 +10014,16 @@ export interface SiteInfoSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -9944,6 +10042,16 @@ export interface TaskNewsletterSend {
   };
   output: {
     sent?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskAskQuestionRetention".
+ */
+export interface TaskAskQuestionRetention {
+  input?: unknown;
+  output: {
+    deleted?: number | null;
   };
 }
 /**
