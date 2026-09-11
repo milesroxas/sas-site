@@ -1,8 +1,7 @@
 import { getClientSideURL } from '@/utilities/getURL'
 import { isQuestion, UNSURE } from './answers'
+import { postInquiry, type SubmitResult } from './post-inquiry'
 import type { FormDelivery, FormInquiryType, ResolvedFormField } from './types'
-
-export type SubmitResult = { reference: string | null; submittedAt: string }
 
 export type SubmitArgs = {
   delivery: FormDelivery
@@ -70,37 +69,19 @@ export async function submitForm({
   values,
   fromAsk,
 }: SubmitArgs): Promise<SubmitResult> {
-  const base = getClientSideURL()
-  const sourceUrl = typeof window === 'undefined' ? undefined : window.location.href
-
   if (delivery === 'inquiries') {
-    const res = await fetch(`${base}/api/inquiries/submit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...toInquiry(fields, values),
-        // Forms created before the field existed carry no type; they were all
-        // the project template, so that stays their meaning.
-        type: inquiryType ?? 'project',
-        sourceUrl,
-        fromAsk: fromAsk || undefined,
-        // Honeypot — a human never sees this field, so it is always empty.
-        role: values.role,
-      }),
+    return postInquiry({
+      ...toInquiry(fields, values),
+      // Forms created before the field existed carry no type; they were all
+      // the project template, so that stays their meaning.
+      type: inquiryType ?? 'project',
+      fromAsk: fromAsk || undefined,
+      // Honeypot: a human never sees this field, so it is always empty.
+      role: values.role,
     })
-    const body = (await res.json().catch(() => ({}))) as {
-      error?: string
-      reference?: string | null
-      submittedAt?: string
-    }
-    if (!res.ok) throw new Error(body.error ?? 'Something went wrong. Try again.')
-    return {
-      reference: body.reference ?? null,
-      submittedAt: body.submittedAt ?? new Date().toISOString(),
-    }
   }
 
-  const res = await fetch(`${base}/api/form-submissions`, {
+  const res = await fetch(`${getClientSideURL()}/api/form-submissions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

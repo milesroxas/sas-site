@@ -2,6 +2,7 @@ import type { Endpoint, PayloadRequest } from 'payload'
 import type { Inquiry } from '@/payload-types'
 import {
   INQUIRY_BUDGETS,
+  INQUIRY_EMAIL_INVALID,
   INQUIRY_MESSAGE_MAX_LENGTH,
   INQUIRY_TIMELINES,
   INQUIRY_TYPES,
@@ -107,7 +108,7 @@ const submit: Endpoint = {
 
       const email = typeof body?.email === 'string' ? normalizeEmailAddress(body.email) : ''
       if (!isValidEmailAddress(email)) {
-        return json({ error: 'Enter an email address we can reply to.' }, 400)
+        return json({ error: INQUIRY_EMAIL_INVALID }, 400)
       }
 
       const name = trimmed(body?.name, MAX_NAME_LENGTH)

@@ -90,6 +90,12 @@ export const FORM_STEP_COPY = {
 /** Longest brief the form accepts, and the counter's denominator. */
 export const INQUIRY_MESSAGE_MAX_LENGTH = 1200
 
+/**
+ * The one thing an inquiry cannot do without, said the same way wherever it
+ * is checked: the intake endpoint, and Ask's handoff card before it posts.
+ */
+export const INQUIRY_EMAIL_INVALID = 'Enter an email address we can reply to.'
+
 export type InquiryType = (typeof INQUIRY_TYPES)[number]['value']
 export type InquiryStatus = (typeof INQUIRY_STATUSES)[number]['value']
 
