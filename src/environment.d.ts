@@ -53,6 +53,8 @@ declare global {
       NEXT_PUBLIC_POSTHOG_KEY?: string
       /** PostHog ingestion host. Optional — defaults to https://us.i.posthog.com; set https://eu.i.posthog.com for EU cloud. */
       NEXT_PUBLIC_POSTHOG_HOST?: string
+      /** Reb2b account key. Optional — B2B identification disabled when unset. */
+      NEXT_PUBLIC_REB2B_KEY?: string
     }
   }
 }

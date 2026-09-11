@@ -1,7 +1,7 @@
 import type React from 'react'
 
 import { CustomCursorProvider } from '@/features/cursor'
-import { PostHogProvider } from './Analytics/PostHog'
+import { AnalyticsProvider } from './Analytics'
 import { ChromeThemeProvider } from './ChromeTheme'
 import { ConsentProvider } from './Consent'
 import { SmoothScrollProvider } from './SmoothScrollProvider'
@@ -14,14 +14,14 @@ export const Providers: React.FC<{
     <ThemeProvider>
       {/* ConsentProvider reads useTheme, so it must sit below ThemeProvider. */}
       <ConsentProvider>
-        {/* PostHogProvider reads useConsentManager, so it must sit below ConsentProvider. */}
-        <PostHogProvider>
+        {/* AnalyticsProvider reads useConsentManager, so it must sit below ConsentProvider. */}
+        <AnalyticsProvider>
           <ChromeThemeProvider>
             <SmoothScrollProvider>
               <CustomCursorProvider>{children}</CustomCursorProvider>
             </SmoothScrollProvider>
           </ChromeThemeProvider>
-        </PostHogProvider>
+        </AnalyticsProvider>
       </ConsentProvider>
     </ThemeProvider>
   )
