@@ -220,18 +220,16 @@ Measured in Storybook, reduced motion, CSS px:
 
 | | Transcript viewport | Offer | Form | Receipt |
 | --- | --- | --- | --- | --- |
-| Closing band, 1280 | 252 (was 254) | 36 | 235 | 167 |
-| Closing band, 390 | 232 (was 238) | 75 | 317 | — |
+| Closing band, 1280 | 312 (was 254) | 36 | 235 | 167 |
+| Closing band, 390 | 300 (was 238) | 75 | 317 | — |
 | Menu, 390 | 427 (was 398) | 75 | 317 | — |
 
-- The closing composer is one line (`rows={1}`; the textarea already sizes to content) and the panel's bottom reserve is measured by a `ResizeObserver` into `--composer-reserve` (130px desktop, 150px phone) instead of `pb-40 md:pb-36`.
+- The closing composer is one line with the send button beside it, as the menu's pill (`rows={1}`, `min-h-0`, the textarea sizes to content, `InputGroupAddon align="inline-end"`), 46px on desktop and 58px on a phone, and the panel's bottom reserve is measured by a `ResizeObserver` into `--composer-reserve` (70px desktop, 82px phone) instead of `pb-40 md:pb-36`.
 - The menu's header description is `sr-only` below `md`, which returned 29px to the conversation and put the question back in view above its reply.
 - The form scrolls to its own top as it opens (`scrollToMessage` with `align: 'start'`). `nearest` left the promise line above the fold on a short panel, which was the original complaint in a new place.
 - The quoted-question footer is gone, the lock caption is one line, and the contact page is a link inside the form rather than a separate row.
 
-**Plan change:** the closing band's transcript did not grow to ~318px as predicted. The composer block is ~126px, not 64px, because its submit button sits on its own row beneath the textarea, and the reserve is measured honestly. The gain went into the form and offer being shorter instead. The menu, which was always the healthier surface, gained the most.
-
-**Known limit:** on a 390px phone in the closing band the form (317px) is taller than the transcript (232px), so the send button sits about 85px below the fold. The promise and both fields are visible and the scroll affordance is present. Closing this fully means giving the closing composer the menu's inline submit button, which was out of scope here.
+The first pass kept the submit button on its own row under the textarea and left the boxed textarea's `min-h-16` in place, so the composer block measured 126px and the transcript gained nothing (232px on a phone against a 317px form, the send button 85px below the fold). The review pass moved the button inline and lifted the minimum; the form now fits the phone viewport with the send button in view.
 
 ### Tests and stories
 
@@ -248,6 +246,8 @@ Three things found on review before the commit, each with a test or a story:
 - **A reply that settled with nothing to read lost its way forward.** The transcript hid an assistant message with no text and no valid handoff (a tool call the schema refused, an answer cut to nothing), and the one-handoff rule keyed on the last *visible* message, so no offer rendered at all. The old quiet row had always stood in there. `TranscriptItems` now keeps such a reply once the status is `ready` (it is still held back while streaming), so the quiet offer closes it. Story: `Features/AskWidget` › `EmptyReply`.
 - **The prompt still ordered the model to call a tool it no longer had.** At `sent` the endpoint withheld the tool but the system prompt kept "call the handoff tool with reason no_answer and write nothing else". The prompts moved to `prompts.ts` (`askSystemPrompt`, `offersAskHandoff`): one builder for the grounded and chat-only modes, and once the visitor has sent, every line that names the tool goes with it. `prompts.test.ts` asserts no variant at `sent` mentions the handoff at all, and that every variant keeps the grounding and length rules.
 - **`useAskChat` wrote a ref during render** to feed the transport's body function. The state now goes as a per-request body on `sendMessage` (`{ body: { handoff } }`), which the SDK merges over the transport's `pagePath`; nothing is written during render.
+- **The closing composer was still 126px tall.** `rows={1}` alone did nothing: the boxed textarea's `min-h-16` still applied, and the submit button had its own row. The button now sits inline (`askComposerButton` / `askComposerIcon`, shared with the menu from `SubmitButton.tsx`) and `min-h-0` lets one row be one row. Transcript viewport on a phone: 232px to 300px; the form's send button is in view.
+- **The `no_answer` lead implied missing content.** "There's nothing on the site about that yet" is what the closing band's own "What does it cost?" chip produced (retrieval finds nothing for it, so the first-turn miss fires). Now "The site doesn't cover that, but the team can.", which is true of prices and of anything else the site leaves to a person.
 
 ### Docs updated
 
@@ -257,6 +257,5 @@ The feature README (flow, file table, the whole "Reaching a person" section, the
 
 1. Review the copy in `ASK_HANDOFFS`. The lead and offer lines are drafts in the studio's voice, not approved.
 2. Watch `ask_questioned` for `handoff_reason` on the chip questions over the next week; the eval covers six phrasings, production covers more.
-3. Optional, deferred from P5: give the closing composer the menu's inline submit button so the form clears the fold on a phone (on a 390px phone the scroller's jump-to-end button also overlaps the send button while the form is scrolled to its top).
-4. Optional, from the audit's open decisions: retire the contact-page carry once inquiries from the form are flowing, and decide where the roadmap's rating control sits now that the offer is a single row.
-5. Known limit: the offer follows the latest reply, so a form opened and then abandoned for a new question closes with its draft. A send already in flight still lands: `markSent` lives in the surface's hook, so the receipt pins to the reply it was sent from and the state goes to `sent` even though the form itself has left.
+3. Optional, from the audit's open decisions: retire the contact-page carry once inquiries from the form are flowing, and decide where the roadmap's rating control sits now that the offer is a single row.
+4. Known limit: the offer follows the latest reply, so a form opened and then abandoned for a new question closes with its draft. A send already in flight still lands: `markSent` lives in the surface's hook, so the receipt pins to the reply it was sent from and the state goes to `sent` even though the form itself has left.

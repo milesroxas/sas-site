@@ -115,7 +115,7 @@ export const ASK_HANDOFFS: Record<AskHandoffKind, AskHandoffCopy> = {
   },
   no_answer: {
     form: 'general',
-    lead: "There's nothing on the site about that yet.",
+    lead: "The site doesn't cover that, but the team can.",
     offer: 'Want a person to answer?',
   },
   none: { form: 'general', lead: null, offer: 'Want a person to reply?' },

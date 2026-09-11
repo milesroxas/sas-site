@@ -19,6 +19,15 @@ type AskSubmitButtonProps = Omit<
 }
 
 /**
+ * The button's size in a one-line composer (the menu's pill, the closing
+ * band): a 40px touch target on a phone with a little reach around it, a
+ * 28px disc from `md`. The glyph scales with it.
+ */
+export const askComposerButton =
+  'relative size-10 after:absolute after:-inset-1 md:size-7 md:after:hidden'
+export const askComposerIcon = 'size-5 md:size-3.5'
+
+/**
  * The composer's one button across every Ask surface. Idle it submits the
  * form; while a reply is in flight it is an enabled Stop, never a dimmed
  * disabled arrow (a half-opacity button reads as broken, not busy). The two

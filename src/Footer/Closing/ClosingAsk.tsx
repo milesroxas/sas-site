@@ -20,7 +20,7 @@ import {
   type AskUIMessage,
 } from '@/features/ask/handoff'
 import { errorText, TranscriptItems, transcriptItemEnter } from '@/features/ask/messages'
-import { AskSubmitButton } from '@/features/ask/SubmitButton'
+import { AskSubmitButton, askComposerButton, askComposerIcon } from '@/features/ask/SubmitButton'
 import { useAskChat } from '@/features/ask/useAskChat'
 import { leakExcite } from '@/features/immersive'
 import type { Footer } from '@/payload-types'
@@ -123,7 +123,7 @@ export function ClosingAsk({
       <Card
         ref={cardRef}
         className={cn(
-          'relative gap-12 overflow-visible bg-card/75 backdrop-blur-md [--card-spacing:--spacing(6)] [--composer-reserve:--spacing(20)]',
+          'relative gap-12 overflow-visible bg-card/75 backdrop-blur-md [--card-spacing:--spacing(6)] [--composer-reserve:--spacing(16)]',
           'transition-shadow ease-[cubic-bezier(0.19,1,0.22,1)]',
           open ? 'ring-transparent duration-250' : 'duration-150',
           keyboard && 'transition-none',
@@ -169,9 +169,10 @@ export function ClosingAsk({
         </div>
 
         {/* One composer stays in place through both states, preserving focus
-            and drafts. One line, like the menu's pill: it grows with a long
-            draft (the textarea sizes to its content), so the conversation,
-            not an empty message box, owns the panel. */}
+            and drafts. One line with the send button beside it, as the menu's
+            pill: a long draft grows the line (the textarea sizes to its
+            content once `min-h-0` lifts the boxed textarea's minimum), so the
+            conversation, not an empty message box, owns the panel. */}
         <form ref={formRef} onSubmit={submit} className="relative z-20 px-6">
           <InputGroup>
             <InputGroupTextarea
@@ -187,12 +188,13 @@ export function ClosingAsk({
                 }
               }}
               placeholder="Ask anything…"
+              enterKeyHint="send"
               maxLength={500}
               rows={1}
               required
-              className="text-base md:text-xs"
+              className="min-h-0 text-base md:text-xs"
             />
-            <InputGroupAddon align="block-end">
+            <InputGroupAddon align="inline-end">
               {messages.length > 0 && !open ? (
                 <Button
                   type="button"
@@ -214,7 +216,8 @@ export function ClosingAsk({
                 busy={busy}
                 canSend={canSend}
                 onStop={stop}
-                className="relative ml-auto size-11 md:size-6 md:after:absolute md:after:-inset-2.5"
+                className={askComposerButton}
+                iconClassName={askComposerIcon}
               />
             </InputGroupAddon>
           </InputGroup>

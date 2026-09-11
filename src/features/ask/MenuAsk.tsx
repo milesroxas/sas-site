@@ -27,7 +27,7 @@ import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
 import { ASK_HANDOFF_TERMS_FALLBACK, type AskHandoffTerms, type AskUIMessage } from './handoff'
 import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
-import { AskSubmitButton } from './SubmitButton'
+import { AskSubmitButton, askComposerButton, askComposerIcon } from './SubmitButton'
 import { useAskChat } from './useAskChat'
 
 /**
@@ -94,9 +94,6 @@ const iconActions = '-mr-3 flex gap-1 self-center md:mr-0 md:self-start'
  * padded by `::after` out to the pill's full height so the target is 48px
  * without the disc filling the capsule. Compact from `md`.
  */
-const composerButton = 'relative size-10 after:absolute after:-inset-1 md:size-7 md:after:hidden'
-const composerIcon = 'size-5 md:size-3.5'
-
 type MenuAskProps = {
   /** Takeover-menu open state: closing the menu returns to the preview view. */
   open: boolean
@@ -384,8 +381,8 @@ export function MenuAsk({
               busy={busy}
               canSend={canSend}
               onStop={stop}
-              className={composerButton}
-              iconClassName={composerIcon}
+              className={askComposerButton}
+              iconClassName={askComposerIcon}
             />
           </InputGroupAddon>
         </InputGroup>
