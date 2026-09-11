@@ -18,6 +18,7 @@ import {
   readUsageReport,
   refreshUsageReport,
 } from '@/features/ask/usage'
+import { captureServerEvent } from '@/utilities/posthog'
 
 /**
  * Public RAG endpoint (mounted under /api by the Payload root config).
@@ -204,6 +205,16 @@ const ask: Endpoint = {
     // Follow-ups still reach the model source-less so the conversation can
     // carry ("thanks", "can you say that more simply?").
     if (sources.length === 0 && !isFollowUp) {
+      captureServerEvent({
+        headers: req.headers,
+        fallbackDistinctId: `ask:${crypto.randomUUID()}`,
+        event: 'ask_questioned',
+        properties: {
+          is_follow_up: false,
+          source_count: 0,
+          question_length: question.length,
+        },
+      })
       return staticAnswerResponse(NO_SOURCES_ANSWER)
     }
 
@@ -233,6 +244,16 @@ const ask: Endpoint = {
           questionLength: question.length,
           sourceCount: sources.length,
           usage,
+        })
+        captureServerEvent({
+          headers: req.headers,
+          fallbackDistinctId: `ask:${crypto.randomUUID()}`,
+          event: 'ask_questioned',
+          properties: {
+            is_follow_up: isFollowUp,
+            source_count: sources.length,
+            question_length: question.length,
+          },
         })
       },
     })

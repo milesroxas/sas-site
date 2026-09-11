@@ -8,6 +8,7 @@ import {
   type InquiryType,
 } from '@/shared/content/inquiry'
 import { isValidEmailAddress, normalizeEmailAddress } from '@/utilities/emailAddress'
+import { captureServerEvent } from '@/utilities/posthog'
 import { deliverInquiryEmails } from './notify'
 
 /**
@@ -162,6 +163,21 @@ const submit: Endpoint = {
       // for a row that could still roll back. Awaited rather than left
       // floating, because a serverless invocation ends with the response.
       await deliverInquiryEmails(req, created)
+
+      // Deferred past the response, so the lead never waits on analytics.
+      captureServerEvent({
+        headers: req.headers,
+        fallbackDistinctId: `inquiry:${created.id}`,
+        event: 'inquiry_submitted',
+        properties: {
+          inquiry_type: type,
+          capability_count: isProject
+            ? Array.isArray(created.capabilities)
+              ? created.capabilities.length
+              : 0
+            : 0,
+        },
+      })
 
       return json({ reference: created.reference, submittedAt: created.submittedAt })
     } catch (err) {

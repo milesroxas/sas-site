@@ -53,8 +53,6 @@ declare global {
       NEXT_PUBLIC_POSTHOG_KEY?: string
       /** PostHog ingestion host. Optional — defaults to https://us.i.posthog.com; set https://eu.i.posthog.com for EU cloud. */
       NEXT_PUBLIC_POSTHOG_HOST?: string
-      /** GA4 measurement ID (G-...). Optional — Google Analytics disabled when unset. */
-      NEXT_PUBLIC_GA_MEASUREMENT_ID?: string
     }
   }
 }

@@ -5,6 +5,7 @@ import type { Subscriber } from '@/payload-types'
 import { sendNewsletterConfirmEmail } from '@/shared/email'
 import { isValidEmailAddress, normalizeEmailAddress } from '@/utilities/emailAddress'
 import { getServerSideURL } from '@/utilities/getURL'
+import { captureServerEvent } from '@/utilities/posthog'
 
 /**
  * Public newsletter endpoints (mounted under /api by the Payload root config).
@@ -133,6 +134,12 @@ const subscribe: Endpoint = {
           throw err
         }
         await deliverConfirmEmail(req, created)
+        captureServerEvent({
+          headers: req.headers,
+          fallbackDistinctId: `subscriber:${created.id}`,
+          event: 'newsletter_signup_started',
+          properties: { audience: audience.slug, returning: false },
+        })
         return json(SUBSCRIBE_OK)
       }
 
@@ -167,6 +174,15 @@ const subscribe: Endpoint = {
         await deliverConfirmEmail(req, existing)
       }
 
+      if (existing.status === 'unsubscribed') {
+        captureServerEvent({
+          headers: req.headers,
+          fallbackDistinctId: `subscriber:${existing.id}`,
+          event: 'newsletter_signup_started',
+          properties: { audience: audience.slug, returning: true },
+        })
+      }
+
       return json(SUBSCRIBE_OK)
     } catch (err) {
       req.payload.logger.error({ msg: 'Newsletter subscribe failed', err })
@@ -199,6 +215,11 @@ const confirm: Endpoint = {
               collection: 'subscribers',
               id: subscriber.id,
               data: { status: 'subscribed' },
+            })
+            captureServerEvent({
+              headers: req.headers,
+              fallbackDistinctId: `subscriber:${subscriber.id}`,
+              event: 'newsletter_signup_confirmed',
             })
           }
           return Response.redirect(`${base}/newsletter/confirmed`, 302)
@@ -235,6 +256,11 @@ const unsubscribe: Endpoint = {
           collection: 'subscribers',
           id: subscriber.id,
           data: { status: 'unsubscribed' },
+        })
+        captureServerEvent({
+          headers: req.headers,
+          fallbackDistinctId: `subscriber:${subscriber.id}`,
+          event: 'newsletter_unsubscribed',
         })
       }
       return ok

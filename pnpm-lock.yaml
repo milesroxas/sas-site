@@ -33,9 +33,6 @@ importers:
       '@gsap/react':
         specifier: ^2.1.2
         version: 2.1.2(gsap@3.15.0)(react@19.2.7)
-      '@next/third-parties':
-        specifier: ^16.3.4
-        version: 16.3.4(next@16.3.4(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.0.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.77.4))(react@19.2.7)
       '@payloadcms/admin-bar':
         specifier: 3.88.0
         version: 3.88.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -153,6 +150,9 @@ importers:
       posthog-js:
         specifier: ^1.399.2
         version: 1.399.2
+      posthog-node:
+        specifier: ^5.51.8
+        version: 5.51.8
       prism-react-renderer:
         specifier: ^2.4.1
         version: 2.4.1(react@19.2.7)
@@ -1798,12 +1798,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@next/third-parties@16.3.4':
-    resolution: {integrity: sha512-DjyyOoBHPHYFgQ0l9VXJFWMeO5FvnFP+bXM9ZC0eGYluVwpNIvMjDPhDhM/VlhK+VK423G+8LMD+y/xwEKAi+w==}
-    peerDependencies:
-      next: ^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0-beta.0
-      react: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0
-
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -2235,8 +2229,14 @@ packages:
   '@posthog/core@1.40.2':
     resolution: {integrity: sha512-H12j7O9iHGvpK9t2ko8W4pvfbV1pBDxrsWC1LA6yp2RhzwvC4T3sWhu+AekDQJSRSrJEWlB0t/Ueq9QhPSq7FQ==}
 
+  '@posthog/core@1.52.0':
+    resolution: {integrity: sha512-pvbdeRRpizktmo8MXZQxjAI4aFfNajwkzxbm72wKV9n2wWcnQWa4m+AqTI2zmmCSsYk7F666rRUdvYqZLjjhWg==}
+
   '@posthog/types@1.393.0':
     resolution: {integrity: sha512-vzWeEJZ7ERQhFRoQYaP5jzN1JvIu46UJyHXsuv+dTGW2r3sMgREOhNxXLZjmFHwZ8/FOHQoyqqQmXTCXZSfMSg==}
+
+  '@posthog/types@1.409.4':
+    resolution: {integrity: sha512-X8egIUjMe1uItlxpbLfWypS2SWLOF+5Vzvne/44AsaHa/fYbtSy8itJNk5iQS1MZEwVYAEYUsQY1vuN61jpxTg==}
 
   '@preact/signals-core@1.14.3':
     resolution: {integrity: sha512-m0K3vnbSLC5rHs2ZVfeAMvBtT1zIyq4mxx5OlNncSgMj5Iz6W5Rn3kPrDxAC+iIKmiVe0lSl6U37t5ZkEWoVAw==}
@@ -6269,6 +6269,15 @@ packages:
   posthog-js@1.399.2:
     resolution: {integrity: sha512-xcvrGEgUYtIVcWPRlVfc/NkMo0IP9nwnM/dzJIAzjDOSewkdDk/9T4Vz1+gooEhXdQCPfG44jSK95mVJsoySqA==}
 
+  posthog-node@5.51.8:
+    resolution: {integrity: sha512-TCqgAYbACwb/D3VI2S861ugD+FavvowQfak8eMwS/wATS+g0Wj+YpsABrBEKi+ZP3Y5SJDcoc7bIH49rlGo1Ww==}
+    engines: {node: ^20.20.0 || >=22.22.0}
+    peerDependencies:
+      rxjs: ^7.0.0
+    peerDependenciesMeta:
+      rxjs:
+        optional: true
+
   potpack@1.0.2:
     resolution: {integrity: sha512-choctRBIV9EMT9WGAZHn3V7t0Z2pMQyl0EZE6pFc/6ml3ssw7Dlf/oAOvFwjm1HVsqfQN8GfeFyJ+d8tRzqueQ==}
 
@@ -6948,9 +6957,6 @@ packages:
     resolution: {integrity: sha512-SNiDnXyHSrxVcIOtVbULzcTmniUiwcV7Nwdyj1twVubeTmbjoa8p69KKDpfkdoOavuM4/GRm1+ykI8qqnavHoA==}
     engines: {node: '>=10'}
     hasBin: true
-
-  third-party-capital@1.0.20:
-    resolution: {integrity: sha512-oB7yIimd8SuGptespDAZnNkzIz+NWaJCu2RMsbs4Wmp9zSDUM8Nhi3s2OOcqYuv3mN4hitXc8DVx+LyUmbUDiA==}
 
   thread-stream@3.2.0:
     resolution: {integrity: sha512-zLBvqpwr4Esa0kRjcrzGU6zL25lePWaCLMx0RQFrmteozIfeNdaMLpG5U7PeHzvlFkAWaRKA9/KVW4F60iB+qw==}
@@ -9037,12 +9043,6 @@ snapshots:
   '@next/swc-win32-x64-msvc@16.3.4':
     optional: true
 
-  '@next/third-parties@16.3.4(next@16.3.4(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.0.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.77.4))(react@19.2.7)':
-    dependencies:
-      next: 16.3.4(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.0.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.77.4)
-      react: 19.2.7
-      third-party-capital: 1.0.20
-
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -9618,7 +9618,13 @@ snapshots:
     dependencies:
       '@posthog/types': 1.393.0
 
+  '@posthog/core@1.52.0':
+    dependencies:
+      '@posthog/types': 1.409.4
+
   '@posthog/types@1.393.0': {}
+
+  '@posthog/types@1.409.4': {}
 
   '@preact/signals-core@1.14.3': {}
 
@@ -13714,6 +13720,10 @@ snapshots:
     transitivePeerDependencies:
       - preact-render-to-string
 
+  posthog-node@5.51.8:
+    dependencies:
+      '@posthog/core': 1.52.0
+
   potpack@1.0.2: {}
 
   preact@10.29.7: {}
@@ -14593,8 +14603,6 @@ snapshots:
       acorn: 8.16.0
       commander: 2.20.3
       source-map-support: 0.5.21
-
-  third-party-capital@1.0.20: {}
 
   thread-stream@3.2.0:
     dependencies:

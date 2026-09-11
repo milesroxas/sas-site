@@ -1,7 +1,8 @@
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
-import type { Block, Field } from 'payload'
+import type { Block, CollectionAfterChangeHook, Field } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import type { FormSubmission } from '@/payload-types'
 import {
   FORM_DELIVERY,
   FORM_STEP_COPY,
@@ -9,6 +10,7 @@ import {
   INQUIRY_MESSAGE_MAX_LENGTH,
   INQUIRY_TYPES,
 } from '@/shared/content/inquiry'
+import { captureServerEvent } from '@/utilities/posthog'
 
 /**
  * Chips sourced from the studio's own vocabulary.
@@ -143,6 +145,28 @@ const EXTRA_FIELDS: Record<string, Field[]> = {
   number: [placeholderField],
   select: [hintField],
   textarea: [placeholderField, hintField, maxLengthField],
+}
+
+/**
+ * Payload runs afterChange inside the transaction, so nothing here may wait on
+ * the network. `captureServerEvent` only enqueues; the flush happens after the
+ * response, once this transaction has long since committed.
+ */
+const captureFormSubmission: CollectionAfterChangeHook<FormSubmission> = ({
+  doc,
+  operation,
+  req,
+}) => {
+  if (operation !== 'create') return doc
+  captureServerEvent({
+    headers: req.headers,
+    fallbackDistinctId: `form-submission:${doc.id}`,
+    event: 'form_submitted',
+    properties: {
+      form_id: typeof doc.form === 'object' ? doc.form.id : doc.form,
+    },
+  })
+  return doc
 }
 
 /**
@@ -288,5 +312,8 @@ export const formBuilder = formBuilderPlugin({
       read: authenticated,
     },
     admin: { group: 'Forms' },
+    hooks: {
+      afterChange: [captureFormSubmission],
+    },
   },
 })

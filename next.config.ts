@@ -26,7 +26,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['192.168.1.169'],
   // Keep the ffmpeg binary out of the bundler — Next must load it from
   // node_modules at runtime (video poster extraction in Media hooks).
-  serverExternalPackages: ['ffmpeg-static'],
+  // posthog-node is server-only; keep it out of the client graph.
+  serverExternalPackages: ['ffmpeg-static', 'posthog-node'],
   // Vercel packs routes into as few functions as fit under the per-function
   // size cap, so anything traced into every route multiplies the function
   // count (Hobby caps a deployment at 12). Payload's config finder resolves
@@ -124,9 +125,14 @@ const nextConfig: NextConfig = {
       has: [{ type: 'header', key: 'accept', value: '.*text/markdown.*' }],
     },
     // PostHog reverse proxy — first-party /ingest path evades ad blockers.
+    // /static and /array must hit the assets origin; the catch-all is ingest.
     {
       source: '/ingest/static/:path*',
       destination: `${posthogAssetsHost}/static/:path*`,
+    },
+    {
+      source: '/ingest/array/:path*',
+      destination: `${posthogAssetsHost}/array/:path*`,
     },
     {
       source: '/ingest/:path*',

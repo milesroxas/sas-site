@@ -17,7 +17,16 @@ Branch `perf/video-gating-hero-priority` (2026-09-09) ships the next slice, veri
 - Theme bootstrap guard (P1-9): the storage and `matchMedia` reads sit in a `try`, so a blocked-storage browser still gets `data-theme` and the `html { opacity: 0 }` rule releases.
 - `videoFixture` now carries its real poster (`mediaFixture`), so Storybook video stories paint what production paints.
 
-Still open from tier 1: the bundle diet (P0-2), posters through `next/image` and real `sizes` on the blocks that pass none (P1-5), `Critical-CH` scoping (P1-8), Speed Insights draft-mode and internal-traffic filtering (section 7).
+2026-09-10: the PostHog slice of P0-2 is done, and Google Analytics is gone.
+
+- `src/providers/Analytics/PostHog.tsx` imports `posthog-js` dynamically inside the consent effect and waits for idle time before doing so. The 216 KB SDK chunk is absent from the initial HTML (verified against a prerendered page in `.next/server/app`); only the provider component ships, and it carries no SDK code. Initial script count on a prerendered page is unchanged at 29.
+- GA4 and `@next/third-parties` are removed. The provider was a second consent-gated tracker duplicating PostHog pageviews with every ads signal denied, so it bought nothing. The initial shared chunk drops from 179 KB to 172 KB. `AnalyticsProvider` collapsed into `PostHogProvider`, since it no longer had a second child to compose.
+- Session replay is **on**, because it is the UX team's tool and Sentry's replay masks all text and blocks all media. It costs 33 KB gzipped (`recorder.js`), fetched through the proxy after consent and after idle, on sampled sessions only. That is outside the first-paint path this audit is about. Sampling lives in PostHog project settings so the rate changes without a deploy.
+- Canvas recording is forced off via `session_recording.captureCanvas.recordCanvas`, the local override that beats the project-level remote config. Heroes tunnel a WebGL scene into a persistent canvas, and canvas capture would re-encode and upload those frames several times a second, against the media budget P0-1 just bought back.
+- Errors stay with Sentry on both client and server. PostHog exception autocapture is off, so no second autocapture script loads and no exception is billed twice.
+- Server-side conversion events use `posthog-node` behind `after()`, so no flush lands in a request path or inside a Payload transaction.
+
+Still open from tier 1: the rest of the bundle diet (P0-2, mainly the WebGL split, the Ask composer and Sentry Replay), posters through `next/image` and real `sizes` on the blocks that pass none (P1-5), `Critical-CH` scoping (P1-8), Speed Insights draft-mode and internal-traffic filtering (section 7).
 
 ## 1. Summary
 
@@ -151,7 +160,7 @@ Root causes
 - `src/Footer/Closing/FooterClosing.tsx` renders `ClosingLightLeak`, which statically imports `LightLeak` from `@/features/immersive`. That file imports `@react-three/fiber` and `three` and mounts its own `<Canvas>` (a second WebGL context) when the closing band is uncovered. It is on every page that renders the closing band, which is every work page.
 - `src/Header/Component.client.tsx` statically imports the `TakeoverMenu`, which imports `MenuAsk`, which imports `useAskChat` (`@ai-sdk/react`, `ai`). `FooterClosing` does the same through `AskWidget`. The AI SDK pulls the full zod runtime. That is about 120 KB gzipped for a composer that is behind a closed menu and below the closing band.
 - `src/instrumentation-client.ts` registers `Sentry.replayIntegration()` and `consoleLoggingIntegration` eagerly, with `enableLogs`. Replay is the heaviest Sentry integration and can be lazy-loaded; the SDK supports loading it after `init`.
-- `src/providers/Analytics/PostHog.tsx` imports `posthog-js` statically. Initialization is correctly gated on consent, but the SDK bytes are not.
+- ~~`src/providers/Analytics/PostHog.tsx` imports `posthog-js` statically. Initialization is correctly gated on consent, but the SDK bytes are not.~~ Fixed 2026-09-10, see section 0.
 - The `@c15t/nextjs` consent manager is bundled with its full UI and its global stylesheet.
 
 Recommendation

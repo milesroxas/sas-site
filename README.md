@@ -115,7 +115,6 @@ Optional — each feature is disabled when its variable is unset:
 | `NEWSLETTER_FROM_ADDRESS`, `NEWSLETTER_FROM_NAME` | Newsletter-specific sender; falls back to `RESEND_FROM_*` |
 | `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | Sentry monitoring; the DSN enables the SDK, the rest enable build-time source map upload |
 | `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` | PostHog analytics (host defaults to US cloud) |
-| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics 4 |
 | `NEXT_PUBLIC_C15T_URL` | c15t consent backend; unset = consent stored in the browser only |
 | `INDEXNOW_KEY` | Served at `/indexnow.txt`; pings only fire in production |
 | `CHROMATIC_PROJECT_TOKEN` | Storybook publishing (`pnpm chromatic`) |
