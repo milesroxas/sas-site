@@ -57,3 +57,8 @@ export const LineFilled: Story = {
   args: { variant: 'line', defaultValue: 'maya@northlight.co' },
   decorators: Line.decorators,
 }
+
+/** No chrome: the container (an `inset` FieldGroup row) draws the field and its states. */
+export const Bare: Story = {
+  args: { variant: 'bare', placeholder: 'you@company.com' },
+}

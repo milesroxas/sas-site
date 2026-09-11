@@ -99,3 +99,51 @@ export const Fieldset: Story = {
     </FieldSet>
   ),
 }
+
+/**
+ * Apple's inset grouped form: one raised block, rows split by hairlines from
+ * the label lane, focus and invalid drawn inside the row. Pair with
+ * `Input variant="bare"`.
+ */
+export const InsetGroup: Story = {
+  render: () => (
+    <FieldGroup className="w-96" variant="inset">
+      <Field orientation="horizontal">
+        <FieldLabel htmlFor="inset-name">Name</FieldLabel>
+        <Input autoComplete="name" id="inset-name" placeholder="Your name" variant="bare" />
+      </Field>
+      <Field orientation="horizontal">
+        <FieldLabel htmlFor="inset-email">Email</FieldLabel>
+        <Input
+          autoComplete="email"
+          defaultValue="jordan@northwind.co"
+          id="inset-email"
+          type="email"
+          variant="bare"
+        />
+        <FieldDescription>From your message</FieldDescription>
+      </Field>
+    </FieldGroup>
+  ),
+}
+
+export const InsetGroupInvalid: Story = {
+  render: () => (
+    <FieldGroup className="w-96" variant="inset">
+      <Field orientation="horizontal">
+        <FieldLabel htmlFor="inset-invalid-name">Name</FieldLabel>
+        <Input defaultValue="Jordan Lee" id="inset-invalid-name" variant="bare" />
+      </Field>
+      <Field orientation="horizontal">
+        <FieldLabel htmlFor="inset-invalid-email">Email</FieldLabel>
+        <Input
+          aria-invalid
+          defaultValue="jordan@northwind"
+          id="inset-invalid-email"
+          type="email"
+          variant="bare"
+        />
+      </Field>
+    </FieldGroup>
+  ),
+}

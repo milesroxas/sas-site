@@ -37,12 +37,25 @@ function FieldLegend({
   )
 }
 
-function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
+/**
+ * `inset` is Apple's inset grouped form: the fields share one raised block
+ * and read as rows of it, each a fixed label lane beside a `bare` control,
+ * split by hairlines that start at the label (see `Field`). A short form set
+ * inside other chrome (Ask's handoff card) asks for a name and an address in
+ * the space of one control, and AutoFill fills the block in one tap.
+ */
+function FieldGroup({
+  className,
+  variant = 'default',
+  ...props
+}: React.ComponentProps<'div'> & { variant?: 'default' | 'inset' }) {
   return (
     <div
       data-slot="field-group"
+      data-variant={variant}
       className={cn(
         'group/field-group @container/field-group flex w-full flex-col gap-4 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4',
+        'data-[variant=inset]:gap-0 data-[variant=inset]:overflow-hidden data-[variant=inset]:rounded-lg data-[variant=inset]:bg-background data-[variant=inset]:shadow-xs data-[variant=inset]:ring-1 data-[variant=inset]:ring-foreground/10 dark:data-[variant=inset]:bg-input/30',
         className,
       )}
       {...props}
@@ -50,20 +63,39 @@ function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-const fieldVariants = cva('group/field flex w-full gap-2 data-[invalid=true]:text-destructive', {
-  variants: {
-    orientation: {
-      vertical: 'flex-col *:w-full [&>.sr-only]:w-auto',
-      horizontal:
-        'flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px',
-      responsive:
-        'flex-col *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px',
+/**
+ * A row of an `inset` group: 44px for touch, 36px from md; a hairline on its
+ * top edge from the label lane on (none on the first row); focus and an
+ * invalid control draw an inset ring, since the group clips anything outside,
+ * and the hairlines on both edges of that row step aside for it.
+ */
+const insetRow = [
+  'group-data-[variant=inset]/field-group:relative group-data-[variant=inset]/field-group:min-h-11 group-data-[variant=inset]/field-group:gap-3 group-data-[variant=inset]/field-group:px-3 md:group-data-[variant=inset]/field-group:min-h-9',
+  'group-data-[variant=inset]/field-group:not-first:before:absolute group-data-[variant=inset]/field-group:not-first:before:top-0 group-data-[variant=inset]/field-group:not-first:before:right-0 group-data-[variant=inset]/field-group:not-first:before:left-3 group-data-[variant=inset]/field-group:not-first:before:h-px group-data-[variant=inset]/field-group:not-first:before:bg-border',
+  'group-data-[variant=inset]/field-group:has-[:focus-visible]:inset-ring-2 group-data-[variant=inset]/field-group:has-[:focus-visible]:inset-ring-ring/50',
+  'group-data-[variant=inset]/field-group:has-[[aria-invalid=true]]:inset-ring-2 group-data-[variant=inset]/field-group:has-[[aria-invalid=true]]:inset-ring-destructive/45',
+  'group-data-[variant=inset]/field-group:has-[:focus-visible,[aria-invalid=true]]:before:opacity-0 group-data-[variant=inset]/field-group:[[data-slot=field]:has(:focus-visible,[aria-invalid=true])+&]:before:opacity-0',
+]
+
+const fieldVariants = cva(
+  ['group/field flex w-full gap-2 data-[invalid=true]:text-destructive', ...insetRow],
+  {
+    variants: {
+      orientation: {
+        vertical: 'flex-col *:w-full [&>.sr-only]:w-auto',
+        // An action row (a button beside its note) wraps the note under the
+        // button once the two no longer fit side by side.
+        horizontal:
+          'flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px has-[>[data-slot=button]]:flex-wrap',
+        responsive:
+          'flex-col *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px',
+      },
+    },
+    defaultVariants: {
+      orientation: 'vertical',
     },
   },
-  defaultVariants: {
-    orientation: 'vertical',
-  },
-})
+)
 
 function Field({
   className,
@@ -99,7 +131,11 @@ function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
  * editorial treatment reads the same.
  */
 const fieldLabelVariants = cva(
-  'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-2 dark:has-data-checked:bg-primary/10',
+  [
+    'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-2 dark:has-data-checked:bg-primary/10',
+    // The label lane of an `inset` row: fixed, so every control starts on one line.
+    'group-data-[variant=inset]/field-group:w-11 group-data-[variant=inset]/field-group:max-w-11 group-data-[variant=inset]/field-group:shrink-0 group-data-[variant=inset]/field-group:text-base/5 group-data-[variant=inset]/field-group:font-normal md:group-data-[variant=inset]/field-group:text-sm/5',
+  ],
   {
     variants: {
       variant: {
@@ -190,6 +226,10 @@ function FieldTitle({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
+/** A leading glyph on a description or error line (a lock, an alert) sits on its first line. */
+const statusGlyph =
+  'has-[>svg]:flex has-[>svg]:items-center has-[>svg]:gap-1.5 [&>svg]:size-3 [&>svg]:shrink-0'
+
 function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
   return (
     <p
@@ -198,6 +238,9 @@ function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
         'text-left text-xs/relaxed leading-normal font-normal text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-1.5',
         'last:mt-0 nth-last-2:-mt-1',
         '[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary',
+        statusGlyph,
+        // Inside an `inset` row it is a trailing note on one line ("From your message").
+        'group-data-[variant=inset]/field-group:shrink-0 group-data-[variant=inset]/field-group:whitespace-nowrap',
         className,
       )}
       {...props}
@@ -273,7 +316,7 @@ function FieldError({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn('text-xs/relaxed font-normal text-destructive', className)}
+      className={cn('text-xs/relaxed font-normal text-destructive', statusGlyph, className)}
       {...props}
     >
       {content}

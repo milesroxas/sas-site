@@ -4,7 +4,7 @@ import type * as React from 'react'
 import { cn } from '@/utilities/ui'
 
 /**
- * Two input treatments, stated once.
+ * Three input treatments, stated once.
  *
  * - `default`: the boxed admin/utility control (filters, inline forms).
  * - `line`: the site's editorial form control — no box, a single hairline
@@ -12,6 +12,9 @@ import { cn } from '@/utilities/ui'
  *   track them: empty rests on `--input`, a filled value darkens the rule to
  *   `--foreground`, and focus takes it to `--primary` (the label follows via
  *   `FieldLabel variant="mono"`, which reads the field's focus with `has`).
+ * - `bare`: no chrome of its own, for an input whose container draws the
+ *   field, its focus and its invalid state (a row of an `inset` FieldGroup),
+ *   like Textarea's `bare`.
  *
  * `text-base` below md in both: iOS Safari zooms the page when a focused
  * control is under 16px, and the zoom outlives the form.
@@ -24,6 +27,7 @@ const inputVariants = cva(
         default:
           'h-7 rounded-md border border-input bg-input/20 px-2 py-0.5 text-base file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-xs/relaxed file:font-medium file:text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 md:text-xs/relaxed dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
         line: 'h-auto rounded-none border-0 border-b border-input bg-transparent px-0 pb-3 text-base not-placeholder-shown:border-b-foreground focus-visible:border-b-primary aria-invalid:border-b-destructive md:text-lg/relaxed',
+        bare: 'h-auto rounded-none border-0 bg-transparent p-0 text-base/5 md:text-sm/5',
       },
     },
     defaultVariants: {
