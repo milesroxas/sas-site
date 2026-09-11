@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
-import { askHandoffChat, createAskChat } from './fixtures'
+import { askHandoffChat, askHandoffTermsFixture, createAskChat } from './fixtures'
 import { MenuAsk } from './MenuAsk'
+import { askSwapSettled, openAskHandoff } from './storyPlays'
 
 /**
  * MenuAsk lives in the takeover menu's center column: the preview slot on top
@@ -98,14 +99,28 @@ export const Mobile: Story = {
 }
 
 /**
- * Phone, handoff card as the whole reply: the inset rows and the send action
- * are 44px targets, and the field labels keep one lane on the narrow column.
+ * Phone, the handoff as the whole reply: the lead line, then the offer's
+ * line and chip (a 44px target) under it, with the question still in view.
  */
 export const MobileHandoff: Story = {
   ...Mobile,
   args: {
+    terms: askHandoffTermsFixture,
     transport: askHandoffChat.transport(),
     initialMessages: askHandoffChat.get(),
+  },
+}
+
+/**
+ * Phone, the offer opened: the inset rows and the send action are 44px
+ * targets, and the field labels keep one lane on the narrow column.
+ */
+export const MobileHandoffForm: Story = {
+  ...MobileHandoff,
+  parameters: { ...Mobile.parameters, ...askSwapSettled },
+  play: async (context) => {
+    await context.userEvent.click(context.canvas.getByRole('textbox', { name: 'Ask a question' }))
+    await openAskHandoff(context)
   },
 }
 

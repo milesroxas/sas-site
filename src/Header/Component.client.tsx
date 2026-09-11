@@ -4,6 +4,7 @@ import Link from 'next/link'
 import type React from 'react'
 import { Container } from '@/components/Container'
 import { useScrolledChrome } from '@/components/SiteChrome/chrome-scroll'
+import type { AskHandoffTerms } from '@/features/ask/handoff'
 import type { Header } from '@/payload-types'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
@@ -22,9 +23,16 @@ interface HeaderClientProps {
   menuContent: MenuContent
   /** Site Info › Ask › Hide Ask: the takeover menu renders without the composer. */
   askHidden?: boolean
+  /** Site Info's reply promise, for the menu transcript's handoff. */
+  askTerms?: AskHandoffTerms
 }
 
-export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent, askHidden }) => {
+export const HeaderClient: React.FC<HeaderClientProps> = ({
+  data,
+  menuContent,
+  askHidden,
+  askTerms,
+}) => {
   const { menuOpen, setMenuOpen, menuButtonRef } = useTakeoverMenuState()
 
   // Past a small scroll threshold both fixed bars shrink so more of the page
@@ -115,6 +123,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data, menuContent, a
         onClose={() => setMenuOpen(false)}
         menuButtonRef={menuButtonRef}
         askHidden={askHidden}
+        askTerms={askTerms}
       />
     </>
   )

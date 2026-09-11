@@ -1,5 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { askHandoffChat, askSourcesFixture, createAskChat } from '@/features/ask/fixtures'
+import {
+  askHandoffChat,
+  askHandoffTermsFixture,
+  askSourcesFixture,
+  createAskChat,
+} from '@/features/ask/fixtures'
+import {
+  askSwapSettled,
+  openAskHandoff,
+  sendAskHandoff,
+  stubInquiryIntake,
+} from '@/features/ask/storyPlays'
 import { ClosingAsk } from './ClosingAsk'
 
 const reply = createAskChat().assistant(
@@ -16,7 +27,7 @@ const meta = {
       </div>
     ),
   ],
-  args: { transport: reply.transport() },
+  args: { terms: askHandoffTermsFixture, transport: reply.transport() },
 } satisfies Meta<typeof ClosingAsk>
 export default meta
 
@@ -52,9 +63,27 @@ export const SourcesOpen: Story = {
   },
 }
 
-/** A pricing question: the handoff card is the whole reply (Paper "Ask handoff - C1"). */
+/** A pricing question: the handoff is the whole reply, its lead line then the offer, with the question still in view. */
 export const Handoff: Story = {
   args: { initialMessages: askHandoffChat.get(), transport: askHandoffChat.transport() },
+}
+
+/** The offer opened in the band's short panel: the form must fit the transcript viewport above the composer. */
+export const HandoffForm: Story = {
+  args: Handoff.args,
+  parameters: askSwapSettled,
+  play: openAskHandoff,
+}
+
+/** Sent from the band: the form becomes its receipt, the composer ready for the next question. */
+export const HandoffSent: Story = {
+  args: Handoff.args,
+  parameters: askSwapSettled,
+  beforeEach: () => stubInquiryIntake(),
+  play: async (context) => {
+    await openAskHandoff(context)
+    await sendAskHandoff(context, { name: 'Jordan Lee', email: 'jordan@northwind.co' })
+  },
 }
 
 export const Thinking: Story = {

@@ -1,6 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { AskWidget } from './AskWidget'
-import { askHandoffChat, askHandoffFixture, askSourcesFixture, createAskChat } from './fixtures'
+import {
+  askHandoffChat,
+  askHandoffFixture,
+  askHandoffTermsFixture,
+  askSourcesFixture,
+  createAskChat,
+} from './fixtures'
+import { askSwapSettled, openAskHandoff, sendAskHandoff, stubInquiryIntake } from './storyPlays'
 
 /**
  * All stories drive the real `useChat` lifecycle through a scripted transport
@@ -20,6 +27,7 @@ const meta = {
       </div>
     ),
   ],
+  args: { terms: askHandoffTermsFixture },
 } satisfies Meta<typeof AskWidget>
 
 export default meta
@@ -120,8 +128,9 @@ export const SourcesOpen: Story = {
 }
 
 /**
- * A pricing question: nothing to publish, so the handoff card is the whole
- * reply. Send stays off until both fields hold something.
+ * A pricing question: nothing to publish, so the handoff is the whole reply.
+ * The reason's lead line lands as the assistant's words, the offer a beat
+ * after it.
  */
 export const Handoff: Story = {
   args: {
@@ -130,7 +139,14 @@ export const Handoff: Story = {
   },
 }
 
-/** The visitor already wrote their address: it starts the email field, marked "From your message". */
+/** The offer opened: the row becomes the form in place. Send stays off until both fields hold something. */
+export const HandoffForm: Story = {
+  args: Handoff.args,
+  parameters: askSwapSettled,
+  play: openAskHandoff,
+}
+
+/** The visitor already wrote their address: the form lands open with it filled, marked "From your message". */
 const handoffEmailChat = createAskChat()
   .user("Can you send me a quote? I'm at jordan@northwind.co")
   .assistant(({ writer }) => {
@@ -150,37 +166,30 @@ export const HandoffFromMessage: Story = {
 /** A malformed address is caught before anything is posted, in the endpoint's own words. */
 export const HandoffInvalidEmail: Story = {
   args: Handoff.args,
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.type(canvas.getByLabelText('Name'), 'Jordan Lee')
-    await userEvent.type(canvas.getByLabelText('Email'), 'jordan@northwind')
-    await userEvent.click(canvas.getByRole('button', { name: 'Send to the team' }))
+  parameters: askSwapSettled,
+  play: async (context) => {
+    await openAskHandoff(context)
+    await context.userEvent.type(context.canvas.getByLabelText('Name'), 'Jordan Lee')
+    await context.userEvent.type(context.canvas.getByLabelText('Email'), 'jordan@northwind')
+    await context.userEvent.click(context.canvas.getByRole('button', { name: 'Send to the team' }))
   },
 }
 
 /**
  * Sent: the intake is stubbed to answer like /api/inquiries/submit, and the
- * card becomes its receipt in place.
+ * form becomes its receipt in place.
  */
 export const HandoffSent: Story = {
   args: Handoff.args,
-  beforeEach: () => {
-    const fetch = window.fetch
-    window.fetch = async (input, init) =>
-      String(input).endsWith('/api/inquiries/submit')
-        ? Response.json({ reference: 'SS-7K2Q', submittedAt: new Date().toISOString() })
-        : fetch(input, init)
-    return () => {
-      window.fetch = fetch
-    }
-  },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.type(canvas.getByLabelText('Name'), 'Jordan Lee')
-    await userEvent.type(canvas.getByLabelText('Email'), 'jordan@northwind.co')
-    await userEvent.click(canvas.getByRole('button', { name: 'Send to the team' }))
+  parameters: askSwapSettled,
+  beforeEach: () => stubInquiryIntake(),
+  play: async (context) => {
+    await openAskHandoff(context)
+    await sendAskHandoff(context, { name: 'Jordan Lee', email: 'jordan@northwind.co' })
   },
 }
 
-/** A partial answer: what the site says, its sources, then the card for the rest. */
+/** A partial answer: what the site says, its sources, then the offer for the rest. */
 const partialChat = createAskChat()
   .user('How do we start, and what would it cost?')
   .assistant(({ writer }) => {
@@ -199,7 +208,7 @@ export const PartialAnswerHandoff: Story = {
   },
 }
 
-/** Retrieval came back empty on a first question: the no-answer card, no model call. */
+/** Retrieval came back empty on a first question: the no-answer lead and offer, no model call. */
 const noSourcesChat = createAskChat().assistant(({ writer }) => {
   writer.tool('handoff', { input: { reason: 'no_answer' }, output: askHandoffFixture('no_answer') })
 })
@@ -207,6 +216,28 @@ const noSourcesChat = createAskChat().assistant(({ writer }) => {
 export const NoSources: Story = {
   args: {
     transport: noSourcesChat.transport(),
+  },
+}
+
+/**
+ * A reply that settled with nothing to read (a tool call the schema refused,
+ * an answer cut to nothing): no bubble, but the quiet offer still closes it,
+ * so there is always a way forward.
+ */
+const emptyReplyChat = createAskChat()
+  .user('What does an engagement look like?')
+  .assistant(({ writer }) => {
+    writer.sourceUrl({
+      sourceId: '/posts/positioning-first',
+      title: 'Positioning first, pixels second',
+      url: '/posts/positioning-first',
+    })
+  })
+
+export const EmptyReply: Story = {
+  args: {
+    transport: emptyReplyChat.transport(),
+    initialMessages: emptyReplyChat.get(),
   },
 }
 

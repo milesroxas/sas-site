@@ -3,7 +3,8 @@
 import { useChat } from '@ai-sdk/react'
 import { type ChatTransport, DefaultChatTransport } from 'ai'
 import { useMemo, useState } from 'react'
-import type { AskUIMessage } from './handoff'
+import type { AskHandoffReceipt, AskHandoffSent } from './HandoffPanel'
+import { type AskUIMessage, askHandoffState } from './handoff'
 
 export const MIN_QUESTION_LENGTH = 3
 
@@ -17,13 +18,20 @@ type UseAskChatOptions = {
 }
 
 /**
- * Chat wiring shared by every Ask surface (the /ask page widget and the
- * takeover-menu composer): the /api/ask transport default, busy state, and
- * the min-length-guarded submit that clears the composer, and `stop` for the
- * composer's in-flight Stop button.
+ * Chat wiring shared by every Ask surface (the takeover-menu composer, the
+ * closing band, and the /ask page widget): the /api/ask transport default,
+ * busy state, the min-length-guarded submit that clears the composer,
+ * `stop` for the composer's in-flight Stop button, and the one handoff the
+ * conversation can send.
+ *
+ * Every request carries where the conversation stands with the team
+ * (`handoff`: none, offered, sent) next to the page it was asked on, so the
+ * endpoint can keep the model from offering twice and drop the offer
+ * entirely once the visitor has sent.
  */
 export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOptions) {
   const [question, setQuestion] = useState('')
+  const [sent, setSent] = useState<AskHandoffSent | null>(null)
   const chatTransport = useMemo(
     () =>
       transport ??
@@ -46,7 +54,12 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
   function sendQuestion(text: string) {
     const trimmed = text.trim()
     if (trimmed.length < MIN_QUESTION_LENGTH || busy) return
-    void sendMessage({ text: trimmed })
+    // Where the conversation stands with the team as this question leaves,
+    // merged into the transport's body beside `pagePath`.
+    void sendMessage(
+      { text: trimmed },
+      { body: { handoff: askHandoffState(messages, sent !== null) } },
+    )
     setQuestion('')
     onSend?.()
   }
@@ -56,11 +69,21 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     sendQuestion(question)
   }
 
+  /** The visitor sent their details from the handoff under `messageId`. */
+  function markSent(messageId: string, receipt: AskHandoffReceipt) {
+    setSent({ messageId, receipt })
+  }
+
+  /** A new conversation: the transcript and what it sent go together. */
+  function reset() {
+    setMessages([])
+    setSent(null)
+  }
+
   return {
     question,
     setQuestion,
     messages,
-    setMessages,
     status,
     error,
     busy,
@@ -68,5 +91,8 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     submit,
     sendQuestion,
     stop,
+    sent,
+    markSent,
+    reset,
   }
 }

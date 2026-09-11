@@ -1,23 +1,28 @@
 import type { UIDataTypes } from 'ai'
 import { createChat } from '@/shared/testing/shadcn-helpers/ai-sdk'
-import type { AskHandoff, AskHandoffReason, AskUITools } from './handoff'
+import type { AskHandoff, AskHandoffReason, AskHandoffTerms, AskUITools } from './handoff'
 
 /**
- * Story fixtures for every Ask surface (the /ask widget, the menu, the
- * closing band), so each plays the same transcript shapes /api/ask streams.
+ * Story fixtures for every Ask surface (the menu, the closing band, and the
+ * /ask widget), so each plays the same transcript shapes /api/ask streams.
  */
 
 /** A scripted chat typed like the real transcript, so a story can play the `handoff` tool. */
 export const createAskChat = () => createChat<unknown, UIDataTypes, AskUITools>()
 
+/** Site Info's promise as production has it: what every surface receives as `terms`. */
+export const askHandoffTermsFixture: AskHandoffTerms = {
+  responseTime: 'within 3 business days',
+  scheduleUrl: 'https://calendar.app.google/example',
+}
+
 /** A handoff as /api/ask resolves it, against the production Site Info values. */
 export const askHandoffFixture = (reason: AskHandoffReason): AskHandoff => ({
   reason,
-  responseTime: 'within 3 business days',
-  scheduleUrl: 'https://calendar.app.google/example',
+  ...askHandoffTermsFixture,
 })
 
-/** A pricing question answered with the handoff card alone: the design's first card state. */
+/** A pricing question answered with the handoff alone: the reason's lead line, then the offer. */
 export const askHandoffChat = createAskChat()
   .user('What does a website cost, and when can you start?')
   .assistant(({ writer }) => {

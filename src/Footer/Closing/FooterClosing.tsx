@@ -3,7 +3,7 @@ import { fullViewportSectionClassName } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { CMSLink } from '@/components/Link'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
-import type { AskUIMessage } from '@/features/ask/handoff'
+import type { AskHandoffTerms, AskUIMessage } from '@/features/ask/handoff'
 import { leakExcite } from '@/features/immersive'
 import type { Footer, Media } from '@/payload-types'
 import { SCROLL_REVEAL_CURTAIN_ENTER_OFFSET, ScrollReveal } from '@/shared/ui/scroll-reveal'
@@ -28,6 +28,8 @@ type FooterClosingProps = {
    * inject a scripted transport; real pages omit it and POST /api/ask.
    */
   askTransport?: ChatTransport<AskUIMessage>
+  /** Site Info's reply promise, for the transcript's handoff. */
+  askTerms?: AskHandoffTerms
 }
 
 /**
@@ -136,6 +138,7 @@ export const FooterClosing = ({
   askHidden = false,
   address = [],
   askTransport,
+  askTerms,
 }: FooterClosingProps) => {
   const media = populatedDoc<Media>(closing?.media)
   const note = closing?.address?.note
@@ -192,7 +195,7 @@ export const FooterClosing = ({
               the closing copy. Hidden Ask uses the address panel instead. */}
           {panel === 'ask' ? (
             <div data-reveal="panel" className="min-w-0">
-              <ClosingAsk ask={closing?.ask} transport={askTransport} />
+              <ClosingAsk ask={closing?.ask} terms={askTerms} transport={askTransport} />
             </div>
           ) : null}
           {panel === 'address' ? <ClosingAddressPanel lines={address} note={note} /> : null}

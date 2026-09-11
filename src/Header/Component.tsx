@@ -1,3 +1,4 @@
+import { resolveAskHandoffTerms } from '@/features/ask/handoff'
 import type { Header as HeaderData } from '@/payload-types'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 import { HeaderClient } from './Component.client'
@@ -14,6 +15,7 @@ export async function Header() {
   return (
     <HeaderClient
       askHidden={Boolean(siteInfo?.ask?.hidden)}
+      askTerms={resolveAskHandoffTerms(siteInfo)}
       data={headerData}
       menuContent={menuContent}
     />

@@ -2,7 +2,7 @@
 
 import { IconX } from '@tabler/icons-react'
 import type { ChatTransport } from 'ai'
-import { useId, useRef, useState } from 'react'
+import { useId, useLayoutEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { InputGroup, InputGroupAddon, InputGroupTextarea } from '@/components/ui/input-group'
@@ -14,7 +14,11 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller'
-import type { AskUIMessage } from '@/features/ask/handoff'
+import {
+  ASK_HANDOFF_TERMS_FALLBACK,
+  type AskHandoffTerms,
+  type AskUIMessage,
+} from '@/features/ask/handoff'
 import { errorText, TranscriptItems, transcriptItemEnter } from '@/features/ask/messages'
 import { AskSubmitButton } from '@/features/ask/SubmitButton'
 import { useAskChat } from '@/features/ask/useAskChat'
@@ -28,11 +32,20 @@ type ClosingAskProps = {
   ask?: NonNullable<Footer['closing']>['ask']
   transport?: ChatTransport<AskUIMessage>
   initialMessages?: AskUIMessage[]
+  /** Site Info's reply promise, for the handoff under a finished answer. */
+  terms?: AskHandoffTerms
 }
 
-export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps) {
+export function ClosingAsk({
+  ask,
+  transport,
+  initialMessages,
+  terms = ASK_HANDOFF_TERMS_FALLBACK,
+}: ClosingAskProps) {
   const [open, setOpen] = useState(Boolean(initialMessages?.length))
   const [keyboard, setKeyboard] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const panelId = useId()
   const {
@@ -46,7 +59,33 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
     submit,
     sendQuestion,
     stop,
+    sent,
+    markSent,
   } = useAskChat({ transport, initialMessages, onSend: () => setOpen(true) })
+
+  /**
+   * The transcript panel is bottom-anchored behind the composer, so it keeps
+   * the composer's footprint clear with bottom padding. That reserve is the
+   * composer's measured height plus the card's padding under it, written as
+   * a variable the panel reads, rather than a padding utility picked to look
+   * right: the one-line composer grows with a long draft (`field-sizing`),
+   * and a guessed reserve either covered the last lines of the conversation
+   * or wasted half the panel on air. Offsets, not client rects: the page
+   * frame is scaled while the menu is docked, and a rect read then would bake
+   * that scale in.
+   */
+  useLayoutEffect(() => {
+    const card = cardRef.current
+    const form = formRef.current
+    if (!card || !form) return
+    const measure = () => {
+      card.style.setProperty('--composer-reserve', `${card.offsetHeight - form.offsetTop}px`)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(form)
+    return () => observer.disconnect()
+  }, [])
   const title = ask?.title || 'Ask us anything.'
   const body = ask?.body || 'Work, process, pricing, fit. Answered in seconds.'
 
@@ -82,8 +121,9 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
           the card's corner arc showing at the seam). It fades on the panel's
           timing so the two edges hand over instead of popping. */}
       <Card
+        ref={cardRef}
         className={cn(
-          'relative gap-12 overflow-visible bg-card/75 backdrop-blur-md [--card-spacing:--spacing(6)]',
+          'relative gap-12 overflow-visible bg-card/75 backdrop-blur-md [--card-spacing:--spacing(6)] [--composer-reserve:--spacing(20)]',
           'transition-shadow ease-[cubic-bezier(0.19,1,0.22,1)]',
           open ? 'ring-transparent duration-250' : 'duration-150',
           keyboard && 'transition-none',
@@ -128,8 +168,11 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
           </div>
         </div>
 
-        {/* One composer stays in place through both states, preserving focus and drafts. */}
-        <form onSubmit={submit} className="relative z-20 px-6">
+        {/* One composer stays in place through both states, preserving focus
+            and drafts. One line, like the menu's pill: it grows with a long
+            draft (the textarea sizes to its content), so the conversation,
+            not an empty message box, owns the panel. */}
+        <form ref={formRef} onSubmit={submit} className="relative z-20 px-6">
           <InputGroup>
             <InputGroupTextarea
               ref={inputRef}
@@ -145,9 +188,9 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
               }}
               placeholder="Ask anything…"
               maxLength={500}
-              rows={2}
+              rows={1}
               required
-              className="min-h-14 text-base md:text-xs"
+              className="text-base md:text-xs"
             />
             <InputGroupAddon align="block-end">
               {messages.length > 0 && !open ? (
@@ -183,7 +226,9 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
           inert={!open}
           data-lenis-prevent
           className={cn(
-            'absolute inset-x-0 bottom-0 z-10 flex h-[max(30rem,100%)] origin-bottom flex-col gap-4 overflow-hidden rounded-lg bg-popover pb-40 pt-4 text-popover-foreground shadow-[0_32px_64px_-16px_#0a0a0a38] ring-1 ring-foreground/10 md:pb-36',
+            // Bottom padding is the composer's measured reserve (see the
+            // layout effect above) plus one step of air over it.
+            'absolute inset-x-0 bottom-0 z-10 flex h-[max(30rem,100%)] origin-bottom flex-col gap-4 overflow-hidden rounded-lg bg-popover pb-[calc(var(--composer-reserve)+(--spacing(4)))] pt-4 text-popover-foreground shadow-[0_32px_64px_-16px_#0a0a0a38] ring-1 ring-foreground/10',
             'transition-[transform,opacity,visibility] ease-[cubic-bezier(0.19,1,0.22,1)]',
             open
               ? 'visible transform-none opacity-100 duration-250'
@@ -224,7 +269,13 @@ export function ClosingAsk({ ask, transport, initialMessages }: ClosingAskProps)
                     measure, anchor, and track it; a short transcript sits at the
                     composer end of the viewport rather than the header. */}
                 <MessageScrollerContent className="justify-end gap-4 px-6">
-                  <TranscriptItems messages={messages} status={status} />
+                  <TranscriptItems
+                    messages={messages}
+                    onSent={markSent}
+                    sent={sent}
+                    status={status}
+                    terms={terms}
+                  />
                   {error ? (
                     <MessageScrollerItem messageId="error">
                       <p role="alert" className={`text-sm text-destructive ${transcriptItemEnter}`}>

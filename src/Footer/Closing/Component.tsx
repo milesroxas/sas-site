@@ -1,3 +1,4 @@
+import { resolveAskHandoffTerms } from '@/features/ask/handoff'
 import type { PageClosing } from '@/payload-types'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 import { formatPostalAddress } from './address'
@@ -26,6 +27,7 @@ export async function FooterClosingSection({ closing }: { closing?: PageClosing 
     <FooterClosing
       address={formatPostalAddress(siteInfo?.address)}
       askHidden={Boolean(siteInfo?.ask?.hidden)}
+      askTerms={resolveAskHandoffTerms(siteInfo)}
       closing={resolveClosing(closing, footerData?.closing)}
     />
   )

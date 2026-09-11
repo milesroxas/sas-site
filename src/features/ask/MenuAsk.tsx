@@ -25,7 +25,7 @@ import {
 import { MenuPreviewSlot } from '@/Header/Menu/PreviewSlot'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
-import type { AskUIMessage } from './handoff'
+import { ASK_HANDOFF_TERMS_FALLBACK, type AskHandoffTerms, type AskUIMessage } from './handoff'
 import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
 import { AskSubmitButton } from './SubmitButton'
 import { useAskChat } from './useAskChat'
@@ -115,6 +115,8 @@ type MenuAskProps = {
   /** Transport override for stories/tests, same seam as AskWidget. */
   transport?: ChatTransport<AskUIMessage>
   initialMessages?: AskUIMessage[]
+  /** Site Info's reply promise, for the handoff under a finished answer. */
+  terms?: AskHandoffTerms
 }
 
 /**
@@ -128,6 +130,7 @@ export function MenuAsk({
   exitChatViewRef,
   transport,
   initialMessages,
+  terms = ASK_HANDOFF_TERMS_FALLBACK,
 }: MenuAskProps) {
   const [chatView, setChatView] = useState(false)
   const showTranscript = () => setChatView(true)
@@ -181,13 +184,15 @@ export function MenuAsk({
     question,
     setQuestion,
     messages,
-    setMessages,
     status,
     error,
     busy,
     canSend,
     submit,
     stop,
+    sent,
+    markSent,
+    reset,
   } = useAskChat({
     transport,
     initialMessages,
@@ -216,7 +221,7 @@ export function MenuAsk({
   const resetConversation = () => {
     // A cleared transcript has nothing to show: hand the window back to the
     // preview in the same gesture so the panel exits instead of emptying.
-    setMessages([])
+    reset()
     leaveTranscript()
   }
 
@@ -275,7 +280,10 @@ export function MenuAsk({
               Escape/backdrop layers trigger via exitChatViewRef. Title and
               description read one step up below `md` (16 / 14px, as the
               transcript body does): the registry's 14 / 12px is caption scale
-              on a phone. */}
+              on a phone. The description stays for screen readers only on a
+              phone: chrome is the least important thing on this surface, and
+              its two lines pushed the question just asked out of view above
+              the reply. */}
           <CardHeader
             className={cn(
               'border-b pt-(--card-spacing) motion-safe:transition-opacity',
@@ -284,7 +292,7 @@ export function MenuAsk({
             style={panelContentStyle(chatView)}
           >
             <CardTitle className="text-base md:text-sm">Ask</CardTitle>
-            <CardDescription className="text-sm/relaxed md:text-xs/relaxed">
+            <CardDescription className="text-sm/relaxed max-md:sr-only md:text-xs/relaxed">
               Answers about our work, services, and insights
             </CardDescription>
             <CardAction className={iconActions}>
@@ -319,7 +327,13 @@ export function MenuAsk({
             >
               <MessageScrollerViewport className="overscroll-contain">
                 <MessageScrollerContent className="p-4">
-                  <TranscriptItems messages={messages} status={status} />
+                  <TranscriptItems
+                    messages={messages}
+                    onSent={markSent}
+                    sent={sent}
+                    status={status}
+                    terms={terms}
+                  />
                   {error && (
                     <MessageScrollerItem messageId="error">
                       <p

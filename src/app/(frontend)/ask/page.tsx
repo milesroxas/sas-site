@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next/types'
 import { AskWidget } from '@/features/ask/AskWidget'
+import { resolveAskHandoffTerms } from '@/features/ask/handoff'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 
 export default async function Page() {
@@ -16,7 +17,7 @@ export default async function Page() {
           <h1 className="mb-8 lg:mb-16">Ask</h1>
         </div>
         <div className="max-w-[50rem] mx-auto">
-          <AskWidget />
+          <AskWidget terms={resolveAskHandoffTerms(siteInfo)} />
         </div>
       </div>
     </div>

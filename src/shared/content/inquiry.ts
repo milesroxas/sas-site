@@ -104,9 +104,12 @@ export type InquiryStatus = (typeof INQUIRY_STATUSES)[number]['value']
  * Info › Inquiries; the contact page and Ask's handoff card both read it
  * through here, so they fall back the same way when it is left empty.
  */
+/** The reply promise when Site Info leaves the response time empty. */
+export const INQUIRY_RESPONSE_TIME_FALLBACK = 'shortly'
+
 export const inquiryResponseTime = (
   siteInfo: Pick<SiteInfo, 'inquiries'> | null | undefined,
-): string => siteInfo?.inquiries?.responseTime || 'shortly'
+): string => siteInfo?.inquiries?.responseTime || INQUIRY_RESPONSE_TIME_FALLBACK
 
 /** Human label for a stored value, for emails and read-only summaries. */
 export const inquiryOptionLabel = (

@@ -9,10 +9,17 @@ import {
 } from 'ai'
 import type { Endpoint } from 'payload'
 import { backfillAskIndex, isBackfillRunning, readLastIndexRebuild } from '@/features/ask/backfill'
-import type { AskHandoff, AskUIMessage } from '@/features/ask/handoff'
+import {
+  ASK_HANDOFF_STATES,
+  type AskHandoff,
+  type AskHandoffState,
+  type AskUIMessage,
+} from '@/features/ask/handoff'
 import { askHandoffTool, resolveAskHandoff } from '@/features/ask/handoffTool'
+import { askHistory } from '@/features/ask/history'
 import { messageText } from '@/features/ask/messageText'
 import { ASK_MODEL_API_KEY_VAR, askModel } from '@/features/ask/model'
+import { askSystemPrompt, offersAskHandoff } from '@/features/ask/prompts'
 import { recordAskQuestion } from '@/features/ask/questions'
 import { retrieveSources } from '@/features/ask/retrieve'
 import {
@@ -44,40 +51,12 @@ import { captureServerEvent } from '@/utilities/posthog'
 const MIN_QUESTION_LENGTH = 3
 const MAX_QUESTION_LENGTH = 500
 const MAX_MESSAGES = 30
-/** Cap on the combined text of the whole transcript: the history is client-supplied. */
-const MAX_TOTAL_CHARS = 8_000
 /** Output budget per answer; includes gpt-5 reasoning tokens, so leave headroom over the ~120-word answer. */
 const MAX_ANSWER_TOKENS = 1_200
 /** Source-less follow-up turns are conversational only (a thanks, a rephrase), so cap them hard. */
 const MAX_CHAT_ONLY_TOKENS = 400
 /** Cap on the retrieval query built from the last two user turns (embedding tokens, not model tokens). */
 const MAX_RETRIEVAL_QUERY_CHARS = 700
-
-const SYSTEM_PROMPT = `You are the Ask assistant on the Suits & Sandals website. Speak as the studio ("we") in a warm, direct, plain voice. You are talking with a prospective client or a curious visitor.
-
-Grounding:
-- Use only the sources below. Never invent facts, numbers, names, dates, or prices.
-- Never mention "sources", "context", "documents", or that anything was "provided" to you. Do not cite titles inline; links are shown next to your answer.
-
-How to answer:
-- Lead with the most useful thing the sources say, in one or two sentences.
-- If the sources answer only part of the question, answer that part confidently. If the rest is something only a person can settle (see Reaching a person), call the handoff tool after your answer and leave the rest to the card: do not also say what we don't publish or name a next step. Otherwise say in one short sentence what we don't publish and name the page path from the matching source's url as the next step. Never say "browse the site".
-- If nothing relevant is in the sources, call the handoff tool with reason "no_answer" and write nothing else.
-- Answer follow-ups in the flow of the conversation; do not restate earlier answers.
-- Under 120 words. Plain text only: no markdown, no headers, no bullet lists unless the visitor asks for steps. No em dashes: use a comma, colon, or period.
-
-Reaching a person:
-- The handoff tool shows a card under your reply where the visitor can send their question to the team: their name and email go straight to our inbox, and the card says when we reply. Use it only when a person is the best next step.
-- Call it when the visitor asks what their own project would cost or how long it would take, or when we could start ("estimate"); wants to start or discuss a project with us ("project"); asks for a person, or for something only a person can answer ("person"); or shares an email address, phone number, or name ("contact_details").
-- When there is nothing else to answer (a question only about price, timing, or availability, a request for a person, or shared contact details), the card is the whole reply: call the tool without writing anything.
-- Never describe the card, its fields, or our reply time; the card says all of that.
-- Never repeat an email address, phone number, or name back. Only the card passes anything to the team; this chat cannot.`
-
-const CHAT_ONLY_PROMPT = `You are the Ask assistant on the Suits & Sandals website, mid-conversation. Speak as the studio ("we") in a warm, direct, plain voice.
-
-No site content matched this turn, so do not state any new facts about the studio, its work, people, or prices. Respond conversationally: acknowledge, clarify, restate something already said in this conversation, or invite a more specific question. One or two sentences, plain text, no em dashes.
-
-If the visitor wants a person, wants to start a project, asks what their own project would cost or when we could start, or shares an email address, phone number, or name, call the handoff tool with the matching reason instead, without describing the card it shows. Never repeat contact details back.`
 
 const json = (body: unknown, status = 200) => Response.json(body, { status })
 
@@ -119,35 +98,6 @@ function retrievalQuery(messages: UIMessage[], question: string): string {
 /** Escapes the attribute values interpolated into the source tags. */
 function attr(value: string): string {
   return value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;')
-}
-
-/**
- * The transcript comes straight from the client, so before it reaches the
- * model: only user/assistant roles (a forged system message would sit above
- * our grounding rules), only text parts (file/image parts would bill vision
- * tokens; a handoff card is a tool part, not something the model said), and a
- * hard budget on total characters (only the last message has a length check
- * of its own). A turn left with no text, such as a reply that was only a
- * handoff card, is dropped rather than sent as an empty message.
- */
-function sanitizeMessages(messages: UIMessage[]): UIMessage[] | null {
-  let totalChars = 0
-  const sanitized: UIMessage[] = []
-
-  for (const message of messages) {
-    if (message.role !== 'user' && message.role !== 'assistant') return null
-    if (!Array.isArray(message.parts)) return null
-
-    const parts = message.parts.filter(
-      (part): part is Extract<typeof part, { type: 'text' }> => part.type === 'text',
-    )
-    for (const part of parts) totalChars += part.text.length
-    if (totalChars > MAX_TOTAL_CHARS) return null
-
-    if (parts.length > 0) sanitized.push({ id: message.id, role: message.role, parts })
-  }
-
-  return sanitized
 }
 
 /**
@@ -196,15 +146,23 @@ const ask: Endpoint = {
     }
 
     // `id` is the AI SDK chat id and `pagePath` the page the composer sits on
-    // (see useAskChat); both are only kept by `recordAskQuestion` if well formed.
+    // (see useAskChat); both are only kept by `recordAskQuestion` if well
+    // formed. `handoff` is where the conversation stands with the team; an
+    // unknown value reads as none, the state that changes nothing.
     const body = (await req.json?.().catch(() => null)) as {
       messages?: unknown
       id?: unknown
       pagePath?: unknown
+      handoff?: unknown
     } | null
     const rawMessages = Array.isArray(body?.messages) ? (body.messages as UIMessage[]) : []
-    const messages = rawMessages.length <= MAX_MESSAGES ? sanitizeMessages(rawMessages) : null
+    const messages = rawMessages.length <= MAX_MESSAGES ? askHistory(rawMessages) : null
     const lastMessage = messages?.at(-1)
+    const handoffState: AskHandoffState = ASK_HANDOFF_STATES.includes(
+      body?.handoff as AskHandoffState,
+    )
+      ? (body?.handoff as AskHandoffState)
+      : 'none'
 
     if (!messages || lastMessage?.role !== 'user') {
       return json({ error: 'Send a conversation ending in a user question.' }, 400)
@@ -257,16 +215,21 @@ const ask: Endpoint = {
       )
       .join('\n\n')
 
-    const system =
-      sources.length > 0
-        ? `${SYSTEM_PROMPT}\n\n<sources>\n${sourcesBlock}\n</sources>`
-        : CHAT_ONLY_PROMPT
+    // The prompt and the tool list agree: once the visitor has sent, the
+    // tool is withheld and the prompt stops asking for it.
+    const grounded = sources.length > 0
+    const system = [
+      askSystemPrompt({ grounded, handoff: handoffState }),
+      grounded ? `<sources>\n${sourcesBlock}\n</sources>` : null,
+    ]
+      .filter(Boolean)
+      .join('\n\n')
 
     const result = streamText({
       model: askModel,
       system,
       messages: await convertToModelMessages(messages),
-      tools: { handoff: askHandoffTool(siteInfo) },
+      tools: offersAskHandoff(handoffState) ? { handoff: askHandoffTool(siteInfo) } : undefined,
       maxOutputTokens: sources.length > 0 ? MAX_ANSWER_TOKENS : MAX_CHAT_ONLY_TOKENS,
       // Extractive answers over provided sources don't need deep reasoning;
       // the default (medium) burns hidden reasoning tokens on every question.

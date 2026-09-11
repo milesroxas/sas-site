@@ -2,12 +2,16 @@ import type { UIMessage } from 'ai'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { askHandoffFixture } from './fixtures'
 import {
+  ASK_HANDOFF_REASONS,
+  ASK_HANDOFFS,
   type AskUIMessage,
   askHandoffEmail,
   askHandoffMessage,
+  askHandoffState,
   clearAskHandoff,
   handoffOf,
   readAskHandoff,
+  resolveAskHandoffTerms,
   saveAskHandoff,
 } from './handoff'
 
@@ -155,5 +159,64 @@ describe('the card sends', () => {
       ]),
     ).toBe('jordan@northwind.co')
     expect(askHandoffEmail([user('1', 'What does it cost?')])).toBeNull()
+  })
+})
+
+describe('the copy per kind', () => {
+  it('gives every reason a lead line, so a handoff-only reply is never wordless', () => {
+    for (const reason of ASK_HANDOFF_REASONS) {
+      expect(ASK_HANDOFFS[reason].lead, reason).toBeTruthy()
+      expect(ASK_HANDOFFS[reason].offer, reason).toBeTruthy()
+    }
+  })
+
+  it('offers quietly, with no lead, after an answer that already has words', () => {
+    expect(ASK_HANDOFFS.none.lead).toBeNull()
+    expect(ASK_HANDOFFS.none.offer).toBeTruthy()
+  })
+})
+
+describe('askHandoffState', () => {
+  const offered: AskUIMessage = {
+    id: 'a',
+    role: 'assistant',
+    parts: [
+      {
+        type: 'tool-handoff',
+        toolCallId: 'call-1',
+        state: 'output-available',
+        input: { reason: 'estimate' },
+        output: askHandoffFixture('estimate'),
+      },
+    ],
+  }
+  const answered = assistant('b', 'With a call.') as AskUIMessage
+  const asked = user('q', 'How do we start?') as AskUIMessage
+
+  it('is none until a reply offers', () => {
+    expect(askHandoffState([asked, answered], false)).toBe('none')
+  })
+
+  it('stays offered for the rest of the conversation', () => {
+    expect(askHandoffState([asked, offered], false)).toBe('offered')
+    expect(askHandoffState([asked, offered, asked, answered], false)).toBe('offered')
+  })
+
+  it('is sent once the visitor has sent, whatever the transcript says', () => {
+    expect(askHandoffState([asked, answered], true)).toBe('sent')
+  })
+})
+
+describe('resolveAskHandoffTerms', () => {
+  it('carries the reply time and booking link from Site Info', () => {
+    expect(
+      resolveAskHandoffTerms({
+        inquiries: { responseTime: 'within 3 business days', scheduleUrl: 'https://cal.example' },
+      }),
+    ).toEqual({ responseTime: 'within 3 business days', scheduleUrl: 'https://cal.example' })
+  })
+
+  it('keeps a reply promise and no booking link without Site Info', () => {
+    expect(resolveAskHandoffTerms(null)).toEqual({ responseTime: 'shortly', scheduleUrl: null })
   })
 })

@@ -89,14 +89,14 @@ Goal: labelled data for the AI team, and a funnel for product and sales: asked, 
 
 ### Rating
 
-- Thumbs up / down under a settled assistant message in `TranscriptItems` (`src/features/ask/messages.tsx`), after `AssistantSources`, before `TalkToTeam`. Optional one-tap reason on thumbs down: `wrong`, `incomplete`, `off_topic`.
+- Thumbs up / down under a settled assistant message in `TranscriptItems` (`src/features/ask/messages.tsx`), after `AssistantSources`, on the same row as the handoff offer (`Handoff` in `src/features/ask/HandoffPanel.tsx`), right-aligned, so a settled reply ends in one quiet row. Optional one-tap reason on thumbs down: `wrong`, `incomplete`, `off_topic`.
 - New endpoint `POST /api/ask/feedback` with `{ conversation, turn, rating, reason? }`. `turn` is the zero-based index of the user message in the transcript so the client needs no row id. Server finds the row by `conversation` + `createdAt` order, sets `rating` and `ratingReason` only if unset. Same rate limiter as `/ask`. No auth.
 - Fields: `rating` (select `up` / `down`, sidebar), `ratingReason` (select, sidebar). Read-only in admin.
 - PostHog: `ask_rated` server event with `rating`, `outcome`, `source_count`.
 
 ### Handoff outcome
 
-- Two ways out, two signals. The quiet row's click (`HandoffLink`, `src/features/ask/TalkToTeam.tsx`) calls `/api/ask/feedback` with `{ conversation, turn, handoff: 'clicked' }`. The handoff card sends the inquiry itself (`postInquiry` from `HandoffCard`), so it can pass the `conversation` id with `fromAsk` and the intake marks the turn `inquiry_sent` directly, no click event needed. "Book a call" leaves the site and is not a handoff. Field `handoff` (select `clicked` / `inquiry_sent`, sidebar).
+- Two ways out, two signals. The contact-page fallback's click (`HandoffLink` in `src/features/ask/HandoffPanel.tsx`) calls `/api/ask/feedback` with `{ conversation, turn, handoff: 'clicked' }`. The handoff form sends the inquiry itself (`postInquiry` from `Handoff`), so it can pass the `conversation` id with `fromAsk` and the intake marks the turn `inquiry_sent` directly, no click event needed. "Book a call" leaves the site and is not a handoff. Field `handoff` (select `clicked` / `inquiry_sent`, sidebar).
 - `saveAskHandoff()` in `handoff.ts` stores the `conversation` id with the questions. The contact form (`ContactTemplate.client.tsx`, `submit.ts`) forwards it with `fromAsk`. `/api/inquiries` sets `askConversation` (text, indexed) on the inquiry and calls the same feedback path to mark the latest turn `inquiry_sent`.
 - Inquiry document view gets a "From Ask" sidebar link: `Inbox > Ask questions?where[conversation][equals]=...`. The question rows never point at the inquiry.
 

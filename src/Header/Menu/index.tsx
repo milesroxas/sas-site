@@ -13,7 +13,7 @@ import { CMSLink } from '@/components/Link'
 import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 import { Button } from '@/components/ui/button'
 import { Clock } from '@/Footer/Clock'
-import type { AskUIMessage } from '@/features/ask/handoff'
+import type { AskHandoffTerms, AskUIMessage } from '@/features/ask/handoff'
 import { MenuAsk } from '@/features/ask/MenuAsk'
 import { cursorTarget } from '@/features/cursor'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -540,6 +540,8 @@ type TakeoverMenuProps = {
   /** Ask transport override — stories/tests script the chat without /api/ask. */
   askTransport?: ChatTransport<AskUIMessage>
   askInitialMessages?: AskUIMessage[]
+  /** Site Info's reply promise, for the transcript's handoff. */
+  askTerms?: AskHandoffTerms
 }
 
 export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
@@ -551,6 +553,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   askHidden = false,
   askTransport,
   askInitialMessages,
+  askTerms,
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null)
   // Chat-view tracking for layered dismissal: while the transcript is up,
@@ -1698,6 +1701,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               exitChatViewRef={exitChatViewRef}
               transport={askTransport}
               initialMessages={askInitialMessages}
+              terms={askTerms}
             />
           )}
         </div>

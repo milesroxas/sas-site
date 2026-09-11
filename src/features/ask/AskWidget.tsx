@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/message-scroller'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
-import type { AskUIMessage } from './handoff'
+import { ASK_HANDOFF_TERMS_FALLBACK, type AskHandoffTerms, type AskUIMessage } from './handoff'
 import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
 import { AskSubmitButton } from './SubmitButton'
 import { useAskChat } from './useAskChat'
@@ -32,18 +32,32 @@ type AskWidgetProps = {
   initialMessages?: AskUIMessage[]
   /** Composer placeholder override, e.g. the footer closing band's shorter prompt. */
   placeholder?: string
+  /** Site Info's reply promise, for the handoff under a finished answer. */
+  terms?: AskHandoffTerms
 }
 
 export function AskWidget({
   transport,
   initialMessages,
   placeholder = 'Ask something about our work, services, or insights…',
+  terms = ASK_HANDOFF_TERMS_FALLBACK,
 }: AskWidgetProps) {
-  const { question, setQuestion, messages, status, error, busy, canSend, submit, stop } =
-    useAskChat({
-      transport,
-      initialMessages,
-    })
+  const {
+    question,
+    setQuestion,
+    messages,
+    status,
+    error,
+    busy,
+    canSend,
+    submit,
+    stop,
+    sent,
+    markSent,
+  } = useAskChat({
+    transport,
+    initialMessages,
+  })
   const hasTranscript = messages.length > 0
 
   /**
@@ -108,7 +122,13 @@ export function AskWidget({
                   <MessageScroller>
                     <MessageScrollerViewport>
                       <MessageScrollerContent className="p-(--card-spacing)">
-                        <TranscriptItems messages={messages} status={status} />
+                        <TranscriptItems
+                          messages={messages}
+                          onSent={markSent}
+                          sent={sent}
+                          status={status}
+                          terms={terms}
+                        />
                       </MessageScrollerContent>
                     </MessageScrollerViewport>
                     <MessageScrollerButton />
