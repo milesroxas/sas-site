@@ -39,6 +39,12 @@ const SWAP_MEDIA = '[data-swap="media"]'
  * like every swap exit), `onSwap` re-renders the next panel, and the
  * incoming half fades in over the fresh nodes. Reduced motion swaps state
  * directly. Returns the context-safe select function.
+ *
+ * `morphHeight` also carries the root from the outgoing panel's height to the
+ * incoming one's on the entrance half, for a surface whose panels differ in
+ * size (a form that becomes its receipt): the surface resizes while its copy
+ * is still fading in, rather than snapping in the frame between the halves.
+ * The root must clip (`overflow: hidden`); the height is cleared once it lands.
  */
 export function useRevealSwap({
   rootRef,
@@ -47,6 +53,7 @@ export function useRevealSwap({
   onSwapStart,
   onSettled,
   scaleMedia = true,
+  morphHeight = false,
 }: {
   rootRef: RefObject<HTMLElement | null>
   /** Currently rendered panel index; the entrance half keys on its change. */
@@ -63,8 +70,12 @@ export function useRevealSwap({
    * track would read as a scale that isn't on the resting canvas.
    */
   scaleMedia?: boolean
+  /** Tween the root's height across the swap (see above). */
+  morphHeight?: boolean
 }) {
   const swapTlRef = useRef<gsap.core.Timeline | null>(null)
+  /** The outgoing panel's height, read as the exit half lands; null when not morphing. */
+  const fromHeightRef = useRef<number | null>(null)
   const swappingRef = useRef(false)
   const targetIndexRef = useRef(active)
   const onSwapStartRef = useRef(onSwapStart)
@@ -87,6 +98,21 @@ export function useRevealSwap({
       const texts = root.querySelectorAll<HTMLElement>(SWAP_TEXT)
       const media = root.querySelector<HTMLElement>(SWAP_MEDIA)
       const tl = gsap.timeline({ onComplete: () => onSettledRef.current?.() })
+      const fromHeight = fromHeightRef.current
+      fromHeightRef.current = null
+      if (fromHeight !== null && fromHeight !== root.offsetHeight) {
+        tl.fromTo(
+          root,
+          { height: fromHeight },
+          {
+            height: root.offsetHeight,
+            duration: TEXT_DURATION,
+            ease: TEXT_EASE,
+            clearProps: 'height',
+          },
+          0,
+        )
+      }
       if (texts.length) {
         tl.fromTo(
           texts,
@@ -132,7 +158,14 @@ export function useRevealSwap({
     swappingRef.current = true
     const texts = root.querySelectorAll<HTMLElement>(SWAP_TEXT)
     const media = root.querySelector<HTMLElement>(SWAP_MEDIA)
-    const tl = gsap.timeline({ onComplete: () => onSwap(index) }).timeScale(EXIT_TIME_SCALE)
+    const tl = gsap
+      .timeline({
+        onComplete: () => {
+          fromHeightRef.current = morphHeight ? (rootRef.current?.offsetHeight ?? null) : null
+          onSwap(index)
+        },
+      })
+      .timeScale(EXIT_TIME_SCALE)
     if (texts.length) {
       tl.to(
         texts,
