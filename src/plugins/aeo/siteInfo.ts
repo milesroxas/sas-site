@@ -1,6 +1,7 @@
 import { revalidateTag } from 'next/cache.js'
 import type { GlobalAfterChangeHook, GlobalConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { linkGroup } from '@/fields/linkGroup'
 
 const revalidateSiteInfo: GlobalAfterChangeHook = ({ doc, req: { payload, context } }) => {
   if (!context.disableRevalidate) {
@@ -175,6 +176,36 @@ export const SiteInfo: GlobalConfig = {
         { name: 'label', type: 'text', required: true },
         { name: 'url', type: 'text', required: true },
       ],
+    },
+    // Small print at the foot of the closing band. It lives here rather than
+    // on the Footer global because these are company facts, not band copy:
+    // one record for every surface that has to state them, and no page-level
+    // override, because the terms a visitor agreed to cannot differ per page.
+    linkGroup({
+      appearances: false,
+      overrides: {
+        name: 'legalLinks',
+        label: 'Legal links',
+        maxRows: 3,
+        admin: {
+          description:
+            'Small print row under the closing band, e.g. Privacy Policy and Terms and Conditions. Up to three; the row owns their look, so only the destination and the label are set here. Cookie settings is not one of these, it has its own field below.',
+          initCollapsed: true,
+        },
+      },
+    }),
+    {
+      // A control, not a link: it reopens the consent preferences in place, so
+      // there is no destination to set and no way to point it somewhere wrong.
+      // Only the wording is an editorial choice.
+      name: 'cookieSettingsLabel',
+      type: 'text',
+      label: 'Cookie settings label',
+      defaultValue: 'Cookie Settings',
+      admin: {
+        description:
+          'Closes the legal row with a button that reopens the cookie preferences. Leave empty to drop it from the row.',
+      },
     },
     {
       name: 'llmsNotes',

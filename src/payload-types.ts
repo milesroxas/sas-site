@@ -9755,6 +9755,41 @@ export interface SiteInfo {
       }[]
     | null;
   /**
+   * Small print row under the closing band, e.g. Privacy Policy and Terms and Conditions. Up to three; the row owns their look, so only the destination and the label are set here. Cookie settings is not one of these, it has its own field below.
+   */
+  legalLinks?:
+    | {
+        link: {
+          type?: ('reference' | 'site' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
+              } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          url?: string | null;
+          label: string;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Closes the legal row with a button that reopens the cookie preferences. Leave empty to drop it from the row.
+   */
+  cookieSettingsLabel?: string | null;
+  /**
    * Optional extra paragraph appended to llms.txt (e.g. preferred citation form, what the agency is known for).
    */
   llmsNotes?: string | null;
@@ -10089,6 +10124,22 @@ export interface SiteInfoSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
+  legalLinks?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              sitePage?: T;
+              url?: T;
+              label?: T;
+            };
+        id?: T;
+      };
+  cookieSettingsLabel?: T;
   llmsNotes?: T;
   updatedAt?: T;
   createdAt?: T;

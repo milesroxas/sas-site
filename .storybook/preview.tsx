@@ -1,3 +1,4 @@
+import { ConsentDialog, ConsentManagerProvider } from '@c15t/nextjs'
 import { withThemeByDataAttribute } from '@storybook/addon-themes'
 import type { Preview, ReactRenderer } from '@storybook/nextjs-vite'
 import { CustomCursorProvider } from '@/features/cursor'
@@ -27,6 +28,19 @@ const preview: Preview = {
       <CustomCursorProvider>
         <Story />
       </CustomCursorProvider>
+    ),
+    // Mirrors the app's ConsentProvider for stories carrying a consent control
+    // (the closing band's cookie settings trigger), which reads the manager
+    // through context and throws without one. Offline, so no story reaches the
+    // consent backend. The dialog comes along so the trigger can actually be
+    // opened here; the banner does not, or every story would start behind it.
+    (Story) => (
+      <ConsentManagerProvider
+        options={{ mode: 'offline', consentCategories: ['necessary', 'measurement', 'marketing'] }}
+      >
+        <ConsentDialog />
+        <Story />
+      </ConsentManagerProvider>
     ),
   ],
   parameters: {
