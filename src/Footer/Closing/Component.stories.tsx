@@ -42,6 +42,21 @@ const closing = {
   media: mediaFixture,
 }
 
+/**
+ * Site Info › Legal links: the small print the band closes on. Cookie
+ * settings is not one of them; it is the trigger that follows the row.
+ */
+const legalLinks = [
+  {
+    id: 'privacy',
+    link: { type: 'custom' as const, url: '/privacy-policy', label: 'Privacy Policy' },
+  },
+  {
+    id: 'terms',
+    link: { type: 'custom' as const, url: '/terms-and-conditions', label: 'Terms and Conditions' },
+  },
+]
+
 const meta = {
   title: 'Features/FooterClosing',
   component: FooterClosing,
@@ -50,6 +65,8 @@ const meta = {
   },
   args: {
     closing,
+    cookieSettingsLabel: 'Cookie Settings',
+    legalLinks,
     askTransport: scriptedAnswers.transport({
       fallback: 'That is the end of this scripted demo — reload the story to start over.',
     }),
@@ -82,6 +99,15 @@ export const AddressPanel: Story = {
       },
     },
   },
+}
+
+/**
+ * Site Info › Legal links and the cookie settings label both left empty: the
+ * small print row is absent and the band closes on the column pair, with no
+ * gap left behind it.
+ */
+export const WithoutLegalLinks: Story = {
+  args: { cookieSettingsLabel: null, legalLinks: [] },
 }
 
 /** Paper preview on the plain closing surface. */

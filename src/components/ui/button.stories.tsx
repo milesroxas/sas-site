@@ -27,6 +27,7 @@ const meta = {
         'glass',
         'underline',
         'text',
+        'fineprint',
       ],
     },
     size: {
@@ -174,6 +175,15 @@ export const ContentActions: Story = {
       </Button>
     </div>
   ),
+}
+
+/**
+ * Small print (the closing band's legal row): quiet ink at rest, full ink and
+ * a rule on hover. The row it sits in (separators, stacking) belongs to
+ * ClosingLegal; see Features/FooterClosing for it assembled.
+ */
+export const Fineprint: Story = {
+  args: { size: 'clear', variant: 'fineprint', children: 'Privacy Policy' },
 }
 
 /** Hero actions over media: frosted primary chip beside an underlined text action. */

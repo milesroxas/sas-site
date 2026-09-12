@@ -42,6 +42,16 @@ const buttonVariants = cva(
         // the copy. Owns the chip's 32px height so the pair rows up; pair with
         // `size="clear"`. `underline` is its foreground-ink twin over media.
         text: 'h-8 text-sm/4 font-normal tracking-tight text-primary underline decoration-1 underline-offset-2 hover:underline-offset-4',
+        // Small print at the foot of a page (the closing band's legal row):
+        // a quiet label that comes up to full ink and takes a rule as the
+        // pointer reaches it, so the row reads as type at rest and as an
+        // action only when wanted. The ink carries the transition (it rides
+        // `pressable`'s color list); the rule is the instant half, which is
+        // what makes the hover read on a label this small.
+        // Owns the 44px touch row it needs while the links are stacked and
+        // drops it once they sit inline. Pair with `size="clear"`.
+        fineprint:
+          'min-h-11 text-sm/tight font-normal text-foreground/70 underline-offset-4 hover:text-foreground hover:underline sm:min-h-0',
       },
       size: {
         default:

@@ -13,7 +13,8 @@ import { resolveClosing } from './resolve'
  *
  * Site Info decides which panel fills the right-hand column: the ask
  * composer, or, with Ask hidden site-wide, the address panel (note from the
- * Footer, postal lines from Site Info › Address).
+ * Footer, postal lines from Site Info › Address). It also carries the legal
+ * links the band closes on.
  */
 export async function FooterClosingSection({ closing }: { closing?: PageClosing | null } = {}) {
   if (closing?.hidden) return null
@@ -29,6 +30,8 @@ export async function FooterClosingSection({ closing }: { closing?: PageClosing 
       askHidden={Boolean(siteInfo?.ask?.hidden)}
       askTerms={resolveAskHandoffTerms(siteInfo)}
       closing={resolveClosing(closing, footerData?.closing)}
+      cookieSettingsLabel={siteInfo?.cookieSettingsLabel}
+      legalLinks={siteInfo?.legalLinks ?? []}
     />
   )
 }
