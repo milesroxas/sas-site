@@ -1,6 +1,6 @@
 # Ask insights roadmap
 
-Status: proposed 2026-09-11; Phases 1 to 3 built 2026-09-12 (code on `dev`; the one migration, `ask-turn-capture`, is generated on approval and carries the old `answered` flag into `outcome`), Phase 4 partly. Companion to [ask-rag-roadmap.md](ask-rag-roadmap.md) (retrieval quality) and the [feature README](../src/features/ask/README.md), which is now the reference for what ships; the phases below are kept as the record of what was decided and why.
+Status: proposed 2026-09-11; Phases 1 to 3 shipped 2026-09-12 (migrations `20260912_164651_ask_turn_capture`, which carries the old `answered` flag into `outcome`, and `20260912_164653_ask_drop_answered`), Phase 4 partly. Companion to [ask-rag-roadmap.md](ask-rag-roadmap.md) (retrieval quality) and the [feature README](../src/features/ask/README.md), which is now the reference for what ships; the phases below are kept as the record of what was decided and why.
 
 ## What shipped (2026-09-12)
 
