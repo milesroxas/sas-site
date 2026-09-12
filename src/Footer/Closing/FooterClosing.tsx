@@ -10,6 +10,7 @@ import { SCROLL_REVEAL_CURTAIN_ENTER_OFFSET, ScrollReveal } from '@/shared/ui/sc
 import { populatedDoc } from '@/utilities/relationshipId'
 import { cn } from '@/utilities/ui'
 import { ClosingAsk } from './ClosingAsk'
+import { ClosingLegal, type ClosingLegalLinks } from './ClosingLegal'
 import { ClosingLightLeak } from './ClosingLightLeak'
 import { ClosingMedia } from './ClosingMedia'
 import { FOOTER_CLOSING_GATE_SELECTOR } from './curtain'
@@ -23,6 +24,10 @@ type FooterClosingProps = {
   askHidden?: boolean
   /** Postal lines from Site Info › Address (see `./address`). */
   address?: string[]
+  /** Small print from Site Info › Legal links, closing the band. */
+  legalLinks?: ClosingLegalLinks
+  /** Site Info › Cookie settings label; the row's consent-dialog trigger. */
+  cookieSettingsLabel?: string | null
   /**
    * Chat transport passthrough to ClosingAsk. Storybook and tests
    * inject a scripted transport; real pages omit it and POST /api/ask.
@@ -137,6 +142,8 @@ export const FooterClosing = ({
   closing,
   askHidden = false,
   address = [],
+  legalLinks = [],
+  cookieSettingsLabel,
   askTransport,
   askTerms,
 }: FooterClosingProps) => {
@@ -181,24 +188,33 @@ export const FooterClosing = ({
             edges fighting. ClosingMedia keeps the scrubbed parallax layer. */}
         {media ? <ClosingMedia media={media} /> : null}
 
-        <Container
-          className={cn(
-            'grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] lg:gap-16',
-            panel && panelMinHeight[panel],
-          )}
-        >
-          {/* Copy sits above the panel: bottom padding lifts it so the button
-              row lands just past the panel's top edge, per the design. */}
-          <ClosingCopy closing={closing} />
+        {/* The legal row closes the band under the two columns, so the column
+            pair and the small print are separate rows of one container. The
+            gap between them is deliberately short of the band's own rhythm
+            (`gap-10` / `lg:gap-16` inside the pair): small print trails the
+            thing it belongs to rather than reading as a third section. */}
+        <Container className="flex flex-col gap-6 lg:gap-8">
+          <div
+            className={cn(
+              'grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] lg:gap-16',
+              panel && panelMinHeight[panel],
+            )}
+          >
+            {/* Copy sits above the panel: bottom padding lifts it so the button
+                row lands just past the panel's top edge, per the design. */}
+            <ClosingCopy closing={closing} />
 
-          {/* The preview opens a bottom-anchored transcript without moving
-              the closing copy. Hidden Ask uses the address panel instead. */}
-          {panel === 'ask' ? (
-            <div data-reveal="panel" className="min-w-0">
-              <ClosingAsk ask={closing?.ask} terms={askTerms} transport={askTransport} />
-            </div>
-          ) : null}
-          {panel === 'address' ? <ClosingAddressPanel lines={address} note={note} /> : null}
+            {/* The preview opens a bottom-anchored transcript without moving
+                the closing copy. Hidden Ask uses the address panel instead. */}
+            {panel === 'ask' ? (
+              <div data-reveal="panel" className="min-w-0">
+                <ClosingAsk ask={closing?.ask} terms={askTerms} transport={askTransport} />
+              </div>
+            ) : null}
+            {panel === 'address' ? <ClosingAddressPanel lines={address} note={note} /> : null}
+          </div>
+
+          <ClosingLegal cookieSettingsLabel={cookieSettingsLabel} links={legalLinks} />
         </Container>
 
         {/* Film light leak over the whole band — last child, so it composites
