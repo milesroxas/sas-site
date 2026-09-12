@@ -42,7 +42,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "ask_questions" ADD COLUMN "input_tokens" numeric;
   ALTER TABLE "ask_questions" ADD COLUMN "output_tokens" numeric;
   ALTER TABLE "ask_questions" ADD COLUMN "turn" varchar;
-  UPDATE "ask_questions" SET "outcome" = CASE WHEN "answered" THEN 'answered' ELSE 'no_sources' END;
+  UPDATE "ask_questions" SET "outcome" = (CASE WHEN "answered" THEN 'answered' ELSE 'no_sources' END)::"public"."enum_ask_questions_outcome";
   ALTER TABLE "ask_questions_sources" ADD CONSTRAINT "ask_questions_sources_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."ask_questions"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "ask_questions_rels" ADD CONSTRAINT "ask_questions_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."ask_questions"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "ask_questions_rels" ADD CONSTRAINT "ask_questions_rels_posts_fk" FOREIGN KEY ("posts_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;
