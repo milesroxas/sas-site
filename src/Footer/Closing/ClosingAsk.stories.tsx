@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { within } from 'storybook/test'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 import {
   askHandoffChat,
@@ -99,6 +100,19 @@ export const MobileSheet: Story = {
     viewport: { options: INITIAL_VIEWPORTS },
     chromatic: { viewports: [390] },
   },
+}
+
+/**
+ * The handoff form on the phone. Opening it jumps the panel to the top of the
+ * transcript, so this is where the transcript's own padding is doing the work:
+ * the form clears the header instead of landing flush under its rule. The
+ * sheet is portalled out of the story canvas, so the play queries the document.
+ */
+export const MobileSheetHandoffForm: Story = {
+  args: Handoff.args,
+  globals: MobileSheet.globals,
+  parameters: { ...MobileSheet.parameters, ...askSwapSettled },
+  play: ({ userEvent }) => openAskHandoff({ canvas: within(document.body), userEvent }),
 }
 
 export const Thinking: Story = {

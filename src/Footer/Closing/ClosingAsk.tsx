@@ -137,8 +137,12 @@ export function ClosingAsk({
         <MessageScrollerViewport>
           {/* Every direct child of the log is an Item so the scroller can
               measure, anchor, and track it; a short transcript sits at the
-              composer end of the viewport rather than the header. */}
-          <MessageScrollerContent className="justify-end gap-4 px-6">
+              composer end of the viewport rather than the header. Its air is
+              padding inside the scroller, not a gap in the shell around it,
+              so the same breathing room holds in the card's panel and in the
+              phone sheet, and a long transcript scrolls through it instead of
+              ending flush against the chrome. */}
+          <MessageScrollerContent className="justify-end gap-4 p-6">
             <TranscriptItems
               feedback={feedback}
               messages={messages}
@@ -302,8 +306,10 @@ export function ClosingAsk({
             data-lenis-prevent
             className={cn(
               // Bottom padding is the composer's measured reserve (see the
-              // layout effect above) plus one step of air over it.
-              'absolute inset-x-0 bottom-0 z-10 flex h-[max(30rem,100%)] origin-bottom flex-col gap-4 overflow-hidden rounded-lg bg-popover pb-[calc(var(--composer-reserve)+(--spacing(4)))] pt-4 text-popover-foreground shadow-[0_32px_64px_-16px_#0a0a0a38] ring-1 ring-foreground/10',
+              // layout effect above); the air over it is the transcript's own
+              // bottom padding, so the last line clears the composer whether
+              // the transcript ends short or scrolls.
+              'absolute inset-x-0 bottom-0 z-10 flex h-[max(30rem,100%)] origin-bottom flex-col overflow-hidden rounded-lg bg-popover pb-(--composer-reserve) pt-4 text-popover-foreground shadow-[0_32px_64px_-16px_#0a0a0a38] ring-1 ring-foreground/10',
               'transition-[transform,opacity,visibility] ease-[cubic-bezier(0.19,1,0.22,1)]',
               open
                 ? 'visible transform-none opacity-100 duration-250'
@@ -370,7 +376,7 @@ function ClosingAskSheet({
         {children}
         <form
           onSubmit={onSubmit}
-          className="border-t px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          className="border-t px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
         >
           {composer(inputRef)}
         </form>
