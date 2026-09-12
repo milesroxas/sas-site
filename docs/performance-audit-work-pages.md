@@ -37,6 +37,22 @@ Branch `perf/video-gating-hero-priority` (2026-09-09) ships the next slice, veri
 
 Still open from tier 1: the rest of the bundle diet (P0-2, mainly the WebGL split, the Ask composer, and Sentry console logging in production), posters through `next/image` and real `sizes` on the blocks that pass none (P1-5), `Critical-CH` scoping (P1-8), Speed Insights draft-mode and internal-traffic filtering (section 7).
 
+2026-09-12: plan for the next slice. Nothing perf-related has merged since the `prod-www-video-gating` baseline (`7829a73`); the 22 commits since are Ask, analytics and UI work. Production numbers are unchanged from the table in `docs/perf/prod-www-video-gating/summary.md`: desktop 90 to 98, mobile 64 to 72, script 1.1 MB gzipped on every page.
+
+Decision: the WebGL half of P0-2 is deferred. A different WebGL technique is replacing the current global canvas and effect stack, so splitting `GlobalCanvasRoot`, `LightLeak` and the scroll gallery now would be thrown away. Do not touch `src/lib/webgl`, `src/features/immersive`, `ClosingLightLeak` or the tunnel until that lands; re-audit the three.js bytes afterwards against the tier 1 target (no `three` chunk on a page that never activates a canvas).
+
+Everything else still open ships as one slice, `perf/tier1-non-webgl`, measured before and after with the runbook against `www.suits-sandals.com` (label the run `after-tier1-non-webgl`):
+
+1. Ask composer split (P0-2). `TakeoverMenu` and `FooterClosing` render a static composer shell; the chat module (`useAskChat`, `@ai-sdk/react`, `ai`, zod) loads through `next/dynamic` on first intent: the menu button's existing `warmMedia` hover hook, and focus on the closing card's input. Must not change `CHAT_WIPE_*` timings, the preview-slot geometry the menu measures, or the closing band's `data-reveal="panel"` entrance. Verify: no zod or AI SDK chunk in the initial script list of a prerendered page; menu open and footer focus still land the first keystroke without a visible stall.
+2. Sentry in production (P0-2). Drop `consoleLoggingIntegration` and `enableLogs` from `src/instrumentation-client.ts` outside development; lower `tracesSampleRate` for public traffic. Error capture and `captureRouterTransitionStart` stay eager.
+3. Image pipeline (P1-5). Posters render through `next/image` (same `getCdnMediaUrl` source as `ImageMedia`) so they get `srcset` and the one-year optimizer cache; real `sizes` on MediaBlock, Carousel, showcase grid, testimonial and the centered-media hero (today they fall back to the `100vw` default and pick the widest candidate). Hero quality stays 90.
+4. `Critical-CH` and `Vary` scoped to `/admin` (P1-8) via `headers()` in `next.config.ts`; confirm `/admin` still renders the right theme server-side and public routes no longer send the hint.
+5. Speed Insights hygiene (section 7). Do not render `SpeedInsights` in draft mode; filter team and admin traffic in `beforeSend` using the same internal-traffic signal the PostHog provider already applies (`5c2b7a8`), so field and product analytics agree on what "public" means. First public field read is 2026-09-16; land this before it.
+6. `posthog-js` to 1.429.5 (see the pending note above). The pnpm cooldown lifted 2026-09-11 18:22 UTC. Re-run the Vault media capture afterwards and confirm the recorder stops emitting an event per autoplay toggle on the looping case-study videos.
+7. CI bundle budget (P0-2 guardrail): a per-route gzipped script budget from the `next build` output so the Ask split cannot regress, set just above the post-slice number and tightened again after the WebGL work.
+
+Expected effect: roughly 120 KB gzipped off every page from the Ask split and Sentry, fewer image bytes on mobile from real `sizes`, one less first-visit round trip in Chrome, and clean field data from 09-16. Mobile LCP on Vault and home stays hero-mp4 bound until phase 5 (encoding) and the WebGL re-audit.
+
 ## 1. Summary
 
 The work pages are not slow because of rendering or interaction. TTFB (0.45s), INP (56ms), CLS (0.01) and FID (4ms) are all green. The pages are slow because of what they ask the browser to download in the first two seconds. Field P75 on desktop is FCP 4.65s and LCP 4.86s, and those two numbers being almost equal is the tell: first paint itself is being starved, and the hero paints as soon as anything paints.
