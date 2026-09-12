@@ -86,6 +86,8 @@ import * as migration_20260908_163549_tabs_tab_size from './20260908_163549_tabs
 import * as migration_20260908_192934_work_scoped_media_pickers from './20260908_192934_work_scoped_media_pickers';
 import * as migration_20260909_174217_site_info_og_image from './20260909_174217_site_info_og_image';
 import * as migration_20260911_151603_ask_questions from './20260911_151603_ask_questions';
+import * as migration_20260912_164130_ask_turn_capture from './20260912_164130_ask_turn_capture';
+import * as migration_20260912_164248_ask_drop_answered from './20260912_164248_ask_drop_answered';
 
 export const migrations = [
   {
@@ -526,6 +528,16 @@ export const migrations = [
   {
     up: migration_20260911_151603_ask_questions.up,
     down: migration_20260911_151603_ask_questions.down,
-    name: '20260911_151603_ask_questions'
+    name: '20260911_151603_ask_questions',
+  },
+  {
+    up: migration_20260912_164130_ask_turn_capture.up,
+    down: migration_20260912_164130_ask_turn_capture.down,
+    name: '20260912_164130_ask_turn_capture',
+  },
+  {
+    up: migration_20260912_164248_ask_drop_answered.up,
+    down: migration_20260912_164248_ask_drop_answered.down,
+    name: '20260912_164248_ask_drop_answered'
   },
 ];
