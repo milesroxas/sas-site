@@ -61,9 +61,12 @@ own field labels, so renaming a question renames it there too.
 
 Arriving from Ask's **Talk to the team** (see `src/features/ask/README.md`,
 "Reaching a person"), the message opens prefilled with the visitor's Ask
-questions, and the submission carries `fromAsk`. That flag becomes `from_ask`
-on the `inquiry_submitted` PostHog event; the inquiry itself shows where it
-came from in its message, so no schema change was needed.
+questions, and the submission carries `fromAsk` and the chat id. That flag
+becomes `from_ask` on the `inquiry_submitted` PostHog event; the inquiry
+stores the chat id as **From Ask** (`askConversation`), and its Request tab
+shows the whole conversation under the message, so whoever picks it up reads
+what the lead asked before they reached out. The intake also marks that Ask
+turn `inquiry_sent`, which is how the Ask dashboard counts leads.
 
 ## Forms, and where answers go
 

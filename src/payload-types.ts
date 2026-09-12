@@ -5459,6 +5459,10 @@ export interface Inquiry {
    * Who owns the reply. Assigning emails them.
    */
   assignedTo?: (number | null) | User;
+  /**
+   * The Ask chat this came from. What they asked is below the request.
+   */
+  askConversation?: string | null;
   submittedAt?: string | null;
   repliedAt?: string | null;
   name: string;
@@ -5492,7 +5496,7 @@ export interface Inquiry {
   createdAt: string;
 }
 /**
- * What visitors asked Ask, with emails, phone numbers and keys removed. Filter Answered to "No" for the questions the site could not answer: that is the content-gap list. Rows delete themselves after 90 days.
+ * Every question asked in Ask, with emails, phone numbers and keys removed, and the answer the visitor got. "No sources" is the content-gap list. Rows delete themselves after 90 days.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ask-questions".
@@ -5501,9 +5505,58 @@ export interface AskQuestion {
   id: number;
   question: string;
   /**
-   * Site content matched the question. Unchecked means Ask had nothing to ground an answer on.
+   * What the model said, redacted. Empty when the reply was only a handoff.
    */
-  answered?: boolean | null;
+  answer?: string | null;
+  /**
+   * The pages the answer drew on, best match first, with the cosine similarity of their best chunk.
+   */
+  sources?:
+    | {
+        title: string;
+        url: string;
+        similarity?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Why it was triaged the way it was.
+   */
+  note?: string | null;
+  /**
+   * The draft that closes the gap.
+   */
+  plannedContent?:
+    | (
+        | {
+            relationTo: 'posts';
+            value: number | Post;
+          }
+        | {
+            relationTo: 'pages';
+            value: number | Page;
+          }
+      )[]
+    | null;
+  status: 'new' | 'reviewed' | 'content_planned' | 'ignored';
+  /**
+   * The site taxonomy, so gaps group by subject.
+   */
+  topic?: (number | null) | Category;
+  /**
+   * What the visitor got. Partial: an answer that ended in a handoff. No sources: nothing relevant was published. Chat only: a follow-up with no new facts.
+   */
+  outcome?: ('answered' | 'partial' | 'no_sources' | 'chat_only' | 'stopped' | 'error') | null;
+  rating?: ('up' | 'down') | null;
+  ratingReason?: ('wrong' | 'incomplete' | 'off_topic') | null;
+  /**
+   * How far the visitor went toward a person.
+   */
+  handoff?: ('clicked' | 'inquiry_sent') | null;
+  /**
+   * Why the reply offered a person, if it did.
+   */
+  handoffReason?: ('estimate' | 'project' | 'person' | 'contact_details' | 'no_answer') | null;
   /**
    * The page the visitor was on.
    */
@@ -5512,11 +5565,18 @@ export interface AskQuestion {
    * Asked after an earlier question in the same chat.
    */
   followUp?: boolean | null;
-  sourceCount?: number | null;
   /**
-   * Shared by every question from one open Ask box. Filter by it to read a conversation in order.
+   * Which search found the sources.
+   */
+  retrieval?: ('embedding' | 'keyword' | 'none') | null;
+  latencyMs?: number | null;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  /**
+   * Shared by every question from one open Ask box.
    */
   conversation?: string | null;
+  turn?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -8397,6 +8457,7 @@ export interface InquiriesSelect<T extends boolean = true> {
   type?: T;
   status?: T;
   assignedTo?: T;
+  askConversation?: T;
   submittedAt?: T;
   repliedAt?: T;
   name?: T;
@@ -8426,11 +8487,32 @@ export interface InquiriesSelect<T extends boolean = true> {
  */
 export interface AskQuestionsSelect<T extends boolean = true> {
   question?: T;
-  answered?: T;
+  answer?: T;
+  sources?:
+    | T
+    | {
+        title?: T;
+        url?: T;
+        similarity?: T;
+        id?: T;
+      };
+  note?: T;
+  plannedContent?: T;
+  status?: T;
+  topic?: T;
+  outcome?: T;
+  rating?: T;
+  ratingReason?: T;
+  handoff?: T;
+  handoffReason?: T;
   pagePath?: T;
   followUp?: T;
-  sourceCount?: T;
+  retrieval?: T;
+  latencyMs?: T;
+  inputTokens?: T;
+  outputTokens?: T;
   conversation?: T;
+  turn?: T;
   updatedAt?: T;
   createdAt?: T;
 }

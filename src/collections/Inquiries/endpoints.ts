@@ -1,4 +1,5 @@
 import type { Endpoint, PayloadRequest } from 'payload'
+import { askIdFrom, markAskTurnAfterResponse } from '@/features/ask/questions'
 import type { Inquiry } from '@/payload-types'
 import {
   INQUIRY_BUDGETS,
@@ -8,6 +9,7 @@ import {
   INQUIRY_TYPES,
   type InquiryType,
 } from '@/shared/content/inquiry'
+import { isOption, type SelectOption } from '@/shared/content/options'
 import { isValidEmailAddress, normalizeEmailAddress } from '@/utilities/emailAddress'
 import { captureServerEvent } from '@/utilities/posthog'
 import { deliverInquiryEmails } from './notify'
@@ -42,13 +44,8 @@ const trimmed = (value: unknown, max: number): string | undefined => {
   return next.length > 0 ? next : undefined
 }
 
-const oneOf = <T extends string>(
-  options: readonly { value: string }[],
-  value: unknown,
-): T | undefined =>
-  typeof value === 'string' && options.some((option) => option.value === value)
-    ? (value as T)
-    : undefined
+const oneOf = <T extends string>(options: readonly SelectOption<T>[], value: unknown) =>
+  isOption(options, value) ? value : undefined
 
 /**
  * Capability ids the visitor picked, reduced to the ones that actually exist.
@@ -121,8 +118,10 @@ const submit: Endpoint = {
         return json({ error: 'Add a line or two about what you need.' }, 400)
       }
 
-      const type = oneOf<InquiryType>(INQUIRY_TYPES, body?.type) ?? 'general'
+      const type: InquiryType = oneOf(INQUIRY_TYPES, body?.type) ?? 'general'
       const isProject = type === 'project'
+
+      const askConversation = askIdFrom(body?.askConversation) ?? undefined
 
       const duplicate = await recentDuplicate(req, email)
       if (duplicate) {
@@ -147,6 +146,8 @@ const submit: Endpoint = {
           company: trimmed(body?.company, MAX_COMPANY_LENGTH),
           website: trimmed(body?.website, MAX_URL_LENGTH),
           sourceUrl: trimmed(body?.sourceUrl, MAX_URL_LENGTH),
+          // The Ask chat it came from, kept only when the id has the SDK's shape.
+          askConversation,
           ...(isProject
             ? {
                 capabilities: await resolveCapabilities(req, body?.capabilities),
@@ -165,6 +166,15 @@ const submit: Endpoint = {
       // floating, because a serverless invocation ends with the response.
       await deliverInquiryEmails(req, created)
 
+      // The Ask turn this inquiry closes learns it was sent.
+      if (askConversation) {
+        markAskTurnAfterResponse(
+          req,
+          { conversation: askConversation, turn: body?.askTurn },
+          { handoff: 'inquiry_sent' },
+        )
+      }
+
       // Deferred past the response, so the lead never waits on analytics.
       captureServerEvent({
         headers: req.headers,
@@ -172,8 +182,8 @@ const submit: Endpoint = {
         event: 'inquiry_submitted',
         properties: {
           inquiry_type: type,
-          // Opened from Ask's "Talk to the team": which leads Ask produced.
-          from_ask: body?.fromAsk === true,
+          // Came out of an Ask chat (the handoff card or the contact-page fallback): which leads Ask produced.
+          from_ask: Boolean(askConversation),
           capability_count: isProject
             ? Array.isArray(created.capabilities)
               ? created.capabilities.length

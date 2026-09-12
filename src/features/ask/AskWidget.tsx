@@ -4,7 +4,7 @@ import type { ChatTransport } from 'ai'
 import { useLenis } from 'lenis/react'
 import { useCallback, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { InputGroup, InputGroupAddon, InputGroupTextarea } from '@/components/ui/input-group'
+import { InputGroup, InputGroupAddon } from '@/components/ui/input-group'
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -14,8 +14,10 @@ import {
 } from '@/components/ui/message-scroller'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
+import { AskTextarea } from './Composer'
 import { ASK_HANDOFF_TERMS_FALLBACK, type AskHandoffTerms, type AskUIMessage } from './handoff'
-import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
+import { errorText, TranscriptItems } from './messages'
+import { transcriptItemEnter } from './motion'
 import { AskSubmitButton } from './SubmitButton'
 import { useAskChat } from './useAskChat'
 
@@ -54,6 +56,7 @@ export function AskWidget({
     stop,
     sent,
     markSent,
+    feedback,
   } = useAskChat({
     transport,
     initialMessages,
@@ -123,6 +126,7 @@ export function AskWidget({
                     <MessageScrollerViewport>
                       <MessageScrollerContent className="p-(--card-spacing)">
                         <TranscriptItems
+                          feedback={feedback}
                           messages={messages}
                           onSent={markSent}
                           sent={sent}
@@ -148,19 +152,11 @@ export function AskWidget({
 
       <form ref={formRef} onSubmit={submit}>
         <InputGroup>
-          <InputGroupTextarea
+          <AskTextarea
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
-                event.preventDefault()
-                event.currentTarget.form?.requestSubmit()
-              }
-            }}
             placeholder={placeholder}
-            maxLength={500}
             rows={2}
-            required
           />
           <InputGroupAddon align="block-end">
             <AskSubmitButton busy={busy} canSend={canSend} onStop={stop} className="ml-auto" />

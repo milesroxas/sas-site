@@ -26,6 +26,11 @@ const assistant = (id: string, text: string): UIMessage => ({
   parts: [{ type: 'text', text }],
 })
 
+/** The ids every handoff is filed under; the tests read them back. */
+const ids = { conversation: 'chat_1', turn: '1' }
+
+const readMessage = () => readAskHandoff()?.message ?? null
+
 afterEach(() => {
   sessionStorage.clear()
   vi.useRealTimers()
@@ -34,44 +39,50 @@ afterEach(() => {
 
 describe('Ask handoff', () => {
   it('carries only what the visitor asked, never the answers', () => {
-    saveAskHandoff([user('1', 'How do we start?'), assistant('2', 'We begin with a call.')])
-    expect(readAskHandoff()).toBe('From my Ask conversation:\n- How do we start?\n\n')
+    saveAskHandoff([user('1', 'How do we start?'), assistant('2', 'We begin with a call.')], ids)
+    expect(readAskHandoff()).toEqual({
+      ids,
+      message: 'From my Ask conversation:\n- How do we start?\n\n',
+    })
   })
 
   it('survives repeated reads, so a remounted form still gets it', () => {
-    saveAskHandoff([user('1', 'What does it cost?')])
+    saveAskHandoff([user('1', 'What does it cost?')], ids)
     expect(readAskHandoff()).not.toBeNull()
     expect(readAskHandoff()).not.toBeNull()
   })
 
   it('is gone once the inquiry is sent', () => {
-    saveAskHandoff([user('1', 'What does it cost?')])
+    saveAskHandoff([user('1', 'What does it cost?')], ids)
     clearAskHandoff()
     expect(readAskHandoff()).toBeNull()
   })
 
   it('keeps the latest five questions', () => {
-    saveAskHandoff(Array.from({ length: 7 }, (_, i) => user(String(i), `Question ${i + 1}`)))
-    const text = readAskHandoff() ?? ''
+    saveAskHandoff(
+      Array.from({ length: 7 }, (_, i) => user(String(i), `Question ${i + 1}`)),
+      ids,
+    )
+    const text = readMessage() ?? ''
     expect(text).not.toContain('Question 2')
     expect(text).toContain('Question 3')
     expect(text).toContain('Question 7')
   })
 
   it('leaves the visitor room to write', () => {
-    saveAskHandoff([user('1', 'x'.repeat(500)), user('2', 'y'.repeat(500))])
-    expect((readAskHandoff() ?? '').trimEnd().length).toBeLessThanOrEqual(600)
+    saveAskHandoff([user('1', 'x'.repeat(500)), user('2', 'y'.repeat(500))], ids)
+    expect((readMessage() ?? '').trimEnd().length).toBeLessThanOrEqual(600)
   })
 
   it('ignores a handoff left behind half an hour ago', () => {
     vi.useFakeTimers()
-    saveAskHandoff([user('1', 'Who have you worked with?')])
+    saveAskHandoff([user('1', 'Who have you worked with?')], ids)
     vi.advanceTimersByTime(31 * 60_000)
     expect(readAskHandoff()).toBeNull()
   })
 
   it('saves nothing when there is no question yet', () => {
-    saveAskHandoff([assistant('1', 'Hello')])
+    saveAskHandoff([assistant('1', 'Hello')], ids)
     expect(readAskHandoff()).toBeNull()
   })
 
@@ -79,7 +90,7 @@ describe('Ask handoff', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('blocked')
     })
-    expect(() => saveAskHandoff([user('1', 'How do we start?')])).not.toThrow()
+    expect(() => saveAskHandoff([user('1', 'How do we start?')], ids)).not.toThrow()
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('blocked')
     })
@@ -141,9 +152,9 @@ describe('handoffOf', () => {
 describe('the card sends', () => {
   it("the visitor's questions in their own words, the same text the contact form opens with", () => {
     const messages = [user('1', 'How do we start?'), assistant('2', 'With a call.')]
-    saveAskHandoff(messages)
+    saveAskHandoff(messages, ids)
     expect(askHandoffMessage(messages)).toBe('From my Ask conversation:\n- How do we start?')
-    expect(readAskHandoff()).toBe(`${askHandoffMessage(messages)}\n\n`)
+    expect(readMessage()).toBe(`${askHandoffMessage(messages)}\n\n`)
   })
 
   it('nothing before a question was asked', () => {

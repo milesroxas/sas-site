@@ -26,9 +26,11 @@ import { MenuPreviewSlot } from '@/Header/Menu/PreviewSlot'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
 import { ASK_HANDOFF_TERMS_FALLBACK, type AskHandoffTerms, type AskUIMessage } from './handoff'
-import { errorText, TranscriptItems, transcriptItemEnter } from './messages'
+import { errorText, TranscriptItems } from './messages'
+import { transcriptItemEnter } from './motion'
 import { AskSubmitButton, askComposerButton, askComposerIcon } from './SubmitButton'
 import { useAskChat } from './useAskChat'
+import { ASK_QUESTION_LENGTH } from './vocabulary'
 
 /**
  * The media-to-chat mask runs inside the docked frame (TakeoverMenu's
@@ -190,6 +192,7 @@ export function MenuAsk({
     sent,
     markSent,
     reset,
+    feedback,
   } = useAskChat({
     transport,
     initialMessages,
@@ -325,6 +328,7 @@ export function MenuAsk({
               <MessageScrollerViewport className="overscroll-contain">
                 <MessageScrollerContent className="p-4">
                   <TranscriptItems
+                    feedback={feedback}
                     messages={messages}
                     onSent={markSent}
                     sent={sent}
@@ -373,7 +377,7 @@ export function MenuAsk({
             placeholder="Ask anything…"
             enterKeyHint="send"
             autoComplete="off"
-            maxLength={500}
+            maxLength={ASK_QUESTION_LENGTH.max}
             required
           />
           <InputGroupAddon align="inline-end">

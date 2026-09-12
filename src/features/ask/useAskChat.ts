@@ -1,12 +1,12 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { type ChatTransport, DefaultChatTransport } from 'ai'
-import { useMemo, useState } from 'react'
+import { type ChatTransport, DefaultChatTransport, generateId } from 'ai'
+import { useCallback, useMemo, useState } from 'react'
+import { type AskFeedback, type AskRated, postAskFeedback } from './feedback'
 import type { AskHandoffReceipt, AskHandoffSent } from './HandoffPanel'
 import { type AskUIMessage, askHandoffState } from './handoff'
-
-export const MIN_QUESTION_LENGTH = 3
+import { ASK_QUESTION_LENGTH, type AskHandoffSignal } from './vocabulary'
 
 type UseAskChatOptions = {
   /** Transport override: stories and tests script the chat without /api/ask. */
@@ -21,8 +21,8 @@ type UseAskChatOptions = {
  * Chat wiring shared by every Ask surface (the takeover-menu composer, the
  * closing band, and the /ask page widget): the /api/ask transport default,
  * busy state, the min-length-guarded submit that clears the composer,
- * `stop` for the composer's in-flight Stop button, and the one handoff the
- * conversation can send.
+ * `stop` for the composer's in-flight Stop button, the one handoff the
+ * conversation can send, and the visitor's feedback on each turn.
  *
  * Every request carries where the conversation stands with the team
  * (`handoff`: none, offered, sent) next to the page it was asked on, so the
@@ -32,6 +32,13 @@ type UseAskChatOptions = {
 export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOptions) {
   const [question, setQuestion] = useState('')
   const [sent, setSent] = useState<AskHandoffSent | null>(null)
+  const [ratings, setRatings] = useState<AskFeedback['ratings']>({})
+  // The chat id files every turn of one conversation; a reset mints a new
+  // one (which is also what empties the transcript) so two conversations
+  // from one open box never share a thread in the log. The seed is spent
+  // on the first chat only.
+  const [id, setId] = useState(generateId)
+  const [seed, setSeed] = useState(initialMessages)
   const chatTransport = useMemo(
     () =>
       transport ??
@@ -43,17 +50,18 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
       }),
     [transport],
   )
-  const { messages, sendMessage, status, error, setMessages, stop } = useChat<AskUIMessage>({
+  const { messages, sendMessage, status, error, stop } = useChat<AskUIMessage>({
+    id,
     transport: chatTransport,
-    messages: initialMessages,
+    messages: seed,
   })
 
   const busy = status === 'submitted' || status === 'streaming'
-  const canSend = !busy && question.trim().length >= MIN_QUESTION_LENGTH
+  const canSend = !busy && question.trim().length >= ASK_QUESTION_LENGTH.min
 
   function sendQuestion(text: string) {
     const trimmed = text.trim()
-    if (trimmed.length < MIN_QUESTION_LENGTH || busy) return
+    if (trimmed.length < ASK_QUESTION_LENGTH.min || busy) return
     // Where the conversation stands with the team as this question leaves,
     // merged into the transport's body beside `pagePath`.
     void sendMessage(
@@ -74,11 +82,33 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     setSent({ messageId, receipt })
   }
 
-  /** A new conversation: the transcript and what it sent go together. */
+  /** A new conversation: the transcript, what it sent, and what it rated go together. */
   function reset() {
-    setMessages([])
+    setId(generateId())
+    setSeed(undefined)
     setSent(null)
+    setRatings({})
   }
+
+  // Shown at once and posted behind it; the server keeps the first rating
+  // (a reason may follow it) and the strongest handoff signal, so a repeat
+  // changes nothing there. Memoized: it is a context value read by every
+  // rating control in the transcript.
+  const rate = useCallback(
+    (turn: string, rated: AskRated) => {
+      setRatings((current) => ({ ...current, [turn]: rated }))
+      postAskFeedback({ id, turn, rating: rated.rating, reason: rated.reason })
+    },
+    [id],
+  )
+  const handoff = useCallback(
+    (turn: string, signal: AskHandoffSignal) => postAskFeedback({ id, turn, handoff: signal }),
+    [id],
+  )
+  const feedback = useMemo<AskFeedback>(
+    () => ({ conversation: id, ratings, rate, handoff }),
+    [id, ratings, rate, handoff],
+  )
 
   return {
     question,
@@ -94,5 +124,6 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     sent,
     markSent,
     reset,
+    feedback,
   }
 }

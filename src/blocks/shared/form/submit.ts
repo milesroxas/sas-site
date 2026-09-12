@@ -1,3 +1,4 @@
+import { type AskHandoffIds, askInquiryFields } from '@/features/ask/handoff'
 import { getClientSideURL } from '@/utilities/getURL'
 import { isQuestion, UNSURE } from './answers'
 import { postInquiry, type SubmitResult } from './post-inquiry'
@@ -9,8 +10,8 @@ export type SubmitArgs = {
   formId: number | string
   /** What the inquiry is filed as. The form declares this; see `inquiryType` in Forms. */
   inquiryType?: FormInquiryType
-  /** The message was opened from Ask's "Talk to the team" (see features/ask/handoff). */
-  fromAsk?: boolean
+  /** The Ask chat the message was opened from (see features/ask/handoff), if any. */
+  ask?: AskHandoffIds | null
   values: Record<string, unknown>
 }
 
@@ -67,7 +68,7 @@ export async function submitForm({
   formId,
   inquiryType,
   values,
-  fromAsk,
+  ask,
 }: SubmitArgs): Promise<SubmitResult> {
   if (delivery === 'inquiries') {
     return postInquiry({
@@ -75,7 +76,7 @@ export async function submitForm({
       // Forms created before the field existed carry no type; they were all
       // the project template, so that stays their meaning.
       type: inquiryType ?? 'project',
-      fromAsk: fromAsk || undefined,
+      ...askInquiryFields(ask ?? null),
       // Honeypot: a human never sees this field, so it is always empty.
       role: values.role,
     })

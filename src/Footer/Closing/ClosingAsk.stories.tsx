@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 import {
   askHandoffChat,
   askHandoffTermsFixture,
@@ -83,6 +84,20 @@ export const HandoffSent: Story = {
   play: async (context) => {
     await openAskHandoff(context)
     await sendAskHandoff(context, { name: 'Jordan Lee', email: 'jordan@northwind.co' })
+  },
+}
+
+/**
+ * Phone: the conversation takes the whole screen as a sheet, its composer
+ * docked at the bottom, instead of a panel boxed inside the band's card.
+ */
+export const MobileSheet: Story = {
+  args: Sources.args,
+  globals: { viewport: { value: 'iphone12', isRotated: false } },
+  parameters: {
+    layout: 'padded',
+    viewport: { options: INITIAL_VIEWPORTS },
+    chromatic: { viewports: [390] },
   },
 }
 

@@ -5,8 +5,9 @@ export type SubmitResult = { reference: string | null; submittedAt: string }
 /** What the public intake (POST /api/inquiries/submit) accepts; it validates every field again. */
 export type InquiryPayload = Record<string, unknown> & {
   type: InquiryType
-  /** Opened from Ask (the contact-form handoff, or sent from Ask's handoff card). */
-  fromAsk?: boolean
+  /** The Ask chat this came from and the turn it closes, so the inbox and the Ask log can meet. */
+  askConversation?: string
+  askTurn?: string
 }
 
 /**

@@ -31,6 +31,7 @@ import { INQUIRY_EMAIL_INVALID } from '@/shared/content/inquiry'
 import { SCROLL_REVEAL_SWAP, useRevealSwap } from '@/shared/ui/scroll-reveal'
 import { isValidEmailAddress, normalizeEmailAddress } from '@/utilities/emailAddress'
 import { cn } from '@/utilities/ui'
+import { type AskFeedback, useAskFeedback } from './feedback'
 import {
   ASK_HANDOFF_HREF,
   ASK_HANDOFFS,
@@ -40,6 +41,7 @@ import {
   askHandoffEmail,
   askHandoffMessage,
   askHandoffPromise,
+  askInquiryFields,
   saveAskHandoff,
 } from './handoff'
 
@@ -71,6 +73,8 @@ type HandoffProps = {
   /** The receipt, when this handoff was sent earlier in the conversation (a remount after later turns). */
   receipt?: AskHandoffReceipt | null
   onSent: (receipt: AskHandoffReceipt) => void
+  /** The question this handoff closes (its user message id), or null for a reply with none. */
+  turn: string | null
 }
 
 /**
@@ -102,6 +106,7 @@ export function Handoff({
   itemId,
   receipt: sentReceipt = null,
   onSent,
+  turn,
 }: HandoffProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
@@ -184,6 +189,7 @@ export function Handoff({
           }}
           suggestedEmail={suggestedEmail}
           terms={terms}
+          turn={turn}
         />
       )}
       {panel === SENT && receipt && <HandoffReceipt receipt={receipt} terms={terms} />}
@@ -218,6 +224,7 @@ function HandoffForm({
   onSent,
   suggestedEmail,
   terms,
+  turn,
 }: {
   kind: AskHandoffKind
   messages: AskUIMessage[]
@@ -225,8 +232,10 @@ function HandoffForm({
   onSent: (receipt: AskHandoffReceipt) => void
   suggestedEmail: string | null
   terms: AskHandoffTerms
+  turn: string | null
 }) {
   const statusId = useId()
+  const feedback = useAskFeedback()
   const [name, setName] = useState('')
   const [email, setEmail] = useState(suggestedEmail ?? '')
   const [error, setError] = useState<string | null>(null)
@@ -246,7 +255,7 @@ function HandoffForm({
         email: address,
         message,
         type: ASK_HANDOFFS[kind].form,
-        fromAsk: true,
+        ...askInquiryFields({ conversation: feedback.conversation, turn }),
       })
       onSent({ email: address, reference })
     } catch (err) {
@@ -293,7 +302,7 @@ function HandoffForm({
       <CardFooter data-swap="text">
         <span>Prefer the full form?</span>
         <Button asChild size="clear" variant="link">
-          <HandoffLink href={ASK_HANDOFF_HREF} messages={messages}>
+          <HandoffLink feedback={feedback} href={ASK_HANDOFF_HREF} messages={messages} turn={turn}>
             Contact page
             <IconArrowRight data-icon="inline-end" />
           </HandoffLink>
@@ -437,6 +446,8 @@ function HandoffReceipt({
 type HandoffLinkProps = Omit<React.ComponentProps<typeof Link>, 'href' | 'onClick' | 'prefetch'> & {
   href: string
   messages: AskUIMessage[]
+  feedback: AskFeedback
+  turn: string | null
 }
 
 /**
@@ -445,16 +456,18 @@ type HandoffLinkProps = Omit<React.ComponentProps<typeof Link>, 'href' | 'onClic
  * so the menu closes on the route change as it does for those. Not
  * prefetched: it sits in a form that is often open without ever being used.
  * Already on the destination, a push to the same path would do nothing, so
- * it reloads to pick the handoff up.
+ * it reloads to pick the handoff up. The click is the turn's handoff signal
+ * until the contact form's own send replaces it.
  */
-function HandoffLink({ href, messages, ...props }: HandoffLinkProps) {
+function HandoffLink({ href, messages, feedback, turn, ...props }: HandoffLinkProps) {
   return (
     <Link
       {...props}
       href={href}
       prefetch={false}
       onClick={(event) => {
-        saveAskHandoff(messages)
+        saveAskHandoff(messages, { conversation: feedback.conversation, turn })
+        if (turn) feedback.handoff(turn, 'clicked')
         if (window.location.pathname === href) {
           event.preventDefault()
           window.location.reload()

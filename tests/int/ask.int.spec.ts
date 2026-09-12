@@ -1,14 +1,21 @@
 import { getPayload, type Payload, type PayloadRequest } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { askEndpoints } from '@/endpoints/ask'
+import { markAskTurn } from '@/features/ask/questions'
 import { extractTerms, retrieveSources } from '@/features/ask/retrieve'
 import config from '@/payload.config'
 
 let payload: Payload
 const originalApiKey = process.env.OPENAI_API_KEY
 
-const askHandler = askEndpoints[0].handler
-const reindexHandler = askEndpoints[1].handler
+const handler = (path: string, method = 'post') => {
+  const endpoint = askEndpoints.find((e) => e.path === path && e.method === method)
+  if (!endpoint) throw new Error(`No ${method} ${path} endpoint`)
+  return endpoint.handler
+}
+const askHandler = handler('/ask')
+const feedbackHandler = handler('/ask/feedback')
+const reindexHandler = handler('/ask/reindex')
 
 type UserTurn = { id: string; role: string; parts: { type: string; text: string }[] }
 
@@ -53,8 +60,8 @@ describe('Ask (RAG)', () => {
 
   describe('retrieveSources', () => {
     it('returns no sources for terms that match nothing in the index', async () => {
-      const sources = await retrieveSources(payload, 'zxqvbn flurbish grommetized')
-      expect(sources).toEqual([])
+      const retrieval = await retrieveSources(payload, 'zxqvbn flurbish grommetized')
+      expect(retrieval).toEqual({ sources: [], path: 'none' })
     })
   })
 
@@ -96,7 +103,7 @@ describe('Ask (RAG)', () => {
       expect(streamText).toContain('"toolName":"handoff"')
       expect(streamText).toContain('"type":"tool-output-available"')
       expect(streamText).toContain('"reason":"no_answer"')
-      expect(streamText).toMatch(/"href":"\/contact/)
+      expect(streamText).toContain('"responseTime":')
       expect(streamText).not.toContain('text-delta')
       expect(streamText).not.toContain('source-url')
     })
@@ -112,6 +119,68 @@ describe('Ask (RAG)', () => {
         lastStatus = res.status
       }
       expect(lastStatus).toBe(429)
+    })
+  })
+
+  describe('POST /api/ask/feedback handler', () => {
+    const ids = { id: 'chat-int-feedback', turn: 'msg-int-feedback' }
+
+    it('rejects a body with nothing to record', async () => {
+      const res = await feedbackHandler(makeReq({ ...ids, rating: 'sideways' }))
+      expect(res.status).toBe(400)
+    })
+
+    it('is a quiet no-op for ids that match no row', async () => {
+      const res = await feedbackHandler(makeReq({ id: 'nope', turn: '../etc', rating: 'up' }))
+      expect(res.status).toBe(200)
+    })
+
+    it('keeps the first rating, takes its reason once, and only the intake can file a sent inquiry', async () => {
+      const row = await payload.create({
+        collection: 'ask-questions',
+        overrideAccess: true,
+        data: {
+          question: 'Integration feedback question',
+          status: 'new',
+          outcome: 'answered',
+          conversation: ids.id,
+          turn: ids.turn,
+        },
+      })
+      try {
+        // The thumb posts before the reason is picked, as Rating.tsx does.
+        await feedbackHandler(makeReq({ ...ids, rating: 'down' }))
+        await feedbackHandler(makeReq({ ...ids, rating: 'down', reason: 'incomplete' }))
+        await feedbackHandler(makeReq({ ...ids, rating: 'up', reason: 'wrong' }))
+        await feedbackHandler(makeReq({ ...ids, handoff: 'inquiry_sent' }))
+        const forged = await payload.findByID({ collection: 'ask-questions', id: row.id })
+        expect(forged.handoff).toBeNull()
+        await markAskTurn(
+          payload,
+          { conversation: ids.id, turn: ids.turn },
+          { handoff: 'inquiry_sent' },
+        )
+        await feedbackHandler(makeReq({ ...ids, handoff: 'clicked' }))
+        const after = await payload.findByID({ collection: 'ask-questions', id: row.id })
+        expect(after.rating).toBe('down')
+        expect(after.ratingReason).toBe('incomplete')
+        expect(after.handoff).toBe('inquiry_sent')
+      } finally {
+        await payload.delete({ collection: 'ask-questions', id: row.id })
+      }
+    })
+
+    it('has its own limiter budget, so taps never cost questions', async () => {
+      process.env.OPENAI_API_KEY = 'sk-int-test-not-real'
+      const ip = 'ask-int-feedback-rate-limit-ip'
+      let lastStatus = 0
+      for (let i = 0; i < 11; i++) {
+        const res = await feedbackHandler(makeReq({ ...ids, rating: 'up' }, ip))
+        lastStatus = res.status
+      }
+      expect(lastStatus).toBe(429)
+      const question = await askHandler(makeReq({ messages: [userMessage('x'.repeat(501))] }, ip))
+      expect(question.status).toBe(400)
     })
   })
 

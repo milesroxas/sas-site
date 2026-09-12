@@ -139,6 +139,15 @@ export const Handoff: Story = {
   },
 }
 
+/** Thumbs down opens one more question in the same row; a pick closes it with the thumb filled. */
+export const RatedDown: Story = {
+  args: Answered.args,
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Not helpful' }))
+    await userEvent.click(canvas.getByRole('button', { name: 'Incomplete' }))
+  },
+}
+
 /** The offer opened: the row becomes the form in place. Send stays off until both fields hold something. */
 export const HandoffForm: Story = {
   args: Handoff.args,

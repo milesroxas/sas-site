@@ -3,6 +3,8 @@
 import { useConfig } from '@payloadcms/ui'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { AdminCard, adminRowStyle } from '@/components/admin/AdminCard'
+import { listDocs, whereIn } from '@/components/admin/rest'
 import { INQUIRY_OPEN_STATUSES, INQUIRY_TYPES, inquiryOptionLabel } from '@/shared/content/inquiry'
 import { useInquiryCounts } from './useInquiryCounts'
 
@@ -19,25 +21,7 @@ type InboxRow = {
 /** How many requests the panel shows before sending you to the full list. */
 const PREVIEW_LIMIT = 5
 
-const OPEN_QUERY = INQUIRY_OPEN_STATUSES.map(
-  (status, index) => `where[status][in][${index}]=${status}`,
-).join('&')
-
-const cardStyle: React.CSSProperties = {
-  border: '1px solid var(--theme-elevation-150)',
-  borderRadius: 8,
-  marginBottom: 24,
-  padding: 24,
-}
-
-const rowStyle: React.CSSProperties = {
-  alignItems: 'baseline',
-  borderTop: '1px solid var(--theme-elevation-100)',
-  display: 'flex',
-  gap: 16,
-  padding: '10px 0',
-  textDecoration: 'none',
-}
+const OPEN_QUERY = whereIn('status', INQUIRY_OPEN_STATUSES)
 
 const relativeDay = (value?: string | null) => {
   if (!value) return ''
@@ -65,35 +49,22 @@ export function InquiriesDashboard() {
 
   useEffect(() => {
     const controller = new AbortController()
-
-    const load = async () => {
-      try {
-        const res = await fetch(
-          `${api}/inquiries?limit=${PREVIEW_LIMIT}&depth=0&sort=-submittedAt&${OPEN_QUERY}`,
-          { credentials: 'include', signal: controller.signal },
-        )
-        if (!res.ok) return
-        const body = (await res.json()) as { docs?: InboxRow[] }
-        setRows(body.docs ?? [])
-      } catch {
+    listDocs<InboxRow>(
+      api,
+      'inquiries',
+      `limit=${PREVIEW_LIMIT}&sort=-submittedAt&${OPEN_QUERY}`,
+      controller.signal,
+    )
+      .then(setRows)
+      .catch(() => {
         // Aborted on unmount, or offline. Counts still render and the list
         // stays as it was.
-      }
-    }
-
-    void load()
+      })
     return () => controller.abort()
   }, [api])
 
   return (
-    <section style={cardStyle}>
-      <header style={{ alignItems: 'baseline', display: 'flex', gap: 16 }}>
-        <h2 style={{ fontSize: 18, margin: 0 }}>Inbox</h2>
-        <Link href={listUrl} style={{ fontSize: 12, marginLeft: 'auto' }}>
-          Open all inquiries
-        </Link>
-      </header>
-
+    <AdminCard action="Open all inquiries" href={listUrl} title="Inbox">
       <p style={{ fontSize: 14, margin: '8px 0 16px' }}>
         {counts.open === 0
           ? 'Nothing waiting. Every request has been answered or closed.'
@@ -101,7 +72,7 @@ export function InquiriesDashboard() {
       </p>
 
       {rows.map((row) => (
-        <Link href={`${listUrl}/${row.id}`} key={row.id} style={rowStyle}>
+        <Link href={`${listUrl}/${row.id}`} key={row.id} style={adminRowStyle}>
           <span style={{ fontVariantNumeric: 'tabular-nums', opacity: 0.6, width: 72 }}>
             {row.reference}
           </span>
@@ -117,6 +88,6 @@ export function InquiriesDashboard() {
           </span>
         </Link>
       ))}
-    </section>
+    </AdminCard>
   )
 }

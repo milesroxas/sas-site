@@ -14,18 +14,24 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
        │                      (chunks grouped into ≤4 doc sources); falls back to
        │                      keyword match over the search index when embeddings
        │                      are unavailable or empty
-       ├─ recordAskQuestion() → redacted row in `ask-questions`, written after the response
        ├─ no sources, first turn → the handoff (`no_answer`) streamed, no model call
        ├─ no sources, follow-up  → chat-only prompt (no new facts allowed), 400-token cap
-       └─ streamText()      → source-url parts first, then the grounded answer streamed,
-                              ending in a `handoff` tool call when a person is the next step
+       ├─ streamText()      → source-url parts first, then the grounded answer streamed,
+       │                      ending in a `handoff` tool call when a person is the next step
+       └─ recordAskQuestion() → one redacted row per turn in `ask-questions`, written after
+                                the response from whichever callback closed the stream
+                                (finish, error, or the visitor's Stop): question, answer,
+                                sources with similarity, outcome, cost, latency
+  └─ POST /api/ask/feedback { id, turn, rating?, reason?, handoff? } → the visitor's word on
+     a stored turn (thumbs, or the contact-page click); the inquiry intake marks `inquiry_sent`
 ```
 
 ## Files
 
 | File | Role |
 | --- | --- |
-| [`retrieve.ts`](./retrieve.ts) | Retrieval seam: `retrieveSources(payload, question)`. Embedding search primary, keyword fallback. The endpoint knows nothing about how sources are found. |
+| [`retrieve.ts`](./retrieve.ts) | Retrieval seam: `retrieveSources(payload, question)` returns the sources (each with its best chunk similarity) and the path that found them. Embedding search primary, keyword fallback. The endpoint knows nothing about how sources are found. |
+| [`vocabulary.ts`](./vocabulary.ts) | The words Ask and the team agree on, client-safe: the question length rule, the outcomes a turn can have (`askOutcome()` derives one from what the endpoint knows), retrieval paths, ratings and their reasons, handoff signals, triage statuses. The collection, the endpoint, the composer and the admin panels all read these lists. Tested in `vocabulary.test.ts`. |
 | [`embeddings.ts`](./embeddings.ts) | ask_embeddings storage/query: `embedMany` on write, cosine-distance SQL on read. |
 | [`chunk.ts`](./chunk.ts) | Heading-aware markdown chunker (~500-token chunks, split on h2/h3 first, tiny sections merged). |
 | [`schema.ts`](./schema.ts) | Drizzle table for ask_embeddings, registered via `beforeSchemaInit` in payload.config.ts. |
@@ -33,12 +39,16 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 | [`../../plugins/ask-index.ts`](../../plugins/ask-index.ts) | Attaches the sync hooks to every surface collection (from the shared surface registry). |
 | [`model.ts`](./model.ts) | Provider seam: answer model (`gpt-5-mini`) and embedding model (`text-embedding-3-small`), both via the Vercel AI SDK. |
 | [`AskWidget.tsx`](./AskWidget.tsx) | Client component: `useChat` transcript, shimmer loading, streamed answers with source links. |
+| [`Composer.tsx`](./Composer.tsx) | `AskTextarea`: the composer's text box wherever it is a textarea (the page, the closing band, its phone sheet). Enter sends, Shift+Enter breaks a line, the cap is the endpoint's. |
+| [`Rating.tsx`](./Rating.tsx) | Two thumbs under every settled reply, after the sources and before the handoff. Thumbs down asks one more question in the same row (wrong, incomplete, off topic). |
+| [`feedback.tsx`](./feedback.tsx) | The visitor's word on a turn, filed under the chat id and the question's own message id (`turn`), so no row id ever reaches the browser. The transcript provides it; the rating control and the handoff read it. `postAskFeedback` fires and forgets. |
+| [`motion.ts`](./motion.ts) | The transcript's entrance classes, shared by the transcript, the rating, and every surface's error line. |
 | [`messages.tsx`](./messages.tsx) | Transcript body shared by every surface. Holds the shimmer until there is something to read (an assistant message with only source parts stays unmounted), renders sources only once the answer has settled, renders a handoff-only reply's lead line as the assistant's words, and closes the last settled reply (even one that settled with nothing to read) with one handoff per conversation. |
 | [`Sources.tsx`](./Sources.tsx) | An answer's sources as a disclosure group: one "Sources" row with the count, a leading chevron that turns down, and inset rows (surface glyph, title, section from the surface registry, → arrow) on the shared `.disclosure-body` track. Collapsed by default. |
 | [`HandoffPanel.tsx`](./HandoffPanel.tsx) | The way to a person under a finished reply, in three states on one surface: the **offer** (a line per kind and a "Talk to the team" chip, the footprint of a quiet row), the **form** it opens into in place (Site Info's reply promise, Name and Email in an inset field group, "Send to the team" posting the visitor's questions to the inquiries intake), and the **receipt** it becomes ("Book a call" there when Site Info has a booking link). Every state change rides `useRevealSwap` with `morphHeight`. Built only from `components/ui` (`Card variant="inset"`, `FieldGroup variant="inset"`, `Input variant="bare"`, `Button size="chat"`). The file is not named `Handoff.tsx`: that collides with `handoff.ts` on a case-insensitive filesystem and TypeScript refuses both. |
 | [`handoffTool.ts`](./handoffTool.ts) | Server side of the handoff: the `handoff` tool the model can call with a reason, and `resolveAskHandoff`, which pairs it with Site Info's terms (reply time, booking link). The tool's description and every reason's wording exclude questions the sources answer, so a visitor asking how projects start gets an answer rather than a form. Tested in `handoffTool.test.ts`. |
 | [`messageText.ts`](./messageText.ts) | The words of a transcript message (text parts only), one reading for the endpoint, the transcript, and the handoff. |
-| [`questions.ts`](./questions.ts) | `recordAskQuestion()`: stores each question for the team after the response, redacted, with the page it was asked on and the chat id. No IP, no analytics id. |
+| [`questions.ts`](./questions.ts) | `recordAskQuestion()`: stores each turn for the team after the response, redacted (question and answer), with its sources, outcome, cost and latency, the page it was asked on, and the chat and message ids. No IP, no analytics id. `markAskTurn()`: the visitor's rating and handoff signal onto that row, first rating wins, a sent inquiry never steps back to a click. |
 | [`redact.ts`](./redact.ts) | `redactFreeText()`: strips emails, phone and card numbers, URL query strings, and key-shaped strings before storage. Keeps budgets, years, dates, and page slugs. Tested in `redact.test.ts`. |
 | [`retention.ts`](./retention.ts) | `ASK_QUESTION_RETENTION_DAYS` and `ASK_NOTICE`, the first line of every transcript. One constant, so the promise and the deletion job cannot drift. Client-safe. |
 | [`handoff.ts`](./handoff.ts) | The handoff contract, client-safe: the reasons, the copy per kind (`ASK_HANDOFFS`, each with the lead line, the offer line, and the destination form), Site Info's terms (`AskHandoffTerms`, `resolveAskHandoffTerms`), the typed transcript message (`AskUIMessage`, with the `tool-handoff` part), `handoffOf`, the conversation's state (`askHandoffState`: none, offered, sent), and the sessionStorage carry to the contact form (`saveAskHandoff`, `readAskHandoff`, `clearAskHandoff`). Tested in `handoff.test.ts`. |
@@ -46,7 +56,8 @@ Visitors ask a question at `/ask`; the site answers **only from published conten
 | [`history.ts`](./history.ts) | `askHistory()`: the transcript as the model may see it. Roles and text parts only, one character budget, and a handoff-only reply kept as the lead line the visitor read, so the model never faces an unanswered turn. Tested in `history.test.ts`. |
 | [`fixtures.ts`](./fixtures.ts) | Story fixtures shared by every surface's stories: a scripted chat typed with the handoff tool, Site Info's terms, a resolved handoff, two sources. |
 | [`storyPlays.ts`](./storyPlays.ts) | Play steps shared by every surface's stories: opening the handoff, sending it, and standing in for the inquiries intake. Separate from `fixtures.ts`, which the unit tests import and which must stay free of Storybook's runtime. |
-| [`../../collections/AskQuestions.ts`](../../collections/AskQuestions.ts) | Admin › Inbox › Ask questions. Team-only read and delete; nobody creates or edits through the API. |
+| [`../../collections/AskQuestions.ts`](../../collections/AskQuestions.ts) | Admin › Inbox › Ask questions. Team-only; nobody creates through the API, and only the triage fields (status, topic, note, planned content) can be edited. |
+| [`../../collections/AskQuestions/components/`](../../collections/AskQuestions/components/) | The admin's reading room: `AskFilters` (New, Content gaps, Thumbs down, Went to a person), `AskConversation` (the whole chat a row belongs to, also shown on an inquiry that came from Ask), `AskDashboard` (the week's counts and the newest untriaged gaps), and the list queries they share. |
 | [`../../jobs/askQuestionRetention.ts`](../../jobs/askQuestionRetention.ts) | Daily Payload task that deletes questions past the retention window, run by the existing `/api/payload-jobs/run` cron. |
 | [`SubmitButton.tsx`](./SubmitButton.tsx) | The composer button shared by every surface: submit when idle, an enabled Stop while a reply is in flight. |
 | [`../../endpoints/ask.ts`](../../endpoints/ask.ts) | The `POST /api/ask` Payload endpoint: validation, rate limiting, retrieval, prompt assembly from `prompts.ts` (the studio voice, no inline citations since links render separately, the partial-answer mode: say what is published, then one next step with a page path from the source `url`), and where the conversation stands with the team appended, so the model never offers twice. |
@@ -159,6 +170,13 @@ callers, 409 while a rebuild is already running on that instance, 503 without th
 `GET /api/ask/reindex` returns `{ lastRebuild }`: that same summary from the last completed pass
 (admin or CLI), or null.
 
+`POST /api/ask/feedback` (public, its own 10-per-minute budget) with `{ id, turn, rating?, reason?, handoff? }`:
+`id` is the chat id and `turn` the user message's id, as `useChat` holds them. The first rating
+wins and its reason may follow once (the thumb posts before the reason is picked); `handoff` may
+only be `clicked`, since `inquiry_sent` is the inquiries intake's to write. Unknown values are
+ignored, an unknown pair is a quiet `{ ok: true }`, and nothing about what is stored is revealed.
+400 when neither a rating nor a handoff signal is present.
+
 `GET /api/ask/usage` (team only): `{ configured, report }`, the last stored OpenAI usage report
 or null; never calls OpenAI. `POST /api/ask/usage` fetches a fresh report from OpenAI, stores it,
 and returns the same shape. 503 with `configured: false` when `OPENAI_ADMIN_API_KEY` is unset,
@@ -176,11 +194,13 @@ backfill script.
 
 ## What we keep
 
-- **Questions, for the team.** Every accepted question lands in `ask-questions` (Admin › Inbox › Ask questions) after the response has gone out, so storage never adds latency. Filter `Answered` to No for the content-gap list: questions the site had nothing to ground an answer on. `Asked on` is the page path, and `Chat` groups one conversation. Team agents can read it over MCP when a key is granted the capability.
+- **Every turn, for the team.** Each accepted question lands in `ask-questions` (Admin › Inbox › Ask questions) after the response has gone out, so storage never adds latency: the question and the answer (both redacted), the sources with their best chunk similarity and which path found them, the outcome, the handoff reason if one was offered, latency, and tokens. `outcome` is what the visitor got, derived from what the endpoint knows (`askOutcome()`): `answered`, `partial` (the reply ended in a handoff), `no_sources` (nothing relevant was published, the content-gap list), `chat_only` (a source-less follow-up), `stopped`, `error`. It is not a quality signal; the visitor's rating is. `Asked on` is the page path; `Chat` groups one conversation, which the row shows in full. Team agents can read it over MCP when a key is granted the capability.
+- **The visitor's word.** Every settled reply can be rated (thumbs, one-tap reason after a thumbs down) and every handoff leaves a signal: `clicked` when the contact-page fallback was taken, `inquiry_sent` when the intake filed an inquiry from that chat (the inquiry carries `askConversation`, and its document shows the conversation). `POST /api/ask/feedback` finds the row by the chat id and the question's message id, keeps the first rating, and never lets a sent inquiry step back to a click.
+- **Triage.** Status (new, reviewed, content planned, ignored), topic from the site's categories, a note, and the draft that closes the gap. The dashboard card counts the week (asked, answered from the site, gaps, thumbs down, went to a person, inquiries from Ask) and lists the newest gaps nobody has looked at.
 - **Redacted before it lands.** `redactFreeText()` is one layer, not a guarantee: a name or employer in plain words survives. The first line of every transcript (`ASK_NOTICE`) asks people to leave personal details out, and tells them the answers are AI-generated (EU AI Act transparency). It is not part of cookie consent: it covers what people type, which is stored whatever they chose on the banner.
 - **Deleted on schedule.** `askQuestionRetention` removes rows older than `ASK_QUESTION_RETENTION_DAYS`. It is queued by Payload's scheduler from the daily cron, so the first run lands a day after deploy and a row can outlive the window by up to a day.
 - **Nothing at OpenAI.** `store: false` stops the Responses API keeping each exchange for 30 days in the dashboard logs. The client resends the transcript every turn, and for reasoning models the SDK asks for encrypted reasoning instead of server-side item references. `sendReasoning: false` keeps that encrypted blob out of the browser.
-- **Metadata only in PostHog.** `ask_questioned` carries length, source count, and the follow-up flag. Question text never goes to analytics: it could not be held to the retention window there, and it would sit next to a visitor id.
+- **Metadata only in PostHog.** `ask_questioned` carries length, source count, the follow-up flag, `outcome`, `retrieval`, `latency_ms`, `page_path` and `handoff_reason`; `ask_rated` carries the rating, its reason and the turn's outcome; `ask_handoff_clicked` the contact-page fallback. Question text never goes to analytics: it could not be held to the retention window there, and it would sit next to a visitor id. PostHog is where the funnel is counted; the admin is where a question is read.
 
 ## Reaching a person
 
@@ -202,7 +222,7 @@ Each state change rides the site's panel swap (`useRevealSwap` with `morphHeight
 - The handoff is read without being cleared: on a full page load the contact page remounts its form just after hydration, and a one-shot read would be spent on the first mount. It is cleared once the inquiry is sent, and ignored after 30 minutes.
 - Already on the destination, a push to the same path does nothing, so the link reloads the page to pick the handoff up.
 
-Both paths file the inquiry with `fromAsk`, and `inquiry_submitted` in PostHog carries `from_ask`, so sales can count the leads Ask produced. `ask_questioned` carries `handoff_reason` (null when no offer was shown). Arrows follow one rule across Ask: → stays on the site (source rows, the contact-page fallback), ↗ leaves it ("Book a call", which opens in a new tab so the conversation survives). The prompts never let the model describe the offer or restate the reply time, and never repeat an email, phone number, or name back.
+Both paths file the inquiry with the chat id (`askConversation`, with the turn it closes), so the inquiry's document shows what the lead asked before reaching out and the turn is marked `inquiry_sent`; `inquiry_submitted` in PostHog carries `from_ask`, derived from that id, so sales can count the leads Ask produced. `ask_questioned` carries `handoff_reason` (null when no offer was shown). Arrows follow one rule across Ask: → stays on the site (source rows, the contact-page fallback), ↗ leaves it ("Book a call", which opens in a new tab so the conversation survives). The prompts never let the model describe the offer or restate the reply time, and never repeat an email, phone number, or name back.
 
 **Checking the triggers.** `scripts/ask-eval.ts` asks a running site the closing band's own suggestion chips and three questions only a person can settle, and reports the sources retrieved and the reason offered for each. A chip must get a grounded answer and no offer. Run it after any prompt or tool-description edit: `pnpm exec tsx scripts/ask-eval.ts http://localhost:3001`.
 

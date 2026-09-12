@@ -4,12 +4,17 @@ import { extractDocMarkdown, readPublicDoc } from '@/shared/content/extract'
 import { indexedSourcePath, surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
 import { embedQuestion, type NearestChunk, queryNearestChunks } from './embeddings'
 import { ASK_MODEL_API_KEY_VAR } from './model'
+import type { AskRetrievalPath } from './vocabulary'
 
 export type RetrievedSource = {
   title: string
   url: string
   text: string
+  /** The document's best chunk similarity; null on the keyword path, which has none. */
+  similarity: number | null
 }
+
+export type Retrieval = { sources: RetrievedSource[]; path: AskRetrievalPath }
 
 /**
  * Retrieval for the /api/ask endpoint. Embedding search over ask_embeddings
@@ -117,12 +122,13 @@ function chunksToSources(chunks: NearestChunk[]): RetrievedSource[] {
 
   return [...byDoc.values()].map(({ url, chunks: docChunks }) => {
     const { title } = docChunks[0]
+    const similarity = Math.max(...docChunks.map((chunk) => chunk.similarity))
     const text = docChunks
       .sort((a, b) => a.chunkIndex - b.chunkIndex)
       .map((chunk) => (chunk.headingPath ? `[${chunk.headingPath}]\n${chunk.text}` : chunk.text))
       .join('\n\n')
 
-    return { title, url, text }
+    return { title, url, text, similarity }
   })
 }
 
@@ -179,24 +185,24 @@ async function retrieveByKeywords(payload: Payload, question: string): Promise<R
       title: sourceDoc.title,
       url: surfaceDocPath(surface, sourceDoc.slug),
       text: markdown.slice(0, MAX_CHARS_PER_SOURCE),
+      similarity: null,
     })
   }
 
   return sources
 }
 
-export async function retrieveSources(
-  payload: Payload,
-  question: string,
-): Promise<RetrievedSource[]> {
+/** The sources for a question and the path that found them (`none` when nothing did). */
+export async function retrieveSources(payload: Payload, question: string): Promise<Retrieval> {
   if (process.env[ASK_MODEL_API_KEY_VAR]) {
     try {
       const sources = await retrieveByEmbedding(payload, question)
-      if (sources.length > 0) return sources
+      if (sources.length > 0) return { sources, path: 'embedding' }
     } catch (err) {
       payload.logger.error({ msg: 'embedding retrieval failed, falling back to keywords', err })
     }
   }
 
-  return retrieveByKeywords(payload, question)
+  const sources = await retrieveByKeywords(payload, question)
+  return { sources, path: sources.length > 0 ? 'keyword' : 'none' }
 }

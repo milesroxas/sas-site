@@ -19,7 +19,7 @@ import { CMSLink } from '@/components/Link'
 import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { DetailList, DetailRow } from '@/components/ui/detail-list'
-import { clearAskHandoff, readAskHandoff } from '@/features/ask/handoff'
+import { type AskHandoffIds, clearAskHandoff, readAskHandoff } from '@/features/ask/handoff'
 import { useRevealSwap } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
@@ -117,9 +117,9 @@ export function ContactTemplate({
   const { getValues, setValue } = formMethods
 
   // Arriving from Ask's "Talk to the team": the visitor's questions open the
-  // message (still theirs to edit), and the inquiry is tagged so sales can see
-  // which leads Ask produced. Cleared once the inquiry is sent.
-  const fromAskRef = useRef(false)
+  // message (still theirs to edit), and the inquiry carries the chat so sales
+  // can read what was asked. Cleared once the inquiry is sent.
+  const askRef = useRef<AskHandoffIds | null>(null)
   useEffect(() => {
     const prefill = readAskHandoff()
     if (!prefill) return
@@ -127,8 +127,10 @@ export function ContactTemplate({
     if (!message?.name) return
     const current = getValues(message.name)
     if (typeof current === 'string' && current.trim().length > 0) return
-    setValue(message.name, prefill.slice(0, message.maxLength ?? undefined), { shouldDirty: true })
-    fromAskRef.current = true
+    setValue(message.name, prefill.message.slice(0, message.maxLength ?? undefined), {
+      shouldDirty: true,
+    })
+    askRef.current = prefill.ids
   }, [fields, getValues, setValue])
 
   const swapTo = useRevealSwap({
@@ -149,9 +151,9 @@ export function ContactTemplate({
           formId,
           inquiryType,
           values,
-          fromAsk: fromAskRef.current,
+          ask: askRef.current,
         })
-        if (fromAskRef.current) clearAskHandoff()
+        if (askRef.current) clearAskHandoff()
         setReceipt({ ...result, values })
         swapTo(1)
       } catch (err) {

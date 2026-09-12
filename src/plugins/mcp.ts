@@ -85,7 +85,7 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
   ),
   ...entries(
     {
-      'ask-questions': `Questions visitors typed into the site Ask box (redacted, no visitor ids, deleted after ${ASK_QUESTION_RETENTION_DAYS} days). \`answered: false\` marks questions the site had no content for. Read-only`,
+      'ask-questions': `Every turn in the site Ask box (redacted question and answer, sources with similarity, outcome, rating, handoff; no visitor ids; deleted after ${ASK_QUESTION_RETENTION_DAYS} days). \`outcome: no_sources\` marks questions the site had no content for. Read-only`,
     },
     READ_ONLY,
   ),

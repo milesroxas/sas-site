@@ -1,8 +1,19 @@
 # Ask insights roadmap
 
-Status: proposed 2026-09-11, not started. Companion to [ask-rag-roadmap.md](ask-rag-roadmap.md) (retrieval quality) and the [feature README](../src/features/ask/README.md). This document owns what the team learns from Ask after it ships: what visitors asked, whether the answer was good, and what to do about it.
+Status: proposed 2026-09-11; Phases 1 to 3 built 2026-09-12 (code on `dev`; the one migration, `ask-turn-capture`, is generated on approval and carries the old `answered` flag into `outcome`), Phase 4 partly. Companion to [ask-rag-roadmap.md](ask-rag-roadmap.md) (retrieval quality) and the [feature README](../src/features/ask/README.md), which is now the reference for what ships; the phases below are kept as the record of what was decided and why.
 
-## Where we are
+## What shipped (2026-09-12)
+
+| Phase | Delivered | Left out, and why |
+|---|---|---|
+| 1 Capture | `answer`, `sources[{title,url,similarity}]`, `retrieval`, `outcome`, `handoffReason`, `latencyMs`, `inputTokens`, `outputTokens`, `turn`; triage `status`, `topic`, `note`, `plannedContent`; `answered` and `sourceCount` dropped (`outcome` and the sources array replace them; the migration must carry the old flag into `outcome` before the drop) | `partial` by phrase match: `askOutcome()` is structural instead (a handoff reason other than `no_answer` after words); `stopped` added for a reply the visitor cut off (the request's abort signal reaches the model call) |
+| 2 Feedback | Thumbs on every settled reply, one-tap reason, `POST /api/ask/feedback` (its own limiter budget; a caller may only file `clicked`, the intake files `inquiry_sent`), `askConversation` on inquiries with the conversation shown on the inquiry and `from_ask` derived from it, `ask_rated` and `ask_handoff_clicked` in PostHog | Rated rows expire with the rest (the export decision: nothing is kept past the notice's 90 days); the eval export is the open Phase 4 item |
+| 3 Readable | `AskConversation` on the row and on the inquiry, `AskDashboard` (7-day counts, newest untriaged gaps), `AskFilters` presets; `page_path` on `ask_questioned` so PostHog breaks questions down by page | Content-gap grouping by embedding (needs schema; only if the flat list proves noisy) |
+| 4 Eval | `outcome` on `ask_questioned` for a post-deploy regression check | Replay of rated rows (`scripts/ask-eval.ts` still runs the fixed cases); needs rated data first |
+
+The turn's `turn` field is the user message's id from the AI SDK, so feedback needs no row id and no index arithmetic (a rejected question leaves no row and no reply, so counting turns would drift). The mobile closing band was reworked in the same change: below `md` the conversation opens as a full-screen sheet (`ClosingAsk.tsx`).
+
+## Where we were (2026-09-11)
 
 `ask-questions` (Admin > Inbox > Ask questions, migration `20260911_151603_ask_questions`) stores one row per accepted question, written after the response by `recordAskQuestion()` in `src/features/ask/questions.ts`:
 

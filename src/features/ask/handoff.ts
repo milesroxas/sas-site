@@ -207,43 +207,63 @@ export function askHandoffEmail(messages: UIMessage[]): string | null {
   return null
 }
 
+/** Which chat, and which question in it, an inquiry from Ask closes. */
+export type AskHandoffIds = { conversation: string; turn: string | null }
+
+/** The handoff as the contact form reads it: the message to open with, and the ids to file under. */
+export type AskHandoffPrefill = { message: string; ids: AskHandoffIds }
+
+/** What an inquiry carries when it came from Ask: the intake reads `askConversation` as "from Ask". */
+export const askInquiryFields = (ids: AskHandoffIds | null) =>
+  ids ? { askConversation: ids.conversation, askTurn: ids.turn ?? undefined } : {}
+
 /**
  * Carry the visitor's Ask questions to the contact form, in this tab's
  * sessionStorage and never in the URL: PostHog records full URLs and servers log
  * them, and the contact page stays static because only the browser reads it.
  * Blocked storage just means the form opens empty.
  */
-export function saveAskHandoff(messages: UIMessage[]): void {
+export function saveAskHandoff(messages: UIMessage[], ids: AskHandoffIds): void {
   const questions = userQuestions(messages)
   if (questions.length === 0) return
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ questions, savedAt: Date.now() }))
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ questions, savedAt: Date.now(), ...ids }))
   } catch {
     // Storage unavailable (private mode, blocked site data): nothing to carry.
   }
 }
 
 /**
- * The text to prefill the contact form's message with, or null.
+ * The handoff to prefill the contact form with, or null: after half an hour,
+ * or for an entry with no chat to file under.
  *
  * Deliberately not cleared on read: on a full page load the contact page
  * remounts its form right after hydration, and a one-shot read would be spent
  * on the first mount and leave the second one empty. The handoff is cleared
- * once the inquiry is sent (`clearAskHandoff`), and ignored after half an hour.
+ * once the inquiry is sent (`clearAskHandoff`).
  */
-export function readAskHandoff(): string | null {
+export function readAskHandoff(): AskHandoffPrefill | null {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY)
     if (!raw) return null
 
-    const { questions, savedAt } = JSON.parse(raw) as { questions?: unknown; savedAt?: unknown }
+    const { questions, savedAt, conversation, turn } = JSON.parse(raw) as {
+      questions?: unknown
+      savedAt?: unknown
+      conversation?: unknown
+      turn?: unknown
+    }
     if (typeof savedAt !== 'number' || Date.now() - savedAt > MAX_AGE_MS) return null
+    if (typeof conversation !== 'string') return null
     const lines = Array.isArray(questions)
       ? questions.filter((q): q is string => typeof q === 'string' && q.trim().length > 0)
       : []
     if (lines.length === 0) return null
 
-    return `${questionsMessage(lines)}\n\n`
+    return {
+      message: `${questionsMessage(lines)}\n\n`,
+      ids: { conversation, turn: typeof turn === 'string' ? turn : null },
+    }
   } catch {
     return null
   }

@@ -7,7 +7,7 @@ import {
   toUIMessageStream,
   type UIMessage,
 } from 'ai'
-import type { Endpoint } from 'payload'
+import type { Endpoint, PayloadRequest } from 'payload'
 import { backfillAskIndex, isBackfillRunning, readLastIndexRebuild } from '@/features/ask/backfill'
 import {
   ASK_HANDOFF_STATES,
@@ -20,7 +20,13 @@ import { askHistory } from '@/features/ask/history'
 import { messageText } from '@/features/ask/messageText'
 import { ASK_MODEL_API_KEY_VAR, askModel } from '@/features/ask/model'
 import { askSystemPrompt, offersAskHandoff } from '@/features/ask/prompts'
-import { recordAskQuestion } from '@/features/ask/questions'
+import {
+  type AskTurnRecord,
+  askIdFrom,
+  markAskTurn,
+  pagePathFrom,
+  recordAskQuestion,
+} from '@/features/ask/questions'
 import { retrieveSources } from '@/features/ask/retrieve'
 import {
   isUsageConfigured,
@@ -29,6 +35,15 @@ import {
   readUsageReport,
   refreshUsageReport,
 } from '@/features/ask/usage'
+import {
+  ASK_MAX_MESSAGES,
+  ASK_QUESTION_LENGTH,
+  ASK_RATING_REASONS,
+  ASK_RATINGS,
+  type AskOutcome,
+  askOutcome,
+} from '@/features/ask/vocabulary'
+import { isOption } from '@/shared/content/options'
 import { captureServerEvent } from '@/utilities/posthog'
 
 /**
@@ -48,9 +63,6 @@ import { captureServerEvent } from '@/utilities/posthog'
  * run under a tight output cap.
  */
 
-const MIN_QUESTION_LENGTH = 3
-const MAX_QUESTION_LENGTH = 500
-const MAX_MESSAGES = 30
 /** Output budget per answer; includes gpt-5 reasoning tokens, so leave headroom over the ~120-word answer. */
 const MAX_ANSWER_TOKENS = 1_200
 /** Source-less follow-up turns are conversational only (a thanks, a rephrase), so cap them hard. */
@@ -61,24 +73,30 @@ const MAX_RETRIEVAL_QUERY_CHARS = 700
 const json = (body: unknown, status = 200) => Response.json(body, { status })
 
 /**
- * Fixed-window in-memory limiter. On serverless this is per warm instance, so
- * it's a cost fuse against naive abuse, not a hard guarantee; acceptable for
- * an MVP; move to a shared store if the endpoint ever draws real traffic.
+ * Fixed-window in-memory limiter, one budget per public route so feedback
+ * taps never spend the question allowance. On serverless this is per warm
+ * instance, so it's a cost fuse against naive abuse, not a hard guarantee;
+ * acceptable for an MVP; move to a shared store if the endpoint ever draws
+ * real traffic.
  */
 const RATE_LIMIT = 10
 const RATE_WINDOW_MS = 60_000
 const hits = new Map<string, { count: number; windowStart: number }>()
 
-function isRateLimited(ip: string): boolean {
+function isRateLimited(req: PayloadRequest, route: string): boolean {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  const key = `${route}:${ip}`
   const now = Date.now()
-  const entry = hits.get(ip)
+  const entry = hits.get(key)
   if (!entry || now - entry.windowStart >= RATE_WINDOW_MS) {
-    hits.set(ip, { count: 1, windowStart: now })
+    hits.set(key, { count: 1, windowStart: now })
     return false
   }
   entry.count += 1
   return entry.count > RATE_LIMIT
 }
+
+const RATE_LIMITED = 'Too many questions, try again in a minute.'
 
 /**
  * Retrieval query for a turn. Follow-ups like "what about for nonprofits?"
@@ -140,15 +158,12 @@ const ask: Endpoint = {
       return json({ error: 'Ask is not configured on this site yet.' }, 503)
     }
 
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-    if (isRateLimited(ip)) {
-      return json({ error: 'Too many questions, try again in a minute.' }, 429)
-    }
+    if (isRateLimited(req, 'ask')) return json({ error: RATE_LIMITED }, 429)
 
     // `id` is the AI SDK chat id and `pagePath` the page the composer sits on
-    // (see useAskChat); both are only kept by `recordAskQuestion` if well
-    // formed. `handoff` is where the conversation stands with the team; an
-    // unknown value reads as none, the state that changes nothing.
+    // (see useAskChat); both are kept only if well formed. `handoff` is where
+    // the conversation stands with the team; an unknown value reads as none,
+    // the state that changes nothing.
     const body = (await req.json?.().catch(() => null)) as {
       messages?: unknown
       id?: unknown
@@ -156,7 +171,7 @@ const ask: Endpoint = {
       handoff?: unknown
     } | null
     const rawMessages = Array.isArray(body?.messages) ? (body.messages as UIMessage[]) : []
-    const messages = rawMessages.length <= MAX_MESSAGES ? askHistory(rawMessages) : null
+    const messages = rawMessages.length <= ASK_MAX_MESSAGES ? askHistory(rawMessages) : null
     const lastMessage = messages?.at(-1)
     const handoffState: AskHandoffState = ASK_HANDOFF_STATES.includes(
       body?.handoff as AskHandoffState,
@@ -169,41 +184,80 @@ const ask: Endpoint = {
     }
 
     const question = messageText(lastMessage).trim()
-    if (question.length < MIN_QUESTION_LENGTH || question.length > MAX_QUESTION_LENGTH) {
+    if (question.length < ASK_QUESTION_LENGTH.min || question.length > ASK_QUESTION_LENGTH.max) {
       return json(
         {
-          error: `Question must be between ${MIN_QUESTION_LENGTH} and ${MAX_QUESTION_LENGTH} characters.`,
+          error: `Question must be between ${ASK_QUESTION_LENGTH.min} and ${ASK_QUESTION_LENGTH.max} characters.`,
         },
         400,
       )
     }
 
-    const sources = await retrieveSources(req.payload, retrievalQuery(messages, question))
+    const startedAt = Date.now()
+    const conversation = askIdFrom(body?.id)
+    const pagePath = pagePathFrom(body?.pagePath)
+    const { sources, path: retrieval } = await retrieveSources(
+      req.payload,
+      retrievalQuery(messages, question),
+    )
     const isFollowUp = messages.length > 1
 
-    recordAskQuestion(req, {
-      question,
-      answered: sources.length > 0,
-      followUp: isFollowUp,
-      sourceCount: sources.length,
-      pagePath: body?.pagePath,
-      conversation: body?.id,
-    })
-
-    // First turn with nothing to ground on: the handoff card, no tokens spent.
-    // Follow-ups still reach the model source-less so the conversation can
-    // carry ("thanks", "can you say that more simply?").
-    if (sources.length === 0 && !isFollowUp) {
+    // One row and one event per turn, whichever callback closes it (a model
+    // stream can end in a finish, an error, or the visitor's Stop).
+    let recorded = false
+    const record = (
+      turn: Pick<
+        AskTurnRecord,
+        'answer' | 'outcome' | 'handoffReason' | 'inputTokens' | 'outputTokens'
+      >,
+    ) => {
+      if (recorded) return
+      recorded = true
+      const latencyMs = Date.now() - startedAt
+      recordAskQuestion(req, {
+        question,
+        turn: lastMessage.id,
+        conversation,
+        pagePath,
+        followUp: isFollowUp,
+        retrieval,
+        sources,
+        latencyMs,
+        ...turn,
+      })
+      req.payload.logger.info({
+        msg: 'ask answered',
+        questionLength: question.length,
+        sourceCount: sources.length,
+        outcome: turn.outcome,
+        handoffReason: turn.handoffReason,
+        latencyMs,
+      })
       captureServerEvent({
         headers: req.headers,
         fallbackDistinctId: `ask:${crypto.randomUUID()}`,
         event: 'ask_questioned',
         properties: {
-          is_follow_up: false,
-          source_count: 0,
+          is_follow_up: isFollowUp,
+          source_count: sources.length,
           question_length: question.length,
-          handoff_reason: 'no_answer',
+          handoff_reason: turn.handoffReason,
+          outcome: turn.outcome,
+          retrieval,
+          latency_ms: latencyMs,
+          page_path: pagePath,
         },
+      })
+    }
+
+    // First turn with nothing to ground on: the handoff card, no tokens spent.
+    // Follow-ups still reach the model source-less so the conversation can
+    // carry ("thanks", "can you say that more simply?").
+    if (sources.length === 0 && !isFollowUp) {
+      record({
+        answer: '',
+        outcome: askOutcome({ grounded: false, handoffReason: 'no_answer' }),
+        handoffReason: 'no_answer',
       })
       return handoffResponse(resolveAskHandoff(siteInfo, 'no_answer'))
     }
@@ -231,6 +285,9 @@ const ask: Endpoint = {
       messages: await convertToModelMessages(messages),
       tools: offersAskHandoff(handoffState) ? { handoff: askHandoffTool(siteInfo) } : undefined,
       maxOutputTokens: sources.length > 0 ? MAX_ANSWER_TOKENS : MAX_CHAT_ONLY_TOKENS,
+      // The visitor's Stop (and a dropped connection) aborts the model call,
+      // so tokens stop with the reader and the turn is recorded as stopped.
+      abortSignal: req.signal,
       // Extractive answers over provided sources don't need deep reasoning;
       // the default (medium) burns hidden reasoning tokens on every question.
       // `store: false`: OpenAI's Responses API otherwise keeps every exchange
@@ -238,28 +295,26 @@ const ask: Endpoint = {
       // resends the transcript each turn, and for reasoning models the SDK asks
       // for encrypted reasoning instead of server-side item references.
       providerOptions: { openai: { reasoningEffort: 'low', store: false } },
-      onFinish: ({ usage, staticToolCalls }) => {
+      onFinish: ({ text, totalUsage, staticToolCalls }) => {
         const handoffReason =
           staticToolCalls.find((call) => call.toolName === 'handoff')?.input.reason ?? null
-        req.payload.logger.info({
-          msg: 'ask answered',
-          questionLength: question.length,
-          sourceCount: sources.length,
+        record({
+          answer: text,
+          outcome: askOutcome({ grounded, handoffReason }),
           handoffReason,
-          usage,
-        })
-        captureServerEvent({
-          headers: req.headers,
-          fallbackDistinctId: `ask:${crypto.randomUUID()}`,
-          event: 'ask_questioned',
-          properties: {
-            is_follow_up: isFollowUp,
-            source_count: sources.length,
-            question_length: question.length,
-            handoff_reason: handoffReason,
-          },
+          inputTokens: totalUsage.inputTokens ?? null,
+          outputTokens: totalUsage.outputTokens ?? null,
         })
       },
+      onAbort: ({ steps }) => {
+        record({
+          answer: steps.map((step) => step.text).join(''),
+          outcome: 'stopped',
+          handoffReason: null,
+        })
+      },
+      // Logged once, by the UI stream's onError below, which every error reaches.
+      onError: () => record({ answer: '', outcome: 'error', handoffReason: null }),
     })
 
     const stream = createUIMessageStream({
@@ -281,13 +336,73 @@ const ask: Endpoint = {
         )
       },
       onError: (err) => {
-        req.payload.logger.error({ msg: 'ask model call failed', err })
+        req.payload.logger.error({ msg: 'ask reply failed', err })
         return 'Something went wrong answering that. Try again shortly.'
       },
     })
 
     return createUIMessageStreamResponse({ stream })
   },
+}
+
+/**
+ * Public: the visitor's word on a turn. A thumbs up or down (with a one-tap
+ * reason), or the contact-page click; `inquiry_sent` is the intake's to
+ * write, never a caller's. The row is found by the chat and message ids the
+ * client already holds, so no row id ever reaches the browser; an unknown
+ * pair is a quiet no-op. Its own limiter budget, so taps never cost questions.
+ */
+const feedback: Endpoint = {
+  path: '/ask/feedback',
+  method: 'post',
+  handler: async (req) => {
+    if (isRateLimited(req, 'feedback')) return json({ error: RATE_LIMITED }, 429)
+
+    const body = (await req.json?.().catch(() => null)) as Record<string, unknown> | null
+    const rating = isOption(ASK_RATINGS, body?.rating) ? body.rating : undefined
+    const ratingReason =
+      rating === 'down' && isOption(ASK_RATING_REASONS, body?.reason) ? body.reason : undefined
+    const handoff = body?.handoff === 'clicked' ? 'clicked' : undefined
+    if (!rating && !handoff) return json({ error: 'Nothing to record.' }, 400)
+
+    const turn = await markAskTurn(
+      req.payload,
+      { conversation: body?.id, turn: body?.turn },
+      { rating, ratingReason, handoff },
+    )
+    if (turn) captureAskFeedback(req, { rating, ratingReason, handoff, ...turn })
+    return json({ ok: true })
+  },
+}
+
+/** `ask_rated` for a rating, `ask_handoff_clicked` for the contact-page fallback; an inquiry is its own event. */
+function captureAskFeedback(
+  req: PayloadRequest,
+  signal: {
+    rating?: string
+    ratingReason?: string
+    handoff?: string
+    outcome: AskOutcome | null
+    sourceCount: number
+  },
+): void {
+  const event = signal.rating
+    ? 'ask_rated'
+    : signal.handoff === 'clicked'
+      ? 'ask_handoff_clicked'
+      : null
+  if (!event) return
+  captureServerEvent({
+    headers: req.headers,
+    fallbackDistinctId: `ask:${crypto.randomUUID()}`,
+    event,
+    properties: {
+      rating: signal.rating ?? null,
+      reason: signal.ratingReason ?? null,
+      outcome: signal.outcome,
+      source_count: signal.sourceCount,
+    },
+  })
 }
 
 /**
@@ -378,4 +493,4 @@ const usageRefresh: Endpoint = {
   },
 }
 
-export const askEndpoints: Endpoint[] = [ask, reindex, indexStatus, usage, usageRefresh]
+export const askEndpoints: Endpoint[] = [ask, feedback, reindex, indexStatus, usage, usageRefresh]

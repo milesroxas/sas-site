@@ -1,40 +1,24 @@
 'use client'
 
 import type { ChatStatus } from 'ai'
-import { Fragment } from 'react'
 import { Bubble, BubbleContent } from '@/components/ui/bubble'
 import { Message, MessageContent } from '@/components/ui/message'
 import { MessageScrollerItem } from '@/components/ui/message-scroller'
 import { cn } from '@/utilities/ui'
+import { type AskFeedback, AskFeedbackProvider } from './feedback'
 import { type AskHandoffReceipt, type AskHandoffSent, Handoff } from './HandoffPanel'
 import {
   ASK_HANDOFFS,
-  type AskHandoffKind,
+  type AskHandoff,
   type AskHandoffTerms,
   type AskUIMessage,
   handoffOf,
 } from './handoff'
 import { messageText } from './messageText'
+import { handoffAfterLead, transcriptItemEnter } from './motion'
+import { AskRating } from './Rating'
 import { ASK_NOTICE } from './retention'
 import { AskSources } from './Sources'
-
-/**
- * Entrance for anything that joins the transcript (messages, the Thinking
- * shimmer, the handoff, errors): a short rise from the composer's
- * direction on the site's settle curve. Mount-once keyframes are safe here:
- * items never re-trigger.
- */
-export const transcriptItemEnter =
-  'motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 motion-safe:ease-out-quint'
-
-/**
- * The handoff's entrance when it follows a lead line that mounts on the same
- * render: the words land first, the offer a beat after, so the two read as
- * "here is why, and here is the way" rather than one block. An arbitrary
- * animation-delay on purpose, as the closing band's composer does: `delay-*`
- * also sets transition-delay, which would hold the chip's press feedback.
- */
-const handoffAfterLead = 'motion-safe:[animation-delay:150ms] motion-safe:fill-mode-backwards'
 
 /**
  * Shared transcript pieces for every Ask surface (the takeover-menu chat, the
@@ -79,6 +63,10 @@ const hasReply = (message: AskUIMessage, live: boolean) =>
  * reply takes the offer with it; an earlier reply's lead line stays, since
  * it was the reply. Once the visitor has sent, the receipt stays pinned to
  * the reply it closed and no later reply offers again.
+ *
+ * Every settled reply can be rated. The rating and the handoff are filed
+ * under the question's own message id (`feedback`), which the transcript
+ * provides to both so neither needs the row it lands in.
  */
 export function TranscriptItems({
   messages,
@@ -86,6 +74,7 @@ export function TranscriptItems({
   terms,
   sent,
   onSent,
+  feedback,
 }: {
   messages: AskUIMessage[]
   status: ChatStatus
@@ -94,6 +83,7 @@ export function TranscriptItems({
   /** The handoff the visitor has sent in this conversation, if any. */
   sent: AskHandoffSent | null
   onSent: (messageId: string, receipt: AskHandoffReceipt) => void
+  feedback: AskFeedback
 }) {
   const last = messages.at(-1)
   const lastIsAssistant = last?.role === 'assistant'
@@ -109,7 +99,7 @@ export function TranscriptItems({
   const settled = status === 'ready' && lastIsAssistant
 
   return (
-    <>
+    <AskFeedbackProvider value={feedback}>
       {visible.length > 0 && (
         <MessageScrollerItem messageId="ask-notice">
           <p
@@ -119,45 +109,19 @@ export function TranscriptItems({
           </p>
         </MessageScrollerItem>
       )}
-      {visible.map((message, index) => {
-        const live = status === 'streaming' && index === visible.length - 1
-        const isAssistant = message.role === 'assistant'
-        const text = messageText(message)
-        const handoff = isAssistant && !live ? handoffOf(message) : null
-        const lead = handoff && text === '' ? ASK_HANDOFFS[handoff.reason].lead : null
-        const sentHere = sent?.messageId === message.id
-        const closes = settled && !sent && index === visible.length - 1 && isAssistant
-        const kind: AskHandoffKind = handoff?.reason ?? 'none'
-        const handoffId = `${message.id}:handoff`
-        return (
-          <Fragment key={message.id}>
-            {text !== '' && (
-              <MessageScrollerItem messageId={message.id} scrollAnchor={message.role === 'user'}>
-                <AskMessage message={message} streaming={live} />
-              </MessageScrollerItem>
-            )}
-            {lead && (
-              <MessageScrollerItem messageId={`${message.id}:lead`}>
-                <AskReply>{lead}</AskReply>
-              </MessageScrollerItem>
-            )}
-            {(sentHere || closes) && (
-              <MessageScrollerItem messageId={handoffId}>
-                <div className={cn(transcriptItemEnter, lead && handoffAfterLead)}>
-                  <Handoff
-                    itemId={handoffId}
-                    kind={kind}
-                    messages={messages}
-                    onSent={(receipt) => onSent(message.id, receipt)}
-                    receipt={sentHere ? sent.receipt : null}
-                    terms={handoff ?? terms}
-                  />
-                </div>
-              </MessageScrollerItem>
-            )}
-          </Fragment>
-        )
-      })}
+      {visible.map((message, index) => (
+        <TranscriptTurn
+          closes={settled && !sent && index === visible.length - 1}
+          key={message.id}
+          live={status === 'streaming' && index === visible.length - 1}
+          message={message}
+          messages={messages}
+          onSent={onSent}
+          previous={visible[index - 1]}
+          sent={sent}
+          terms={terms}
+        />
+      ))}
       {pending && (
         <MessageScrollerItem messageId="pending">
           <p
@@ -168,7 +132,113 @@ export function TranscriptItems({
           </p>
         </MessageScrollerItem>
       )}
+    </AskFeedbackProvider>
+  )
+}
+
+/**
+ * One message and what closes it: the bubble (or a handoff-only reply's lead
+ * line), the rating, and the handoff when this reply ends the transcript or
+ * was the one sent from. `previous` is the message before it, which for a
+ * reply is the question it answers and the turn its feedback files under.
+ */
+function TranscriptTurn({
+  message,
+  previous,
+  live,
+  closes,
+  ...handoffProps
+}: {
+  message: AskUIMessage
+  previous: AskUIMessage | undefined
+  /** Still receiving deltas. */
+  live: boolean
+  /** The settled reply that ends the transcript, with nothing sent yet. */
+  closes: boolean
+  messages: AskUIMessage[]
+  sent: AskHandoffSent | null
+  terms: AskHandoffTerms
+  onSent: (messageId: string, receipt: AskHandoffReceipt) => void
+}) {
+  const reply = message.role === 'assistant' && !live
+  const text = messageText(message)
+  const handoff = reply ? handoffOf(message) : null
+  const lead = handoff && text === '' ? ASK_HANDOFFS[handoff.reason].lead : null
+  const turn = reply && previous?.role === 'user' ? previous.id : null
+  const { sent } = handoffProps
+  const sentHere = sent?.messageId === message.id
+
+  return (
+    <>
+      {text !== '' && (
+        <MessageScrollerItem messageId={message.id} scrollAnchor={message.role === 'user'}>
+          <AskMessage message={message} streaming={live} />
+        </MessageScrollerItem>
+      )}
+      {lead && (
+        <MessageScrollerItem messageId={`${message.id}:lead`}>
+          <AskReply>{lead}</AskReply>
+        </MessageScrollerItem>
+      )}
+      {turn && (
+        <MessageScrollerItem messageId={`${message.id}:rating`}>
+          <div className={transcriptItemEnter}>
+            <AskRating turn={turn} />
+          </div>
+        </MessageScrollerItem>
+      )}
+      {(sentHere || (closes && reply)) && (
+        <TurnHandoff
+          afterLead={lead !== null}
+          handoff={handoff}
+          messageId={message.id}
+          messages={handoffProps.messages}
+          onSent={handoffProps.onSent}
+          receipt={sentHere && sent ? sent.receipt : null}
+          terms={handoffProps.terms}
+          turn={turn}
+        />
+      )}
     </>
+  )
+}
+
+/** The way to a person as a transcript item, its entrance a beat after a lead line that mounted with it. */
+function TurnHandoff({
+  messageId,
+  handoff,
+  afterLead,
+  turn,
+  messages,
+  receipt,
+  terms,
+  onSent,
+}: {
+  messageId: string
+  handoff: AskHandoff | null
+  afterLead: boolean
+  turn: string | null
+  messages: AskUIMessage[]
+  /** Set when this is the handoff the visitor already sent from. */
+  receipt: AskHandoffReceipt | null
+  terms: AskHandoffTerms
+  onSent: (messageId: string, receipt: AskHandoffReceipt) => void
+}) {
+  const itemId = `${messageId}:handoff`
+  return (
+    <MessageScrollerItem messageId={itemId}>
+      <div className={cn(transcriptItemEnter, afterLead && handoffAfterLead)}>
+        <Handoff
+          itemId={itemId}
+          kind={handoff?.reason ?? 'none'}
+          messages={messages}
+          onSent={(sent) => onSent(messageId, sent)}
+          receipt={receipt}
+          terms={handoff ?? terms}
+          turn={turn}
+        />
+      </div>
+    </MessageScrollerItem>
   )
 }
 

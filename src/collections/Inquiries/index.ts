@@ -103,6 +103,18 @@ export const Inquiries: CollectionConfig<'inquiries'> = {
       },
     },
     {
+      name: 'askConversation',
+      type: 'text',
+      label: 'From Ask',
+      index: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        condition: (data) => Boolean(data?.askConversation),
+        description: 'The Ask chat this came from. What they asked is below the request.',
+      },
+    },
+    {
       name: 'submittedAt',
       type: 'date',
       index: true,
@@ -202,6 +214,19 @@ export const Inquiries: CollectionConfig<'inquiries'> = {
               admin: {
                 readOnly: true,
                 description: 'Page the form was on — useful when a campaign is running.',
+              },
+            },
+            {
+              name: 'askThread',
+              type: 'ui',
+              admin: {
+                condition: (data) => Boolean(data?.askConversation),
+                components: {
+                  Field: {
+                    path: '@/collections/AskQuestions/components/AskConversation#AskConversation',
+                    clientProps: { conversationPath: 'askConversation' },
+                  },
+                },
               },
             },
           ],

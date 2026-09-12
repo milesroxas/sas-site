@@ -8,8 +8,9 @@
  * form follows.
  */
 import type { SiteInfo } from '@/payload-types'
+import { optionLabel, type SelectOption } from './options'
 
-export type InquiryOption = { label: string; value: string }
+export type InquiryOption = SelectOption
 
 /**
  * Which kind of form a request came from. Declared per form (Forms → sidebar,
@@ -112,10 +113,7 @@ export const inquiryResponseTime = (
 ): string => siteInfo?.inquiries?.responseTime || INQUIRY_RESPONSE_TIME_FALLBACK
 
 /** Human label for a stored value, for emails and read-only summaries. */
-export const inquiryOptionLabel = (
-  options: readonly InquiryOption[],
-  value?: string | null,
-): string | undefined => options.find((option) => option.value === value)?.label
+export const inquiryOptionLabel = optionLabel
 
 /**
  * Reference prefix and alphabet. Crockford-style: no I, L, O, U, so a

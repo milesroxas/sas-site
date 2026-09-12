@@ -2,6 +2,7 @@
 
 import { useAuth, useConfig } from '@payloadcms/ui'
 import { useCallback, useEffect, useSyncExternalStore } from 'react'
+import { countDocs, whereIn } from '@/components/admin/rest'
 import { INQUIRY_OPEN_STATUSES } from '@/shared/content/inquiry'
 
 export type InquiryCounts = {
@@ -18,9 +19,7 @@ const EMPTY: InquiryCounts = { new: 0, open: 0, mine: 0 }
 /** Refresh cadence while any admin screen is open. */
 const POLL_INTERVAL_MS = 60_000
 
-const OPEN_QUERY = INQUIRY_OPEN_STATUSES.map(
-  (status, index) => `where[status][in][${index}]=${status}`,
-).join('&')
+const OPEN_QUERY = whereIn('status', INQUIRY_OPEN_STATUSES)
 
 /**
  * One poller, however many readers.
@@ -56,14 +55,7 @@ const emit = (next: InquiryCounts) => {
 }
 
 async function fetchCounts(api: string, userId: number | string | undefined) {
-  const count = async (query: string) => {
-    const res = await fetch(`${api}/inquiries?limit=0&depth=0&${query}`, {
-      credentials: 'include',
-    })
-    if (!res.ok) return 0
-    const body = (await res.json()) as { totalDocs?: number }
-    return body.totalDocs ?? 0
-  }
+  const count = (query: string) => countDocs(api, 'inquiries', query)
 
   const [newCount, openCount, mineCount] = await Promise.all([
     count('where[status][equals]=new'),
@@ -100,8 +92,7 @@ const subscribe = (listener: () => void) => {
 const getSnapshot = () => snapshot
 
 /**
- * The three numbers the inbox is judged by. Counts come from `limit=0`
- * queries, so nothing but the totals crosses the wire.
+ * The three numbers the inbox is judged by.
  *
  * Returns `refresh` for the callers that have just changed something and
  * should not wait out the interval to see it.
