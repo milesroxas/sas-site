@@ -1,0 +1,135 @@
+#!/usr/bin/expect -f
+#
+# `pnpm migrate:create` with its create/rename prompts answered from an
+# explicit answer sheet (AGENTS.md, "Required: create / rename prompt
+# answers"). Every prompt drizzle asks must have an answer on the command
+# line; anything unanswered or unexpected aborts before drizzle writes files.
+#
+# Usage (from the repo root):
+#   expect scripts/migrate-create.exp <migration-name> <answer>...
+#
+# Answers:
+#   column:<table>.<new>=<old>   rename column <old> to <new> (keeps data)
+#   column:<table>.<new>=+       create column <new>
+#   table:<new>=<old>            rename table <old> to <new> (keeps rows)
+#   table:<new>=+                create table <new>
+#   enum:<new>=<old>             rename enum <old> to <new>
+#   enum:<new>=+                 create enum <new>
+#
+# Payload diffs twice: UP asks about the new names, then DOWN asks the mirror
+# prompts about the old names. A rename needs both answers, e.g.
+#   column:posts.body_text=body  column:posts.body=body_text
+#
+# Each choice is made by matching the option drizzle actually lists, never by
+# position alone. Review the generated SQL afterwards, then run
+# `pnpm check:migrations` and `pnpm check:migrations:drift`.
+#
+# Agents: run this only after the user approves the migration in the current
+# conversation (project settings keep it behind an `ask` permission rule).
+
+if {$argc < 1} {
+  puts stderr "usage: expect scripts/migrate-create.exp <migration-name> <answer>..."
+  exit 2
+}
+if {![file isdirectory src/migrations]} {
+  puts stderr "run from the repo root (src/migrations not found)"
+  exit 2
+}
+
+set name [lindex $argv 0]
+array set answer {}
+foreach arg [lrange $argv 1 end] {
+  if {![regexp {^(column|table|enum):([^=]+)=(.+)$} $arg -> kind key value]} {
+    puts stderr "bad answer: $arg"
+    exit 2
+  }
+  set answer($kind:$key) $value
+}
+array set handled {}
+
+# The option list drizzle renders under the question, in order: `+` for
+# create, otherwise the name it would rename from.
+proc listed_options {} {
+  # Local timeout: a flag beside the braced list would stop expect unbracing it.
+  set timeout 5
+  sleep 0.8
+  expect {
+    -re {.*(create|rename) (column|table|enum)[^\r\n]*} {}
+    timeout {
+      puts "\nABORT: prompt options never rendered"
+      exit 6
+    }
+  }
+  regsub -all {\x1b\[[0-9;?]*[A-Za-z]} $expect_out(buffer) {} screen
+  set options {}
+  foreach line [split $screen "\n"] {
+    # "+ <new>  create column" or "~ <old> > <new>  rename column" (the arrow is
+    # a non-ASCII glyph, matched as any token so this file stays ASCII).
+    if {![regexp {([+~])\s+(\S+)(?:\s+\S+\s+\S+)?\s+(create|rename) (?:column|table|enum)} $line -> sign from action]} {
+      continue
+    }
+    set option [expr {$action eq "create" ? "+" : $from}]
+    # A second render repeats the list; the first one is the whole list.
+    if {[lsearch -exact $options $option] >= 0} break
+    lappend options $option
+  }
+  return $options
+}
+
+proc answer_prompt {id} {
+  global answer handled
+  if {[info exists handled($id)]} return
+  set handled($id) 1
+  if {![info exists answer($id)]} {
+    puts "\nABORT: no answer given for $id"
+    exit 4
+  }
+  set want $answer($id)
+  set options [listed_options]
+  set index [lsearch -exact $options $want]
+  if {[lindex $options 0] ne "+" || $index < 0} {
+    puts "\nABORT: $id wants '$want' but drizzle listed: $options"
+    exit 3
+  }
+  set choice [expr {$want eq "+" ? "create" : "rename from $want"}]
+  puts "\n>>> $id -> $choice"
+  for {set i 0} {$i < $index} {incr i} {
+    send "\033\[B"
+    sleep 0.25
+  }
+  sleep 0.3
+  send "\r"
+}
+
+set timeout 300
+spawn pnpm migrate:create $name
+
+expect {
+  -re {Is (\S+) column in (\S+) table created or renamed from another column\?} {
+    answer_prompt "column:$expect_out(2,string).$expect_out(1,string)"
+    exp_continue
+  }
+  -re {Is (\S+) (table|enum) created or renamed from another (?:table|enum)\?} {
+    answer_prompt "$expect_out(2,string):$expect_out(1,string)"
+    exp_continue
+  }
+  -re {Is \S+ \S+ created or renamed from another} {
+    puts "\nABORT: prompt kind this script does not answer"
+    exit 5
+  }
+  timeout {
+    puts "\nABORT: timed out"
+    exit 6
+  }
+  eof
+}
+
+catch wait result
+set status [lindex $result 3]
+foreach id [array names answer] {
+  if {![info exists handled($id)]} {
+    puts "\nWARNING: answer never asked for: $id"
+    set status 7
+  }
+}
+exit $status
