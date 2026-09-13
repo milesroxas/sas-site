@@ -1,5 +1,5 @@
 import type { Block } from 'payload'
-import { themeField } from '@/blocks/shared/fields'
+import { storySourceField, themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 
@@ -11,8 +11,8 @@ import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
  * side off the page edge while the section itself runs to it.
  *
  * Self-contained by default (authors the body inline), so it can be dropped
- * into any collection's `blocks` field. On Work Pages the `source` select can
- * pull canonical Case Study story content instead.
+ * into any collection's `blocks` field. On Work and Lab Pages the `source`
+ * select can pull canonical story content instead.
  */
 export const SplitImageOffset: Block = {
   slug: 'splitImageOffset',
@@ -23,32 +23,14 @@ export const SplitImageOffset: Block = {
   interfaceName: 'SplitImageOffsetBlock',
   labels: { singular: 'Pair offset', plural: 'Pair offsets' },
   fields: [
-    {
-      name: 'source',
-      type: 'select',
-      required: true,
-      defaultValue: 'custom',
-      options: [
-        'custom',
-        'context',
-        'challenge',
-        'strategy',
-        'approach',
-        'outcome-summary',
-        'learnings',
-      ],
-      admin: {
-        description:
-          'Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).',
-      },
-    },
+    storySourceField(),
     { name: 'heading', type: 'text' },
     {
       name: 'body',
       type: 'richText',
       admin: {
         description:
-          'Shown when source is "Custom", or as a Work Page override for canonical content.',
+          'Shown when source is "Custom", or as a Work or Lab Page override for canonical content.',
       },
     },
     {

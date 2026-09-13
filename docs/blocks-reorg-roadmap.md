@@ -127,25 +127,26 @@ The Section-nestable run is defined once in `src/blocks/shared/section-blocks.ts
 | Block | Pages | Posts | Work | Lab | Expertise | Audience | Home |
 |---|---|---|---|---|---|---|---|
 | Section | PageSection | PageSection | WorkSection | LabSection | SegmentSection | SegmentSection | not yet |
-| Standard (`richTransition`; Work: `caseStudyTransition`) | yes | yes | yes (story variant) | yes | yes | yes | held |
-| Offset (`featureHeadingOffset`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
-| Stacked (`fullMedia`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
-| Split (`mediaContentSplit`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
-| Split narrow (`splitContentNarrow`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
-| Pair (`imagePair`) | yes | yes | yes (story variant) | yes | yes | yes | held |
-| Pair offset (`splitImageOffset`) | yes | yes | yes (story variant) | yes | yes | yes | held |
-| Statement (`featureImageStatement`) | yes | yes | yes (story variant) | yes | yes | yes | yes |
+| Standard (`richTransition`; Work: `caseStudyTransition`) | yes | yes | yes (story variant) | yes (story variant) | yes | yes | held |
+| Offset (`featureHeadingOffset`) | yes | yes | yes (story variant) | yes (story variant) | yes | yes | yes |
+| Stacked (`fullMedia`) | yes | yes | yes (story variant) | yes (story variant) | yes | yes | yes |
+| Split (`mediaContentSplit`) | yes | yes | yes (story variant) | yes (story variant) | yes | yes | yes |
+| Split narrow (`splitContentNarrow`) | yes | yes | yes (story variant) | yes (story variant) | yes | yes | yes |
+| Pair (`imagePair`) | yes | yes | yes (story variant) | yes (story variant) | yes | yes | held |
+| Pair offset (`splitImageOffset`) | yes | yes | yes (story variant) | yes (story variant) | yes | yes | held |
+| Statement (`featureImageStatement`) | yes | yes | yes (story variant) | yes (story variant) | yes | yes | yes |
 | Caption (`mediaBlock`) | yes | yes | yes | yes | yes | yes | yes |
 | Rich text (`richText`) | yes | yes | no (hand-built run) | yes | yes | yes | yes |
 | FAQ (`faq`) | yes | yes | yes (plain) | yes | yes | yes | yes |
 | Carousel (`carousel`) | yes | yes (new in B3) | yes (plain) | yes | yes | yes | yes |
 | Insight list (`insightList`) | yes | yes | yes (plain) | yes | yes | yes | yes |
-| Tabs (`featureTabs`) | yes | yes (new in B5) | yes (story variant) | yes (new in B5) | yes | yes | yes |
+| Tabs (`featureTabs`) | yes | yes (new in B5) | yes (story variant) | yes (story variant) | yes | yes | yes |
 | Content (`content`) | yes | nested only | nested only | nested only | yes | yes | yes |
 
 Two things stay collection-owned on purpose:
 
-- **Standard on Work** is its own block: `caseStudyTransition` (`wp_transition`, live in production) puts the same copy fields behind a canonical Case Study story picker. Everywhere else Standard is the generic `richTransition` (`src/blocks/rich-transition/config.ts`, per-parent `*_transition` tables) in the shared run, added 2026-09-03; it replaced the lab twin `labTransition` (`lp_transition`, zero production rows), which carried exactly these fields under a static `dbName`. Work builds its run by hand so it never offers both.
+- **Standard on Work** is its own block: `caseStudyTransition` (`wp_transition`, live in production) puts the same copy fields behind a canonical Case Study story picker. Everywhere else Standard is the generic `richTransition` (`src/blocks/rich-transition/config.ts`, per-parent `*_transition` tables) in the shared run, added 2026-09-03; it replaced the lab twin `labTransition` (`lp_transition`, zero production rows), which carried exactly these fields under a static `dbName`. Work builds its run by hand so it never offers both. Lab keeps the `richTransition` slug and table and puts the story picker in front of it (2026-09-13, see below).
+- **Lab variants** (2026-09-13) come from mapping `sectionNestableBlocks` through `labBlock` (`src/blocks/lab/config.ts`): every block with a story `source` becomes a `Lab*` interface with the story picker resolving against the Lab Project (`CANONICAL_STORY_FIELDS['lab-pages']`), Standard gains the source first, and everything else passes through. Lab has no Asset Libraries, so there is no media scoping. `RenderLabBlocks` resolves copy with `story-copy.ts` (shared with Work) and then renders through `sectionChildComponents` like every other surface. Statement grid joined Lab's top-level Statements group as a story variant.
 - **Work variants** are wrappers over the shared block: same slug and table, extra fields. `withStoryBeatSource` adds the story-beat fields to blocks that pull canonical copy; `withCaseStudyScopedMedia` (`src/fields/caseStudyScopedMedia.ts`) scopes every media picker to the case study's asset libraries and adds the block-level `browseAllMedia` opt-out. Shared configs carry only the public gate (`publicApprovedMediaWhere`), so the opt-out never appears outside Work. Caption and Carousel carry no copy fields, so Work offers them with the picker scope only; FAQ and Insight list are offered plain (their headings and items are the block's own copy, and the Insight mark picker keeps its SVG-only filter), so `RenderCaseStudyBlocks` renders them without resolving anything against the study. Tabs is the exception in the Interactive group: every tab row carries a `source`, so Work nests `WorkFeatureTabs` and resolves each tab's heading and body against the study as before.
 
 ### Drawer group order
@@ -159,7 +160,7 @@ Every composition surface leads with the reorganized groups, then its legacy gro
 | Pages, Expertise, Audience | Structure, Section heading, Media and content, Media, Text, Interactive, Lists, Statements, Forms & CTAs, Custom |
 | Posts | Structure, Section heading, Media and content, Media, Text, Interactive, Lists |
 | Work Pages | Structure, Section heading, Media and content, Media, Interactive, Lists, Narrative, Statements |
-| Lab Pages | Structure, Section heading, Media and content, Media, Text, Interactive, Lists, Narrative |
+| Lab Pages | Structure, Section heading, Media and content, Media, Text, Interactive, Lists, Narrative, Statements |
 | Home (global, no Section) | Section heading, Media and content, Media, Text, Interactive, Lists, Statements, Forms & CTAs, Custom |
 
 Lists moved up with B4: the run carries Insight list, so the group now appears at the run's position and the legacy list blocks (later in each array) join that tab. Payload groups the drawer by label, so a group's blocks need not be contiguous in the array; the convention below keeps them contiguous where it costs nothing.

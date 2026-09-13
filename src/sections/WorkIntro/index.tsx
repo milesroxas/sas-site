@@ -4,19 +4,35 @@ import RichText from '@/components/RichText'
 import type { WorkIntro as WorkIntroData } from '@/payload-types'
 import { WorkIntroSection } from './Section.client'
 
+/**
+ * The fullest summary a Content Hub record holds: the intro band has room for
+ * the medium copy, so the shorter summaries only stand in when an editor left
+ * it blank.
+ */
+export const introSummary = (
+  summaries:
+    | { medium?: string | null; oneLine?: string | null; short?: string | null }
+    | null
+    | undefined,
+) => {
+  const { medium, short, oneLine } = summaries ?? {}
+  return medium || short || oneLine
+}
+
 type Props = {
   eyebrow?: WorkIntroData['eyebrow']
   title: WorkIntroData['title']
   /** Website-only rich-text override; wins over the canonical summary. */
   body?: WorkIntroData['bodyOverride']
-  /** Canonical case-study summary from the Content Hub. Blank lines split paragraphs. */
+  /** Canonical summary from the Content Hub (`introSummary`). Blank lines split paragraphs. */
   summary?: string | null
 }
 
 /**
- * Full-screen introduction band placed right after the work hero: statement
- * title on the left, eyebrow plus the canonical case-study summary offset on
- * the right. All type is regular weight by design.
+ * Full-screen introduction band placed right after the hero of a page that
+ * presents a Content Hub record (Work and Lab Pages): statement title on the
+ * left, eyebrow plus the canonical summary offset on the right. All type is
+ * regular weight by design.
  */
 export const WorkIntro: React.FC<Props> = ({ eyebrow, title, body, summary }) => (
   <WorkIntroSection>

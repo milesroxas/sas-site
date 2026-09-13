@@ -3,8 +3,9 @@ import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { labBlocks } from '@/blocks/lab/config'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
+import { closingTab } from '@/fields/closing'
 import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/fields/pageFields'
-import { heroContentCollapsible, heroPresentationFields } from '@/fields/pageHero'
+import { heroContentCollapsible, heroPresentationFields, pageIntroField } from '@/fields/pageHero'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
@@ -68,7 +69,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
         },
         {
           label: 'Opening',
-          description: 'The full-screen opening of the page: the hero.',
+          description: 'The full-screen opening of the page: hero, then the introduction band.',
           fields: [
             {
               name: 'hero',
@@ -96,6 +97,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
                 },
               ],
             },
+            pageIntroField(),
           ],
         },
         {
@@ -133,6 +135,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
           label: 'Related Work',
           fields: [relatedPagesField('relatedLabPages', 'lab-pages'), editorialNotesField()],
         },
+        closingTab(),
         seoMetaTab(),
       ],
     },

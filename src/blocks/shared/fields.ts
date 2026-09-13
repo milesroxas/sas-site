@@ -1,4 +1,6 @@
-import type { Field, SelectField } from 'payload'
+import type { Condition, Field, SelectField } from 'payload'
+import { STORY_SECTIONS, STORY_SOURCE_OPTIONS } from '@/collections/story/narrative'
+import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 
 /**
  * Block surface select shared by every block family. Values map to
@@ -16,11 +18,29 @@ export const themeField = (name = 'theme'): SelectField => ({
 })
 
 /**
+ * The `source` select of a media-and-content block. Every surface stores it;
+ * only pages that present a canonical story record (Work and Lab Pages) offer
+ * the story picker and resolve a section into the block's copy.
+ */
+export const storySourceField = (condition?: Condition): SelectField => ({
+  name: 'source',
+  type: 'select',
+  required: true,
+  defaultValue: 'custom',
+  options: [...STORY_SOURCE_OPTIONS],
+  admin: {
+    ...(condition ? { condition } : {}),
+    description:
+      'Choose which content feeds this block. "Custom" uses the body below; the others pull canonical story content (Work and Lab Pages only).',
+  },
+})
+
+/**
  * Copy fields of a story-section block: an eyebrow plus website-only
  * overrides of the canonical heading and body, and the freeform body used
  * when the section's `source` is `custom`.
  */
-export const storySectionCopyFields = (): Field[] => [
+const storySectionCopyFields = (): Field[] => [
   { name: 'eyebrow', type: 'text' },
   { name: 'headingOverride', type: 'text' },
   {
@@ -32,6 +52,42 @@ export const storySectionCopyFields = (): Field[] => [
     name: 'customBody',
     type: 'richText',
     admin: { condition: (_, siblingData) => siblingData?.source === 'custom' },
+  },
+]
+
+/**
+ * Fields of the legacy Narrative "Story section" block, shared by the Work
+ * (`caseStudyStorySection`) and Lab (`labStorySection`) instances: a canonical
+ * section or custom copy, optional media beside it, and its arrangement.
+ */
+export const storySectionFields = (): Field[] => [
+  {
+    name: 'source',
+    type: 'select',
+    required: true,
+    defaultValue: 'context',
+    options: [...STORY_SECTIONS, 'custom'],
+    admin: { description: 'Uses canonical story content unless a website override is supplied.' },
+  },
+  ...storySectionCopyFields(),
+  {
+    name: 'media',
+    type: 'upload',
+    relationTo: 'media',
+    filterOptions: publicApprovedMediaWhere,
+  },
+  {
+    name: 'layout',
+    type: 'select',
+    defaultValue: 'text-only',
+    options: ['text-only', 'text-left', 'text-right', 'centered', 'sticky-media'],
+  },
+  themeField(),
+  {
+    name: 'width',
+    type: 'select',
+    defaultValue: 'standard',
+    options: ['narrow', 'standard', 'wide'],
   },
 ]
 

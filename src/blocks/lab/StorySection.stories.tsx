@@ -3,9 +3,9 @@ import { mediaFixture, paragraph, richText, text, videoFixture } from '../fixtur
 import { StorySection } from './StorySection'
 
 /**
- * Copy resolution (block override vs the project's canonical section) happens
- * in `RenderLabBlocks`, so the story hands the section its resolved body; the
- * heading still comes off the block.
+ * Copy resolution (block override vs the Lab Project's canonical story) happens
+ * in `RenderLabBlocks`, so the story hands the section its already-resolved
+ * heading and body.
  */
 const content = richText(
   paragraph(
@@ -33,6 +33,7 @@ const meta = {
       width: 'standard',
     },
     content,
+    heading: 'Context',
   },
 } satisfies Meta<typeof StorySection>
 
@@ -40,20 +41,19 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** With no override, the heading is the name of the section the block points at. */
 export const TextOnly: Story = {}
 
-export const WithOverrides: Story = {
+export const WithEyebrow: Story = {
   args: {
     block: {
       blockType: 'labStorySection',
       source: 'approach',
       eyebrow: 'How it works',
-      headingOverride: 'One scale, two surfaces',
       layout: 'text-only',
       theme: 'light',
       width: 'narrow',
     },
+    heading: 'One scale, two surfaces',
   },
 }
 
@@ -74,7 +74,7 @@ export const MediaLeft: Story = {
   args: {
     block: {
       blockType: 'labStorySection',
-      source: 'outcome',
+      source: 'outcome-summary',
       layout: 'text-right',
       media: videoFixture,
       theme: 'light',

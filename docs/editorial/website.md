@@ -79,7 +79,11 @@ If publishing fails, fix the named item in the Content Hub first — that's the 
 
 ## Lab Pages
 
-Lab Pages work exactly like Work Pages, but present a **Lab Project** (Content Hub) at `/lab/[slug]`: same Content Source / Presentation / Assets pattern, one Lab Page per project, same title-as-editorial-label rule.
+Lab Pages work exactly like Work Pages, but present a **Lab Project** (Content Hub) at `/lab/[slug]`: one Lab Page per project, the same title-as-editorial-label rule, and the same tabs (Content Source, Opening with hero and introduction band, Composition, Assets, Related Work, Closing, SEO).
+
+Composition offers the same story-aware blocks as Work Pages: Story Section, Standard, Offset, Stacked, Split, Split narrow, Pair, Pair offset, Statement, Tabs, and Statement grid each pull a canonical section of the Lab Project, or one of its Story Beats, exactly as described in [Pairing narrative paragraphs with media](#pairing-narrative-paragraphs-with-media). Lab-only blocks (Project facts, Related lab projects, Media showcase) stay as they were. Lab Projects have no key decisions, metrics, or Asset Libraries, so those Work blocks and the media scoping are not offered.
+
+A Lab Page will not publish unless the Lab Project is published, the layout has at least one block, every Story Beat it references exists on the Lab Project, and every image is **public-approved**.
 
 ## Expertise and Audience Pages
 

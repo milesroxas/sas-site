@@ -19,17 +19,9 @@ import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
 import { SectionBand } from '@/blocks/section/SectionBand'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
+import { resolveStoryBlockCopy, resolveStorySectionCopy } from '@/blocks/shared/story-copy'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
-import {
-  type CaseStudyStoryBody,
-  type CaseStudyStoryScope,
-  type CaseStudyStorySource,
-  findCaseStudyStoryBeat,
-  isStoryBeatKey,
-  resolveCaseStudyStoryBody,
-  resolveCaseStudyStoryHeading,
-} from '@/collections/CaseStudies/story'
 import RichText from '@/components/RichText'
 import type {
   CaseStudy,
@@ -55,7 +47,6 @@ import type {
   WorkSplitImageOffsetBlock,
 } from '@/payload-types'
 import { RevealSection as CssRevealSection } from '@/shared/ui/reveal-section'
-import { hasRichTextContent } from '@/utilities/hasRichTextContent'
 import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
 import { blockRevealVariants } from '../shared/reveal-variants'
 import { KeyDecisions as KeyDecisionsList } from './KeyDecisions'
@@ -65,126 +56,19 @@ import { RevealSection } from './RevealSection.client'
 import { StorySection as StorySectionLayout } from './StorySection'
 import { TestimonialBlock as TestimonialQuote } from './Testimonial'
 
-/**
- * Feature blocks carry a single rich-text body plus a `source` select. Written
- * copy always wins; an empty body pulls from the canonical case study when a
- * source other than `custom` is chosen. Empty means no real content — a
- * touched-then-cleared editor saves an empty paragraph that must not shadow
- * the pulled source.
- */
-const resolveFeatureBody = (
-  body: CaseStudyStoryBody | null | undefined,
-  source: CaseStudyStorySource | null | undefined,
-  storyBeatKey: string | null | undefined,
-  study: CaseStudy,
-  storyScope?: CaseStudyStoryScope | null,
-) =>
-  hasRichTextContent(body)
-    ? body
-    : resolveCaseStudyStoryBody(study, source, storyBeatKey, storyScope)
-
-/**
- * The story copy every media block shares. `source` is nullable: a block that
- * hides it behind a toggle (Full media's "Show content") generates it as
- * optional, and no source resolves the same as `custom`.
- */
-type StoryCopyFields = Pick<
-  WorkSplitContentNarrowBlock,
-  'body' | 'heading' | 'storyBeatKey' | 'storyScope'
-> & {
-  source?: WorkSplitContentNarrowBlock['source'] | null
-}
-
-/**
- * Media blocks (split narrow, full media, image pair, split offset) share one
- * body field: `custom` renders the body as-is, any other source falls back to
- * the canonical story content when the body is empty.
- */
-const resolveStoryBody = (
-  block: Pick<StoryCopyFields, 'body' | 'source' | 'storyBeatKey' | 'storyScope'>,
-  study: CaseStudy,
-) =>
-  block.source === 'custom' || hasRichTextContent(block.body)
-    ? block.body
-    : resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey, block.storyScope)
-
-const storyBeatHeading = (
-  study: CaseStudy,
-  source: CaseStudyStorySource | null | undefined,
-  storyBeatKey: string | null | undefined,
-) => {
-  if (!source || source === 'custom' || !isStoryBeatKey(storyBeatKey)) return undefined
-  const beat = findCaseStudyStoryBeat(study, source, storyBeatKey)
-  return beat?.heading || beat?.label
-}
-
-const defaultHeading = (source: CaseStudyStorySource) =>
-  ({
-    context: 'Context',
-    challenge: 'Challenge',
-    strategy: 'Strategy',
-    approach: 'Approach',
-    'outcome-summary': 'Outcomes',
-    learnings: 'Learnings',
-    custom: '',
-  })[source]
-
-/**
- * The block with its heading filled in from the story beat. Media blocks let
- * the beat speak for itself: an empty heading on the block is not a missing
- * heading, it is a request for the one the beat already carries.
- */
-const withStoryBeatHeading = <
-  T extends Pick<StoryCopyFields, 'heading' | 'source' | 'storyBeatKey'>,
->(
-  block: T,
-  study: CaseStudy,
-) => ({
-  ...block,
-  heading: block.heading || storyBeatHeading(study, block.source, block.storyBeatKey),
-})
-
-/**
- * The story section splits its copy across two fields: `custom` renders the
- * block's own body, any other source renders the canonical story unless the
- * editor wrote a website-only override.
- */
-const resolveStorySectionBody = (block: WorkCaseStudyStorySectionBlock, study: CaseStudy) =>
-  block.source === 'custom'
-    ? block.customBody
-    : hasRichTextContent(block.bodyOverride)
-      ? block.bodyOverride
-      : resolveCaseStudyStoryBody(study, block.source, block.storyBeatKey, block.storyScope)
-
-/**
- * Heading precedence for a story section: the editor's override, then the
- * heading the story beat already carries, then the name of the canonical
- * section it came from.
- */
-const storySectionHeading = (block: WorkCaseStudyStorySectionBlock, study: CaseStudy) =>
-  block.headingOverride ||
-  storyBeatHeading(study, block.source, block.storyBeatKey) ||
-  defaultHeading(block.source)
-
 const StorySection = ({
   block,
   study,
 }: {
   block: WorkCaseStudyStorySectionBlock
   study: CaseStudy
-}) => (
-  <StorySectionLayout
-    block={block}
-    content={resolveStorySectionBody(block, study)}
-    heading={storySectionHeading(block, study)}
-  />
-)
+}) => <StorySectionLayout block={block} {...resolveStorySectionCopy(block, study)} />
 
 /**
- * What a story-driven media block needs before it can render: the resolved
- * body, its single media document, and the block with the story beat's
- * heading filled in where the editor left the override empty. Null when the
- * block has no populated media, which is nothing to show.
+ * What a story-driven media block needs before it can render: the block with
+ * its copy resolved against the study, that body as `content`, and its single
+ * media document. Null when the block has no populated media, which is
+ * nothing to show.
  */
 const storyMediaProps = <
   T extends WorkFullMediaBlock | WorkMediaContentSplitBlock | WorkSplitContentNarrowBlock,
@@ -194,11 +78,8 @@ const storyMediaProps = <
 ) => {
   const media = populatedDoc<MediaDoc>(block.media)
   if (!media) return null
-  return {
-    block: withStoryBeatHeading(block, study),
-    content: resolveStoryBody(block, study),
-    media,
-  }
+  const resolved = resolveStoryBlockCopy(block, study)
+  return { block: resolved, content: resolved.body, media }
 }
 
 const SplitNarrow = ({
@@ -279,10 +160,10 @@ const ImagePairSection = ({
   block: WorkImagePairBlock
   study: CaseStudy
 }) => {
-  const content = resolveStoryBody(block, study)
   const portrait = populatedDoc<MediaDoc>(block.portraitMedia)
   const landscape = populatedDoc<MediaDoc>(block.landscapeMedia)
   if (!portrait || !landscape) return null
+  const resolved = resolveStoryBlockCopy(block, study)
   return (
     <RevealSection
       bare={bare}
@@ -292,8 +173,8 @@ const ImagePairSection = ({
     >
       <ImagePair
         bare
-        block={withStoryBeatHeading(block, study)}
-        content={content}
+        block={resolved}
+        content={resolved.body}
         landscape={landscape}
         portrait={portrait}
       />
@@ -310,10 +191,10 @@ const SplitImageOffsetSection = ({
   block: WorkSplitImageOffsetBlock
   study: CaseStudy
 }) => {
-  const content = resolveStoryBody(block, study)
   const large = populatedDoc<MediaDoc>(block.largeMedia)
   const small = populatedDoc<MediaDoc>(block.smallMedia)
   if (!large || !small) return null
+  const resolved = resolveStoryBlockCopy(block, study)
   return (
     <RevealSection
       bare={bare}
@@ -321,13 +202,7 @@ const SplitImageOffsetSection = ({
       theme={block.theme}
       variant={blockRevealVariants.splitImageOffset}
     >
-      <SplitImageOffset
-        bare
-        block={withStoryBeatHeading(block, study)}
-        content={content}
-        large={large}
-        small={small}
-      />
+      <SplitImageOffset bare block={resolved} content={resolved.body} large={large} small={small} />
     </RevealSection>
   )
 }
@@ -394,8 +269,7 @@ const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => (
  * Transition band: no bottom padding, so it runs into the next block.
  *
  * An interstitial with a canonical source restates a story beat, so its
- * heading and body fall back the same way the feature blocks do — written
- * copy first, then the canonical content the picker points at.
+ * heading and body resolve like every heading-led block (`story-copy.ts`).
  */
 const Transition = ({
   bare,
@@ -407,22 +281,7 @@ const Transition = ({
   study: CaseStudy
 }) => (
   <RevealSection bare={bare} className="pb-0 md:pb-0" theme={block.theme} variant="intro">
-    <RichTransition
-      bare
-      {...block}
-      body={resolveFeatureBody(
-        block.body,
-        block.source,
-        block.storyBeatKey,
-        study,
-        block.storyScope,
-      )}
-      heading={
-        block.heading ||
-        resolveCaseStudyStoryHeading(study, block.source, block.storyBeatKey, block.storyScope) ||
-        ''
-      }
-    />
+    <RichTransition bare {...resolveStoryBlockCopy(block, study)} />
   </RevealSection>
 )
 
@@ -463,22 +322,7 @@ const FeatureHeadingOffsetSection = ({
   study: CaseStudy
 }) => (
   <RevealSection bare={bare} theme={block.theme} variant={blockRevealVariants.featureHeadingOffset}>
-    <FeatureHeadingOffset
-      bare
-      {...block}
-      body={resolveFeatureBody(
-        block.body,
-        block.source,
-        block.storyBeatKey,
-        study,
-        block.storyScope,
-      )}
-      heading={
-        block.heading ||
-        resolveCaseStudyStoryHeading(study, block.source, block.storyBeatKey, block.storyScope) ||
-        ''
-      }
-    />
+    <FeatureHeadingOffset bare {...resolveStoryBlockCopy(block, study)} />
   </RevealSection>
 )
 
@@ -490,22 +334,7 @@ const FeatureStatementGridSection = ({
   study: CaseStudy
 }) => (
   <RevealSection theme={block.theme} variant={blockRevealVariants.featureStatementGrid}>
-    <FeatureStatementGrid
-      bare
-      {...block}
-      heading={
-        block.heading ||
-        resolveCaseStudyStoryHeading(study, block.source, block.storyBeatKey, block.storyScope) ||
-        ''
-      }
-      statement={resolveFeatureBody(
-        block.statement,
-        block.source,
-        block.storyBeatKey,
-        study,
-        block.storyScope,
-      )}
-    />
+    <FeatureStatementGrid bare {...resolveStoryBlockCopy(block, study)} />
   </RevealSection>
 )
 
@@ -524,17 +353,7 @@ const FeatureImageStatementSection = ({
     theme={block.theme}
     variant={blockRevealVariants.featureImageStatement}
   >
-    <FeatureImageStatement
-      bare
-      {...block}
-      caption={resolveFeatureBody(
-        block.caption,
-        block.source,
-        block.storyBeatKey,
-        study,
-        block.storyScope,
-      )}
-    />
+    <FeatureImageStatement bare {...resolveStoryBlockCopy(block, study)} />
   </RevealSection>
 )
 
@@ -548,24 +367,7 @@ const FeatureTabsSection = ({
   study: CaseStudy
 }) => (
   <RevealSection bare={bare} theme={block.theme} variant={blockRevealVariants.featureTabs}>
-    <FeatureTabs
-      bare
-      {...block}
-      tabs={(block.tabs || []).map((tab) => ({
-        ...tab,
-        description: resolveFeatureBody(
-          tab.description,
-          tab.source,
-          tab.storyBeatKey,
-          study,
-          tab.storyScope,
-        ),
-        heading:
-          tab.heading ||
-          resolveCaseStudyStoryHeading(study, tab.source, tab.storyBeatKey, tab.storyScope) ||
-          '',
-      }))}
-    />
+    <FeatureTabs bare {...resolveStoryBlockCopy(block, study)} />
   </RevealSection>
 )
 

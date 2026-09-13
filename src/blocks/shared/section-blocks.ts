@@ -26,9 +26,10 @@ import { SplitImageOffset } from '@/blocks/split-image-offset/config'
  * Ordered by `admin.group`: the blocks drawer renders groups in
  * first-appearance order.
  *
- * Work Pages swap the Standard heading for their own story-resolving variant
- * (`caseStudyTransition`), so they build their run by hand instead of
- * spreading this one.
+ * Lab Pages map this run into story-aware variants (`labBlock` in
+ * `blocks/lab/config.ts`). Work Pages swap the Standard heading for their own
+ * story-resolving variant (`caseStudyTransition`), so they build their run by
+ * hand instead of mapping this one.
  */
 export const sectionNestableBlocks: Block[] = [
   // Section heading

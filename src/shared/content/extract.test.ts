@@ -1,7 +1,7 @@
 import type { Payload } from 'payload'
 import { describe, expect, it, vi } from 'vitest'
 import { extractDocMarkdown, extractGlobalMarkdown } from './extract'
-import type { ContentSurface, GlobalSurface } from './surfaces'
+import { type ContentSurface, type GlobalSurface, surfaceByCollection } from './surfaces'
 
 const paragraph = (text: string) => ({
   root: {
@@ -170,6 +170,61 @@ describe('extractDocMarkdown', () => {
     expect(markdown).toBe(['# Work', '## Study', 'Big idea.'].join('\n\n'))
     expect(find.mock.calls[0][0]).toMatchObject({
       collection: 'case-studies',
+      overrideAccess: false,
+      draft: false,
+    })
+  })
+
+  it('embeds a Lab Page with its Lab Project story: overviews and beats, never beat keys or labels', async () => {
+    const surface = surfaceByCollection.get('lab-pages')
+    expect(surface?.body).toEqual({
+      kind: 'walk',
+      canonicalField: { name: 'labProject', collection: 'lab-projects' },
+    })
+    const { payload, find } = stubPayload({
+      'lab-projects': [
+        {
+          id: 9,
+          title: 'Type Scale Lab',
+          kind: 'experiment',
+          status: 'completed',
+          internalNotes: 'never',
+          context: { body: paragraph('Why we started.'), storyBeats: [] },
+          approach: {
+            body: paragraph('How it ran.'),
+            storyBeats: [
+              {
+                key: 'one-scale',
+                label: 'Selector label',
+                heading: 'One scale, two surfaces',
+                body: paragraph('The beat itself.'),
+              },
+            ],
+          },
+        },
+      ],
+    })
+    const markdown = await extractDocMarkdown(
+      payload,
+      surface as ContentSurface,
+      {
+        title: 'Lab',
+        labProject: 9,
+      } as never,
+    )
+
+    expect(markdown).toBe(
+      [
+        '# Lab',
+        '## Type Scale Lab',
+        'Why we started.',
+        'How it ran.',
+        '## One scale, two surfaces',
+        'The beat itself.',
+      ].join('\n\n'),
+    )
+    expect(find.mock.calls[0][0]).toMatchObject({
+      collection: 'lab-projects',
       overrideAccess: false,
       draft: false,
     })

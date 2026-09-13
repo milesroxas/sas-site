@@ -2,6 +2,7 @@ import { draftMode } from 'next/headers'
 import { RenderCaseStudyBlocks } from '@/blocks/case-study/RenderCaseStudyBlocks'
 import { FeaturedWorkSection } from '@/blocks/featured-work/Component'
 import { resolveRelatedWorkEntries } from '@/blocks/featured-work/resolve-entries'
+import { STORY_SECTION_SELECT } from '@/collections/story/narrative'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
@@ -9,7 +10,7 @@ import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { CaseStudyHero } from '@/heros/CaseStudyHero'
 import type { CaseStudy } from '@/payload-types'
-import { WorkIntro } from '@/sections/WorkIntro'
+import { introSummary, WorkIntro } from '@/sections/WorkIntro'
 import { populatedDoc } from '@/utilities/relationshipId'
 import { breadcrumbSchema, creativeWorkSchema } from '@/utilities/schema'
 import {
@@ -29,14 +30,9 @@ const queryWorkPageBySlug = createSlugQuery('work-pages', {
       summaries: true,
       primaryAudience: true,
       featuredCapabilities: true,
-      context: true,
-      challenge: true,
+      ...STORY_SECTION_SELECT,
       objectives: true,
-      strategy: true,
-      approach: true,
       keyDecisions: true,
-      learnings: true,
-      outcomeSummary: true,
       qualitativeOutcomes: true,
       metrics: true,
       testimonials: true,
@@ -51,16 +47,6 @@ const queryWorkPageBySlug = createSlugQuery('work-pages', {
 
 export const generateStaticParams = slugStaticParams('work-pages')
 export const generateMetadata = slugMetadata('/works', queryWorkPageBySlug)
-
-/**
- * The fullest summary the Content Hub holds for a study: the intro band has
- * room for the medium copy, so the shorter summaries only stand in when an
- * editor left it blank.
- */
-const introSummary = (summaries: CaseStudy['summaries']) => {
-  const { medium, short, oneLine } = summaries ?? {}
-  return medium || short || oneLine
-}
 
 export default async function WorkPageRoute({ params }: SlugRouteArgs) {
   const { isEnabled: draft } = await draftMode()

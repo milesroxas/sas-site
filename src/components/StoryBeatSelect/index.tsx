@@ -1,13 +1,18 @@
 'use client'
 
 import { SelectInput, useConfig, useField } from '@payloadcms/ui'
-import type { OptionObject, TextFieldClientComponent } from 'payload'
+import type { OptionObject, TextFieldClientProps } from 'payload'
 import { useEffect, useMemo, useState } from 'react'
 import {
-  CASE_STUDY_STORY_SECTION_DEFINITIONS,
-  type CaseStudyStorySection,
+  CANONICAL_STORY_FIELDS,
+  type StoryPresentationCollection,
+} from '@/collections/story/canonical'
+import {
   isStoryBeatKey,
-} from '@/collections/CaseStudies/story'
+  STORY_SECTION_DEFINITIONS,
+  type StoryField,
+  type StorySource,
+} from '@/collections/story/narrative'
 
 type StoryBeatOption = {
   key: string
@@ -18,9 +23,7 @@ type StorySectionResponse = {
   storyBeats?: StoryBeatOption[] | null
 }
 
-type CaseStudyResponse = Partial<
-  Record<(typeof CASE_STUDY_STORY_SECTION_DEFINITIONS)[number]['field'], StorySectionResponse>
->
+type StoryRecordResponse = Partial<Record<StoryField, StorySectionResponse>>
 
 const relationId = (value: unknown): number | string | undefined => {
   if (typeof value === 'number' || typeof value === 'string') return value
@@ -34,51 +37,62 @@ const relationId = (value: unknown): number | string | undefined => {
 const sourcePathFor = (path: string) => path.replace(/\.storyBeatKey$/, '.source')
 
 const definitionFor = (source: unknown) =>
-  CASE_STUDY_STORY_SECTION_DEFINITIONS.find((definition) => definition.source === source)
+  STORY_SECTION_DEFINITIONS.find((definition) => definition.source === source)
 
-export const StoryBeatSelect: TextFieldClientComponent = ({ field, path, readOnly }) => {
+const selectedSections = STORY_SECTION_DEFINITIONS.map(({ field }) => `select[${field}]=true`).join(
+  '&',
+)
+
+/**
+ * Story Beat picker for a presentation block. `presentation` (from
+ * `withStoryBeatSource`) names the page collection, which decides the
+ * relationship that points at the canonical story record and the collection
+ * the beats are read from.
+ */
+export const StoryBeatSelect = ({
+  field,
+  path,
+  presentation,
+  readOnly,
+}: TextFieldClientProps & { presentation: StoryPresentationCollection }) => {
   const { config } = useConfig()
-  const { value: caseStudy } = useField({ path: 'caseStudy' })
-  const { value: source } = useField<CaseStudyStorySection | 'custom'>({
-    path: sourcePathFor(path),
-  })
+  const canonical = CANONICAL_STORY_FIELDS[presentation]
+  const { value: relation } = useField({ path: canonical.name })
+  const { value: source } = useField<StorySource>({ path: sourcePathFor(path) })
   const { setValue, showError, value } = useField<string | null>({ path })
-  const [study, setStudy] = useState<CaseStudyResponse>({})
+  const [record, setRecord] = useState<StoryRecordResponse>({})
   const [loading, setLoading] = useState(false)
-  const [loadedCaseStudyId, setLoadedCaseStudyId] = useState<number | string>()
-  const caseStudyId = relationId(caseStudy)
+  const [loadedRecordId, setLoadedRecordId] = useState<number | string>()
+  const recordId = relationId(relation)
   const definition = definitionFor(source)
 
   useEffect(() => {
-    if (!caseStudyId) {
-      setStudy({})
-      setLoadedCaseStudyId(undefined)
+    if (!recordId) {
+      setRecord({})
+      setLoadedRecordId(undefined)
       return
     }
 
     let cancelled = false
     const api = config.routes?.api || '/api'
-    const selectedFields = CASE_STUDY_STORY_SECTION_DEFINITIONS.map(
-      ({ field: sectionField }) => `select[${sectionField}]=true`,
-    ).join('&')
-    setStudy({})
-    setLoadedCaseStudyId(undefined)
+    setRecord({})
+    setLoadedRecordId(undefined)
     setLoading(true)
 
     const run = async () => {
       try {
         const response = await fetch(
-          `${api}/case-studies/${encodeURIComponent(caseStudyId)}?depth=0&draft=true&${selectedFields}`,
+          `${api}/${canonical.collection}/${encodeURIComponent(recordId)}?depth=0&draft=true&${selectedSections}`,
           { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
         )
         if (!response.ok || cancelled) return
-        const doc = (await response.json()) as CaseStudyResponse
+        const doc = (await response.json()) as StoryRecordResponse
         if (!cancelled) {
-          setStudy(doc)
-          setLoadedCaseStudyId(caseStudyId)
+          setRecord(doc)
+          setLoadedRecordId(recordId)
         }
       } catch {
-        if (!cancelled) setStudy({})
+        if (!cancelled) setRecord({})
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -88,9 +102,9 @@ export const StoryBeatSelect: TextFieldClientComponent = ({ field, path, readOnl
     return () => {
       cancelled = true
     }
-  }, [caseStudyId, config.routes?.api])
+  }, [canonical.collection, config.routes?.api, recordId])
 
-  const beats = definition ? study[definition.field]?.storyBeats || [] : []
+  const beats = definition ? record[definition.field]?.storyBeats || [] : []
   const options = useMemo<OptionObject[]>(
     () => beats.map((beat) => ({ label: beat.label, value: beat.key })),
     [beats],
@@ -99,13 +113,13 @@ export const StoryBeatSelect: TextFieldClientComponent = ({ field, path, readOnl
   useEffect(() => {
     if (
       !loading &&
-      loadedCaseStudyId === caseStudyId &&
+      loadedRecordId === recordId &&
       isStoryBeatKey(value) &&
       !beats.some((beat) => beat.key === value)
     ) {
       setValue(null)
     }
-  }, [beats, caseStudyId, loadedCaseStudyId, loading, setValue, value])
+  }, [beats, loadedRecordId, loading, recordId, setValue, value])
 
   return (
     <SelectInput
@@ -126,7 +140,7 @@ export const StoryBeatSelect: TextFieldClientComponent = ({ field, path, readOnl
             ? `Choose a ${definition.label} Story Beat`
             : 'Choose a canonical section first'
       }
-      readOnly={readOnly || !caseStudyId || !definition}
+      readOnly={readOnly || !recordId || !definition}
       showError={showError}
       value={value || undefined}
     />

@@ -19,7 +19,7 @@ All public surfaces in `CONTENT_SURFACES` are in the corpus, driven by the share
 and Ask at once). That currently includes pages, posts, work/lab/expertise/audience pages, and
 contact pages. Layout collections extract through a generic allowlist walker
 (`src/shared/content/extract.ts`); work-pages and lab-pages hydrate their canonical Content Hub
-records. Case Study section bodies and nested Story Beats are walked from that canonical record,
+records. Case Study and Lab Project section bodies and nested Story Beats are walked from that canonical record,
 so website layouts do not become the retrieval source of truth. The search plugin indexes every surface; the /search page links each result to its own
 collection's URL. Rebuild the search index with the admin Reindex button (Search collection,
 System group).

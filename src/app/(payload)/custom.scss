@@ -1,7 +1,7 @@
-/* Case Study story sections: the Story Beats array title renders as an h3
-   section header by default, reading as a sibling of the section group label
-   (e.g. Challenge). Scale it down to match its peer field label (Overview).
-   Field className is set in src/collections/CaseStudies/story.ts. */
+/* Story sections (Case Study Content, Lab Projects): the Story Beats array
+   title renders as an h3 section header by default, reading as a sibling of the
+   section group label (e.g. Challenge). Scale it down to match its peer field
+   label (Overview). Field className is set in src/collections/story/narrative.ts. */
 
 .array-field.story-section-beats > .array-field__header .array-field__title {
   font-size: 1rem;

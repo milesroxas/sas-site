@@ -6,9 +6,8 @@ import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { closingTab } from '@/fields/closing'
 import { menuPreviewField } from '@/fields/menuPreview'
-import { overridesVisible, showOverridesField } from '@/fields/overrides'
 import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/fields/pageFields'
-import { heroContentCollapsible, heroPresentationFields } from '@/fields/pageHero'
+import { heroContentCollapsible, heroPresentationFields, pageIntroField } from '@/fields/pageHero'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
@@ -95,39 +94,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
                 },
               ],
             },
-            {
-              name: 'intro',
-              type: 'group',
-              interfaceName: 'WorkIntro',
-              admin: {
-                description:
-                  'Full-screen introduction band rendered right after the hero. The body is the canonical case-study summary from the Content Hub.',
-              },
-              fields: [
-                {
-                  name: 'eyebrow',
-                  type: 'text',
-                  admin: {
-                    description: 'Short label above the introduction copy, e.g. "Introduction".',
-                  },
-                },
-                {
-                  name: 'title',
-                  type: 'text',
-                  admin: { description: 'Statement headline for the section.' },
-                },
-                showOverridesField(),
-                {
-                  name: 'bodyOverride',
-                  type: 'richText',
-                  admin: {
-                    description:
-                      'Website-only override for the canonical summary; canonical content is unchanged.',
-                    condition: overridesVisible,
-                  },
-                },
-              ],
-            },
+            pageIntroField(),
           ],
         },
         {

@@ -1,18 +1,10 @@
 import { Section } from '@/blocks/shared/section'
+import type { StoryBody } from '@/collections/story/narrative'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import type { LabProject, LabStorySectionBlock, Media as MediaDoc } from '@/payload-types'
+import type { LabStorySectionBlock, Media as MediaDoc } from '@/payload-types'
 import { populatedDoc } from '@/utilities/relationshipId'
 import { cn } from '@/utilities/ui'
-
-const defaultHeading = (source: LabStorySectionBlock['source']) =>
-  ({
-    context: 'Context',
-    approach: 'Approach',
-    outcome: 'Outcome',
-    learnings: 'Learnings',
-    custom: '',
-  })[source]
 
 const storyWidths: Record<NonNullable<LabStorySectionBlock['width']>, string> = {
   narrow: 'max-w-3xl',
@@ -21,17 +13,18 @@ const storyWidths: Record<NonNullable<LabStorySectionBlock['width']>, string> = 
 }
 
 /**
- * A narrative beat, optionally beside its media. Which copy this renders —
- * the block's own body or the project's canonical section — is decided by the
- * renderer; the heading still falls back to the name of the section the block
- * points at, which the block alone knows.
+ * A narrative beat, optionally beside its media. Which copy this renders (the
+ * block's own fields or the Lab Project behind it) is decided by the renderer,
+ * so the section only lays out the heading and body it is handed.
  */
 export const StorySection = ({
   block,
   content,
+  heading,
 }: {
   block: LabStorySectionBlock
-  content: NonNullable<LabProject['context']> | null | undefined
+  content: StoryBody | null | undefined
+  heading: string
 }) => {
   if (!content) return null
   const media = populatedDoc<MediaDoc>(block.media)
@@ -47,9 +40,7 @@ export const StorySection = ({
       >
         <div className={cn('text-stack', block.layout === 'text-right' && 'md:order-2')}>
           {block.eyebrow && <p className="text-sm uppercase tracking-[0.2em]">{block.eyebrow}</p>}
-          <h2 className="text-heading-2">
-            {block.headingOverride || defaultHeading(block.source)}
-          </h2>
+          <h2 className="text-heading-2">{heading}</h2>
           <RichText data={content} enableGutter={false} />
         </div>
         {media && <Media resource={media} imgClassName="h-auto w-full" />}

@@ -1,10 +1,14 @@
 import { draftMode } from 'next/headers'
 import { RenderLabBlocks } from '@/blocks/lab/RenderLabBlocks'
+import { STORY_SECTION_SELECT } from '@/collections/story/narrative'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
+import { FooterClosingSection } from '@/Footer/Closing/Component'
+import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { LabHero } from '@/heros/LabHero'
 import type { LabProject } from '@/payload-types'
+import { introSummary, WorkIntro } from '@/sections/WorkIntro'
 import { populatedDoc } from '@/utilities/relationshipId'
 import { breadcrumbSchema, creativeWorkSchema } from '@/utilities/schema'
 import {
@@ -28,10 +32,7 @@ const queryLabPageBySlug = createSlugQuery('lab-pages', {
       summaries: true,
       capabilities: true,
       technologies: true,
-      context: true,
-      approach: true,
-      outcome: true,
-      learnings: true,
+      ...STORY_SECTION_SELECT,
       coverAsset: true,
       selectedAssets: true,
       projectLinks: true,
@@ -53,22 +54,33 @@ export default async function LabPageRoute({ params }: SlugRouteArgs) {
   const project = populatedDoc<LabProject>(page?.labProject)
   if (!page || !project) return <PayloadRedirects url={url} />
   return (
-    <article>
-      <JsonLd
-        data={[
-          creativeWorkSchema(page, '/lab'),
-          breadcrumbSchema([
-            { name: 'Lab', path: '/lab' },
-            { name: page.title, path: url },
-          ]),
-        ]}
-      />
-      <PayloadRedirects disableNotFound url={url} />
-      {draft && <LivePreviewListener />}
-      <LabHero page={page} project={project} />
-      {page.layout?.length ? (
-        <RenderLabBlocks blocks={page.layout} page={page} project={project} />
-      ) : null}
-    </article>
+    <>
+      <article className={FOOTER_CLOSING_ARTICLE_CLASS}>
+        <JsonLd
+          data={[
+            creativeWorkSchema(page, '/lab'),
+            breadcrumbSchema([
+              { name: 'Lab', path: '/lab' },
+              { name: page.title, path: url },
+            ]),
+          ]}
+        />
+        <PayloadRedirects disableNotFound url={url} />
+        {draft && <LivePreviewListener />}
+        <LabHero page={page} project={project} />
+        {page.intro?.title ? (
+          <WorkIntro
+            body={page.intro.bodyOverride}
+            eyebrow={page.intro.eyebrow}
+            summary={introSummary(project.summaries)}
+            title={page.intro.title}
+          />
+        ) : null}
+        {page.layout?.length ? (
+          <RenderLabBlocks blocks={page.layout} page={page} project={project} />
+        ) : null}
+      </article>
+      <FooterClosingSection closing={page.closing} />
+    </>
   )
 }

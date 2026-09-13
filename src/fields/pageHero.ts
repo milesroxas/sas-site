@@ -1,4 +1,4 @@
-import type { CollapsibleField, Field, SelectField } from 'payload'
+import type { CollapsibleField, Field, GroupField, SelectField } from 'payload'
 import { overridesVisible, showOverridesField } from './overrides'
 
 /**
@@ -57,3 +57,42 @@ export const heroMediaTreatmentField = (): SelectField => ({
 
 /** The presentation pair that closes a hero's "Media & layout" collapsible. */
 export const heroPresentationFields = (): Field[] => [heroThemeField(), heroMediaTreatmentField()]
+
+/**
+ * Full-screen introduction band rendered right after the hero. Its body is the
+ * canonical record's summary from the Content Hub; the override replaces it on
+ * the website only.
+ */
+export const pageIntroField = (): GroupField => ({
+  name: 'intro',
+  type: 'group',
+  interfaceName: 'WorkIntro',
+  admin: {
+    description:
+      'Full-screen introduction band rendered right after the hero. The body is the canonical summary from the Content Hub.',
+  },
+  fields: [
+    {
+      name: 'eyebrow',
+      type: 'text',
+      admin: {
+        description: 'Short label above the introduction copy, e.g. "Introduction".',
+      },
+    },
+    {
+      name: 'title',
+      type: 'text',
+      admin: { description: 'Statement headline for the section.' },
+    },
+    showOverridesField(),
+    {
+      name: 'bodyOverride',
+      type: 'richText',
+      admin: {
+        description:
+          'Website-only override for the canonical summary; canonical content is unchanged.',
+        condition: overridesVisible,
+      },
+    },
+  ],
+})

@@ -1,47 +1,27 @@
 import type { Block } from 'payload'
+import { Content } from '@/blocks/Content/config'
+import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
+import { featureSourceField } from '@/blocks/feature/shared'
+import { RichTransition } from '@/blocks/rich-transition/config'
 import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import { sectionBlock } from '@/blocks/section/config'
-import { relatedSelectionFields, storySectionCopyFields, themeField } from '@/blocks/shared/fields'
+import { relatedSelectionFields, storySectionFields, themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { sectionChildBlocks, sectionNestableBlocks } from '@/blocks/shared/section-blocks'
+import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
+import { hasStorySource, withStoryBeatSource } from '@/fields/storyBeatSource'
 
-export const LabStorySection: Block = {
-  slug: 'labStorySection',
-  admin: { group: BLOCK_GROUPS.narrative },
-  dbName: 'lp_story',
-  interfaceName: 'LabStorySectionBlock',
-  labels: { singular: 'Story section', plural: 'Story sections' },
-  fields: [
-    {
-      name: 'source',
-      type: 'select',
-      required: true,
-      defaultValue: 'context',
-      options: ['context', 'approach', 'outcome', 'learnings', 'custom'],
-      admin: { description: 'Uses canonical story content unless a website override is supplied.' },
-    },
-    ...storySectionCopyFields(),
-    {
-      name: 'media',
-      type: 'upload',
-      relationTo: 'media',
-      filterOptions: { usageStatus: { equals: 'public-approved' } },
-    },
-    {
-      name: 'layout',
-      type: 'select',
-      defaultValue: 'text-only',
-      options: ['text-only', 'text-left', 'text-right', 'centered', 'sticky-media'],
-    },
-    themeField(),
-    {
-      name: 'width',
-      type: 'select',
-      defaultValue: 'standard',
-      options: ['narrow', 'standard', 'wide'],
-    },
-  ],
-}
+export const LabStorySection: Block = withStoryBeatSource(
+  {
+    slug: 'labStorySection',
+    admin: { group: BLOCK_GROUPS.narrative },
+    dbName: 'lp_story',
+    interfaceName: 'LabStorySectionBlock',
+    labels: { singular: 'Story section', plural: 'Story sections' },
+    fields: storySectionFields(),
+  },
+  'LabStorySectionBlock',
+  'lab-pages',
+)
 
 export const LabMediaShowcase: Block = {
   slug: 'labMediaShowcase',
@@ -105,12 +85,39 @@ export const LabRelatedProjects: Block = {
 }
 
 /**
- * A Lab Page Section nests the shared run every composition surface offers
- * (docs/blocks-reorg-roadmap.md); lab pages resolve no story copy of their
- * own, so the generic Standard heading in that run is the lab Standard.
+ * The Lab variant of a shared block: same slug and table, named `Lab` plus the
+ * shared interface. A block that carries a story `source` gains the story
+ * scope and Story Beat picker reading the related Lab Project; one without
+ * passes through unchanged, so the Lab run tracks the shared run with no list
+ * of its own to keep in sync.
+ *
+ * Standard is the one shared block that authors its copy with no `source` at
+ * all, so the Lab variant puts the story picker in front of it, exactly the
+ * field set Work's `caseStudyTransition` carries.
  */
+const labBlock = (shared: Block): Block => {
+  const block =
+    shared.slug === RichTransition.slug
+      ? { ...shared, fields: [featureSourceField(), ...shared.fields] }
+      : shared
+  if (!hasStorySource(block)) return block
+  if (!block.interfaceName) {
+    throw new Error(`labBlock: story-capable block "${block.slug}" needs an interfaceName.`)
+  }
+  return withStoryBeatSource(block, `Lab${block.interfaceName}`, 'lab-pages')
+}
+
+/**
+ * The shared Section-nestable run (docs/blocks-reorg-roadmap.md) as Lab Pages
+ * offer it: in a Section and at the top level while the Section transition is
+ * underway, story copy resolving against the related Lab Project.
+ */
+const labSectionBlocks = sectionNestableBlocks.map(labBlock)
+
 export const LabSection = sectionBlock({
-  blocks: sectionChildBlocks,
+  // Content carries no story copy; it closes the nested list under Custom
+  // exactly as `sectionChildBlocks` does on every other surface.
+  blocks: [...labSectionBlocks, Content],
   interfaceName: 'LabSectionBlock',
 })
 
@@ -123,12 +130,14 @@ export const labBlocks = [
   // Structure
   LabSection,
   // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
-  ...sectionNestableBlocks,
+  ...labSectionBlocks,
   // Media
   LabMediaShowcase,
   ScrollGallery,
   // Narrative
   LabStorySection,
+  // Statements
+  labBlock(FeatureStatementGrid),
   // Lists (legacy, top-level only)
   LabFacts,
   LabRelatedProjects,

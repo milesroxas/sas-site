@@ -1,4 +1,5 @@
 import { APIError, type CollectionBeforeValidateHook } from 'payload'
+import { assertStoryBeatReferencesExist } from '@/collections/story/validate'
 import { findUnpublishableMedia } from '@/hooks/findUnpublishableMedia'
 import type { LabPage, LabProject } from '@/payload-types'
 import { relationshipId, relationshipIds } from '@/utilities/relationshipId'
@@ -36,6 +37,8 @@ export const validateLabPage: CollectionBeforeValidateHook<LabPage> = async ({
   if (labProject._status !== 'published') {
     throw new APIError('The related Lab Project must be published first.', 400)
   }
+
+  assertStoryBeatReferencesExist(labProject, merged.layout, 'Lab Project')
 
   const mediaIDs = relationshipIds([
     merged.coverAsset,

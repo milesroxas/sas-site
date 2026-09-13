@@ -20,7 +20,7 @@ import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import { sectionBlock } from '@/blocks/section/config'
 import {
   relatedSelectionFields,
-  storySectionCopyFields,
+  storySectionFields,
   themeField,
   transitionFields,
 } from '@/blocks/shared/fields'
@@ -36,44 +36,7 @@ export const CaseStudyStorySection: Block = {
   dbName: 'wp_story',
   interfaceName: 'CaseStudyStorySectionBlock',
   labels: { singular: 'Story section', plural: 'Story sections' },
-  fields: [
-    {
-      name: 'source',
-      type: 'select',
-      required: true,
-      defaultValue: 'context',
-      options: [
-        'context',
-        'challenge',
-        'strategy',
-        'approach',
-        'outcome-summary',
-        'learnings',
-        'custom',
-      ],
-      admin: { description: 'Uses canonical story content unless a website override is supplied.' },
-    },
-    ...storySectionCopyFields(),
-    {
-      name: 'media',
-      type: 'upload',
-      relationTo: 'media',
-      filterOptions: publicApprovedMediaWhere,
-    },
-    {
-      name: 'layout',
-      type: 'select',
-      defaultValue: 'text-only',
-      options: ['text-only', 'text-left', 'text-right', 'centered', 'sticky-media'],
-    },
-    themeField(),
-    {
-      name: 'width',
-      type: 'select',
-      defaultValue: 'standard',
-      options: ['narrow', 'standard', 'wide'],
-    },
-  ],
+  fields: storySectionFields(),
 }
 
 export const CaseStudyMediaShowcase: Block = {
@@ -205,8 +168,10 @@ export const CaseStudyRelatedWork: Block = {
  * blocks that pull canonical story copy also take `withStoryBeatSource`.
  * Same slug and table as the shared block; only the interface differs.
  */
+const workStoryBlock = (block: Block, interfaceName: string) =>
+  withStoryBeatSource(block, interfaceName, 'work-pages')
 const workStoryMediaBlock = (block: Block, interfaceName: string) =>
-  withCaseStudyScopedMedia(withStoryBeatSource(block, interfaceName), interfaceName)
+  withCaseStudyScopedMedia(workStoryBlock(block, interfaceName), interfaceName)
 
 const WorkCaseStudyStorySection = workStoryMediaBlock(
   CaseStudyStorySection,
@@ -223,7 +188,7 @@ const WorkSplitContentNarrow = workStoryMediaBlock(
 const WorkFullMedia = workStoryMediaBlock(FullMedia, 'WorkFullMediaBlock')
 const WorkImagePair = workStoryMediaBlock(ImagePair, 'WorkImagePairBlock')
 const WorkSplitImageOffset = workStoryMediaBlock(SplitImageOffset, 'WorkSplitImageOffsetBlock')
-const WorkFeatureHeadingOffset = withStoryBeatSource(
+const WorkFeatureHeadingOffset = workStoryBlock(
   FeatureHeadingOffset,
   'WorkFeatureHeadingOffsetBlock',
 )
@@ -236,10 +201,7 @@ const WorkFeatureImageStatement = workStoryMediaBlock(
   'WorkFeatureImageStatementBlock',
 )
 const WorkFeatureTabs = workStoryMediaBlock(FeatureTabs, 'WorkFeatureTabsBlock')
-const WorkCaseStudyTransition = withStoryBeatSource(
-  CaseStudyTransition,
-  'WorkCaseStudyTransitionBlock',
-)
+const WorkCaseStudyTransition = workStoryBlock(CaseStudyTransition, 'WorkCaseStudyTransitionBlock')
 const WorkMediaContentSplit = workStoryMediaBlock(MediaContentSplit, 'WorkMediaContentSplitBlock')
 // Media-only variants: no story copy, so only the picker scope changes.
 const WorkMediaBlock = withCaseStudyScopedMedia(MediaBlock, 'WorkMediaBlock')

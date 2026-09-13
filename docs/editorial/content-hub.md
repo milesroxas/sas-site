@@ -127,6 +127,16 @@ Publishing Case Study Content makes it available to consumers (API and Work Page
 
 Publishing canonical content does **not** put anything on the website — that happens when a Work Page is published (see [website.md](website.md)).
 
+## Lab Projects
+
+Content Hub → Lab Projects is the canonical record of internal work: experiments, prototypes, tools, and research. It follows the Case Study model where the two overlap:
+
+- **Overview** — title, kind, status, dates, thesis, the three summaries, capabilities, and technologies. At least one summary is required to publish.
+- **Narrative** — the same six sections as Case Study Content (context, challenge, strategy, approach, outcomes, learnings), each with an optional **Section body** and ordered **Story Beats**, written the same way (see [When to create Story Beats](#when-to-create-story-beats)). Leave a section empty when it does not apply to the work. Internal notes sit at the end of the tab and are never public.
+- **Assets & Links** — cover asset, selected assets, and project links. Lab media does not need an Asset Library.
+
+Lab Pages reference beats exactly as Work Pages do, so the same rule applies: once a published Lab Page uses a beat, publishing the Lab Project without that beat (renamed or removed) is refused until the page is updated.
+
 ## What the public can and cannot see
 
 | Public API returns | Never returned publicly |

@@ -97,7 +97,7 @@ describe.sequential('lab projects and lab pages', () => {
         kind: 'experiment',
         status: 'completed',
         summaries: { oneLine: 'A small internal experiment.' },
-        outcome: richText('It worked.'),
+        outcomeSummary: { body: richText('It worked.') },
         _status: 'published',
       },
     })
@@ -131,7 +131,7 @@ describe.sequential('lab projects and lab pages', () => {
         title: `Lab Page ${suffix}`,
         slug: `lab-page-${suffix}`,
         labProject: publishedProjectId,
-        layout: [{ blockType: 'labStorySection', source: 'outcome' }],
+        layout: [{ blockType: 'labStorySection', source: 'outcome-summary' }],
         _status: 'published',
       },
       context: { disableRevalidate: true },
@@ -145,6 +145,106 @@ describe.sequential('lab projects and lab pages', () => {
       where: { slug: { equals: `lab-page-${suffix}` } },
     })
     expect(anonymous.totalDocs).toBe(1)
+  })
+
+  it('keeps Story Beat keys unique within a lab project section', async () => {
+    await expect(
+      payload.create({
+        collection: 'lab-projects',
+        user,
+        overrideAccess: false,
+        draft: true,
+        data: {
+          title: `Duplicate Beats ${suffix}`,
+          key: `duplicate-beats-${suffix}`,
+          approach: {
+            storyBeats: [
+              { key: 'same-beat', label: 'One', body: richText('One') },
+              { key: 'same-beat', label: 'Two', body: richText('Two') },
+            ],
+          },
+        },
+      }),
+    ).rejects.toThrow('Approach Story Beat key must be unique')
+  })
+
+  it('resolves Story Beats on Lab Pages and protects referenced keys', async () => {
+    const project = await payload.create({
+      collection: 'lab-projects',
+      user,
+      overrideAccess: false,
+      context: { disableRevalidate: true },
+      data: {
+        title: `Story Beat Experiment ${suffix}`,
+        key: `story-beat-experiment-${suffix}`,
+        kind: 'experiment',
+        status: 'completed',
+        summaries: { short: 'Structured lab narrative' },
+        approach: {
+          storyBeats: [{ key: 'detail-beat', label: 'Detail', body: richText('Beat body') }],
+        },
+        _status: 'published',
+      },
+    })
+
+    const page = await payload.create({
+      collection: 'lab-pages',
+      user,
+      overrideAccess: false,
+      context: { disableRevalidate: true },
+      data: {
+        title: `Story Beat Lab ${suffix}`,
+        slug: `story-beat-lab-${suffix}`,
+        labProject: project.id,
+        intro: { title: 'Story beat introduction' },
+        layout: [
+          {
+            blockType: 'labStorySection',
+            source: 'approach',
+            storyScope: 'beat',
+            storyBeatKey: 'detail-beat',
+          },
+        ],
+        _status: 'published',
+      },
+    })
+    expect(page._status).toBe('published')
+
+    await expect(
+      payload.update({
+        collection: 'lab-pages',
+        id: page.id,
+        user,
+        overrideAccess: false,
+        context: { disableRevalidate: true },
+        data: {
+          layout: [
+            {
+              blockType: 'labStorySection',
+              source: 'approach',
+              storyScope: 'beat',
+              storyBeatKey: 'missing-beat',
+            },
+          ],
+        },
+      }),
+    ).rejects.toThrow('does not exist on the related Lab Project record')
+
+    await expect(
+      payload.update({
+        collection: 'lab-projects',
+        id: project.id,
+        user,
+        overrideAccess: false,
+        context: { disableRevalidate: true },
+        data: {
+          approach: {
+            storyBeats: [{ key: 'renamed-beat', label: 'Detail', body: richText('Beat body') }],
+          },
+          _status: 'published',
+        },
+      }),
+    ).rejects.toThrow('is used by a Lab Page')
   })
 
   it('refuses to delete a lab project that a lab page still uses', async () => {

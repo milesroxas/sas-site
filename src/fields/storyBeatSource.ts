@@ -1,5 +1,6 @@
 import type { Block, CheckboxField, Field, SelectField, TextField } from 'payload'
-import { CASE_STUDY_STORY_SECTIONS, isStoryBeatKey } from '@/collections/CaseStudies/story'
+import type { StoryPresentationCollection } from '@/collections/story/canonical'
+import { isStoryBeatKey, STORY_SECTIONS } from '@/collections/story/narrative'
 import { overridesVisible, showOverridesField } from '@/fields/overrides'
 
 const COPY_FIELD_NAMES = new Set([
@@ -28,7 +29,7 @@ const whenCanonicalSource =
   (sourceCondition?: FieldCondition): FieldCondition =>
   (data, siblingData, ctx) =>
     (!sourceCondition || Boolean(sourceCondition(data, siblingData, ctx))) &&
-    CASE_STUDY_STORY_SECTIONS.some((source) => source === siblingData?.source)
+    STORY_SECTIONS.some((source) => source === siblingData?.source)
 
 /** Custom copy is always visible; canonical copy is behind `showOverrides`. */
 const storyCopyVisible =
@@ -107,7 +108,10 @@ const storyScopeField = (sourceCondition?: FieldCondition): SelectField => ({
  * story section in beat scope, and never when the block hides `source` behind
  * its own condition (e.g. Full media's "Show content" toggle).
  */
-const storyBeatKeyField = (sourceCondition?: FieldCondition): TextField => ({
+const storyBeatKeyField = (
+  presentation: StoryPresentationCollection,
+  sourceCondition?: FieldCondition,
+): TextField => ({
   name: 'storyBeatKey',
   type: 'text',
   label: 'Story beat',
@@ -117,7 +121,10 @@ const storyBeatKeyField = (sourceCondition?: FieldCondition): TextField => ({
       siblingData?.storyScope === 'beat',
     description: 'Choose one reusable beat from the selected section.',
     components: {
-      Field: '@/components/StoryBeatSelect#StoryBeatSelect',
+      Field: {
+        path: '@/components/StoryBeatSelect#StoryBeatSelect',
+        clientProps: { presentation },
+      },
     },
   },
   validate: (
@@ -139,16 +146,26 @@ const storyShowOverridesField = (sourceCondition?: FieldCondition): CheckboxFiel
   },
 })
 
-const isStorySource = (field: SelectField) =>
+const isStorySource = (field: Field): field is SelectField =>
+  field.type === 'select' &&
   field.name === 'source' &&
-  CASE_STUDY_STORY_SECTIONS.every((source) =>
-    field.options.some((option) => optionValue(option) === source),
-  )
+  STORY_SECTIONS.every((source) => field.options.some((option) => optionValue(option) === source))
 
-const withStoryBeatFields = (fields: Field[]): Field[] => {
-  const sourceField = fields.find(
-    (field): field is SelectField => field.type === 'select' && isStorySource(field),
-  )
+/**
+ * True when a block (at any layout or array depth) carries a story `source`
+ * select, i.e. its copy can come from a canonical story record.
+ */
+export const hasStorySource = (block: Block): boolean => {
+  const search = (fields: Field[]): boolean =>
+    fields.some((field) => isStorySource(field) || ('fields' in field && search(field.fields)))
+  return search(block.fields)
+}
+
+const withStoryBeatFields = (
+  fields: Field[],
+  presentation: StoryPresentationCollection,
+): Field[] => {
+  const sourceField = fields.find(isStorySource)
   const sourceCondition = sourceField?.admin?.condition
 
   return fields.flatMap((field): Field[] => {
@@ -160,10 +177,10 @@ const withStoryBeatFields = (fields: Field[]): Field[] => {
       field.type === 'group' ||
       field.type === 'row'
     ) {
-      next = { ...field, fields: withStoryBeatFields(field.fields) } as Field
+      next = { ...field, fields: withStoryBeatFields(field.fields, presentation) } as Field
     }
 
-    if (next.type !== 'select' || !isStorySource(next)) {
+    if (!isStorySource(next)) {
       return sourceField ? [withCopyVisibility(next, sourceCondition)] : [next]
     }
 
@@ -179,19 +196,25 @@ const withStoryBeatFields = (fields: Field[]): Field[] => {
     return [
       source,
       storyScopeField(next.admin?.condition),
-      storyBeatKeyField(next.admin?.condition),
+      storyBeatKeyField(presentation, next.admin?.condition),
       storyShowOverridesField(next.admin?.condition),
     ]
   })
 }
 
 /**
- * Case Study presentation blocks get a Work Page-specific interface, a native
- * story-content select, and an optional section-scoped Story Beat selector.
- * Shared block configs remain collection-agnostic everywhere else.
+ * The variant of a story-capable block for a website collection that presents
+ * a canonical story record (Work Pages over Case Study Content, Lab Pages over
+ * Lab Projects): its own interface, the story scope select, and a
+ * section-scoped Story Beat selector reading the related record. Shared block
+ * configs remain collection-agnostic everywhere else.
  */
-export const withStoryBeatSource = (block: Block, interfaceName: string): Block => ({
+export const withStoryBeatSource = (
+  block: Block,
+  interfaceName: string,
+  presentation: StoryPresentationCollection,
+): Block => ({
   ...block,
   interfaceName,
-  fields: withStoryBeatFields(block.fields),
+  fields: withStoryBeatFields(block.fields, presentation),
 })

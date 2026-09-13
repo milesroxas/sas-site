@@ -3,6 +3,7 @@ import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
+import { narrativeTab } from '@/collections/story/narrative'
 import { slugField } from '@/fields/slug'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import {
@@ -10,7 +11,6 @@ import {
   revalidateCaseStudyConsumers,
 } from './hooks/revalidateCaseStudy'
 import { validateCaseStudy } from './hooks/validateCaseStudy'
-import { CASE_STUDY_STORY_SECTION_DEFINITIONS, caseStudyStorySectionField } from './story'
 
 export const CaseStudies: CollectionConfig<'case-studies'> = {
   slug: 'case-studies',
@@ -111,12 +111,14 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
             },
           ],
         },
-        {
-          label: 'Narrative',
-          description:
-            'Channel-neutral prose, organized by story role. Each section can stay continuous or be split into reusable Story Beats.',
-          fields: CASE_STUDY_STORY_SECTION_DEFINITIONS.map(caseStudyStorySectionField),
-        },
+        narrativeTab({
+          context: 'Background and the client situation before the engagement.',
+          challenge: 'The problem being solved.',
+          strategy: 'The high-level strategic direction taken.',
+          approach: 'How the work was carried out.',
+          'outcome-summary': 'The overall result of the engagement.',
+          learnings: 'What the team took away from the work.',
+        }),
         {
           label: 'Objectives & Decisions',
           description:

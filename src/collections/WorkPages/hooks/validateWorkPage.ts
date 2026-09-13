@@ -1,5 +1,5 @@
 import { APIError, type CollectionBeforeValidateHook } from 'payload'
-import { getCaseStudyStorySection, storyBeatReferences } from '@/collections/CaseStudies/story'
+import { assertStoryBeatReferencesExist } from '@/collections/story/validate'
 import { findUnpublishableMedia } from '@/hooks/findUnpublishableMedia'
 import type { CaseStudy, WorkPage } from '@/payload-types'
 import { relationshipId, relationshipIds } from '@/utilities/relationshipId'
@@ -42,17 +42,7 @@ export const validateWorkPage: CollectionBeforeValidateHook<WorkPage> = async ({
     throw new APIError('The related Case Study Content must be published first.', 400)
   }
 
-  const beatReferences = storyBeatReferences(merged.layout)
-  const missingBeat = beatReferences.find((reference) => {
-    const beats = getCaseStudyStorySection(caseStudy, reference.section)?.storyBeats || []
-    return !beats.some((beat) => beat.key === reference.key)
-  })
-  if (missingBeat) {
-    throw new APIError(
-      `${missingBeat.section} Story Beat ${missingBeat.key} does not exist on the related Case Study Content record.`,
-      400,
-    )
-  }
+  assertStoryBeatReferencesExist(caseStudy, merged.layout, 'Case Study Content')
 
   const libraryIDs = (caseStudy.assetLibraries || []).map(relationshipId).filter(Boolean)
   if (!libraryIDs.length) {

@@ -1017,372 +1017,12 @@ export interface CaseStudy {
    * Capabilities to highlight. Used for related-work matching.
    */
   featuredCapabilities?: (number | Capability)[] | null;
-  /**
-   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
-   */
-  context?: {
-    /**
-     * Background and the client situation before the engagement. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
-     */
-    body?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    /**
-     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
-     */
-    storyBeats?:
-      | {
-          /**
-           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
-           */
-          key: string;
-          /**
-           * Internal name shown in presentation selectors.
-           */
-          label: string;
-          /**
-           * Optional channel-neutral public heading. A presentation can override it.
-           */
-          heading?: string | null;
-          /**
-           * Self-contained canonical copy for this reusable narrative beat.
-           */
-          body: {
-            root: {
-              type: string;
-              children: {
-                type: any;
-                version: number;
-                [k: string]: unknown;
-              }[];
-              direction: ('ltr' | 'rtl') | null;
-              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-              indent: number;
-              version: number;
-            };
-            [k: string]: unknown;
-          };
-          id?: string | null;
-        }[]
-      | null;
-  };
-  /**
-   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
-   */
-  challenge?: {
-    /**
-     * The problem being solved. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
-     */
-    body?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    /**
-     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
-     */
-    storyBeats?:
-      | {
-          /**
-           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
-           */
-          key: string;
-          /**
-           * Internal name shown in presentation selectors.
-           */
-          label: string;
-          /**
-           * Optional channel-neutral public heading. A presentation can override it.
-           */
-          heading?: string | null;
-          /**
-           * Self-contained canonical copy for this reusable narrative beat.
-           */
-          body: {
-            root: {
-              type: string;
-              children: {
-                type: any;
-                version: number;
-                [k: string]: unknown;
-              }[];
-              direction: ('ltr' | 'rtl') | null;
-              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-              indent: number;
-              version: number;
-            };
-            [k: string]: unknown;
-          };
-          id?: string | null;
-        }[]
-      | null;
-  };
-  /**
-   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
-   */
-  strategy?: {
-    /**
-     * The high-level strategic direction taken. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
-     */
-    body?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    /**
-     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
-     */
-    storyBeats?:
-      | {
-          /**
-           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
-           */
-          key: string;
-          /**
-           * Internal name shown in presentation selectors.
-           */
-          label: string;
-          /**
-           * Optional channel-neutral public heading. A presentation can override it.
-           */
-          heading?: string | null;
-          /**
-           * Self-contained canonical copy for this reusable narrative beat.
-           */
-          body: {
-            root: {
-              type: string;
-              children: {
-                type: any;
-                version: number;
-                [k: string]: unknown;
-              }[];
-              direction: ('ltr' | 'rtl') | null;
-              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-              indent: number;
-              version: number;
-            };
-            [k: string]: unknown;
-          };
-          id?: string | null;
-        }[]
-      | null;
-  };
-  /**
-   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
-   */
-  approach?: {
-    /**
-     * How the work was carried out. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
-     */
-    body?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    /**
-     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
-     */
-    storyBeats?:
-      | {
-          /**
-           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
-           */
-          key: string;
-          /**
-           * Internal name shown in presentation selectors.
-           */
-          label: string;
-          /**
-           * Optional channel-neutral public heading. A presentation can override it.
-           */
-          heading?: string | null;
-          /**
-           * Self-contained canonical copy for this reusable narrative beat.
-           */
-          body: {
-            root: {
-              type: string;
-              children: {
-                type: any;
-                version: number;
-                [k: string]: unknown;
-              }[];
-              direction: ('ltr' | 'rtl') | null;
-              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-              indent: number;
-              version: number;
-            };
-            [k: string]: unknown;
-          };
-          id?: string | null;
-        }[]
-      | null;
-  };
-  /**
-   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
-   */
-  outcomeSummary?: {
-    /**
-     * The overall result of the engagement. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
-     */
-    body?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    /**
-     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
-     */
-    storyBeats?:
-      | {
-          /**
-           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
-           */
-          key: string;
-          /**
-           * Internal name shown in presentation selectors.
-           */
-          label: string;
-          /**
-           * Optional channel-neutral public heading. A presentation can override it.
-           */
-          heading?: string | null;
-          /**
-           * Self-contained canonical copy for this reusable narrative beat.
-           */
-          body: {
-            root: {
-              type: string;
-              children: {
-                type: any;
-                version: number;
-                [k: string]: unknown;
-              }[];
-              direction: ('ltr' | 'rtl') | null;
-              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-              indent: number;
-              version: number;
-            };
-            [k: string]: unknown;
-          };
-          id?: string | null;
-        }[]
-      | null;
-  };
-  /**
-   * Canonical narrative for this part of the case study. The overview and beats are composed in order for whole-section consumers.
-   */
-  learnings?: {
-    /**
-     * What the team took away from the work. Standalone summary of this section — reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
-     */
-    body?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    /**
-     * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
-     */
-    storyBeats?:
-      | {
-          /**
-           * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
-           */
-          key: string;
-          /**
-           * Internal name shown in presentation selectors.
-           */
-          label: string;
-          /**
-           * Optional channel-neutral public heading. A presentation can override it.
-           */
-          heading?: string | null;
-          /**
-           * Self-contained canonical copy for this reusable narrative beat.
-           */
-          body: {
-            root: {
-              type: string;
-              children: {
-                type: any;
-                version: number;
-                [k: string]: unknown;
-              }[];
-              direction: ('ltr' | 'rtl') | null;
-              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-              indent: number;
-              version: number;
-            };
-            [k: string]: unknown;
-          };
-          id?: string | null;
-        }[]
-      | null;
-  };
+  context?: NarrativeSection;
+  challenge?: NarrativeSection;
+  strategy?: NarrativeSection;
+  approach?: NarrativeSection;
+  outcomeSummary?: NarrativeSection;
+  learnings?: NarrativeSection;
   /**
    * What success looked like at the start.
    */
@@ -1541,6 +1181,70 @@ export interface CaseStudy {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * What the team took away from the work. The overview and beats are composed in order for whole-section consumers.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NarrativeSection".
+ */
+export interface NarrativeSection {
+  /**
+   * Standalone summary of this section, reused on its own as a section intro or quick overview. When beats exist, it renders before them and should not repeat their copy.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Ordered, independently reusable ideas within this section. Use these when a presentation should pair individual passages with different media or layouts.
+   */
+  storyBeats?:
+    | {
+        /**
+         * Stable reference inside this section (e.g. consequential-art-direction). Do not rename after a presentation uses it.
+         */
+        key: string;
+        /**
+         * Internal name shown in presentation selectors.
+         */
+        label: string;
+        /**
+         * Optional channel-neutral public heading. A presentation can override it.
+         */
+        heading?: string | null;
+        /**
+         * Self-contained canonical copy for this reusable narrative beat.
+         */
+        body: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        id?: string | null;
+      }[]
+    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1751,7 +1455,7 @@ export interface WorkPage {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Full-screen introduction band rendered right after the hero. The body is the canonical case-study summary from the Content Hub.
+ * Full-screen introduction band rendered right after the hero. The body is the canonical summary from the Content Hub.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "WorkIntro".
@@ -1968,7 +1672,7 @@ export interface WorkFullMediaBlock {
   eyebrow?: string | null;
   heading?: string | null;
   /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
    */
   body?: {
     root: {
@@ -2040,7 +1744,7 @@ export interface WorkMediaContentSplitBlock {
   eyebrow?: string | null;
   heading?: string | null;
   /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
    */
   body?: {
     root: {
@@ -2105,7 +1809,7 @@ export interface WorkSplitContentNarrowBlock {
   eyebrow?: string | null;
   heading?: string | null;
   /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
    */
   body?: {
     root: {
@@ -2162,7 +1866,7 @@ export interface WorkImagePairBlock {
   showOverrides?: boolean | null;
   heading?: string | null;
   /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
    */
   body?: {
     root: {
@@ -2230,7 +1934,7 @@ export interface WorkSplitImageOffsetBlock {
   showOverrides?: boolean | null;
   heading?: string | null;
   /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
    */
   body?: {
     root: {
@@ -3715,7 +3419,7 @@ export interface FeatureHeadingOffsetBlock {
   eyebrow?: string | null;
   heading: string;
   /**
-   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   * On Work and Lab pages, pull this copy from the canonical story. "Custom" uses the copy written here; writing copy always overrides the pulled source.
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
   /**
@@ -3758,7 +3462,7 @@ export interface FullMediaBlock {
    */
   showContent?: boolean | null;
   /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical story content (Work and Lab Pages only).
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
   /**
@@ -3767,7 +3471,7 @@ export interface FullMediaBlock {
   eyebrow?: string | null;
   heading?: string | null;
   /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
    */
   body?: {
     root: {
@@ -3814,7 +3518,7 @@ export interface FullMediaBlock {
  */
 export interface MediaContentSplitBlock {
   /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical story content (Work and Lab Pages only).
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
   /**
@@ -3823,7 +3527,7 @@ export interface MediaContentSplitBlock {
   eyebrow?: string | null;
   heading?: string | null;
   /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
    */
   body?: {
     root: {
@@ -3863,7 +3567,7 @@ export interface MediaContentSplitBlock {
  */
 export interface SplitContentNarrowBlock {
   /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical story content (Work and Lab Pages only).
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
   /**
@@ -3872,7 +3576,7 @@ export interface SplitContentNarrowBlock {
   eyebrow?: string | null;
   heading?: string | null;
   /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
    */
   body?: {
     root: {
@@ -3908,12 +3612,12 @@ export interface SplitContentNarrowBlock {
  */
 export interface ImagePairBlock {
   /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical story content (Work and Lab Pages only).
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
   heading?: string | null;
   /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
    */
   body?: {
     root: {
@@ -3960,12 +3664,12 @@ export interface ImagePairBlock {
  */
 export interface SplitImageOffsetBlock {
   /**
-   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical Case Study story content (Work Pages only).
+   * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical story content (Work and Lab Pages only).
    */
   source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
   heading?: string | null;
   /**
-   * Shown when source is "Custom", or as a Work Page override for canonical content.
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
    */
   body?: {
     root: {
@@ -4009,7 +3713,7 @@ export interface SplitImageOffsetBlock {
 export interface FeatureImageStatementBlock {
   media: number | Media;
   /**
-   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   * On Work and Lab pages, pull this copy from the canonical story. "Custom" uses the copy written here; writing copy always overrides the pulled source.
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
   /**
@@ -4163,7 +3867,7 @@ export interface FeatureTabsBlock {
      */
     heading: string;
     /**
-     * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+     * On Work and Lab pages, pull this copy from the canonical story. "Custom" uses the copy written here; writing copy always overrides the pulled source.
      */
     source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
     /**
@@ -4434,7 +4138,7 @@ export interface FeatureStatementGridBlock {
   eyebrow?: string | null;
   heading: string;
   /**
-   * On Work pages, pull this copy from the canonical case study. "Custom" uses the copy written here; writing copy always overrides the pulled source.
+   * On Work and Lab pages, pull this copy from the canonical story. "Custom" uses the copy written here; writing copy always overrides the pulled source.
    */
   source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
   /**
@@ -4688,29 +4392,31 @@ export interface LabPage {
     theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
     mediaTreatment?: ('contained' | 'full-bleed' | 'floating' | 'background') | null;
   };
+  intro?: WorkIntro;
   /**
    * Website composition only. Canonical narrative remains in the related Lab Project record.
    */
   layout?:
     | (
         | LabSectionBlock
-        | RichTransitionBlock
-        | FeatureHeadingOffsetBlock
-        | FullMediaBlock
-        | MediaContentSplitBlock
-        | SplitContentNarrowBlock
-        | ImagePairBlock
-        | SplitImageOffsetBlock
-        | FeatureImageStatementBlock
+        | LabRichTransitionBlock
+        | LabFeatureHeadingOffsetBlock
+        | LabFullMediaBlock
+        | LabMediaContentSplitBlock
+        | LabSplitContentNarrowBlock
+        | LabImagePairBlock
+        | LabSplitImageOffsetBlock
+        | LabFeatureImageStatementBlock
         | MediaBlock
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
-        | FeatureTabsBlock
+        | LabFeatureTabsBlock
         | InsightListBlock
         | LabMediaShowcaseBlock
         | ScrollGalleryBlock
         | LabStorySectionBlock
+        | LabFeatureStatementGridBlock
         | LabFactsBlock
         | LabRelatedProjectsBlock
       )[]
@@ -4721,6 +4427,7 @@ export interface LabPage {
   coverAsset?: (number | null) | Media;
   relatedLabPages?: (number | LabPage)[] | null;
   editorialNotes?: string | null;
+  closing?: PageClosing;
   meta?: {
     /**
      * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
@@ -4826,78 +4533,12 @@ export interface LabProject {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Why this lab work was started.
-   */
-  context?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * How the work was carried out.
-   */
-  approach?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * What resulted from the experiment or build.
-   */
-  outcome?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * What the team took away from the work.
-   */
-  learnings?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+  context?: NarrativeSection;
+  challenge?: NarrativeSection;
+  strategy?: NarrativeSection;
+  approach?: NarrativeSection;
+  outcomeSummary?: NarrativeSection;
+  learnings?: NarrativeSection;
   /**
    * Internal only. Never exposed to anonymous API consumers.
    */
@@ -4968,19 +4609,19 @@ export interface LabSectionBlock {
   stack?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
-        | RichTransitionBlock
-        | FeatureHeadingOffsetBlock
-        | FullMediaBlock
-        | MediaContentSplitBlock
-        | SplitContentNarrowBlock
-        | ImagePairBlock
-        | SplitImageOffsetBlock
-        | FeatureImageStatementBlock
+        | LabRichTransitionBlock
+        | LabFeatureHeadingOffsetBlock
+        | LabFullMediaBlock
+        | LabMediaContentSplitBlock
+        | LabSplitContentNarrowBlock
+        | LabImagePairBlock
+        | LabSplitImageOffsetBlock
+        | LabFeatureImageStatementBlock
         | MediaBlock
         | RichTextBlock
         | FaqBlock
         | CarouselBlock
-        | FeatureTabsBlock
+        | LabFeatureTabsBlock
         | InsightListBlock
         | ContentBlock
       )[]
@@ -4988,6 +4629,561 @@ export interface LabSectionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'section';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabRichTransitionBlock".
+ */
+export interface LabRichTransitionBlock {
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * How the copy sits on the band.
+   */
+  layout?: ('offset' | 'left' | 'centered' | 'split' | 'statement') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'richTransition';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFeatureHeadingOffsetBlock".
+ */
+export interface LabFeatureHeadingOffsetBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Supporting copy in the offset right column. Leave empty to pull the source.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Type size of the supporting copy.
+   */
+  bodySize?: ('small' | 'medium' | 'large') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureHeadingOffset';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFullMediaBlock".
+ */
+export interface LabFullMediaBlock {
+  /**
+   * Off renders the media on its own, with no copy beneath it.
+   */
+  showContent?: boolean | null;
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Contained uses the aspect ratio below. Full width crops to 16:9 on small screens and 21:9 from md up.
+   */
+  media: number | Media;
+  /**
+   * Contained keeps the media in the page column. Full width bleeds edge to edge.
+   */
+  width?: ('contained' | 'full-width') | null;
+  /**
+   * Crop for contained media.
+   */
+  aspectRatio?: ('16-9' | '3-2' | '21-9') | null;
+  /**
+   * Arrange the content row on the left or the right below the media (desktop only; smaller screens always sit left).
+   */
+  contentPosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'fullMedia';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabMediaContentSplitBlock".
+ */
+export interface LabMediaContentSplitBlock {
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media: number | Media;
+  /**
+   * Arrange the media on the left or the right of the content.
+   */
+  layout?: ('left' | 'right') | null;
+  /**
+   * Crop for the media column.
+   */
+  aspectRatio?: ('16-9' | '3-2' | '21-9') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaContentSplit';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabSplitContentNarrowBlock".
+ */
+export interface LabSplitContentNarrowBlock {
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Short kicker above the text.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media: number | Media;
+  /**
+   * Arrange the image on the left or the right of the text.
+   */
+  imagePosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'splitContentNarrow';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabImagePairBlock".
+ */
+export interface LabImagePairBlock {
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Cropped to 4:5.
+   */
+  portraitMedia: number | Media;
+  /**
+   * Cropped to 16:10.
+   */
+  landscapeMedia: number | Media;
+  /**
+   * Arrange the portrait on the left or the right; the landscape fills the other column. On small screens the left image stacks first.
+   */
+  portraitPosition?: ('left' | 'right') | null;
+  /**
+   * Which image the text sits under. Under the portrait it stays compact; under the landscape it runs larger and wider.
+   */
+  textPosition?: ('under-portrait' | 'under-landscape') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'imagePair';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabSplitImageOffsetBlock".
+ */
+export interface LabSplitImageOffsetBlock {
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source: 'custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings';
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  heading?: string | null;
+  /**
+   * Shown when source is "Custom", or as a Work or Lab Page override for canonical content.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Cropped to 5:4.
+   */
+  largeMedia: number | Media;
+  /**
+   * Cropped to 3:2. Shown above the caption.
+   */
+  smallMedia: number | Media;
+  /**
+   * Place the small image and caption on the left or the right of the large image.
+   */
+  captionPosition?: ('left' | 'right') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'splitImageOffset';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFeatureImageStatementBlock".
+ */
+export interface LabFeatureImageStatementBlock {
+  media: number | Media;
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Large statement set beneath the image. Leave empty to pull the source.
+   */
+  caption?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Which edge the statement aligns to beneath the image.
+   */
+  textPosition?: ('left' | 'right') | null;
+  /**
+   * Small steps the statement down one type size.
+   */
+  textSize?: ('default' | 'small') | null;
+  /**
+   * Contained keeps the image in the site container; full bleeds edge to edge.
+   */
+  imageWidth?: ('contained' | 'full') | null;
+  /**
+   * Crop for the image, at both widths. Responsive keeps the taller small-screen crop that widens to 21:9 from md up.
+   */
+  aspectRatio?: ('responsive' | '16-9' | '3-2' | '21-9') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureImageStatement';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFeatureTabsBlock".
+ */
+export interface LabFeatureTabsBlock {
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    heading?: string | null;
+    /**
+     * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+     */
+    source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+    /**
+     * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+     */
+    storyScope?: ('overview' | 'section' | 'beat') | null;
+    /**
+     * Choose one reusable beat from the selected section.
+     */
+    storyBeatKey?: string | null;
+    /**
+     * Reveal the website-only override fields. Saved overrides still apply while hidden.
+     */
+    showOverrides?: boolean | null;
+    /**
+     * Tab body copy. Leave empty to pull the source.
+     */
+    description?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    subheading?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * Short note shown as a card over the media.
+     */
+    caption?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Default sets heading-sized tab labels that wrap onto a second row. Small steps them down one type size and keeps them on one row that pans sideways, for five or more tabs.
+   */
+  tabSize?: ('default' | 'small') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureTabs';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5073,9 +5269,21 @@ export interface ScrollGalleryBlock {
  */
 export interface LabStorySectionBlock {
   /**
-   * Uses canonical story content unless a website override is supplied.
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
-  source: 'context' | 'approach' | 'outcome' | 'learnings' | 'custom';
+  source: 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings' | 'custom';
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
   eyebrow?: string | null;
   headingOverride?: string | null;
   /**
@@ -5121,6 +5329,68 @@ export interface LabStorySectionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'labStorySection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFeatureStatementGridBlock".
+ */
+export interface LabFeatureStatementGridBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading?: string | null;
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
+   */
+  statement?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Short supporting line pinned below the statement.
+   */
+  footnote?: string | null;
+  cards: {
+    media?: (number | null) | Media;
+    title: string;
+    description: string;
+    id?: string | null;
+  }[];
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'featureStatementGrid';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7546,33 +7816,36 @@ export interface LabPagesSelect<T extends boolean = true> {
         theme?: T;
         mediaTreatment?: T;
       };
+  intro?: T | WorkIntroSelect<T>;
   layout?:
     | T
     | {
         section?: T | LabSectionBlockSelect<T>;
-        richTransition?: T | RichTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        imagePair?: T | ImagePairBlockSelect<T>;
-        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
+        richTransition?: T | LabRichTransitionBlockSelect<T>;
+        featureHeadingOffset?: T | LabFeatureHeadingOffsetBlockSelect<T>;
+        fullMedia?: T | LabFullMediaBlockSelect<T>;
+        mediaContentSplit?: T | LabMediaContentSplitBlockSelect<T>;
+        splitContentNarrow?: T | LabSplitContentNarrowBlockSelect<T>;
+        imagePair?: T | LabImagePairBlockSelect<T>;
+        splitImageOffset?: T | LabSplitImageOffsetBlockSelect<T>;
+        featureImageStatement?: T | LabFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
+        featureTabs?: T | LabFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
         scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         labStorySection?: T | LabStorySectionBlockSelect<T>;
+        featureStatementGrid?: T | LabFeatureStatementGridBlockSelect<T>;
         labFacts?: T | LabFactsBlockSelect<T>;
         labRelatedProjects?: T | LabRelatedProjectsBlockSelect<T>;
       };
   coverAsset?: T;
   relatedLabPages?: T;
   editorialNotes?: T;
+  closing?: T | PageClosingSelect<T>;
   meta?:
     | T
     | {
@@ -7607,22 +7880,201 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
   blocks?:
     | T
     | {
-        richTransition?: T | RichTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        imagePair?: T | ImagePairBlockSelect<T>;
-        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
+        richTransition?: T | LabRichTransitionBlockSelect<T>;
+        featureHeadingOffset?: T | LabFeatureHeadingOffsetBlockSelect<T>;
+        fullMedia?: T | LabFullMediaBlockSelect<T>;
+        mediaContentSplit?: T | LabMediaContentSplitBlockSelect<T>;
+        splitContentNarrow?: T | LabSplitContentNarrowBlockSelect<T>;
+        imagePair?: T | LabImagePairBlockSelect<T>;
+        splitImageOffset?: T | LabSplitImageOffsetBlockSelect<T>;
+        featureImageStatement?: T | LabFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
+        featureTabs?: T | LabFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabRichTransitionBlock_select".
+ */
+export interface LabRichTransitionBlockSelect<T extends boolean = true> {
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  eyebrow?: T;
+  heading?: T;
+  layout?: T;
+  theme?: T;
+  body?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFeatureHeadingOffsetBlock_select".
+ */
+export interface LabFeatureHeadingOffsetBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  body?: T;
+  bodySize?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFullMediaBlock_select".
+ */
+export interface LabFullMediaBlockSelect<T extends boolean = true> {
+  showContent?: T;
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  media?: T;
+  width?: T;
+  aspectRatio?: T;
+  contentPosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabMediaContentSplitBlock_select".
+ */
+export interface LabMediaContentSplitBlockSelect<T extends boolean = true> {
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  media?: T;
+  layout?: T;
+  aspectRatio?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabSplitContentNarrowBlock_select".
+ */
+export interface LabSplitContentNarrowBlockSelect<T extends boolean = true> {
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  media?: T;
+  imagePosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabImagePairBlock_select".
+ */
+export interface LabImagePairBlockSelect<T extends boolean = true> {
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  heading?: T;
+  body?: T;
+  portraitMedia?: T;
+  landscapeMedia?: T;
+  portraitPosition?: T;
+  textPosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabSplitImageOffsetBlock_select".
+ */
+export interface LabSplitImageOffsetBlockSelect<T extends boolean = true> {
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  heading?: T;
+  body?: T;
+  largeMedia?: T;
+  smallMedia?: T;
+  captionPosition?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFeatureImageStatementBlock_select".
+ */
+export interface LabFeatureImageStatementBlockSelect<T extends boolean = true> {
+  media?: T;
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  caption?: T;
+  textPosition?: T;
+  textSize?: T;
+  imageWidth?: T;
+  aspectRatio?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFeatureTabsBlock_select".
+ */
+export interface LabFeatureTabsBlockSelect<T extends boolean = true> {
+  tabs?:
+    | T
+    | {
+        title?: T;
+        heading?: T;
+        source?: T;
+        storyScope?: T;
+        storyBeatKey?: T;
+        showOverrides?: T;
+        description?: T;
+        subheading?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        media?: T;
+        caption?: T;
+        id?: T;
+      };
+  tabSize?: T;
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -7671,6 +8123,9 @@ export interface ScrollGalleryBlockSelect<T extends boolean = true> {
  */
 export interface LabStorySectionBlockSelect<T extends boolean = true> {
   source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
   eyebrow?: T;
   headingOverride?: T;
   bodyOverride?: T;
@@ -7679,6 +8134,31 @@ export interface LabStorySectionBlockSelect<T extends boolean = true> {
   layout?: T;
   theme?: T;
   width?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabFeatureStatementGridBlock_select".
+ */
+export interface LabFeatureStatementGridBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  heading?: T;
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  statement?: T;
+  footnote?: T;
+  cards?:
+    | T
+    | {
+        media?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  theme?: T;
   id?: T;
   blockName?: T;
 }
@@ -8043,90 +8523,12 @@ export interface CaseStudiesSelect<T extends boolean = true> {
       };
   primaryAudience?: T;
   featuredCapabilities?: T;
-  context?:
-    | T
-    | {
-        body?: T;
-        storyBeats?:
-          | T
-          | {
-              key?: T;
-              label?: T;
-              heading?: T;
-              body?: T;
-              id?: T;
-            };
-      };
-  challenge?:
-    | T
-    | {
-        body?: T;
-        storyBeats?:
-          | T
-          | {
-              key?: T;
-              label?: T;
-              heading?: T;
-              body?: T;
-              id?: T;
-            };
-      };
-  strategy?:
-    | T
-    | {
-        body?: T;
-        storyBeats?:
-          | T
-          | {
-              key?: T;
-              label?: T;
-              heading?: T;
-              body?: T;
-              id?: T;
-            };
-      };
-  approach?:
-    | T
-    | {
-        body?: T;
-        storyBeats?:
-          | T
-          | {
-              key?: T;
-              label?: T;
-              heading?: T;
-              body?: T;
-              id?: T;
-            };
-      };
-  outcomeSummary?:
-    | T
-    | {
-        body?: T;
-        storyBeats?:
-          | T
-          | {
-              key?: T;
-              label?: T;
-              heading?: T;
-              body?: T;
-              id?: T;
-            };
-      };
-  learnings?:
-    | T
-    | {
-        body?: T;
-        storyBeats?:
-          | T
-          | {
-              key?: T;
-              label?: T;
-              heading?: T;
-              body?: T;
-              id?: T;
-            };
-      };
+  context?: T | NarrativeSectionSelect<T>;
+  challenge?: T | NarrativeSectionSelect<T>;
+  strategy?: T | NarrativeSectionSelect<T>;
+  approach?: T | NarrativeSectionSelect<T>;
+  outcomeSummary?: T | NarrativeSectionSelect<T>;
+  learnings?: T | NarrativeSectionSelect<T>;
   objectives?:
     | T
     | {
@@ -8191,6 +8593,22 @@ export interface CaseStudiesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NarrativeSection_select".
+ */
+export interface NarrativeSectionSelect<T extends boolean = true> {
+  body?: T;
+  storyBeats?:
+    | T
+    | {
+        key?: T;
+        label?: T;
+        heading?: T;
+        body?: T;
+        id?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "lab-projects_select".
  */
 export interface LabProjectsSelect<T extends boolean = true> {
@@ -8215,10 +8633,12 @@ export interface LabProjectsSelect<T extends boolean = true> {
         name?: T;
         id?: T;
       };
-  context?: T;
-  approach?: T;
-  outcome?: T;
-  learnings?: T;
+  context?: T | NarrativeSectionSelect<T>;
+  challenge?: T | NarrativeSectionSelect<T>;
+  strategy?: T | NarrativeSectionSelect<T>;
+  approach?: T | NarrativeSectionSelect<T>;
+  outcomeSummary?: T | NarrativeSectionSelect<T>;
+  learnings?: T | NarrativeSectionSelect<T>;
   internalNotes?: T;
   coverAsset?: T;
   selectedAssets?: T;

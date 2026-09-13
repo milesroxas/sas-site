@@ -1,5 +1,6 @@
 import type { CollectionSlug, GlobalSlug } from 'payload'
 import { CONTACT_INDEX_SLUG } from '@/collections/ContactPages/constants'
+import { CANONICAL_STORY_FIELDS, type CanonicalStoryField } from '@/collections/story/canonical'
 
 /**
  * The single source of truth for the site's public content surfaces: which
@@ -27,9 +28,10 @@ export type SurfaceBody =
    * Substance is spread across layout blocks / groups — extracted by the
    * generic walker in `extract.ts`. `canonicalField` names a relationship to
    * the Content Hub record that carries the narrative this page renders
-   * (e.g. work-pages → case-studies); the walker hydrates and includes it.
+   * (`CANONICAL_STORY_FIELDS`: work-pages → case-studies, lab-pages →
+   * lab-projects); the walker hydrates and includes it.
    */
-  | { kind: 'walk'; canonicalField?: { name: string; collection: CollectionSlug } }
+  | { kind: 'walk'; canonicalField?: CanonicalStoryField }
 
 export type ContentSurface = {
   collection: CollectionSlug
@@ -67,13 +69,13 @@ export const CONTENT_SURFACES: ContentSurface[] = [
     collection: 'work-pages',
     title: 'Work',
     urlPrefix: '/works',
-    body: { kind: 'walk', canonicalField: { name: 'caseStudy', collection: 'case-studies' } },
+    body: { kind: 'walk', canonicalField: CANONICAL_STORY_FIELDS['work-pages'] },
   },
   {
     collection: 'lab-pages',
     title: 'Lab',
     urlPrefix: '/lab',
-    body: { kind: 'walk', canonicalField: { name: 'labProject', collection: 'lab-projects' } },
+    body: { kind: 'walk', canonicalField: CANONICAL_STORY_FIELDS['lab-pages'] },
   },
   {
     collection: 'contact-pages',

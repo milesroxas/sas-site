@@ -92,7 +92,22 @@ Story Beat keys are unique within their parent section, not globally. Nesting pr
 business meaning in the API, while the composite `(section, key)` reference stays stable across
 website blocks and future presentation collections.
 
-Publish-time integrity (`validateWorkPage`): the linked Case Study must itself be published and have at least one Asset Library, and every media reference on the page (cover, hero, downloads, block media) must be `public-approved` **and** belong to one of the study's libraries. Deleting a Case Study that a Work Page references is blocked.
+The story model is shared, not Case Study specific. Lab Projects carry the same six narrative
+sections (`NarrativeSection` interface), and Lab Pages resolve them the same way:
+
+- `src/collections/story/narrative.ts` — section vocabulary, the Narrative tab factory, and the
+  body/heading/scope resolvers.
+- `src/collections/story/canonical.ts` — `CANONICAL_STORY_FIELDS`, which relationship on a page
+  names its story record (work-pages → case-studies, lab-pages → lab-projects). The Story Beat
+  picker, validation, and the RAG surface registry all read it.
+- `src/collections/story/validate.ts` — beat keys unique per section; a page cannot publish a
+  missing beat; a record cannot publish without a beat its page still uses.
+- `src/blocks/shared/story-copy.ts` — the copy precedence both renderers use (written copy wins,
+  then the story), so `RenderCaseStudyBlocks` and `RenderLabBlocks` never restate it.
+- Lab block variants come from mapping the shared Section run through `labBlock`
+  (`src/blocks/lab/config.ts`): story-capable blocks gain the story picker, the rest pass through.
+
+Publish-time integrity (`validateWorkPage`): the linked Case Study must itself be published and have at least one Asset Library, every referenced Story Beat must exist on it, and every media reference on the page (cover, hero, downloads, block media) must be `public-approved` **and** belong to one of the study's libraries. Deleting a Case Study that a Work Page references is blocked. `validateLabPage` applies the same rules minus Asset Libraries (media only needs to be `public-approved`).
 
 ## Access control
 

@@ -23,8 +23,9 @@ import { blockRevealVariants, type RevealMappedBlockSlug } from './reveal-varian
  * render mirror of `sectionChildBlocks` in `section-blocks.ts`. Every collection
  * that offers the run renders it through this map (Pages, Posts, segment
  * pages, lab pages), so the same CMS block paints and moves identically
- * wherever an editor places it. Work pages resolve canonical story copy first
- * and render their own variants (`RenderCaseStudyBlocks`).
+ * wherever an editor places it. Lab pages resolve canonical story copy into
+ * the block first (`story-copy.ts`); Work pages resolve it the same way and
+ * render their own variants (`RenderCaseStudyBlocks`).
  */
 export const sectionChildComponents = {
   carousel: CarouselBlock,

@@ -9,7 +9,8 @@ import { BLOCK_GROUPS } from '@/blocks/shared/groups'
  * Self-contained (authors its copy inline), so it sits in the shared
  * Section-nestable run. Work Pages offer `caseStudyTransition` instead: the
  * same copy fields behind a canonical story picker, on a static table that is
- * live in production.
+ * live in production. Lab Pages keep this slug and put the same picker in
+ * front of it (`labBlock` in `blocks/lab/config.ts`).
  */
 export const RichTransition: Block = {
   slug: 'richTransition',

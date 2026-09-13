@@ -1,4 +1,4 @@
-import type { CaseStudyStoryBody } from '@/collections/CaseStudies/story'
+import type { StoryBody } from '@/collections/story/narrative'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { Media as MediaDoc, WorkCaseStudyStorySectionBlock } from '@/payload-types'
@@ -24,7 +24,7 @@ export const StorySection = ({
   heading,
 }: {
   block: WorkCaseStudyStorySectionBlock
-  content: CaseStudyStoryBody | null | undefined
+  content: StoryBody | null | undefined
   heading: string
 }) => {
   if (!content) return null

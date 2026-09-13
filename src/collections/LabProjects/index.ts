@@ -3,6 +3,7 @@ import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
+import { narrativeTab } from '@/collections/story/narrative'
 import { projectLinksField } from '@/fields/pageFields'
 import { slugField } from '@/fields/slug'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
@@ -129,29 +130,16 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
             },
           ],
         },
-        {
-          label: 'Story',
-          fields: [
-            {
-              name: 'context',
-              type: 'richText',
-              admin: { description: 'Why this lab work was started.' },
-            },
-            {
-              name: 'approach',
-              type: 'richText',
-              admin: { description: 'How the work was carried out.' },
-            },
-            {
-              name: 'outcome',
-              type: 'richText',
-              admin: { description: 'What resulted from the experiment or build.' },
-            },
-            {
-              name: 'learnings',
-              type: 'richText',
-              admin: { description: 'What the team took away from the work.' },
-            },
+        narrativeTab(
+          {
+            context: 'Why this lab work was started.',
+            challenge: 'The question or problem the work set out to answer.',
+            strategy: 'The direction or hypothesis the work set out to test.',
+            approach: 'How the work was carried out.',
+            'outcome-summary': 'What resulted from the experiment or build.',
+            learnings: 'What the team took away from the work.',
+          },
+          [
             {
               name: 'internalNotes',
               type: 'textarea',
@@ -162,7 +150,7 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
               admin: { description: 'Internal only. Never exposed to anonymous API consumers.' },
             },
           ],
-        },
+        ),
         {
           label: 'Assets & Links',
           fields: [
