@@ -1,8 +1,8 @@
 /**
  * Environment gate shared by the three Sentry entry points (browser, Node,
- * edge). No DSN leaves the SDK disabled, and development — local or
- * `vercel dev` — never reports even when a DSN is set. Traces are sampled in
- * production to protect quota and captured fully everywhere else.
+ * edge). The SDK only runs on the production deployment: no DSN, local dev,
+ * `vercel dev`, and preview deployments all leave it disabled so a free-tier
+ * quota is spent on real traffic only. Production traces are sampled.
  *
  * Server and edge read `VERCEL_ENV`; the browser bundle can only see the
  * `NEXT_PUBLIC_` copy, so each entry point passes in the one it has.
@@ -12,14 +12,12 @@ export const sentryBaseOptions = (vercelEnv: string | undefined) => {
 
   return {
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-    enabled: Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN) && environment !== 'development',
-    // Separates preview and production streams in Sentry (issue filters,
-    // alert rules, release health all key off this).
+    enabled: Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN) && isSentryProduction(vercelEnv),
     environment,
-    tracesSampleRate: isSentryProduction(vercelEnv) ? 0.2 : 1.0,
+    tracesSampleRate: 0.2,
     debug: false,
   }
 }
 
 /** Whether this runtime is the production deployment, not a preview or local run. */
-const isSentryProduction = (vercelEnv: string | undefined) => vercelEnv === 'production'
+export const isSentryProduction = (vercelEnv: string | undefined) => vercelEnv === 'production'

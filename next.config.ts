@@ -8,6 +8,7 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 import { redirects } from './redirects'
+import { isSentryProduction } from './sentry.shared'
 import { getServerSideURL } from './src/utilities/getURL'
 
 const deployUrl = getServerSideURL()
@@ -157,8 +158,12 @@ export default withSentryConfig(withPayload(nextConfig, { devBundleServerPackage
   // build time, does not affect the served bundle).
   widenClientFileUpload: true,
 
-  // Client sourcemaps are only for Sentry's eyes — remove them after upload.
+  // Client sourcemaps are only for Sentry's eyes: remove them after upload.
+  // Upload only from the production build; preview and local builds would
+  // otherwise create releases and artifacts for deployments the SDK never
+  // reports from (see sentry.shared.ts).
   sourcemaps: {
+    disable: !isSentryProduction(process.env.VERCEL_ENV),
     deleteSourcemapsAfterUpload: true,
   },
 
