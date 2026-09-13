@@ -4,6 +4,8 @@ How the WebGL/shader effects are organized, tuned, and reused across the site â€
 
 For shader *technique* (GLSL, raymarching, dispersion, motion physics), use the `creative-webgl-shaders` skill (`.agents/skills/creative-webgl-shaders`). This document covers the *project architecture* around those techniques.
 
+For the proposed use of Streak Field in CMS hero, preview, and block media slots, see the [implementation plan](streak-field-media-plan.md), reviewed against the current code on 2026-09-13. Its runtime and CMS changes are proposals, not shipped behavior.
+
 ## Where things live
 
 | Layer | Path | Role |

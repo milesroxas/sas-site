@@ -18,6 +18,7 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | [docs/mcp.md](docs/mcp.md) | Developers | Internal MCP server at `/api/mcp`: API keys, capabilities, security model |
 | [docs/animations.md](docs/animations.md) | Developers | Route transitions, scroll reveals, marquee; tuning workflow |
 | [docs/immersive-effects.md](docs/immersive-effects.md) | Developers | WebGL effects: architecture, defaults/presets contract, playground workflow |
+| [docs/streak-field-media-plan.md](docs/streak-field-media-plan.md) | Developers | Proposed shader media: current-code review, Payload model, runtime gates, and staged rollout |
 | [docs/conductor.md](docs/conductor.md) | Developers | Parallel Conductor workspaces, per-workspace DBs, migration files across branches |
 | [docs/prds/content-hub.md](docs/prds/content-hub.md) | Reference | Original PRD and architecture amendment |
 | [src/features/ask/README.md](src/features/ask/README.md) | Developers | Ask: what ships (RAG, surfaces, inbox, handoff). Roadmaps: [docs/ask-rag-roadmap.md](docs/ask-rag-roadmap.md), [docs/ask-insights-roadmap.md](docs/ask-insights-roadmap.md) |
