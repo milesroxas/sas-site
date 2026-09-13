@@ -19,9 +19,17 @@ a "before" survives until its "after" exists.
 Field data (Speed Insights) is read separately, seven days after a prod deploy
 (section 5).
 
+For Streak Field work, also use [Streak Field captures](#streak-field-captures)
+below. The [feature plan](streak-field-media-plan.md#acceptance-and-measurement)
+owns acceptance thresholds; the [performance roadmap](performance-audit-work-pages.md#6-execution-order-and-expected-impact)
+owns sequencing. This runbook describes how to collect comparable evidence.
+
 ## 1. Targets
 
 Always the same three URLs, so runs compare:
+
+These are the media control routes. Pin their content/version for a comparison;
+shader variants are separate labeled cases, not a silent change to the control.
 
 | Key | Path | Why |
 |---|---|---|
@@ -35,7 +43,10 @@ Hosts:
 - `preview` = the Vercel preview URL for the branch under test (`vercel ls`, or the PR check). `preview.suits-sandals.com` is the `preview` git branch's domain and lags production by that branch's deployment, so do not use it as a stand-in for prod.
 - `local` = `http://localhost:3001`, smoke only, never for numbers (no CDN, dev bundles, no Brotli).
 
-Preview deployments answer `x-robots-tag: noindex`; production is indexable. No auth needed on either.
+Earlier captures used unauthenticated preview deployments with `x-robots-tag: noindex`
+and indexable production. Confirm the selected deployment's headers and access
+before a new run; the repository source check does not establish current hosting
+or deployment-protection settings.
 
 ## 2. Setup (once per machine)
 
@@ -45,9 +56,11 @@ export CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome
 ```
 
 Playwright's Chromium (`@playwright/test`, already installed) drives the capture
-scripts. The scripts live in the session scratchpad and load Playwright through
-`createRequire(<repo>/package.json)`; sources are in section 6. `SCRATCH` below
-is that directory.
+scripts. Their source is embedded in section 6; they are not currently runnable
+files in the repo's `scripts/` directory. Before a new capture, save those code
+blocks as files in a chosen scratch directory and substitute its absolute path
+for `SCRATCH` below. Do not assume a prior session's scratch files still exist.
+The scripts load Playwright through `createRequire(<repo>/package.json)`.
 
 ## 3. Run
 
@@ -111,7 +124,7 @@ vault    at load: mp4=1 posters=10 (poster priority: High, preload link: yes)
          video state at end: 10/10 with source, 10/10 play when centred; mp4 refetched on return: 0
 ```
 
-Pass criteria after video gating:
+Pass criteria after video gating, for the original media control configuration:
 
 - `mp4` at load: 1 (hero) on `vault`, 0 on `adacore`.
 - Hero poster: priority `High` (some Chrome builds report `VeryHigh`), and a `<link rel=preload as=image fetchpriority=high>` in the head.
@@ -154,6 +167,13 @@ Lab noise is about 10% on LCP and 3 points on the score. What counts as real:
 
 Paste both tables into the audit doc's status section when a phase closes.
 
+For Streak Field, record results in the feature plan as well and distinguish
+initial loading, deferred runtime loading, steady animation, and fallback.
+The feature plan's small regression thresholds trigger investigation; compare
+them against observed run-to-run noise before attributing a regression. A
+better Lighthouse score with no working qualified live path does not pass the
+feature milestone.
+
 ## 5. Field (Speed Insights)
 
 Seven days after prod. Vercel dashboard, project `sas-site`, Speed Insights,
@@ -161,6 +181,74 @@ route filter `/works/[slug]`, P75. Record LCP, FCP, INP and the LCP element
 attribution. `www.suits-sandals.com` has served the Next site since 2026-09-09, so
 field samples are public traffic from that date; anything earlier was team and
 client traffic on the Vercel alias and is not comparable.
+
+## Streak Field captures
+
+This is an additional procedure for the shader feature. The existing media
+scripts below do not instrument shader frames, simulation, or resources. Add
+focused instrumentation during feature Phase 0; do not report those checks as
+automated or passing until it exists and has run. No shader capture was run
+when this procedure was added.
+
+### Comparison matrix
+
+| Case | Purpose | Expected path |
+| --- | --- | --- |
+| Existing media control | Protect current image/video loading and transitions. | Unchanged authored media, with its current priority/visibility rules. |
+| Shader selected, poster-only rollout mode | Verify content resolution, first paint, and transitions independently of the runtime. | Preset/entry poster; no Streak runtime load or replaced-video request. |
+| Shader selected, qualified hardware | Verify the actual product and its runtime cost. | Poster first, then the live field after eligibility and intro/transition settlement. |
+| Shader selected, ineligible or failed runtime | Verify graceful degradation. | Complete poster/background, usable content and navigation, no recurring GPU work or retry loop. |
+
+Keep content and layout fixed between poster/live shader cases. A video-to-shader
+comparison measures a source change, including removed video bytes; it does not
+prove one shader renderer is faster than another. For renderer comparisons,
+match the preset, seed, slot size, density, DPR, complexity, and capture history.
+Record visual differences instead of treating unequal quality as a free win.
+
+### Record with every run
+
+- Source commit and deployment URL, content version or fixture revision, visual
+  mode, preset/implementation revision, seed, overrides, and surface theme.
+- Device, OS, browser/version, viewport, DPR, actual renderer/backend, quality
+  tier, hardware versus software rendering, cache state, and throttling.
+- Initial HTML/script/media bytes and requests separately from deferred
+  graphics requests and total bytes after interaction. Include eligible and
+  ineligible paths; no Three on a route that never activates any canvas remains
+  a loading check, while a live shader route legitimately loads its runtime.
+- Poster request priority, paint/layout behavior, eligibility and first-live-frame
+  timing, and any hidden legacy media requests. Observe which element becomes LCP.
+- Frame intervals and dropped frames on real qualified hardware, main-thread
+  work, GPU timings where available, draw/simulation counts, active contexts,
+  resource counts, and plateau behavior. Report unsupported measurements as
+  unavailable, not zero.
+
+Use the durations, cycle counts, and quality thresholds from the feature plan
+rather than maintaining a second budget here. Reproduce software rendering as
+a fallback test, and run the live path on real hardware separately. Do not
+special-case Lighthouse or user agents to hide work from measurement.
+
+### Lifecycle and interaction sequence
+
+1. Capture cold load and the first qualified live frame. Confirm the initial
+   poster is complete before shader readiness and the live visual eventually appears.
+2. Scroll the field out of view and back; cover the page with the menu; enter
+   Ask; return through its shrink/unwipe; close the menu. Check resource admission
+   and draw/simulation activity at each settled state.
+3. Pause/resume, background the tab, change reduced-motion preference, and inject
+   runtime failure/context loss. Check visible fallback and absence of retry loops.
+4. Repeat route/menu/Ask cycles, including rapid interruption, back/forward,
+   hero handoff, and IndustryWork takeover. Check resource plateaus and matching
+   posters, crops, names, and cleanup.
+5. Compare media controls and shader modes against the feature's acceptance
+   table. Record failed gates with affected device/placement and a concrete next
+   action; a supported-device live failure cannot be closed as a fallback success.
+
+Save the baseline under `docs/perf/streak-field-baseline/` and subsequent stages
+under `docs/perf/streak-field-<phase>/`, with mode/device labels in each result.
+Keep compact capture data, frame/resource summaries, and reproduction notes in
+the repo following the existing raw-Lighthouse retention policy. Record both
+product and performance verdicts in the feature plan. Retest production field
+behavior after rollout using the same public-traffic hygiene as section 5.
 
 ## 6. Script sources
 

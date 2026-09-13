@@ -4,6 +4,42 @@ Date: 2026-09-03. Deployment audited: `57f6f47` on the production alias `preview
 
 ## 0. Status
 
+### Current direction, 2026-09-13
+
+Deliver **CMS-selectable Streak Field visuals for website heroes, previews, and composition blocks**, with named code presets, per-entry variation, graceful degradation, and cohesive existing navigation. The [Streak Field implementation plan](streak-field-media-plan.md) defines the feature and its acceptance gates. [Section 6](#6-execution-order-and-expected-impact) below defines the coordinated performance work. This direction supersedes the September 12 blanket WebGL deferral and the older removal-first recommendations.
+
+Performance is part of delivering the feature: optimized first-paint posters, deferred runtime bytes, bounded animation, reliable pause/failure handling, and no regression to media loading or navigation. A poster-only deployment is a rollout/fallback mode. Feature completion requires working live shader visuals on qualified hardware as well as complete fallback behavior. A shared canvas, WebGPU, vgpu, and live GPU page transitions are implementation options, not the end goal.
+
+The planned WebGL work is now scoped to supporting Streak Field. Measure the current WebGL2 effect as the baseline and reuse the persistent-root location where the shared-rendering prototype passes. Do not wait for an unspecified replacement project, create a second competing runtime, or rewrite all effects before shipping the pilot. Retained effects still count toward the total GPU and loading budget.
+
+The dated entries below are history, not a second execution queue. Sections 1–5 retain the original audit evidence and recommendations; shipped status and present priorities come from this section and sections 6–8. Old package upgrade targets, CMS inventories, forecasts, and lab numbers must be rechecked before implementation. No new performance measurements or application changes were made for this roadmap revision.
+
+### Verified repository state, 2026-09-13
+
+Checked against `de03f43` plus the documentation edits in this working tree. Application source, lockfile, installed packages, workflow files, and referenced paths were inspected. This confirms repository implementation, not what is currently deployed or selected in production Payload. No CMS query, production request, build, browser test, or benchmark was run during this verification.
+
+Lockfile and installed packages agree on Next 16.3.4, React 19.2.7, Payload 3.88.0, Three 0.182.0, R3F 9.6.1, Drei 10.7.7, PostHog JS 1.399.2, and Sentry Next.js 10.65.0. These are verified versions, not new upgrade recommendations.
+
+| Area | Current implementation and evidence | Roadmap status |
+| --- | --- | --- |
+| Streak Field | [Effect](../src/features/immersive/ui/streak-field.tsx), named presets, playground, and stories exist. Source usages are in the demo/stories; hero/block/menu configs and generated types have no shader visual selection. No `docs/perf/streak-field-*` report exists. | CMS feature and measured runtime baseline are **not implemented**. |
+| Persistent graphics | [GlobalCanvasRoot](../src/components/GlobalCanvasRoot/index.tsx) imports the canvas module eagerly; its `LazyGlobalCanvas` uses `Promise.resolve`. [GlobalCanvas](../src/lib/webgl/components/global-canvas/index.tsx) uses the WebGPU-first factory, while Streak Field owns a separate classic canvas. | Real import split, shared/local decision, and coordinated ownership remain **open**. |
+| Graphics admission | [GPU detection](../src/lib/webgl/utils/gpu-detection.ts) checks API/context availability and pointer policy. Streak Field has an intersection gate but no poster, first-frame callback, explicit hidden-document/menu pause, or software-renderer policy. | Feature lifecycle and fallback work remain **open**. |
+| Home lens and footer leak | [HeroBackground](../src/Home/hero/HeroBackground.tsx) waits for HeroBand settlement; the lens texture hook still invalidates on visible video frames. [ClosingLightLeak](../src/Footer/Closing/ClosingLightLeak.tsx) gates mounting but statically imports its effect. | Existing behavior is present. Idle-work and loading/coexistence improvements remain **open**; historical draw rates were not remeasured. |
+| Image delivery | [ImageMedia](../src/components/Media/ImageMedia/index.tsx) prefers CDN URLs, uses quality 90, and defaults `sizes` to `100vw`. [Next config](../next.config.ts) allows qualities 75/90, caps device sizes at 2560, and sets a one-year minimum optimizer TTL. | Core image fixes are **implemented**. Per-placement sizes and shared blur cleanup remain open. There is no per-call quality override in Media today. |
+| Video loading/posters | [VideoMedia](../src/components/Media/VideoMedia/index.tsx) keeps priority sources eager, gates default loops by visibility, and leaves controlled videos eager with metadata preload. Its native `poster` is still a raw URL; Carousel additionally renders an optimized Media poster overlay. | Video gating is **implemented**. Responsive native-video poster replacement remains **open**; do not describe every poster as unoptimized. |
+| Menu prefetch/warmup | [TakeoverMenu](../src/Header/Menu/index.tsx) sets `menuLinkPrefetch = open ? undefined : false`. Closed links disable prefetch; opening restores Next's default. `warmMedia` preloads image previews on button intent/open, skips videos, and does not call `router.prefetch` or prepare shaders. | Closed-menu fix is **implemented**. Any explicit route or shader preparation is new work. Keep the closed overlay laid out for current geometry measurements. |
+| Ask loading | TakeoverMenu imports MenuAsk; [FooterClosing](../src/Footer/Closing/FooterClosing.tsx) imports [ClosingAsk](../src/Footer/Closing/ClosingAsk.tsx), which imports `useAskChat` directly. These paths have no lazy chat boundary. | Ask split remains **open**. Footer work targets ClosingAsk, not the separate AskWidget component. |
+| Analytics | [PostHog](../src/providers/Analytics/PostHog.tsx) dynamically imports after environment/internal-traffic/consent checks and idle scheduling; canvas recording is disabled. AnalyticsProvider composes PostHog and Reb2b. | Loading/consent/internal-traffic logic is **implemented**. The historical PostHog 1.429.5 upgrade has **not landed** in this checkout. Remote project settings are unverified. |
+| Sentry | [Browser instrumentation](../src/instrumentation-client.ts) has no Replay integration but still configures console logging and `enableLogs: true`. [Shared options](../sentry.shared.ts) sample production traces at 0.2. | Replay removal is **implemented**. Production logging reduction and any further sampling change remain **open**. |
+| Layout and theme | [Frontend layout](../src/app/(frontend)/layout.tsx) gates AdminBar on draft mode and preconnects to the configured media host. [InitTheme](../src/providers/Theme/InitTheme/index.tsx) guards storage/matchMedia. SpeedInsights is still unconditional with no `beforeSend`. | AdminBar/preconnect/theme fixes are **implemented**. Speed Insights draft/internal filtering remains **open**. |
+| Client hints | Installed Payload `withPayload` appends `Accept-CH`, `Vary`, and `Critical-CH` on `/:path*`. Next config has no header scoping. | **Open**. A proposed fix must handle the wrapper's appended rule, not assume adding an admin-only rule removes it. |
+| Performance automation | Package scripts contain build/test/migration checks; the only checked-in GitHub workflow runs Payload jobs. The pre-push hook checks migrations. Capture scripts are examples in the runbook, not checked-in runnable files under `scripts/`. | CI bundle budgets and shader instrumentation are **not implemented**. |
+
+This table is the current source inventory. The execution stages below describe future work. Historical measurements remain useful baselines only when their deployment, content, and capture method are identified.
+
+### Earlier status and measurements
+
 2026-09-09, branch `perf/cold-start-1-3` (preview deploy first). A prod re-check that day found that none of the tier 1 items below had shipped except the menu `prefetch={false}`, and added two cold-path findings the original audit missed: every `/_next/static` URL carries `?dpl=<deployment>`, so the browser cache is empty after each deploy, and `<Image>` sources go through the Payload file route (a function answering `max-age=0`), so the optimizer serves `max-age=60` to browsers and re-fetches the origin per variant. Shipped in that branch:
 
 - Next 16.3.4: immutable content-addressed static assets (`/_next/static/immutable/*`, no `dpl` query) so chunks and fonts survive redeploys in the browser cache. The `experimental.viewTransition` flag no longer exists in 16.3; the integration is built in.
@@ -37,25 +73,27 @@ Branch `perf/video-gating-hero-priority` (2026-09-09) ships the next slice, veri
 
 Still open from tier 1: the rest of the bundle diet (P0-2, mainly the WebGL split, the Ask composer, and Sentry console logging in production), posters through `next/image` and real `sizes` on the blocks that pass none (P1-5), `Critical-CH` scoping (P1-8), Speed Insights draft-mode and internal-traffic filtering (section 7).
 
-2026-09-12: plan for the next slice. Nothing perf-related has merged since the `prod-www-video-gating` baseline (`7829a73`); the 22 commits since are Ask, analytics and UI work. Production numbers are unchanged from the table in `docs/perf/prod-www-video-gating/summary.md`: desktop 90 to 98, mobile 64 to 72, script 1.1 MB gzipped on every page.
+2026-09-12: plan for the next slice. Nothing perf-related has merged since the `prod-www-video-gating` baseline (`7829a73`); the 22 commits since are Ask, analytics and UI work. The stored `docs/perf/prod-www-video-gating/summary.md` baseline reports desktop 90 to 98, mobile 64 to 72, and about 1.1 MB gzipped of script on the measured routes. These are the earlier capture results, not a fresh production measurement.
 
-Decision: the WebGL half of P0-2 is deferred. A different WebGL technique is replacing the current global canvas and effect stack, so splitting `GlobalCanvasRoot`, `LightLeak` and the scroll gallery now would be thrown away. Do not touch `src/lib/webgl`, `src/features/immersive`, `ClosingLightLeak` or the tunnel until that lands; re-audit the three.js bytes afterwards against the tier 1 target (no `three` chunk on a page that never activates a canvas).
+September 12 decision, superseded September 13: the WebGL half of P0-2 was deferred pending a replacement technique. It is now part of the Streak Field delivery sequence in section 6. Loading boundaries, capability checks, lifecycle fixes, and necessary coexistence changes may be implemented there; avoid a separate cleanup of infrastructure that the selected runtime will replace.
 
-Everything else still open ships as one slice, `perf/tier1-non-webgl`, measured before and after with the runbook against `www.suits-sandals.com` (label the run `after-tier1-non-webgl`):
+The September 12 non-WebGL proposal was `perf/tier1-non-webgl`, measured before and after with the runbook (label `after-tier1-non-webgl`). Its remaining items can ship independently under section 6; the entire list is not a prerequisite for Streak Field:
 
 1. Ask composer split (P0-2). `TakeoverMenu` and `FooterClosing` render a static composer shell; the chat module (`useAskChat`, `@ai-sdk/react`, `ai`, zod) loads through `next/dynamic` on first intent: the menu button's existing `warmMedia` hover hook, and focus on the closing card's input. Must not change `CHAT_WIPE_*` timings, the preview-slot geometry the menu measures, or the closing band's `data-reveal="panel"` entrance. Verify: no zod or AI SDK chunk in the initial script list of a prerendered page; menu open and footer focus still land the first keystroke without a visible stall.
 2. Sentry in production (P0-2). Drop `consoleLoggingIntegration` and `enableLogs` from `src/instrumentation-client.ts` outside development; lower `tracesSampleRate` for public traffic. Error capture and `captureRouterTransitionStart` stay eager.
 3. Image pipeline (P1-5). Posters render through `next/image` (same `getCdnMediaUrl` source as `ImageMedia`) so they get `srcset` and the one-year optimizer cache; real `sizes` on MediaBlock, Carousel, showcase grid, testimonial and the centered-media hero (today they fall back to the `100vw` default and pick the widest candidate). Hero quality stays 90.
-4. `Critical-CH` and `Vary` scoped to `/admin` (P1-8) via `headers()` in `next.config.ts`; confirm `/admin` still renders the right theme server-side and public routes no longer send the hint.
+4. Proposed `Critical-CH` and `Vary` scoping to `/admin` (P1-8). Source verification on September 13 found that `withPayload` appends a catch-all rule after user `headers()`, so implementation must change the final composed header rules and verify public/admin responses, not only add an admin rule.
 5. Speed Insights hygiene (section 7). Do not render `SpeedInsights` in draft mode; filter team and admin traffic in `beforeSend` using the same internal-traffic signal the PostHog provider already applies (`5c2b7a8`), so field and product analytics agree on what "public" means. First public field read is 2026-09-16; land this before it.
 6. `posthog-js` to 1.429.5 (see the pending note above). The pnpm cooldown lifted 2026-09-11 18:22 UTC. Re-run the Vault media capture afterwards and confirm the recorder stops emitting an event per autoplay toggle on the looping case-study videos.
 7. CI bundle budget (P0-2 guardrail): a per-route gzipped script budget from the `next build` output so the Ask split cannot regress, set just above the post-slice number and tightened again after the WebGL work.
 
 Expected effect: roughly 120 KB gzipped off every page from the Ask split and Sentry, fewer image bytes on mobile from real `sizes`, one less first-visit round trip in Chrome, and clean field data from 09-16. Mobile LCP on Vault and home stays hero-mp4 bound until phase 5 (encoding) and the WebGL re-audit.
 
-2026-09-12, PageSpeed Insights read on `/` (report `vqjeu9zzdo`, Lighthouse 13.4.1 on Lightrider): desktop 59 with FCP 0.3 s, LCP 0.9 s, CLS 0, but TBT 4,410 ms, Speed Index 5.8 s, 8.6 s main-thread; mobile 64 with LCP 8.7 s, TBT 300 ms, matching the `prod-www-video-gating` baseline. The desktop TBT is not in our lab numbers (170 ms locally, 7 ms in the baseline) and is not a regression. Reproduced locally by forcing software WebGL plus a 4x CPU slowdown (TBT 2,520 ms, 20 long tasks, 2.5 s of "Other" attributed to the three.js chunk in back-to-back ~100 ms tasks); mobile under the same conditions stays at 190 ms. Cause: the home hero lens (`src/Home/hero/HeroBackground.tsx`, `RefractionMedia` with `HERO_LENS` over the 24 fps looping hero mp4) is `frameloop="demand"`, but `useBackdropTexture` in `glass-media-internals.ts` invalidates on every `requestVideoFrameCallback` while on screen, so the full-viewport canvas repaints 24 times per second indefinitely with the pointer nowhere near it (measured with a draw-call probe: 24 draws/s for 20 s, intro settled, unchanged after hover and leave). `useDeviceDetection().hasGPU` admits any WebGL context that is not coarse-pointer-and-no-hover and not reduced motion, so Lightrider's SwiftShader on a fine-pointer desktop profile qualifies and renders every frame on the CPU. Real desktops with a GPU do not pay this in TBT, but the loop is still 24 full-viewport shader passes per second for an undistorted image whenever the lens is at rest. Left to the WebGL rework (the effect is being replaced); the rework should (a) not repaint a video-backed lens while `uHover` is 0 and no proximity is active, letting the DOM video show through instead, and (b) treat a software renderer (`WEBGL_debug_renderer_info` naming SwiftShader, llvmpipe or Mesa) as no GPU. Other PSI desktop findings map to open items: "Had redirects, +125 ms" is the `Critical-CH` restart (P1-8, item 4 above; Lighthouse reports it as a same-URL redirect); render-blocking CSS 50 KB is P2-10; unused JS 335 KB is P0-2.
+2026-09-12, PageSpeed Insights read on `/` (report `vqjeu9zzdo`, Lighthouse 13.4.1 on Lightrider): desktop 59 with FCP 0.3 s, LCP 0.9 s, CLS 0, but TBT 4,410 ms, Speed Index 5.8 s, 8.6 s main-thread; mobile 64 with LCP 8.7 s, TBT 300 ms, matching the `prod-www-video-gating` baseline. The desktop TBT is not in our lab numbers (170 ms locally, 7 ms in the baseline) and is not a regression. Reproduced locally by forcing software WebGL plus a 4x CPU slowdown (TBT 2,520 ms, 20 long tasks, 2.5 s of "Other" attributed to the three.js chunk in back-to-back ~100 ms tasks); mobile under the same conditions stays at 190 ms. Cause: the home hero lens (`src/Home/hero/HeroBackground.tsx`, `RefractionMedia` with `HERO_LENS` over the 24 fps looping hero mp4) is `frameloop="demand"`, but `useBackdropTexture` in `glass-media-internals.ts` invalidates on every `requestVideoFrameCallback` while on screen, so the full-viewport canvas repaints 24 times per second indefinitely with the pointer nowhere near it (measured with a draw-call probe: 24 draws/s for 20 s, intro settled, unchanged after hover and leave). `useDeviceDetection().hasGPU` admits any WebGL context that is not coarse-pointer-and-no-hover and not reduced motion, so Lightrider's SwiftShader on a fine-pointer desktop profile qualifies and renders every frame on the CPU. Real desktops with a GPU do not pay this in TBT, but the loop is still 24 full-viewport shader passes per second for an undistorted image whenever the lens is at rest. September 13 action: include capability and idle-work handling in the Streak Field runtime/coexistence stage. A retained video-backed lens should not repaint while `uHover` is 0 and no proximity is active; let the DOM video show through. Known software renderers such as SwiftShader and llvmpipe should use fallback behavior when identified. Do not reject Mesa categorically, since it also supports hardware acceleration; unknown renderer identity requires conservative admission and runtime measurement. Other PSI desktop findings map to open items: "Had redirects, +125 ms" is the `Critical-CH` restart (P1-8, item 4 above; Lighthouse reports it as a same-URL redirect); render-blocking CSS 50 KB is P2-10; unused JS 335 KB is P0-2.
 
-## 1. Summary
+## 1. Original audit summary (2026-09-03)
+
+Historical snapshot. Several causes below have since been fixed; use the verified repository-state table for current implementation status. Original traffic and deployment descriptions are not claims about today's production site.
 
 The work pages are not slow because of rendering or interaction. TTFB (0.45s), INP (56ms), CLS (0.01) and FID (4ms) are all green. The pages are slow because of what they ask the browser to download in the first two seconds. Field P75 on desktop is FCP 4.65s and LCP 4.86s, and those two numbers being almost equal is the tell: first paint itself is being starved, and the hero paints as soon as anything paints.
 
@@ -71,7 +109,7 @@ A data caveat: the site is still `noindex` on a Vercel domain and `www.suits-san
 
 Lab confirmation (Lighthouse 12, desktop preset, fast machine, cold cache): performance 88, FCP 0.6s, LCP 2.1s with 67% of LCP time spent in render delay on the hero video, 23.5 MB transferred, 168 requests.
 
-## 2. What was measured
+## 2. What was measured in the original audit
 
 | Source | What it gave |
 |---|---|
@@ -125,7 +163,7 @@ For comparison, `/works` (RES 99) ships the same JavaScript but has 2 videos and
 
 The lab machine has a fast CPU and an unthrottled connection to the origin, which is why lab FCP is 0.6s. The field distribution is dominated by the same assets on ordinary networks and laptops, where 24 MB and 1 MB of script do not fit inside the first two seconds.
 
-## 3. How a work page loads today
+## 3. How a work page loaded in the original audit
 
 1. The HTML is a static prerender (`x-nextjs-prerender: 1`, CDN `HIT`), 35 KB gzipped. TTFB is fine. Chrome users pay one extra navigation round trip on their first visit because Payload's `withPayload` injects `Critical-CH: Sec-CH-Prefers-Color-Scheme` on every route (see finding 8).
 2. The head declares two font preloads, four stylesheets, one low-priority script preload and 30 async scripts. Stylesheets are the only render-blocking resources. The inline theme bootstrap sits after the stylesheets and sets `data-theme` before the body parses, which releases the `html { opacity: 0 }` rule (finding 9).
@@ -137,6 +175,8 @@ The lab machine has a fast CPU and an unthrottled connection to the origin, whic
 The route itself is in good shape: static params, one cached slug query shared by metadata and page, tag-based revalidation, related work resolved at build. Nothing here needs to move to the server; the problem is entirely on the client side of the wire.
 
 ## 4. Findings, ranked
+
+Historical evidence and recommendations from the original audit, with some dated follow-up notes. These are not all outstanding tasks. In particular, video gating, default image quality/sizes/CDN handling, closed-menu prefetch, AdminBar gating, and analytics loading have newer implementations recorded in section 0.
 
 Severity reflects impact on FCP and LCP for a first-time visitor on an ordinary connection.
 
@@ -185,7 +225,7 @@ Lighthouse reports 476 KB of that as unused on a fully loaded work page, and the
 Root causes
 - `src/lib/webgl/components/global-canvas/index.tsx` exports `LazyGlobalCanvas = dynamic(() => Promise.resolve({ default: GlobalCanvas }), { ssr: false })`. The module statically imports `@react-three/fiber`, `@react-three/drei`, the renderer factory and the store, so `Promise.resolve` of an already-imported component is not a code split. The root layout mounts it on every page. The canvas only activates behind `ImmersiveShell webgl`. Today that is the `/demo/immersive` playground and the `HighImpactHero` (`src/heros/HighImpact/index.tsx`), which tunnels `WebGlBackdropScene` (the original spinning torus knot) into the persistent canvas. The CMS still has that hero type live on all five expertise pages and three of the four audience pages, which is why `/expertise/[slug]` is the worst route on the site (RES 32). On a work page the canvas renders `null` after downloading and parsing about 1 MB raw of three.js.
 - `src/Footer/Closing/FooterClosing.tsx` renders `ClosingLightLeak`, which statically imports `LightLeak` from `@/features/immersive`. That file imports `@react-three/fiber` and `three` and mounts its own `<Canvas>` (a second WebGL context) when the closing band is uncovered. It is on every page that renders the closing band, which is every work page.
-- `src/Header/Component.client.tsx` statically imports the `TakeoverMenu`, which imports `MenuAsk`, which imports `useAskChat` (`@ai-sdk/react`, `ai`). `FooterClosing` does the same through `AskWidget`. The AI SDK pulls the full zod runtime. That is about 120 KB gzipped for a composer that is behind a closed menu and below the closing band.
+- `src/Header/Component.client.tsx` statically imports `TakeoverMenu`, which imports `MenuAsk`, which imports `useAskChat` (`@ai-sdk/react`, `ai`). The current footer path is `FooterClosing` → `ClosingAsk` → `useAskChat`; the earlier AskWidget reference is obsolete for that surface. The historical size estimate was about 120 KB gzipped; no current bundle size was measured in this verification.
 - `src/instrumentation-client.ts` registers `consoleLoggingIntegration` eagerly, with `enableLogs`. ~~It also registered `Sentry.replayIntegration()`, the heaviest Sentry integration.~~ Replay removed 2026-09-10, see section 0.
 - ~~`src/providers/Analytics/PostHog.tsx` imports `posthog-js` statically. Initialization is correctly gated on consent, but the SDK bytes are not.~~ Fixed 2026-09-10, see section 0.
 - The `@c15t/nextjs` consent manager is bundled with its full UI and its global stylesheet.
@@ -327,6 +367,8 @@ Sentry sends the session and the pageload transaction at ~500 ms (three `/monito
 
 ## 5. Perceived performance for a creative portfolio
 
+September 13 scope: retain the intent of these original suggestions, but apply the source-specific loading and fallback contracts in the Streak Field plan. Editorial removal of videos, hero-type changes, and a full media-encoding project are not prerequisites for the shader feature. Measure both cold loading and warm navigation; sustained animation and repeated route changes matter beyond the Lighthouse score.
+
 Real metrics will improve with the fixes above. These are the choices that make a heavy, media-led case study feel fast while it is still loading.
 
 1. **Poster first, motion second.** The hero should paint a still within the first few hundred milliseconds and start moving when the video is ready. Encode each loop so its first frame equals the poster, and start playback on `canplay` with a short crossfade or none at all. The reader sees a finished screen, then it starts to breathe. Today the reader sees the poster only when bandwidth allows and the video pops in whenever it arrives.
@@ -336,117 +378,104 @@ Real metrics will improve with the fixes above. These are the choices that make 
 5. **Use the transition budget for prefetch.** On a client navigation from `/works`, the `work-open` morph takes about a second. That second is when the destination hero poster should be fetched (on hover intent the way `warmMedia` does it), and when nothing else on the destination should be fetching. Wire non-hero video loading to the `ScrollReveal` `onComplete` or the transition end so the morph runs on an idle network.
 6. **Set a per-page media budget and show it to editors.** A case study should carry at most three or four loops, the hero no more than about 1.5 MB, inline loops well under 1 MB each. A small admin note on the Media collection (size, duration, bitrate after upload) makes the budget visible where the decision is made.
 7. **Sequence the closing band.** The curtain effect, the parallax and the light leak are the last things on the page; they should be the last things to load. Import the leak module when the gate marker enters the extended root, not with the page bundle.
-8. **Cold cache is the only cache that matters for the score.** Most visits that produce a Speed Insights sample are first visits to a case study from a link. Everything above assumes an empty cache; warm-cache navigation is already fast.
+8. **Measure cold load and warm navigation separately.** Cold captures expose first-visit transfer costs. Warm route changes, menu/Ask interaction, and sustained shader activity need their own checks; the original load audit does not establish their current performance.
 
 ## 6. Execution order and expected impact
 
-| Phase | Work | Effort | Expected field effect |
-|---|---|---|---|
-| 1. Stop the flood | Viewport-gated video source and playback in `VideoMedia`, `preload="none"` off-hero, `fetchpriority` and preload for the hero poster, `preconnect` to the media host, `prefetch={false}` plus intent prefetch for menu links, hide the closed overlay from layout | 1 to 2 days | Largest single move. Vault page from 24 MB to roughly 4 MB at load. LCP P75 should fall from ~4.9 s toward ~2.5 s, FCP with it |
-| 2. Bundle diet | Real code split for three, R3F and drei; lazy Ask composer; lazy Sentry Replay; dynamic PostHog; CI bundle budget | 2 to 3 days | About 600 KB gzipped less per page. Faster hydration, earlier reveals, RES into the 80s |
-| 3. Image and payload pipeline | Quality and `qualities`, valid `sizes` everywhere, posters through `next/image`, drop the shared blur, slim media props to client components, optimizer fetching from R2 directly | 2 days | 30 to 50% fewer image bytes, ~100 KB smaller HTML, less hydration parse. RES at or above 90 |
-| 4. Chrome and hygiene | `Critical-CH` scoped to admin, theme bootstrap hardened, Tailwind `@source not`, consent CSS scoped, header shrink without relayout, read-before-write in reveal shells | 1 to 2 days | Removes a first-visit round trip in Chrome, trims the render-blocking chain, reduces forced reflow during hydration |
-| 5. Video encoding and editorial budget | Re-encode inline loops at 720p with AV1 or HEVC alternates, trim to 4 to 6 s, per-page media guideline in the CMS | ongoing | Halves media bytes again for the heaviest pages; keeps the score stable as content grows |
+Current sequence, revised 2026-09-13. Phase numbers in older dated entries refer to the original audit sequence. The feature phases below refer to [streak-field-media-plan.md](streak-field-media-plan.md#implementation-phases).
+
+### Delivery sequence
+
+| Stage | Scope and dependency | Required outcome |
+| --- | --- | --- |
+| A. Baseline and shared contracts | Feature Phase 0. Pin source commit, content/fixtures, browser/backend, and device. Record media mode, shader poster mode, and live shader mode separately. | A baseline and a bounded runtime experiment. No open-ended dependency on another renderer project. |
+| B. First paint and scene hardening | Feature Phase 1. Optimized posters, real lazy import, first-frame/error handling, pause/visibility, and production-safe shader settings. | A hardcoded live field on qualified hardware, a complete poster fallback, and unchanged loading for media mode. |
+| C. Runtime ownership decision | Feature Phase 2. Compare shared rendering at the existing root with one admitted local Streak canvas. Include clipping, route lifecycle, existing effects, resource cleanup, and cold-load cost. | Choose the measured viable path. A failed shared-canvas experiment proceeds with the bounded local path where qualified; it does not trigger a whole-site graphics rewrite. |
+| D. CMS pilot | Feature Phase 3. Home hero, both Work Page hero layouts, Work Page menu preview, and Stacked/fullMedia block. Integrate validation, queries, posters, and existing handoffs. | Editors can select and publish Streak Field, vary presets/seed/allowed controls, and see live qualified hero/block visuals. Menu and repeated previews may use posters. |
+| E. Supported surface rollout | Feature Phase 4. Extend the same contract to remaining approved heroes, preview choices, and composition blocks. | Explicit live/poster/unsupported matrix, backward-compatible media, complete schema coverage, and passing performance/navigation checks. |
+| F. Optional enhancements | Feature Phase 5 and backend experiments. Exact still generation, live settled-menu previews, compatible morphs, TSL/WebGPU or vgpu. | Each enhancement earns its own visual and performance case. None blocks stages D or E. |
+
+Stages B and C include the WebGL portion of P0-2. Keep a lightweight registration/loading owner at the persistent root and import the heavy renderer only when eligible. Preserve the feature's consumer contract if ownership changes. Handle remaining eager imports from retained effects as focused loading/coexistence changes, not a separate redesign of those effects.
+
+If a gate fails, record the failing device/placement, cause, remedy, and next check in the feature plan. Reduce quality or use posters for that case. If no qualified device can run the pilot, keep the feature open; declaring every surface poster-only would miss the product goal. Do not lower visual quality beyond an approved look merely to reach a frame-rate number.
+
+### Independent performance work
+
+These items can ship before or during the feature sequence as separate, measurable changes. They are not an all-or-nothing prerequisite. Coordinate overlapping files, especially Media and TakeoverMenu, through their existing contracts.
+
+| Item | Keep doing | Boundary with Streak Field |
+| --- | --- | --- |
+| Ask composer loading | Split chat dependencies on actual intent, preserve the static shell and first keystroke. | Keep preview-window geometry, cover/resize timing, Escape/close behavior, and explicit preview-versus-chat state stable. GPU work pauses while Ask owns the slot. |
+| Image pipeline | Real responsive sizes and optimized posters through the current CDN/Next Image path. | Streak posters reuse this path. Preserve actual hero priority and dimensions; do not create a second poster-delivery system. |
+| Sentry and analytics | Finish production logging/sampling and field-data hygiene, preserving error capture and consent behavior. Verify any package update against the installed version at implementation time. | Keep canvas recording off. Do not reintroduce Sentry Replay from the historical checklist. Report shader failures through existing monitoring without per-frame event traffic. |
+| Client hints and measurement | Scope unnecessary public hints; exclude draft/internal field traffic using the supported API. | Account for `withPayload` appending its catch-all header rule after user configuration. Verify final public/admin headers; an additional admin-only rule alone does not remove the public rule. |
+| CI bundle checks | Establish budgets from comparable production output, then tighten after each measured improvement. | Record initial application bytes and deferred graphics bytes separately. Do not treat permitted live shader bytes as a regression merely because the original audit assumed an inert work page. |
+| Video encoding and media payloads | Optimize retained video surfaces and excessive serialized data when measurements justify it. | Do not require re-encoding all media or removing authored loops before the shader pilot. Shader mode must avoid fetching the replaced video at all. |
+
+Keep the benefits already recorded in section 0: CDN image resolution, video gating, hero poster loading, disabled menu auto-prefetch, draft-only AdminBar, and consent-gated analytics. Revalidate them; do not count them again as future savings.
+
+### Performance gates and scope limits
+
+The numeric gates and device policies live once in the feature plan's [acceptance section](streak-field-media-plan.md#acceptance-and-measurement) and [runtime budgets](streak-field-media-plan.md#budgets-and-preparation). This roadmap schedules those checks rather than creating a competing set of thresholds.
+
+- First paint and navigation must work from the poster without waiting for GPU initialization. Qualified live visuals must still become visible after their intro/transition settles; hiding them indefinitely is not an optimization.
+- No Streak runtime fetch on ineligible/poster-only paths. No Three chunk on a route that never activates any canvas remains the loading-boundary target. A qualified shader page may load a measured deferred graphics bundle; report both initial and total-session bytes.
+- One live Streak Field is the initial ceiling. Count retained lenses, light leaks, galleries, canvases, and simulation passes in the same report. Hidden, offscreen, paused, and occluded fields perform no draws or simulation.
+- Match preset, seed, slot dimensions, density, DPR, and complexity when comparing renderers. Compare appearance as well as frame behavior. Attribute gains from swapping a video to a shader separately from renderer optimization.
+- Keep original media and navigation behavior. Defaulting every visitor to a still, retiring effects, changing hero layouts, or removing imagery to improve a score is not feature completion.
+- Shared ownership is preferred only where proven. A mandatory TSL port, generic shader registry, new router, universal FBO transition system, and migration of every existing effect are outside the delivery prerequisite.
+
+The old forecasts of 600 KB savings, 350–400 KB total script, fixed effort, and guaranteed RES improvement are historical estimates, not release promises. Measure the post-change result, preserve the qualified live feature, and investigate feature-attributable regressions against the agreed baseline.
 
 ## 7. Verification
 
-Repeatable lab captures (Lighthouse medians, cold-cache media capture, theme guard) are scripted in [performance-measurement.md](performance-measurement.md); results live under `docs/perf/<label>/`. Baseline `before-video-gating` was taken against prod on 2026-09-09.
+Use [performance-measurement.md](performance-measurement.md), including its Streak Field procedure. The feature plan is authoritative for acceptance thresholds. Store results under `docs/perf/<label>/` and record the source/content/backend configuration with every run. This revision contains no new benchmark results.
 
-- Lab, before and after each phase: Lighthouse desktop and mobile against `www.suits-sandals.com/works/vault-workforce-screening` (production since 2026-09-09; earlier runs used the `preview.suits-sandals.com` alias) (the heaviest page) and `/works/adacore` (image hero). Targets for the Vault page after phase 2: under 5 MB transferred at load, under 60 requests, under 400 KB gzipped of script, LCP under 2.0 s in the desktop preset, no forced reflow attributed to hydration.
-- WebPageTest with a 4G profile and a mid-range laptop CPU profile, filmstrip on, to confirm the poster-first hero paints before 1.5 s.
-- Field: Speed Insights per route after seven days of traffic on the same domain. Watch the LCP element attribution flip from `<video>` to the poster image.
-- Measurement hygiene: do not render `SpeedInsights` in draft mode (live preview loads should not sample), and filter internal traffic with the component's `beforeSend`. `www.suits-sandals.com` cut over from Webflow on 2026-09-09; field numbers before that date describe internal and client traffic on the Vercel alias and need a fresh baseline.
-- Storybook: a video-gating story for `VideoMedia` (poster only, then playing on intersection) and a reduced-motion pass on the reveal shells, per the existing visual-verify workflow.
+For each stage:
 
-## 8. Lowest-risk first pass
+1. Run comparable production-build preview captures on Home, Vault, and Adacore. Keep the existing media configuration as a control and add separately labeled shader fixtures/configurations. Run cold-cache Lighthouse desktop/mobile medians for load cost; do not use a score alone to judge GPU quality.
+2. Inspect first-paint poster requests and sizing, replaced-video requests, initial versus deferred chunks, first live frame, and actual GPU admission. A software-renderer run passing through posters proves fallback, not live performance.
+3. Run real-hardware animation and lifecycle checks from the feature plan, including hidden tab, menu/Ask occlusion, pause, repeated navigation, context loss, and resource plateaus. Record the selected backend and visual quality tier.
+4. Verify current Media tests, Storybook fixtures, reduced motion, both hero layouts, nested Stacked blocks, and cold-cache menu/IndustryWork handoffs. Preserve existing motion constants unless a specific bug requires a reviewed change.
+5. On a production rollout, compare public field data after a sufficient collection window on the same domain. Exclude draft/internal traffic. Observe the actual LCP element; a shader poster can be a valid replacement for the earlier video candidate.
 
-This section answers a narrower question: which of the fixes above can ship without touching the view transitions, the GSAP reveal and menu choreography, Lenis, the cursor, or any shader, and what has to stay exactly as it is for the light leak to keep working.
+A live pilot passes both halves: editors can author the intended feature and the qualified render path meets its performance/behavior gates. Poster-only mode can pass fallback checks and safely precede live rollout, but cannot close the live milestone. Unrelated performance debt gets a separate follow-up; defects in first paint, navigation, resource safety, or the feature's own budget keep the affected live rollout gated.
 
-### 8.1 The spinning backdrop is still live, and the light leak does not depend on it
+## 8. Scope boundaries for implementation
 
-The persistent 3D object from the start of the project is `WebGlBackdropScene` (`src/features/immersive/ui/webgl-backdrop-scene.tsx`): an indigo torus knot rotating on the global orthographic canvas. It is no longer on the home page or the work pages, but it is not gone:
+### Existing effects and the old spinning backdrop
 
-| Where | Status |
-|---|---|
-| `src/heros/HighImpact/index.tsx` | Still renders `<WebGLTunnel><WebGlBackdropScene /></WebGLTunnel>` inside `ImmersiveShell webgl`, which activates the layout-level `GlobalCanvas` and its WebGPU-first renderer |
-| CMS, `hero.type = highImpact` | Live on all five published expertise pages and on three audience pages (`growth--repositioning-brands`, `healthtech-life-sciences-branding`, `technical-b2b-branding`). No `pages` documents use it |
-| Production HTML | `/expertise/brand-positioning-messaging` renders the HighImpact hero markup; the canvas mounts client-side on load |
-| Session behaviour | `isActivated` never resets, so once a visitor lands on an expertise page the GL context lives for the rest of the session; other routes only hide it and pause its frame loop |
+The earlier source review found `WebGlBackdropScene` in HighImpact heroes and the demo, with LightLeak and several other effects owning separate canvases. That ownership evidence is useful when testing coexistence. The historical CMS counts are not a current content inventory.
 
-Speed Insights agrees: `/expertise/[slug]` scores 32, the lowest route on the site.
+Do not switch published hero types or remove the spinning backdrop as a performance-only prerequisite. A real loading boundary can defer the renderer even when some routes still legitimately activate it. If a page adopts Streak Field, replace its visual deliberately through the supported CMS choice and retain the existing media fallback data. Changes to other authored visuals need their own product rationale.
 
-What the light leak actually needs, verified in `src/features/immersive/ui/light-leak.tsx`:
+Retain current effects unless the selected Streak runtime requires a focused compatibility, loading, pause, or disposal change. Preserve the demo's ability to exercise those effects and avoid dead imports from retired integrations. No blanket prohibition prevents necessary work in `src/lib/webgl`, `src/features/immersive`, or the tunnel within this feature sequence.
 
-- Its own small `<Canvas>` from `@react-three/fiber` with the classic WebGL renderer, a GLSL `ShaderMaterial`, `useFrame`, `useThree`.
-- `useDeviceDetection` (GPU and reduced-motion gate), `CANVAS_RESIZE`, `resolveTuning`, the excite selector and its shader module.
-- Nothing from the global canvas: no tunnel, no store, no WebGPU renderer, no `RAF`, no `Preload`. The file header says so explicitly (the global canvas prefers WebGPU, where raw GLSL is unsupported).
+### Preserve interaction contracts
 
-The same is true of every other shipped effect: `RefractionMedia` (home hero lens), `DispersionMedia`, `ScrollGallery`, `ChromaSplitText`, `FloatingCards` and the GL headings all mount their own canvas. The only consumers of the global canvas and tunnel are the HighImpact hero and the demo playground.
+- Keep HeroBand intro gating, measurable media/poster targets, real DOM poster sources for cloning, and current menu/hero handoff cleanup.
+- Keep Ask's preview geometry, cover and resize sequence, keyboard behavior, and first-input handling. Shader admission follows explicit state and settlement, not an arbitrary timeout.
+- Keep Section/RevealSection, BlockGrid, `bare`, and current pinned/reveal masks. Test a live placement before adding it to the support matrix; posters are appropriate during transformed transitions.
+- Preserve the normal video source/playback contracts and original uploads when a visual switches modes.
+- Do not warm every graphics module on idle. Prepare only eligible near-visible content or one likely destination, according to the feature's bounded preparation policy.
 
-So retiring the spinning backdrop is safe for the light leak by construction, and it is the single change that lets the three.js chunks leave the layout bundle. Two ways to do it, lowest risk first:
+### Work that stays separate
 
-1. **Content only.** Switch the eight documents from `highImpact` to `mediumImpact` in the admin. No code, no deploy, reversible per page. The dark hero, media and links stay; the knot goes. This is worth doing today regardless of the code path.
-2. **Code.** Remove the `WebGLTunnel` block from `HighImpactHero` and drop the `webgl` flag on its `ImmersiveShell`, keeping the dark theme, media and layout. Then the only activator left is `/demo/immersive`, and `GlobalCanvasRoot` can become a real split (dynamic import of the canvas module when `isActivated` flips). Keep `WebGlBackdropScene` and the canvas infrastructure in the repo for the demo route and future backdrops; nothing about the technique is lost.
+Header geometry redesign, wholesale reveal/scroll replacement, CSS pruning, blanket image-quality reductions, and an editorial reduction of case-study media remain separate work. They can proceed when independently justified, but do not enter the Streak critical path merely because an old audit listed them.
 
-Neither step touches `view-transition.css`. The `.vt-global-canvas` rule simply matches nothing when the canvas is absent.
-
-### 8.2 Tier 1: no visual or motion change, ship first
-
-Each item changes bytes or request timing only. None alters DOM order, class names, timing constants, or what the reveal shells, transitions or shaders see.
-
-| Change | Where | What it must not touch | Risk |
-|---|---|---|---|
-| Retire the spinning backdrop (8.1, content first) | CMS hero type, then `HighImpact/index.tsx` | Keep `ImmersiveShell`, tunnel, store and `WebGlBackdropScene` files for the demo route | Very low. The hero keeps its layout; only the knot disappears |
-| Lazy-load the light leak module | `src/Footer/Closing/ClosingLightLeak.tsx` | The `open` gate, `LIGHT_LEAK_PAPER` preset, theme switching, all `LightLeak` defaults and the shader | Very low. The component already mounts only when the gate marker enters; wrapping the import in `next/dynamic` (no SSR) moves the three.js download to that same moment. Warm the chunk on idle after load so the leak is never late at the curtain |
-| Lazy-load the Ask composer | `src/features/ask/MenuAsk.tsx` consumers in `Header/Menu/index.tsx` and `FooterClosing.tsx` | The composer's wipe timings (`CHAT_WIPE_*`) and the preview-slot geometry the menu measures | Low. The menu already warms hover media on button intent; load the chat module on the same signal and on composer focus in the footer card. Render the card shell statically so the closing band's layout and `data-reveal="panel"` entrance are unchanged |
-| Lazy Sentry Replay, dynamic PostHog import | `src/instrumentation-client.ts`, `src/providers/Analytics/PostHog.tsx` | Error capture, consent gating, `captureRouterTransitionStart` | Very low. The installed SDK exports `lazyLoadIntegration`; PostHog init is already inside a consent effect, so the `import()` goes there |
-| Video source and playback gating for non-hero videos | `src/components/Media/VideoMedia/index.tsx` | The hero: keep it eager and unchanged, because the takeover menu clones the first media inside `[data-hero-media]` and reads its `readyState` for the handoff. Carousel keeps its own controller | Low. Poster paints exactly as today; the `<video>` gets its source one to two viewports before it enters and plays on intersection. The `data-reveal="media"` clip masks wrap the container, not the source, so the wipe is unchanged. Pinned shells (featured work) stay in the viewport while pinned, so observer-driven play works there too |
-| `fetchpriority="high"` on the hero media, `preconnect` to the media host, `<link rel=preload>` for the hero poster | `Media` props on both case-study heroes, root layout head | Nothing else | Very low. Attribute-only |
-| Valid default `sizes`, real `sizes` on blocks that pass none | `ImageMedia` default, MediaBlock, Carousel, showcase grid, testimonial, centered-media hero | The `srcset` candidates stay; only which one the browser picks changes | Very low. Chromatic will not diff (Storybook fixtures use fixed URLs) |
-| Menu links `prefetch={false}`, prefetch on menu-button intent instead | `Header/Menu/index.tsx`, `CMSLink` passthrough | The hero handoff's `router.push` (it runs after the traveler animation, which covers a fetch) and the `warmMedia` intent hook, which is the right place to add `router.prefetch` | Low. First open after a cold load may fetch on click instead of instantly; prefetching on hover of the menu button removes even that |
-| Scope Payload's `Critical-CH` and `Vary` to `/admin` | `next.config.ts` `headers()` | Nothing on the frontend uses the hint | Low. Header only; verify `/admin` still renders the right theme server-side |
-| Guard the theme bootstrap | `src/providers/Theme/InitTheme/index.tsx` | The stored-preference logic | Very low. `try`/`catch` around the storage read plus a fallback attribute |
-| Admin bar only with a Payload cookie | `src/app/(frontend)/layout.tsx` | Draft mode and live preview | Very low. Cookie check on the server; the bar still renders for logged-in editors |
-
-Expected effect of Tier 1 alone: the layout bundle loses three.js, drei, R3F, the AI SDK, zod, Replay and PostHog (roughly 600 KB gzipped); the Vault page stops fetching 20 MB of video at load; 80 prefetches disappear from the LCP window. That is the bulk of the field gap, with no animation code touched.
-
-### 8.3 Tier 2: motion-adjacent, ship behind the demo pages and Chromatic
-
-These change how or when motion code runs, not what it does. They deserve the visual-verify pass (`/demo/transitions`, reduced-motion and motion Storybook screenshots) before merging.
-
-- Read-before-write in `ScrollReveal` and `WorkIntroSection`: gather `getBoundingClientRect` for every target first, then apply `gsap.set`. Same timelines, same tuning, fewer forced reflows.
-- Share one `IntersectionObserver` across reveal shells. Same gate semantics (`enterOffset` as a root margin), one observer.
-- Gate a media wipe on `load` or `canplay` as well as intersection, so a clip mask never wipes onto an empty frame. This is a perceived-quality gain that also removes pressure to load everything early.
-- Warm the light leak and scroll gallery chunks on idle after LCP, so their first mount never waits on the network.
-
-### 8.4 Tier 3: not part of the low-risk pass
-
-Skip these for now; each interacts with geometry that the menu docking, the pinned shells or Lenis measure.
-
-- `content-visibility: auto` on bands (changes intrinsic heights that ScrollTrigger and the curtain gate read).
-- Changing how the header bar shrinks (`--header-bar-height` feeds the menu's docking geometry and the page frame padding).
-- Removing the global canvas infrastructure outright (the demo route uses it, and future backdrops may).
-- Tailwind `@source not` pruning (safe in principle, but it needs a Chromatic run to prove no shipped class was only discovered through a story).
-- Image quality changes below 90 on the hero (safe technically, but a taste decision for a portfolio; start with inline imagery).
-
-### 8.5 How to prove nothing broke
-
-- `/demo/transitions` and `/demo/immersive` still run every reveal, the scramble, the lens and the light leak; the demo route still activates the global canvas.
-- Storybook reduced-motion and motion passes for `FooterClosing` (light leak mounts when the curtain opens, in both themes), `VideoMedia` (poster, then playback on intersection), the takeover menu (hero handoff still completes on a cold cache), and the case-study heroes.
-- Manual: open the menu on a cold load, hover a work link, click through; the handoff should be identical. Navigate `/works` to a case study and back: the `work-open` morph and the mask reveals are unaffected because nothing in `view-transition.css` or `DirectionalTransition` changes.
-- Lighthouse on the Vault page: script transfer under 450 KB gzipped, media under 5 MB at load, no `three` chunk in the initial script list, LCP element still the hero.
+Schema implementation follows the feature plan and repository migration rules. This roadmap revision changes no schema and requires no migration.
 
 ## Appendix A. Files referenced
 
 | Area | Files |
 |---|---|
 | Route | `src/app/(frontend)/works/[slug]/page.tsx`, `src/utilities/slugRoute.ts`, `src/app/(frontend)/layout.tsx`, `src/app/(frontend)/template.tsx` |
-| Media | `src/components/Media/index.tsx`, `src/components/Media/ImageMedia/index.tsx`, `src/components/Media/VideoMedia/index.tsx`, `src/cssVariables.ts`, `src/collections/Media.ts`, `src/utilities/getMediaUrl.ts`, `next.config.ts` (`images`) |
+| Media | `src/components/Media/index.tsx`, `src/components/Media/ImageMedia/index.tsx`, `src/components/Media/VideoMedia/index.tsx`, `src/collections/Media.ts`, `src/utilities/getMediaUrl.ts`, `next.config.ts` (`images`) |
 | Heroes and blocks | `src/heros/CaseStudyHeroCenteredMedia.tsx`, `src/heros/CaseStudyHeroLandscape.tsx`, `src/blocks/case-study/RenderCaseStudyBlocks.tsx`, `src/blocks/case-study/RevealSection.client.tsx`, `src/blocks/full-media/FullMedia.tsx`, `src/blocks/MediaBlock/Component.tsx`, `src/blocks/shared/media-showcase-grid.tsx`, `src/blocks/Carousel/playback.ts`, `src/blocks/featured-work/FeaturedWorkList.client.tsx` |
 | Reveal and motion | `src/shared/ui/scroll-reveal/scroll-reveal.tsx`, `src/shared/ui/reveal-section/RevealSection.tsx`, `src/sections/WorkIntro/Section.client.tsx`, `src/app/(frontend)/globals.css` (`.reveal-section`, `html { opacity: 0 }`) |
 | Chrome | `src/Header/Component.client.tsx`, `src/Header/Menu/index.tsx`, `src/Header/getMenuContent.ts`, `src/Footer/Closing/FooterClosing.tsx`, `src/Footer/Closing/ClosingLightLeak.tsx`, `src/Footer/Closing/ClosingMedia.tsx`, `src/components/SiteChrome/index.tsx`, `src/components/AdminBar/index.tsx` |
 | WebGL and immersive | `src/components/GlobalCanvasRoot/index.tsx`, `src/lib/webgl/components/global-canvas/index.tsx`, `src/lib/webgl/utils/create-renderer.ts`, `src/features/immersive/ui/light-leak.tsx`, `src/features/immersive/ui/scroll-gallery.tsx` |
-| Ask | `src/features/ask/MenuAsk.tsx`, `src/features/ask/AskWidget.tsx`, `src/features/ask/useAskChat.ts` |
+| Ask | `src/features/ask/MenuAsk.tsx`, `src/Footer/Closing/ClosingAsk.tsx`, `src/features/ask/AskWidget.tsx` (separate reusable surface), `src/features/ask/useAskChat.ts` |
 | Providers and analytics | `src/providers/index.tsx`, `src/providers/SmoothScrollProvider.tsx`, `src/providers/Theme/InitTheme/index.tsx`, `src/providers/Analytics/PostHog.tsx`, `src/providers/Consent/index.tsx`, `src/features/cursor/CustomCursorProvider.tsx`, `src/instrumentation-client.ts`, `sentry.shared.ts` |
 | Headers | `node_modules/@payloadcms/next/dist/withPayload/withPayload.js` (`Accept-CH`, `Critical-CH`, `Vary`) |
 

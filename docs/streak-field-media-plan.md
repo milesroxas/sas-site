@@ -1,10 +1,12 @@
 # Streak Field as website media: implementation plan
 
-Status: proposed, not implemented. Reviewed 2026-09-13 against `1e7d9e6` in `sas-site`.
+Status: proposed, not implemented. Initially reviewed 2026-09-13 against `1e7d9e6`; source claims rechecked against `de03f43` plus the current documentation edits in `sas-site` on the same date.
 
 This supersedes the September 9 plan reviewed at `4e838d2`, including its later shared-canvas revision, for implementation in this repository. The original discussion is [Shader Transition Plan](https://chatgpt.com/c/6aa20240-af6c-83ea-89ef-d39470587a7e). This review compared the earlier plan, current source, changes since that commit, the performance roadmap, and primary framework documentation. No new browser smoke test, production benchmark, or GPU prototype was run. Historical performance results below are evidence from the repo's audit, not measurements from this review.
 
-Reviewed package declarations: Next.js 16.3.4, React 19.2.7, Payload 3.88.0, Three.js 0.182.0, R3F ^9.6.1, Drei ^10.7.7. Recheck resolved dependency versions when implementation begins.
+Verified lockfile and installed versions: Next.js 16.3.4, React 19.2.7, Payload 3.88.0, Three.js 0.182.0, R3F 9.6.1, Drei 10.7.7. Recheck resolved dependency versions when implementation begins.
+
+Current feature status: the Streak Field effect, named presets, playground, and stories exist. Current source usages are demo/story paths. Hero, block, and menu fields remain media uploads; shader selection, its generated types, the visual adapter, poster-generation workflow, and shared Streak runtime are proposals. No shader benchmark report exists under `docs/perf/`. See the [verified repository inventory](performance-audit-work-pages.md#verified-repository-state-2026-09-13) for implemented versus pending performance work. This source check does not verify live Payload content or the current production deployment.
 
 ## Decision
 
@@ -21,7 +23,9 @@ One animated Streak Field is the initial ceiling across the public document. Tha
 
 ### Coordination with the performance roadmap
 
-[The September 12 performance decision](performance-audit-work-pages.md#0-status) defers splitting the old WebGL stack because a different technique is expected to replace it. This plan does not silently cancel that decision. Phase 0 must establish whether this Streak Field work is that replacement or must integrate with a separately chosen renderer. Until that is resolved, the content contract, poster work, fixtures, and benchmark design remain useful independently of backend selection. The WebGL2 path below is the baseline prototype, not authorization to perform a second competing rewrite.
+[The September 13 performance direction](performance-audit-work-pages.md#0-status) aligns the WebGL work with this feature and supersedes the indefinite replacement deferral. There is no dependency on an unspecified replacement project. Use the current WebGL2 Streak Field as the baseline; decide shared versus bounded local ownership through Phase 2. Integrate loading, capability, lifecycle, and necessary coexistence changes into this sequence. Independent Ask, image, and telemetry improvements can ship without blocking it.
+
+The feature plan owns functionality and numeric acceptance gates; the performance roadmap owns scheduling and scope boundaries; the measurement runbook owns capture procedure. Update them together when a decision changes. A poster-only pilot or a better Lighthouse score does not complete the feature: completion requires CMS-selected live Streak Field on qualified hardware in the supported hero/block placements, preset-based previews, per-entry variation, reliable existing transitions, and graceful fallback. Optional live menu previews, continuous morphs, and backend experiments cannot delay that outcome.
 
 ## What changed, and what did not
 
@@ -33,7 +37,7 @@ The shader and `src/lib/webgl` have no source diff between `4e838d2` and this re
 | Image delivery | [ImageMedia](../src/components/Media/ImageMedia/index.tsx) uses `getCdnMediaUrl`, versioned media URLs, Next Image, quality 90, and `sizes`. | Shader posters must use this pipeline or an equivalent optimized static-image path. Do not regress to full-size Payload file URLs. |
 | Video delivery | [VideoMedia](../src/components/Media/VideoMedia/index.tsx) distinguishes priority heroes, viewport-gated loops, and controller-owned videos. | Leave media mode's loading behavior intact. Shader mode must not mount the old video invisibly behind its poster. |
 | Ask in the menu | [PreviewSlot](../src/Header/Menu/PreviewSlot.tsx) expands for chat; [TakeoverMenu](../src/Header/Menu/index.tsx) owns cover, resize, exit, and preview transitions. | A settled menu is not necessarily a visible media slot. Suspend any future live preview throughout Ask and both directions of its cover/resize animation. |
-| Menu interaction | Current-page rows are disabled and hover media is readiness-gated with stale-intent handling. | Shader preparation must obey the same eligibility and cancellation rules. Do not warm disabled/current-page rows or all links at once. |
+| Menu interaction | Current-page rows are disabled and hover media is readiness-gated with stale-intent handling. Closed links use `prefetch={false}`; open links restore Next's default. Button-intent `warmMedia` loads image previews, not routes, videos, or shaders. | New shader preparation must obey eligibility and cancellation rules. Its bounded successor policy must not copy the existing whole-preview-image warmup loop. |
 | Featured work | [FeaturedWorkList](../src/blocks/featured-work/FeaturedWorkList.client.tsx) now uses pinned wipes, parallax, scale, and dimming. | Use shader posters in these frames initially. A fixed scissor view will not automatically reproduce ancestor transforms, masks, or opacity. |
 | Industry work | [IndustryWorkClient](../src/blocks/IndustryWork/Component.client.tsx) arms its shared-element name at click time to avoid stale duplicate names. | Retain that behavior. Static poster transitions must not remount the live scene just to change a ViewTransition name. |
 | Performance evidence | [Performance audit](performance-audit-work-pages.md#0-status) records a video-backed lens repainting about 24 times/second and software WebGL causing heavy desktop main-thread work. | Successful context creation is insufficient admission. Test software rendering and verify idle draw counts, not only `frameloop="demand"`. |
@@ -133,7 +137,7 @@ Provide a keyboard-accessible pause/resume control for sustained automatic motio
 
 Reuse the persistent position occupied by [GlobalCanvasRoot](../src/components/GlobalCanvasRoot/index.tsx). Replace its eager import with a thin client owner and an actual dynamic import during the coordinated WebGL rework. Keep the owner outside route templates. Do not introduce another router, scroll library, or frame clock.
 
-For the classic baseline, choose WebGL2 before renderer creation and keep that choice fixed for the document lifetime. Do not switch global backends every time a GLSL slot appears. Verify the existing `HighImpactHero`/`WebGlBackdropScene` and demo consumers against the choice. If a separately planned runtime supersedes this owner, implement the same visual-slot contract there.
+For the classic baseline, choose WebGL2 before renderer creation and keep that choice fixed for the document lifetime. Do not switch global backends every time a GLSL slot appears. Verify the existing `HighImpactHero`/`WebGlBackdropScene` and demo consumers against the choice. Any later backend change implements the same visual-slot contract and must justify its cost with measurements.
 
 Separate `FieldScene` from the standalone demo wrapper. Slots register stable identity, DOM bounds, visual descriptor, visible/occluded state, and priority. Registration cleanup is idempotent and reference-counted; it cannot turn off other consumers. Scene persistence is explicit: retain only the admitted scene and any bounded prepared successor, not every visited route's scene.
 
@@ -200,11 +204,11 @@ Retarget an interrupted morph from current displayed values and ignore stale cal
 
 ## Implementation phases
 
-Each phase ends with reviewable evidence and a recorded outcome here. A gate that fails narrows live rendering to posters or the measured fallback; it does not justify dropping first-paint or navigation requirements.
+Each phase ends with reviewable evidence and a recorded outcome here. A gate that fails narrows live rendering to posters or the measured fallback for the affected device/placement; it does not justify dropping first-paint or navigation requirements. If all qualified pilot devices remain poster-only, the live feature remains incomplete and the failing gate needs a concrete follow-up. Unrelated performance backlog items do not become new release prerequisites.
 
 ### Phase 0: align ownership and establish baseline
 
-- Resolve the replacement note in the performance roadmap and record the chosen runtime owner. Recheck the current branch and any pending WebGL work before editing it.
+- Follow the September 13 roadmap decision: this work owns the Streak Field runtime changes. Recheck the current branch for overlapping work, then record baseline ownership and the shared-rendering experiment; do not reopen the superseded unspecified-replacement dependency.
 - Use [performance-measurement.md](performance-measurement.md) for production/preview measurements, with `/`, Vault, and Adacore as controls. Add a shader fixture route/story for equal-size drift, topography, and paper comparisons.
 - Record cold and warm loading, real-hardware frame behavior, context/draw counts, idle/hidden work, and software-WebGL fallback. Keep existing audit figures labeled historical.
 - Fix the feature's scope and acceptance thresholds before optimization. No CMS schema is required in this phase.
