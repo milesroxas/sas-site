@@ -169,10 +169,10 @@ Phases 1 and 2 can ship together in one migration if built in one branch. Phase 
 
 ## Open questions
 
-- `partial` detection: phrase match or one classification call? Start with phrase match, revisit after 200 answers.
-- Rated-row retention: export or extend? Affects `ASK_NOTICE` copy.
-- Grouping storage: column on `ask_questions` or a sibling table? Sibling keeps the collection's own schema Payload-managed.
-- Do we want the rating UI on all three surfaces (page, menu, footer closing band) or the page only for v1?
+- `partial` detection: **decided.** Structural (`askOutcome()`): a grounded reply that ended in a handoff other than `no_answer`. Not phrase match, no classification call.
+- Rated-row retention: export or extend? Still open; default remains export. Rated rows expire with the rest. Affects `ASK_NOTICE` if extended.
+- Grouping storage: column on `ask_questions` or a sibling table? Still open; not shipped.
+- Rating UI on all three surfaces: **decided.** All three (page, menu, closing band).
 
 ## Checklist before starting any phase
 

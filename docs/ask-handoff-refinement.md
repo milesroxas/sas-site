@@ -212,7 +212,7 @@ The tool description, every reason's wording, and both prompts now exclude quest
 | How much would a new website for my startup cost? | 4 | `estimate` |
 | Can I talk to someone on the team? | 4 | `person` |
 
-The three chips that produced the `project` card in the audit now come back grounded with no offer.
+The three chips that produced the `project` card in the audit now come back grounded with no offer. The live chips in `ClosingAsk.tsx` have since changed; the eval still runs this fixed set.
 
 ### The layout
 
@@ -257,5 +257,5 @@ The feature README (flow, file table, the whole "Reaching a person" section, the
 
 1. Review the copy in `ASK_HANDOFFS`. The lead and offer lines are drafts in the studio's voice, not approved.
 2. Watch `ask_questioned` for `handoff_reason` on the chip questions over the next week; the eval covers six phrasings, production covers more.
-3. Optional, from the audit's open decisions: retire the contact-page carry once inquiries from the form are flowing, and decide where the roadmap's rating control sits now that the offer is a single row.
+3. Optional, from the audit's open decisions: retire the contact-page carry once inquiries from the form are flowing. The rating control shipped on every surface, after the sources and before the handoff.
 4. Known limit: the offer follows the latest reply, so a form opened and then abandoned for a new question closes with its draft. A send already in flight still lands: `markSent` lives in the surface's hook, so the receipt pins to the reply it was sent from and the state goes to `sent` even though the form itself has left.

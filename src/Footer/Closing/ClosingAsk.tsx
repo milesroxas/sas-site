@@ -31,7 +31,11 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import type { Footer } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 
-const suggestions = ['How do we start?', 'What does it cost?', 'Who have you worked with?']
+const suggestions = [
+  'Do you work with startups?',
+  'What is your process?',
+  'Can you fix my Webflow site?',
+]
 
 type ClosingAskProps = {
   ask?: NonNullable<Footer['closing']>['ask']

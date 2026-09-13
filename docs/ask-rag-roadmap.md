@@ -4,9 +4,9 @@ The Ask feature ([feature README](../src/features/ask/README.md)) shipped as the
 
 ## Design decisions the MVP locked in (and why)
 
-- **Vercel AI SDK, not a vendor SDK.** `generateText` is provider-agnostic; the vendor is one line in `model.ts`. The SDK also ships `embed`/`embedMany` and `streamText`/`useChat`, which stages 2 and 4 need — no new dependency later.
+- **Vercel AI SDK, not a vendor SDK.** The vendor is one line in `model.ts`. The SDK ships `embed`/`embedMany` and `streamText`/`useChat` (what the endpoint and surfaces use), so later stages needed no new dependency.
 - **Retrieval behind one module.** The endpoint knows nothing about *how* sources are found. Every retrieval upgrade below is a change to `retrieve.ts` internals with the same `retrieveSources(payload, question)` signature.
-- **Refuse rather than guess.** Empty retrieval short-circuits before the model; the system prompt requires refusal when sources don't cover the question. Every stage keeps this property.
+- **Refuse rather than guess.** A first-turn miss short-circuits before the model (`no_answer` handoff). A source-less follow-up still reaches the model under a chat-only prompt that forbids new facts. The grounded prompt requires refusal (or `no_answer`) when sources don't cover the question.
 
 ## Stage 0 — MVP (shipped)
 
@@ -40,7 +40,7 @@ for copy that changed. After deploying, run the backfill once to pick up the new
 the keyword path remains as fallback. Publish/unpublish/delete hooks
 (`src/features/ask/indexSync.ts`, attached by `src/plugins/ask-index.ts`) keep the index in
 step, including canonical-record edits re-embedding dependent pages. Backfill / drift repair:
-`pnpm payload run scripts/backfill-ask-index.ts`. The migration enables the extension; local
+`pnpm exec tsx --env-file=.env scripts/backfill-ask-index.ts`. The migration enables the extension; local
 docker runs `pgvector/pgvector:pg18`. Hybrid (vector + keyword fused) scoring remains open —
 adopt if stage-5 evals show keyword-shaped misses.
 
@@ -65,14 +65,20 @@ chat-only prompt with a 400-token cap; source-less first turns stay canned (no m
 
 ## Stage 5 — Production hardening
 
-Prerequisites for promoting Ask from a page to a site-wide widget:
+Ask is already on the takeover menu and the closing band (plus `/ask`). **Site Info › Ask › Hide Ask** removes every surface. Capture, ratings, and the inbox shipped with the [insights work](ask-insights-roadmap.md). What is left of this stage:
+
+**Shipped**
+
+- **Observability:** `ask-questions` stores the turn (question, answer, sources with similarity, outcome, tokens, latency). Unanswered questions are the content-gap list (`outcome = no_sources`).
+- **Visitor signal:** thumbs, handoff click / inquiry, dashboard.
+
+**Still open**
 
 - **Shared rate limiting:** replace the per-instance limiter with a shared store (Vercel KV / Upstash) keyed by IP; add a per-day cap.
-- **Observability:** persist `{ question, matched sources, answer, usage, latency }` to a Payload collection. Unanswered questions are a **content-gap signal** — the list of things visitors want that the site doesn't say.
-- **Evals:** a small fixture set of question → expected-source pairs, run as an integration test (`payload run`) so retrieval changes (stages 2–3) are measured, not vibed.
+- **Evals:** a small fixture set of question → expected-source pairs, run as an integration test so retrieval changes are measured, not vibed. `scripts/ask-eval.ts` already covers handoff-trigger cases, not retrieval quality.
 - **Answer caching:** normalize + hash the question, cache answers for identical questions (content changes invalidate via the same hooks that reindex).
-- **Cost controls:** monthly token budget alarm; the model stays swappable in `model.ts` if unit economics change.
+- **Cost controls:** monthly token budget alarm (the usage panel exists; there is no alarm). The model stays swappable in `model.ts` if unit economics change.
 
 ## Sequencing recommendation
 
-1 → 2 → 3 ship as a unit of "answers get good" and are all behind `retrieve.ts`. 4 is UX polish once answers are worth streaming. 5 gates any promotion of the feature beyond the `/ask` page. Skip nothing in 5 if Ask ever lands in the site header.
+1 → 2 → 3 shipped as "answers get good", all behind `retrieve.ts`. 4 shipped. 5's capture and inbox shipped with the insights work. Shared rate limiting, retrieval evals, answer caching, and a budget alarm are still open. Ask already lives beyond `/ask`; Hide Ask is the off switch.

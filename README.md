@@ -20,7 +20,7 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | [docs/immersive-effects.md](docs/immersive-effects.md) | Developers | WebGL effects: architecture, defaults/presets contract, playground workflow |
 | [docs/conductor.md](docs/conductor.md) | Developers | Parallel Conductor workspaces, per-workspace DBs, migration files across branches |
 | [docs/prds/content-hub.md](docs/prds/content-hub.md) | Reference | Original PRD and architecture amendment |
-| [docs/ask-rag-roadmap.md](docs/ask-rag-roadmap.md) | Reference | Roadmap for the `/ask` retrieval-augmented answering feature |
+| [src/features/ask/README.md](src/features/ask/README.md) | Developers | Ask: what ships (RAG, surfaces, inbox, handoff). Roadmaps: [docs/ask-rag-roadmap.md](docs/ask-rag-roadmap.md), [docs/ask-insights-roadmap.md](docs/ask-insights-roadmap.md) |
 | [AGENTS.md](AGENTS.md) | Agents (Cursor / Claude / Codex) | Slim always-on contract: DB, security, tooling; Payload how-to in `.agents/skills/payload` |
 
 ## Stack
@@ -66,7 +66,7 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 
 - AEO plugin: `/llms.txt`, IndexNow pings, JSON-LD, markdown alternates ([docs/aeo.md](docs/aeo.md))
 - Internal MCP server at `/api/mcp` for agent-driven content authoring with per-key capabilities ([docs/mcp.md](docs/mcp.md))
-- `/ask` retrieval-augmented answering over published content, indexed into pgvector on publish ([docs/ask-rag-roadmap.md](docs/ask-rag-roadmap.md))
+- Ask: retrieval-augmented answering over published content (menu, closing band, `/ask`), indexed into pgvector on publish ([src/features/ask/README.md](src/features/ask/README.md))
 
 ## Prerequisites
 
