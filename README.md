@@ -35,7 +35,7 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | UI | Tailwind CSS 4, shadcn/ui, Radix UI, Geist |
 | Motion / 3D | Lenis, Tempus, GSAP, React Three Fiber, Three.js |
 | AI | Vercel AI SDK + OpenAI, pgvector embeddings (`/ask`) |
-| Analytics / monitoring | Sentry, PostHog, GA4, Vercel Speed Insights, c15t consent |
+| Analytics / monitoring | PostHog (analytics + replay), Sentry (errors), Vercel Speed Insights, c15t consent |
 | Tooling | pnpm, Biome, Vitest, Playwright, Storybook + Chromatic |
 
 ## Features
