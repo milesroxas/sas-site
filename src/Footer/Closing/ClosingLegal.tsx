@@ -3,6 +3,7 @@ import { Fragment } from 'react'
 import { CMSLink } from '@/components/Link'
 import { buttonVariants } from '@/components/ui/button'
 import type { SiteInfo } from '@/payload-types'
+import { cn } from '@/utilities/ui'
 
 export type ClosingLegalLinks = NonNullable<SiteInfo['legalLinks']>
 
@@ -12,8 +13,14 @@ type ClosingLegalProps = {
   cookieSettingsLabel?: string | null
 }
 
-/** The one look this row wears, so the link and the trigger cannot drift. */
-const legalItemClassName = buttonVariants({ size: 'clear', variant: 'fineprint' })
+/**
+ * The one look this row wears, so the link and the trigger cannot drift.
+ * Through `cn`, because `buttonVariants` concatenates: the base recipe's
+ * `text-xs/relaxed font-medium` would otherwise survive beside the variant's
+ * `text-sm/tight font-normal` and win on source order. `Button` merges the
+ * same way, which is what keeps the trigger and the `CMSLink`s identical.
+ */
+const legalItemClassName = cn(buttonVariants({ size: 'clear', variant: 'fineprint' }))
 
 /** Hairline between two items on one line; it goes away when the row stacks. */
 const Rule = () => <span aria-hidden className="hidden h-4 w-px bg-border sm:block" />
