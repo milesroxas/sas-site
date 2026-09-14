@@ -36,7 +36,7 @@ export function PasteGuideDialog({
 }: PasteGuideDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="data-[size=default]:max-w-[min(92vw,40rem)] data-[size=default]:sm:max-w-[min(92vw,40rem)]">
+      <AlertDialogContent className="max-h-[calc(100svh-2rem)] grid-rows-[auto_minmax(0,1fr)_auto] data-[size=default]:max-w-[min(92vw,40rem)] data-[size=default]:sm:max-w-[min(92vw,40rem)]">
         <AlertDialogHeader>
           <AlertDialogMedia>
             <IconClipboardCheck aria-hidden />
@@ -45,7 +45,7 @@ export function PasteGuideDialog({
           <AlertDialogDescription>{target.note}</AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="space-y-3 text-left">
+        <div className="min-h-0 space-y-3 overflow-y-auto text-left">
           <p className="max-w-prose text-sm/relaxed text-pretty text-muted-foreground">
             {target.format === 'code' ? (
               <>
@@ -72,10 +72,10 @@ export function PasteGuideDialog({
             )}
           </p>
           <ScrollArea
-            className="rounded-md border border-border bg-muted/40"
+            className="min-w-0 rounded-md border border-border bg-muted/40"
             viewportClassName="max-h-64"
           >
-            <pre className="p-3 font-mono text-xs/relaxed text-foreground">
+            <pre className="p-3 font-mono text-xs/relaxed break-words whitespace-pre-wrap text-foreground">
               <code>{snippet}</code>
             </pre>
           </ScrollArea>
