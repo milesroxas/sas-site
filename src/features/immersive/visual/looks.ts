@@ -1,4 +1,9 @@
-import { STREAK_FIELD_BACKDROP, STREAK_FIELD_DEPTH_MAP, STREAK_FIELD_TOPOGRAPHY } from '../presets'
+import {
+  STREAK_FIELD_BACKDROP,
+  STREAK_FIELD_DEPTH_MAP,
+  STREAK_FIELD_TECHNICAL_LINES,
+  STREAK_FIELD_TOPOGRAPHY,
+} from '../presets'
 import type { StreakFieldProps } from '../ui/streak-field'
 
 /**
@@ -63,6 +68,13 @@ export const STREAK_LOOKS = {
     description: 'The same grid leaning up the slope, with only the crests lit.',
     motion: 'flow',
     tuning: STREAK_FIELD_DEPTH_MAP,
+  }),
+  'technical-lines-v1': look({
+    id: 'technical-lines-v1',
+    label: 'Technical Lines',
+    description: 'Thin, long strokes in a cooler blue: a sparse schematic, not a tick grid.',
+    motion: 'drift',
+    tuning: STREAK_FIELD_TECHNICAL_LINES,
   }),
 } as const satisfies Record<string, StreakLook>
 

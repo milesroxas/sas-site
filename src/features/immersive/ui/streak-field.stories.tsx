@@ -3,6 +3,7 @@ import {
   STREAK_FIELD_BACKDROP,
   STREAK_FIELD_DEPTH_MAP,
   STREAK_FIELD_PAPER,
+  STREAK_FIELD_TECHNICAL_LINES,
   STREAK_FIELD_TOPOGRAPHY,
 } from '../presets'
 import { StreakField } from './streak-field'
@@ -125,4 +126,9 @@ export const Topography: Story = {
 /** The same grid leaning up the slope, with only the crests lit. */
 export const DepthMap: Story = {
   args: STREAK_FIELD_DEPTH_MAP,
+}
+
+/** Sparse thin strokes, long and slightly bent: the `technical-lines-v1` look. */
+export const TechnicalLines: Story = {
+  args: STREAK_FIELD_TECHNICAL_LINES,
 }

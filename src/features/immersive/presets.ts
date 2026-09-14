@@ -259,3 +259,37 @@ export const STREAK_FIELD_DEPTH_MAP = {
   maxLength: 11,
   brightnessSpread: 0.15,
 } as const satisfies Partial<StreakFieldProps>
+
+/**
+ * Technical Lines: dialed in on /demo/immersive. A schematic overlay, not a
+ * tick grid. The default field is a dense sheet of short dashes; this one
+ * thins the population, lengthens the stroke, and lets each dash bend
+ * (`segments` 6) so the rows read as ruled lines rather than ticks.
+ *
+ * Relief is quieter overall but punchier at the peaks, with the floor dropped
+ * so valleys stay on the sheet instead of falling to black. Ink shifts cooler
+ * and more saturated, brightness comes up, and shimmer and tail fade drop, so
+ * the strokes hold as even technical marks rather than a breathing signal.
+ */
+export const STREAK_FIELD_TECHNICAL_LINES = {
+  count: 4200,
+  segments: 6,
+  columnPitch: 1,
+  rowPitch: 5.5,
+  thickness: 1.05,
+  maxLength: 22.5,
+  lengthBias: 5,
+  relief: 0.46,
+  reliefFloor: 0.13,
+  reliefContrast: 4.04,
+  reliefLength: 0.6,
+  lifetime: 8.7,
+  lifeSpread: 0.69,
+  ink: [0.373, 0.549, 1],
+  paperInk: [0.149, 0.275, 0.62],
+  brightness: 2.47,
+  brightnessSpread: 0.27,
+  flicker: 0.09,
+  tail: 0.21,
+  cap: 1.2,
+} as const satisfies Partial<StreakFieldProps>
