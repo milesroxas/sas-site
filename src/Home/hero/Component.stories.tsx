@@ -80,3 +80,23 @@ export const WithoutMedia: Story = {
 export const ColdIntro: Story = {
   args: { intro: 'cold' },
 }
+
+/** A Streak Field behind the statement: the poster is the first paint, the field waits for the intro. */
+export const LeftStreakField: Story = {
+  args: {
+    media: null,
+    visualType: 'streakField',
+    shader: { preset: 'signal-v1', seed: 694, pointerInteraction: true },
+  },
+}
+
+/** Topography behind the centered statement, with the editor's speed pulled back. */
+export const CenterTopography: Story = {
+  args: {
+    type: 'center',
+    title: 'Brand clarity for complex businesses',
+    media: null,
+    visualType: 'streakField',
+    shader: { preset: 'topography-v1', seed: 21, speed: 0.7 },
+  },
+}

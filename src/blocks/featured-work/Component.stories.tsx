@@ -14,6 +14,7 @@ const workEntry = (id: number, title: string, client: string, media = mediaFixtu
     client,
     industry: 'fintech',
     capabilities: ['Brand strategy', 'Web design'],
+    visual: { kind: 'media', media },
     media,
   }
 }

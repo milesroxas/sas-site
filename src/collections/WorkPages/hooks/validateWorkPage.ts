@@ -1,21 +1,9 @@
 import { APIError, type CollectionBeforeValidateHook } from 'payload'
 import { assertStoryBeatReferencesExist } from '@/collections/story/validate'
+import { collectVisualMediaRefs } from '@/fields/visual-refs'
 import { findUnpublishableMedia } from '@/hooks/findUnpublishableMedia'
 import type { CaseStudy, WorkPage } from '@/payload-types'
 import { relationshipId, relationshipIds } from '@/utilities/relationshipId'
-
-// Every upload field on a layout block ends in "media" (media, portraitMedia,
-// largeMedia, …); non-upload matches like browseAllMedia are booleans and fall
-// out of the later relationshipId() pass.
-const blockMedia = (layout: WorkPage['layout']) =>
-  (layout || []).flatMap((block) => {
-    const fromFields = Object.entries(block).flatMap(([key, value]) => {
-      if (!/media$/i.test(key) || !value) return []
-      return Array.isArray(value) ? value : [value]
-    })
-    if (!('slides' in block) || !Array.isArray(block.slides)) return fromFields
-    return [...fromFields, ...block.slides.flatMap((slide) => (slide.media ? [slide.media] : []))]
-  })
 
 export const validateWorkPage: CollectionBeforeValidateHook<WorkPage> = async ({
   data,
@@ -52,11 +40,17 @@ export const validateWorkPage: CollectionBeforeValidateHook<WorkPage> = async ({
     )
   }
 
+  // Every media reference the page holds, retained or not: cover, hero,
+  // downloads, shader posters, and every `…media` field on every block,
+  // including blocks nested inside Sections. The hover-only `menuPreview`
+  // upload stays outside the gate, as before.
   const mediaIDs = relationshipIds([
     merged.coverAsset,
     merged.hero?.media,
+    merged.hero?.shader?.posterMedia,
+    merged.menuPreviewShader?.posterMedia,
     ...(merged.downloadableAssets || []),
-    ...blockMedia(merged.layout),
+    ...collectVisualMediaRefs(merged.layout),
   ])
 
   const invalid = await findUnpublishableMedia({

@@ -64,3 +64,12 @@ export const Dark: Story = {
 export const Composed: Story = {
   args: { body: contentColumnFixture, heading: 'A branding agency for complex offerings' },
 }
+
+/** A Streak Field beside the copy: the frame keeps its aspect, the poster paints first. */
+export const StreakField: Story = {
+  args: {
+    media: null,
+    visualType: 'streakField',
+    shader: { preset: 'depth-map-v1', seed: 8 },
+  },
+}

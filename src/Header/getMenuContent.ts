@@ -2,7 +2,17 @@ import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache.js'
 import { getPayload } from 'payload'
 import { CONTACT_INDEX_SLUG } from '@/collections/ContactPages/constants'
+import {
+  mediaPosterImage,
+  presetPosterImage,
+  resolveMenuPreviewVisual,
+  resolveVisual,
+  type StoredMenuPreviewSlot,
+  type Visual,
+} from '@/features/immersive/visual'
+import { HERO_BAND_THEME } from '@/heros/band-theme'
 import type { Media, WorkPage } from '@/payload-types'
+import type { Theme } from '@/providers/Theme/types'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { MENU_CONTENT_TAG } from './menuCache'
 
@@ -13,7 +23,29 @@ import { MENU_CONTENT_TAG } from './menuCache'
  * (./Menu/heroHandoff). A `menuPreview` pick or the Header's fallback is
  * hover-only; the handoff would otherwise poll for a hero that never mounts.
  */
-export type MenuMedia = { url: string; mime: string; hero: boolean }
+export type MenuMedia = {
+  url: string
+  mime: string
+  hero: boolean
+  /**
+   * A Streak Field poster's light-ground twin. `url` is the dark-ground
+   * still; the menu picks by the site theme at paint time (`menuMediaUrl`).
+   * Only ever a still: a shader descriptor never reaches the menu.
+   */
+  lightUrl?: string
+  /**
+   * The still carries alpha (a Streak Field poster: on the page the CSS
+   * ground beneath owns its color), and this is the ground it is shown on.
+   * A hero's own visual takes its band's polarity, so the preview reads as
+   * the destination does; `site` follows the visitor's theme at paint time
+   * (an independent preview, a hero with no band). The menu paints that
+   * ground under the still (`data-menu-media-ground`, globals.css) and picks
+   * the twin drawn for it, so a poster never composites over the page crop
+   * or the media it replaces.
+   */
+  ground?: MenuGround
+}
+export type MenuGround = Theme | 'site'
 export type MenuLink = { title: string; href: string; media: MenuMedia | null }
 export type MenuWorkItem = MenuLink & { eyebrow: string | null }
 
@@ -58,6 +90,56 @@ function menuMedia(media: MediaRef, hero: boolean): MenuMedia | null {
   return { url: getMediaUrl(url, media.updatedAt), mime: media.mimeType, hero }
 }
 
+/**
+ * Resolved visual → hover-preview source. A media visual goes through
+ * `menuMedia`; a Streak Field previews its poster (the approved upload, else
+ * the look's stills for both grounds) on `ground`. `hero` follows the same
+ * rule as for media: only the destination's own visual, which mounts a
+ * poster inside `[data-hero-media]`, can be handed off onto.
+ */
+function menuVisual(
+  visual: Visual | null,
+  hero: boolean,
+  ground: MenuGround = 'site',
+): MenuMedia | null {
+  if (!visual) return null
+  if (visual.kind === 'media') return menuMedia(visual.media, hero)
+  const { descriptor } = visual
+  const upload = descriptor.posterMedia ? mediaPosterImage(descriptor.posterMedia) : null
+  if (upload) return { url: upload.src, mime: upload.mime, hero, ground }
+  const dark = presetPosterImage(descriptor.look, 'dark')
+  const light = presetPosterImage(descriptor.look, 'light')
+  return { url: dark.src, lightUrl: light.src, mime: dark.mime, hero, ground }
+}
+
+/**
+ * What a destination previews: the editor's independent menu preview when
+ * one is chosen (hover-only, it never mounts on the page, shown on the site
+ * theme), else the destination's own visual, which can hand off when the
+ * page mounts it as `[data-hero-media]` (`ownMountsHero`) and is shown on
+ * the ground the page paints it on (`ownGround`: a hero band's palette, or
+ * the site theme where the hero has no band).
+ */
+function previewOrOwn(
+  doc: StoredMenuPreviewSlot,
+  own: Visual | null,
+  seedKey: string | number,
+  { ownMountsHero = true, ownGround = HERO_BAND_THEME as MenuGround } = {},
+): MenuMedia | null {
+  return (
+    menuVisual(resolveMenuPreviewVisual(doc, { seedKey }), false) ??
+    menuVisual(own, ownMountsHero && own !== null, ownGround)
+  )
+}
+
+/** The menu-preview and hero fields every previewable page selects. */
+const PREVIEW_SELECT = {
+  hero: true,
+  menuPreview: true,
+  menuPreviewType: true,
+  menuPreviewShader: true,
+} as const
+
 /** Menu shows at most this many case studies (Header `featuredWork` maxRows). */
 const MENU_WORKS_LIMIT = 4
 
@@ -88,9 +170,9 @@ async function getMenuContent(): Promise<MenuContent> {
         where: published,
         sort: '_order',
         limit: 5,
-        // Depth 1 populates hero.media for the hover preview.
+        // Depth 1 populates hero.media and the preview pick for the hover preview.
         depth: 1,
-        select: { title: true, slug: true, hero: true },
+        select: { title: true, slug: true, ...PREVIEW_SELECT },
       }),
       payload.find({
         collection: 'audience-pages',
@@ -98,7 +180,7 @@ async function getMenuContent(): Promise<MenuContent> {
         sort: '_order',
         limit: 4,
         depth: 1,
-        select: { title: true, slug: true, hero: true },
+        select: { title: true, slug: true, ...PREVIEW_SELECT },
       }),
       payload.find({
         collection: 'work-pages',
@@ -106,42 +188,28 @@ async function getMenuContent(): Promise<MenuContent> {
         limit: MENU_WORKS_LIMIT,
         // Depth 3 reaches work → case study → project → industries for the eyebrow.
         depth: 3,
-        select: {
-          title: true,
-          slug: true,
-          caseStudy: true,
-          hero: true,
-          coverAsset: true,
-          menuPreview: true,
-        },
+        select: { title: true, slug: true, caseStudy: true, coverAsset: true, ...PREVIEW_SELECT },
       }),
-      // Primary-nav destinations: hero media for every published page, keyed by href.
+      // Primary-nav destinations: the visual every published page previews, keyed by href.
       payload.find({
         collection: 'pages',
         where: published,
         limit: 50,
         depth: 1,
-        select: { slug: true, hero: true },
+        select: { slug: true, ...PREVIEW_SELECT },
       }),
       payload.findGlobal({ slug: 'home', depth: 1, select: { hero: true } }),
-      // Index globals: their pages render the hero as copy only, so neither
-      // source can be handed off onto a mounted hero (hover-only, see MenuMedia).
-      payload.findGlobal({
-        slug: 'works-index',
-        depth: 1,
-        select: { hero: true, menuPreview: true },
-      }),
-      payload.findGlobal({
-        slug: 'insights-index',
-        depth: 1,
-        select: { hero: true, menuPreview: true },
-      }),
+      // Index globals: their pages render the hero copy only, but a Streak
+      // Field chosen there runs behind the whole page (`IndexBackground`),
+      // so that one can be handed off onto; an upload cannot (see MenuMedia).
+      payload.findGlobal({ slug: 'works-index', depth: 1, select: PREVIEW_SELECT }),
+      payload.findGlobal({ slug: 'insights-index', depth: 1, select: PREVIEW_SELECT }),
       payload.find({
         collection: 'contact-pages',
         where: published,
         limit: 20,
         depth: 1,
-        select: { slug: true, menuPreview: true },
+        select: { slug: true, menuPreview: true, menuPreviewType: true, menuPreviewShader: true },
       }),
     ])
 
@@ -150,18 +218,40 @@ async function getMenuContent(): Promise<MenuContent> {
     if (media) pageMedia[href] = media
   }
   for (const doc of pages.docs) {
-    if (doc.slug) setPageMedia(`/${doc.slug}`, menuMedia(doc.hero?.media, true))
+    if (doc.slug) {
+      setPageMedia(
+        `/${doc.slug}`,
+        previewOrOwn(doc, resolveVisual(doc.hero, { seedKey: doc.id }), doc.id),
+      )
+    }
   }
-  setPageMedia('/', menuMedia(home.hero?.media, true))
-  setPageMedia('/works', menuMedia(worksIndex.menuPreview ?? worksIndex.hero?.media, false))
   setPageMedia(
-    '/insights',
-    menuMedia(insightsIndex.menuPreview ?? insightsIndex.hero?.media, false),
+    '/',
+    menuVisual(resolveVisual(home.hero, { seedKey: 'home' }), true, HERO_BAND_THEME),
   )
+  // Index globals: an explicit preview (hover-only), else the hero's visual,
+  // which the page mounts only when it is a Streak Field, behind the whole
+  // listing on the site theme (no band).
+  const worksVisual = resolveVisual(worksIndex.hero, { seedKey: 'works-index' })
+  setPageMedia(
+    '/works',
+    previewOrOwn(worksIndex, worksVisual, 'works-index', {
+      ownMountsHero: worksVisual?.kind === 'streakField',
+      ownGround: 'site',
+    }),
+  )
+  const insightsVisual = resolveVisual(insightsIndex.hero, { seedKey: 'insights-index' })
+  const insightsMedia = previewOrOwn(insightsIndex, insightsVisual, 'insights-index', {
+    ownMountsHero: insightsVisual?.kind === 'streakField',
+    ownGround: 'site',
+  })
+  // `/posts` renders the same index view, so the docked window rests on the same media there.
+  setPageMedia('/insights', insightsMedia)
+  setPageMedia('/posts', insightsMedia)
   for (const doc of contacts.docs) {
     if (!doc.slug) continue
     const href = doc.slug === CONTACT_INDEX_SLUG ? '/contact' : `/contact/${doc.slug}`
-    setPageMedia(href, menuMedia(doc.menuPreview, false))
+    setPageMedia(href, menuVisual(resolveMenuPreviewVisual(doc, { seedKey: doc.id }), false))
   }
 
   // `in` queries return DB order — restore the editor's pick order.
@@ -173,21 +263,26 @@ async function getMenuContent(): Promise<MenuContent> {
     expertise: expertise.docs.map((doc) => ({
       title: doc.title,
       href: `/expertise/${doc.slug}`,
-      media: menuMedia(doc.hero?.media, true),
+      media: previewOrOwn(doc, resolveVisual(doc.hero, { seedKey: doc.id }), doc.id),
     })),
     audiences: audiences.docs.map((doc) => ({
       title: doc.title,
       href: `/who-we-help/${doc.slug}`,
-      media: menuMedia(doc.hero?.media, true),
+      media: previewOrOwn(doc, resolveVisual(doc.hero, { seedKey: doc.id }), doc.id),
     })),
     works: workDocs.map((doc) => ({
       title: doc.title,
       href: `/works/${doc.slug}`,
       eyebrow: workEyebrow(doc as WorkPage),
-      // The editor's preview pick is hover-only; behind it, the same fallback
+      // The editor's preview pick is hover-only; behind it, the same visual
       // the work hero renders (page override, else cover asset) can hand off.
-      media:
-        menuMedia(doc.menuPreview, false) ?? menuMedia(doc.hero?.media ?? doc.coverAsset, true),
+      // Work heroes paint no band of their own: the site theme is the ground.
+      media: previewOrOwn(
+        doc,
+        resolveVisual(doc.hero, { fallbackMedia: doc.coverAsset, seedKey: doc.id }),
+        doc.id,
+        { ownGround: 'site' },
+      ),
     })),
     pageMedia,
     fallbackMedia: menuMedia(header.menuFallbackMedia, false),

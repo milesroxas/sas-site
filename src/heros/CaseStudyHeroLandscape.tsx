@@ -1,4 +1,4 @@
-import { Media } from '@/components/Media'
+import { Visual } from '@/components/Visual'
 import type { CaseStudy, WorkPage } from '@/payload-types'
 import { WorkImageTransition } from '@/shared/lib/view-transition'
 import { pluralLabel } from '@/utilities/pluralLabel'
@@ -46,7 +46,7 @@ const HeroDetails = ({
  * an edge-to-edge landscape media strip (21:9 lg / 5:4 below). No summary.
  */
 export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study: CaseStudy }) => {
-  const { capabilities, industries, media, organization } = caseStudyHeroFacts(page, study)
+  const { capabilities, industries, organization, visual } = caseStudyHeroFacts(page, study)
   const client = organization?.name || organization?.shortName
 
   return (
@@ -57,17 +57,19 @@ export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study:
         </h1>
         <HeroDetails capabilities={capabilities} client={client} industries={industries} />
       </div>
-      {media && (
+      {visual && (
         // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
         <div data-hero-media className="contents">
-          {/* VT name lands on Media's own wrapper (the `contents` div above can't snapshot). */}
+          {/* VT name lands on the visual's own wrapper (the `contents` div above can't snapshot). */}
           <WorkImageTransition slug={page.slug}>
-            <Media
-              priority
-              resource={media}
-              size="100vw"
+            <Visual
+              frameClassName="aspect-5/4 lg:aspect-21/9"
               imgClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
+              placement="hero"
+              priority
+              size="100vw"
               videoClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
+              visual={visual}
             />
           </WorkImageTransition>
         </div>

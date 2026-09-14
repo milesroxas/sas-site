@@ -1,8 +1,8 @@
 import gsap from 'gsap'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { HeroHandoffOptions } from './heroHandoff'
-import { startHeroHandoff } from './heroHandoff'
-import { CARD_RADIUS_DESKTOP, getCardMotion } from './motion'
+import { createMenuMediaElement, startHeroHandoff } from './heroHandoff'
+import { CARD_RADIUS_DESKTOP, getCardMotion, MENU_MEDIA_GROUND_ATTR } from './motion'
 
 /**
  * The controller's value is its sequencing under races (route commit vs menu
@@ -91,6 +91,39 @@ const makeRect = (width: number, height: number): DOMRect =>
     x: 10,
     y: 20,
   }) as DOMRect
+
+describe('createMenuMediaElement', () => {
+  const poster = {
+    url: '/images/streak-field/signal-v1-dark.webp',
+    lightUrl: '/images/streak-field/signal-v1-light.webp',
+    mime: 'image/webp',
+    hero: true,
+  }
+  afterEach(() => {
+    delete document.documentElement.dataset.theme
+  })
+
+  it('paints a pinned ground under a poster with alpha, with the twin drawn for it', () => {
+    document.documentElement.dataset.theme = 'light'
+    const el = createMenuMediaElement({ ...poster, ground: 'dark' })
+    expect(el.hasAttribute(MENU_MEDIA_GROUND_ATTR)).toBe(true)
+    expect(el.dataset.theme).toBe('dark')
+    expect(el.getAttribute('src')).toBe(poster.url)
+  })
+
+  it('paints the site ground under a poster on the site ground', () => {
+    document.documentElement.dataset.theme = 'light'
+    const el = createMenuMediaElement({ ...poster, ground: 'site' })
+    expect(el.dataset.theme).toBe('light')
+    expect(el.getAttribute('src')).toBe(poster.lightUrl)
+  })
+
+  it('paints nothing under an opaque still', () => {
+    const still = createMenuMediaElement({ url: '/hero.jpg', mime: 'image/jpeg', hero: true })
+    expect(still.hasAttribute(MENU_MEDIA_GROUND_ATTR)).toBe(false)
+    expect(still.dataset.theme).toBeUndefined()
+  })
+})
 
 describe('startHeroHandoff', () => {
   let frame: HTMLElement

@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Container } from '@/components/Container'
-import { Media } from '@/components/Media'
+import { Visual } from '@/components/Visual'
 import { cursorTarget } from '@/features/cursor'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
@@ -539,13 +539,14 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
                       >
                         {/* First child owns the frame's full box — it is the wipe's scale target. */}
                         <div className="absolute inset-0">
-                          {entry.media ? (
-                            <Media
+                          {entry.visual ? (
+                            <Visual
                               fill
                               htmlElement={null}
                               imgClassName="object-cover"
-                              resource={entry.media}
+                              placement="card"
                               size="(min-width: 768px) 55vw, 100vw"
+                              visual={entry.visual}
                             />
                           ) : null}
                         </div>

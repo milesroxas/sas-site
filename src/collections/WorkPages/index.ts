@@ -5,11 +5,12 @@ import { caseStudyBlocks } from '@/blocks/case-study/config'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { closingTab } from '@/fields/closing'
-import { menuPreviewField } from '@/fields/menuPreview'
+import { menuPreviewFields } from '@/fields/menuPreview'
 import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/fields/pageFields'
 import { heroContentCollapsible, heroPresentationFields, pageIntroField } from '@/fields/pageHero'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
+import { visualSlotFields } from '@/fields/visual'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { collectionPreview } from '@/utilities/generatePreviewPath'
 import { revalidateWorkPage, revalidateWorkPageDelete } from './hooks/revalidateWorkPage'
@@ -76,12 +77,15 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
                   type: 'collapsible',
                   label: 'Media & layout',
                   fields: [
-                    {
-                      name: 'media',
-                      type: 'upload',
-                      relationTo: 'media',
-                      filterOptions: caseStudyScopedMediaFilter,
-                    },
+                    ...visualSlotFields(
+                      {
+                        name: 'media',
+                        type: 'upload',
+                        relationTo: 'media',
+                        filterOptions: caseStudyScopedMediaFilter,
+                      },
+                      { posterFilterOptions: caseStudyScopedMediaFilter },
+                    ),
                     browseAllMediaField(),
                     {
                       name: 'layout',
@@ -155,7 +159,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
     ...pagePublishingFields(),
     // Scoped like every other picker on the page; the Assets tab's
     // `browseAllMedia` is a root-level sibling, so it opts this one out too.
-    menuPreviewField({
+    ...menuPreviewFields({
       filterOptions: caseStudyScopedMediaFilter,
       description:
         "Shown in the site menu while this page's link is hovered, and by the Industry work block when it features this page. Leave empty to use the hero media, then the cover asset, then the Header's menu fallback (the block falls back to the cover asset, then hero media).",

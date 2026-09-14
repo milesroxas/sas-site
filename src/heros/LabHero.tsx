@@ -1,4 +1,5 @@
-import { Media } from '@/components/Media'
+import { Visual } from '@/components/Visual'
+import { resolveVisual } from '@/features/immersive/visual'
 import type { LabPage, LabProject } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 
@@ -11,14 +12,13 @@ const kindLabels: Record<NonNullable<LabProject['kind']>, string> = {
 }
 
 export const LabHero = ({ page, project }: { page: LabPage; project: LabProject }) => {
-  const media =
-    page.hero?.media && typeof page.hero.media === 'object' ? page.hero.media : page.coverAsset
+  const visual = resolveVisual(page.hero, { fallbackMedia: page.coverAsset, seedKey: page.id })
   const centered = page.hero?.layout === 'centered'
   return (
     <header
       className={cn(
         'container mx-auto grid min-h-[70vh] items-center gap-10 py-20',
-        !centered && media && 'md:grid-cols-2',
+        !centered && visual && 'md:grid-cols-2',
         centered && 'max-w-5xl text-center',
       )}
     >
@@ -34,10 +34,17 @@ export const LabHero = ({ page, project }: { page: LabPage; project: LabProject 
             project.thesis}
         </p>
       </div>
-      {media && typeof media === 'object' && (
+      {visual && (
         // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
         <div data-hero-media className="contents">
-          <Media priority resource={media} imgClassName="h-auto w-full" />
+          <Visual
+            frameClassName="aspect-video"
+            imgClassName="h-auto w-full"
+            placement="hero"
+            posterClassName="object-cover"
+            priority
+            visual={visual}
+          />
         </div>
       )}
     </header>

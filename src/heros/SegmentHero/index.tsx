@@ -2,7 +2,8 @@ import type React from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
 import { Container } from '@/components/Container'
 import { CMSLink } from '@/components/Link'
-import { Media } from '@/components/Media'
+import { Visual } from '@/components/Visual'
+import { resolveVisual } from '@/features/immersive/visual'
 import { HeroBand } from '@/heros/HeroBand'
 import type { SegmentHero as SegmentHeroData } from '@/payload-types'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
@@ -51,14 +52,9 @@ const HeroActions: React.FC<{ className?: string; links: SegmentHeroData['links'
  * the work-open landing dissolve onto, so an entrance mask of its own would
  * fight that settle.
  */
-export const SegmentHero: React.FC<SegmentHeroData> = ({
-  description,
-  eyebrow,
-  lead,
-  links,
-  media,
-  title,
-}) => {
+export const SegmentHero: React.FC<SegmentHeroData> = (hero) => {
+  const { description, eyebrow, lead, links, title } = hero
+  const visual = resolveVisual(hero, { seedKey: title })
   const hasClosing = Boolean(lead || description)
   return (
     <HeroBand
@@ -110,15 +106,18 @@ export const SegmentHero: React.FC<SegmentHeroData> = ({
         </Container>
       </ScrollReveal>
 
-      {media && typeof media === 'object' && (
+      {visual && (
         // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
         <div data-hero-media className="contents">
-          <Media
+          <Visual
             fill
+            frameClassName="-z-10"
             imgClassName="-z-10 object-cover select-none"
+            placement="hero"
+            posterClassName="object-cover select-none"
             priority
-            resource={media}
             size="100vw"
+            visual={visual}
           />
         </div>
       )}

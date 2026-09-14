@@ -438,19 +438,18 @@ void main() {
     float reseat = onGrid ? 0.0 : floor(cycles) * span * 0.6180339887;
     float xPx = mod(start + uTime * speed + reseat, span) - lengthPx;
     centre = vec2(xPx + lengthPx * 0.5, yPx);
-
-    float height;
-    dir = fieldAt(centre, height);
   }
 
   float envelope = smoothstep(0.0, max(uFadeIn, 1e-3), life)
                  * (1.0 - smoothstep(1.0 - max(uFadeOut, 1e-3), 1.0, life));
 
-  // Height at the centre for the relief, and the pointer's proximity there.
-  // Sampled once per streak (every vertex lands on the same value) so a
-  // dash shades as a whole.
+  // The field at the centre, evaluated once per streak: its direction turns
+  // a drifting dash and its height shades the relief. Every vertex lands on
+  // the same value, so a dash shades as a whole. Flow dashes already carry
+  // their heading from the simulation and only take the height.
   float height;
-  fieldAt(centre, height);
+  vec2 fieldDir = fieldAt(centre, height);
+  if (uMotion != 1) dir = fieldDir;
   float proxC;
   pointerDisplace(centre, proxC);
 

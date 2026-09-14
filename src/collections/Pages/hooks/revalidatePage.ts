@@ -6,5 +6,7 @@ export const { afterChange: revalidatePage, afterDelete: revalidateDelete } =
     // Pages live at the site root, so there is no index path to purge.
     basePath: '',
     label: 'Page',
+    // The takeover menu previews nav pages by their hero visual or menu preview.
+    revalidateMenu: true,
     sitemapTag: 'pages-sitemap',
   })

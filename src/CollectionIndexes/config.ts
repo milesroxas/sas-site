@@ -2,9 +2,9 @@ import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
-import { menuPreviewField } from '@/fields/menuPreview'
+import { menuPreviewFields } from '@/fields/menuPreview'
 import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
-import { hero } from '@/heros/config'
+import { heroField } from '@/heros/config'
 import { generateGlobalPreviewPath } from '@/utilities/generatePreviewPath'
 import { revalidateCollectionIndex } from './hooks/revalidateCollectionIndex'
 
@@ -56,9 +56,20 @@ const collectionIndexGlobal = ({
       type: 'tabs',
       tabs: [
         {
-          fields: [hero],
+          fields: [
+            // The index renders the hero as copy only, so the upload never
+            // paints here and is not required; a Streak Field runs behind the
+            // whole page instead, and the menu previews either as its poster.
+            heroField({
+              visualCondition: () => true,
+              mediaRequired: false,
+              visualTypeDescription:
+                'Streak Field runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.',
+            }),
+          ],
           label: 'Hero',
-          description: 'The opening of the index page. Low Impact fits archive listings best.',
+          description:
+            'The opening of the index page. Low Impact fits archive listings best; a Streak Field visual runs behind the whole page whatever the type.',
         },
         {
           name: 'meta',
@@ -69,7 +80,7 @@ const collectionIndexGlobal = ({
     },
     // The index pages render their hero as copy only, so this is the sole
     // way an editor puts media behind the menu link.
-    menuPreviewField({
+    ...menuPreviewFields({
       description:
         "Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the Header's menu fallback.",
     }),

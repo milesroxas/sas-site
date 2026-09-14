@@ -36,19 +36,21 @@ import {
   CHAT_WIPE_DURATION,
   CHAT_WIPE_EASE,
   canStartHeroHandoff,
+  cloneHeroSource,
   DESKTOP_CARD_SHADOW,
   DESKTOP_MEDIA_QUERY,
   DISSOLVE_DURATION,
   DISSOLVE_EASE,
   FRAME_Z,
+  findHeroMediaElement,
   getCardMotion,
   getViewportWidth,
-  HERO_MEDIA_SELECTOR,
   isDesktop,
   isInAppNavClick,
   isMediaReady,
   MENU_EASE,
   MOBILE_CARD_SHADOW,
+  menuMediaUrl,
   onMediaReady,
 } from './motion'
 import { collectHeldMedia, type NavCurtain, startNavCurtain } from './navCurtain'
@@ -308,40 +310,13 @@ const clearFrameProps = (frame: HTMLElement) => {
 }
 
 /**
- * Clone the page's own hero media for the dissolve layer. Cloning (vs
- * re-rendering from data) guarantees the exact rendition already on screen:
- * images paint straight from cache, videos resume at the page's timestamp.
- */
-const cloneHeroSource = (source: HTMLImageElement | HTMLVideoElement) => {
-  const clone = source.cloneNode(true) as HTMLImageElement | HTMLVideoElement
-  clone.removeAttribute('id')
-  clone.removeAttribute('style')
-  clone.removeAttribute('class')
-  if (clone instanceof HTMLImageElement) {
-    // Pin to the rendition the page already resolved so no new request fires.
-    if (source instanceof HTMLImageElement && source.currentSrc) {
-      clone.src = source.currentSrc
-      clone.removeAttribute('srcset')
-      clone.removeAttribute('sizes')
-    }
-    clone.loading = 'eager'
-    clone.alt = ''
-  } else if (clone instanceof HTMLVideoElement) {
-    clone.muted = true
-    clone.loop = true
-    clone.playsInline = true
-    if (source instanceof HTMLVideoElement) clone.currentTime = source.currentTime
-  }
-  return clone
-}
-
-/**
  * Inject the dissolve layer into the page frame: a viewport-box overlay
  * holding the docked window's resting media. Living inside the frame means
  * the dock's scale + clip mask crop it exactly like the page, so the
  * cross-fade stays inside the animating window.
  *
- * The base is the page's own hero media when it mounts one (`cloneHeroSource`).
+ * The base is the page's own hero media when it mounts one (`cloneHeroSource`,
+ * ./motion: a Streak Field poster arrives with its band's ground painted).
  * A page that renders no hero media (the index pages, contact pages) takes
  * `resting` instead, the media the menu previews for this route (its
  * `menuPreview` pick, else the Header fallback), so the settled window reads
@@ -373,7 +348,7 @@ const mountHeroMedia = (frame: HTMLElement, scrollTop: number, resting: MenuMedi
     pointerEvents: 'none',
   })
 
-  const source = frame.querySelector<HTMLImageElement | HTMLVideoElement>(HERO_MEDIA_SELECTOR)
+  const source = findHeroMediaElement(frame)
   let base: HTMLImageElement | HTMLVideoElement | null = null
   if (source) base = cloneHeroSource(source)
   else if (resting) base = createMenuMediaElement(resting)
@@ -470,7 +445,8 @@ const showHoverMedia = (media: MenuMedia | null) => {
   // instead of stacking a duplicate; overwrite kills any in-flight fade-out
   // before its remove fires.
   const last = previous.at(-1)
-  if (last?.dataset.menuHoverItem === media.url) {
+  const mediaUrl = menuMediaUrl(media)
+  if (last?.dataset.menuHoverItem === mediaUrl) {
     gsap.to(last, {
       autoAlpha: 1,
       duration,
@@ -486,7 +462,7 @@ const showHoverMedia = (media: MenuMedia | null) => {
   }
 
   const el = createMenuMediaElement(media)
-  el.setAttribute('data-menu-hover-item', media.url)
+  el.setAttribute('data-menu-hover-item', mediaUrl)
   el.dataset.menuHoverPending = ''
   gsap.set(el, {
     position: 'absolute',
@@ -680,11 +656,11 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
    * full screen.
    */
   const isMenuMediaReady = useCallback((media: MenuMedia) => {
-    if (warmedRef.current.has(media.url)) return true
+    if (warmedRef.current.has(menuMediaUrl(media))) return true
     const layer = getPageFrame()?.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
     if (!layer) return false
     for (const el of layer.querySelectorAll<HTMLElement>(HOVER_ITEM_SELECTOR)) {
-      if (el.dataset.menuHoverItem === media.url && isMediaReady(el)) return true
+      if (el.dataset.menuHoverItem === menuMediaUrl(media) && isMediaReady(el)) return true
     }
     return false
   }, [])
@@ -940,9 +916,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       // Cache warming must never compete with page-critical requests.
       img.fetchPriority = 'low'
       img.decoding = 'async'
-      img.src = media.url
+      const url = menuMediaUrl(media)
+      img.src = url
       onMediaReady(img, (ok) => {
-        if (ok) warmedRef.current.add(media.url)
+        if (ok) warmedRef.current.add(url)
       })
     }
   }, [hoverMediaList])

@@ -52,6 +52,7 @@ export const validatePublicMedia: CollectionBeforeChangeHook<Post> = async ({ da
 
   const sources = new Map<MediaId, Set<string>>()
   addRef(data.heroImage, 'heroImage', sources)
+  addRef(data.shader?.posterMedia, 'shader.posterMedia', sources)
   addRef(data.meta?.image, 'meta.image', sources)
   collectMediaRefs(data.content, 'content', sources)
 

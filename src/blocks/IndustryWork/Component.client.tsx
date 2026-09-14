@@ -14,6 +14,7 @@ import {
 } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
+import { Visual } from '@/components/Visual'
 import { cursorTarget, useCursorProximitySource } from '@/features/cursor'
 import {
   INDUSTRY_WORK_MEDIA,
@@ -121,12 +122,12 @@ const useShaderCrossfade = (showShader: boolean) => {
 }
 
 const IndustryWorkMedia = ({
-  media,
+  visual,
   proximity,
   canvasMounted,
   canvasHot,
 }: {
-  media: WorkEntry['media']
+  visual: WorkEntry['visual']
   /** Cursor-target proximity source; pre-activates the effects on approach. */
   proximity?: RefractionMediaProps['subscribeProximity']
   /** Mount the canvas once — never during a clip-path / scale tween. */
@@ -137,13 +138,29 @@ const IndustryWorkMedia = ({
    */
   canvasHot: boolean
 }) => {
+  const media = visual?.kind === 'media' ? visual.media : null
   const src = media ? webglMediaSrc(media) || undefined : undefined
   const isVideo = Boolean(media?.mimeType?.includes('video'))
   const { enabled, ready, handleReady } = useWebglMediaLayer(src, canvasMounted)
   const showShader = ready && canvasHot
   const { fadeMs, hideDom, shaderVisible } = useShaderCrossfade(showShader)
 
-  if (!media) return null
+  if (!visual) return null
+  // A Streak Field entry shows its poster here: repeated work previews stay
+  // static, and the lens has no pixels of its own to refract.
+  if (!media) {
+    return (
+      <div className="absolute inset-0">
+        <Visual
+          fill
+          imgClassName="object-cover"
+          placement="card"
+          size={MEDIA_SIZE}
+          visual={visual}
+        />
+      </div>
+    )
+  }
 
   return (
     <>
@@ -220,7 +237,7 @@ const MetaGroup = ({ label, values }: { label: string; values: string[] }) => (
 const useIndustrySwap = (panels: IndustryWorkPanel[]) => {
   const [active, setActive] = useState(0)
   const [textIndex, setTextIndex] = useState(0)
-  const [prevMedia, setPrevMedia] = useState<WorkEntry['media']>(null)
+  const [prevMedia, setPrevMedia] = useState<WorkEntry['visual']>(null)
   // Canvas stays unmounted until the first entrance has cleared its clip-path
   // / scale. After that it stays mounted across industry swaps (no shader
   // recompile) and is only hidden while the DOM track owns the swap motion.
@@ -285,7 +302,7 @@ const useIndustrySwap = (panels: IndustryWorkPanel[]) => {
   const onSelect = (index: number) => {
     if (index === active) return
     swappingMediaRef.current = true
-    setPrevMedia(panels[active]?.work.media ?? null)
+    setPrevMedia(panels[active]?.work.visual ?? null)
     setActive(index)
     selectIndustry(index)
   }
@@ -452,12 +469,13 @@ export const IndustryWorkClient = ({
                 <div className="absolute inset-0">
                   {prevMedia ? (
                     <div aria-hidden className="absolute inset-0">
-                      <Media
+                      <Visual
                         fill
                         htmlElement={null}
                         imgClassName="object-cover"
-                        resource={prevMedia}
+                        placement="card"
                         size={MEDIA_SIZE}
+                        visual={prevMedia}
                       />
                     </div>
                   ) : null}
@@ -465,8 +483,8 @@ export const IndustryWorkClient = ({
                     <IndustryWorkMedia
                       canvasHot={canvasHot}
                       canvasMounted={canvasMounted}
-                      media={mediaWork.media}
                       proximity={mediaProximity}
+                      visual={mediaWork.visual}
                     />
                   </div>
                 </div>

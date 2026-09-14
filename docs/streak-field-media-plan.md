@@ -1,16 +1,20 @@
 # Streak Field as website media: implementation plan
 
-Status: proposed, not implemented. Initially reviewed 2026-09-13 against `1e7d9e6`; source claims rechecked against `de03f43` plus the current documentation edits in `sas-site` on the same date.
+Status: implemented through Phase 4 in code on 2026-09-13 (see [Implementation record](#implementation-record-2026-09-13)); Phase 0 and Phase 2 measurement gates and the optional Phase 5 authoring work remain open. Initially reviewed 2026-09-13 against `1e7d9e6`; source claims rechecked against `de03f43` plus the current documentation edits in `sas-site` on the same date.
 
 This supersedes the September 9 plan reviewed at `4e838d2`, including its later shared-canvas revision, for implementation in this repository. The original discussion is [Shader Transition Plan](https://chatgpt.com/c/6aa20240-af6c-83ea-89ef-d39470587a7e). This review compared the earlier plan, current source, changes since that commit, the performance roadmap, and primary framework documentation. No new browser smoke test, production benchmark, or GPU prototype was run. Historical performance results below are evidence from the repo's audit, not measurements from this review.
 
 Verified lockfile and installed versions: Next.js 16.3.4, React 19.2.7, Payload 3.88.0, Three.js 0.182.0, R3F 9.6.1, Drei 10.7.7. Recheck resolved dependency versions when implementation begins.
 
-Current feature status: the Streak Field effect, named presets, playground, and stories exist. Current source usages are demo/story paths. Hero, block, and menu fields remain media uploads; shader selection, its generated types, the visual adapter, poster-generation workflow, and shared Streak runtime are proposals. No shader benchmark report exists under `docs/perf/`. See the [verified repository inventory](performance-audit-work-pages.md#verified-repository-state-2026-09-13) for implemented versus pending performance work. This source check does not verify live Payload content or the current production deployment.
+Current feature status: shader selection (`visualType` plus a `StreakVisualConfig` group) exists on the Pages (High and Medium impact), Segment, Home, Lab and Post heroes, the index globals (where it runs behind the whole page), the Stacked, Split narrow and Media split blocks, the Work Page hero, and the menu-preview slot on Pages, Expertise and Who We Help pages, Contact Pages, the index globals and Work Pages; the server resolver, the `Visual` adapter, the poster-first `StreakVisual` slot, code-owned posters and the bounded local runtime are implemented. The baseline record lives in [`docs/perf/streak-field-baseline/`](perf/streak-field-baseline/README.md); its hardware measurements are still open. This source check does not verify live Payload content or the current production deployment.
+
+Day-to-day usage (what every control does, the shipped looks, the editor fields, the poster pipeline, best practices) lives in the [Streak Field guide](streak-field.md). This plan owns scope, phase gates, the support matrix and the migration answer sheet.
 
 ## Decision
 
 The feature still makes sense: an editor can choose **Media** or **Streak Field**, select a code-defined look, and give each page or block a stable seed and a few bounded adjustments. Store art direction in Payload; keep shader code, quality limits, resource ownership, and transition rules in code.
+
+**Primary surfaces.** The feature is mainly for pages that have no natural photograph or video of their own: Pages (High and Medium impact heroes, the Segment hero), the Home hero, Lab Pages, Posts, the Works and Insights index globals, the Expertise, Who We Help and Contact menu previews, and the composition blocks on those pages. Work Pages are an occasional consumer: a case study normally carries real client media, so the shader is the exception there. Work-specific rules (case-study asset-library scoping, case-study publish checks) are guards for that edge case, not the model for the feature.
 
 The earlier plan's conclusions still hold. Its implementation order needs to account for the current performance work and menu:
 
@@ -145,7 +149,7 @@ Keep React for registration and coarse state changes. Frame time, pointer state,
 
 ### DOM placement is a pass/fail gate
 
-Prototype the home background, contained work hero, Stacked/fullMedia block inside a Section, and a settled menu-sized rectangle with hardcoded descriptors before adding CMS fields.
+Prototype the home background, a contained page hero (a Pages High-impact hero, and a Work hero as the scoped-media case), Stacked/fullMedia block inside a Section, and a settled menu-sized rectangle with hardcoded descriptors before adding CMS fields.
 
 [Drei View](https://raw.githubusercontent.com/pmndrs/drei/master/docs/portals/view.mdx) tracks DOM rectangles and renders scissored regions in one canvas. It is a useful starting point, not a complete solution for this site's layering. Explicitly verify:
 
@@ -234,27 +238,28 @@ Each phase ends with reviewable evidence and a recorded outcome here. A gate tha
 
 ### Phase 3: CMS pilot and poster-compatible navigation
 
-Pilot surfaces: Home hero, both Work Page hero layouts, Work Page menu preview, and the Stacked (`fullMedia`) composition block. Menus and repeated previews use posters.
+Pilot surfaces: Home hero, the Pages High and Medium impact heroes, the Pages menu preview, and the Stacked (`fullMedia`) composition block. Both Work Page hero layouts and the Work Page menu preview join the pilot as the constrained case (scoped asset libraries, case-study publish checks) so those guards are proven early, not because Work is the primary target. Menus and repeated previews use posters.
 
 | Work | Existing integration points |
 | --- | --- |
-| Field factory and preset picker | `src/fields/`, `src/Home/hero/config.ts`, `src/collections/WorkPages/index.ts`, `src/fields/menuPreview.ts`, `src/blocks/full-media/config.ts` |
+| Field factory and preset picker | `src/fields/`, `src/heros/config.ts`, `src/Home/hero/config.ts`, `src/fields/menuPreview.ts`, `src/blocks/full-media/config.ts`, `src/collections/WorkPages/index.ts` |
 | Home | `src/Home/hero/index.tsx`, `HeroBackground.tsx`; preserve HeroBand intro gating and choose media/lens or shader explicitly. |
-| Work heroes | `src/heros/caseStudyHeroFacts.ts`, `CaseStudyHeroLandscape.tsx`, `CaseStudyHeroCenteredMedia.tsx`; accept valid shader visuals even without a populated upload. |
+| Pages heroes | `src/heros/HighImpact/`, `src/heros/MediumImpact/`, `RenderHero`; the shader is the common case here, so the poster-first slot and HeroBand settlement are proven on these first. |
+| Work heroes (constrained case) | `src/heros/caseStudyHeroFacts.ts`, `CaseStudyHeroLandscape.tsx`, `CaseStudyHeroCenteredMedia.tsx`; accept valid shader visuals even without a populated upload; keep the case-study media scoping. |
 | Stacked block | `src/blocks/full-media/Component.tsx`, `FullMedia.tsx`, and `src/blocks/case-study/RenderCaseStudyBlocks.tsx`; update both generic and work adapters and retain `bare`/Section behavior. |
-| Menu and work previews | `src/Header/getMenuContent.ts`, `src/Header/Menu/`, `src/blocks/shared/resolve-work-entry.ts`, `src/blocks/IndustryWork/Component.tsx`; keep precedence and transition eligibility explicit. |
-| Publish checks | `src/collections/WorkPages/hooks/validateWorkPage.ts`, shared field validation, nested Section/block traversal, media approval and asset-library checks. |
+| Menu previews | `src/Header/getMenuContent.ts`, `src/Header/Menu/`; Pages first, then `src/blocks/shared/resolve-work-entry.ts` and `src/blocks/IndustryWork/Component.tsx` for the work consumers; keep precedence and transition eligibility explicit. |
+| Publish checks | Shared field validation and nested Section/block traversal for every parent; `src/collections/WorkPages/hooks/validateWorkPage.ts` adds the case-study media approval and asset-library checks. |
 | Freshness | Home/work/menu and dependent page/index revalidation; published-only queries, draft isolation, and media-depth/select coverage. |
 
 The reused `fullMedia` schema is present under multiple parents and version tables. Even a narrow editor pilot can have broader schema impact. Do not generate a migration until the complete field/parent inventory is frozen.
 
-Existing media-reference walkers will miss `shader.posterMedia` and some nested structures. Add explicit recursive collection of the new references where those blocks are supported. For Work Pages, uploaded posters must be public-approved and satisfy existing case-study asset-library rules. Built-in preset images are code assets, not a reason to waive the rest of Work Page publishing requirements. Include hidden but retained references according to the established policy rather than accidentally bypassing it.
+Existing media-reference walkers will miss `shader.posterMedia` and some nested structures. Add explicit recursive collection of the new references where those blocks are supported. On the rare Work Page that uses the shader, uploaded posters must be public-approved and satisfy existing case-study asset-library rules. Built-in preset images are code assets, not a reason to waive the rest of Work Page publishing requirements. Include hidden but retained references according to the established policy rather than accidentally bypassing it.
 
 **Exit:** old documents render as before; editors can draft/publish shader pilot surfaces; posters work through menu/hero handoffs; types/import maps and focused checks pass; the approved migration covers all added fields and versions.
 
 ### Phase 4: complete the approved surface rollout
 
-Extend the same factory/resolver to generic High/Medium impact heroes, SegmentHero, Lab Page heroes, PostHero, additional menu-preview field callers, and supported composition blocks such as SplitContentNarrow and MediaContentSplit. Copy-only hero types do not acquire a live visual implicitly.
+Extend the same factory/resolver to SegmentHero, Lab Page heroes, PostHero, the Works and Insights index globals, the remaining menu-preview callers (Expertise, Who We Help, Contact Pages, the index globals), and supported composition blocks such as SplitContentNarrow and MediaContentSplit. These, with the Pages heroes from Phase 3, are where the shader is expected day to day. Copy-only hero types do not acquire a live visual implicitly.
 
 Add explicit entry/card preview choices alongside existing cover uploads where needed. Update WorkEntry, lab/post cards, featured work, and their fixtures/query projections; keep repeated views static. Extend [LabPage validation](../src/collections/LabPages/hooks/validateLabPage.ts) and [Post media validation](../src/collections/Posts/hooks/validatePublicMedia.ts) before exposing poster uploads there. Check every additional block's generic, work, lab, and nested Section render paths.
 
@@ -302,23 +307,80 @@ Use frame and resource instrumentation without synchronous GPU readbacks in the 
 
 Implementation validation: `pnpm exec tsc --noEmit` after meaningful type/config changes; `pnpm generate:types` and `pnpm generate:importmap` after schema/admin work; focused `pnpm exec vitest run --config vitest.config.mts <affected-test-files>`; Storybook/browser checks for visual cases; production build and targeted Playwright navigation/failure checks. Add tests for resolver precedence, lifecycle ownership, validation, and existing transition regressions, not tests that merely repeat configuration literals. Do not run the local CI migration script to obtain a build.
 
+
+## Implementation record (2026-09-13)
+
+What shipped in code against this plan, phase by phase, and what each phase still owes.
+
+### Phase 0: ownership and baseline
+
+- Ownership: the Streak Field runs through **one admitted local classic WebGL2 canvas** per document, owned by the `StreakVisual` slot with a module-level, reference-counted admission registry (`src/features/immersive/visual/admission.ts`, ceiling 1, priority hero > block > menu > card). The shared-canvas prototype was not attempted; it stays a measured comparison against this baseline, and the consumer contract is unchanged either way.
+- Root fixes shipped alongside: `GlobalCanvasRoot` is a real dynamic import boundary that mounts only once a route activates the global canvas, and the WebGL store's `isActive` boolean became a reference-counted lease (`acquireActive`).
+- Baseline record: [`docs/perf/streak-field-baseline/README.md`](perf/streak-field-baseline/README.md). **Open:** production-preview captures, real-hardware traces, resource plateau across route/menu/Ask cycles.
+
+### Phase 1: visual contract and hardened scene
+
+- Light contract at `@/features/immersive/visual`: `STREAK_LOOKS` (`signal-v1`, `backdrop-v1`, `topography-v1`, `depth-map-v1`, each a delta-only preset), `resolveVisual` / `resolveMenuPreviewVisual` / `resolveStreakDescriptor`, `composeStreakTuning`, placement ceilings, rollout switch (`NEXT_PUBLIC_STREAK_LIVE=off` for poster-only), posters, capability probe, admission, motion preference. No Three import on that path.
+- Scene split: `ui/streak-field-scene.tsx` (shared `FieldScene`), `ui/streak-field-tuning.ts` (props, defaults, `resolveStreakTuning`), `ui/streak-field.tsx` (demo and story owner, unchanged API), `ui/streak-field-runtime.tsx` (production owner: first-frame readiness per generation, `onShaderError`, `webglcontextlost`, `failIfMajorPerformanceCaveat`, flow-target check, frame watchdog with one step down then poster).
+- Scene hardening: flow resources allocated only for `flow` looks and disposed; render target and scissor restored around the simulation pass; the vertex shader samples the field once per streak; grid density keeps full coverage when the count is capped (`coveragePitch`); pointer bounds refresh on scroll and resize; frozen fields run on demand and stop after their eases settle; hidden, covered, paused or offscreen slots run `frameloop="never"`, release their lease, and unmount after a short suspension.
+- Posters: `public/images/streak-field/<look>-<surface>.webp` with alpha, rendered by `scripts/streak-field-posters.ts` from the `Immersive/StreakField/Posters` capture rig; both ground polarities ship and globals.css picks one by the nearest `[data-theme]` or `.band-dark`.
+- Pause control: `VisualMotionToggle`, one document-wide switch kept for the session, hidden under reduced motion; placed in the hero copy layer where the field sits behind pointer-transparent chrome.
+- Stories: `Immersive/StreakVisual` (hero, contained block, topography, dark band, uploaded poster, degraded preset, card placement, held by owner, editor adjusted), `Immersive/VisualMotionToggle`, plus Streak Field variants on the Stacked, Split narrow, Media split, Home hero and Case study hero stories.
+
+### Phase 2: shared-runtime prototype and backend decision
+
+- Decision: **bounded local delivery**, recorded above. Unsupported live placements: menu previews, cards, repeated and pinned work previews, carousels and galleries (all posters by `PLACEMENT_LIMITS`). Touch-first devices, reduced motion, software renderers and contexts without a renderable float target (for `flow` looks) stay on posters.
+- **Open:** the four representative placements on a shared canvas, renderer-state isolation under scissoring, and the cost comparison. Nothing in the CMS contract changes if that experiment later wins.
+
+### Phase 3 and Phase 4: CMS pilot and rollout
+
+- Field factory `visualSlotFields(upload)` (`src/fields/visual.ts`): the existing upload (hidden once the shader is chosen; a previously `required` upload becomes required-unless-shader), `visualType`, and the `shader` group (`preset` text with `StreakLookSelect`, integer `seed` persisted on save when the shader is chosen, `speed` 0 to 1, `intensity` 0.5 to 1.25, `pointerInteraction`, image-only `posterMedia`). Applied to: Pages hero (High and Medium impact), Segment hero, Home hero, Lab Page hero, Post hero (`heroImage`, portrait frame, SEO image still the media fallback), the index globals' hero (shown for every hero type, upload not required: `heroField({ visualCondition, mediaRequired })`), `fullMedia`, `splitContentNarrow`, `mediaContentSplit` (every parent and version table), and the Work Page hero as the occasional case (poster picker scoped to the case study's libraries, blocks through `withCaseStudyScopedMedia`).
+- Index pages: a Streak Field chosen on `works-index` or `insights-index` runs behind the whole listing through `IndexBackground` (`src/CollectionIndexes/IndexBackground.tsx`): an absolute, pointer-transparent layer whose sticky inner frame is one screen tall, so the canvas never grows with the list; placement `hero`; the pause control is fixed above the footer bar. The listing stays clickable and the field answers the window pointer. A media upload chosen there is menu-only; the index stays copy.
+- Menu preview: `menuPreviewFields()` adds `menuPreviewType` (`automatic` | `media` | `streakField`) and `menuPreviewShader` beside the existing upload on Pages, Expertise and Who We Help pages, Contact Pages, the index globals and Work Pages. Missing type is legacy resolution; explicit automatic inherits even over a retained upload. Not added on Posts or Lab Pages: the menu never links them. Pages revalidation now purges the menu cache tag.
+- Server resolution: `caseStudyHeroFacts`, `resolveWorkEntry` (now carries `visual`), `IndustryWork`, `WorksBrowse`, `getMenuContent` (posters only; `MenuMedia.lightUrl` carries the light-ground twin, `menuMediaUrl` picks at paint time), all through `resolveVisual`. Precedence per consumer is unchanged: menu `menuPreview` → hero → cover; work entries cover → hero; Industry work overrides with `menuPreview`. `getMenuContent` applies one rule (`previewOrOwn`) to every previewable destination: an independent preview is hover-only; the destination's own visual can hand off when the page mounts it. An index global's own visual hands off only as a Streak Field (the page mounts it as `[data-hero-media]`); `/posts` shares the Insights index's entry, so the docked window rests on the poster there instead of a page crop.
+- Navigation: the poster is a real `<img>` inside `[data-hero-media]`, so the takeover menu clones it and the hero handoff lands on it. `findHeroMediaElement` prefers the first hero media element with a box (the theme hides the other poster twin) and falls back to the first match.
+- Menu ground (2026-09-14): posters carry alpha, and the menu's dissolve layer has no ground, so a poster used to composite over the page crop or the media it replaced (a hover preview showed the current page's hero video through the still). `MenuMedia.ground` now names the ground a Streak poster is shown on: a hero's own visual takes its band's polarity (`HERO_BAND_THEME`, `src/heros/band-theme.ts`, the same constant `HeroBand` defaults to), and an independent preview or a hero without a band (Work Pages, the index globals) takes `site`, the visitor's theme at paint time. `menuMediaUrl` picks the twin drawn for that ground and `setMenuMediaGround` pins the element to it (`data-menu-media-ground` plus `data-theme`, so globals.css resolves `--background` from the site palette; no color is restated). The cloned hero poster (`cloneHeroSource`, now in `Menu/motion.ts`) drops its `data-visual-poster` theme gate, which hid a dark-band twin once it left the band under a light site theme (the window stayed on the page crop), and pins the polarity of the nearest `data-theme` ancestor instead.
+- Publish checks: `collectVisualMediaRefs` (`src/fields/visual-refs.ts`) walks every `…media` field, `shader.posterMedia`, carousel slides and Section-nested blocks; the Lab and Work validators include hero and menu-preview shader posters; the Posts public-media gate includes `shader.posterMedia`. Retained uploads are still validated. Home revalidation now purges the menu cache tag.
+- **Deliberately not done:** carousels, galleries, pinned featured work and cards stay posters; no admin live preview or Generate still action (Phase 5).
+
+### Support matrix
+
+| Surface | Live | Poster | Notes |
+| --- | --- | --- | --- |
+| Pages High/Medium impact, Segment hero, Home hero, Lab hero, Post hero | Yes (placement `hero`) | Yes | The everyday surfaces. Live waits for the hero intro to settle where a band plays one. |
+| Work Page heroes (both layouts) | Yes (placement `hero`) | Yes | Occasional: case studies usually keep uploaded client media. Poster picker is scoped to the case study's libraries. |
+| Works and Insights index pages (`IndexBackground`) | Yes (placement `hero`) | Yes | One-screen sticky frame behind the whole listing; listing stays clickable. |
+| Stacked, Split narrow, Media split (top level or inside a Section) | Yes (placement `block`) | Yes | Dark bands pin the ground; Section-nested blocks read the ground at runtime. |
+| Takeover menu previews and handoff traveler | No | Yes | Posters only; `hero` eligibility follows the destination's own visual. |
+| Work entries, Industry work panels, Works browse rows, featured work | No | Yes | Placement `card`: no probe, no runtime chunk. |
+| Carousels, galleries, media showcase | Not offered | Uploads only | Unchanged. |
+| Reduced motion, coarse pointer, software renderer, no WebGL2, live switch off | No | Yes | The poster is the complete visual; nothing falls back to a retained upload. |
+
+### Database
+
+Migration `20260914_032613_streak_field_visuals` (regenerated 2026-09-14 after `menuPreviewType` gained `defaultValue: 'automatic'`) carries every schema change on the branch. The answer sheet below records the prompts it was generated with; regenerate it if the branch is rebased past a newer snapshot.
+
 ## Database, rollout, and rollback
 
-This review changes documentation only. No schema changed, no migration is currently needed, and no create/rename prompts are produced by this work.
+The implementation adds columns only: `visual_type`, the `shader_*` group columns and `menu_preview_type` / `menu_preview_shader_*` on every parent listed above (`pages`, `posts`, `expertise_pages`, `audience_pages`, `home`, `lab_pages`, the index globals, `contact_pages` and `work_pages`), plus their `_v` version copies and the block tables under each parent. No table, block slug, `dbName` or upload column is renamed. Local development syncs through Drizzle push; a migration is required before CI can deploy and must be generated only after this branch is rebased on the newest snapshot.
 
 During implementation, follow [AGENTS.md](../AGENTS.md) and [the database workflow](../README.md#database--migrations): dev push locally, regenerate types/import maps, request permission before `pnpm migrate:create`, and apply migrations only through CI. Never run `payload migrate` locally. Validate enum safety with `pnpm check:migrations` and snapshot ancestry with the existing drift workflow. Do not add fields after a migration without covering them in a newly reviewed snapshot/migration.
 
-### Expected future migrate:create prompt answers
+### migrate:create prompt answers
 
-Suggested command after the complete pilot schema is ready and permission is granted: `pnpm migrate:create streak-field-media`.
+Run when regenerating (after rebasing on `main` and with approval): `pnpm migrate:create streak-field-visuals`
 
-The exact SQL table/column prompt inventory must be generated from the final field factory, parent collections/globals, nested blocks, and version schema. It does not exist yet. Expected choices for this additive design:
+The design is additive, so `migrate:create` asks no create-or-rename questions: every generated column is new and every table already exists (the 2026-09-14 run asked none). If it does ask, answer as follows and investigate any prompt not listed here.
 
-1. A new visual-kind field such as `hero.visualType` or `menuPreviewType`: **create column**, never rename an existing upload column. It stores a new choice and preserves authored media.
-2. A new scalar under `shader` or `menuPreviewShader` (preset, seed, speed, intensity, pointer interaction, poster relation): **create column** for each new generated column, including version copies. These have no prior equivalent to rename.
-3. Any genuinely new table emitted by the final schema: **create table**, only after verifying it is new. This design adds no collection, array, or block slug and expects to extend existing tables, so an unexpected table rename/drop requires investigation.
+`menu_preview_type` is added with `DEFAULT 'automatic'`, which Postgres applies to every existing row. An explicit `automatic` ignores a stored upload, so the migration's hand-written backfill (kept in the same `up()`) sets rows that already carry a `menu_preview_id` to `media` on `work_pages`, `contact_pages`, `works_index`, `insights_index` and their `_v` tables: editors' existing picks keep previewing. Re-add that backfill whenever the migration is regenerated.
 
-No renames are intended. Existing `hero.media`, `coverAsset`, `menuPreview`, `heroImage`, block slugs, and block `dbName` values remain intact. Before requesting migration approval, replace this forecast with an exact numbered prompt answer sheet based on the implemented schema. Include all parent/version fields, not just the pilot Work Page.
+1. Any `visual_type` column (hero groups on `pages`, `home`, `lab_pages`, `works_index`, `insights_index`, the segment-page collections and `work_pages`; the document root on `posts` beside `hero_image_id`; the `*_full_media`, `*_split_narrow`, `*_media_split` block tables under every parent and Section; every `_v` version copy) — **create column**. New choice; the upload column beside it is untouched.
+2. Any `shader_preset`, `shader_seed`, `shader_speed`, `shader_intensity`, `shader_pointer_interaction`, `shader_poster_media_id` column on the same tables — **create column**. No prior equivalent.
+3. Any `menu_preview_type` column and `menu_preview_shader_*` columns on `contact_pages`, `works_index`, `insights_index`, `work_pages` and their version tables — **create column**. The existing `menu_preview_id` column stays. On `pages`, `expertise_pages` and `audience_pages` (and their `_v` tables) the whole slot is new: `menu_preview_id`, `menu_preview_type` and `menu_preview_shader_*` — **create column** each; nothing there is a rename.
+4. Any `enum_*_visual_type` or `enum_*_menu_preview_type` enum — **create**. New enums; the migration must not `ALTER TYPE … ADD VALUE` an existing one.
+5. Any prompt about a table being created or renamed — **investigate before answering**; this change creates no table and renames nothing. `hero.media`, `coverAsset`, `menuPreview`, `heroImage`, block slugs and `dbName` values are unchanged.
+
+After generating: `pnpm check:migrations` and `pnpm check:migrations:drift`, review the `.ts` and `.json` together, and commit both.
 
 Roll out behind a code-owned feature switch: poster-only mode first, then one live pilot surface, then qualified placements. Disabling live rendering must continue to display authored shader posters, not fall back to an unrelated retained video. Roll back runtime behavior without deleting schema fields or uploaded originals. Keep preset posters for stored IDs across rollback releases.
 

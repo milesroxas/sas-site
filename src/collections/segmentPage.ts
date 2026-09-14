@@ -8,6 +8,7 @@ import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
+import { menuPreviewFields } from '@/fields/menuPreview'
 import { editorialNotesField } from '@/fields/pageFields'
 import { segmentPageBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
@@ -151,6 +152,10 @@ export const segmentPageCollection = <S extends SegmentPageSlug>({
       ],
     },
     { name: 'publishedAt', type: 'date', admin: { position: 'sidebar' } },
+    ...menuPreviewFields({
+      description:
+        "Shown in the site menu while this page's link is hovered. Leave empty to use the hero visual, then the Header's menu fallback.",
+    }),
     slugField({ useAsSlug: 'title' }),
   ],
   hooks: {

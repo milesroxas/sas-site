@@ -43,7 +43,15 @@ const menuContent: MenuContent = {
     {
       title: 'Website Strategy, UX & Development',
       href: '/expertise/website-strategy',
-      media: hoverMedia(fixtureHero('#7f1d1d', '#f59e0b', '#22d3ee')),
+      // A Streak Field hero, as getMenuContent previews it: the look's poster
+      // twins (alpha stills served from public/) on the hero band's ground.
+      media: {
+        url: '/images/streak-field/backdrop-v1-dark.webp',
+        lightUrl: '/images/streak-field/backdrop-v1-light.webp',
+        mime: 'image/webp',
+        hero: true,
+        ground: 'dark',
+      },
     },
     { title: 'Product UX/UI & Design Systems', href: '/expertise/product-ux', media: null },
     {

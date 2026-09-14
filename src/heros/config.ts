@@ -4,11 +4,36 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
-import type { Field } from 'payload'
+import type { Condition, Field } from 'payload'
 
 import { linkGroup } from '@/fields/linkGroup'
+import { visualSlotFields } from '@/fields/visual'
 
-export const hero: Field = {
+const mediaHeroTypes: Condition = (_, { type } = {}) =>
+  ['highImpact', 'mediumImpact'].includes(type)
+
+export type HeroFieldArgs = {
+  /**
+   * When the visual slot (upload, kind, shader) shows. Defaults to the hero
+   * types that render media; a page that paints the visual somewhere other
+   * than the hero band (the index globals) shows it for every type.
+   */
+  visualCondition?: Condition
+  /** Whether the upload is required (unless the shader is chosen). Off where the band never paints it. */
+  mediaRequired?: boolean
+  visualTypeDescription?: string
+}
+
+/**
+ * The generic page hero: type, copy, links and a visual slot. A factory,
+ * not a literal: Payload mutates field configs while sanitizing them, and
+ * the index globals need a different visual gate from Pages.
+ */
+export const heroField = ({
+  visualCondition = mediaHeroTypes,
+  mediaRequired = true,
+  visualTypeDescription,
+}: HeroFieldArgs = {}): Field => ({
   name: 'hero',
   type: 'group',
   fields: [
@@ -83,15 +108,17 @@ export const hero: Field = {
         maxRows: 2,
       },
     }),
-    {
-      name: 'media',
-      type: 'upload',
-      admin: {
-        condition: (_, { type } = {}) => ['highImpact', 'mediumImpact'].includes(type),
+    ...visualSlotFields(
+      {
+        name: 'media',
+        type: 'upload',
+        relationTo: 'media',
+        required: mediaRequired,
       },
-      relationTo: 'media',
-      required: true,
-    },
+      { condition: visualCondition, visualTypeDescription },
+    ),
   ],
   label: false,
-}
+})
+
+export const hero: Field = heroField()

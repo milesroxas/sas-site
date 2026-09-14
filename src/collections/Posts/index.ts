@@ -15,6 +15,7 @@ import { editorialNotesField, relatedPagesField } from '@/fields/pageFields'
 import { postLayoutBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
+import { visualSlotFields } from '@/fields/visual'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Banner } from '../../blocks/Banner/config'
@@ -77,14 +78,20 @@ export const Posts: CollectionConfig<'posts'> = {
       tabs: [
         {
           fields: [
-            {
-              name: 'heroImage',
-              type: 'upload',
-              relationTo: 'media',
-              admin: {
-                description: 'Portrait crop (4:5) beside the title in the post hero.',
+            ...visualSlotFields(
+              {
+                name: 'heroImage',
+                type: 'upload',
+                relationTo: 'media',
+                admin: {
+                  description: 'Portrait crop (4:5) beside the title in the post hero.',
+                },
               },
-            },
+              {
+                visualTypeDescription:
+                  'Leave empty to use the hero image, then the SEO image. Streak Field fills the portrait frame with a code-defined look; an image left in place is kept but not shown.',
+              },
+            ),
             {
               name: 'standfirst',
               type: 'textarea',

@@ -35,6 +35,7 @@ const item = (
   industries: worksBrowseIndustries.filter((option) => option.slug === industrySlug),
   year: '2026',
   capabilities,
+  visual: { kind: 'media', media: heroImageFixture },
   media: heroImageFixture,
   featured: false,
   publishedAt: `2026-0${6 - id}-01T00:00:00.000Z`,
@@ -64,7 +65,7 @@ export const worksBrowseItems: WorksBrowseItem[] = [
     'consumer-packaged-goods',
     capability('web-design', 'brand-expansion', 'web-strategy', 'website-production'),
     // No media: the row falls back to the muted placeholder frame.
-    { media: null },
+    { media: null, visual: null },
   ),
   item(
     4,

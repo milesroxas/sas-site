@@ -70,6 +70,11 @@ const nextConfig: NextConfig = {
       {
         pathname: '/api/media/file/**',
       },
+      // Code-owned Streak Field posters (src/features/immersive/visual/posters.ts);
+      // the `?v=` query keys the transform to the look revision.
+      {
+        pathname: '/images/streak-field/**',
+      },
     ],
     // Media URLs carry `?<updatedAt>`, so a transform can live as long as the
     // object. Without this the optimizer inherits Payload's `max-age=0` and

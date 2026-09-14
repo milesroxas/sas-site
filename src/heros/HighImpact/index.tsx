@@ -1,13 +1,16 @@
 'use client'
 import type React from 'react'
 import { Container } from '@/components/Container'
-import { Media } from '@/components/Media'
+import { Visual } from '@/components/Visual'
 import { ImmersiveShell, WebGLTunnel, WebGlBackdropScene } from '@/features/immersive'
+import { resolveVisual } from '@/features/immersive/visual'
 import { HeroBand } from '@/heros/HeroBand'
 import { HeroDescription, HeroLinks, HeroTitle } from '@/heros/shared'
 import type { Page } from '@/payload-types'
 
-export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, media, title }) => {
+export const HighImpactHero: React.FC<Page['hero']> = (hero) => {
+  const { description, links, title } = hero
+  const visual = resolveVisual(hero, { seedKey: title ?? 'hero' })
   return (
     // The band owns the palette and the header pull; the immersive shell
     // inside it owns the WebGL layer and the layout.
@@ -32,14 +35,17 @@ export const HighImpactHero: React.FC<Page['hero']> = ({ description, links, med
           </div>
         </Container>
 
-        {media && typeof media === 'object' && (
+        {visual && (
           // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
           <div data-hero-media className="contents">
-            <Media
+            <Visual
               fill
+              frameClassName="-z-10 opacity-85"
               imgClassName="-z-10 object-cover opacity-85 mix-blend-soft-light select-none"
+              placement="hero"
+              posterClassName="object-cover select-none"
               priority
-              resource={media}
+              visual={visual}
             />
           </div>
         )}

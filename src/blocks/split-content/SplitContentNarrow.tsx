@@ -1,8 +1,10 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
+import { blockSurface } from '@/blocks/shared/visual-surface'
 import { Container } from '@/components/Container'
-import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import type { Media as MediaDoc, SplitContentNarrowBlock } from '@/payload-types'
+import { Visual } from '@/components/Visual'
+import type { Visual as VisualValue } from '@/features/immersive/visual'
+import type { SplitContentNarrowBlock } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { BlockGrid } from '../shared/grid'
 import { Section } from '../shared/section'
@@ -39,12 +41,12 @@ export const SplitContentNarrow = ({
   bare = false,
   block,
   content,
-  media,
+  visual,
 }: {
   bare?: boolean
   block: Pick<SplitContentNarrowBlock, 'eyebrow' | 'heading' | 'imagePosition' | 'theme'>
   content: DefaultTypedEditorState | null | undefined
-  media: MediaDoc
+  visual: VisualValue
 }) => {
   if (!content) return null
   const imageLeft = block.imagePosition === 'left'
@@ -59,12 +61,14 @@ export const SplitContentNarrow = ({
           )}
           data-reveal="media"
         >
-          <Media
+          <Visual
             fill
             htmlElement={null}
             imgClassName="object-cover"
-            resource={media}
+            placement="block"
             size="(max-width: 768px) 100vw, 72vw"
+            surface={blockSurface(block.theme, bare)}
+            visual={visual}
           />
         </div>
         <div

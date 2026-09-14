@@ -1,4 +1,5 @@
 import type { Field } from 'payload'
+import { visualSlotFields } from '@/fields/visual'
 
 export const homeHero: Field = {
   name: 'hero',
@@ -39,12 +40,18 @@ export const homeHero: Field = {
           'Supporting paragraph shown under the statement (left) or in the footer (center).',
       },
     },
-    {
-      name: 'media',
-      type: 'upload',
-      relationTo: 'media',
-      label: 'Background',
-    },
+    ...visualSlotFields(
+      {
+        name: 'media',
+        type: 'upload',
+        relationTo: 'media',
+        label: 'Background',
+      },
+      {
+        visualTypeDescription:
+          'Leave empty to use the background upload. Streak Field renders a code-defined look behind the statement; an upload left in place is kept but not shown.',
+      },
+    ),
     {
       name: 'featuredPost',
       type: 'relationship',

@@ -1601,3 +1601,27 @@ html[data-theme="dark"],
 html[data-theme="light"] {
   opacity: initial;
 }
+
+/* Visual posters (src/features/immersive/visual/streak-visual.tsx): a Streak
+   Field slot ships one still per ground polarity and the ground decides which
+   paints. Light is the site default; a dark site theme or a dark band flips
+   the pair. Keyed here rather than on a theme hook so the server HTML already
+   shows the right still and the takeover menu finds one visible image. */
+[data-visual-poster="dark"] {
+  display: none;
+}
+:is([data-theme="dark"], .band-dark) [data-visual-poster="light"] {
+  display: none;
+}
+:is([data-theme="dark"], .band-dark) [data-visual-poster="dark"] {
+  display: block;
+}
+
+/* Takeover-menu media (src/Header/Menu/motion.ts): a Streak Field poster
+   painted outside its band (the docked window, a hover preview, the handoff
+   traveler) carries alpha, so it paints the ground it was drawn for itself.
+   The element is pinned to that polarity with `data-theme`, and the palette
+   rules above resolve `--background` on it: no color is restated here. */
+[data-menu-media-ground] {
+  background-color: var(--background);
+}

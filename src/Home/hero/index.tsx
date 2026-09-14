@@ -1,12 +1,14 @@
 import type React from 'react'
 import type { CSSProperties } from 'react'
 import { Container } from '@/components/Container'
+import { resolveVisual, VisualMotionToggle } from '@/features/immersive/visual'
 import { HeroBand, type HeroIntroMode } from '@/heros/HeroBand'
-import type { Home, Media, Post } from '@/payload-types'
+import type { Home, Post } from '@/payload-types'
 import { populatedDoc } from '@/utilities/relationshipId'
 import { cn } from '@/utilities/ui'
 import { FeaturedCard } from './FeaturedCard'
 import { HeroBackground } from './HeroBackground'
+import { HeroStreakBackground } from './HeroStreakBackground'
 
 type HomeHeroData = Home['hero']
 type HeroLayout = HomeHeroData['type']
@@ -102,11 +104,14 @@ const HomeHero: React.FC<HomeHeroProps> = ({
   featuredPost,
   intro = 'auto',
   media,
+  shader,
   title,
   type,
+  visualType,
 }) => {
   const isCenter = type === 'center'
-  const backgroundMedia = populatedDoc<Media>(media)
+  // Resolved once: an explicit Streak Field wins over a retained upload.
+  const visual = resolveVisual({ media, shader, visualType }, { seedKey: 'home-hero' })
   const post = populatedDoc<Post>(featuredPost)
 
   return (
@@ -117,12 +122,13 @@ const HomeHero: React.FC<HomeHeroProps> = ({
       intro={intro}
       pinsChromeAtLoad
     >
-      {backgroundMedia && <HeroBackground media={backgroundMedia} />}
+      {visual?.kind === 'media' && <HeroBackground media={visual.media} />}
+      {visual?.kind === 'streakField' && <HeroStreakBackground descriptor={visual.descriptor} />}
       {/* Cold page intro only (globals.css "Page intro"): the band's own
           ground, retracting downward to uncover the media at the site
           reveal's tempo. Same negative z as the media group and a later
           sibling, so it paints over the media and under the copy. */}
-      {backgroundMedia && (
+      {visual && (
         <div aria-hidden className="absolute inset-0 -z-10 bg-background" data-intro-cover />
       )}
 
@@ -160,6 +166,11 @@ const HomeHero: React.FC<HomeHeroProps> = ({
             type={type}
           />
         </Container>
+        {/* The field runs behind pointer-transparent chrome, so its pause
+            control lives in the copy layer where it can be reached. */}
+        {visual?.kind === 'streakField' && (
+          <VisualMotionToggle className="absolute right-4 bottom-4 md:right-8 md:bottom-6" />
+        )}
       </div>
     </HeroBand>
   )

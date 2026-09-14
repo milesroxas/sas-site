@@ -89,6 +89,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | CMS content migration from another system | `.agents/skills/cms-migration` |
 | WebGL / shaders / R3F / TSL / motion physics | `.agents/skills/creative-webgl-shaders` — use the **creative-webgl-shaders** skill |
 | Immersive effects — usage, defaults/presets contract | [docs/immersive-effects.md](docs/immersive-effects.md); Cursor rule `.cursor/rules/immersive-effects.mdc` |
+| Streak Field — controls, looks, CMS usage, posters, best practices | [docs/streak-field.md](docs/streak-field.md); plan and gates: [docs/streak-field-media-plan.md](docs/streak-field-media-plan.md) |
 | Animations — reveals, route transitions, tuning workflow | [docs/animations.md](docs/animations.md) |
 | Performance — audit findings, before/after capture runbook | [docs/performance-audit-work-pages.md](docs/performance-audit-work-pages.md); [docs/performance-measurement.md](docs/performance-measurement.md) |
 | Contact forms, the inquiries inbox, notification | [docs/inquiries.md](docs/inquiries.md) |

@@ -1,10 +1,10 @@
 import type React from 'react'
 import { findWorkPagesById } from '@/blocks/shared/find-work-pages'
 import { resolveWorkEntry } from '@/blocks/shared/resolve-work-entry'
+import { resolveMenuPreviewVisual, visualMedia } from '@/features/immersive/visual'
 import type {
   Industry,
   IndustryWorkBlock as IndustryWorkBlockProps,
-  Media as MediaDoc,
   WorkPage,
 } from '@/payload-types'
 import { populatedDoc, relationshipId, relationshipIds } from '@/utilities/relationshipId'
@@ -33,9 +33,9 @@ export const IndustryWorkBlock: React.FC<IndustryWorkBlockProps> = async ({
       if (!page || !entry) return null
 
       // Same precedence as the takeover menu: the page's preview pick wins
-      // over its featured media (cover, else hero) when one is filled in.
-      const preview = populatedDoc<MediaDoc>(page.menuPreview)
-      const work = preview ? { ...entry, media: preview } : entry
+      // over its featured visual (cover, else hero) when one is filled in.
+      const preview = resolveMenuPreviewVisual(page, { seedKey: page.id })
+      const work = preview ? { ...entry, visual: preview, media: visualMedia(preview) } : entry
 
       return {
         id: row.id ?? String(index),

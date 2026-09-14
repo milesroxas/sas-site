@@ -258,6 +258,7 @@ const workEntryFixture = (
     client,
     industry: null,
     capabilities: ['Brand strategy', 'Web design'],
+    visual: { kind: 'media', media },
     media,
   }
 }

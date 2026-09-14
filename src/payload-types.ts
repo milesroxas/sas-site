@@ -298,6 +298,11 @@ export interface Page {
         }[]
       | null;
     media?: (number | null) | Media;
+    /**
+     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
   };
   layout: (
     | PageSectionBlock
@@ -362,6 +367,15 @@ export interface Page {
   };
   publishedAt?: string | null;
   /**
+   * Automatic follows this page’s own visual. Media upload and Streak Field set an independent, hover-only preview.
+   */
+  menuPreviewType?: ('automatic' | 'media' | 'streakField') | null;
+  /**
+   * Shown in the site menu while this page's link is hovered. Leave empty to use the hero visual, then the Header's menu fallback.
+   */
+  menuPreview?: (number | null) | Media;
+  menuPreviewShader?: StreakVisualConfig;
+  /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
@@ -381,6 +395,11 @@ export interface Post {
    * Portrait crop (4:5) beside the title in the post hero.
    */
   heroImage?: (number | null) | Media;
+  /**
+   * Leave empty to use the hero image, then the SEO image. Streak Field fills the portrait frame with a code-defined look; an image left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
   /**
    * Editorial sentence under the title in the hero. Distinct from the SEO description — this one is written to be read.
    */
@@ -1352,6 +1371,11 @@ export interface WorkPage {
     summaryOverride?: string | null;
     media?: (number | null) | Media;
     /**
+     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
+    /**
      * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
      */
     browseAllMedia?: boolean | null;
@@ -1442,9 +1466,14 @@ export interface WorkPage {
   featured?: boolean | null;
   publishedAt?: string | null;
   /**
+   * Automatic follows this page’s own visual. Media upload and Streak Field set an independent, hover-only preview.
+   */
+  menuPreviewType?: ('automatic' | 'media' | 'streakField') | null;
+  /**
    * Shown in the site menu while this page's link is hovered, and by the Industry work block when it features this page. Leave empty to use the hero media, then the cover asset, then the Header's menu fallback (the block falls back to the cover asset, then hero media).
    */
   menuPreview?: (number | null) | Media;
+  menuPreviewShader?: StreakVisualConfig;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -1453,6 +1482,36 @@ export interface WorkPage {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StreakVisualConfig".
+ */
+export interface StreakVisualConfig {
+  /**
+   * A shipped Streak Field look. Tuning lives in code; pick the closest look.
+   */
+  preset?: string | null;
+  /**
+   * Lays out the field. The same seed always draws the same composition; leave empty to have one assigned when saved.
+   */
+  seed?: number | null;
+  /**
+   * Playback rate as a fraction of the look, 0 to 1. Empty is the look as shipped.
+   */
+  speed?: number | null;
+  /**
+   * Brightness multiplier, 0.5 to 1.25. Empty is the look as shipped.
+   */
+  intensity?: number | null;
+  /**
+   * Let the pointer push and light the field on devices that run it live.
+   */
+  pointerInteraction?: boolean | null;
+  /**
+   * Optional still shown before the field runs, and wherever it cannot (reduced motion, no WebGL, menus, social). Images only. Empty uses the look’s built-in poster.
+   */
+  posterMedia?: (number | null) | Media;
 }
 /**
  * Full-screen introduction band rendered right after the hero. The body is the canonical summary from the Content Hub.
@@ -1692,7 +1751,12 @@ export interface WorkFullMediaBlock {
   /**
    * Contained uses the aspect ratio below. Full width crops to 16:9 on small screens and 21:9 from md up.
    */
-  media: number | Media;
+  media?: (number | null) | Media;
+  /**
+   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
@@ -1761,7 +1825,12 @@ export interface WorkMediaContentSplitBlock {
     };
     [k: string]: unknown;
   } | null;
-  media: number | Media;
+  media?: (number | null) | Media;
+  /**
+   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
@@ -1826,7 +1895,12 @@ export interface WorkSplitContentNarrowBlock {
     };
     [k: string]: unknown;
   } | null;
-  media: number | Media;
+  media?: (number | null) | Media;
+  /**
+   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
@@ -2270,9 +2344,14 @@ export interface ContactPage {
   };
   publishedAt?: string | null;
   /**
+   * Automatic follows this page’s own visual. Media upload and Streak Field set an independent, hover-only preview.
+   */
+  menuPreviewType?: ('automatic' | 'media' | 'streakField') | null;
+  /**
    * Shown in the site menu while this page's link is hovered. Leave empty to use the Header's menu fallback.
    */
   menuPreview?: (number | null) | Media;
+  menuPreviewShader?: StreakVisualConfig;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -3491,7 +3570,12 @@ export interface FullMediaBlock {
   /**
    * Contained uses the aspect ratio below. Full width crops to 16:9 on small screens and 21:9 from md up.
    */
-  media: number | Media;
+  media?: (number | null) | Media;
+  /**
+   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
   /**
    * Contained keeps the media in the page column. Full width bleeds edge to edge.
    */
@@ -3544,7 +3628,12 @@ export interface MediaContentSplitBlock {
     };
     [k: string]: unknown;
   } | null;
-  media: number | Media;
+  media?: (number | null) | Media;
+  /**
+   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
   /**
    * Arrange the media on the left or the right of the content.
    */
@@ -3593,7 +3682,12 @@ export interface SplitContentNarrowBlock {
     };
     [k: string]: unknown;
   } | null;
-  media: number | Media;
+  media?: (number | null) | Media;
+  /**
+   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
   /**
    * Arrange the image on the left or the right of the text.
    */
@@ -4385,6 +4479,11 @@ export interface LabPage {
      */
     summaryOverride?: string | null;
     media?: (number | null) | Media;
+    /**
+     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
     layout?: ('editorial-split' | 'centered' | 'immersive' | 'media-led') | null;
     /**
      * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
@@ -4787,7 +4886,12 @@ export interface LabFullMediaBlock {
   /**
    * Contained uses the aspect ratio below. Full width crops to 16:9 on small screens and 21:9 from md up.
    */
-  media: number | Media;
+  media?: (number | null) | Media;
+  /**
+   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
   /**
    * Contained keeps the media in the page column. Full width bleeds edge to edge.
    */
@@ -4852,7 +4956,12 @@ export interface LabMediaContentSplitBlock {
     };
     [k: string]: unknown;
   } | null;
-  media: number | Media;
+  media?: (number | null) | Media;
+  /**
+   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
   /**
    * Arrange the media on the left or the right of the content.
    */
@@ -4913,7 +5022,12 @@ export interface LabSplitContentNarrowBlock {
     };
     [k: string]: unknown;
   } | null;
-  media: number | Media;
+  media?: (number | null) | Media;
+  /**
+   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
   /**
    * Arrange the image on the left or the right of the text.
    */
@@ -5504,6 +5618,15 @@ export interface ExpertisePage {
   };
   publishedAt?: string | null;
   /**
+   * Automatic follows this page’s own visual. Media upload and Streak Field set an independent, hover-only preview.
+   */
+  menuPreviewType?: ('automatic' | 'media' | 'streakField') | null;
+  /**
+   * Shown in the site menu while this page's link is hovered. Leave empty to use the hero visual, then the Header's menu fallback.
+   */
+  menuPreview?: (number | null) | Media;
+  menuPreviewShader?: StreakVisualConfig;
+  /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
@@ -5564,7 +5687,12 @@ export interface SegmentHero {
   /**
    * Fills the band behind the copy.
    */
-  media: number | Media;
+  media?: (number | null) | Media;
+  /**
+   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5699,6 +5827,15 @@ export interface AudiencePage {
     };
   };
   publishedAt?: string | null;
+  /**
+   * Automatic follows this page’s own visual. Media upload and Streak Field set an independent, hover-only preview.
+   */
+  menuPreviewType?: ('automatic' | 'media' | 'streakField') | null;
+  /**
+   * Shown in the site menu while this page's link is hovered. Leave empty to use the hero visual, then the Header's menu fallback.
+   */
+  menuPreview?: (number | null) | Media;
+  menuPreviewShader?: StreakVisualConfig;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -6619,6 +6756,8 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
       };
   layout?:
     | T
@@ -6667,11 +6806,26 @@ export interface PagesSelect<T extends boolean = true> {
             };
       };
   publishedAt?: T;
+  menuPreviewType?: T;
+  menuPreview?: T;
+  menuPreviewShader?: T | StreakVisualConfigSelect<T>;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StreakVisualConfig_select".
+ */
+export interface StreakVisualConfigSelect<T extends boolean = true> {
+  preset?: T;
+  seed?: T;
+  speed?: T;
+  intensity?: T;
+  pointerInteraction?: T;
+  posterMedia?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -6742,6 +6896,8 @@ export interface FullMediaBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
   width?: T;
   aspectRatio?: T;
   contentPosition?: T;
@@ -6759,6 +6915,8 @@ export interface MediaContentSplitBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
   layout?: T;
   aspectRatio?: T;
   theme?: T;
@@ -6775,6 +6933,8 @@ export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
   imagePosition?: T;
   theme?: T;
   id?: T;
@@ -7238,6 +7398,8 @@ export interface PageClosingSelect<T extends boolean = true> {
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
   heroImage?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
   standfirst?: T;
   content?: T;
   layout?:
@@ -7309,6 +7471,8 @@ export interface WorkPagesSelect<T extends boolean = true> {
         titleOverride?: T;
         summaryOverride?: T;
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
         browseAllMedia?: T;
         layout?: T;
         theme?: T;
@@ -7367,7 +7531,9 @@ export interface WorkPagesSelect<T extends boolean = true> {
       };
   featured?: T;
   publishedAt?: T;
+  menuPreviewType?: T;
   menuPreview?: T;
+  menuPreviewShader?: T | StreakVisualConfigSelect<T>;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -7462,6 +7628,8 @@ export interface WorkFullMediaBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
   browseAllMedia?: T;
   width?: T;
   aspectRatio?: T;
@@ -7483,6 +7651,8 @@ export interface WorkMediaContentSplitBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
   browseAllMedia?: T;
   layout?: T;
   aspectRatio?: T;
@@ -7503,6 +7673,8 @@ export interface WorkSplitContentNarrowBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
   browseAllMedia?: T;
   imagePosition?: T;
   theme?: T;
@@ -7812,6 +7984,8 @@ export interface LabPagesSelect<T extends boolean = true> {
         titleOverride?: T;
         summaryOverride?: T;
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
         layout?: T;
         theme?: T;
         mediaTreatment?: T;
@@ -7947,6 +8121,8 @@ export interface LabFullMediaBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
   width?: T;
   aspectRatio?: T;
   contentPosition?: T;
@@ -7967,6 +8143,8 @@ export interface LabMediaContentSplitBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
   layout?: T;
   aspectRatio?: T;
   theme?: T;
@@ -7986,6 +8164,8 @@ export interface LabSplitContentNarrowBlockSelect<T extends boolean = true> {
   heading?: T;
   body?: T;
   media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
   imagePosition?: T;
   theme?: T;
   id?: T;
@@ -8241,6 +8421,9 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
             };
       };
   publishedAt?: T;
+  menuPreviewType?: T;
+  menuPreview?: T;
+  menuPreviewShader?: T | StreakVisualConfigSelect<T>;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -8272,6 +8455,8 @@ export interface SegmentHeroSelect<T extends boolean = true> {
         id?: T;
       };
   media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -8367,6 +8552,9 @@ export interface AudiencePagesSelect<T extends boolean = true> {
             };
       };
   publishedAt?: T;
+  menuPreviewType?: T;
+  menuPreview?: T;
+  menuPreviewShader?: T | StreakVisualConfigSelect<T>;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -8439,7 +8627,9 @@ export interface ContactPagesSelect<T extends boolean = true> {
             };
       };
   publishedAt?: T;
+  menuPreviewType?: T;
   menuPreview?: T;
+  menuPreviewShader?: T | StreakVisualConfigSelect<T>;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -9602,6 +9792,11 @@ export interface Home {
     description: string;
     media?: (number | null) | Media;
     /**
+     * Leave empty to use the background upload. Streak Field renders a code-defined look behind the statement; an upload left in place is kept but not shown.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
+    /**
      * Optional insight card anchored in the hero footer.
      */
     featuredPost?: (number | null) | Post;
@@ -9770,6 +9965,11 @@ export interface InsightsIndex {
         }[]
       | null;
     media?: (number | null) | Media;
+    /**
+     * Streak Field runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
   };
   meta?: {
     /**
@@ -9803,9 +10003,14 @@ export interface InsightsIndex {
     };
   };
   /**
+   * Automatic follows this page’s own visual. Media upload and Streak Field set an independent, hover-only preview.
+   */
+  menuPreviewType?: ('automatic' | 'media' | 'streakField') | null;
+  /**
    * Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the Header's menu fallback.
    */
   menuPreview?: (number | null) | Media;
+  menuPreviewShader?: StreakVisualConfig;
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -9878,6 +10083,11 @@ export interface WorksIndex {
         }[]
       | null;
     media?: (number | null) | Media;
+    /**
+     * Streak Field runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
   };
   meta?: {
     /**
@@ -9911,9 +10121,14 @@ export interface WorksIndex {
     };
   };
   /**
+   * Automatic follows this page’s own visual. Media upload and Streak Field set an independent, hover-only preview.
+   */
+  menuPreviewType?: ('automatic' | 'media' | 'streakField') | null;
+  /**
    * Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the Header's menu fallback.
    */
   menuPreview?: (number | null) | Media;
+  menuPreviewShader?: StreakVisualConfig;
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -10247,6 +10462,8 @@ export interface HomeSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
         featuredPost?: T;
         featuredLabel?: T;
       };
@@ -10337,6 +10554,8 @@ export interface InsightsIndexSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
       };
   meta?:
     | T
@@ -10352,7 +10571,9 @@ export interface InsightsIndexSelect<T extends boolean = true> {
               image?: T;
             };
       };
+  menuPreviewType?: T;
   menuPreview?: T;
+  menuPreviewShader?: T | StreakVisualConfigSelect<T>;
   _status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -10389,6 +10610,8 @@ export interface WorksIndexSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
       };
   meta?:
     | T
@@ -10404,7 +10627,9 @@ export interface WorksIndexSelect<T extends boolean = true> {
               image?: T;
             };
       };
+  menuPreviewType?: T;
   menuPreview?: T;
+  menuPreviewShader?: T | StreakVisualConfigSelect<T>;
   _status?: T;
   updatedAt?: T;
   createdAt?: T;

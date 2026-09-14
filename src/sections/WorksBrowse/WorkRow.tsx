@@ -2,8 +2,8 @@ import { IconArrowUpRight } from '@tabler/icons-react'
 import Link from 'next/link'
 import type React from 'react'
 import { Fragment } from 'react'
-import { Media } from '@/components/Media'
 import { Badge } from '@/components/ui/badge'
+import { Visual } from '@/components/Visual'
 import { cursorTarget } from '@/features/cursor'
 import { FIGURE, LABEL, padIndex } from '@/sections/Browse/registers'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
@@ -81,13 +81,14 @@ export const WorkRow: React.FC<{
         className="relative aspect-video w-full shrink-0 overflow-hidden rounded-md bg-muted md:w-56 lg:w-96"
         data-reveal="media"
       >
-        {item.media && (
-          <Media
+        {item.visual && (
+          <Visual
             fill
             htmlElement={null}
             imgClassName="object-cover"
-            resource={item.media}
+            placement="card"
             size="(min-width: 1024px) 24rem, (min-width: 768px) 14rem, 100vw"
+            visual={item.visual}
           />
         )}
       </div>

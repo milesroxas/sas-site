@@ -56,6 +56,22 @@ export const SeoImageFallback: Story = {
   },
 }
 
+/**
+ * A Streak Field in the portrait frame: the poster paints first and the
+ * field goes live where the device allows. The retained SEO image is not
+ * shown; the pause control sits inside the frame.
+ */
+export const StreakField: Story = {
+  args: {
+    post: {
+      ...basePost,
+      heroImage: null,
+      visualType: 'streakField',
+      shader: { preset: 'depth-map-v1', seed: 42, pointerInteraction: true },
+    },
+  },
+}
+
 /** No standfirst and no author: the two rows the hero can drop. */
 export const Minimal: Story = {
   args: {

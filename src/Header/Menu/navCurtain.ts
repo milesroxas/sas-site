@@ -1,7 +1,7 @@
 import gsap from 'gsap'
 import { rootMs } from '@/shared/lib/view-transition/root-ms'
 import { suppressViewTransitions } from '@/shared/lib/view-transition/suppress'
-import { HERO_MEDIA_SELECTOR, isMediaReady, onMediaReady, TRAVELER_Z } from './motion'
+import { findHeroMediaElement, isMediaReady, onMediaReady, TRAVELER_Z } from './motion'
 
 /**
  * Navigation curtain: the plain-close navigation (a menu link whose
@@ -165,7 +165,7 @@ export const startNavCurtain = (opts: NavCurtainOptions): NavCurtain => {
    */
   const liftWhenPainted = () => {
     if (finished || lifting) return
-    const hero = opts.frame.querySelector<HTMLElement>(HERO_MEDIA_SELECTOR)
+    const hero = findHeroMediaElement(opts.frame)
     if (hero && !isMediaReady(hero)) {
       onMediaReady(hero, lift)
       later(lift, PAINT_TIMEOUT_MS)

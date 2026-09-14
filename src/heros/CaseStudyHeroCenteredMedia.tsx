@@ -1,4 +1,4 @@
-import { Media } from '@/components/Media'
+import { Visual } from '@/components/Visual'
 import type { CaseStudy, Organization, WorkPage } from '@/payload-types'
 import { WorkImageTransition } from '@/shared/lib/view-transition'
 import { pluralLabel } from '@/utilities/pluralLabel'
@@ -73,7 +73,7 @@ export const CaseStudyHeroCenteredMedia = ({
   page: WorkPage
   study: CaseStudy
 }) => {
-  const { capabilities, industries, media, organization, platforms } = caseStudyHeroFacts(
+  const { capabilities, industries, organization, platforms, visual } = caseStudyHeroFacts(
     page,
     study,
   )
@@ -93,16 +93,18 @@ export const CaseStudyHeroCenteredMedia = ({
           </div>
           <HeroTaxonomy industries={industries} platforms={platforms} />
         </div>
-        {media && (
+        {visual && (
           // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
           <div data-hero-media className="md:px-8 lg:px-0">
             <WorkImageTransition slug={page.slug}>
-              <Media
-                priority
-                resource={media}
+              <Visual
                 className="lg:mx-auto lg:w-1/2"
+                frameClassName="aspect-8/5 lg:mx-auto lg:w-1/2"
                 imgClassName="aspect-8/5 w-full object-cover"
+                placement="hero"
+                priority
                 videoClassName="aspect-8/5 w-full object-cover"
+                visual={visual}
               />
             </WorkImageTransition>
           </div>

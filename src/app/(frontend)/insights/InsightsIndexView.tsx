@@ -1,5 +1,6 @@
 import { draftMode } from 'next/headers'
 import type { Metadata } from 'next/types'
+import { IndexBackground } from '@/CollectionIndexes/IndexBackground'
 import { insightsIndexHeroFallback, queryInsightsIndex } from '@/CollectionIndexes/queries'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { InsightsBrowse } from '@/sections/InsightsBrowse'
@@ -21,8 +22,10 @@ export async function InsightsIndexView() {
   ])
 
   return (
-    <main>
+    // relative isolate: the index ground's -z-10 layer sits above the page frame's opaque bg.
+    <main className="relative isolate">
       {draft && <LivePreviewListener />}
+      <IndexBackground hero={hero} seedKey="insights-index" />
       <InsightsBrowse eyebrow={hero.eyebrow} posts={posts} title={hero.title} topics={topics} />
     </main>
   )

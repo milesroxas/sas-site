@@ -1,5 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { STREAK_FIELD_DEPTH_MAP, STREAK_FIELD_PAPER, STREAK_FIELD_TOPOGRAPHY } from '../presets'
+import {
+  STREAK_FIELD_BACKDROP,
+  STREAK_FIELD_DEPTH_MAP,
+  STREAK_FIELD_PAPER,
+  STREAK_FIELD_TOPOGRAPHY,
+} from '../presets'
 import { StreakField } from './streak-field'
 
 /**
@@ -40,14 +45,9 @@ export const Static: Story = {
   },
 }
 
-/** Sparse and slow: a quiet backdrop with copy sitting on it. */
+/** Sparse and slow: a quiet backdrop with copy sitting on it (the `backdrop-v1` look). */
 export const AsABackdrop: Story = {
-  args: {
-    count: 900,
-    rowPitch: 18,
-    drift: -6,
-    flicker: 0.15,
-  },
+  args: STREAK_FIELD_BACKDROP,
   render: (args) => (
     <div data-theme="dark" className="relative isolate min-h-svh bg-black text-foreground">
       <StreakField {...args} />

@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Immersive effects (sas-site)
 
-Full guide: [docs/immersive-effects.md](../../docs/immersive-effects.md); non-WebGL motion systems (scroll reveal, route transitions): [docs/animations.md](../../docs/animations.md) — same defaults contract (`src/shared/ui/scroll-reveal` exports `SCROLL_REVEAL_INTRO`, `SCROLL_REVEAL_UNDER_MEDIA`, and `SCROLL_REVEAL_TRIGGER_DEFAULTS`). Shader technique lives in the **creative-webgl-shaders** skill; this rule is the project contract around it.
+Full guide: [docs/immersive-effects.md](../../docs/immersive-effects.md); non-WebGL motion systems (scroll reveal, route transitions): [docs/animations.md](../../docs/animations.md) — same defaults contract (`src/shared/ui/scroll-reveal` exports `SCROLL_REVEAL_INTRO`, `SCROLL_REVEAL_UNDER_MEDIA`, and `SCROLL_REVEAL_TRIGGER_DEFAULTS`). Shader technique lives in the **creative-webgl-shaders** skill; this rule is the project contract around it. Streak Field as CMS media (controls, looks, editor fields, posters): [docs/streak-field.md](../../docs/streak-field.md).
 
 ## Single source of truth — hard rules
 

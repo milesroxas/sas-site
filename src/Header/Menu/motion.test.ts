@@ -3,10 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { clipPathInset } from '@/shared/ui/hero-landing'
 import {
   canStartHeroHandoff,
+  cloneHeroSource,
   getCardMotion,
   getViewportCrop,
   isInAppNavClick,
   isMediaReady,
+  MENU_MEDIA_GROUND_ATTR,
+  menuMediaUrl,
   onMediaReady,
 } from './motion'
 
@@ -141,6 +144,85 @@ describe('media readiness', () => {
     onMediaReady(video, played)
     video.dispatchEvent(new Event('loadeddata'))
     expect(played).toHaveBeenCalledWith(true)
+  })
+})
+
+describe('cloneHeroSource', () => {
+  it('clones a bare copy pinned to the rendition on screen', () => {
+    const source = document.createElement('img')
+    source.id = 'hero'
+    source.className = 'object-cover'
+    source.setAttribute('srcset', '/hero-900.jpg 900w, /hero-1600.jpg 1600w')
+    source.setAttribute('sizes', '100vw')
+    source.src = '/hero-1600.jpg'
+    Object.defineProperty(source, 'currentSrc', { value: '/hero-1600.jpg', configurable: true })
+    const clone = cloneHeroSource(source)
+    expect(clone.id).toBe('')
+    expect(clone.className).toBe('')
+    expect(clone.getAttribute('srcset')).toBeNull()
+    expect(clone.getAttribute('src')).toBe('/hero-1600.jpg')
+    expect(clone.style.backgroundColor).toBe('')
+  })
+
+  it('drops a Streak poster theme gate and pins the ground it was drawn on', () => {
+    document.documentElement.dataset.theme = 'light'
+    const band = document.createElement('div')
+    band.dataset.theme = 'dark'
+    const source = document.createElement('img')
+    source.setAttribute('data-visual-poster', 'dark')
+    source.src = '/images/streak-field/signal-v1-dark.webp'
+    band.append(source)
+    document.body.append(band)
+    try {
+      const clone = cloneHeroSource(source)
+      expect(clone.hasAttribute('data-visual-poster')).toBe(false)
+      expect(clone.hasAttribute(MENU_MEDIA_GROUND_ATTR)).toBe(true)
+      expect(clone.dataset.theme).toBe('dark')
+    } finally {
+      band.remove()
+      delete document.documentElement.dataset.theme
+    }
+  })
+
+  it('takes the document theme for a poster outside any band', () => {
+    document.documentElement.dataset.theme = 'light'
+    const source = document.createElement('img')
+    source.setAttribute('data-visual-poster', 'light')
+    document.body.append(source)
+    try {
+      expect(cloneHeroSource(source).dataset.theme).toBe('light')
+    } finally {
+      source.remove()
+      delete document.documentElement.dataset.theme
+    }
+  })
+})
+
+describe('menuMediaUrl', () => {
+  const poster = {
+    url: '/images/streak-field/signal-v1-dark.webp',
+    lightUrl: '/images/streak-field/signal-v1-light.webp',
+  }
+  afterEach(() => {
+    delete document.documentElement.dataset.theme
+  })
+
+  it('follows the site theme for a poster on the site ground', () => {
+    document.documentElement.dataset.theme = 'light'
+    expect(menuMediaUrl({ ...poster, ground: 'site' })).toBe(poster.lightUrl)
+    document.documentElement.dataset.theme = 'dark'
+    expect(menuMediaUrl({ ...poster, ground: 'site' })).toBe(poster.url)
+  })
+
+  it('keeps a pinned ground whatever the site theme is', () => {
+    document.documentElement.dataset.theme = 'light'
+    expect(menuMediaUrl({ ...poster, ground: 'dark' })).toBe(poster.url)
+    document.documentElement.dataset.theme = 'dark'
+    expect(menuMediaUrl({ ...poster, ground: 'light' })).toBe(poster.lightUrl)
+  })
+
+  it('has one URL for anything that is not a poster', () => {
+    expect(menuMediaUrl({ url: '/hero.jpg' })).toBe('/hero.jpg')
   })
 })
 

@@ -137,3 +137,36 @@ export const CenteredMediaNoPlatform: Story = {
     },
   },
 }
+
+/** A Streak Field hero, centered layout: valid without any upload. */
+export const StreakFieldCentered: Story = {
+  args: {
+    page: {
+      ...page,
+      coverAsset: null,
+      hero: {
+        ...page.hero,
+        layout: 'centered-media',
+        media: null,
+        visualType: 'streakField',
+        shader: { preset: 'depth-map-v1', seed: 4 },
+      },
+    },
+  },
+}
+
+/** A Streak Field hero, landscape strip. */
+export const StreakFieldLandscape: Story = {
+  args: {
+    page: {
+      ...page,
+      hero: {
+        ...page.hero,
+        layout: 'landscape',
+        media: null,
+        visualType: 'streakField',
+        shader: { preset: 'topography-v1', seed: 9 },
+      },
+    },
+  },
+}

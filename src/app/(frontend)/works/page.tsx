@@ -1,5 +1,6 @@
 import { draftMode } from 'next/headers'
 import type { Metadata } from 'next/types'
+import { IndexBackground } from '@/CollectionIndexes/IndexBackground'
 import { queryWorksIndex, worksIndexHeroFallback } from '@/CollectionIndexes/queries'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { WorksBrowse } from '@/sections/WorksBrowse'
@@ -15,8 +16,10 @@ export default async function WorksPage() {
   const { items, industries, capabilities } = await queryWorksBrowseData()
 
   return (
-    <main>
+    // relative isolate: the index ground's -z-10 layer sits above the page frame's opaque bg.
+    <main className="relative isolate">
       {draft && <LivePreviewListener />}
+      <IndexBackground hero={worksIndex?.hero} seedKey="works-index" />
       <WorksBrowse
         capabilities={capabilities}
         eyebrow={hero.eyebrow}

@@ -23,6 +23,7 @@ import { resolveStoryBlockCopy, resolveStorySectionCopy } from '@/blocks/shared/
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
 import RichText from '@/components/RichText'
+import { resolveVisual } from '@/features/immersive/visual'
 import type {
   CaseStudy,
   CaseStudyKeyDecisionsBlock,
@@ -76,10 +77,10 @@ const storyMediaProps = <
   block: T,
   study: CaseStudy,
 ) => {
-  const media = populatedDoc<MediaDoc>(block.media)
-  if (!media) return null
+  const visual = resolveVisual(block, { seedKey: block.id ?? undefined })
+  if (!visual) return null
   const resolved = resolveStoryBlockCopy(block, study)
-  return { block: resolved, content: resolved.body, media }
+  return { block: resolved, content: resolved.body, visual }
 }
 
 const SplitNarrow = ({

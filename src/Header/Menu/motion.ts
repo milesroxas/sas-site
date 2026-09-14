@@ -6,7 +6,9 @@
  * exactly once (docs/animations.md contract).
  */
 
+import type { Theme } from '@/providers/Theme/types'
 import { clipPathInset } from '@/shared/ui/hero-landing'
+import type { MenuMedia } from '../getMenuContent'
 
 /** Fast ease-in-out shared by the window dock, its clip mask, and the handoff expansion. */
 export const MENU_EASE = 'power2.inOut'
@@ -98,6 +100,103 @@ export const TRAVELER_Z = 46
  * page as the expansion target.
  */
 export const HERO_MEDIA_SELECTOR = '[data-hero-media] img, [data-hero-media] video'
+
+/**
+ * The hero media element the menu clones and the handoff lands on: the first
+ * match that has a box, else the first match. A Streak Field slot renders one
+ * poster per ground polarity and the theme hides the other (`display: none`,
+ * zero rect), so "first match" alone could pick the hidden twin. `requireBox`
+ * drops the fallback for callers that must measure (the handoff's landing).
+ */
+export const findHeroMediaElement = (
+  root: ParentNode,
+  { requireBox = false }: { requireBox?: boolean } = {},
+): HTMLImageElement | HTMLVideoElement | null => {
+  const matches = root.querySelectorAll<HTMLImageElement | HTMLVideoElement>(HERO_MEDIA_SELECTOR)
+  for (const el of matches) {
+    const rect = el.getBoundingClientRect()
+    if (rect.width > 0 && rect.height > 0) return el
+  }
+  return requireBox ? null : (matches[0] ?? null)
+}
+
+/**
+ * The ground a `MenuMedia` is shown on: its pinned polarity (a hero band's),
+ * else the visitor's site theme at paint time.
+ */
+export const menuMediaGround = (media: Pick<MenuMedia, 'ground'>): Theme =>
+  media.ground && media.ground !== 'site'
+    ? media.ground
+    : document.documentElement.dataset.theme === 'dark'
+      ? 'dark'
+      : 'light'
+
+/**
+ * The URL a `MenuMedia` paints with: a Streak Field poster carries a
+ * light-ground twin and takes the one drawn for its ground; everything else
+ * has one URL.
+ */
+export const menuMediaUrl = (media: Pick<MenuMedia, 'url' | 'lightUrl' | 'ground'>): string =>
+  media.lightUrl && menuMediaGround(media) === 'light' ? media.lightUrl : media.url
+
+/**
+ * Marks a menu media element that paints its own ground (globals.css
+ * "Takeover-menu media"): a poster with alpha would otherwise composite
+ * over the page crop or the media it is replacing. The element carries the
+ * ground's polarity as `data-theme`, so the site's own palette rules resolve
+ * `--background` on it and no color is restated here.
+ */
+export const MENU_MEDIA_GROUND_ATTR = 'data-menu-media-ground'
+
+/** Paint `ground` under a menu media element (see `MENU_MEDIA_GROUND_ATTR`). */
+export const setMenuMediaGround = (el: HTMLElement, ground: Theme) => {
+  el.setAttribute(MENU_MEDIA_GROUND_ATTR, '')
+  el.dataset.theme = ground
+}
+
+/** A Streak Field poster still: one twin per ground, gated by the theme (globals.css "Visual posters"). */
+const VISUAL_POSTER_ATTR = 'data-visual-poster'
+
+/**
+ * Clone the page's own hero media for the dissolve layer. Cloning (vs
+ * re-rendering from data) guarantees the exact rendition already on screen:
+ * images paint straight from cache, videos resume at the page's timestamp.
+ *
+ * A Streak Field poster needs two more things to survive the move. Its
+ * theme gate (`data-visual-poster`) is dropped: the clone leaves the hero
+ * band for the page frame, and a dark-ground twin cloned out of a dark band
+ * would be `display: none` under a light site theme, leaving the window on
+ * the page crop. And it paints the ground it was drawn on: the still has
+ * alpha, and on the page the nearest palette pin (the band's `data-theme`,
+ * else the document's) owns its color, so the clone carries that polarity.
+ */
+export const cloneHeroSource = (source: HTMLImageElement | HTMLVideoElement) => {
+  const clone = source.cloneNode(true) as HTMLImageElement | HTMLVideoElement
+  clone.removeAttribute('id')
+  clone.removeAttribute('style')
+  clone.removeAttribute('class')
+  if (clone instanceof HTMLImageElement) {
+    // Pin to the rendition the page already resolved so no new request fires.
+    if (source instanceof HTMLImageElement && source.currentSrc) {
+      clone.src = source.currentSrc
+      clone.removeAttribute('srcset')
+      clone.removeAttribute('sizes')
+    }
+    clone.loading = 'eager'
+    clone.alt = ''
+    if (source.hasAttribute(VISUAL_POSTER_ATTR)) {
+      clone.removeAttribute(VISUAL_POSTER_ATTR)
+      const pin = source.closest<HTMLElement>('[data-theme]')?.dataset.theme
+      setMenuMediaGround(clone, pin === 'dark' ? 'dark' : 'light')
+    }
+  } else if (clone instanceof HTMLVideoElement) {
+    clone.muted = true
+    clone.loop = true
+    clone.playsInline = true
+    if (source instanceof HTMLVideoElement) clone.currentTime = source.currentTime
+  }
+  return clone
+}
 
 /**
  * Media readiness — the menu never dissolves *to* a hole.

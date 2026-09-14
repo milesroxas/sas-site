@@ -180,6 +180,18 @@ export const STREAK_FIELD_PAPER = {
 } as const satisfies Partial<StreakFieldProps>
 
 /**
+ * The streak field as a quiet backdrop: sparse rows, a slow leftward creep
+ * and little shimmer, so copy can sit on it. Promoted from the "as a
+ * backdrop" story once the `backdrop-v1` visual look began shipping it.
+ */
+export const STREAK_FIELD_BACKDROP = {
+  count: 900,
+  rowPitch: 18,
+  drift: -6,
+  flicker: 0.15,
+} as const satisfies Partial<StreakFieldProps>
+
+/**
  * The streak field as a topography: a tick grid where every dash streams
  * along the contours of an fbm height map (curl of the potential runs along
  * its level lines) and brightens with altitude, so ridges read as lit relief

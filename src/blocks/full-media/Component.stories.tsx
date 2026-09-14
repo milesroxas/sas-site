@@ -72,3 +72,24 @@ export const MediaOnly: Story = {
 export const NoContentAuthored: Story = {
   args: { eyebrow: undefined, heading: undefined, body: undefined },
 }
+
+/** A Streak Field in place of the upload: poster first, live once admitted. */
+export const StreakField: Story = {
+  args: {
+    media: null,
+    visualType: 'streakField',
+    shader: { preset: 'topography-v1', seed: 12 },
+    width: 'contained',
+    aspectRatio: '16-9',
+  },
+}
+
+/** The same field on a dark band: the slot reads the band's ground. */
+export const StreakFieldDark: Story = {
+  args: {
+    media: null,
+    visualType: 'streakField',
+    shader: { preset: 'signal-v1', seed: 5, pointerInteraction: true },
+    theme: 'dark',
+  },
+}

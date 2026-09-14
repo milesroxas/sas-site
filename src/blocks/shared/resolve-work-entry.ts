@@ -1,3 +1,4 @@
+import { resolveVisual, type Visual, visualMedia } from '@/features/immersive/visual'
 import type { CaseStudy, Media as MediaDoc, Organization, Project, WorkPage } from '@/payload-types'
 import { populatedDoc } from '@/utilities/relationshipId'
 
@@ -9,6 +10,12 @@ export type WorkEntry = {
   client: string | null
   industry: string | null
   capabilities: string[]
+  /**
+   * The featured visual: the cover asset, else the hero's visual (an upload
+   * or a Streak Field, which repeated entries show as a poster).
+   */
+  visual: Visual | null
+  /** The media document behind `visual`, for consumers that need pixels; null for a Streak Field. */
   media: MediaDoc | null
 }
 
@@ -21,7 +28,8 @@ export const termNames = (terms?: (number | { name: string })[] | null): string[
 /**
  * Presentation-ready summary of a work page for blocks that feature work
  * entries: canonical title, client, first industry, capabilities (featured
- * ones win over the project's), and featured media (cover, else hero media).
+ * ones win over the project's), and the featured visual (cover, else the
+ * hero's visual).
  */
 export function resolveWorkEntry(page: WorkPage): WorkEntry | null {
   if (!page.slug) return null
@@ -31,8 +39,9 @@ export function resolveWorkEntry(page: WorkPage): WorkEntry | null {
   const organization = populatedDoc<Organization>(project?.organization)
 
   const cover = populatedDoc<MediaDoc>(page.coverAsset)
-  const heroMedia = populatedDoc<MediaDoc>(page.hero?.media)
-  const media = cover || heroMedia
+  const visual: Visual | null = cover
+    ? { kind: 'media', media: cover }
+    : resolveVisual(page.hero, { seedKey: page.id })
 
   const industries = termNames(project?.industries)
   const featured = termNames(study?.featuredCapabilities)
@@ -46,6 +55,7 @@ export function resolveWorkEntry(page: WorkPage): WorkEntry | null {
     client: organization?.name || organization?.shortName || null,
     industry: industries[0] ?? null,
     capabilities,
-    media,
+    visual,
+    media: visualMedia(visual),
   }
 }

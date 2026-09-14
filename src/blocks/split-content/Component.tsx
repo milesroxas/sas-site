@@ -1,3 +1,4 @@
+import { resolveVisual } from '@/features/immersive/visual'
 import type { SplitContentNarrowBlock as SplitContentNarrowBlockType } from '@/payload-types'
 import { SplitContentNarrow } from './SplitContentNarrow'
 
@@ -10,7 +11,7 @@ import { SplitContentNarrow } from './SplitContentNarrow'
 export const SplitContentNarrowBlock = (
   props: SplitContentNarrowBlockType & { bare?: boolean; disableInnerContainer?: boolean },
 ) => {
-  const media = props.media
-  if (typeof media !== 'object' || !media) return null
-  return <SplitContentNarrow bare={props.bare} block={props} content={props.body} media={media} />
+  const visual = resolveVisual(props, { seedKey: props.id ?? undefined })
+  if (!visual) return null
+  return <SplitContentNarrow bare={props.bare} block={props} content={props.body} visual={visual} />
 }

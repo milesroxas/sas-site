@@ -14,6 +14,7 @@ import {
 import { onChromeScroll, pageFrameFrozen } from '@/components/SiteChrome/chrome-scroll'
 import { CHROME_THEME_SITE, type ChromeBar, useChromeThemeStore } from '@/providers/ChromeTheme'
 import type { Theme } from '@/providers/Theme/types'
+import { HERO_BAND_THEME } from './band-theme'
 
 /** How a band plays the page intro (globals.css "Page intro"). */
 export type HeroIntroMode = 'auto' | 'cold' | 'warm'
@@ -242,7 +243,7 @@ type HeroBandProps = React.HTMLAttributes<HTMLElement> & {
  */
 export const HeroBand: React.FC<HeroBandProps> = ({
   as = 'section',
-  theme = 'dark',
+  theme = HERO_BAND_THEME,
   pinsChromeAtLoad = false,
   intro,
   children,

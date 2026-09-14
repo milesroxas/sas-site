@@ -1,3 +1,4 @@
+import { resolveVisual } from '@/features/immersive/visual'
 import type { MediaContentSplitBlock as MediaContentSplitBlockType } from '@/payload-types'
 import { MediaContentSplit } from './MediaContentSplit'
 
@@ -10,7 +11,7 @@ import { MediaContentSplit } from './MediaContentSplit'
 export const MediaContentSplitBlock = (
   props: MediaContentSplitBlockType & { bare?: boolean; disableInnerContainer?: boolean },
 ) => {
-  const media = props.media
-  if (typeof media !== 'object' || !media) return null
-  return <MediaContentSplit bare={props.bare} block={props} content={props.body} media={media} />
+  const visual = resolveVisual(props, { seedKey: props.id ?? undefined })
+  if (!visual) return null
+  return <MediaContentSplit bare={props.bare} block={props} content={props.body} visual={visual} />
 }

@@ -120,7 +120,3 @@ export function GlobalCanvas({
     </div>
   )
 }
-
-export const LazyGlobalCanvas = dynamic(() => Promise.resolve({ default: GlobalCanvas }), {
-  ssr: false,
-})

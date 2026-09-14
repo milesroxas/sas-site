@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
+import { menuPreviewFields } from '@/fields/menuPreview'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
 import { hero } from '@/heros/config'
@@ -87,6 +88,10 @@ export const Pages: CollectionConfig<'pages'> = {
         position: 'sidebar',
       },
     },
+    ...menuPreviewFields({
+      description:
+        "Shown in the site menu while this page's link is hovered. Leave empty to use the hero visual, then the Header's menu fallback.",
+    }),
     slugField(),
   ],
   hooks: {

@@ -28,7 +28,7 @@ export function Canvas({ children, root = false, force = false }: CanvasProps) {
   // Atomic selectors: a bare useWebGLStore() subscribes this provider to the whole
   // store, re-rendering the wrapped subtree on every active toggle (perf-zustand-selectors).
   const activate = useWebGLStore((s) => s.activate)
-  const setActive = useWebGLStore((s) => s.setActive)
+  const acquireActive = useWebGLStore((s) => s.acquireActive)
   const getWebGLTunnel = useWebGLStore((s) => s.getWebGLTunnel)
   const getDOMTunnel = useWebGLStore((s) => s.getDOMTunnel)
 
@@ -38,9 +38,9 @@ export function Canvas({ children, root = false, force = false }: CanvasProps) {
   useLayoutEffect(() => {
     if (!shouldRender) return
     activate()
-    setActive(true)
-    return () => setActive(false)
-  }, [shouldRender, activate, setActive])
+    // A lease, not a flag: releasing this one leaves other providers' leases intact.
+    return acquireActive()
+  }, [shouldRender, activate, acquireActive])
 
   const tunnelsReady = globalWebGLTunnel && globalDOMTunnel
 

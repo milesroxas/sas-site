@@ -1,17 +1,9 @@
 import { APIError, type CollectionBeforeValidateHook } from 'payload'
 import { assertStoryBeatReferencesExist } from '@/collections/story/validate'
+import { collectVisualMediaRefs } from '@/fields/visual-refs'
 import { findUnpublishableMedia } from '@/hooks/findUnpublishableMedia'
 import type { LabPage, LabProject } from '@/payload-types'
 import { relationshipId, relationshipIds } from '@/utilities/relationshipId'
-
-const blockMedia = (layout: LabPage['layout']) =>
-  (layout || []).flatMap((block) => {
-    if ('slides' in block && Array.isArray(block.slides)) {
-      return block.slides.flatMap((slide) => (slide.media ? [slide.media] : []))
-    }
-    if (!('media' in block) || !block.media) return []
-    return Array.isArray(block.media) ? block.media : [block.media]
-  })
 
 export const validateLabPage: CollectionBeforeValidateHook<LabPage> = async ({
   data,
@@ -43,7 +35,8 @@ export const validateLabPage: CollectionBeforeValidateHook<LabPage> = async ({
   const mediaIDs = relationshipIds([
     merged.coverAsset,
     merged.hero?.media,
-    ...blockMedia(merged.layout),
+    merged.hero?.shader?.posterMedia,
+    ...collectVisualMediaRefs(merged.layout),
   ])
 
   const invalid = await findUnpublishableMedia({

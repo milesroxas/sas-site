@@ -1,5 +1,6 @@
 import type { GroupField } from 'payload'
 import { linkGroup } from '@/fields/linkGroup'
+import { visualSlotFields } from '@/fields/visual'
 
 /**
  * The opening of a segment page (Who We Help, Expertise). One hero, no type
@@ -58,14 +59,14 @@ export const segmentHero: GroupField = {
       type: 'collapsible',
       label: 'Media & layout',
       fields: [
-        {
+        ...visualSlotFields({
           name: 'media',
           type: 'upload',
           relationTo: 'media',
           required: true,
           filterOptions: { usageStatus: { equals: 'public-approved' } },
           admin: { description: 'Fills the band behind the copy.' },
-        },
+        }),
       ],
     },
   ],

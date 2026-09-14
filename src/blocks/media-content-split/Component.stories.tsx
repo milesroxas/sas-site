@@ -71,3 +71,12 @@ export const Composed: Story = {
 export const ComposedDark: Story = {
   args: { body: contentColumnFixture, theme: 'dark' },
 }
+
+/** A Streak Field in the media column. */
+export const StreakField: Story = {
+  args: {
+    media: null,
+    visualType: 'streakField',
+    shader: { preset: 'backdrop-v1', seed: 3, speed: 0.6 },
+  },
+}

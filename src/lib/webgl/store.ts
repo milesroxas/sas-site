@@ -22,7 +22,10 @@ function getDOMTunnel(): WebGLTunnelInstance {
 
 type WebGLStore = {
   isActivated: boolean
+  /** True while at least one consumer holds an activity lease. */
   isActive: boolean
+  /** Open leases; `isActive` is derived from it, never set directly by a consumer. */
+  activeLeases: number
   /**
    * Number of Preload compile passes in flight. The frame loop must not render
    * while this is nonzero: WebGPU pipelines created by compileAsync are pending
@@ -36,7 +39,12 @@ type WebGLStore = {
   getWebGLTunnel: () => WebGLTunnelInstance
   getDOMTunnel: () => WebGLTunnelInstance
   activate: () => void
-  setActive: (active: boolean) => void
+  /**
+   * Hold the canvas active until the returned release is called. Reference
+   * counted and idempotent: one provider unmounting never deactivates the
+   * canvas for another that still holds a lease.
+   */
+  acquireActive: () => () => void
   beginCompiling: () => void
   endCompiling: () => void
 }
@@ -44,6 +52,7 @@ type WebGLStore = {
 export const useWebGLStore = create<WebGLStore>((set, get) => ({
   isActivated: false,
   isActive: false,
+  activeLeases: 0,
   compilingCount: 0,
 
   getWebGLTunnel,
@@ -53,14 +62,20 @@ export const useWebGLStore = create<WebGLStore>((set, get) => ({
     const state = get()
     if (state.isActivated) return
 
-    set({
-      isActivated: true,
-      isActive: true,
-    })
+    set({ isActivated: true })
   },
 
-  setActive: (active: boolean) => {
-    set({ isActive: active })
+  acquireActive: () => {
+    set((state) => ({ activeLeases: state.activeLeases + 1, isActive: true }))
+    let released = false
+    return () => {
+      if (released) return
+      released = true
+      set((state) => {
+        const activeLeases = Math.max(0, state.activeLeases - 1)
+        return { activeLeases, isActive: activeLeases > 0 }
+      })
+    }
   },
 
   beginCompiling: () => {

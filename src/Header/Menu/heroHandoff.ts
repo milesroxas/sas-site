@@ -12,11 +12,14 @@ import {
   CARD_RADIUS_MOBILE,
   DISSOLVE_DURATION,
   DISSOLVE_EASE,
+  findHeroMediaElement,
   getCardMotion,
   getViewportWidth,
-  HERO_MEDIA_SELECTOR,
   MENU_EASE,
+  menuMediaGround,
+  menuMediaUrl,
   onMediaReady,
+  setMenuMediaGround,
   TRAVELER_Z,
 } from './motion'
 
@@ -117,8 +120,13 @@ export const createMenuMediaElement = (media: MenuMedia): HTMLImageElement | HTM
   }
   const img = document.createElement('img')
   img.decoding = 'async'
-  img.src = media.url
+  img.src = menuMediaUrl(media)
   img.alt = ''
+  // A poster with alpha paints its ground itself: the layer it lands in has
+  // none, and whatever sits beneath (the page crop, the media it is
+  // replacing) would show through. The twin `menuMediaUrl` picked is the
+  // one drawn for this ground.
+  if (media.ground) setMenuMediaGround(img, menuMediaGround(media))
   return img
 }
 
@@ -301,9 +309,8 @@ export const startHeroHandoff = (opts: HeroHandoffOptions): HeroHandoff => {
     const deadline = performance.now() + HERO_MOUNT_TIMEOUT_MS
     const step = () => {
       if (finished) return
-      const el = opts.frame.querySelector<HTMLElement>(HERO_MEDIA_SELECTOR)
-      const rect = el?.getBoundingClientRect()
-      if (el && rect && rect.width > 0 && rect.height > 0) {
+      const el = findHeroMediaElement(opts.frame, { requireBox: true })
+      if (el) {
         heroTarget = el
         maybeCollapse()
         return

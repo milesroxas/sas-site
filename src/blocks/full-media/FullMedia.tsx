@@ -1,10 +1,12 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import { ASPECT_RATIO_CLASS } from '@/blocks/shared/aspect-ratio'
 import { eyebrowClassName } from '@/blocks/shared/typography'
+import { blockSurface } from '@/blocks/shared/visual-surface'
 import { Container } from '@/components/Container'
-import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import type { FullMediaBlock, Media as MediaDoc } from '@/payload-types'
+import { Visual } from '@/components/Visual'
+import type { Visual as VisualValue } from '@/features/immersive/visual'
+import type { FullMediaBlock } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { BlockGrid } from '../shared/grid'
 import { Section } from '../shared/section'
@@ -34,7 +36,7 @@ export const FullMedia = ({
   bare = false,
   block,
   content,
-  media,
+  visual,
 }: {
   bare?: boolean
   block: Pick<
@@ -42,7 +44,7 @@ export const FullMedia = ({
     'aspectRatio' | 'contentPosition' | 'eyebrow' | 'heading' | 'showContent' | 'theme' | 'width'
   >
   content: DefaultTypedEditorState | null | undefined
-  media: MediaDoc
+  visual: VisualValue
 }) => {
   const showContent =
     block.showContent !== false && Boolean(block.eyebrow || block.heading || content)
@@ -60,7 +62,15 @@ export const FullMedia = ({
       )}
       data-reveal="media"
     >
-      <Media fill htmlElement={null} imgClassName="object-cover" resource={media} size="100vw" />
+      <Visual
+        fill
+        htmlElement={null}
+        imgClassName="object-cover"
+        placement="block"
+        size="100vw"
+        surface={blockSurface(block.theme, bare)}
+        visual={visual}
+      />
     </div>
   )
   const contentCells = showContent ? (

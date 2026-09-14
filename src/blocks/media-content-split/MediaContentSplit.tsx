@@ -1,13 +1,12 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import { ASPECT_RATIO_CLASS } from '@/blocks/shared/aspect-ratio'
 import { eyebrowClassName } from '@/blocks/shared/typography'
+import { blockSurface } from '@/blocks/shared/visual-surface'
 import { Container } from '@/components/Container'
-import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
-import type {
-  MediaContentSplitBlock as MediaContentSplitBlockData,
-  Media as MediaDoc,
-} from '@/payload-types'
+import { Visual } from '@/components/Visual'
+import type { Visual as VisualValue } from '@/features/immersive/visual'
+import type { MediaContentSplitBlock as MediaContentSplitBlockData } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { BlockGrid } from '../shared/grid'
 import { Section } from '../shared/section'
@@ -32,7 +31,7 @@ export const MediaContentSplit = ({
   bare = false,
   block,
   content,
-  media,
+  visual,
 }: {
   bare?: boolean
   block: Pick<
@@ -40,7 +39,7 @@ export const MediaContentSplit = ({
     'aspectRatio' | 'eyebrow' | 'heading' | 'layout' | 'theme'
   >
   content: DefaultTypedEditorState | null | undefined
-  media: MediaDoc
+  visual: VisualValue
 }) => {
   const mediaRight = block.layout === 'right'
   const inner = (
@@ -54,12 +53,14 @@ export const MediaContentSplit = ({
           )}
           data-reveal="media"
         >
-          <Media
+          <Visual
             fill
             htmlElement={null}
             imgClassName="object-cover"
-            resource={media}
+            placement="block"
             size="(max-width: 768px) 100vw, 50vw"
+            surface={blockSurface(block.theme, bare)}
+            visual={visual}
           />
         </div>
         <div

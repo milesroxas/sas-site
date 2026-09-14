@@ -8,6 +8,7 @@ import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/
 import { heroContentCollapsible, heroPresentationFields, pageIntroField } from '@/fields/pageHero'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
+import { visualSlotFields } from '@/fields/visual'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { collectionPreview } from '@/utilities/generatePreviewPath'
 import { revalidateLabPage, revalidateLabPageDelete } from './hooks/revalidateLabPage'
@@ -80,12 +81,12 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
                   type: 'collapsible',
                   label: 'Media & layout',
                   fields: [
-                    {
+                    ...visualSlotFields({
                       name: 'media',
                       type: 'upload',
                       relationTo: 'media',
                       filterOptions: { usageStatus: { equals: 'public-approved' } },
-                    },
+                    }),
                     {
                       name: 'layout',
                       type: 'select',

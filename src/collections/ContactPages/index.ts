@@ -3,7 +3,7 @@ import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { link } from '@/fields/link'
-import { menuPreviewField } from '@/fields/menuPreview'
+import { menuPreviewFields } from '@/fields/menuPreview'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
@@ -214,7 +214,7 @@ export const ContactPages: CollectionConfig<'contact-pages'> = {
     },
     { name: 'publishedAt', type: 'date', admin: { position: 'sidebar' } },
     // No hero on this template: without a preview the menu shows the Header's fallback.
-    menuPreviewField({
+    ...menuPreviewFields({
       description:
         "Shown in the site menu while this page's link is hovered. Leave empty to use the Header's menu fallback.",
     }),

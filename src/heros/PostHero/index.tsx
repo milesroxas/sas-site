@@ -1,7 +1,8 @@
 import type React from 'react'
 import { ViewTransition } from 'react'
-import { Media } from '@/components/Media'
-import type { Media as MediaDoc, Post } from '@/payload-types'
+import { Visual } from '@/components/Visual'
+import { resolveVisual, VisualMotionToggle } from '@/features/immersive/visual'
+import type { Post } from '@/payload-types'
 import { readingTimeMinutes } from '@/shared/content/reading-time'
 import { POST_IMAGE_FRAME, postImageShare, postImageVtName } from '@/shared/lib/view-transition'
 import { formatAuthors } from '@/utilities/formatAuthors'
@@ -33,7 +34,18 @@ const MetaRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 export const PostHero: React.FC<{
   post: Post
 }> = ({ post }) => {
-  const { categories, content, heroImage, meta, populatedAuthors, slug, standfirst, title } = post
+  const {
+    categories,
+    content,
+    heroImage,
+    meta,
+    populatedAuthors,
+    shader,
+    slug,
+    standfirst,
+    title,
+    visualType,
+  } = post
 
   const kicker = (categories ?? [])
     .filter((category) => typeof category === 'object' && category !== null)
@@ -44,23 +56,27 @@ export const PostHero: React.FC<{
   const readingTime = `${readingTimeMinutes(content)} min`
 
   /**
-   * Header art, in order of intent: the post's own portrait crop, else the SEO
-   * image — the asset the insights cards already show for this post, so a post
-   * that skips `heroImage` opens on media instead of an empty box. The takeover
-   * menu clones whatever lands inside `data-hero-media`, so its docked window
-   * inherits the same fallback (src/Header/Menu).
+   * Header art, in order of intent: a Streak Field chosen on the post, else
+   * the post's own portrait crop, else the SEO image — the asset the insights
+   * cards already show for this post, so a post that skips `heroImage` opens
+   * on media instead of an empty box. The takeover menu clones whatever lands
+   * inside `data-hero-media` (a Streak Field's poster included), so its docked
+   * window inherits the same fallback (src/Header/Menu).
    */
-  const heroMedia = [heroImage, meta?.image].find(
-    (candidate): candidate is MediaDoc => typeof candidate === 'object' && candidate !== null,
+  const visual = resolveVisual(
+    { media: heroImage, shader, visualType },
+    { fallbackMedia: meta?.image, seedKey: post.id },
   )
 
-  const media = heroMedia && (
-    <Media
+  const media = visual && (
+    <Visual
       fill
       imgClassName="object-cover"
+      placement="hero"
+      posterClassName="object-cover select-none"
       priority
-      resource={heroMedia}
       size="(min-width: 64rem) 42vw, 100vw"
+      visual={visual}
     />
   )
 
@@ -100,6 +116,10 @@ export const PostHero: React.FC<{
           ) : (
             media
           ))}
+        {/* The field is pointer-transparent, so its pause control sits over it, inside the frame. */}
+        {visual?.kind === 'streakField' && (
+          <VisualMotionToggle className="absolute right-3 bottom-3" />
+        )}
       </div>
     </header>
   )

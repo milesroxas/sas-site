@@ -1,8 +1,8 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { resolveVisual, type Visual, visualMedia } from '@/features/immersive/visual'
 import type { Media, WorkPage } from '@/payload-types'
 import type { IndexFilterOption } from '@/sections/Browse'
-import { populatedDoc } from '@/utilities/relationshipId'
 
 export type WorksBrowseFilterOption = IndexFilterOption
 
@@ -17,7 +17,9 @@ export type WorksBrowseItem = {
   /** Engagement year — endDate when completed, else startDate. */
   year: string | null
   capabilities: WorksBrowseFilterOption[]
-  /** Hero media, falling back to the cover asset — same as the work hero and menu. */
+  /** Hero visual, falling back to the cover asset — same as the work hero and menu. */
+  visual: Visual | null
+  /** The media behind `visual`; null for a Streak Field hero without a cover. */
   media: Media | null
   featured: boolean
   publishedAt: string | null
@@ -79,6 +81,8 @@ export const toWorksBrowseItem = (page: WorksBrowsePage): WorksBrowseItem | null
     typeof capability === 'object' ? [{ slug: capability.slug, label: capability.name }] : [],
   )
 
+  const visual = resolveVisual(page.hero, { fallbackMedia: page.coverAsset, seedKey: page.id })
+
   return {
     id: page.id,
     slug: page.slug,
@@ -87,7 +91,8 @@ export const toWorksBrowseItem = (page: WorksBrowsePage): WorksBrowseItem | null
     industries,
     year: yearOf(project?.endDate ?? project?.startDate),
     capabilities,
-    media: populatedDoc<Media>(page.hero?.media) ?? populatedDoc<Media>(page.coverAsset),
+    visual,
+    media: visualMedia(visual),
     featured: Boolean(page.featured),
     publishedAt: page.publishedAt ?? null,
   }
