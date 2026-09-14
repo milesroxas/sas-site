@@ -2,6 +2,13 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm run ci",
   "installCommand": "pnpm install",
+  "git": {
+    "deploymentEnabled": {
+      "*": false,
+      "main": true,
+      "preview": true
+    }
+  },
   "crons": [
     {
       "path": "/api/payload-jobs/run",
