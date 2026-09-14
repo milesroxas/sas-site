@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "sas-cms": {
+      "url": "https://preview.suits-sandals.com/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:SAS_CMS_MCP_KEY}"
+      }
+    },
+    "posthog": {
+      "url": "https://mcp.posthog.com/mcp",
+      "headers": {
+        "x-posthog-project-id": "512227"
+      }
+    },
+    "pmndrs": {
+      "url": "https://docs.pmnd.rs/api/mcp"
+    },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp"
+    }
+  }
+}

@@ -1,5 +1,14 @@
 {
   "plugins": {
+    "vercel": {
+      "enabled": true
+    },
+    "paper-desktop": {
+      "enabled": true
+    },
+    "figma": {
+      "enabled": true
+    },
     "sentry": {
       "enabled": true
     }

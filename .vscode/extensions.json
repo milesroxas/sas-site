@@ -1,3 +1,18 @@
 {
-  "recommendations": ["biomejs.biome"]
+  "recommendations": [
+    "biomejs.biome",
+    "editorconfig.editorconfig",
+    "bradlc.vscode-tailwindcss",
+    "phoenisx.cssvar",
+    "yoavbls.pretty-ts-errors",
+    "fallow-rs.fallow-vscode",
+    "vitest.explorer",
+    "ms-playwright.playwright",
+    "joshbolduc.story-explorer",
+    "mikestead.dotenv",
+    "redhat.vscode-yaml",
+    "github.vscode-github-actions",
+    "ms-azuretools.vscode-docker"
+  ],
+  "unwantedRecommendations": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
 }
