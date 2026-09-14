@@ -13,15 +13,23 @@ import { CONTENT_SURFACES } from '@/shared/content/surfaces'
  * switched on per key — the checkboxes default to off, so a new key can do
  * nothing until an admin grants it capabilities.
  *
- * Deliberately excluded: `users`, `subscribers`, `newsletters` (accounts, PII,
- * and send machinery), `inquiries`, `forms` / `form-submissions`, `redirects`,
- * `search` (derived index), and the API-keys collection itself.
+ * Every authorable collection and global in the config is listed below. The
+ * exceptions are structural, not oversights:
  *
- * `ask-questions` is the one visitor-sourced collection exposed, read-only: its
- * text is redacted on write and rows carry no IP or visitor id, and analysing
- * it (what prospects ask, what the site cannot answer) is exactly the job a
- * team agent is for. Like everything here, a key still needs the capability
- * ticked before it can read it.
+ * - `users` and the MCP API-keys collection — the auth and capability control
+ *   plane. A key that could write either would be able to mint an admin or
+ *   widen its own capabilities.
+ * - `search` (rebuilt by plugin hooks, so writes are clobbered) and Payload's
+ *   internals (`payload-jobs`, `payload-kv`, `payload-folders`,
+ *   `payload-locked-documents`, `payload-preferences`, `payload-migrations`) —
+ *   infrastructure, and the migration ledger is CI's.
+ *
+ * Visitor-sourced rows are exposed read-only, never for authoring: they carry
+ * contact PII (`inquiries`, `form-submissions`, `subscribers`) or visitor
+ * questions (`ask-questions`, redacted on write with no IP or visitor id).
+ * Analysing them — what prospects ask, what the site cannot answer, who is
+ * waiting on a reply — is exactly the job a team agent is for. Like everything
+ * here, a key still needs the capability ticked before it can read them.
  */
 
 type McpCollectionEntry = NonNullable<NonNullable<MCPPluginConfig['collections']>[CollectionSlug]>
@@ -49,6 +57,34 @@ const TAXONOMY: Record<string, string> = {
   platforms: 'Platform/product taxonomy projects are tagged with',
 }
 
+/** Site plumbing behind the published pages. */
+const OPERATIONS: Record<string, string> = {
+  forms:
+    'Form definitions (fields, confirmation behaviour, emails) that pages embed. Submitted data lives in `form-submissions`',
+  redirects: 'URL redirects — a source path pointing at a document or an external URL',
+}
+
+/**
+ * Newsletter authoring. Sending is not reachable over MCP: it runs through the
+ * send endpoint and its job, and access control freezes sending and sent
+ * campaigns, so an agent can compose and target a draft but never deliver one.
+ */
+const NEWSLETTER: Record<string, string> = {
+  audiences: 'Newsletter audiences (segments) that subscribers belong to',
+  newsletters:
+    'Newsletter campaigns — content, subject, and audience selection. Sending is triggered from the admin only; sending and sent campaigns are locked',
+}
+
+/** Visitor-submitted records. Read-only: every one of these carries contact PII. */
+const VISITOR_RECORDS: Record<string, string> = {
+  'form-submissions':
+    'Data submitted through site forms, including whatever contact details the form collects. Read-only',
+  inquiries:
+    'Contact-form inquiries — name, email, message, and triage state for each lead. Read-only',
+  subscribers:
+    'Newsletter subscribers — email address, audience membership, and subscription state. Read-only',
+}
+
 const entries = (records: Record<string, string>, enabled: McpCollectionEntry['enabled']) =>
   Object.entries(records).map(([slug, description]) => [slug, { description, enabled }] as const)
 
@@ -67,6 +103,9 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
   ),
   ...entries(CONTENT_HUB, AUTHORING),
   ...entries(TAXONOMY, AUTHORING),
+  ...entries(OPERATIONS, AUTHORING),
+  ...entries(NEWSLETTER, AUTHORING),
+  ...entries(VISITOR_RECORDS, READ_ONLY),
   ...entries(
     {
       'asset-libraries':
@@ -104,8 +143,18 @@ const globals: MCPPluginConfig['globals'] = {
     description: 'Site homepage — hero, layout blocks, and SEO published at /',
     enabled: { find: true, update: true },
   },
+  'insights-index': {
+    description:
+      'Insights index page — hero and SEO for the listing published at /insights (also /posts). The list itself is code-owned',
+    enabled: { find: true, update: true },
+  },
   'site-info': {
     description: 'Company identity used for JSON-LD, llms.txt, and default page metadata',
+    enabled: { find: true, update: true },
+  },
+  'works-index': {
+    description:
+      'Work index page — hero and SEO for the listing published at /works. The list itself is code-owned',
     enabled: { find: true, update: true },
   },
 }
@@ -210,6 +259,7 @@ export const mcp: Plugin = mcpPlugin({
         'Omit slug, key, and generateSlug fields on create and update: slugs auto-generate from the title or name, and any value you send is normalized to a URL-safe slug.',
         'Asset libraries require organization and project ids; omit rootFolder to auto-create one.',
         'Media cannot be uploaded here; reference existing media documents by id.',
+        'Inquiries, form submissions, subscribers, and Ask questions are read-only and hold visitor contact details: read them for analysis and triage, and never copy that PII into published content or send it anywhere outside this workspace.',
       ].join(' '),
     },
   },

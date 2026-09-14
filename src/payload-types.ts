@@ -6393,6 +6393,39 @@ export interface PayloadMcpApiKey {
     update?: boolean | null;
     delete?: boolean | null;
   };
+  forms?: {
+    find?: boolean | null;
+    create?: boolean | null;
+    update?: boolean | null;
+    delete?: boolean | null;
+  };
+  redirects?: {
+    find?: boolean | null;
+    create?: boolean | null;
+    update?: boolean | null;
+    delete?: boolean | null;
+  };
+  audiences?: {
+    find?: boolean | null;
+    create?: boolean | null;
+    update?: boolean | null;
+    delete?: boolean | null;
+  };
+  newsletters?: {
+    find?: boolean | null;
+    create?: boolean | null;
+    update?: boolean | null;
+    delete?: boolean | null;
+  };
+  formSubmissions?: {
+    find?: boolean | null;
+  };
+  inquiries?: {
+    find?: boolean | null;
+  };
+  subscribers?: {
+    find?: boolean | null;
+  };
   assetLibraries?: {
     find?: boolean | null;
     create?: boolean | null;
@@ -6417,7 +6450,15 @@ export interface PayloadMcpApiKey {
     find?: boolean | null;
     update?: boolean | null;
   };
+  insightsIndex?: {
+    find?: boolean | null;
+    update?: boolean | null;
+  };
   siteInfo?: {
+    find?: boolean | null;
+    update?: boolean | null;
+  };
+  worksIndex?: {
     find?: boolean | null;
     update?: boolean | null;
   };
@@ -9639,6 +9680,53 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         update?: T;
         delete?: T;
       };
+  forms?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  redirects?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  audiences?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  newsletters?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  formSubmissions?:
+    | T
+    | {
+        find?: T;
+      };
+  inquiries?:
+    | T
+    | {
+        find?: T;
+      };
+  subscribers?:
+    | T
+    | {
+        find?: T;
+      };
   assetLibraries?:
     | T
     | {
@@ -9675,7 +9763,19 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         find?: T;
         update?: T;
       };
+  insightsIndex?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+      };
   siteInfo?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+      };
+  worksIndex?:
     | T
     | {
         find?: T;

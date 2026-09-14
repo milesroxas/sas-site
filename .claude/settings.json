@@ -1,0 +1,21 @@
+{
+  "enabledPlugins": {
+    "pmndrs@pmndrs": true,
+    "vercel@claude-plugins-official": true,
+    "paper-desktop@paper": true
+  },
+  "extraKnownMarketplaces": {
+    "pmndrs": {
+      "source": {
+        "source": "github",
+        "repo": "pmndrs/claude-code-plugin"
+      }
+    },
+    "paper": {
+      "source": {
+        "source": "github",
+        "repo": "paper-design/agent-plugins"
+      }
+    }
+  }
+}
