@@ -88,11 +88,17 @@ const PAGE_FRAME_SELECTOR = '[data-page-frame]'
 /**
  * Whether the takeover menu covers the page: it marks the frame `inert`
  * while docked and the document `data-menu-handoff` for the flight out.
- * A covered field draws nothing and releases its admission.
+ * A covered field draws nothing and releases its admission. `enabled`
+ * false never reports covered: the menu's own window lives inside that
+ * inert frame and is the thing doing the covering.
  */
-export function usePageCovered(): boolean {
+export function usePageCovered(enabled = true): boolean {
   const [covered, setCovered] = useState(false)
   useEffect(() => {
+    if (!enabled) {
+      setCovered(false)
+      return
+    }
     const frame = document.querySelector<HTMLElement>(PAGE_FRAME_SELECTOR)
     const root = document.documentElement
     const read = () =>
@@ -102,7 +108,7 @@ export function usePageCovered(): boolean {
     if (frame) observer.observe(frame, { attributes: true, attributeFilter: ['inert'] })
     observer.observe(root, { attributes: true, attributeFilter: ['data-menu-handoff'] })
     return () => observer.disconnect()
-  }, [])
+  }, [enabled])
   return covered
 }
 

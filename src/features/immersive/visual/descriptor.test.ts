@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { Media } from '@/payload-types'
 import {
+  parseStreakDescriptor,
   resolveMenuPreviewVisual,
   resolveStreakDescriptor,
   resolveVisual,
   STREAK_SEED_MAX,
   seedFromKey,
+  serializeStreakDescriptor,
 } from './descriptor'
 import { STREAK_FALLBACK_LOOK } from './looks'
 
@@ -101,8 +103,8 @@ describe('resolveStreakDescriptor', () => {
   it('accepts only image uploads as posters', () => {
     expect(
       resolveStreakDescriptor({ preset: 'signal-v1', seed: 1, posterMedia: image(9) }).posterMedia
-        ?.id,
-    ).toBe(9)
+        ?.url,
+    ).toBe('/m/9')
     expect(
       resolveStreakDescriptor({ preset: 'signal-v1', seed: 1, posterMedia: image(9, 'video/mp4') })
         .posterMedia,
@@ -142,5 +144,60 @@ describe('resolveMenuPreviewVisual', () => {
 
   it('inherits when media is chosen but nothing is uploaded', () => {
     expect(resolveMenuPreviewVisual({ menuPreview: null, menuPreviewType: 'media' })).toBeNull()
+  })
+})
+
+describe('serializeStreakDescriptor / parseStreakDescriptor', () => {
+  it('round-trips a descriptor, keeping only what the poster needs of an upload', () => {
+    const descriptor = resolveStreakDescriptor({
+      preset: 'signal-v1',
+      seed: 42,
+      speed: 0.5,
+      intensity: 1.1,
+      pointerInteraction: true,
+      posterMedia: image(9),
+    })
+    const text = serializeStreakDescriptor(descriptor)
+    expect(text).not.toContain('usageStatus')
+    expect(parseStreakDescriptor(text)).toEqual({
+      ...descriptor,
+      posterMedia: {
+        filename: '9.jpg',
+        updatedAt: '',
+        url: '/m/9',
+        width: undefined,
+        height: undefined,
+        mimeType: 'image/jpeg',
+      },
+    })
+  })
+
+  it('round-trips a descriptor without an upload', () => {
+    const descriptor = resolveStreakDescriptor({ preset: 'topography-v1', seed: 7 })
+    expect(parseStreakDescriptor(serializeStreakDescriptor(descriptor))).toEqual(descriptor)
+  })
+
+  it('returns null for anything it cannot trust', () => {
+    expect(parseStreakDescriptor(null)).toBeNull()
+    expect(parseStreakDescriptor('')).toBeNull()
+    expect(parseStreakDescriptor('not json')).toBeNull()
+    expect(parseStreakDescriptor('42')).toBeNull()
+    expect(parseStreakDescriptor(JSON.stringify({ look: 'nope', seed: 1 }))).toBeNull()
+    expect(parseStreakDescriptor(JSON.stringify({ look: 'signal-v1', seed: -1 }))).toBeNull()
+  })
+
+  it('clamps multipliers and drops a malformed poster', () => {
+    const parsed = parseStreakDescriptor(
+      JSON.stringify({ look: 'signal-v1', seed: 1, speed: 9, intensity: 0, posterMedia: 'x' }),
+    )
+    expect(parsed).toEqual({
+      look: 'signal-v1',
+      seed: 1,
+      speed: 1,
+      intensity: 0.5,
+      pointer: false,
+      posterMedia: null,
+      degraded: false,
+    })
   })
 })

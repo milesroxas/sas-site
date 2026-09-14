@@ -242,7 +242,7 @@ Precedence per consumer is deliberately not flattened: the menu uses `menuPrevie
 |-----------|------|---------|-----------|------|---------|
 | `hero` | yes | 1.5 | 8000 | yes | yes |
 | `block` | yes | 1 | 4000 | yes | yes |
-| `menu` | no | 1 | 1500 | no | no |
+| `menu` | yes (the docked window at rest) | 2 | 1000 | yes | no |
 | `card` | no | 1 | 0 | no | no |
 
 - **One live field per document** (`STREAK_LIVE_CEILING`). Slots hold a reference-counted lease (`admission.ts`) and are ranked hero > block > menu > card. Release is idempotent, so a stale cleanup can never switch another slot off.
@@ -258,7 +258,8 @@ Precedence per consumer is deliberately not flattened: the menu uses `menuPrevie
 | Work Page heroes, both layouts (occasional; case studies usually keep client media) | yes (`hero`) | yes |
 | Works and Insights index pages (`IndexBackground`, one-screen sticky frame behind the listing) | yes (`hero`) | yes |
 | Stacked (`fullMedia`), Split narrow, Media split, top level or inside a Section | yes (`block`) | yes |
-| Takeover menu previews and the handoff traveler | no | yes |
+| Takeover menu docked window, resting on a page whose hero is a Streak Field (`Menu/LiveVisual`) | yes (`menu`) | yes |
+| Takeover menu hover previews and the handoff traveler | no | yes |
 | Work entries, Industry Work panels, Works browse rows, featured work | no | yes |
 | Carousels, galleries, media showcase | not offered | uploads only |
 | Reduced motion, coarse pointer, software renderer, no WebGL2, live switch off | no | yes |
@@ -272,7 +273,7 @@ poster -> preparing -> live -> suspended -> poster
                   \-> failed (never retries)
 ```
 
-A live field is admitted only when **all** of these hold: hydrated, placement allows live, descriptor not degraded, no `prefers-reduced-motion`, not paused, not a coarse-pointer device, WebGL2 probe passed without a software renderer, a renderable float target for `flow` looks, near the viewport, document visible, page not covered by the menu, the owner's `active` (hero intros hold it), and a lease under the ceiling.
+A live field is admitted only when **all** of these hold: hydrated, placement allows live, descriptor not degraded, no `prefers-reduced-motion`, not paused, not a coarse-pointer device, WebGL2 probe passed without a software renderer, a renderable float target for `flow` looks, near the viewport, document visible, page not covered by the menu (the menu's own window skips this gate), the owner's `active` (hero intros hold it; the menu holds its window until the dock has settled and nothing is over it), and a lease under the ceiling.
 
 - The server HTML always contains a real `<img>` poster in a stable frame. That is what the takeover menu clones and what the hero handoff lands on. A canvas `cloneNode` copies no pixels, so the poster is load bearing, not decoration.
 - Reveal happens on the **first drawn frame of the current generation**. A late callback from a previous seed, route or lost context cannot reveal a blank buffer.
@@ -324,6 +325,7 @@ Headless Chromium renders through SwiftShader. Slow, but it runs the same progra
 - Resolve once, on the server, with `resolveVisual`. Never re-resolve in a client component.
 - Always pass a stable `seedKey` (document or block id). Never an array index: reordering must not reshuffle the field.
 - The poster `<img>` must stay inside `[data-hero-media]` for the menu clone and hero handoff. Do not replace it with the canvas.
+- The slot root carries `data-visual-descriptor` (`serializeStreakDescriptor`). The takeover menu reads it off the cloned hero to run the same field in its docked window; keep it on the root of anything that renders a Streak Field as hero media.
 - Blocks keep the [Section spacing contract](blocks-reorg-roadmap.md): a shader source does not create a full-viewport section and never writes its own `py-*`.
 - New media references need `collectVisualMediaRefs` coverage (`src/fields/visual-refs.ts`) so publish checks and revalidation see `shader.posterMedia`.
 - Every new visual UI ships a Storybook story, including the poster, failure and light/dark cases.
@@ -363,6 +365,7 @@ Removing a look is a **content** change: keep its id, entry and posters until ev
 | Grid truncates at the bottom | Something bypassed `coveragePitch`. Grid density must widen pitch when `count` is capped, not drop rows. |
 | Wrong ground, poster looks washed out or doubled | The ground is read from the nearest `[data-theme]` / `.band-dark`. Posters carry alpha, so a missing CSS ground shows as a pale or doubled image. |
 | Menu preview shows a page crop instead of the still | The poster is not inside `[data-hero-media]`, or the cloned element was theme gated away. See the menu ground notes in the [plan](streak-field-media-plan.md#implementation-record-2026-09-13). |
+| Menu window rests on the still, never runs the field | Check the slot inside `[data-menu-live-visual]`: no slot means the hero's `data-visual-descriptor` was missing or unparsable; status `poster` means a gate (reduced motion, coarse pointer, software renderer) or the menu holding `active` (still docking, a hover preview, the Ask transcript). Faint, sub-pixel streaks mean the host lost its counter-scale (`fitToWindow`, `trackWindowScale` in Menu/index.tsx). |
 | Look changed but the site still shows the old still | Posters not regenerated, or `STREAK_LOOK_REVISION` not bumped. |
 | Editor picked a look but it renders static everywhere | The stored preset is not a shipped id, so the descriptor is `degraded`: poster only by design. Fix the stored value. |
 

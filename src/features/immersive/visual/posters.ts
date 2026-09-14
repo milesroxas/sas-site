@@ -1,5 +1,5 @@
-import type { Media } from '@/payload-types'
 import { getCdnMediaUrl, getMediaUrl } from '@/utilities/getMediaUrl'
+import type { PosterMediaSource } from './descriptor'
 import { STREAK_LOOK_REVISION, type StreakLookId } from './looks'
 
 /**
@@ -32,7 +32,7 @@ export type PosterImage = {
 }
 
 /** The optimized URL for an approved poster upload, through the CDN path images use. */
-export const mediaPosterImage = (media: Media): PosterImage | null => {
+export const mediaPosterImage = (media: PosterMediaSource): PosterImage | null => {
   const src =
     getCdnMediaUrl(media.filename, media.updatedAt) || getMediaUrl(media.url, media.updatedAt)
   if (!src) return null

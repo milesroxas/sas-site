@@ -43,6 +43,16 @@ export type StoredVisualSlot = {
   shader?: StoredStreakVisual | null
 }
 
+/**
+ * What a poster upload contributes to a descriptor: the fields
+ * `mediaPosterImage` reads. A resolver hands over the populated document;
+ * a serialized descriptor (`serializeStreakDescriptor`) carries only these.
+ */
+export type PosterMediaSource = Pick<
+  Media,
+  'filename' | 'updatedAt' | 'url' | 'width' | 'height' | 'mimeType'
+>
+
 export type StreakVisualDescriptor = {
   look: StreakLookId
   /** Integer seed; the same seed lays out the same field on every load. */
@@ -53,7 +63,7 @@ export type StreakVisualDescriptor = {
   intensity: number
   pointer: boolean
   /** An approved upload that replaces the look's built-in poster. */
-  posterMedia: Media | null
+  posterMedia: PosterMediaSource | null
   /**
    * The stored preset was not a shipped look: the descriptor fell back to
    * `STREAK_FALLBACK_LOOK` and must render as a poster only. Editing
@@ -142,6 +152,54 @@ export const resolveVisual = (
   }
   const media = populatedDoc<Media>(slot?.media) ?? populatedDoc<Media>(options.fallbackMedia)
   return media ? { kind: 'media', media } : null
+}
+
+const POSTER_MEDIA_KEYS = ['filename', 'updatedAt', 'url', 'width', 'height', 'mimeType'] as const
+
+/**
+ * A descriptor as a string, for the slot to publish on its root
+ * (`data-visual-descriptor`): a consumer that only has the DOM, such as the
+ * takeover menu mounting the page's own field in its docked window, can
+ * rebuild the same field from it. The poster upload is reduced to what
+ * `mediaPosterImage` reads, so no document leaves the server boundary twice.
+ */
+export const serializeStreakDescriptor = (descriptor: StreakVisualDescriptor): string => {
+  const posterMedia = descriptor.posterMedia
+    ? Object.fromEntries(POSTER_MEDIA_KEYS.map((key) => [key, descriptor.posterMedia?.[key]]))
+    : null
+  return JSON.stringify({ ...descriptor, posterMedia })
+}
+
+const isPosterMediaSource = (value: unknown): value is PosterMediaSource =>
+  typeof value === 'object' && value !== null && typeof (value as Media).mimeType === 'string'
+
+/**
+ * The inverse of `serializeStreakDescriptor`. Never throws and never
+ * guesses: anything malformed, including an unknown look, is `null`, so a
+ * consumer falls back to the poster it already has.
+ */
+export const parseStreakDescriptor = (
+  text: string | null | undefined,
+): StreakVisualDescriptor | null => {
+  if (!text) return null
+  let raw: unknown
+  try {
+    raw = JSON.parse(text)
+  } catch {
+    return null
+  }
+  if (typeof raw !== 'object' || raw === null) return null
+  const value = raw as Record<string, unknown>
+  if (!isStreakLookId(value.look) || !isValidStreakSeed(value.seed)) return null
+  return {
+    look: value.look,
+    seed: value.seed,
+    speed: normalizeStreakMultiplier(value.speed, STREAK_SPEED_RANGE),
+    intensity: normalizeStreakMultiplier(value.intensity, STREAK_INTENSITY_RANGE),
+    pointer: value.pointer === true,
+    posterMedia: isPosterMediaSource(value.posterMedia) ? value.posterMedia : null,
+    degraded: value.degraded === true,
+  }
 }
 
 /** The media document behind a visual, when it has one. Streak visuals return null. */

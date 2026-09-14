@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import type React from 'react'
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { CMSLink } from '@/components/Link'
 import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ import type { MenuContent, MenuLink, MenuMedia } from '../getMenuContent'
 import { ariaCurrent, menuCurrent } from './current'
 import { focusForKeyboard, trackInputModality } from './focus'
 import { createMenuMediaElement, type HeroHandoff, startHeroHandoff } from './heroHandoff'
+import { MenuLiveVisual } from './LiveVisual'
 import {
   CARD_RADIUS_DESKTOP,
   CARD_RADIUS_MOBILE,
@@ -45,6 +47,7 @@ import {
   findHeroMediaElement,
   getCardMotion,
   getViewportWidth,
+  type HeroStreakSource,
   isDesktop,
   isInAppNavClick,
   isMediaReady,
@@ -52,6 +55,7 @@ import {
   MOBILE_CARD_SHADOW,
   menuMediaUrl,
   onMediaReady,
+  readHeroStreakSource,
 } from './motion'
 import { collectHeldMedia, type NavCurtain, startNavCurtain } from './navCurtain'
 import { MenuPreviewSlot, PREVIEW_WINDOW_SELECTOR } from './PreviewSlot'
@@ -94,6 +98,13 @@ const HERO_LAYER_SELECTOR = '[data-menu-hero-media]'
 const HERO_BASE_SELECTOR = '[data-menu-hero-base]'
 /** Hover-preview elements stacked above the base inside the layer. */
 const HOVER_ITEM_SELECTOR = '[data-menu-hover-item]'
+/**
+ * Host for the page's own Streak Field, run live above the base (see
+ * ./LiveVisual). Sized to the window's visible crop like the chat cover;
+ * React renders into it through a portal, so it is empty until the menu
+ * has settled and empty again once the close begins to fade it.
+ */
+const LIVE_HOST_SELECTOR = '[data-menu-live-visual]'
 
 /* Menu motion — every open/close tunable lives here; shared primitives (ease,
    dissolve, geometry) in ./motion, handoff tunables in ./heroHandoff
@@ -327,7 +338,13 @@ const clearFrameProps = (frame: HTMLElement) => {
  * same mask-cropped home, and an empty layer paints nothing, so the settled
  * menu keeps the scaled page view.
  */
-const mountHeroMedia = (frame: HTMLElement, scrollTop: number, resting: MenuMedia | null) => {
+type LiveVisualMount = { host: HTMLElement; source: HeroStreakSource }
+
+const mountHeroMedia = (
+  frame: HTMLElement,
+  scrollTop: number,
+  resting: MenuMedia | null,
+): LiveVisualMount | null => {
   frame.querySelector(HERO_LAYER_SELECTOR)?.remove()
 
   const layer = document.createElement('div')
@@ -366,26 +383,101 @@ const mountHeroMedia = (frame: HTMLElement, scrollTop: number, resting: MenuMedi
     layer.appendChild(base)
   }
 
+  // The page's own Streak Field runs live above its poster clone. The host
+  // goes in now so it stacks under the hover previews and the chat cover,
+  // which append later; it is fitted to the crop once the dock is measured
+  // and stays invisible until the settled menu mounts the field into it.
+  let live: LiveVisualMount | null = null
+  const streak = source && readHeroStreakSource(source)
+  if (streak) {
+    const host = document.createElement('div')
+    host.setAttribute('data-menu-live-visual', '')
+    gsap.set(host, { position: 'absolute', overflow: 'hidden', autoAlpha: 0 })
+    layer.appendChild(host)
+    live = { host, source: streak }
+  }
+
   frame.appendChild(layer)
   const video = layer.querySelector('video')
   if (video) void video.play().catch(() => {})
+  return live
 }
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /**
- * Fit the chat cover to the docked window's visible box, in the frame's own
- * unscaled coordinates (the hero layer is already offset to that box, so these
- * are layer-local). Without a measured dock — detached render, unusable slot —
- * fall back to filling the layer.
+ * Fit an overlay (the chat cover, the live-visual host) to the docked
+ * window's visible box, in the frame's own unscaled coordinates (the hero
+ * layer is already offset to that box, so these are layer-local). Without a
+ * measured dock — detached render, unusable slot — fall back to filling the
+ * layer.
+ *
+ * `counterScale` sizes the box in screen pixels and scales it back up by the
+ * dock's inverse, so that inside it one CSS pixel is one screen pixel. The
+ * live field composes in CSS px (streak thickness, row pitch, lengths): laid
+ * out at the frame's size and then shrunk by the dock it would be a faint,
+ * sub-pixel copy of the hero, where at 1:1 it is the field at its own size,
+ * seen through the window. The open timeline keeps the inverse tracking the
+ * frame's scale while the dock moves (see `trackWindowScale`).
  */
-const setCoverBox = (cover: HTMLElement, motion: ReturnType<typeof getCardMotion> | null) => {
+const fitToWindow = (
+  el: HTMLElement,
+  motion: ReturnType<typeof getCardMotion> | null,
+  { counterScale = false }: { counterScale?: boolean } = {},
+) => {
   if (!motion) {
-    gsap.set(cover, { top: 0, left: 0, width: '100%', height: '100%' })
+    gsap.set(el, { top: 0, left: 0, width: '100%', height: '100%', scale: 1 })
     return
   }
   const { insetT, insetL, clipW, clipH } = motion.crop
-  gsap.set(cover, { top: insetT, left: insetL, width: clipW, height: clipH })
+  if (!counterScale) {
+    gsap.set(el, { top: insetT, left: insetL, width: clipW, height: clipH })
+    return
+  }
+  gsap.set(el, {
+    top: insetT,
+    left: insetL,
+    width: clipW * motion.scale,
+    height: clipH * motion.scale,
+    transformOrigin: '0 0',
+    scale: 1 / motion.scale,
+  })
+}
+
+/**
+ * Keep a counter-scaled overlay at 1:1 screen pixels while the frame's scale
+ * tweens: its scale is the frame's inverse on every tick, in both directions
+ * of the timeline, rather than an ease of its own that would only agree with
+ * the frame at the ends.
+ */
+const trackWindowScale = (
+  tl: gsap.core.Timeline,
+  el: HTMLElement,
+  frame: HTMLElement,
+  settledScale: number,
+) =>
+  tl.fromTo(
+    el,
+    { scale: 1 },
+    {
+      scale: 1 / settledScale,
+      duration: FRAME_DURATION,
+      immediateRender: false,
+      modifiers: { scale: () => 1 / Number(gsap.getProperty(frame, 'scale')) },
+    },
+    0,
+  )
+
+/** Every overlay in the layer that is sized to the window's crop. */
+const refitWindowOverlays = (
+  layer: HTMLElement | null,
+  motion: ReturnType<typeof getCardMotion> | null,
+) => {
+  if (!layer) return
+  const cover = layer.querySelector<HTMLElement>(CHAT_COVER_SELECTOR)
+  if (cover) fitToWindow(cover, motion)
+  const host = layer.querySelector<HTMLElement>(LIVE_HOST_SELECTOR)
+  if (host) fitToWindow(host, motion, { counterScale: true })
 }
 
 /**
@@ -558,6 +650,21 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
    * live menu content without re-running on it.
    */
   const restingMedia = useEffectEvent(() => previewFor(pageMedia[window.location.pathname]))
+  /**
+   * The page's own Streak Field, run live in the docked window (./LiveVisual)
+   * through a portal into the host `mountHeroMedia` left in the layer. Set
+   * with the layer at open, cleared with it at `restoreFrame`; `liveSettled`
+   * is the open timeline's verdict that the window is at rest, and
+   * `hoverPreview` that a link's media is (about to be) over it.
+   */
+  const [liveVisual, setLiveVisual] = useState<LiveVisualMount | null>(null)
+  const [liveSettled, setLiveSettled] = useState(false)
+  const [hoverPreview, setHoverPreview] = useState(false)
+  /** Hover preview plus the bookkeeping the live field needs; every call site in this component. */
+  const previewMedia = useCallback((media: MenuMedia | null) => {
+    showHoverMedia(media)
+    setHoverPreview(media !== null)
+  }, [])
   // CTA from the Header global; the original hardcoded button is the fallback
   // until an editor fills the field.
   const cta = data?.cta?.link
@@ -624,6 +731,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
     if (!frame) return
     frame.removeAttribute('inert')
     clearFrameProps(frame)
+    // The layer, and the live field's host with it, is gone: unmount the field.
+    setLiveVisual(null)
+    setLiveSettled(false)
+    setHoverPreview(false)
     document.documentElement.style.overflow = ''
     if (navigated) {
       const anchor = window.location.hash
@@ -734,7 +845,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       if (hoverShowPendingRef.current && media) {
         window.clearTimeout(hoverTimer.current)
         hoverShowPendingRef.current = false
-        showHoverMedia(media)
+        previewMedia(media)
       }
 
       const frame = getPageFrame()
@@ -816,7 +927,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       router.push(anchor.pathname + anchor.search + anchor.hash)
       onClose()
     },
-    [onClose, restoreFrame, router, isMenuMediaReady],
+    [onClose, restoreFrame, router, isMenuMediaReady, previewMedia],
   )
 
   // Route committed while the frame is still frozen (menu open or mid-undock):
@@ -856,7 +967,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         hoverShowPendingRef.current = true
         hoverTimer.current = window.setTimeout(() => {
           hoverShowPendingRef.current = false
-          showHoverMedia(media)
+          previewMedia(media)
         }, HOVER_SHOW_DELAY_MS)
       },
       onPointerLeave: (event: React.PointerEvent) => {
@@ -864,10 +975,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         if (pendingNavRef.current) return
         window.clearTimeout(hoverTimer.current)
         hoverShowPendingRef.current = false
-        hoverTimer.current = window.setTimeout(() => showHoverMedia(null), HOVER_CLEAR_DELAY_MS)
+        hoverTimer.current = window.setTimeout(() => previewMedia(null), HOVER_CLEAR_DELAY_MS)
       },
     }),
-    [],
+    [previewMedia],
   )
 
   /**
@@ -1072,6 +1183,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                   },
                   CLIP_LAG,
                 )
+              // The live field's host holds 1:1 screen pixels through the
+              // dock (it is only ever seen settled, or fading on the reverse).
+              const liveHost = heroLayer?.querySelector<HTMLElement>(LIVE_HOST_SELECTOR)
+              if (liveHost) trackWindowScale(tl, liveHost, frame, motion.scale)
               if (dissolveBase) {
                 // Cross-fade dissolve: the page's own hero media fades in over
                 // the page content inside the docking window, landing as the
@@ -1182,10 +1297,10 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
               frame.scrollTop = scrollYRef.current
               const heroLayer = frame.querySelector<HTMLElement>(HERO_LAYER_SELECTOR)
               if (heroLayer) gsap.set(heroLayer, { top: frame.scrollTop })
-              // The cover is absolutely sized now, so it must be re-fitted to
-              // the rebuilt dock's crop (buildTimeline above refreshed it).
-              const cover = heroLayer?.querySelector<HTMLElement>(CHAT_COVER_SELECTOR)
-              if (cover) setCoverBox(cover, cardMotionRef.current)
+              // The cover and the live host are absolutely sized now, so they
+              // must be re-fitted to the rebuilt dock's crop (buildTimeline
+              // above refreshed it).
+              refitWindowOverlays(heroLayer, cardMotionRef.current)
               next.progress(1)
             }, 80)
           }
@@ -1239,12 +1354,24 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
         // Inject this page's resting media (its hero, else its menu preview)
         // into the frame first: the rebuilt timeline wires the dissolve only
         // when the layer exists.
-        mountHeroMedia(frame, window.scrollY, restingMedia())
+        const live = mountHeroMedia(frame, window.scrollY, restingMedia())
         tl = rebuildTimelineRef.current()
         // Fresh layer: whatever the previous open arranged is gone.
         lateBaseRef.current = false
         revealLateHeroBase()
+        // The live host follows the crop the timeline just measured; the
+        // field itself mounts once the dock has settled (onComplete below).
+        if (live) fitToWindow(live.host, cardMotionRef.current, { counterScale: true })
+        setLiveVisual(live)
+      } else {
+        // Reopened mid-reverse: the layer and host survive, and the close
+        // had started fading the host out.
+        const host = frame.querySelector<HTMLElement>(
+          `${HERO_LAYER_SELECTOR} ${LIVE_HOST_SELECTOR}`,
+        )
+        if (host) gsap.to(host, { autoAlpha: 1, duration: DISSOLVE_DURATION, overwrite: 'auto' })
       }
+      setLiveSettled(false)
       // Freeze the page at its current scroll position inside a fixed
       // full-viewport frame. Scale + clip-path do the rest — no width/height
       // tween, so in-page layout stays intact.
@@ -1267,6 +1394,21 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       document.documentElement.style.overflow = 'hidden'
 
       tl.eventCallback('onComplete', () => {
+        // The window is at rest: the page's own field may run in it. Its
+        // host comes in over the base on the preview beat; the two hold the
+        // same still on the same ground, so this reads as nothing at all.
+        setLiveSettled(true)
+        const liveHost = frame.querySelector<HTMLElement>(
+          `${HERO_LAYER_SELECTOR} ${LIVE_HOST_SELECTOR}`,
+        )
+        if (liveHost) {
+          gsap.to(liveHost, {
+            autoAlpha: 1,
+            duration: prefersReducedMotion() ? 0 : DISSOLVE_DURATION,
+            ease: DISSOLVE_EASE,
+            overwrite: 'auto',
+          })
+        }
         // Keyboard users land on the first *visible* menu control: a link, or
         // a phone drill-in row (never the composer's submit, never the row
         // that is the page: currentProps took it out of the tab order). The
@@ -1292,7 +1434,21 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       // on media-less pages the layer sits outside the timeline, so a preview
       // left behind (Escape while hovering) would ride the reverse and pop off.
       window.clearTimeout(hoverTimer.current)
-      if (!holding) showHoverMedia(null)
+      if (!holding) previewMedia(null)
+      // The live field stops now and its host fades on the base's beat, so
+      // the window returns to the page crop through the still, as it came.
+      setLiveSettled(false)
+      const liveHost = frame.querySelector<HTMLElement>(
+        `${HERO_LAYER_SELECTOR} ${LIVE_HOST_SELECTOR}`,
+      )
+      if (liveHost) {
+        gsap.to(liveHost, {
+          autoAlpha: 0,
+          duration: prefersReducedMotion() ? 0 : HERO_DISSOLVE_END - HERO_DISSOLVE_START,
+          ease: HERO_DISSOLVE_EASE,
+          overwrite: 'auto',
+        })
+      }
       // A base the timeline never owned has to be dissolved back out by hand,
       // over the beat the reverse would have given it.
       if (lateBaseRef.current && !holding) {
@@ -1329,7 +1485,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       })
       tl.reverse()
     }
-  }, [open, menuButtonRef, restoreFrame, revealLateHeroBase])
+  }, [open, menuButtonRef, restoreFrame, revealLateHeroBase, previewMedia])
 
   /**
    * Phone sub-view in front of the nav (see the SUB_VIEW_* block above).
@@ -1506,7 +1662,7 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
       })
       layer.appendChild(cover)
     }
-    setCoverBox(cover, cardMotionRef.current)
+    fitToWindow(cover, cardMotionRef.current)
     gsap.to(cover, {
       clipPath: CHAT_COVER_FULL,
       duration: prefersReducedMotion() ? 0 : CHAT_WIPE_DURATION,
@@ -1531,6 +1687,13 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   // Fades out in 200ms, well inside the wipe (CHAT_WIPE_DURATION), so the
   // column is already released when the slot grows into it on the handoff
   // beat (CHAT_STAGE_DELAY_MS, Menu/motion.ts).
+  /**
+   * Whether the page's own field may draw in the window (./LiveVisual):
+   * open and settled, nothing over it. A close, a hover preview and the Ask
+   * transcript each stop it at once; the host's own fade covers the freeze.
+   */
+  const liveActive = open && liveSettled && !hoverPreview && !chatView
+
   const chatHideable = (extra?: string) =>
     cn(
       'max-md:transition-[opacity,display] max-md:transition-discrete max-md:duration-200 max-md:ease-out max-md:starting:opacity-0',
@@ -1563,103 +1726,112 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
   const menuLinkPrefetch = open ? undefined : false
 
   return (
-    <div
-      ref={overlayRef}
-      id="site-menu"
-      aria-hidden={!open}
-      data-menu-backdrop
-      // z-40: above the footer bar (z-30, later in DOM) so the fixed footer
-      // never paints over the open menu; the docked frame sits at FRAME_Z (45),
-      // the header stays on top at z-50.
-      className="invisible fixed inset-0 z-40 bg-background text-foreground opacity-0 pointer-events-none"
-      onClick={onOverlayClick}
-    >
-      <nav
-        aria-label="Site menu"
+    <>
+      {/* The page's own Streak Field, run live in the docked window: rendered
+          into the host the dissolve layer holds inside the page frame, so the
+          dock's scale and clip mask crop it like everything else there. */}
+      {liveVisual &&
+        createPortal(
+          <MenuLiveVisual source={liveVisual.source} active={liveActive} />,
+          liveVisual.host,
+        )}
+      <div
+        ref={overlayRef}
+        id="site-menu"
+        aria-hidden={!open}
         data-menu-backdrop
-        // Mobile: two modules. Ask (preview + composer) holds the top; the
-        // primary nav anchors to the bottom cluster with the utility strip
-        // (clock + CTA, thumb zone), so any spare height reads as a deliberate
-        // break between the modules rather than a void above the strip.
-        // Desktop: three columns — editorial lists, centered window, nav.
-        // The center column is 36vw capped at 32rem (518px at 1440, the
-        // design's preview width). Each side column is a 20rem stack centered
-        // in its track: the column gap equals the gutter (3rem from md), so
-        // the air between a side column and the window is the air between it
-        // and the viewport edge at any width, instead of the columns drifting
-        // to the edges as the tracks grow. Row 1 is shared by the side
-        // columns and the center cell (preview window centered above the
-        // composer); the CTA sits below in row 2, past the design's 8rem break.
-        className="absolute inset-0 flex flex-col gap-6 px-gutter pt-[calc(var(--header-bar-height)+0.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] md:grid md:grid-cols-[1fr_minmax(18rem,min(32rem,36vw))_1fr] md:grid-rows-[minmax(0,1fr)_auto] md:gap-x-12 md:gap-y-32 md:pt-[calc(var(--header-height)+2.5rem)] md:pb-10"
+        // z-40: above the footer bar (z-30, later in DOM) so the fixed footer
+        // never paints over the open menu; the docked frame sits at FRAME_Z (45),
+        // the header stays on top at z-50.
+        className="invisible fixed inset-0 z-40 bg-background text-foreground opacity-0 pointer-events-none"
+        onClick={onOverlayClick}
       >
-        {/* Left column — editorial lists (desktop only). */}
-        <div
+        <nav
+          aria-label="Site menu"
           data-menu-backdrop
-          data-lenis-prevent
-          className={cn(
-            'no-scrollbar hidden min-h-0 w-full max-w-xs flex-col gap-12 overflow-y-auto overscroll-contain md:col-start-1 md:row-start-1 md:flex md:justify-self-center',
-            SCROLL_RING_ROOM,
-          )}
+          // Mobile: two modules. Ask (preview + composer) holds the top; the
+          // primary nav anchors to the bottom cluster with the utility strip
+          // (clock + CTA, thumb zone), so any spare height reads as a deliberate
+          // break between the modules rather than a void above the strip.
+          // Desktop: three columns — editorial lists, centered window, nav.
+          // The center column is 36vw capped at 32rem (518px at 1440, the
+          // design's preview width). Each side column is a 20rem stack centered
+          // in its track: the column gap equals the gutter (3rem from md), so
+          // the air between a side column and the window is the air between it
+          // and the viewport edge at any width, instead of the columns drifting
+          // to the edges as the tracks grow. Row 1 is shared by the side
+          // columns and the center cell (preview window centered above the
+          // composer); the CTA sits below in row 2, past the design's 8rem break.
+          className="absolute inset-0 flex flex-col gap-6 px-gutter pt-[calc(var(--header-bar-height)+0.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))] md:grid md:grid-cols-[1fr_minmax(18rem,min(32rem,36vw))_1fr] md:grid-rows-[minmax(0,1fr)_auto] md:gap-x-12 md:gap-y-32 md:pt-[calc(var(--header-height)+2.5rem)] md:pb-10"
         >
-          {expertise.length > 0 && (
-            <section className="flex flex-col gap-6">
-              <h3 data-menu-item className="font-mono text-xs/none text-muted-foreground">
-                Expertise
-              </h3>
-              <ul className="flex flex-col gap-4">
-                {expertise.map((item) => (
-                  <li
-                    key={item.href}
-                    data-menu-item
-                    {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
-                  >
-                    <Link
-                      href={item.href}
-                      prefetch={menuLinkPrefetch}
-                      {...currentProps(isCurrent(item.href))}
-                      className={cn(
-                        'text-sm text-card-foreground transition-colors hover:text-primary',
-                        CURRENT_ROW,
-                      )}
+          {/* Left column — editorial lists (desktop only). */}
+          <div
+            data-menu-backdrop
+            data-lenis-prevent
+            className={cn(
+              'no-scrollbar hidden min-h-0 w-full max-w-xs flex-col gap-12 overflow-y-auto overscroll-contain md:col-start-1 md:row-start-1 md:flex md:justify-self-center',
+              SCROLL_RING_ROOM,
+            )}
+          >
+            {expertise.length > 0 && (
+              <section className="flex flex-col gap-6">
+                <h3 data-menu-item className="font-mono text-xs/none text-muted-foreground">
+                  Expertise
+                </h3>
+                <ul className="flex flex-col gap-4">
+                  {expertise.map((item) => (
+                    <li
+                      key={item.href}
+                      data-menu-item
+                      {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
                     >
-                      {item.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-          {audiences.length > 0 && (
-            <section className="flex flex-col gap-6">
-              <h3 data-menu-item className="font-mono text-xs/none text-muted-foreground">
-                Who We Help
-              </h3>
-              <ul className="flex flex-col gap-2">
-                {audiences.map((item) => (
-                  <li
-                    key={item.href}
-                    data-menu-item
-                    {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
-                  >
-                    <Link
-                      href={item.href}
-                      prefetch={menuLinkPrefetch}
-                      {...currentProps(isCurrent(item.href))}
-                      className={cn(
-                        'pressable block rounded-md bg-secondary p-3 text-sm text-secondary-foreground hover:text-primary',
-                        CURRENT_CARD,
-                      )}
+                      <Link
+                        href={item.href}
+                        prefetch={menuLinkPrefetch}
+                        {...currentProps(isCurrent(item.href))}
+                        className={cn(
+                          'text-sm text-card-foreground transition-colors hover:text-primary',
+                          CURRENT_ROW,
+                        )}
+                      >
+                        {item.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {audiences.length > 0 && (
+              <section className="flex flex-col gap-6">
+                <h3 data-menu-item className="font-mono text-xs/none text-muted-foreground">
+                  Who We Help
+                </h3>
+                <ul className="flex flex-col gap-2">
+                  {audiences.map((item) => (
+                    <li
+                      key={item.href}
+                      data-menu-item
+                      {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
                     >
-                      {item.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-        </div>
+                      <Link
+                        href={item.href}
+                        prefetch={menuLinkPrefetch}
+                        {...currentProps(isCurrent(item.href))}
+                        className={cn(
+                          'pressable block rounded-md bg-secondary p-3 text-sm text-secondary-foreground hover:text-primary',
+                          CURRENT_CARD,
+                        )}
+                      >
+                        {item.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
 
-        {/* Center cell: slot + form are MenuAsk fragment children. On desktop
+          {/* Center cell: slot + form are MenuAsk fragment children. On desktop
             this wrapper stacks them in row 1 (the slot takes the height left
             above the composer and centers the window in it); on a phone it is
             `contents`, so both stay direct children of the flex stack. The
@@ -1668,22 +1840,22 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             With Ask hidden only the slot renders: the frame still docks onto
             its window, and the composer's absence reads as air under the
             window rather than a re-flow. */}
-        <div className="max-md:contents md:col-start-2 md:row-start-1 md:flex md:min-h-0 md:flex-col md:items-center md:gap-6">
-          {askHidden ? (
-            <MenuPreviewSlot />
-          ) : (
-            <MenuAsk
-              open={open}
-              onViewChange={handleChatViewChange}
-              exitChatViewRef={exitChatViewRef}
-              transport={askTransport}
-              initialMessages={askInitialMessages}
-              terms={askTerms}
-            />
-          )}
-        </div>
+          <div className="max-md:contents md:col-start-2 md:row-start-1 md:flex md:min-h-0 md:flex-col md:items-center md:gap-6">
+            {askHidden ? (
+              <MenuPreviewSlot />
+            ) : (
+              <MenuAsk
+                open={open}
+                onViewChange={handleChatViewChange}
+                exitChatViewRef={exitChatViewRef}
+                transport={askTransport}
+                initialMessages={askInitialMessages}
+                terms={askTerms}
+              />
+            )}
+          </div>
 
-        {/* Right column: recent work (desktop) + primary nav, one stack from
+          {/* Right column: recent work (desktop) + primary nav, one stack from
             the top like the left column: the work list, a short rule, the nav.
             The rule sits on gap-12 either side, twice the gap-6 inside each
             list and the left column's section break, so the two groups read
@@ -1691,242 +1863,246 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
             pinned to the bottom, so a tall viewport adds air below the nav,
             not a void between the groups. Centered in its track like the left
             column (see the grid note above). */}
-        <div
-          data-menu-backdrop
-          data-lenis-prevent
-          className={chatHideable(
-            cn(
-              'no-scrollbar flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:w-full md:max-w-xs md:flex-none md:gap-12 md:justify-self-center',
-              SCROLL_RING_ROOM,
-            ),
-          )}
-        >
-          {works.length > 0 && (
-            <ul className="hidden flex-col gap-6 md:flex">
-              {works.map((item) => {
-                const mark = isCurrent(item.href)
-                return (
-                  <li
-                    key={item.href}
-                    data-menu-item
-                    {...itemHandlers(previewFor(item.media), mark)}
-                  >
-                    <Link
-                      href={item.href}
-                      prefetch={menuLinkPrefetch}
-                      {...currentProps(mark)}
-                      className={cn('group flex flex-col gap-3', CURRENT_PAGE_OUT)}
-                      {...(mark === 'page' ? {} : cursorTarget({ label: 'View work' }))}
+          <div
+            data-menu-backdrop
+            data-lenis-prevent
+            className={chatHideable(
+              cn(
+                'no-scrollbar flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto overscroll-contain md:col-start-3 md:row-start-1 md:w-full md:max-w-xs md:flex-none md:gap-12 md:justify-self-center',
+                SCROLL_RING_ROOM,
+              ),
+            )}
+          >
+            {works.length > 0 && (
+              <ul className="hidden flex-col gap-6 md:flex">
+                {works.map((item) => {
+                  const mark = isCurrent(item.href)
+                  return (
+                    <li
+                      key={item.href}
+                      data-menu-item
+                      {...itemHandlers(previewFor(item.media), mark)}
                     >
-                      {item.eyebrow && (
+                      <Link
+                        href={item.href}
+                        prefetch={menuLinkPrefetch}
+                        {...currentProps(mark)}
+                        className={cn('group flex flex-col gap-3', CURRENT_PAGE_OUT)}
+                        {...(mark === 'page' ? {} : cursorTarget({ label: 'View work' }))}
+                      >
+                        {item.eyebrow && (
+                          <span
+                            className={cn(
+                              'font-mono text-xs/none text-muted-foreground',
+                              CURRENT_WORK_TEXT,
+                            )}
+                          >
+                            {item.eyebrow}
+                          </span>
+                        )}
                         <span
                           className={cn(
-                            'font-mono text-xs/none text-muted-foreground',
+                            'text-lg/none text-foreground transition-colors group-hover:text-primary',
                             CURRENT_WORK_TEXT,
                           )}
                         >
-                          {item.eyebrow}
+                          {item.title}
                         </span>
-                      )}
-                      <span
-                        className={cn(
-                          'text-lg/none text-foreground transition-colors group-hover:text-primary',
-                          CURRENT_WORK_TEXT,
-                        )}
-                      >
-                        {item.title}
-                      </span>
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
 
-          {works.length > 0 && (
-            <div data-menu-item className="hidden h-px w-10 bg-border md:block" />
-          )}
+            {works.length > 0 && (
+              <div data-menu-item className="hidden h-px w-10 bg-border md:block" />
+            )}
 
-          {/* Phone: the nav and its sub-views stack on SUB_VIEW_STAGE; from md
+            {/* Phone: the nav and its sub-views stack on SUB_VIEW_STAGE; from md
               both wrappers are `contents`, so the list is the column's direct
               child as before. */}
-          <div className={SUB_VIEW_STAGE}>
-            <div
-              inert={isMobile && subView !== null}
-              className={cn(
-                SUB_VIEW_SCROLL,
-                'md:contents',
-                subView !== null && 'max-md:pointer-events-none',
-              )}
-            >
-              {/* max-md:mt-auto (not justify-end) so the list stays scrollable
+            <div className={SUB_VIEW_STAGE}>
+              <div
+                inert={isMobile && subView !== null}
+                className={cn(
+                  SUB_VIEW_SCROLL,
+                  'md:contents',
+                  subView !== null && 'max-md:pointer-events-none',
+                )}
+              >
+                {/* max-md:mt-auto (not justify-end) so the list stays scrollable
                   when it overflows: auto margins collapse to 0 inside overflow.
                   No padding below the list: the stack gap is the break before
                   the strip, and padding inside a scroll panel is scrollable
                   height, which on a short phone made a list that fit by eye
                   jiggle by exactly that much. */}
-              <ul className="flex flex-col items-start gap-4 max-md:mt-auto md:gap-6">
-                {/* Drill-in rows lead the nav (the offer, then the proof). The
+                <ul className="flex flex-col items-start gap-4 max-md:mt-auto md:gap-6">
+                  {/* Drill-in rows lead the nav (the offer, then the proof). The
                     chevron marks a deeper level; destinations carry none. */}
-                {subViews.map(({ key, title, href }, index) => (
-                  <li
-                    key={key}
-                    data-menu-item
-                    className="md:hidden"
-                    style={subViewRowTiming(index, subView === null)}
-                  >
-                    <button
-                      ref={(el) => {
-                        subViewTriggerRefs.current[key] = el
-                      }}
-                      type="button"
-                      aria-current={ariaCurrent(href, pathname) && 'true'}
-                      aria-expanded={subView === key}
-                      aria-controls={subViewId(key)}
-                      onClick={() => setSubView(key)}
-                      className={cn(
-                        NAV_ROW,
-                        TOUCH_ROW_HIT,
-                        SUB_VIEW_ROW,
-                        'inline-flex items-center gap-1',
-                        subView !== null && subViewRowHidden('start'),
-                      )}
-                    >
-                      {title}
-                      <IconChevronRight aria-hidden className="size-4 text-muted-foreground" />
-                    </button>
-                  </li>
-                ))}
-                {navItems.map(({ link }, i) => {
-                  const href = navItemHref(link)
-                  return (
+                  {subViews.map(({ key, title, href }, index) => (
                     <li
-                      key={i}
+                      key={key}
                       data-menu-item
-                      style={subViewRowTiming(subViews.length + i, subView === null)}
-                      {...itemHandlers(previewFor(href ? pageMedia[href] : null), isCurrent(href))}
+                      className="md:hidden"
+                      style={subViewRowTiming(index, subView === null)}
                     >
-                      <CMSLink
-                        {...link}
-                        appearance="inline"
-                        {...currentProps(isCurrent(href))}
-                        className={cn(
-                          NAV_LINK,
-                          SUB_VIEW_ROW,
-                          subView !== null && subViewRowHidden('start'),
-                        )}
-                      />
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-
-            {/* The back row mirrors the row that opened the view (‹ Expertise
-                for Expertise ›): the flipped chevron and the rows' arrival
-                from the right say which way it goes. */}
-            {subViews.map(({ key, title, items }) => {
-              const active = subView === key
-              return (
-                <section
-                  key={key}
-                  id={subViewId(key)}
-                  aria-label={title}
-                  data-menu-subview={key}
-                  inert={!active}
-                  className={cn(
-                    SUB_VIEW_SCROLL,
-                    'md:hidden',
-                    !active && 'max-md:pointer-events-none',
-                  )}
-                >
-                  {/* gap-8 over the list's 16: the back row is the view's title,
-                      not its first item. */}
-                  <div className="mt-auto flex flex-col items-start gap-8">
-                    <div data-menu-item style={subViewRowTiming(0, active)}>
                       <button
                         ref={(el) => {
-                          subViewBackRefs.current[key] = el
+                          subViewTriggerRefs.current[key] = el
                         }}
                         type="button"
-                        onClick={() => setSubView(null)}
+                        aria-current={ariaCurrent(href, pathname) && 'true'}
+                        aria-expanded={subView === key}
+                        aria-controls={subViewId(key)}
+                        onClick={() => setSubView(key)}
                         className={cn(
                           NAV_ROW,
                           TOUCH_ROW_HIT,
                           SUB_VIEW_ROW,
                           'inline-flex items-center gap-1',
-                          !active && subViewRowHidden('end'),
+                          subView !== null && subViewRowHidden('start'),
                         )}
                       >
-                        <IconChevronLeft aria-hidden className="size-4 text-muted-foreground" />
                         {title}
-                        <span className="sr-only">, back to menu</span>
+                        <IconChevronRight aria-hidden className="size-4 text-muted-foreground" />
                       </button>
-                    </div>
-                    <ul className="flex flex-col items-start gap-4">
-                      {items.map((item, i) => (
-                        <li
-                          key={item.href}
-                          data-menu-item
-                          style={subViewRowTiming(i + 1, active)}
-                          {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
-                        >
-                          <Link
-                            href={item.href}
-                            prefetch={menuLinkPrefetch}
-                            {...currentProps(isCurrent(item.href))}
-                            className={cn(
-                              SUB_VIEW_LINK,
-                              SUB_VIEW_ROW,
-                              !active && subViewRowHidden('end'),
-                            )}
-                          >
-                            {item.title}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </section>
-              )
-            })}
-          </div>
-        </div>
+                    </li>
+                  ))}
+                  {navItems.map(({ link }, i) => {
+                    const href = navItemHref(link)
+                    return (
+                      <li
+                        key={i}
+                        data-menu-item
+                        style={subViewRowTiming(subViews.length + i, subView === null)}
+                        {...itemHandlers(
+                          previewFor(href ? pageMedia[href] : null),
+                          isCurrent(href),
+                        )}
+                      >
+                        <CMSLink
+                          {...link}
+                          appearance="inline"
+                          {...currentProps(isCurrent(href))}
+                          className={cn(
+                            NAV_LINK,
+                            SUB_VIEW_ROW,
+                            subView !== null && subViewRowHidden('start'),
+                          )}
+                        />
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
 
-        {/* Bottom of the mobile stack: the utility strip at the safe-area
+              {/* The back row mirrors the row that opened the view (‹ Expertise
+                for Expertise ›): the flipped chevron and the rows' arrival
+                from the right say which way it goes. */}
+              {subViews.map(({ key, title, items }) => {
+                const active = subView === key
+                return (
+                  <section
+                    key={key}
+                    id={subViewId(key)}
+                    aria-label={title}
+                    data-menu-subview={key}
+                    inert={!active}
+                    className={cn(
+                      SUB_VIEW_SCROLL,
+                      'md:hidden',
+                      !active && 'max-md:pointer-events-none',
+                    )}
+                  >
+                    {/* gap-8 over the list's 16: the back row is the view's title,
+                      not its first item. */}
+                    <div className="mt-auto flex flex-col items-start gap-8">
+                      <div data-menu-item style={subViewRowTiming(0, active)}>
+                        <button
+                          ref={(el) => {
+                            subViewBackRefs.current[key] = el
+                          }}
+                          type="button"
+                          onClick={() => setSubView(null)}
+                          className={cn(
+                            NAV_ROW,
+                            TOUCH_ROW_HIT,
+                            SUB_VIEW_ROW,
+                            'inline-flex items-center gap-1',
+                            !active && subViewRowHidden('end'),
+                          )}
+                        >
+                          <IconChevronLeft aria-hidden className="size-4 text-muted-foreground" />
+                          {title}
+                          <span className="sr-only">, back to menu</span>
+                        </button>
+                      </div>
+                      <ul className="flex flex-col items-start gap-4">
+                        {items.map((item, i) => (
+                          <li
+                            key={item.href}
+                            data-menu-item
+                            style={subViewRowTiming(i + 1, active)}
+                            {...itemHandlers(previewFor(item.media), isCurrent(item.href))}
+                          >
+                            <Link
+                              href={item.href}
+                              prefetch={menuLinkPrefetch}
+                              {...currentProps(isCurrent(item.href))}
+                              className={cn(
+                                SUB_VIEW_LINK,
+                                SUB_VIEW_ROW,
+                                !active && subViewRowHidden('end'),
+                              )}
+                            >
+                              {item.title}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </section>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Bottom of the mobile stack: the utility strip at the safe-area
             edge, studio clock left and the primary CTA right, so the CTA
             reads as chrome (the menu's own footer bar) rather than a seventh
             nav row. It lives outside the scrolling nav column so it holds
             position when the nav overflows; the stack gap is the break above
             it. Desktop dissolves the strip (`contents`): the clock goes
             back to the footer, and the CTA sits under the composer (row 3). */}
-        {/* chatHideable sits on the wrapper, not on the data-menu-items: the
+          {/* chatHideable sits on the wrapper, not on the data-menu-items: the
             open stagger leaves inline opacity on every item, which would beat
             the class-driven fade in both directions. */}
-        <div className={chatHideable('flex items-center justify-between gap-6 md:contents')}>
-          <div data-menu-item className="md:hidden">
-            <Clock className="text-foreground" />
+          <div className={chatHideable('flex items-center justify-between gap-6 md:contents')}>
+            <div data-menu-item className="md:hidden">
+              <Clock className="text-foreground" />
+            </div>
+            <div
+              data-menu-item
+              className="md:col-start-2 md:row-start-2 md:justify-self-center"
+              {...itemHandlers(previewFor(pageMedia[ctaHref]), isCurrent(ctaHref))}
+            >
+              <Button asChild variant="default" size="pill">
+                <Link
+                  href={ctaHref}
+                  prefetch={menuLinkPrefetch}
+                  {...currentProps(isCurrent(ctaHref))}
+                  className={cn('aria-disabled:opacity-50', CURRENT_PAGE_OUT)}
+                  {...ctaLinkProps}
+                  {...cursorTarget()}
+                >
+                  <span>{ctaLabel}</span>
+                </Link>
+              </Button>
+            </div>
           </div>
-          <div
-            data-menu-item
-            className="md:col-start-2 md:row-start-2 md:justify-self-center"
-            {...itemHandlers(previewFor(pageMedia[ctaHref]), isCurrent(ctaHref))}
-          >
-            <Button asChild variant="default" size="pill">
-              <Link
-                href={ctaHref}
-                prefetch={menuLinkPrefetch}
-                {...currentProps(isCurrent(ctaHref))}
-                className={cn('aria-disabled:opacity-50', CURRENT_PAGE_OUT)}
-                {...ctaLinkProps}
-                {...cursorTarget()}
-              >
-                <span>{ctaLabel}</span>
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
-    </div>
+        </nav>
+      </div>
+    </>
   )
 }

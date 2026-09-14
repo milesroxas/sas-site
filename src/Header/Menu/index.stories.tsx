@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { useRef, useState } from 'react'
+import { StreakVisual, type StreakVisualDescriptor } from '@/features/immersive/visual'
 import type { Header as HeaderType } from '@/payload-types'
 import { createChat } from '@/shared/testing/shadcn-helpers/ai-sdk'
 import type { MenuContent } from '../getMenuContent'
@@ -128,13 +129,27 @@ const scriptedAsk = createChat()
     )
   })
 
+/** The fake page's own Streak Field (StreakHero): the hero publishes it, the window runs it. */
+const streakHero: StreakVisualDescriptor = {
+  look: 'technical-lines-v1',
+  seed: 694,
+  speed: 1,
+  intensity: 1,
+  pointer: false,
+  posterMedia: null,
+  degraded: false,
+}
+
 function TakeoverMenuDemo({
   askHidden = false,
   heroMedia = true,
 }: {
   askHidden?: boolean
-  /** Whether the fake page mounts a `data-hero-media` region for the menu to clone. */
-  heroMedia?: boolean
+  /**
+   * What the fake page mounts as `data-hero-media` for the menu to clone: an
+   * image, the Streak Field (`streak`), or nothing.
+   */
+  heroMedia?: boolean | 'streak'
 }) {
   const [open, setOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
@@ -143,12 +158,31 @@ function TakeoverMenuDemo({
     <>
       {/* Stand-in for the (frontend)/layout.tsx page frame the menu docks. */}
       <div data-page-frame className="relative min-h-svh bg-background text-foreground">
-        {heroMedia && (
-          /* Marked like a real hero — the menu clones this into its dissolve layer. */
-          <div data-hero-media className="absolute inset-x-0 top-0 h-svh overflow-hidden">
-            {/* biome-ignore lint/performance/noImgElement: the menu clones the raw img/video inside data-hero-media (HERO_MEDIA_SELECTOR); a next/image wrapper isn't what production heros render in Storybook */}
-            <img src={heroMediaSrc} alt="" className="size-full object-cover opacity-30" />
+        {heroMedia === 'streak' ? (
+          /* A Streak Field hero on a dark band, as the production heroes
+             mount one: the menu clones its poster and, once docked, runs
+             the same field live in the window (Menu/LiveVisual). */
+          <div
+            data-hero-media
+            data-theme="dark"
+            className="absolute inset-x-0 top-0 h-svh overflow-hidden bg-background"
+          >
+            <StreakVisual
+              admission="force"
+              descriptor={streakHero}
+              fill
+              placement="hero"
+              priority
+            />
           </div>
+        ) : (
+          heroMedia && (
+            /* Marked like a real hero — the menu clones this into its dissolve layer. */
+            <div data-hero-media className="absolute inset-x-0 top-0 h-svh overflow-hidden">
+              {/* biome-ignore lint/performance/noImgElement: the menu clones the raw img/video inside data-hero-media (HERO_MEDIA_SELECTOR); a next/image wrapper isn't what production heros render in Storybook */}
+              <img src={heroMediaSrc} alt="" className="size-full object-cover opacity-30" />
+            </div>
+          )
         )}
         <div className="container relative flex min-h-svh flex-col justify-center gap-6 py-24">
           <p className="font-mono text-xs text-muted-foreground">Fake page frame</p>
@@ -236,6 +270,20 @@ export const AskHidden: Story = {
 export const MediaLessPage: Story = {
   ...Default,
   render: () => <TakeoverMenuDemo heroMedia={false} />,
+}
+
+/**
+ * Opened from a page whose hero is a Streak Field. The window docks onto the
+ * hero's poster, then the same field runs live in it at 1:1 screen pixels
+ * once the dock has settled (Menu/LiveVisual): what a video hero already
+ * gets. Hover a link to see it yield to the preview and resume after; close
+ * to see it fade back into the page. The hero forces admission (stories
+ * only); the window's own slot takes the real gates, so a software renderer
+ * or reduced motion keeps the poster there.
+ */
+export const StreakHero: Story = {
+  ...Default,
+  render: () => <TakeoverMenuDemo heroMedia="streak" />,
 }
 
 /**

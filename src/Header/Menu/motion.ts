@@ -6,6 +6,7 @@
  * exactly once (docs/animations.md contract).
  */
 
+import { parseStreakDescriptor, type StreakVisualDescriptor } from '@/features/immersive/visual'
 import type { Theme } from '@/providers/Theme/types'
 import { clipPathInset } from '@/shared/ui/hero-landing'
 import type { MenuMedia } from '../getMenuContent'
@@ -158,6 +159,42 @@ export const setMenuMediaGround = (el: HTMLElement, ground: Theme) => {
 const VISUAL_POSTER_ATTR = 'data-visual-poster'
 
 /**
+ * The polarity a hero media element is painted on: the nearest palette pin
+ * (a hero band's `data-theme`), else the document's. What the page's ground
+ * is under the element, so a copy shown elsewhere can paint the same one.
+ */
+const heroSourceGround = (source: Element): Theme =>
+  source.closest<HTMLElement>('[data-theme]')?.dataset.theme === 'dark' ? 'dark' : 'light'
+
+/** The Streak Field slot root (`StreakVisual`), which publishes its descriptor. */
+const STREAK_SLOT_SELECTOR = '[data-visual="streakField"]'
+
+/**
+ * The page's own Streak Field, read off its hero: what the docked window
+ * needs to run the same field live (Menu/LiveVisual.tsx) rather than rest
+ * on the still. `sizes` is the hero poster's, so the window's own poster
+ * resolves to the rendition already in cache and paints without a request.
+ */
+export type HeroStreakSource = {
+  descriptor: StreakVisualDescriptor
+  ground: Theme
+  sizes: string
+}
+
+export const readHeroStreakSource = (
+  source: HTMLImageElement | HTMLVideoElement,
+): HeroStreakSource | null => {
+  const slot = source.closest<HTMLElement>(STREAK_SLOT_SELECTOR)
+  const descriptor = parseStreakDescriptor(slot?.getAttribute('data-visual-descriptor'))
+  if (!slot || !descriptor) return null
+  return {
+    descriptor,
+    ground: heroSourceGround(source),
+    sizes: source.getAttribute('sizes') || '100vw',
+  }
+}
+
+/**
  * Clone the page's own hero media for the dissolve layer. Cloning (vs
  * re-rendering from data) guarantees the exact rendition already on screen:
  * images paint straight from cache, videos resume at the page's timestamp.
@@ -186,8 +223,7 @@ export const cloneHeroSource = (source: HTMLImageElement | HTMLVideoElement) => 
     clone.alt = ''
     if (source.hasAttribute(VISUAL_POSTER_ATTR)) {
       clone.removeAttribute(VISUAL_POSTER_ATTR)
-      const pin = source.closest<HTMLElement>('[data-theme]')?.dataset.theme
-      setMenuMediaGround(clone, pin === 'dark' ? 'dark' : 'light')
+      setMenuMediaGround(clone, heroSourceGround(source))
     }
   } else if (clone instanceof HTMLVideoElement) {
     clone.muted = true

@@ -11,6 +11,7 @@ import {
   MENU_MEDIA_GROUND_ATTR,
   menuMediaUrl,
   onMediaReady,
+  readHeroStreakSource,
 } from './motion'
 
 const setViewport = (width: number, height: number) => {
@@ -275,5 +276,57 @@ describe('getCardMotion', () => {
     expect(motion.clipPath).toMatch(shape)
     expect(motion.openClipPath).toMatch(shape)
     expect(motion.openClipPath).toBe(clipPathInset(0, 0, 0, 0, 0))
+  })
+})
+
+describe('readHeroStreakSource', () => {
+  const descriptor = {
+    look: 'signal-v1',
+    seed: 12,
+    speed: 0.5,
+    intensity: 1,
+    pointer: false,
+    posterMedia: null,
+    degraded: false,
+  }
+  const mountHero = (theme: 'dark' | 'light' | null, serialized: string | null) => {
+    const band = document.createElement('section')
+    if (theme) band.dataset.theme = theme
+    const slot = document.createElement('div')
+    slot.setAttribute('data-visual', 'streakField')
+    if (serialized !== null) slot.setAttribute('data-visual-descriptor', serialized)
+    const img = document.createElement('img')
+    img.setAttribute('sizes', '(min-width: 64rem) 42vw, 100vw')
+    slot.appendChild(img)
+    band.appendChild(slot)
+    document.body.appendChild(band)
+    return img
+  }
+
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('reads the descriptor, the band ground and the poster sizes off the hero', () => {
+    const img = mountHero('dark', JSON.stringify(descriptor))
+    expect(readHeroStreakSource(img)).toEqual({
+      descriptor,
+      ground: 'dark',
+      sizes: '(min-width: 64rem) 42vw, 100vw',
+    })
+  })
+
+  it('takes the light ground and the default sizes when nothing pins them', () => {
+    const img = mountHero(null, JSON.stringify(descriptor))
+    img.removeAttribute('sizes')
+    expect(readHeroStreakSource(img)).toMatchObject({ ground: 'light', sizes: '100vw' })
+  })
+
+  it('is null for media heroes and for a slot without a usable descriptor', () => {
+    const plain = document.createElement('img')
+    document.body.appendChild(plain)
+    expect(readHeroStreakSource(plain)).toBeNull()
+    expect(readHeroStreakSource(mountHero('dark', null))).toBeNull()
+    expect(readHeroStreakSource(mountHero('dark', '{"look":"nope"}'))).toBeNull()
   })
 })

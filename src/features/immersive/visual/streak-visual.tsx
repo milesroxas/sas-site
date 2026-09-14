@@ -19,7 +19,7 @@ import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
 import type { StreakFailureReason, StreakFieldRuntimeProps } from '../ui/streak-field-runtime'
 import { composeStreakTuning } from './compose'
-import type { StreakVisualDescriptor } from './descriptor'
+import { type StreakVisualDescriptor, serializeStreakDescriptor } from './descriptor'
 import {
   useCoarsePointer,
   useDocumentVisible,
@@ -178,6 +178,7 @@ export function StreakVisual({
   const id = useId()
   const rootRef = useRef<HTMLDivElement>(null)
   const posters = useMemo(() => posterSet(descriptor), [descriptor])
+  const serialized = useMemo(() => serializeStreakDescriptor(descriptor), [descriptor])
   const look = STREAK_LOOKS[descriptor.look]
 
   // Eligibility: policy first (no probe for a poster-only placement), then
@@ -202,7 +203,8 @@ export function StreakVisual({
   // Presence: draw only while near, visible, uncovered and settled.
   const near = useNearViewport(rootRef)
   const documentVisible = useDocumentVisible()
-  const covered = usePageCovered()
+  // The menu placement is the docked window itself, inside the covering frame.
+  const covered = usePageCovered(placement !== 'menu')
   const wanted = eligible && !paused && near && documentVisible && !covered && active
   const admitted = useStreakLease(id, wanted, ADMISSION_PRIORITY[placement])
   const live = wanted && admitted
@@ -284,6 +286,7 @@ export function StreakVisual({
         className,
       )}
       data-visual="streakField"
+      data-visual-descriptor={serialized}
       data-visual-look={descriptor.look}
       data-visual-status={status}
       {...(failure ? { 'data-visual-failure': failure } : {})}
