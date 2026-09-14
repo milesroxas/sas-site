@@ -65,7 +65,7 @@ Consumers spread it: `<RefractionMedia src={src} {...HERO_LENS} />`. Everything 
 ## Using an effect on a page
 
 1. Dial in the look at [`/demo/immersive`](/demo/immersive) (text load-ins: [`/demo/transitions`](/demo/transitions)) — every parameter is wired to the GUI.
-2. Copy the snippet (the copy button emits props in component units; the paste guide explains placement).
+2. Copy the snippet (the copy button emits props in component units; the paste guide explains placement). The Streak Field section is the exception: its copy emits a CMS look, a delta-only preset plus its `STREAK_LOOKS` entry, see [streak-field.md](streak-field.md#tuning-workflow).
 3. Import from the barrel and pass the props:
 
    ```tsx

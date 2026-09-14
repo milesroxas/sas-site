@@ -47,19 +47,29 @@ export function PasteGuideDialog({
 
         <div className="space-y-3 text-left">
           <p className="max-w-prose text-sm/relaxed text-pretty text-muted-foreground">
-            Open <code className={codeClass}>{target.file}</code> and replace{' '}
-            {target.format === 'object' ? (
-              <code className={codeClass}>{target.symbol}</code>
-            ) : target.format === 'css-vars' ? (
+            {target.format === 'code' ? (
               <>
-                the <code className={codeClass}>{target.symbol}</code> block
+                Each block on the clipboard is headed by a comment naming the file it belongs in;
+                together they feed <code className={codeClass}>{target.symbol}</code> in{' '}
+                <code className={codeClass}>{target.file}</code>:
               </>
             ) : (
               <>
-                the props on <code className={codeClass}>{`<${target.symbol} />`}</code>
+                Open <code className={codeClass}>{target.file}</code> and replace{' '}
+                {target.format === 'object' ? (
+                  <code className={codeClass}>{target.symbol}</code>
+                ) : target.format === 'css-vars' ? (
+                  <>
+                    the <code className={codeClass}>{target.symbol}</code> block
+                  </>
+                ) : (
+                  <>
+                    the props on <code className={codeClass}>{`<${target.symbol} />`}</code>
+                  </>
+                )}{' '}
+                with the clipboard contents:
               </>
-            )}{' '}
-            with the clipboard contents:
+            )}
           </p>
           <ScrollArea
             className="rounded-md border border-border bg-muted/40"
@@ -69,6 +79,13 @@ export function PasteGuideDialog({
               <code>{snippet}</code>
             </pre>
           </ScrollArea>
+          {target.steps?.length ? (
+            <ol className="max-w-prose list-decimal space-y-1 pl-5 text-sm/relaxed text-pretty text-muted-foreground">
+              {target.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          ) : null}
         </div>
 
         <AlertDialogFooter>

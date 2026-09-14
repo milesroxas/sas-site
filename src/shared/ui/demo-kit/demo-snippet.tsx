@@ -4,10 +4,10 @@ import { IconCopy } from '@tabler/icons-react'
 import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useDemoSettings } from './demo-settings'
-import { formatSnippet, type PasteTarget } from './format-snippet'
+import { formatSnippet, type PasteTarget, type SnippetValues } from './format-snippet'
 import { PasteGuideDialog } from './paste-guide-dialog'
 
-export type SnippetRegister = (values: Record<string, unknown>) => void
+export type SnippetRegister = (values: SnippetValues) => void
 
 const SnippetContext = createContext<SnippetRegister | null>(null)
 
@@ -27,18 +27,19 @@ export function DemoSnippetProvider({
 }
 
 /**
- * Registers the values the surrounding copy button emits. Demo content calls
- * this with the exact props it hands the feature component, so the snippet
- * carries applied units rather than raw GUI numbers.
+ * Registers what the surrounding copy button emits. Demo content calls this
+ * with the exact props it hands the feature component, so the snippet
+ * carries applied units rather than raw GUI numbers, or, for a `code` paste
+ * target, with the finished source it formatted itself.
  */
-export function useDemoSnippet(values: Record<string, unknown>) {
+export function useDemoSnippet(values: SnippetValues) {
   const register = useContext(SnippetContext)
-  // Serialized so the effect only fires when a value actually changes — the
+  // Serialized so the effect only fires when a value actually changes: the
   // object identity is new on every render.
   const serialized = JSON.stringify(values)
 
   useEffect(() => {
-    register?.(JSON.parse(serialized) as Record<string, unknown>)
+    register?.(JSON.parse(serialized) as SnippetValues)
   }, [register, serialized])
 }
 
@@ -64,7 +65,7 @@ export function useSnippetCopy(paste: PasteTarget | undefined): SnippetCopyContr
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle')
   const [guideOpen, setGuideOpen] = useState(false)
   const [snippet, setSnippet] = useState('')
-  const valuesRef = useRef<Record<string, unknown>>({})
+  const valuesRef = useRef<SnippetValues>({})
   const registerRef = useRef<SnippetRegister>((values) => {
     valuesRef.current = values
   })

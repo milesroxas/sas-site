@@ -44,7 +44,7 @@ The light entry (`@/features/immersive/visual`) imports no Three, so Payload con
 | Payload field factory | `src/fields/visual.ts`, `src/fields/visual-validate.ts` |
 | Admin look picker | `src/components/StreakLookSelect/` |
 | Poster capture script | `scripts/streak-field-posters.ts` |
-| Playground | `src/widgets/immersive-demo/ui/streak-field-playground.tsx` at `/demo/immersive` |
+| Playground and its look formatter | `src/widgets/immersive-demo/ui/streak-field-playground.tsx`, `streak-look-snippet.ts` at `/demo/immersive` |
 
 ## Quick start
 
@@ -331,13 +331,17 @@ Headless Chromium renders through SwiftShader. Slow, but it runs the same progra
 ## Tuning workflow
 
 1. Open `/demo/immersive` and dial the look in. Every parameter is wired to the GUI; the window's own light/dark button switches the ground.
-2. Copy the snippet. It emits props in component units.
-3. If it ships, add it to `presets.ts` as a delta-only preset with a comment explaining the art direction, not just the numbers.
-4. If editors should be able to choose it, add a look entry (below).
-5. Regenerate posters and bump `STREAK_LOOK_REVISION`.
+2. Name it in the **Ship as look** folder (the picker label; the id `<slug>-v1` and the const `STREAK_FIELD_<SLUG>` are derived) and give it its one-line picker description.
+3. Copy. The clipboard holds two blocks, each headed by the file it belongs in: a delta-only preset for `presets.ts` (only what differs from `STREAK_FIELD_DEFAULTS`; `surface` and `seed` never come along, the page ground and the CMS entry own those) and its `STREAK_LOOKS` entry for `visual/looks.ts`, with `motion` set from the panel. The paste guide lists the steps.
+4. Paste both, then write the preset's comment: the art direction, not only the numbers.
+5. Regenerate posters and bump `STREAK_LOOK_REVISION`. The look is now in the Look picker on every visual slot.
 6. Verify against a running dev server, not only Storybook: composed Tailwind class strings and theme gates behave differently there.
 
+The demo's `streak-look-snippet.ts` is the formatter; `formatStreakLookSnippet` is unit tested so the emitted shape tracks the `StreakLook` type.
+
 ## Adding a look
+
+The playground's copy button emits steps 1 and 2 ready to paste (see [Tuning workflow](#tuning-workflow)).
 
 1. Preset in `src/features/immersive/presets.ts`, deltas only, with a comment.
 2. Entry in `STREAK_LOOKS` (`visual/looks.ts`): stable versioned id (`name-v1`), label, one-line description for the picker, and `motion` set to `drift` or `flow` so the runtime can gate float-target support.

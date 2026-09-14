@@ -22,9 +22,11 @@ import {
 import {
   DemoBrowserFrame,
   useDemoAction,
+  useDemoControls,
   useDemoSnippet,
   useSettableDemoControls,
 } from '@/shared/ui/demo-kit'
+import { formatStreakLookSnippet } from './streak-look-snippet'
 
 /**
  * Demo content: the streak field over a themed stage in a browser window,
@@ -32,7 +34,9 @@ import {
  * wired to the surrounding DemoSection's GUI. Move the pointer over the
  * window to perturb the flow; the load buttons write a shipped preset into
  * the panel; the window's theme button flips the stage and loads the look
- * that ships over it. Demo-only, not shipped UI.
+ * that ships over it. The copy button emits the tuning as a CMS look: a
+ * delta-only preset plus its `STREAK_LOOKS` entry, named from the Ship
+ * folder, ready for the admin Look picker. Demo-only, not shipped UI.
  */
 
 /** The inks move between the component's 0..1 tuple and leva's colour picker. */
@@ -69,6 +73,13 @@ const SHAPES = ['dash', 'dot'] satisfies StreakFieldShape[]
 const MOTIONS = ['drift', 'flow'] satisfies StreakFieldMotion[]
 
 export function StreakFieldPlayground() {
+  // Names the look the copy button emits. Text only: the id, the const name
+  // and the picker label are all derived from `name` (see streak-look-snippet).
+  const { name, description } = useDemoControls('Ship as look', {
+    name: { value: 'New look' },
+    description: { value: '', label: 'picker line' },
+  })
+
   const [{ count, dpr, seed, segments, surface, surfaceEase }, setCanvas] = useSettableDemoControls(
     'Canvas',
     {
@@ -371,9 +382,10 @@ export function StreakFieldPlayground() {
     cap,
   }
 
-  // Placement (`className`) stays out: the consumer decides which surface the
-  // field fills and paints the ground beneath it.
-  useDemoSnippet(props)
+  // The clipboard gets the look, not the prop bag: only the deltas from the
+  // defaults, and never `surface` or `seed`, which the page ground and the
+  // CMS entry own. Placement (`className`) stays out for the same reason.
+  useDemoSnippet(formatStreakLookSnippet({ name, description, props }))
 
   const other: StreakFieldSurface = surface === 'dark' ? 'light' : 'dark'
 
