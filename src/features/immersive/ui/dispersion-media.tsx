@@ -3,9 +3,10 @@
 import { useFBO } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import cn from 'clsx'
-import { useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MathUtils, type Mesh, type ShaderMaterial } from 'three'
 import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
+import { ContextGuard } from '@/lib/webgl/components/context-guard'
 import {
   applyGlassIorUniforms,
   BACKDROP_FRAGMENT,
@@ -68,6 +69,8 @@ export type DispersionMediaProps = {
   source?: GlassMediaSource | null
   /** Fired once the first texture is on the GPU — use it to reveal the canvas. */
   onReady?: () => void
+  /** The browser took the context from a running panel; the canvas is dropped and not retried. */
+  onContextLost?: () => void
   /** Refracting mesh shape. */
   shape?: DispersionShape
   /** Uniform scale of the mesh (world units; the panel is ~5 units tall). */
@@ -244,20 +247,29 @@ function DispersionScene({
  * bands. Give it a sized container via className (e.g. an aspect-ratio
  * utility); the media cover-fits behind the mesh.
  */
-export function DispersionMedia({ className, ...scene }: DispersionMediaProps) {
+export function DispersionMedia({ className, onContextLost, ...scene }: DispersionMediaProps) {
+  // A real loss (never R3F's teardown) drops the canvas for this mount.
+  const [lost, setLost] = useState(false)
+  const handleLost = useCallback(() => {
+    setLost(true)
+    onContextLost?.()
+  }, [onContextLost])
   return (
     <div className={cn('relative', className)}>
-      <Canvas
-        dpr={GLASS_DPR}
-        flat
-        linear
-        frameloop="demand"
-        camera={GLASS_CAMERA}
-        gl={GLASS_GL_OPTIONS}
-        resize={CANVAS_RESIZE}
-      >
-        <DispersionScene {...scene} />
-      </Canvas>
+      {lost ? null : (
+        <Canvas
+          dpr={GLASS_DPR}
+          flat
+          linear
+          frameloop="demand"
+          camera={GLASS_CAMERA}
+          gl={GLASS_GL_OPTIONS}
+          resize={CANVAS_RESIZE}
+        >
+          <DispersionScene {...scene} />
+          <ContextGuard kind="lens" onLost={handleLost} />
+        </Canvas>
+      )}
     </div>
   )
 }

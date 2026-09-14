@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { MediaShowcaseGrid } from '@/blocks/shared/media-showcase-grid'
 import { BAND_SPACING } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
@@ -37,8 +37,9 @@ const trackHeight = (count: number) =>
  * item while the camera dollies through the planes; the eyebrow/heading stay
  * put top-left and a counter plus the focused item's caption sit bottom-left.
  *
- * Without a GPU (or under reduced motion) the same items render as a stacked
- * media list on the shared band rhythm, so the content is never lost.
+ * Without a GPU (or under reduced motion, or once a context is lost) the same
+ * items render as a stacked media list on the shared band rhythm, so the
+ * content is never lost.
  */
 export function ScrollGalleryClient({
   entries,
@@ -52,6 +53,9 @@ export function ScrollGalleryClient({
   const trackRef = useRef<HTMLDivElement>(null)
   const { hasGPU } = useDeviceDetection()
   const [active, setActive] = useState(0)
+  // A lost context (a real GPU reset) is the no-GPU case from here on.
+  const [lost, setLost] = useState(false)
+  const handleContextLost = useCallback(() => setLost(true), [])
 
   const items = useMemo<ScrollGalleryItem[]>(
     () =>
@@ -63,7 +67,7 @@ export function ScrollGalleryClient({
     [entries],
   )
 
-  if (!hasGPU) {
+  if (!hasGPU || lost) {
     return (
       <Container className={BAND_SPACING.loose}>
         <GalleryCopy eyebrow={eyebrow} heading={heading} />
@@ -81,7 +85,12 @@ export function ScrollGalleryClient({
   return (
     <div className="relative" ref={trackRef} style={{ height: trackHeight(entries.length) }}>
       <div className="sticky top-0 h-svh overflow-hidden">
-        <ScrollGallery items={items} pinRef={trackRef} onActiveChange={setActive} />
+        <ScrollGallery
+          items={items}
+          onActiveChange={setActive}
+          onContextLost={handleContextLost}
+          pinRef={trackRef}
+        />
 
         {/* DOM overlay: pinned copy and the focus readout. Pointer events pass
             through so page scroll and the custom cursor behave as on any band. */}

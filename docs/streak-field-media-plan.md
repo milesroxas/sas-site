@@ -314,9 +314,10 @@ What shipped in code against this plan, phase by phase, and what each phase stil
 
 ### Phase 0: ownership and baseline
 
-- Ownership: the Streak Field runs through **one admitted local classic WebGL2 canvas** per document, owned by the `StreakVisual` slot with a module-level, reference-counted admission registry (`src/features/immersive/visual/admission.ts`, ceiling 1, priority hero > block > menu > card). The shared-canvas prototype was not attempted; it stays a measured comparison against this baseline, and the consumer contract is unchanged either way.
+- Ownership: the Streak Field runs through **one admitted local classic WebGL2 canvas** per document, owned by the `StreakVisual` slot with a module-level, reference-counted lease on the document GPU budget (`src/lib/webgl/gpu-budget.ts`; `streak` kind capped at 1, priority hero > block > menu > card). The shared-canvas prototype was not attempted; it stays a measured comparison against this baseline, and the consumer contract is unchanged either way.
+- Coexistence (2026-09-14): the budget counts every canvas, not only Streak Fields. Hero and work lenses (`useWebglMediaLayer`), the footer light leak, the scroll gallery and the global backdrop hold leases on the same registry, ranked by role (`GPU_PRIORITY`: hero media, block media, backdrop, overlay, idle), under `GPU_LIVE_CEILING = 3` live contexts per document. Each Canvas mounts a `ContextGuard` that keeps a census of existing contexts (mirrored to `<html data-gpu-*>`) and reports a real context loss to its owner; every effect then drops its canvas to its DOM fallback and does not retry for that mount. R3F's teardown `forceContextLoss()` is never reported as a loss.
 - Root fixes shipped alongside: `GlobalCanvasRoot` is a real dynamic import boundary that mounts only once a route activates the global canvas, and the WebGL store's `isActive` boolean became a reference-counted lease (`acquireActive`).
-- Baseline record: [`docs/perf/streak-field-baseline/README.md`](perf/streak-field-baseline/README.md). **Open:** production-preview captures, real-hardware traces, resource plateau across route/menu/Ask cycles.
+- Baseline record: [`docs/perf/streak-field-baseline/README.md`](perf/streak-field-baseline/README.md). The 20-cycle route/menu/Ask resource plateau ran on 2026-09-14 against a workspace dev build with hardware GL (record and script there). **Open:** production-preview captures, real-hardware 30-second traces.
 
 ### Phase 1: visual contract and hardened scene
 

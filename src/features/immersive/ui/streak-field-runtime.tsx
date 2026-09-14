@@ -1,6 +1,6 @@
 'use client'
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import {
   Component,
   type ReactNode,
@@ -11,6 +11,7 @@ import {
   useRef,
 } from 'react'
 import type { WebGLRenderer } from 'three'
+import { ContextGuard } from '@/lib/webgl/components/context-guard'
 import {
   bindPointerInput,
   createPointerInput,
@@ -107,27 +108,6 @@ function FrameWatch({ onSlow }: { onSlow: () => void }) {
   return null
 }
 
-/**
- * Context loss is a failure only while the runtime is alive. R3F tears an
- * unmounted canvas down with `forceContextLoss()` (500ms after unmount),
- * which fires the same event; a listener left behind would report a routine
- * release, such as the 8s suspension or a route change, as `context-lost`
- * and pin the slot on its poster for the rest of the page. As a child of the
- * Canvas, this subscriber's cleanup runs with the tree, before that synthetic
- * loss arrives, and it costs the owner no state and no re-render.
- */
-function ContextLossGuard({ onLost }: { onLost: () => void }) {
-  const gl = useThree((state) => state.gl)
-  useEffect(() => {
-    const canvas = gl.domElement
-    // Not prevented: the owner restores the poster and stops; a restored
-    // context would resume a loop it explicitly gave up.
-    canvas.addEventListener('webglcontextlost', onLost)
-    return () => canvas.removeEventListener('webglcontextlost', onLost)
-  }, [gl, onLost])
-  return null
-}
-
 type BoundaryProps = { onError: () => void; children: ReactNode }
 
 /** Catches the renderer constructor and any render-time throw into `onFailure`. */
@@ -212,7 +192,8 @@ export function StreakFieldRuntime({
           rootRef={rootRef}
           tuning={tuning}
         />
-        <ContextLossGuard onLost={handleContextLost} />
+        {/* Census entry plus real loss; R3F's teardown loss never reaches it. */}
+        <ContextGuard kind="streak" onLost={handleContextLost} />
         {onSlow && active && animated && <FrameWatch onSlow={onSlow} />}
       </Canvas>
     </RuntimeBoundary>

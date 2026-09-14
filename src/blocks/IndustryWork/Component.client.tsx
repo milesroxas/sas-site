@@ -141,7 +141,7 @@ const IndustryWorkMedia = ({
   const media = visual?.kind === 'media' ? visual.media : null
   const src = media ? webglMediaSrc(media) || undefined : undefined
   const isVideo = Boolean(media?.mimeType?.includes('video'))
-  const { enabled, ready, handleReady } = useWebglMediaLayer(src, canvasMounted)
+  const { enabled, ready, handleReady, handleContextLost } = useWebglMediaLayer(src, canvasMounted)
   const showShader = ready && canvasHot
   const { fadeMs, hideDom, shaderVisible } = useShaderCrossfade(showShader)
 
@@ -192,6 +192,7 @@ const IndustryWorkMedia = ({
         >
           <RefractionMedia
             className="size-full"
+            onContextLost={handleContextLost}
             onReady={handleReady}
             src={src}
             subscribeProximity={hideDom ? proximity : undefined}

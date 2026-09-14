@@ -4,11 +4,14 @@ import { OrthographicCamera } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import cn from 'clsx'
 import dynamic from 'next/dynamic'
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useId, useMemo, useState } from 'react'
 import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
+import { GPU_PRIORITY } from '@/lib/webgl/gpu-budget'
 import { useWebGLStore } from '@/lib/webgl/store'
+import { useGpuLease } from '@/lib/webgl/use-gpu-lease'
 import { createRenderer } from '@/lib/webgl/utils/create-renderer'
 import { detectGPUCapability } from '@/lib/webgl/utils/gpu-detection'
+import { ContextGuard } from '../context-guard'
 import { Preload } from '../preload'
 import { RAF } from '../raf'
 import s from './global-canvas.module.css'
@@ -49,6 +52,24 @@ export function GlobalCanvas({
   const capability = detectGPUCapability()
   const dpr = useMemo<[number, number]>(() => [1, capability.dpr], [capability.dpr])
 
+  // The persistent context counts on the document GPU budget for as long as
+  // it exists: backdrop rank while a route draws on it, idle rank (first to
+  // yield) while it is only kept warm for the next route. A lost context (a
+  // real GPU reset, never R3F's teardown) drops the canvas; the next route
+  // that activates the layer gets a fresh attempt.
+  const id = useId()
+  const [lost, setLost] = useState(false)
+  const handleLost = useCallback(() => setLost(true), [])
+  useEffect(() => {
+    if (isActive) setLost(false)
+  }, [isActive])
+  const admitted = useGpuLease(
+    id,
+    isActivated && capability.hasGPU && !lost,
+    'backdrop',
+    isActive ? GPU_PRIORITY.backdrop : GPU_PRIORITY.idle,
+  )
+
   if (!isActivated) {
     return null
   }
@@ -72,47 +93,50 @@ export function GlobalCanvas({
         pointerEvents: isActive ? 'auto' : 'none',
       }}
     >
-      <Canvas
-        gl={async (props) => {
-          const { renderer, type } = await createRenderer({
-            canvas: props.canvas as HTMLCanvasElement,
-            alpha,
-            antialias: capability.dpr < 2,
-            powerPreference: 'high-performance',
-            stencil: true,
-            depth: true,
-            forceWebGL,
-          })
-          setRendererType(type)
-          return renderer
-        }}
-        dpr={dpr}
-        orthographic
-        frameloop="never"
-        linear
-        flat
-        {...(typeof document !== 'undefined' && {
-          eventSource: document.documentElement,
-        })}
-        eventPrefix="client"
-        resize={RESIZE_OPTIONS}
-        style={{ pointerEvents: isActive ? 'all' : 'none' }}
-      >
-        <OrthographicCamera
-          makeDefault
-          position={CAMERA_POSITION}
-          near={0.001}
-          far={10000}
-          zoom={1}
-        />
-        <RAF render={shouldRender} />
-        <Suspense>
-          <WebGLTunnel.Out />
-        </Suspense>
-        <Preload />
-        {/* stats-gl reads the WebGL context; skip under the WebGPU path (use forceWebGL to inspect). */}
-        {StatsGl && rendererType === 'webgl' && <StatsGl trackGPU />}
-      </Canvas>
+      {admitted && (
+        <Canvas
+          gl={async (props) => {
+            const { renderer, type } = await createRenderer({
+              canvas: props.canvas as HTMLCanvasElement,
+              alpha,
+              antialias: capability.dpr < 2,
+              powerPreference: 'high-performance',
+              stencil: true,
+              depth: true,
+              forceWebGL,
+            })
+            setRendererType(type)
+            return renderer
+          }}
+          dpr={dpr}
+          orthographic
+          frameloop="never"
+          linear
+          flat
+          {...(typeof document !== 'undefined' && {
+            eventSource: document.documentElement,
+          })}
+          eventPrefix="client"
+          resize={RESIZE_OPTIONS}
+          style={{ pointerEvents: isActive ? 'all' : 'none' }}
+        >
+          <OrthographicCamera
+            makeDefault
+            position={CAMERA_POSITION}
+            near={0.001}
+            far={10000}
+            zoom={1}
+          />
+          <RAF render={shouldRender} />
+          <Suspense>
+            <WebGLTunnel.Out />
+          </Suspense>
+          <Preload />
+          <ContextGuard kind="backdrop" onLost={handleLost} />
+          {/* stats-gl reads the WebGL context; skip under the WebGPU path (use forceWebGL to inspect). */}
+          {StatsGl && rendererType === 'webgl' && <StatsGl trackGPU />}
+        </Canvas>
+      )}
       <DOMTunnel.Out />
       {process.env.NODE_ENV === 'development' && rendererType && (
         <div className={s.rendererBadge}>{rendererType === 'webgpu' ? 'WebGPU' : 'WebGL'}</div>

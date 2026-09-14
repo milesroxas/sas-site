@@ -16,6 +16,7 @@ import {
 } from 'react'
 import { useHydrated } from '@/hooks/use-hydrated'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
+import { GPU_PRIORITY } from '@/lib/webgl/gpu-budget'
 import { cn } from '@/utilities/ui'
 import type { StreakFailureReason, StreakFieldRuntimeProps } from '../ui/streak-field-runtime'
 import { composeStreakTuning } from './compose'
@@ -60,11 +61,12 @@ const RELEASE_AFTER_MS = 8000
 /** The poster/canvas crossfade; the release waits it out before unmounting. */
 const CROSSFADE_MS = 500
 
+/** Rank on the document GPU budget: the page's media first, decoration last. */
 const ADMISSION_PRIORITY: Record<VisualPlacement, number> = {
-  hero: 3,
-  block: 2,
-  menu: 1,
-  card: 0,
+  hero: GPU_PRIORITY.hero,
+  block: GPU_PRIORITY.block,
+  menu: GPU_PRIORITY.backdrop,
+  card: GPU_PRIORITY.overlay,
 }
 
 export type StreakVisualStatus = 'poster' | 'preparing' | 'live' | 'suspended' | 'failed'

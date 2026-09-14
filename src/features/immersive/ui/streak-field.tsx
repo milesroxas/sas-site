@@ -4,6 +4,7 @@ import { Canvas } from '@react-three/fiber'
 import cn from 'clsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDeviceDetection } from '@/hooks/use-device-detection'
+import { ContextGuard } from '@/lib/webgl/components/context-guard'
 import {
   bindPointerInput,
   createPointerInput,
@@ -118,6 +119,8 @@ export function StreakField({ className, force = false, ...deltas }: StreakField
         style={STREAK_CANVAS_STYLE}
       >
         <FieldScene rootRef={rootRef} inputRef={inputRef} tuning={tuning} />
+        {/* Census only: the demo owner has no poster to fall back to. */}
+        <ContextGuard kind="streak" />
       </Canvas>
     </div>
   )

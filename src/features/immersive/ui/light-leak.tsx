@@ -3,10 +3,13 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import cn from 'clsx'
 import type { CSSProperties, RefObject } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { MathUtils, type ShaderMaterial, Vector2, Vector3 } from 'three'
 import { useDeviceDetection } from '@/hooks/use-device-detection'
 import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
+import { ContextGuard } from '@/lib/webgl/components/context-guard'
+import { GPU_PRIORITY } from '@/lib/webgl/gpu-budget'
+import { useGpuLease } from '@/lib/webgl/use-gpu-lease'
 import { resolveTuning } from '../resolve-tuning'
 import { LIGHT_LEAK_EXCITE_SELECTOR } from './light-leak-excite'
 import { createFragmentShader, VERTEX_SHADER } from './light-leak-shader'
@@ -558,7 +561,11 @@ function LeakScene({ rootRef, inputRef, scrollSource, tuning }: LeakSceneProps) 
  * `isolate` matters — without it the blend reaches past the intended backdrop.
  *
  * Renders nothing without a GPU, on low-power devices, or under
- * `prefers-reduced-motion` (see `force`).
+ * `prefers-reduced-motion` (see `force`). It is decoration, so it holds the
+ * lowest rank on the document GPU budget: when the page's own media fills
+ * the ceiling the leak yields its canvas and returns once a slot frees. A
+ * lost context (a real GPU reset, never R3F's teardown) drops the canvas
+ * for good; the ground beneath is the fallback.
  */
 export function LightLeak({ className, force = false, scrollSource, ...deltas }: LightLeakProps) {
   const tuning = resolveTuning<LightLeakTuning>(LIGHT_LEAK_DEFAULTS, deltas)
@@ -576,11 +583,17 @@ export function LightLeak({ className, force = false, scrollSource, ...deltas }:
   // Off-screen overlays keep their context but stop rendering, so a leak on a
   // section costs nothing while that section is scrolled away.
   const [inView, setInView] = useState(true)
+  const [lost, setLost] = useState(false)
+  const handleLost = useCallback(() => setLost(true), [])
 
   const dprRange = useMemo<[number, number]>(() => [1, dpr], [dpr])
   const canvasStyle = useMemo<CSSProperties>(() => ({ mixBlendMode: blendMode }), [blendMode])
 
-  const enabled = hasGPU || force
+  const wanted = (hasGPU || force) && !lost
+  // The lease is held while mounted, in view or not: a parked context is
+  // cheap, and the leak must not pop in on every scroll past its section.
+  const id = useId()
+  const enabled = useGpuLease(id, wanted, 'leak', GPU_PRIORITY.overlay)
 
   useEffect(() => {
     const root = rootRef.current
@@ -649,6 +662,7 @@ export function LightLeak({ className, force = false, scrollSource, ...deltas }:
           scrollSource={scrollSource}
           tuning={tuning}
         />
+        <ContextGuard kind="leak" onLost={handleLost} />
       </Canvas>
     </div>
   )

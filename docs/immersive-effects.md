@@ -79,6 +79,15 @@ Consumers spread it: `<RefractionMedia src={src} {...HERO_LENS} />`. Everything 
 
 Effects handle their own fallbacks (`prefers-reduced-motion`, missing GPU, lost contexts render static/DOM fallbacks); consumers gate only on their own concerns (e.g. `useDeviceDetection().hasGPU` before mounting a heavy canvas, as `HeroBackground` does).
 
+### Contexts: the document budget and real loss
+
+Every Canvas an effect owns mounts one `ContextGuard` (`src/lib/webgl/components/context-guard`) and holds a lease on the document GPU budget (`src/lib/webgl/gpu-budget.ts`, hook `useGpuLease`). Two things follow from that:
+
+- **One budget for every canvas.** Streak Fields, the hero and work lenses, the footer light leak, the scroll gallery and the global backdrop are ranked together: `GPU_LIVE_CEILING` live contexts per document (3 to start), one Streak Field among them (`STREAK_KIND_CEILING`), highest `GPU_PRIORITY` first (`hero` > `block` > `backdrop` > `overlay` > `idle`), arrival order among equals. An effect that is not admitted keeps its DOM layer (poster, media element, nothing) and mounts its canvas once a slot frees. The leak ranks last, the page's own media first.
+- **Real loss falls back, teardown does not.** The guard forwards `webglcontextlost` (and the WebGPU device-lost hook) to its owner only while the Canvas is alive; R3F's `forceContextLoss()` on unmount arrives after the guard's cleanup, so a suspension or route change is never a loss. On a real loss the effect drops its canvas and never retries for that mount: the Streak Field restores its poster (`failed`, `context-lost`), `RefractionMedia` and `ScrollGallery` report `onContextLost` so their owners reveal the DOM media (`useWebglMediaLayer` does it for the lenses; the gallery block swaps to its stacked grid), the leak leaves the ground beneath it, the global backdrop stays dark until the next route activates it.
+
+The registry mirrors itself onto `<html>` as `data-gpu-leases`, `data-gpu-admitted` and `data-gpu-contexts` (leases wanted, leases admitted, contexts that exist right now including parked ones), which is what devtools and the resource-plateau probe read (`docs/perf/streak-field-baseline/README.md`). Adding a canvas-owning effect: hold a lease with a kind and a rank, mount the guard inside the Canvas, and make "not admitted" and "lost" render the same DOM fallback.
+
 ## Adding a new effect — checklist
 
 1. Component in `src/features/immersive/ui/<name>.tsx`: props type, then `export const <NAME>_DEFAULTS … as const satisfies Partial<Props>`, destructure defaults from it.

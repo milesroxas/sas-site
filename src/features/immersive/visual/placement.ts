@@ -1,3 +1,5 @@
+import { STREAK_KIND_CEILING } from '@/lib/webgl/gpu-budget'
+
 /**
  * Where a live Streak Field may run, and the code-owned ceilings for each
  * placement. Editors choose a look; these numbers are calibrated in code and
@@ -45,5 +47,9 @@ export const degradedLimits = (limits: PlacementLimits): PlacementLimits => ({
   count: Math.max(500, Math.floor(limits.count / 2)),
 })
 
-/** One animated Streak Field across the document is the starting ceiling. */
-export const STREAK_LIVE_CEILING = 1
+/**
+ * One animated Streak Field across the document is the starting ceiling:
+ * the `streak` kind's cap on the document GPU budget (`@/lib/webgl/gpu-budget`),
+ * which also counts lenses, the light leak, galleries and the global backdrop.
+ */
+export const STREAK_LIVE_CEILING = STREAK_KIND_CEILING

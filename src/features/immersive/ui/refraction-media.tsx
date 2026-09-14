@@ -3,7 +3,7 @@
 import { useFBO } from '@react-three/drei'
 import { Canvas, type RootState, useFrame, useThree } from '@react-three/fiber'
 import cn from 'clsx'
-import { useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   MathUtils,
   type Mesh,
@@ -13,6 +13,7 @@ import {
   type WebGLRenderTarget,
 } from 'three'
 import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
+import { ContextGuard } from '@/lib/webgl/components/context-guard'
 import { resolveTuning } from '../resolve-tuning'
 import {
   applyGlassIorUniforms,
@@ -316,6 +317,12 @@ export type RefractionMediaProps = {
   source?: GlassMediaSource | null
   /** Fired once the first texture is on the GPU — use it to reveal the canvas. */
   onReady?: () => void
+  /**
+   * The browser took the context from a running panel (a real GPU reset;
+   * R3F's own teardown never reports here). The canvas is dropped and never
+   * retried; the owner reveals its DOM media, as `useWebglMediaLayer` does.
+   */
+  onContextLost?: () => void
   /**
    * External 0–1 activation source (1 = true hover) — e.g. the cursor
    * provider's proximity via `useCursorProximitySource` from
@@ -957,11 +964,17 @@ export function RefractionMedia({
   video,
   source,
   onReady,
+  onContextLost,
   subscribeProximity,
   ...deltas
 }: RefractionMediaProps) {
   const tuning = resolveTuning<RefractionMediaTuning>(REFRACTION_MEDIA_DEFAULTS, deltas)
   const overscan = canvasOverscan(tuning.bleed, tuning.lensVisibility, tuning.lensSpread)
+  const [lost, setLost] = useState(false)
+  const handleLost = useCallback(() => {
+    setLost(true)
+    onContextLost?.()
+  }, [onContextLost])
   return (
     <div className={cn('pointer-events-none relative', className)}>
       {/* Overscan host: the canvas hangs past the container so melt and a
@@ -969,24 +982,27 @@ export function RefractionMedia({
           resolves against the matching axis, matching the shader's per-axis
           margin. Ancestors must not clip for the overhang to paint. */}
       <div className="absolute" style={{ inset: `${(-overscan * 100).toFixed(3)}%` }}>
-        <Canvas
-          dpr={GLASS_DPR}
-          flat
-          linear
-          frameloop="demand"
-          camera={GLASS_CAMERA}
-          gl={GLASS_GL_OPTIONS}
-          resize={CANVAS_RESIZE}
-        >
-          <RefractionScene
-            onReady={onReady}
-            source={source}
-            src={src}
-            subscribeProximity={subscribeProximity}
-            tuning={tuning}
-            video={video}
-          />
-        </Canvas>
+        {lost ? null : (
+          <Canvas
+            dpr={GLASS_DPR}
+            flat
+            linear
+            frameloop="demand"
+            camera={GLASS_CAMERA}
+            gl={GLASS_GL_OPTIONS}
+            resize={CANVAS_RESIZE}
+          >
+            <RefractionScene
+              onReady={onReady}
+              source={source}
+              src={src}
+              subscribeProximity={subscribeProximity}
+              tuning={tuning}
+              video={video}
+            />
+            <ContextGuard kind="lens" onLost={handleLost} />
+          </Canvas>
+        )}
       </div>
     </div>
   )

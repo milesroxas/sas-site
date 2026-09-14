@@ -245,7 +245,7 @@ Precedence per consumer is deliberately not flattened: the menu uses `menuPrevie
 | `menu` | yes (the docked window at rest) | 2 | 1000 | yes | no |
 | `card` | no | 1 | 0 | no | no |
 
-- **One live field per document** (`STREAK_LIVE_CEILING`). Slots hold a reference-counted lease (`admission.ts`) and are ranked hero > block > menu > card. Release is idempotent, so a stale cleanup can never switch another slot off.
+- **One live field per document** (`STREAK_LIVE_CEILING`), inside the document GPU budget shared with every other canvas (`src/lib/webgl/gpu-budget.ts`: `GPU_LIVE_CEILING` contexts in total across Streak Fields, lenses, the footer leak, galleries and the global backdrop). Slots hold a reference-counted `streak` lease (`useStreakLease`) ranked hero > block > menu > card on the shared `GPU_PRIORITY` scale; a hero field outranks a work lens, a block field ties with one and yields to an earlier arrival, and both outrank the leak. Release is idempotent, so a stale cleanup can never switch another slot off. `<html data-gpu-leases data-gpu-admitted data-gpu-contexts>` shows the live numbers.
 - **One step down, then the poster.** A frame watchdog (two consecutive slow 90-frame windows averaging worse than 40 fps) drops to `degradedLimits`: half the particles at DPR 1. A second trip fails to the poster. There is no step back up.
 - **Grid coverage is preserved when count is capped.** `coveragePitch` widens both pitches rather than truncating rows.
 - `NEXT_PUBLIC_STREAK_LIVE=off` turns live rendering off for a deployment. Posters still render; nothing falls back to a retained upload.
@@ -279,7 +279,7 @@ A live field is admitted only when **all** of these hold: hydrated, placement al
 - Reveal happens on the **first drawn frame of the current generation**. A late callback from a previous seed, route or lost context cannot reveal a blank buffer.
 - Suspension parks the canvas at `frameloop="never"` and releases the lease. After 8s the poster fades back and the canvas unmounts.
 - Failures (`context`, `shader`, `context-lost`, `flow-unsupported`, `performance`, `chunk`) restore the poster and stop. No retry loops, ever.
-- `context-lost` means the browser took the context from a running field. R3F tears every unmounted canvas down with `forceContextLoss()` about 500ms later, which logs `THREE.WebGLRenderer: Context Lost.` in the console; the runtime removes its listener at unmount, so a release or a route change is never reported as a failure. That log line on its own is teardown, not a GPU reset.
+- `context-lost` means the browser took the context from a running field. R3F tears every unmounted canvas down with `forceContextLoss()` about 500ms later, which logs `THREE.WebGLRenderer: Context Lost.` in the console; the runtime's `ContextGuard` (shared with every other effect, `src/lib/webgl/components/context-guard`) is removed with the tree at unmount, so a release or a route change is never reported as a failure. That log line on its own is teardown, not a GPU reset. The other effects fall back the same way on a real loss: see [immersive-effects.md](immersive-effects.md#contexts-the-document-budget-and-real-loss).
 - `VisualMotionToggle` is the document-wide pause (WCAG 2.2.2). It stops work and releases leases; it does not set speed to zero. It is kept for the session and hidden under reduced motion.
 
 ## Posters
@@ -359,7 +359,8 @@ Removing a look is a **content** change: keep its id, entry and posters until ev
 | Symptom | Cause and fix |
 |---------|---------------|
 | Poster shows, canvas never mounts | Check `data-visual-status`. `poster` means a gate is unmet: placement, reduced motion, coarse pointer, offscreen, covered by the menu, or another slot holds the only lease. |
-| `THREE.WebGLRenderer: Context Lost.` in the console with no `failed` slot | Routine: R3F force-loses the context of every unmounted canvas (footer light leak scroll gate, an 8s release, a route change). Only a slot whose status is `failed` with `data-visual-failure="context-lost"` is a real loss. |
+| `THREE.WebGLRenderer: Context Lost.` in the console with no `failed` slot | Routine: R3F force-loses the context of every unmounted canvas (footer light leak scroll gate, an 8s release, a route change). Only a slot whose status is `failed` with `data-visual-failure="context-lost"` is a real loss. Read `<html data-gpu-contexts>` for the contexts that exist right now. |
+| Slot stays `poster` while another canvas is live | The document budget is full (`data-gpu-admitted` equals `GPU_LIVE_CEILING`) or another Streak Field holds the one `streak` slot. A hero field outranks everything but an earlier hero lens; a block field yields to the page's media. It mounts once a slot frees. |
 | `data-visual-status="failed"` | Read `data-visual-failure`: `context` (no WebGL2 or a performance caveat), `shader`, `context-lost`, `flow-unsupported` (no renderable float target for a `flow` look), `performance` (watchdog gave up), `chunk` (runtime failed to load). |
 | Field runs, then drops back to a still | The frame watchdog stepped down and then failed. Lower the look's `count`, `dpr` or octaves rather than raising the ceiling. |
 | Grid truncates at the bottom | Something bypassed `coveragePitch`. Grid density must widen pitch when `count` is capped, not drop rows. |

@@ -2,8 +2,8 @@
 
 import { type RefObject, useEffect, useState, useSyncExternalStore } from 'react'
 import { useSiteTheme } from '@/hooks/use-site-theme'
+import { useGpuLease } from '@/lib/webgl/use-gpu-lease'
 import type { Theme } from '@/providers/Theme/types'
-import { isStreakAdmitted, requestStreakLease, subscribeStreakAdmission } from './admission'
 import { NO_STREAK_CAPABILITY, probeStreakCapability, type StreakCapability } from './capability'
 import {
   getServerMotionPaused,
@@ -113,20 +113,13 @@ export function usePageCovered(enabled = true): boolean {
 }
 
 /**
- * Hold a live lease while `wanted`, and report whether this slot is among
- * the admitted ones. Release is idempotent; the effect's cleanup is the one
- * place it happens.
+ * Hold a `streak` lease on the document GPU budget while `wanted`, and
+ * report whether this slot is among the admitted ones. The budget ranks
+ * every canvas on the page together; the Streak Field's own cap is
+ * `STREAK_LIVE_CEILING`.
  */
 export function useStreakLease(id: string, wanted: boolean, priority: number): boolean {
-  useEffect(() => {
-    if (!wanted) return
-    return requestStreakLease(id, priority)
-  }, [id, wanted, priority])
-  return useSyncExternalStore(
-    subscribeStreakAdmission,
-    () => wanted && isStreakAdmitted(id),
-    () => false,
-  )
+  return useGpuLease(id, wanted, 'streak', priority)
 }
 
 const GROUND_SELECTOR = '[data-theme], .band-dark'

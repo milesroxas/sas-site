@@ -1,10 +1,13 @@
 'use client'
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
+import { type RefObject, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Color, MathUtils, type Mesh, type ShaderMaterial, type Texture, Vector2 } from 'three'
 import { useDeviceDetection } from '@/hooks/use-device-detection'
 import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
+import { ContextGuard } from '@/lib/webgl/components/context-guard'
+import { GPU_PRIORITY } from '@/lib/webgl/gpu-budget'
+import { useGpuLease } from '@/lib/webgl/use-gpu-lease'
 import { cn } from '@/utilities/ui'
 import { resolveTuning } from '../resolve-tuning'
 import { useBackdropTexture, useOnScreen } from './glass-media-internals'
@@ -168,6 +171,12 @@ export type ScrollGalleryProps = {
    * so a counter or caption can follow the camera.
    */
   onActiveChange?: (index: number) => void
+  /**
+   * The browser took the context from a running gallery (a real GPU reset;
+   * R3F's own teardown never reports here). The canvas is dropped and never
+   * retried; the consumer swaps in its DOM layout.
+   */
+  onContextLost?: () => void
   /** Render even where the GPU / motion gates would suppress the canvas (demos, stories). */
   force?: boolean
   className?: string
@@ -599,6 +608,7 @@ export function ScrollGallery({
   pinRef,
   scrollSource,
   onActiveChange,
+  onContextLost,
   force = false,
   ...deltas
 }: ScrollGalleryProps) {
@@ -607,7 +617,15 @@ export function ScrollGallery({
   const { hasGPU } = useDeviceDetection()
   // Off-screen galleries keep their context but stop rendering.
   const [inView, setInView] = useState(true)
-  const enabled = hasGPU || force
+  const [lost, setLost] = useState(false)
+  const handleLost = useCallback(() => {
+    setLost(true)
+    onContextLost?.()
+  }, [onContextLost])
+  // The block's media: block rank on the document GPU budget, held while
+  // mounted so the pinned track never loses its planes mid-scroll.
+  const id = useId()
+  const enabled = useGpuLease(id, (hasGPU || force) && !lost, 'gallery', GPU_PRIORITY.block)
 
   const dprRange = useMemo<[number, number]>(() => [DPR_MIN, tuning.dpr], [tuning.dpr])
   const cameraConfig = useMemo(
@@ -652,6 +670,7 @@ export function ScrollGallery({
           onActiveChange={onActiveChange}
           tuning={tuning}
         />
+        <ContextGuard kind="gallery" onLost={handleLost} />
       </Canvas>
     </div>
   )

@@ -4,6 +4,7 @@ import type React from 'react'
 import { Media } from '@/components/Media'
 import { HERO_LENS, RefractionMedia, useWebglMediaLayer } from '@/features/immersive'
 import { useHeroIntroSettled } from '@/heros/HeroBand'
+import { GPU_PRIORITY } from '@/lib/webgl/gpu-budget'
 import type { Media as MediaType } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { webglMediaSrc } from '@/utilities/webglMediaSrc'
@@ -28,7 +29,12 @@ export const HeroBackground: React.FC<{ media: MediaType }> = ({ media }) => {
   // still compositing, and its arrival becomes the entrance's last beat, a
   // same-media dissolve once its first frame is on the GPU.
   const introSettled = useHeroIntroSettled()
-  const { enabled, ready, handleReady } = useWebglMediaLayer(src, introSettled)
+  // The page's own media: first rank on the document GPU budget.
+  const { enabled, ready, handleReady, handleContextLost } = useWebglMediaLayer(
+    src,
+    introSettled,
+    GPU_PRIORITY.hero,
+  )
 
   return (
     <div
@@ -58,6 +64,7 @@ export const HeroBackground: React.FC<{ media: MediaType }> = ({ media }) => {
         >
           <RefractionMedia
             className="size-full"
+            onContextLost={handleContextLost}
             onReady={handleReady}
             src={src}
             video={isVideo}
