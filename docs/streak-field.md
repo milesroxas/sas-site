@@ -278,6 +278,7 @@ A live field is admitted only when **all** of these hold: hydrated, placement al
 - Reveal happens on the **first drawn frame of the current generation**. A late callback from a previous seed, route or lost context cannot reveal a blank buffer.
 - Suspension parks the canvas at `frameloop="never"` and releases the lease. After 8s the poster fades back and the canvas unmounts.
 - Failures (`context`, `shader`, `context-lost`, `flow-unsupported`, `performance`, `chunk`) restore the poster and stop. No retry loops, ever.
+- `context-lost` means the browser took the context from a running field. R3F tears every unmounted canvas down with `forceContextLoss()` about 500ms later, which logs `THREE.WebGLRenderer: Context Lost.` in the console; the runtime removes its listener at unmount, so a release or a route change is never reported as a failure. That log line on its own is teardown, not a GPU reset.
 - `VisualMotionToggle` is the document-wide pause (WCAG 2.2.2). It stops work and releases leases; it does not set speed to zero. It is kept for the session and hidden under reduced motion.
 
 ## Posters
@@ -356,6 +357,7 @@ Removing a look is a **content** change: keep its id, entry and posters until ev
 | Symptom | Cause and fix |
 |---------|---------------|
 | Poster shows, canvas never mounts | Check `data-visual-status`. `poster` means a gate is unmet: placement, reduced motion, coarse pointer, offscreen, covered by the menu, or another slot holds the only lease. |
+| `THREE.WebGLRenderer: Context Lost.` in the console with no `failed` slot | Routine: R3F force-loses the context of every unmounted canvas (footer light leak scroll gate, an 8s release, a route change). Only a slot whose status is `failed` with `data-visual-failure="context-lost"` is a real loss. |
 | `data-visual-status="failed"` | Read `data-visual-failure`: `context` (no WebGL2 or a performance caveat), `shader`, `context-lost`, `flow-unsupported` (no renderable float target for a `flow` look), `performance` (watchdog gave up), `chunk` (runtime failed to load). |
 | Field runs, then drops back to a still | The frame watchdog stepped down and then failed. Lower the look's `count`, `dpr` or octaves rather than raising the ceiling. |
 | Grid truncates at the bottom | Something bypassed `coveragePitch`. Grid density must widen pitch when `count` is capped, not drop rows. |
