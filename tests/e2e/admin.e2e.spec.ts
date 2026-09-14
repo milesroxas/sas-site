@@ -6,6 +6,9 @@ test.describe('Admin Panel', () => {
   let page: Page
 
   test.beforeAll(async ({ browser }, _testInfo) => {
+    // Seeding boots Payload in a subprocess, which pulls the schema before it
+    // can write the user; that is well past the default 30s hook budget.
+    test.setTimeout(180_000)
     await seedTestUser()
 
     const context = await browser.newContext()
@@ -15,6 +18,7 @@ test.describe('Admin Panel', () => {
   })
 
   test.afterAll(async () => {
+    test.setTimeout(180_000)
     await cleanupTestUser()
   })
 

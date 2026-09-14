@@ -1,46 +1,31 @@
-import { getPayload } from 'payload'
-import config from '../../src/payload.config.js'
+import { execFileSync } from 'node:child_process'
 
+/**
+ * Seeds and removes the admin e2e user through a `tsx` subprocess, the same
+ * way the content hub fixture runs. Playwright loads spec files with plain
+ * Node ESM, which cannot resolve the extensionless `next/server` import the
+ * Payload config reaches through its plugins, so the config is never imported
+ * into the test process itself.
+ */
 export const testUser = {
   email: 'dev@payloadcms.com',
   password: 'test',
 }
 
-/**
- * Seeds a test user for e2e admin tests.
- */
-export async function seedTestUser(): Promise<void> {
-  const payload = await getPayload({ config })
-
-  // Delete existing test user if any
-  await payload.delete({
-    collection: 'users',
-    where: {
-      email: {
-        equals: testUser.email,
-      },
-    },
-  })
-
-  // Create fresh test user
-  await payload.create({
-    collection: 'users',
-    data: testUser,
+const runFixture = (operation: 'seed' | 'cleanup') => {
+  execFileSync('pnpm', ['exec', 'tsx', 'tests/e2e/support/admin-user-fixture.ts', operation], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'inherit',
   })
 }
 
-/**
- * Cleans up test user after tests
- */
-export async function cleanupTestUser(): Promise<void> {
-  const payload = await getPayload({ config })
+/** Seeds a test user for e2e admin tests. */
+export async function seedTestUser(): Promise<void> {
+  runFixture('seed')
+}
 
-  await payload.delete({
-    collection: 'users',
-    where: {
-      email: {
-        equals: testUser.email,
-      },
-    },
-  })
+/** Cleans up the test user after tests. */
+export async function cleanupTestUser(): Promise<void> {
+  runFixture('cleanup')
 }
