@@ -31,6 +31,17 @@ const richText = (text: string) => ({
   },
 })
 
+/**
+ * The opening a published segment page must carry: a title, and a Streak
+ * Field standing in for the required upload, so publishing here needs no
+ * uploaded asset.
+ */
+const streakHero = (title: string) => ({
+  title,
+  visualType: 'streakField' as const,
+  shader: { preset: 'signal-v1' },
+})
+
 describe.sequential('website IA surfaces', () => {
   let payload: Payload
   let user: User
@@ -114,6 +125,7 @@ describe.sequential('website IA surfaces', () => {
       context: { disableRevalidate: true },
       data: {
         _status: 'published',
+        hero: streakHero(`Draft Expertise ${suffix}`),
         layout: [
           {
             blockType: 'content',
@@ -167,6 +179,7 @@ describe.sequential('website IA surfaces', () => {
       context: { disableRevalidate: true },
       data: {
         _status: 'published',
+        hero: streakHero(`Draft Audience ${suffix}`),
         layout: [
           {
             blockType: 'content',
