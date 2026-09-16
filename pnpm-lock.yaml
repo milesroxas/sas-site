@@ -16,6 +16,7 @@ overrides:
 patchedDependencies:
   '@payloadcms/next': 5aab1b45b1b4ba0dc4dcac57bd9d0e0f3d8a82b17f4e710fd3e0a4c119e92536
   '@payloadcms/plugin-mcp': 88e253e31165639e8981b339844fe5dc4b68ca8efb384a0cb3f8faa134fecb72
+  '@webreel/core@0.1.4': 50881b74aac6d35110eaaad84119b2c19b0214a1947eab048309d9cab80a8ea1
 
 importers:
 
@@ -11479,7 +11480,7 @@ snapshots:
 
   '@webgpu/types@0.1.71': {}
 
-  '@webreel/core@0.1.4(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+  '@webreel/core@0.1.4(patch_hash=50881b74aac6d35110eaaad84119b2c19b0214a1947eab048309d9cab80a8ea1)(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
     dependencies:
       chrome-remote-interface: 0.33.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       sharp: 0.34.5
@@ -15049,7 +15050,7 @@ snapshots:
 
   webreel@0.1.4(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
-      '@webreel/core': 0.1.4(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      '@webreel/core': 0.1.4(patch_hash=50881b74aac6d35110eaaad84119b2c19b0214a1947eab048309d9cab80a8ea1)(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       commander: 14.0.3
       jiti: 2.7.0
       jsonc-parser: 3.3.1

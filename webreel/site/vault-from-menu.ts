@@ -6,7 +6,7 @@ const vaultMenuLink = '#site-menu a[href="/works/vault-workforce-screening"]'
 
 export const vaultFromMenu = {
   'vault-from-menu': {
-    url: '/',
+    url: '/?webreel',
     output: 'site/vault-from-menu.mp4',
     waitFor: { selector: 'button[aria-label="Open menu"]' },
     steps: [

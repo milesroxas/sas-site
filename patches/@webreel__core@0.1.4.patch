@@ -1,0 +1,19 @@
+diff --git a/dist/cursor-motion.js b/dist/cursor-motion.js
+index 3efa0e6bc32b906cd067cd4d259d76743a3f8db2..1130c5d28c72cd7d2c581827ea61830dfbf4aa0b 100644
+--- a/dist/cursor-motion.js
++++ b/dist/cursor-motion.js
+@@ -72,7 +72,13 @@ export async function animateMoveTo(ctx, client, fromX, fromY, toX, toY) {
+     positions[positions.length - 1] = { x: toX, y: toY };
+     if (ctx.isRecording && ctx.timeline) {
+         ctx.timeline.setCursorPath(positions);
+-        await new Promise((r) => setTimeout(r, NUM_STEPS * CAPTURE_CYCLE_MS));
++        // Wall-clock CAPTURE_CYCLE_MS undercounts real capture (a 1920x1080
++        // GSAP page is often >35ms/frame), so mouseMoved used to fire while
++        // the composited cursor was still mid-path. Wait for one timeline
++        // tick per path point so the overlay arrives, then dispatch.
++        for (let i = 0; i < positions.length; i++) {
++            await ctx.timeline.waitForNextTick();
++        }
+         await client.Input.dispatchMouseEvent({
+             type: "mouseMoved",
+             x: toX,

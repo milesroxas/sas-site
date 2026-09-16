@@ -45,6 +45,33 @@ function useFinePointer(): boolean {
   )
 }
 
+const WEBREEL_FLAG = 'webreel'
+
+/** Webreel records its own cursor in post. The site overlay lags (outerLag
+ *  0.35s) and only sees CDP `mouseMoved` at the end of a move, so both read
+ *  as a delayed second pointer. `?webreel` is stored so client navigations
+ *  keep it off. */
+function isWebreelPointer(): boolean {
+  if (navigator.webdriver) return true
+  try {
+    if (new URLSearchParams(window.location.search).has(WEBREEL_FLAG)) {
+      sessionStorage.setItem(WEBREEL_FLAG, '1')
+      return true
+    }
+    return sessionStorage.getItem(WEBREEL_FLAG) === '1'
+  } catch {
+    return false
+  }
+}
+
+function useWebreelPointer(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    isWebreelPointer,
+    () => false,
+  )
+}
+
 // Environments like Storybook docs mount one provider per story on a single
 // page. Overlays must not stack: each tracks the same pointer, and layered
 // mix-blend-difference rings visually cancel. The first enabled provider owns
@@ -77,7 +104,8 @@ function useOwnsOverlay(enabled: boolean): boolean {
 export const CustomCursorProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const finePointer = useFinePointer()
   const prefersReducedMotion = usePrefersReducedMotion()
-  const ownsOverlay = useOwnsOverlay(finePointer && !prefersReducedMotion)
+  const webreelPointer = useWebreelPointer()
+  const ownsOverlay = useOwnsOverlay(finePointer && !prefersReducedMotion && !webreelPointer)
 
   return (
     <>
