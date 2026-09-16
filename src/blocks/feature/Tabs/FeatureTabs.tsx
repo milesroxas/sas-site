@@ -99,7 +99,7 @@ const TabPanel: React.FC<{ tab: FeatureTab; surface: StreakVisualSurface }> = ({
         </div>
       ) : null}
     </div>
-    <div className="relative aspect-3/2 overflow-hidden bg-muted md:col-span-8 lg:col-span-5 lg:aspect-16/9">
+    <div className="relative aspect-3/2 overflow-hidden md:col-span-8 lg:col-span-5 lg:aspect-16/9">
       {tab.visual ? (
         <Visual
           fill

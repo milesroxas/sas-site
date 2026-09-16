@@ -198,7 +198,7 @@ export const AudienceTabs: React.FC<AudienceTabsProps> = ({ heading, tabs, theme
           </div>
 
           <div
-            className="relative aspect-4/3 w-full overflow-hidden rounded-md bg-muted lg:col-span-7"
+            className="relative aspect-4/3 w-full overflow-hidden rounded-md lg:col-span-7"
             data-entrance="media"
           >
             {prevVisual ? (
