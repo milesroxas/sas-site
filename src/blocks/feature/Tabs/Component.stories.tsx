@@ -103,6 +103,22 @@ export const Small: Story = {
   },
 }
 
+/** A Streak Field in one tab's slot: poster first, live once admitted. */
+export const StreakField: Story = {
+  args: {
+    tabs: meta.args.tabs.map((tab, index) =>
+      index === 0
+        ? {
+            ...tab,
+            media: null,
+            visualType: 'streakField',
+            shader: { preset: 'topography-v1', seed: 12 },
+          }
+        : tab,
+    ),
+  },
+}
+
 export const Dark: Story = {
   args: { theme: 'dark' },
 }

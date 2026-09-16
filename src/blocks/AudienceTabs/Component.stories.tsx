@@ -125,3 +125,20 @@ export const DarkTheme: Story = {
 export const TwoTabs: Story = {
   args: { tabs: meta.args.tabs.slice(0, 2) },
 }
+
+/** A Streak Field in the first tab's slot on the default dark band; the swap wipes it like any media. */
+export const StreakField: Story = {
+  args: {
+    theme: 'dark',
+    tabs: meta.args.tabs.map((tab, index) =>
+      index === 0
+        ? {
+            ...tab,
+            media: null,
+            visualType: 'streakField',
+            shader: { preset: 'signal-v1', seed: 5, pointerInteraction: true },
+          }
+        : tab,
+    ),
+  },
+}

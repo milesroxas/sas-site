@@ -192,7 +192,7 @@ Looks are stable versioned ids stored as text (`src/features/immersive/visual/lo
 
 `visualSlotFields(upload)` wraps an existing upload into a slot. Field names are identical on every parent, so one resolver reads them all, and the upload keeps its name and relation.
 
-Where it is used: mostly on pages without media of their own, so Pages (High and Medium impact, Segment), Home, Lab Pages, Posts, the Works and Insights index globals, the Expertise, Who We Help and Contact menu previews, and the Stacked, Split narrow and Media split blocks on those pages. Work Pages carry the same slot but rarely use it: a case study normally keeps its uploaded client media. Work-only rules below are edge-case guards.
+Where it is used: mostly on pages without media of their own, so Pages (High and Medium impact, Segment), Home, Lab Pages, Posts, the Works and Insights index globals, the Expertise, Who We Help and Contact menu previews, the Stacked, Split narrow and Media split blocks on those pages, and every tab of the Tabs and Audience tabs blocks (each tab row is its own slot, resolved per row by `resolveRowVisuals`, `src/blocks/shared/row-visuals.ts`; only the active tab's field is live). Work Pages carry the same slot but rarely use it: a case study normally keeps its uploaded client media. Work-only rules below are edge-case guards.
 
 | Field | Type | Rules |
 |-------|------|-------|

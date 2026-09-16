@@ -2737,6 +2737,11 @@ export interface WorkFeatureTabsBlock {
       | null;
     media?: (number | null) | Media;
     /**
+     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
+    /**
      * Short note shown as a card over the media.
      */
     caption?: string | null;
@@ -2884,7 +2889,12 @@ export interface WorkAudienceTabsBlock {
           id?: string | null;
         }[]
       | null;
-    media: number | Media;
+    media?: (number | null) | Media;
+    /**
+     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
     id?: string | null;
   }[];
   /**
@@ -3991,6 +4001,11 @@ export interface FeatureTabsBlock {
       | null;
     media?: (number | null) | Media;
     /**
+     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
+    /**
      * Short note shown as a card over the media.
      */
     caption?: string | null;
@@ -4143,7 +4158,12 @@ export interface AudienceTabsBlock {
           id?: string | null;
         }[]
       | null;
-    media: number | Media;
+    media?: (number | null) | Media;
+    /**
+     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
     id?: string | null;
   }[];
   /**
@@ -5281,6 +5301,11 @@ export interface LabFeatureTabsBlock {
         }[]
       | null;
     media?: (number | null) | Media;
+    /**
+     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
     /**
      * Short note shown as a card over the media.
      */
@@ -7119,6 +7144,8 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
         caption?: T;
         id?: T;
       };
@@ -7221,6 +7248,8 @@ export interface AudienceTabsBlockSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
         id?: T;
       };
   theme?: T;
@@ -7837,6 +7866,8 @@ export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
         caption?: T;
         id?: T;
       };
@@ -7865,6 +7896,8 @@ export interface WorkAudienceTabsBlockSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
         id?: T;
       };
   browseAllMedia?: T;
@@ -8291,6 +8324,8 @@ export interface LabFeatureTabsBlockSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
         caption?: T;
         id?: T;
       };
