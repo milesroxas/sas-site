@@ -18,6 +18,8 @@
       "!src/migrations/*.json",
       "!**/importMap.js",
       "!**/.tmp",
+      "!**/videos",
+      "!**/.webreel",
       "!**/.git",
       "!**/.hg",
       "!**/.pnp.*",

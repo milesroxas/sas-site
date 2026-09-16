@@ -192,6 +192,9 @@ importers:
       tunnel-rat:
         specifier: ^0.1.2
         version: 0.1.2(@types/react@19.2.17)(react@19.2.7)
+      webreel:
+        specifier: ^0.1.4
+        version: 0.1.4(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       zustand:
         specifier: ^5.0.14
         version: 5.0.14(@types/react@19.2.17)(react@19.2.7)(use-sync-external-store@1.6.0(react@19.2.7))
@@ -4022,6 +4025,10 @@ packages:
   '@webgpu/types@0.1.71':
     resolution: {integrity: sha512-mMy8/ODcKhab808co15eW+yN+HgXoQxRQHTiBV9Mrvl1r0ufnid7YOcI+gi4eUWSWl9ezD6TW2KXccrL8HCh2A==}
 
+  '@webreel/core@0.1.4':
+    resolution: {integrity: sha512-RvWZdN4ebsZF1lx3eZNEL5cg7YHSB/MbbaBxFrNGQdcORXjFFvli6n7exwLkknFgfvrFH5qD3O37jOHub4JX8g==}
+    engines: {node: '>=18'}
+
   '@workflow/serde@4.1.0':
     resolution: {integrity: sha512-pav4F2BoirECWR7Nf1TKt+2eETcBj7jj4cBefQ8VXQCA6NPkaKeLfj/zMgi+3zYV5ZIBT4GuUiphsj0/b9hPQQ==}
 
@@ -4320,6 +4327,10 @@ packages:
       '@chromatic-com/vitest':
         optional: true
 
+  chrome-remote-interface@0.33.3:
+    resolution: {integrity: sha512-zNnn0prUL86Teru6UCAZ1yU1XeXljHl3gj7OrfPcarEfU62OUU4IujDPdTDW3dAWwRqN3ZMG/Chhkh2gPL/wiw==}
+    hasBin: true
+
   chrome-trace-event@1.0.4:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
     engines: {node: '>=6.0'}
@@ -4381,6 +4392,13 @@ packages:
   commander@13.1.0:
     resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
     engines: {node: '>=18'}
+
+  commander@14.0.3:
+    resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
+    engines: {node: '>=20'}
+
+  commander@2.11.0:
+    resolution: {integrity: sha512-b0553uYA5YAEGgyYIGYROzKQ7X5RAqedkfjiZxwi0kL1g3bOaBNNZfYkzt/CL0umgD5wc9Jec2FbB98CjkMRvQ==}
 
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
@@ -7389,6 +7407,11 @@ packages:
       webpack-cli:
         optional: true
 
+  webreel@0.1.4:
+    resolution: {integrity: sha512-4W9VnjwbxmX8s1GVMqDmaR1atHz4bltnwDIVeuQ/78kK1cDykgHNvwRgsu4om5U59XUYkjdHZHHX5kjhI8AZcQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
     engines: {node: '>=12'}
@@ -7431,6 +7454,18 @@ packages:
 
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
+
+  ws@7.5.13:
+    resolution: {integrity: sha512-rsKI6xDBFVf4r/x8XyChGK04QR/XHroxs/jUcoWvtEZM8TPU/X/uIY9B1CsSzYws9ZJb/6bbBu7dPhFW00CAoA==}
+    engines: {node: '>=8.3.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: ^5.0.2
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
 
   ws@8.21.0:
     resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
@@ -11444,6 +11479,14 @@ snapshots:
 
   '@webgpu/types@0.1.71': {}
 
+  '@webreel/core@0.1.4(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+    dependencies:
+      chrome-remote-interface: 0.33.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      sharp: 0.34.5
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   '@workflow/serde@4.1.0': {}
 
   '@xtuc/ieee754@1.2.0': {}
@@ -11713,6 +11756,14 @@ snapshots:
     dependencies:
       semver: 7.8.5
 
+  chrome-remote-interface@0.33.3(bufferutil@4.1.0)(utf-8-validate@6.0.6):
+    dependencies:
+      commander: 2.11.0
+      ws: 7.5.13(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   chrome-trace-event@1.0.4: {}
 
   ci-info@4.4.0: {}
@@ -11755,6 +11806,10 @@ snapshots:
   commander@11.1.0: {}
 
   commander@13.1.0: {}
+
+  commander@14.0.3: {}
+
+  commander@2.11.0: {}
 
   commander@2.20.3: {}
 
@@ -14992,6 +15047,16 @@ snapshots:
       - postcss
       - uglify-js
 
+  webreel@0.1.4(bufferutil@4.1.0)(utf-8-validate@6.0.6):
+    dependencies:
+      '@webreel/core': 0.1.4(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      commander: 14.0.3
+      jiti: 2.7.0
+      jsonc-parser: 3.3.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   whatwg-mimetype@3.0.0: {}
 
   whatwg-mimetype@5.0.0: {}
@@ -15035,6 +15100,11 @@ snapshots:
       strip-ansi: 7.2.0
 
   wrappy@1.0.2: {}
+
+  ws@7.5.13(bufferutil@4.1.0)(utf-8-validate@6.0.6):
+    optionalDependencies:
+      bufferutil: 4.1.0
+      utf-8-validate: 6.0.6
 
   ws@8.21.0(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     optionalDependencies:

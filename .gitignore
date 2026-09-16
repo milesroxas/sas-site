@@ -24,6 +24,10 @@ next-env.d.ts
 .dev-tui/
 .claude/worktrees/
 
+# Webreel recordings (regenerable from webreel.config.ts)
+/videos/
+/.webreel/
+
 # Payload default media upload directory
 public/media/
 

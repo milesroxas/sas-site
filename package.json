@@ -95,6 +95,7 @@
     "tempus": "1.0.0-dev.18",
     "three": "0.182.0",
     "tunnel-rat": "^0.1.2",
+    "webreel": "^0.1.4",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
