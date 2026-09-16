@@ -39,17 +39,19 @@ export const FeaturedCard: React.FC<FeaturedCardProps> = ({ label = 'Insights', 
         </div>
         <p className="text-xs leading-relaxed text-foreground">{post.title}</p>
       </div>
-      {/* Square thumbnail, sized off the row height (stretch + aspect-square),
-          which makes its width independent of its grid track. Once the card is
-          clamped by `max-w-full` the track can end up narrower than that —
-          below ~360px viewport it shrank to 46px against an 83px image, and the
-          media painted outside the card's rounded panel. `minmax(0, 191px)`
-          lets the text column give up its width first, so the thumbnail keeps
-          its square; `max-w-full` is the floor for the widths where even that
-          is not enough (the crop tightens instead of escaping). */}
+      {/* Square thumbnail at a fixed 5rem (the row a two-line title makes,
+          minus the card's padding). It used to be sized off the row height
+          (stretch + aspect-square, width from the ratio), which needs the
+          grid to re-resolve its columns once the rows are known. Chromium
+          does; WebKit (every iOS browser) does not, so there the auto track
+          and the thumbnail collapsed to 0x0 and next/image logged
+          "fill" and a height value of 0. A fixed square lays out the same
+          everywhere: the text track (`minmax(0, 191px)`) still gives up its
+          width first on narrow viewports, and a taller title centers the
+          square beside it. */}
       {image && (
-        <div className="relative aspect-square h-auto min-h-0 w-auto min-w-0 max-w-full overflow-clip rounded-md">
-          <Media fill imgClassName="object-cover select-none" resource={image} size="200px" />
+        <div className="relative size-20 shrink-0 self-center overflow-clip rounded-md">
+          <Media fill imgClassName="object-cover select-none" resource={image} size="80px" />
         </div>
       )}
     </Link>
