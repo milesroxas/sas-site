@@ -92,6 +92,9 @@ export interface Config {
     audiences: Audience;
     subscribers: Subscriber;
     users: User;
+    'streak-looks': StreakLook;
+    'streak-releases': StreakRelease;
+    'streak-renders': StreakRender;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -116,7 +119,7 @@ export interface Config {
       caseStudies: 'case-studies';
     };
     'payload-folders': {
-      documentsAndFolders: 'payload-folders' | 'media';
+      documentsAndFolders: 'payload-folders' | 'media' | 'streak-looks';
     };
   };
   collectionsSelect: {
@@ -144,6 +147,9 @@ export interface Config {
     audiences: AudiencesSelect<false> | AudiencesSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'streak-looks': StreakLooksSelect<false> | StreakLooksSelect<true>;
+    'streak-releases': StreakReleasesSelect<false> | StreakReleasesSelect<true>;
+    'streak-renders': StreakRendersSelect<false> | StreakRendersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -980,13 +986,85 @@ export interface FolderInterface {
           relationTo?: 'media';
           value: number | Media;
         }
+      | {
+          relationTo?: 'streak-looks';
+          value: number | StreakLook;
+        }
     )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  folderType?: 'media'[] | null;
+  folderType?: ('media' | 'streak-looks')[] | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Create a look, save its draft, then publish from Studio. Published releases stay pinned on existing pages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "streak-looks".
+ */
+export interface StreakLook {
+  id: number;
+  title: string;
+  description?: string | null;
+  thumbnail?: (number | null) | Media;
+  tags?: string[] | null;
+  /**
+   * Hides the look from new selections. Existing releases keep working.
+   */
+  archived?: boolean | null;
+  recipe:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
+  folder?: (number | null) | FolderInterface;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  /**
+   * What this person is emailed about, on top of anything assigned to them.
+   */
+  notifications?: {
+    inquiries?: boolean | null;
+    /**
+     * Leave both selected to be told about everything.
+     */
+    inquiryTypes?: ('project' | 'general')[] | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * Canonical, reusable engagement content. Website presentation is authored under Website: Pages → Work.
@@ -1489,6 +1567,10 @@ export interface WorkPage {
  */
 export interface StreakVisualConfig {
   /**
+   * Pinned version from Streak Field Studio. Clear to use a built-in look.
+   */
+  release?: (number | null) | StreakRelease;
+  /**
    * A shipped Streak Field look. Tuning lives in code; pick the closest look.
    */
   preset?: string | null;
@@ -1512,6 +1594,43 @@ export interface StreakVisualConfig {
    * Optional still shown before the field runs, and wherever it cannot (reduced motion, no WebGL, menus, social). Images only. Empty uses the look’s built-in poster.
    */
   posterMedia?: (number | null) | Media;
+}
+/**
+ * Immutable published artwork. Edit the source look to create a new release.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "streak-releases".
+ */
+export interface StreakRelease {
+  id: number;
+  title: string;
+  look: number | StreakLook;
+  sourceHash: string;
+  releaseKey: string;
+  snapshot:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  posters:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  darkPoster: number | Media;
+  lightPoster: number | Media;
+  publishedBy?: (number | null) | User;
+  captureBuild: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Full-screen introduction band rendered right after the hero. The body is the canonical summary from the Content Hub.
@@ -4054,42 +4173,6 @@ export interface Category {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  /**
-   * What this person is emailed about, on top of anything assigned to them.
-   */
-  notifications?: {
-    inquiries?: boolean | null;
-    /**
-     * Leave both selected to be told about everything.
-     */
-    inquiryTypes?: ('project' | 'general')[] | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "DynamicAudienceBlock".
  */
 export interface DynamicAudienceBlock {
@@ -6188,6 +6271,47 @@ export interface Subscriber {
   createdAt: string;
 }
 /**
+ * Durable poster and export jobs. Failed jobs can be retried in Studio.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "streak-renders".
+ */
+export interface StreakRender {
+  id: number;
+  title: string;
+  look: number | StreakLook;
+  kind: 'publish' | 'export';
+  state: 'queued' | 'rendering' | 'complete' | 'failed' | 'cancelled';
+  sourceHash: string;
+  snapshot:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  capture:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  requestedBy: number | User;
+  attempts?: number | null;
+  lease?: string | null;
+  leaseExpires?: string | null;
+  error?: string | null;
+  release?: (number | null) | StreakRelease;
+  output?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -6716,6 +6840,18 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
+        relationTo: 'streak-looks';
+        value: number | StreakLook;
+      } | null)
+    | ({
+        relationTo: 'streak-releases';
+        value: number | StreakRelease;
+      } | null)
+    | ({
+        relationTo: 'streak-renders';
+        value: number | StreakRender;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: number | Redirect;
       } | null)
@@ -6886,6 +7022,7 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "StreakVisualConfig_select".
  */
 export interface StreakVisualConfigSelect<T extends boolean = true> {
+  release?: T;
   preset?: T;
   seed?: T;
   speed?: T;
@@ -9351,6 +9488,64 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "streak-looks_select".
+ */
+export interface StreakLooksSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  thumbnail?: T;
+  tags?: T;
+  archived?: T;
+  recipe?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  folder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "streak-releases_select".
+ */
+export interface StreakReleasesSelect<T extends boolean = true> {
+  title?: T;
+  look?: T;
+  sourceHash?: T;
+  releaseKey?: T;
+  snapshot?: T;
+  posters?: T;
+  darkPoster?: T;
+  lightPoster?: T;
+  publishedBy?: T;
+  captureBuild?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "streak-renders_select".
+ */
+export interface StreakRendersSelect<T extends boolean = true> {
+  title?: T;
+  look?: T;
+  kind?: T;
+  state?: T;
+  sourceHash?: T;
+  snapshot?: T;
+  capture?: T;
+  requestedBy?: T;
+  attempts?: T;
+  lease?: T;
+  leaseExpires?: T;
+  error?: T;
+  release?: T;
+  output?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

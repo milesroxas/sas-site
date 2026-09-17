@@ -301,6 +301,8 @@ export type FieldSceneProps = {
   onFirstFrame?: () => void
   /** `flow` was requested but the context has no renderable float target. */
   onFlowUnsupported?: () => void
+  /** Capture owners advance a fixed simulation step; website owners omit it. */
+  fixedDelta?: number
 }
 
 export function FieldScene({
@@ -309,6 +311,7 @@ export function FieldScene({
   tuning,
   onFirstFrame,
   onFlowUnsupported,
+  fixedDelta,
 }: FieldSceneProps) {
   const {
     count,
@@ -492,7 +495,7 @@ export function FieldScene({
     const u = material.uniforms
     const su = flow?.material.uniforms
     // Floored too: the velocity below divides by it, and a first frame can be 0.
-    const dt = MathUtils.clamp(delta, 1e-4, MAX_DELTA)
+    const dt = MathUtils.clamp(fixedDelta ?? delta, 1e-4, MAX_DELTA)
     const fieldDt = dt * timeScale
     time.current += fieldDt
 

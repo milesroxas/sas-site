@@ -1,5 +1,7 @@
 import type { Media } from '@/payload-types'
 import { populatedDoc } from '@/utilities/relationshipId'
+import { STREAK_RENDERER_VERSION } from '../studio/recipe'
+import { parseRelease, type ReleaseDescriptor } from '../studio/release'
 import { isStreakLookId, STREAK_FALLBACK_LOOK, type StreakLookId } from './looks'
 
 /**
@@ -28,6 +30,7 @@ export const STREAK_SEED_MAX = 2_147_483_647
 
 /** The shader group as Payload stores it, on any parent. */
 export type StoredStreakVisual = {
+  release?: unknown
   preset?: string | null
   seed?: number | null
   speed?: number | null
@@ -54,6 +57,7 @@ export type PosterMediaSource = Pick<
 >
 
 export type StreakVisualDescriptor = {
+  release?: ReleaseDescriptor | null
   look: StreakLookId
   /** Integer seed; the same seed lays out the same field on every load. */
   seed: number
@@ -121,11 +125,17 @@ export const resolveStreakDescriptor = (
   options: ResolveVisualOptions = {},
 ): StreakVisualDescriptor => {
   const look = isStreakLookId(shader?.preset) ? shader.preset : STREAK_FALLBACK_LOOK
-  const degraded = !isStreakLookId(shader?.preset)
-  const seed = isValidStreakSeed(shader?.seed) ? shader.seed : seedFromKey(options.seedKey ?? look)
+  const release = parseRelease(shader?.release)
+  const degraded = shader?.release
+    ? !release || release.snapshot.renderer !== STREAK_RENDERER_VERSION
+    : !isStreakLookId(shader?.preset)
+  const seed = isValidStreakSeed(shader?.seed)
+    ? shader.seed
+    : (release?.snapshot.dark.seed ?? seedFromKey(options.seedKey ?? look))
   const posterMedia = populatedDoc<Media>(shader?.posterMedia)
   return {
     look,
+    ...(release ? { release } : {}),
     seed,
     speed: normalizeStreakMultiplier(shader?.speed, STREAK_SPEED_RANGE),
     intensity: normalizeStreakMultiplier(shader?.intensity, STREAK_INTENSITY_RANGE),
@@ -193,12 +203,19 @@ export const parseStreakDescriptor = (
   if (!isStreakLookId(value.look) || !isValidStreakSeed(value.seed)) return null
   return {
     look: value.look,
+    ...(parseRelease(value.release) ? { release: parseRelease(value.release) } : {}),
     seed: value.seed,
     speed: normalizeStreakMultiplier(value.speed, STREAK_SPEED_RANGE),
     intensity: normalizeStreakMultiplier(value.intensity, STREAK_INTENSITY_RANGE),
     pointer: value.pointer === true,
     posterMedia: isPosterMediaSource(value.posterMedia) ? value.posterMedia : null,
-    degraded: value.degraded === true,
+    degraded:
+      value.degraded === true ||
+      Boolean(
+        value.release &&
+          (!parseRelease(value.release) ||
+            parseRelease(value.release)?.snapshot.renderer !== STREAK_RENDERER_VERSION),
+      ),
   }
 }
 

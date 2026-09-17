@@ -53,6 +53,7 @@ export {
   type VisualPlacement,
 } from './placement'
 export {
+  descriptorPosters,
   mediaPosterImage,
   type PosterImage,
   presetPosterImage,

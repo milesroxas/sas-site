@@ -3,8 +3,7 @@ import { unstable_cache } from 'next/cache.js'
 import { getPayload } from 'payload'
 import { CONTACT_INDEX_SLUG } from '@/collections/ContactPages/constants'
 import {
-  mediaPosterImage,
-  presetPosterImage,
+  descriptorPosters,
   resolveMenuPreviewVisual,
   resolveVisual,
   type StoredMenuPreviewSlot,
@@ -105,11 +104,14 @@ function menuVisual(
   if (!visual) return null
   if (visual.kind === 'media') return menuMedia(visual.media, hero)
   const { descriptor } = visual
-  const upload = descriptor.posterMedia ? mediaPosterImage(descriptor.posterMedia) : null
-  if (upload) return { url: upload.src, mime: upload.mime, hero, ground }
-  const dark = presetPosterImage(descriptor.look, 'dark')
-  const light = presetPosterImage(descriptor.look, 'light')
-  return { url: dark.src, lightUrl: light.src, mime: dark.mime, hero, ground }
+  const { dark, light, single } = descriptorPosters(descriptor)
+  return {
+    url: dark.src,
+    ...(single ? {} : { lightUrl: light.src }),
+    mime: dark.mime,
+    hero,
+    ground,
+  }
 }
 
 /**

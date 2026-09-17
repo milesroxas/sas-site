@@ -1,4 +1,5 @@
 import { STREAK_FIELD_PAPER } from '../presets'
+import { limitStudioTuning } from '../studio/recipe'
 import {
   resolveStreakTuning,
   type StreakFieldSurface,
@@ -22,12 +23,14 @@ export function composeStreakTuning(
 ): StreakFieldTuning {
   const { surface, limits } = options
   const look = STREAK_LOOKS[descriptor.look]
-  const base = resolveStreakTuning({
-    ...look.tuning,
-    ...(surface === 'light' ? STREAK_FIELD_PAPER : {}),
-  })
+  const base =
+    descriptor.release?.snapshot[surface] ??
+    resolveStreakTuning({
+      ...look.tuning,
+      ...(surface === 'light' ? STREAK_FIELD_PAPER : {}),
+    })
   const pointer = descriptor.pointer && limits.pointer
-  return {
+  const result = {
     ...base,
     surface,
     seed: descriptor.seed,
@@ -39,4 +42,5 @@ export function composeStreakTuning(
     // scene skip the listeners; the look's other pointer knobs stay intact.
     pointerRadius: pointer ? base.pointerRadius : 0,
   }
+  return descriptor.release ? limitStudioTuning(result, 'hero') : result
 }

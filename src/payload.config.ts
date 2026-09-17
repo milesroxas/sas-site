@@ -199,7 +199,7 @@ export default buildConfig({
     access: {
       run: ({ req }: { req: PayloadRequest }): boolean => {
         // Allow logged in users to execute this endpoint (default)
-        if (req.user) return true
+        if (req.user?.collection === 'users') return true
 
         const secret = process.env.CRON_SECRET
         if (!secret) return false

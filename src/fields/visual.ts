@@ -4,6 +4,7 @@ import type {
   FilterOptions,
   GroupField,
   NumberField,
+  PayloadRequest,
   SelectField,
   TextField,
   UploadField,
@@ -84,7 +85,11 @@ const presetField = (): TextField => ({
     description: 'A shipped Streak Field look. Tuning lives in code; pick the closest look.',
     components: { Field: '@/components/StreakLookSelect#StreakLookSelect' },
   },
-  validate: (value, args) => validatePresetValue(value, chosenFromPath(args)),
+  validate: (value, args) =>
+    validatePresetValue(
+      value,
+      chosenFromPath(args) && !(args.siblingData as { release?: unknown })?.release,
+    ),
 })
 
 const seedField = (): NumberField => ({
@@ -100,7 +105,12 @@ const seedField = (): NumberField => ({
   hooks: {
     beforeChange: [
       ({ value, data, path }) =>
-        value ?? (chosenFromPath({ data, path }) ? randomStreakSeed() : value),
+        value ??
+        (chosenFromPath({ data, path }) &&
+        !(shaderSlotOf(data, path)[path?.[path.length - 2] ?? 'shader'] as { release?: unknown })
+          ?.release
+          ? randomStreakSeed()
+          : value),
     ],
   },
 })
@@ -176,6 +186,30 @@ export const streakShaderField = ({
   interfaceName: 'StreakVisualConfig',
   admin: { condition },
   fields: [
+    {
+      name: 'release',
+      type: 'relationship',
+      relationTo: 'streak-releases',
+      maxDepth: 0,
+      index: true,
+      label: 'Published Studio release',
+      admin: {
+        description: 'Pinned version from Streak Field Studio. Clear to use a built-in look.',
+        components: { Field: '@/plugins/streak-studio/components/ReleaseSelect#ReleaseSelect' },
+      },
+      validate: async (value: unknown, { req }: { req: PayloadRequest }) => {
+        if (!value) return true
+        const id = typeof value === 'object' && 'id' in value ? value.id : value
+        const release = await req.payload.findByID({
+          collection: 'streak-releases',
+          id: String(id),
+          depth: 0,
+          disableErrors: true,
+          req,
+        })
+        return release ? true : 'Choose an available published release.'
+      },
+    },
     presetField(),
     {
       type: 'row',

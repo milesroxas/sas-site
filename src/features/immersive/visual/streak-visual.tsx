@@ -33,7 +33,7 @@ import {
 } from './hooks'
 import { STREAK_LOOKS } from './looks'
 import { degradedLimits, PLACEMENT_LIMITS, type VisualPlacement } from './placement'
-import { mediaPosterImage, type PosterImage, presetPosterImage } from './posters'
+import { descriptorPosters, type PosterImage } from './posters'
 import { placementAllowsLive } from './rollout'
 
 /**
@@ -121,18 +121,6 @@ export type StreakVisualProps = {
   admission?: 'auto' | 'force'
 }
 
-type PosterSet = { light: PosterImage; dark: PosterImage; single: boolean }
-
-const posterSet = (descriptor: StreakVisualDescriptor): PosterSet => {
-  const upload = descriptor.posterMedia ? mediaPosterImage(descriptor.posterMedia) : null
-  if (upload) return { light: upload, dark: upload, single: true }
-  return {
-    light: presetPosterImage(descriptor.look, 'light'),
-    dark: presetPosterImage(descriptor.look, 'dark'),
-    single: false,
-  }
-}
-
 const Poster = ({
   poster,
   priority,
@@ -179,7 +167,7 @@ export function StreakVisual({
 }: StreakVisualProps) {
   const id = useId()
   const rootRef = useRef<HTMLDivElement>(null)
-  const posters = useMemo(() => posterSet(descriptor), [descriptor])
+  const posters = useMemo(() => descriptorPosters(descriptor), [descriptor])
   const serialized = useMemo(() => serializeStreakDescriptor(descriptor), [descriptor])
   const look = STREAK_LOOKS[descriptor.look]
 
@@ -196,7 +184,9 @@ export function StreakVisual({
   const [tier, setTier] = useState<'normal' | 'degraded'>('normal')
   const limits =
     tier === 'degraded' ? degradedLimits(PLACEMENT_LIMITS[placement]) : PLACEMENT_LIMITS[placement]
-  const flowOk = look.motion !== 'flow' || (limits.flow && Boolean(capability?.floatTarget))
+  const flowOk =
+    (descriptor.release?.snapshot.dark.motion ?? look.motion) !== 'flow' ||
+    (limits.flow && Boolean(capability?.floatTarget))
   // Stories only (see `admission`): the lifecycle without the gates.
   const forced = admission === 'force' && hydrated && !failure
   const eligible =
@@ -218,7 +208,7 @@ export function StreakVisual({
   const [mounted, setMounted] = useState(false)
   const [generation, setGeneration] = useState(0)
   const [readyGeneration, setReadyGeneration] = useState<number | null>(null)
-  const descriptorKey = `${descriptor.look}:${descriptor.seed}:${descriptor.speed}:${descriptor.intensity}:${descriptor.pointer}`
+  const descriptorKey = `${descriptor.release?.sourceHash ?? descriptor.look}:${descriptor.seed}:${descriptor.speed}:${descriptor.intensity}:${descriptor.pointer}`
   const lastKey = useRef(descriptorKey)
   useEffect(() => {
     if (lastKey.current === descriptorKey) return

@@ -28,7 +28,12 @@ const nextConfig: NextConfig = {
   // Keep the ffmpeg binary out of the bundler — Next must load it from
   // node_modules at runtime (video poster extraction in Media hooks).
   // posthog-node is server-only; keep it out of the client graph.
-  serverExternalPackages: ['ffmpeg-static', 'posthog-node'],
+  serverExternalPackages: [
+    'ffmpeg-static',
+    'posthog-node',
+    '@sparticuz/chromium',
+    'playwright-core',
+  ],
   // Vercel packs routes into as few functions as fit under the per-function
   // size cap, so anything traced into every route multiplies the function
   // count (Hobby caps a deployment at 12). Payload's config finder resolves
@@ -58,10 +63,16 @@ const nextConfig: NextConfig = {
       // The package's index.js stays traced so the top-level import in
       // extractVideoFrame still resolves everywhere.
       './**/ffmpeg-static/ffmpeg',
+      './**/@sparticuz/chromium/bin/**',
+      './**/playwright-core/**',
     ],
   },
   outputFileTracingIncludes: {
     '/api/**': ['./node_modules/.pnpm/ffmpeg-static@*/node_modules/ffmpeg-static/ffmpeg'],
+    '/api/streak-render/run': [
+      './node_modules/.pnpm/@sparticuz+chromium@*/node_modules/@sparticuz/chromium/bin/**',
+      './node_modules/.pnpm/playwright-core@*/node_modules/playwright-core/**',
+    ],
   },
   images: {
     // Dev fallback when NEXT_PUBLIC_MEDIA_URL is unset; production media

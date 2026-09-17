@@ -79,3 +79,5 @@ export {
 } from './ui/text-load-in-raymarched'
 export { WebGlBackdropScene } from './ui/webgl-backdrop-scene'
 export { useWebglMediaLayer } from './use-webgl-media-layer'
+export { StreakCapture } from './studio/capture'
+export { StreakStudioPreview } from './studio/preview'

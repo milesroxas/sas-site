@@ -9,6 +9,7 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { LinkFeatureClient as LinkFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { ReleaseSelect as ReleaseSelect_23fe4ca0a6220e7bae40bc91b4db3586 } from '@/plugins/streak-studio/components/ReleaseSelect'
 import { StreakLookSelect as StreakLookSelect_15ae4655193ceeddce420cddbf5153c3 } from '@/components/StreakLookSelect'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { TextStyleFeatureClient as TextStyleFeatureClient_e7b913e416ceba4e2967f6c2d57f66da } from '@/fields/lexical/textStyle/feature.client'
@@ -31,6 +32,9 @@ import { InboxFilters as InboxFilters_aaad21e601cb033ff32297ebb9c0eb64 } from '@
 import { AskFilters as AskFilters_5782205e6a7be63baf0396df427a8fb3 } from '@/collections/AskQuestions/components/AskFilters'
 import { SendPanel as SendPanel_31190afebae247357b767d1f03bd15c8 } from '@/collections/Newsletters/components/SendPanel'
 import { InviteUserButton as InviteUserButton_12d1a33bcb436082b29bbf2ed4cf60ef } from '@/collections/Users/components/InviteUserButton'
+import { Studio as Studio_67c16313d030480edfa491b86dfc34c6 } from '@/plugins/streak-studio/components/Studio'
+import { PublishButton as PublishButton_5a35448d00732a2cb070b7da7922d784 } from '@/plugins/streak-studio/components/PublishButton'
+import { Usage as Usage_5e194be06d689c8c93729d21ad0b750b } from '@/plugins/streak-studio/components/Usage'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { CapabilitiesToolbar as CapabilitiesToolbar_1ba37f1a47d78984fe73dea23b65dbc9 } from '@/components/McpCapabilityControls'
@@ -63,6 +67,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#LinkFeatureClient": LinkFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/plugins/streak-studio/components/ReleaseSelect#ReleaseSelect": ReleaseSelect_23fe4ca0a6220e7bae40bc91b4db3586,
   "@/components/StreakLookSelect#StreakLookSelect": StreakLookSelect_15ae4655193ceeddce420cddbf5153c3,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/fields/lexical/textStyle/feature.client#TextStyleFeatureClient": TextStyleFeatureClient_e7b913e416ceba4e2967f6c2d57f66da,
@@ -85,6 +90,9 @@ export const importMap = {
   "@/collections/AskQuestions/components/AskFilters#AskFilters": AskFilters_5782205e6a7be63baf0396df427a8fb3,
   "@/collections/Newsletters/components/SendPanel#SendPanel": SendPanel_31190afebae247357b767d1f03bd15c8,
   "@/collections/Users/components/InviteUserButton#InviteUserButton": InviteUserButton_12d1a33bcb436082b29bbf2ed4cf60ef,
+  "@/plugins/streak-studio/components/Studio#Studio": Studio_67c16313d030480edfa491b86dfc34c6,
+  "@/plugins/streak-studio/components/PublishButton#PublishButton": PublishButton_5a35448d00732a2cb070b7da7922d784,
+  "@/plugins/streak-studio/components/Usage#Usage": Usage_5e194be06d689c8c93729d21ad0b750b,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@/components/McpCapabilityControls#CapabilitiesToolbar": CapabilitiesToolbar_1ba37f1a47d78984fe73dea23b65dbc9,

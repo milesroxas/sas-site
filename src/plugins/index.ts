@@ -14,6 +14,7 @@ import { aeoPlugin } from '@/plugins/aeo'
 import { askIndexPlugin } from '@/plugins/ask-index'
 import { formBuilder } from '@/plugins/form-builder'
 import { mcp } from '@/plugins/mcp'
+import { streakStudioPlugin } from '@/plugins/streak-studio'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { searchFields } from '@/search/fieldOverrides'
 import { SEARCH_COLLECTIONS, surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
@@ -34,6 +35,7 @@ const generateURL: GenerateURL<SeoDoc> = ({ collectionConfig, doc }) => {
 }
 
 export const plugins: Plugin[] = [
+  streakStudioPlugin,
   redirectsPlugin({
     collections: ['pages', 'posts', 'work-pages', 'lab-pages', 'expertise-pages', 'audience-pages'],
     overrides: {

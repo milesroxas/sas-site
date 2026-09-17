@@ -1,5 +1,5 @@
 import { getCdnMediaUrl, getMediaUrl } from '@/utilities/getMediaUrl'
-import type { PosterMediaSource } from './descriptor'
+import type { PosterMediaSource, StreakVisualDescriptor } from './descriptor'
 import { STREAK_LOOK_REVISION, type StreakLookId } from './looks'
 
 /**
@@ -55,3 +55,19 @@ export const presetPosterImage = (
   mime: STREAK_POSTER_MIME,
   alt: '',
 })
+
+/** One poster resolver serves page slots and takeover-menu previews. */
+export function descriptorPosters(descriptor: StreakVisualDescriptor) {
+  const upload = descriptor.posterMedia ? mediaPosterImage(descriptor.posterMedia) : null
+  if (upload) return { light: upload, dark: upload, single: true }
+  const release = descriptor.release
+  return {
+    light:
+      (release && mediaPosterImage(release.posters.light)) ||
+      presetPosterImage(descriptor.look, 'light'),
+    dark:
+      (release && mediaPosterImage(release.posters.dark)) ||
+      presetPosterImage(descriptor.look, 'dark'),
+    single: false,
+  }
+}
