@@ -32,6 +32,7 @@ import { InboxFilters as InboxFilters_aaad21e601cb033ff32297ebb9c0eb64 } from '@
 import { AskFilters as AskFilters_5782205e6a7be63baf0396df427a8fb3 } from '@/collections/AskQuestions/components/AskFilters'
 import { SendPanel as SendPanel_31190afebae247357b767d1f03bd15c8 } from '@/collections/Newsletters/components/SendPanel'
 import { InviteUserButton as InviteUserButton_12d1a33bcb436082b29bbf2ed4cf60ef } from '@/collections/Users/components/InviteUserButton'
+import { Thumbnail as Thumbnail_4f6b75b91ac41b6260620bec0703da81 } from '@/plugins/streak-studio/components/Thumbnail'
 import { Studio as Studio_67c16313d030480edfa491b86dfc34c6 } from '@/plugins/streak-studio/components/Studio'
 import { PublishButton as PublishButton_5a35448d00732a2cb070b7da7922d784 } from '@/plugins/streak-studio/components/PublishButton'
 import { Usage as Usage_5e194be06d689c8c93729d21ad0b750b } from '@/plugins/streak-studio/components/Usage'
@@ -90,6 +91,7 @@ export const importMap = {
   "@/collections/AskQuestions/components/AskFilters#AskFilters": AskFilters_5782205e6a7be63baf0396df427a8fb3,
   "@/collections/Newsletters/components/SendPanel#SendPanel": SendPanel_31190afebae247357b767d1f03bd15c8,
   "@/collections/Users/components/InviteUserButton#InviteUserButton": InviteUserButton_12d1a33bcb436082b29bbf2ed4cf60ef,
+  "@/plugins/streak-studio/components/Thumbnail#Thumbnail": Thumbnail_4f6b75b91ac41b6260620bec0703da81,
   "@/plugins/streak-studio/components/Studio#Studio": Studio_67c16313d030480edfa491b86dfc34c6,
   "@/plugins/streak-studio/components/PublishButton#PublishButton": PublishButton_5a35448d00732a2cb070b7da7922d784,
   "@/plugins/streak-studio/components/Usage#Usage": Usage_5e194be06d689c8c93729d21ad0b750b,

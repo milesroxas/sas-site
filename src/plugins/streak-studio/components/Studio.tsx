@@ -339,6 +339,7 @@ export const Studio: JSONFieldClientComponent = ({ path }) => {
                     {label(key)}
                     {'options' in spec ? (
                       <select
+                        id={`${path}-${key}`}
                         value={String(current)}
                         onChange={(event) => change(name, event.target.value)}
                       >

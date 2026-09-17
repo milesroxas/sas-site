@@ -88,7 +88,11 @@ export const StreakLooks: CollectionConfig = {
       name: 'thumbnail',
       type: 'upload',
       relationTo: 'media',
-      admin: { readOnly: true, position: 'sidebar' },
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        components: { Cell: '@/plugins/streak-studio/components/Thumbnail#Thumbnail' },
+      },
       access: { create: internal, update: internal },
     },
     { name: 'tags', type: 'text', hasMany: true, index: true },

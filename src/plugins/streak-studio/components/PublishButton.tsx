@@ -19,8 +19,17 @@ export function PublishButton() {
             await submit({ overrides: { _status: 'draft' } })
             return
           }
-          await saveAndQueue(submit, id, getData().recipe as StreakRecipe, 'publish-release')
-          toast.success('Release queued. Studio will show the finished posters automatically.')
+          const job = await saveAndQueue(
+            submit,
+            id,
+            getData().recipe as StreakRecipe,
+            'publish-release',
+          )
+          toast.success(
+            job.state === 'complete'
+              ? 'This release is already published.'
+              : 'Release queued. Studio will show the finished posters automatically.',
+          )
         } catch (error) {
           toast.error((error as Error).message)
         } finally {
