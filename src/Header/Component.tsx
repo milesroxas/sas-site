@@ -3,6 +3,7 @@ import type { Header as HeaderData } from '@/payload-types'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 import { HeaderClient } from './Component.client'
 import { getCachedMenuContent } from './getMenuContent'
+import { toMenuHeader } from './menuHeader'
 
 export async function Header() {
   const [headerData, menuContent, siteInfo] = await Promise.all([
@@ -16,7 +17,7 @@ export async function Header() {
     <HeaderClient
       askHidden={Boolean(siteInfo?.ask?.hidden)}
       askTerms={resolveAskHandoffTerms(siteInfo)}
-      data={headerData}
+      data={toMenuHeader(headerData)}
       menuContent={menuContent}
     />
   )

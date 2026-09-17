@@ -18,10 +18,10 @@ import type { AskHandoffTerms, AskUIMessage } from '@/features/ask/handoff'
 import { MenuAsk } from '@/features/ask/MenuAsk'
 import { cursorTarget } from '@/features/cursor'
 import { useIsMobile } from '@/hooks/use-mobile'
-import type { Header as HeaderType } from '@/payload-types'
 import { suppressViewTransitions } from '@/shared/lib/view-transition/suppress'
 import { cn } from '@/utilities/ui'
 import type { MenuContent, MenuLink, MenuMedia } from '../getMenuContent'
+import type { MenuHeader } from '../menuHeader'
 import { ariaCurrent, menuCurrent } from './current'
 import { focusForKeyboard, trackInputModality } from './focus'
 import { createMenuMediaElement, type HeroHandoff, startHeroHandoff } from './heroHandoff'
@@ -588,13 +588,13 @@ const showHoverMedia = (media: MenuMedia | null) => {
   })
 }
 
-type NavItemLink = NonNullable<HeaderType['navItems']>[number]['link']
+type NavItemLink = NonNullable<MenuHeader['navItems']>[number]['link']
 
 /** Mirror of CMSLink's href resolution — hover-preview lookup only. */
 const navItemHref = (link: NavItemLink): string | null => resolveCmsLinkHref(link)
 
 type TakeoverMenuProps = {
-  data: HeaderType
+  data: MenuHeader
   menuContent: MenuContent
   open: boolean
   onClose: () => void

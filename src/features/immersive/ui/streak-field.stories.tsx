@@ -3,6 +3,7 @@ import {
   STREAK_FIELD_BACKDROP,
   STREAK_FIELD_DEPTH_MAP,
   STREAK_FIELD_PAPER,
+  STREAK_FIELD_TECHNICAL_B2B,
   STREAK_FIELD_TECHNICAL_LINES,
   STREAK_FIELD_TOPOGRAPHY,
 } from '../presets'
@@ -131,4 +132,10 @@ export const DepthMap: Story = {
 /** Sparse thin strokes, long and slightly bent: the `technical-lines-v1` look. */
 export const TechnicalLines: Story = {
   args: STREAK_FIELD_TECHNICAL_LINES,
+}
+
+/** Sparse oriented dashes on a wide grid, streaming along a simplex flow: the `technical-b2b-v1` look. */
+export const TechnicalB2b: Story = {
+  name: 'Technical B2B',
+  args: STREAK_FIELD_TECHNICAL_B2B,
 }

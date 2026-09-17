@@ -183,6 +183,8 @@ Looks are stable versioned ids stored as text (`src/features/immersive/visual/lo
 | `backdrop-v1` | Quiet backdrop | drift | `STREAK_FIELD_BACKDROP`: 900 streaks, 18 px rows, a slow leftward creep, shimmer down. Built for copy to sit on. |
 | `topography-v1` | Topography | flow | `STREAK_FIELD_TOPOGRAPHY`: a 12000-tick grid streaming along `curl` contours, full `orient`, relief at 1 with a low floor. Ridges read as lit relief, valleys fall into black. |
 | `depth-map-v1` | Depth map | flow | `STREAK_FIELD_DEPTH_MAP`: the same grid leaning up the slope (`gradient`, `orient` 0.6), broader noise, high floor, so only crests surface as one soft form. |
+| `technical-lines-v1` | Technical Lines | drift | `STREAK_FIELD_TECHNICAL_LINES`: thin, long strokes in a cooler blue. A sparse schematic overlay, not a tick grid. |
+| `technical-b2b-v1` | Technical B2B | flow | `STREAK_FIELD_TECHNICAL_B2B`: a sparse grid of bent dashes streaming along a simplex field, fully oriented, cyan on dark. |
 
 `STREAK_FIELD_PAPER` is not a look. It is the light-ground delta (denser stroke, less shimmer) that `composeStreakTuning` folds in automatically whenever the ground is light.
 

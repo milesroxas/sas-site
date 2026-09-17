@@ -293,3 +293,56 @@ export const STREAK_FIELD_TECHNICAL_LINES = {
   tail: 0.21,
   cap: 1.2,
 } as const satisfies Partial<StreakFieldProps>
+
+/**
+ * Technical B2B: dialed in on /demo/immersive. A sparse schematic grid, not a
+ * tick sheet and not terrain. Wide pitch and a low count leave air between
+ * dashes; each stroke is long enough to read as a ruled mark, bent along
+ * the field (`segments` 8) and fully oriented to it.
+ *
+ * Motion is `flow` through a single-octave simplex: particles stream out of
+ * their cells, displacement bunches along the rows only (`noiseAxis` 1), and
+ * the field itself evolves slowly. Relief is quieter with the floor dropped,
+ * so valleys stay on the sheet instead of falling to black. Shimmer is off.
+ *
+ * Ink is a cooler cyan over dark, near-navy on paper. The pointer lifts and
+ * brightens rather than shoving: no wake, a tighter radius, a snappier ease.
+ */
+export const STREAK_FIELD_TECHNICAL_B2B = {
+  count: 1500,
+  segments: 8,
+  layout: 'grid',
+  columnPitch: 10.5,
+  rowPitch: 11,
+  thickness: 2.25,
+  minLength: 6.5,
+  maxLength: 15.5,
+  lengthBias: 2.3,
+  motion: 'flow',
+  drift: 5,
+  driftSpread: 0.46,
+  timeScale: 0.45,
+  noise: 'simplex',
+  noiseScale: 980,
+  noiseStrength: 17.75,
+  noiseSpeed: 0.246,
+  noiseOctaves: 1,
+  noiseGain: 1,
+  noiseAxis: 1,
+  orient: 1,
+  relief: 0.63,
+  reliefFloor: 0.08,
+  reliefContrast: 1.33,
+  reliefLength: 0.63,
+  pointerRadius: 310,
+  pointerWake: 0,
+  pointerAgitate: 3.4,
+  pointerGlow: 3,
+  pointerLift: 0.91,
+  pointerEase: 8.6,
+  ink: [0.4, 0.702, 0.914],
+  paperInk: [0.063, 0.118, 0.278],
+  brightnessSpread: 0.37,
+  flickerRate: 0,
+  tail: 0.27,
+} as const satisfies Partial<StreakFieldProps>

@@ -5,13 +5,13 @@ import type React from 'react'
 import { Container } from '@/components/Container'
 import { useScrolledChrome } from '@/components/SiteChrome/chrome-scroll'
 import type { AskHandoffTerms } from '@/features/ask/handoff'
-import type { Header } from '@/payload-types'
 import { lateralNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 import type { MenuContent } from './getMenuContent'
 import { HeaderBar } from './HeaderBar'
 import { TakeoverMenu } from './Menu'
 import { useTakeoverMenuState } from './Menu/useTakeoverMenuState'
+import type { MenuHeader } from './menuHeader'
 import { ThemeToggle } from './ThemeToggle'
 
 /** Phone menu glyphs: stacked in one grid cell, swapped by opacity + a quarter turn. */
@@ -19,7 +19,7 @@ const HEADER_ICON =
   'col-start-1 row-start-1 size-6 transition-[opacity,rotate] duration-200 ease-out motion-reduce:transition-none'
 
 interface HeaderClientProps {
-  data: Header
+  data: MenuHeader
   menuContent: MenuContent
   /** Site Info › Ask › Hide Ask: the takeover menu renders without the composer. */
   askHidden?: boolean

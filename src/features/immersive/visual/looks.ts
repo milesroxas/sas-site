@@ -1,6 +1,7 @@
 import {
   STREAK_FIELD_BACKDROP,
   STREAK_FIELD_DEPTH_MAP,
+  STREAK_FIELD_TECHNICAL_B2B,
   STREAK_FIELD_TECHNICAL_LINES,
   STREAK_FIELD_TOPOGRAPHY,
 } from '../presets'
@@ -18,7 +19,7 @@ import type { StreakFieldProps } from '../ui/streak-field'
  * in a way that invalidates rendered derivatives (posters, stills): Payload
  * revisions version content, not deployed TypeScript.
  */
-export const STREAK_LOOK_REVISION = 1
+export const STREAK_LOOK_REVISION = 2
 
 export type StreakLookMotion = 'drift' | 'flow'
 
@@ -75,6 +76,14 @@ export const STREAK_LOOKS = {
     description: 'Thin, long strokes in a cooler blue: a sparse schematic, not a tick grid.',
     motion: 'drift',
     tuning: STREAK_FIELD_TECHNICAL_LINES,
+  }),
+  'technical-b2b-v1': look({
+    id: 'technical-b2b-v1',
+    label: 'Technical B2B',
+    description:
+      'A sparse grid of bent dashes streaming along a simplex field. Cyan schematic, not a tick sheet.',
+    motion: 'flow',
+    tuning: STREAK_FIELD_TECHNICAL_B2B,
   }),
 } as const satisfies Record<string, StreakLook>
 

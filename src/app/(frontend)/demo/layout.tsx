@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import type React from 'react'
 import { getCachedMenuContent } from '@/Header/getMenuContent'
+import { toMenuHeader } from '@/Header/menuHeader'
 import type { Footer, Header } from '@/payload-types'
 import { DemoSiteProvider, toSiteLink } from '@/shared/ui/demo-kit'
 import { getCachedGlobal } from '@/utilities/getGlobals'
@@ -24,7 +25,7 @@ export default async function DemoLayout({ children }: { children: React.ReactNo
   return (
     <DemoSiteProvider
       value={{
-        header,
+        header: toMenuHeader(header),
         menuContent,
         location: footer.location,
         getInTouch: toSiteLink(footer.getInTouch),

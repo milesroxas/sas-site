@@ -2,7 +2,7 @@
 
 import { createContext, type ReactNode, useContext } from 'react'
 import type { MenuContent } from '@/Header/getMenuContent'
-import type { Header } from '@/payload-types'
+import type { MenuHeader } from '@/Header/menuHeader'
 
 /** CMS link reduced to plain data — hrefs pre-resolved by the demo layout. */
 export type DemoSiteLink = {
@@ -19,7 +19,7 @@ export type DemoSiteLink = {
  */
 export type DemoSiteChrome = {
   /** Header global — nav items for the takeover site menu. */
-  header: Header
+  header: MenuHeader
   /** Editorial columns + hover media for the takeover site menu. */
   menuContent: MenuContent
   /** Site footer fields (Footer global). */
