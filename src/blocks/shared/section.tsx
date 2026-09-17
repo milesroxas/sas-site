@@ -45,8 +45,20 @@ export type SectionTheme = keyof typeof themeClasses
  * between two top-level blocks' content the sum of the two steps:
  *
  * - normal + normal → 8rem / 12rem — every text and contained block
- * - loose  + normal → 10rem / 14rem — full-bleed media next to copy
- * - loose  + loose  → 12rem / 16rem — two images in a row
+ * - loose  + normal → 12rem / 18rem — full-bleed media next to copy
+ * - loose  + loose  → 16rem / 24rem — two images in a row
+ *
+ * The steps double: tight 2/3rem, normal 4/6rem, loose 8/12rem. `loose` used
+ * to sit 1.5rem above normal, too small a step to read as a decision, and too
+ * little inset for a painted band, whose edge is visible and so cannot borrow
+ * the neighbouring block's padding the way an `inherit` band does.
+ *
+ * A `stack` step is that sum, not the single band step: two blocks inside a
+ * Section sit exactly as far apart as the same two blocks stacked at the top
+ * level, so a Section regroups a run under one surface without retuning its
+ * rhythm. Halving it instead capped a Section's widest setting at half the
+ * page (128px against 256px on a work page, whose blocks are pinned loose),
+ * which read as a dead select.
  *
  * `tight` is the editor-facing step below normal: a Section block holding a
  * short run of related blocks that should read as one beat.
@@ -56,9 +68,9 @@ export type SectionTheme = keyof typeof themeClasses
  */
 export const SPACING_SCALE = {
   none: { band: 'py-0', stack: 'space-y-0' },
-  tight: { band: 'py-8 md:py-12', stack: 'space-y-8 md:space-y-12' },
-  normal: { band: 'py-16 md:py-24', stack: 'space-y-16 md:space-y-24' },
-  loose: { band: 'py-24 md:py-32', stack: 'space-y-24 md:space-y-32' },
+  tight: { band: 'py-8 md:py-12', stack: 'space-y-16 md:space-y-24' },
+  normal: { band: 'py-16 md:py-24', stack: 'space-y-32 md:space-y-48' },
+  loose: { band: 'py-32 md:py-48', stack: 'space-y-64 md:space-y-96' },
 } as const
 
 export type BandSpacing = keyof typeof SPACING_SCALE

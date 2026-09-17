@@ -333,7 +333,7 @@ Miles wraps the existing prod content into Sections by hand. `scripts/wrap-secti
 **Editorial improvements while wrapping (encouraged, not required):**
 
 - Transitions render `pb-0` today, which a Section cannot restate. Put each transition in the SAME Section as the blocks it introduces (transition first). Fixes the padding and gives real structure.
-- Blocks inside one Section sit closer (space-y-16 md:space-y-24) than adjacent Sections do. Grouping same-theme runs into one Section is the intended look; one block per Section reproduces today's looser rhythm.
+- Blocks inside one Section sit at the same rhythm as the same blocks stacked at the top level: a `stack` step equals the sum of two adjacent bands of that step (2026-09-17). Grouping same-theme runs into one Section regroups the surface without retuning the spacing; drop the Section to Tight when the run should read as one beat.
 
 - [ ] adacore wrapped and published
 - [ ] vault-workforce-screening wrapped and published
@@ -387,7 +387,7 @@ Sections-only top level per collection once every remaining block is nestable or
 |---|---|---|
 | D1 | ~~Do all 7 `fullMedia` instances become **Stacked**?~~ | TAKEN: slug kept, relabeled Stacked, zero data movement. Split is net-new. Still review the 7 visually during the prod dry-run |
 | D2 | ~~Split block spec~~ | TAKEN: even `md:grid-cols-2` grid, media one column at an editor-chosen aspect (16:9 / 3:2 / 21:9), content stack the other; `layout: left/right`; same `source` pull as siblings |
-| D3 | ~~Rhythm inside one section~~ | TAKEN: `SECTION_CONTENT_CLASS = 'space-y-16 md:space-y-24'` in `src/blocks/section/shared.ts`; tune there only |
+| D3 | ~~Rhythm inside one section~~ | TAKEN: `SPACING_SCALE[step].stack` in `src/blocks/shared/section.tsx`; tune there only. Each stack step is the sum of two adjacent bands of that step, so a Section keeps the page rhythm (retuned 2026-09-17; it was half that, which capped a Section below the rhythm of a work page) |
 | D4 | Which blocks are permanently top-level-only | Likely `scrollGallery`, `caseStudyMediaShowcase`, `featuredWork` (pinned/full-bleed shells), plus the Interactive shells that own a pin or a full viewport (`industryWork`, `audienceTabs`, `featuredWork`). Carousel proved nestable in B3 (it only needed `bare`), Tabs in B5. Decide the rest before Phase E |
 | D5 | ~~Group name casing~~ | TAKEN: repo sentence case (`Section heading`, `Media and content`) |
 | D6 | Pair select semantics (`textPosition` under-portrait/under-landscape vs Left/Right) | Zero prod rows: redesign freely in D to `primaryPosition: left/right` + `contentPosition: left/right` |
