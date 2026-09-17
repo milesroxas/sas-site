@@ -31,12 +31,13 @@
     "test": "pnpm run test:int && pnpm run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=--no-deprecation playwright test --config=playwright.config.ts",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
-    "ci": "payload migrate && pnpm build",
+    "ci": "pnpm guard:preview-db && payload migrate && pnpm build",
     "db:up": "docker compose up postgres -d",
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up postgres -d",
     "prepare": "git config core.hooksPath .githooks || true",
-    "streak:worker": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/streak-studio-worker.ts"
+    "streak:worker": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/streak-studio-worker.ts",
+    "guard:preview-db": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/guard-preview-db.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.11",

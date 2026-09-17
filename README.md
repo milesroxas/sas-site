@@ -328,7 +328,7 @@ Deploys to Vercel with Neon Postgres and Cloudflare R2. `vercel.json` sets the b
 
 The Payload job queue drives newsletter sends and scheduled publishing, and a daily run is too coarse for it. Because Vercel Hobby allows only daily crons, `.github/workflows/payload-jobs.yml` hits the same endpoint every 10 minutes and the Vercel cron stays as a backstop. That workflow needs the `PAYLOAD_JOBS_URL`, `CRON_SECRET`, and `VERCEL_AUTOMATION_BYPASS_SECRET` repo secrets.
 
-Required Vercel env vars: `PAYLOAD_SECRET`, `CRON_SECRET`, `PREVIEW_SECRET`, Resend keys, and the `R2_*` / `NEXT_PUBLIC_MEDIA_URL` media vars. `POSTGRES_URL` is set by the Neon integration.
+Required Vercel env vars: `PAYLOAD_SECRET`, `CRON_SECRET`, `PREVIEW_SECRET`, Resend keys, and the `R2_*` / `NEXT_PUBLIC_MEDIA_URL` media vars. `POSTGRES_URL` is set by the Neon integration. `PRODUCTION_DB_ENDPOINT` (the production Neon endpoint id, `ep-...`) feeds `scripts/guard-preview-db.ts`, which `pnpm ci` runs before `payload migrate`: preview deploys get a Neon branch (`preview/<git-branch>`) from the Neon deployment action on the store connection, and the guard aborts any non-production build that still sees the production endpoint. Preview deploys only from the `preview` git branch (`vercel.json`).
 
 ## Testing
 
