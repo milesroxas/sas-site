@@ -1102,6 +1102,26 @@
   --footer-bar-height-scrolled: 2.5rem;
   /* Fixed admin bar (components/AdminBar); footer + page frame offset by it. */
   --admin-bar-height: 2rem;
+  --radius: 0.45rem;
+}
+
+/* Light palette, keyed to `[data-theme="light"]` as well as `:root` — the
+   mirror of the dark block below, so both polarities are addressable and
+   neither is only a fallback.
+
+   Light is the site default, so `:root` carries it and an unstamped document
+   paints light. But a *nested* light scope has to repaint too: a light hero
+   band pinning the fixed bars (`HeaderBar`/`FooterBar` stamp `data-theme`) and
+   the demo browser windows (src/shared/ui/demo-kit/demo-browser.tsx) both
+   place `data-theme="light"` inside a document that may be dark. With the
+   palette on `:root` alone those scopes matched no rule and inherited the dark
+   values — the attribute changed and nothing repainted.
+
+   Same specificity as the dark block, which is stated after this one, so a
+   dark document still resolves dark; only elements that match `light`
+   directly take these. */
+:root,
+[data-theme="light"] {
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -1130,7 +1150,6 @@
   --chart-3: oklch(0.546 0.245 262.881);
   --chart-4: oklch(0.488 0.243 264.376);
   --chart-5: oklch(0.424 0.199 265.638);
-  --radius: 0.45rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.546 0.245 262.881);

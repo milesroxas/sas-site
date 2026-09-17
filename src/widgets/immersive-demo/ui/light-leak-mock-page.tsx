@@ -89,20 +89,15 @@ const EXPOSURES = [
   { f: 'f/16', t: '1/2000', note: 'Diffraction takes over.' },
 ]
 
-type LightLeakMockPageProps = {
-  /**
-   * Which ground to judge the leak against. The effect has two composites —
-   * emissive over a dense surface, absorptive over a pale one — and each is
-   * only tunable over the ground it ships on, so the GUI drives this.
-   */
-  surface?: 'dark' | 'light'
-}
-
-export function LightLeakMockPage({ surface = 'dark' }: LightLeakMockPageProps) {
+export function LightLeakMockPage() {
   return (
-    // Every surface below is a semantic token, so the whole page follows this
-    // attribute rather than pinning one palette.
-    <div data-theme={surface} className="bg-background text-foreground">
+    // Every surface below is a semantic token, so the page follows whatever
+    // ground the browser window is themed to (DemoBrowserFrame) rather than
+    // pinning a palette of its own. That ground is what the leak is judged
+    // over: the effect has two composites — emissive over a dense surface,
+    // absorptive over a pale one — and each is only tunable over the one it
+    // ships on.
+    <div className="bg-background text-foreground">
       {/* 1 — Hero */}
       <section className="flex min-h-[78vh] flex-col justify-center gap-5 px-8 py-20">
         <Badge variant="secondary" className="w-fit font-mono text-[0.625rem] tracking-widest">

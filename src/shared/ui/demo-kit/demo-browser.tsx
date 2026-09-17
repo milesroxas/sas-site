@@ -1,13 +1,15 @@
 'use client'
 
-import { IconWorld } from '@tabler/icons-react'
+import { IconMoon, IconSun, IconWorld } from '@tabler/icons-react'
 import Lenis from 'lenis'
 import type { ReactNode, RefObject } from 'react'
 import { useEffect, useRef } from 'react'
 import { useTempus } from 'tempus/react'
+import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Spinner } from '@/components/ui/spinner'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
+import type { Theme } from '@/providers/Theme/types'
 import { cn } from '@/utilities/ui'
 
 /**
@@ -90,6 +92,20 @@ export type DemoBrowserFrameProps = {
   path: string
   /** Swaps the address-bar icon for a spinner. */
   loading?: boolean
+  /**
+   * The palette the previewed site is in. Stamped on the frame, so the chrome
+   * and everything inside the window resolve one theme — the demo content
+   * never pins its own. Omitted, the window follows the visitor's site theme.
+   */
+  theme?: Theme
+  /**
+   * Makes the theme a control: the frame renders the window's light/dark
+   * toggle and hands back the other polarity. Demos that also load a preset
+   * with the flip do it here, so the panel and the ground stay one truth.
+   */
+  onThemeChange?: (theme: Theme) => void
+  /** Appended to the toggle's tooltip — what flipping also writes, if anything. */
+  themeHint?: string
   /** Chrome left of the address bar — a back button, say. */
   leading?: ReactNode
   /** Chrome right of the address bar — a status readout or a window control, say. */
@@ -103,11 +119,19 @@ export type DemoBrowserFrameProps = {
  * The window frame: rounded chrome with an address bar, wrapping whatever the
  * demo puts inside. `data-lenis-prevent` keeps root Lenis off the frame so
  * wheel input belongs to the window's own scroller.
+ *
+ * The frame is also the window's theme scope: `data-theme` here covers the
+ * chrome and the page inside it, which is what a visitor's browser does. The
+ * site's palette rules (globals.css) resolve every token beneath it, so a
+ * window previewing light inside a dark shell really repaints.
  */
 export function DemoBrowserFrame({
   children,
   path,
   loading = false,
+  theme,
+  onThemeChange,
+  themeHint,
   leading,
   trailing,
   className,
@@ -116,7 +140,11 @@ export function DemoBrowserFrame({
   return (
     <div
       data-lenis-prevent
-      className={cn('overflow-hidden rounded-lg border border-border bg-background', className)}
+      data-theme={theme}
+      className={cn(
+        'overflow-hidden rounded-lg border border-border bg-background text-foreground',
+        className,
+      )}
     >
       <div
         className={cn(
@@ -136,9 +164,43 @@ export function DemoBrowserFrame({
           )}
           <span className="truncate">suits-sandals.com{path}</span>
         </div>
+        {onThemeChange ? (
+          <WindowThemeButton theme={theme ?? 'light'} onChange={onThemeChange} hint={themeHint} />
+        ) : null}
         {trailing}
       </div>
       {children}
     </div>
+  )
+}
+
+/**
+ * The window's palette control, in the chrome rather than the demo's GUI: it
+ * describes the page being previewed, not the effect, so it never belongs in
+ * the panel the copy button reads.
+ */
+function WindowThemeButton({
+  theme,
+  onChange,
+  hint,
+}: {
+  theme: Theme
+  onChange: (theme: Theme) => void
+  hint?: string
+}) {
+  const other: Theme = theme === 'dark' ? 'light' : 'dark'
+  const label = other === 'dark' ? 'Dark' : 'Light'
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => onChange(other)}
+      aria-label={`Preview the page in ${other} mode`}
+      title={`Themes the window — chrome and page — in ${other} mode.${hint ? ` ${hint}` : ''}`}
+    >
+      {other === 'dark' ? <IconMoon aria-hidden /> : <IconSun aria-hidden />}
+      {label}
+    </Button>
   )
 }

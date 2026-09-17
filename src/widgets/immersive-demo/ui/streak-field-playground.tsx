@@ -1,7 +1,5 @@
 'use client'
 
-import { IconMoon, IconSun } from '@tabler/icons-react'
-import { Button } from '@/components/ui/button'
 import type {
   StreakFieldInk,
   StreakFieldLayout,
@@ -387,31 +385,17 @@ export function StreakFieldPlayground() {
   // CMS entry own. Placement (`className`) stays out for the same reason.
   useDemoSnippet(formatStreakLookSnippet({ name, description, props }))
 
-  const other: StreakFieldSurface = surface === 'dark' ? 'light' : 'dark'
-
   return (
     <DemoBrowserFrame
       path="/lab/streak-field"
-      trailing={
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => applySurface(other)}
-          aria-label={`Preview the stage in ${other} mode`}
-          title="Themes the stage inside the window and loads the look that ships over it: STREAK_FIELD_PAPER on light, the defaults on dark. This writes into the panel, overwriting those controls."
-        >
-          {surface === 'dark' ? <IconSun aria-hidden /> : <IconMoon aria-hidden />}
-          {surface === 'dark' ? 'Light' : 'Dark'}
-        </Button>
-      }
+      theme={surface as StreakFieldSurface}
+      onThemeChange={applySurface}
+      themeHint="Also loads the look that ships over that ground: STREAK_FIELD_PAPER on light, the defaults on dark, written into the panel over those controls."
     >
       {/* isolate: the streaks composite against this stage and stop there. The
-          stage paints the site's ground for the chosen theme so the crossfade
-          is judged over the real surface. */}
-      <div
-        data-theme={surface}
-        className="relative isolate h-[70vh] overflow-hidden bg-background text-foreground"
-      >
+          stage paints the window's ground (the frame owns the theme) so the
+          crossfade is judged over the real surface. */}
+      <div className="relative isolate h-[70vh] overflow-hidden bg-background text-foreground">
         {/* force: the demo has to render the effect even for a visitor whose
             device or motion preference would suppress it in production. */}
         <StreakField force {...props} />

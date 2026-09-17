@@ -1,10 +1,9 @@
 'use client'
 
-import { IconMoon, IconSun } from '@tabler/icons-react'
 import { useRef, useState } from 'react'
-import { Button } from '@/components/ui/button'
 import type { LightLeakBlendMode, LightLeakTint } from '@/features/immersive'
 import { LIGHT_LEAK_DEFAULTS as DEFAULTS, LIGHT_LEAK_PAPER, LightLeak } from '@/features/immersive'
+import type { Theme } from '@/providers/Theme/types'
 import {
   DemoBrowserFrame,
   DemoScroller,
@@ -41,13 +40,14 @@ const widen = (set: (patch: never) => void): PanelSetter => set as PanelSetter
 export function LightLeakPlayground() {
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Which theme the mock page inside the window is painted in. Demo
-  // scaffolding, not a component prop — the leak reads its look from props
-  // alone, and this only decides the ground it composites over. It lives in
-  // the window chrome rather than the GUI because it describes the page being
+  // Which theme the window is previewed in — the frame stamps it and the
+  // chrome and page beneath resolve from there. Demo scaffolding, not a
+  // component prop: the leak reads its look from props alone, and this only
+  // decides the ground it composites over. The frame puts its control in the
+  // window chrome rather than the GUI because it describes the page being
   // previewed, not the effect: the panel holds only what ends up in the
   // emitted snippet.
-  const [surface, setSurface] = useState<'dark' | 'light'>('dark')
+  const [surface, setSurface] = useState<Theme>('dark')
 
   // Only the scroll parameters that shape the *effect's* response. Lenis's own
   // feel (lerp, wheel multiplier) is site-wide and set in SmoothScrollProvider,
@@ -271,7 +271,7 @@ export function LightLeakPlayground() {
    * overwriting hand-tuning of the keys the preset owns, which is the point of
    * the button.
    */
-  const applySurface = (next: 'dark' | 'light') => {
+  const applySurface = (next: Theme) => {
     const values = { ...DEFAULTS, ...(next === 'light' ? LIGHT_LEAK_PAPER : {}) }
 
     // Every key LIGHT_LEAK_PAPER overrides, pointing at the folder that holds
@@ -364,24 +364,15 @@ export function LightLeakPlayground() {
   return (
     <DemoBrowserFrame
       path="/lab/light-leak"
-      trailing={
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => applySurface(surface === 'dark' ? 'light' : 'dark')}
-          aria-label={`Preview the page in ${surface === 'dark' ? 'light' : 'dark'} mode`}
-          title="Themes the page inside the window and loads the look that ships over it — LIGHT_LEAK_PAPER on light, the defaults on dark. This writes into the panel, overwriting those controls."
-        >
-          {surface === 'dark' ? <IconSun aria-hidden /> : <IconMoon aria-hidden />}
-          {surface === 'dark' ? 'Light' : 'Dark'}
-        </Button>
-      }
+      theme={surface}
+      onThemeChange={applySurface}
+      themeHint="Also loads the look that ships over that ground: LIGHT_LEAK_PAPER on light, the defaults on dark, written into the panel over those controls."
     >
       {/* isolate: the blend must reach the page inside the window and stop
           there — without it, plus-lighter composites against the demo shell. */}
       <div className="relative isolate">
         <DemoScroller viewportRef={scrollRef} className="h-[70vh]">
-          <LightLeakMockPage surface={surface} />
+          <LightLeakMockPage />
         </DemoScroller>
         {/* force: the demo has to render the effect even for a visitor whose
             device or motion preference would suppress it in production. */}
