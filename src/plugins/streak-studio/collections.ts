@@ -18,7 +18,7 @@ export const StreakLooks: CollectionConfig = {
       edit: { PublishButton: '@/plugins/streak-studio/components/PublishButton#PublishButton' },
     },
     useAsTitle: 'title',
-    defaultColumns: ['thumbnail', 'title', 'tags', '_status', 'archived', 'updatedAt'],
+    defaultColumns: ['title', 'thumbnail', 'tags', '_status', 'archived', 'updatedAt'],
     description:
       'Create a look, save its draft, then publish from Studio. Published releases stay pinned on existing pages.',
   },
