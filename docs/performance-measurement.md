@@ -34,8 +34,10 @@ shader variants are separate labeled cases, not a silent change to the control.
 | Key | Path | Why |
 |---|---|---|
 | `vault` | `/works/vault-workforce-screening` | heaviest page, 10 videos |
-| `adacore` | `/works/adacore` | image hero, control |
+| `interchecks` | `/works/interchecks` | image hero, control (since 2026-09-16; `/works/adacore` was the control before, it is a draft now and 404s) |
 | `home` | `/` | hero handoff surface, refraction media |
+
+Before a run, `curl -sI` each target and confirm `200`; a draft returns a 404 page whose LCP is a paragraph, and the summary will not tell you.
 
 Hosts:
 
@@ -77,12 +79,13 @@ OUT=docs/perf/$LABEL && mkdir -p "$OUT"
 ### 3.1 Lighthouse, 3 runs per page per preset
 
 ```bash
-for key in vault adacore home; do
+for key in vault interchecks home; do
   case $key in
     vault) route=/works/vault-workforce-screening ;;
-    adacore) route=/works/adacore ;;
+    interchecks) route=/works/interchecks ;;
     home) route=/ ;;
   esac
+  curl -s -o /dev/null "$HOST$route"   # warm the HTML and image cache before the first run
   for preset in desktop mobile; do
     for i in 1 2 3; do
       flags="--output=json --output-path=$OUT/$key-$preset-$i.json --quiet --chrome-flags=--headless=new"
@@ -126,7 +129,7 @@ vault    at load: mp4=1 posters=10 (poster priority: High, preload link: yes)
 
 Pass criteria after video gating, for the original media control configuration:
 
-- `mp4` at load: 1 (hero) on `vault`, 0 on `adacore`.
+- `mp4` at load: 1 (hero) on `vault`, 0 on `interchecks` before M4; since 2026-09-16 both read 2 because a loop sits inside two screens of the fold (see M4 in the audit doc).
 - Hero poster: priority `High` (some Chrome builds report `VeryHigh`), and a `<link rel=preload as=image fetchpriority=high>` in the head.
 - After scrolling to the end: every video has a source, and every video plays once centred in view (`playing` equals `videos`).
 - Scroll back to the top: zero new mp4 objects requested.
@@ -141,7 +144,31 @@ checks `html[data-theme]` is set and computed opacity is `1`.
 node "$SCRATCH/theme-guard.mjs" "$HOST"
 ```
 
-### 3.5 Commit the run
+### 3.5 PageSpeed Insights (Lightrider) read
+
+PSI is its own environment: Lightrider runs WebGL in software, its CPU multiplier is 1.2x on slow hardware (not the 4x of a local mobile run), and Chrome there is usually a version behind the desktop. Its TBT does not reproduce locally (2026-09-16: 1,970 ms on PSI mobile vs 260 ms local at 4x, 20 ms at 1.2x); read PSI for LCP, Speed Index and the insight lists, and read the task list from the local trace.
+
+The anonymous API quota (`https://www.googleapis.com/pagespeedonline/v5/runPagespeed`) is often exhausted. Run the analysis in the browser at https://pagespeed.web.dev/, copy the report URL, and scrape it with headless Chromium (section 6.5): the report page renders both form factors from one URL. Record score, the five metrics, and the insight lines with their estimated savings in `notes.md`.
+
+Local approximation of the PSI environment (home, mobile preset):
+
+```bash
+pnpm dlx lighthouse "$HOST/" --output=json --output-path=$OUT/home-mobile-sw.json --quiet \
+  --chrome-flags="--headless=new --disable-gpu --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader"
+# add --throttling.cpuSlowdownMultiplier=1.2 for PSI's multiplier
+```
+
+### 3.6 Long-task attribution (CPU profile)
+
+Lighthouse's `long-tasks` audit names a chunk, not a function. Section 6.4 drives the page under Moto G emulation at 4x CPU with a sampling profiler and prints, per long task, the leaf functions, the chunks on the stack and the entry function:
+
+```bash
+node "$SCRATCH/cpu-profile.mjs" "$HOST/"
+```
+
+Run it before touching hydration or provider order, and paste the top entries for the two largest tasks into `notes.md`.
+
+### 3.7 Commit the run
 
 ```bash
 rm docs/perf/$LABEL/*-[0-9].json
@@ -163,7 +190,7 @@ Lab noise is about 10% on LCP and 3 points on the score. What counts as real:
 - `mediaKb` (Lighthouse) and `mp4` at load (capture): an order of magnitude on `vault`.
 - `lcp`: 1 to 2 s on `vault` mobile after gating. The rest of the gap is script (`scriptKb`) and waits for the bundle diet.
 - `lcpEl`: stays the hero. If it flips to a body image, the hero poster preload is not firing.
-- `kb` on `adacore` and `home`: small change expected; a large one means something unrelated shipped.
+- `kb` on `interchecks` and `home`: small change expected; a large one means something unrelated shipped.
 
 Paste both tables into the audit doc's status section when a phase closes.
 
@@ -262,7 +289,7 @@ import path from 'node:path'
 const { chromium } = createRequire('/Users/milesroxas/SITES/sas-site/package.json')('@playwright/test')
 
 const [host, outDir] = process.argv.slice(2)
-const pages = { vault: '/works/vault-workforce-screening', adacore: '/works/adacore', home: '/' }
+const pages = { vault: '/works/vault-workforce-screening', interchecks: '/works/interchecks', home: '/' }
 // Video objects by CDP resource type, not URL: some uploads have no
 // extension (`Vault Hero`), and range requests re-hit the same object, so
 // count distinct objects.
@@ -444,6 +471,89 @@ fs.writeFileSync(path.join(dir, 'summary.md'), `# ${path.basename(dir)}\n\nMedia
 console.log(md)
 ```
 
+### 6.4 `cpu-profile.mjs`
+
+```js
+// Mobile emulation + 4x CPU throttle; records long tasks with a sampling CPU
+// profile so each long task can be attributed to functions and chunks.
+import { createRequire } from 'node:module'
+const { chromium, devices } = createRequire('/Users/milesroxas/SITES/sas-site/package.json')('@playwright/test')
+const url = process.argv[2] || 'https://www.suits-sandals.com/'
+const browser = await chromium.launch({ headless: true })
+const context = await browser.newContext({ ...devices['Moto G4'], deviceScaleFactor: 1.75 })
+const page = await context.newPage()
+const cdp = await context.newCDPSession(page)
+await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+await cdp.send('Profiler.enable')
+await cdp.send('Profiler.setSamplingInterval', { interval: 500 })
+await page.addInitScript(() => {
+  window.__longtasks = []
+  new PerformanceObserver((list) => {
+    for (const e of list.getEntries()) window.__longtasks.push({ start: e.startTime, dur: e.duration })
+  }).observe({ type: 'longtask', buffered: true })
+})
+await cdp.send('Profiler.start')
+await page.goto(url, { waitUntil: 'load', timeout: 120000 })
+await page.waitForTimeout(12000)
+const nowAtStop = await page.evaluate(() => performance.now())
+const { profile } = await cdp.send('Profiler.stop')
+const longtasks = await page.evaluate(() => window.__longtasks)
+console.log('long tasks (ms since nav start):')
+for (const t of longtasks) console.log(' ', Math.round(t.start), Math.round(t.dur))
+const nodes = new Map(profile.nodes.map((n) => [n.id, n]))
+const parent = new Map()
+for (const n of profile.nodes) for (const c of n.children || []) parent.set(c, n.id)
+let ts = profile.startTime
+const samples = []
+for (let i = 0; i < profile.samples.length; i++) { ts += profile.timeDeltas[i]; samples.push({ ts, node: profile.samples[i] }) }
+// Profiler timestamps are monotonic microseconds; align on the stop instant.
+const originUs = profile.endTime - nowAtStop * 1000
+for (const t of longtasks.filter((t) => t.dur >= 50)) {
+  const s = originUs + t.start * 1000, e = s + t.dur * 1000
+  const inTask = samples.filter((x) => x.ts >= s && x.ts <= e)
+  const byLeaf = new Map(), byUrl = new Map(), byTop = new Map()
+  for (const x of inTask) {
+    let n = nodes.get(x.node)
+    const leaf = n
+    const leafKey = `${leaf.callFrame.functionName || '(anon)'} ${leaf.callFrame.url.split('/').pop()}:${leaf.callFrame.lineNumber}`
+    byLeaf.set(leafKey, (byLeaf.get(leafKey) || 0) + 1)
+    const chain = []
+    while (n) { chain.push(n); n = nodes.get(parent.get(n.id)) }
+    for (const u of new Set(chain.map((c) => c.callFrame.url.split('/').pop()).filter(Boolean))) byUrl.set(u, (byUrl.get(u) || 0) + 1)
+    const top = chain.filter((c) => c.callFrame.url).slice(-1)[0]
+    if (top) { const k = `${top.callFrame.functionName || '(anon)'} ${top.callFrame.url.split('/').pop()}:${top.callFrame.lineNumber}`; byTop.set(k, (byTop.get(k) || 0) + 1) }
+  }
+  const fmt = (m) => [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${v} ${k}`).join('\n      ')
+  console.log(`\n## task @${Math.round(t.start)} ${Math.round(t.dur)}ms samples=${inTask.length}`)
+  console.log('   leaf:\n      ' + fmt(byLeaf))
+  console.log('   urls:\n      ' + fmt(byUrl))
+  console.log('   entry:\n      ' + fmt(byTop))
+}
+await browser.close()
+```
+
+### 6.5 `psi-scrape.mjs`
+
+```js
+// Dumps the visible text of a PageSpeed Insights report for both form factors.
+import { createRequire } from 'node:module'
+const { chromium } = createRequire('/Users/milesroxas/SITES/sas-site/package.json')('@playwright/test')
+const url = process.argv[2] // https://pagespeed.web.dev/analysis/<slug>/<id>?form_factor=mobile
+const browser = await chromium.launch({ headless: true })
+const page = await browser.newPage({ viewport: { width: 1400, height: 2000 } })
+await page.goto(url, { waitUntil: 'networkidle', timeout: 120000 })
+await page.waitForTimeout(4000)
+for (const ff of ['mobile', 'desktop']) {
+  const tab = page.getByRole('tab', { name: new RegExp(ff, 'i') }).first()
+  if (await tab.count()) { await tab.click(); await page.waitForTimeout(2500) }
+  console.log(`\n=================== ${ff} ===================\n`)
+  console.log((await page.evaluate(() => document.body.innerText)).slice(0, 20000))
+}
+await browser.close()
+```
+
+The insight rows print collapsed (title and estimated savings only); the report's audit bodies live in a shadow DOM that the text dump does not expand. For the resource lists behind an insight, run the same page locally with Lighthouse and read the JSON.
+
 ## 7. Gotchas
 
 - Lighthouse mobile applies 4x CPU slowdown and simulated 4G; the desktop preset barely throttles. Compare like presets only.
@@ -453,3 +563,8 @@ console.log(md)
 - Chromium pauses muted autoplay loops that are off screen, so a "playing" count only means something for a video centred in view; the capture script measures per video for that reason.
 - Headless Chromium keeps a 15px scrollbar; capture scroll positions are relative to a 1280x800 viewport.
 - The `html { opacity: 0 }` anti-flash rule means a page with no `data-theme` looks loaded in the DOM but paints white. The theme guard script is the check for that.
+- Lighthouse's LCP is a simulation (Lantern), not the observed paint. It estimates LCP from every request that started before the observed LCP paint, treating all but low-priority images as required. A hero `<video preload="auto">` with an inline `<source>` starts its mp4 at ~200 ms, so the mp4 and the whole script graph land in the LCP estimate even though the observed LCP is the 35 KB poster at 430 ms (home mobile, 2026-09-16: observed 0.43 s, reported 9.1 s). Read `metrics.observedLargestContentfulPaint` next to the reported value before attributing an LCP change to rendering.
+- The `redirects` audit listing the page URL twice is the `Critical-CH` restart from `withPayload` (780 ms on mobile), not a real redirect.
+- `long-tasks` and `bootup-time` attribute by chunk; under Turbopack the hot leaf is usually the chunk registry (`registerChunk` / module factories), which means module evaluation of what hydration pulled in, not application code. The CPU-profile script (6.4) shows which chunks are on the stack; a task whose leaf is one GSAP function called from React's commit is the reveal shells' layout reads and writes (P1-7).
+- Lighthouse's final full-page screenshot resizes the viewport at the end of a run; a late long task in the React chunk (about 9 s after navigation on the home page) is that resize, not page behaviour, and does not appear when the page is profiled without Lighthouse.
+- A draft route returns a 404 page that still scores; `lcp element` becomes a paragraph. Check status codes first (section 1).
