@@ -84,11 +84,18 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
   )
 }
 
+/**
+ * Radix keeps a panel mounted once it has been shown and hides it with the
+ * `hidden` attribute, whose `display: none` is a UA rule a `flex` or `grid`
+ * utility on the panel outranks: the hidden panel would keep its padding and
+ * push every later panel down the page. The attribute is restated here at a
+ * specificity no display utility can beat.
+ */
 function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Content>) {
   return (
     <TabsPrimitive.Content
       data-slot="tabs-content"
-      className={cn('flex-1 outline-none', className)}
+      className={cn('flex-1 outline-none [&[hidden]]:hidden', className)}
       {...props}
     />
   )

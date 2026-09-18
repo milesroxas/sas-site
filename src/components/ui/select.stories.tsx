@@ -89,3 +89,33 @@ export const Disabled: Story = {
     </Select>
   ),
 }
+
+/**
+ * `description` puts a second line under the option, for a menu whose options
+ * need a word of explanation. The label and its line set as one left-aligned
+ * block, and the row reserves the column the check mark sits in.
+ */
+export const Described: Story = {
+  args: { defaultValue: 'curl' },
+  render: (args) => (
+    <Select {...args}>
+      <SelectTrigger className="w-64">
+        <SelectValue placeholder="Select a noise" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="none" description="Streaks stay on their rows: no displacement.">
+          None
+        </SelectItem>
+        <SelectItem value="simplex" description="A smooth isotropic drift.">
+          Simplex
+        </SelectItem>
+        <SelectItem value="ridged" description="The field creased into seams.">
+          Ridged
+        </SelectItem>
+        <SelectItem value="curl" description="A divergence-free swirl that runs along contours.">
+          Curl
+        </SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+}

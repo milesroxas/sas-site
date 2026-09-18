@@ -16,17 +16,22 @@ export type SliderMark = {
  * The fill ink. `changed` is the one visual a value uses to say it departs
  * from its default; everything else about the row stays the same.
  */
-const sliderRangeVariants = cva('absolute h-full rounded-full', {
-  variants: {
-    variant: {
-      default: 'bg-foreground',
-      changed: 'bg-primary',
+const sliderRangeVariants = cva(
+  // A disabled slider dims its fill along with its track: a full-contrast
+  // fill under a muted label reads as an active control that stopped working.
+  'absolute h-full rounded-full group-data-[disabled]/slider:bg-muted-foreground/30',
+  {
+    variants: {
+      variant: {
+        default: 'bg-foreground',
+        changed: 'bg-primary',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
     },
   },
-  defaultVariants: {
-    variant: 'default',
-  },
-})
+)
 
 /**
  * How far past a limit the thumb follows the pointer: the further out, the
@@ -198,7 +203,7 @@ function Slider({
             data-slot="slider-mark"
             data-kind={mark.kind ?? 'default'}
             aria-hidden
-            className="pointer-events-none absolute w-px bg-muted-foreground data-[kind=default]:top-full data-[kind=default]:mt-[3px] data-[kind=default]:h-1 data-[kind=zero]:-top-[3px] data-[kind=zero]:h-2.5"
+            className="pointer-events-none absolute -translate-x-1/2 rounded-full bg-muted-foreground/60 data-[kind=default]:top-full data-[kind=default]:mt-[3px] data-[kind=default]:h-[3px] data-[kind=default]:w-[3px] data-[kind=zero]:-top-[3px] data-[kind=zero]:h-2.5 data-[kind=zero]:w-0.5"
             style={{ left: percent(mark.value, min, max) }}
           />
         ))}
