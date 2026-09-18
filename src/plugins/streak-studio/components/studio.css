@@ -209,6 +209,17 @@
   --sidebar-wrap-width: var(--doc-sidebar-width);
   --sidebar-gutter-h-left: 0px;
   --sidebar-gutter-h-right: 0px;
+  /* Payload sizes the sticky column at `100vh - --doc-controls-height`, the
+     height it would need if the controls bar were the only thing above it.
+     At rest the app header is above it too, so the column runs one header
+     past the fold: the page grows by that much even when the stage is short,
+     and the Inspector's last rows sit below the window with its own scroll
+     region ending out of reach. The column is chrome, not a field stack, so
+     it states every band above it and ends on the fold. Once the page does
+     scroll (a stage taller than the window) the header leaves and the column
+     sticks under the controls bar with that band to spare at the bottom,
+     which is the trade for never lengthening the page ourselves. */
+  --sidebar-wrap-height: calc(100svh - var(--app-header-height) - var(--doc-controls-height));
 }
 
 /* Payload's sidebar gutter is 40px in and 60px out, sized for a stack of
