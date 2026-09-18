@@ -10,6 +10,8 @@ import {
   type InquiryType,
 } from '@/shared/content/inquiry'
 import { isOption, type SelectOption } from '@/shared/content/options'
+import { BOT_BLOCKED_MESSAGE } from '@/utilities/botid/routes'
+import { isBlockedBot } from '@/utilities/botid/server'
 import { isValidEmailAddress, normalizeEmailAddress } from '@/utilities/emailAddress'
 import { captureServerEvent } from '@/utilities/posthog'
 import { deliverInquiryEmails } from './notify'
@@ -27,6 +29,9 @@ import { deliverInquiryEmails } from './notify'
  * - A honeypot field silently swallows naive bots, and a short per-email
  *   window absorbs double submits (an impatient second click must not create a
  *   second lead) without telling a prober anything.
+ * - Vercel BotID refuses automated clients that get past the honeypot. It
+ *   answers with a real error, not a fake success: a misjudged human has to
+ *   learn the brief did not land.
  * - Free text is length-capped before it reaches the database, not after.
  */
 const MAX_NAME_LENGTH = 200
@@ -101,6 +106,10 @@ const submit: Endpoint = {
       // Honeypot: the field is off-screen, so only a bot ever fills it in.
       if (typeof body?.role === 'string' && body.role.length > 0) {
         return json({ reference: null, submittedAt: new Date().toISOString() })
+      }
+
+      if (await isBlockedBot(req)) {
+        return json({ error: BOT_BLOCKED_MESSAGE }, 403)
       }
 
       const email = typeof body?.email === 'string' ? normalizeEmailAddress(body.email) : ''

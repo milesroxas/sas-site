@@ -131,6 +131,31 @@ the last step, so the copy column stays short enough to stick beside the form.
   Handling (owner, status, notes) lives beside it and moves freely.
 - `repliedAt` follows the status rather than being typed.
 
+## Spam protection
+
+Three layers, all scoped to the public form writes (`/api/inquiries/submit`,
+`/api/form-submissions`, `/api/newsletter/subscribe`). None of them touch page
+reads, `/llms.txt`, the markdown alternates, sitemaps or `/api/mcp`, so crawlers
+and answer engines are unaffected (see [aeo.md](aeo.md)).
+
+1. **Honeypots** in each handler (`role`, `company`): a filled field gets a fake
+   success.
+2. **Vercel BotID** (`src/utilities/botid/`). The browser SDK, started in
+   `src/instrumentation-client.ts`, signs requests to the paths in
+   `BOT_PROTECTED_ROUTES`; each handler calls `isBlockedBot(req)` and answers
+   403 with a readable message. Verified bots pass, the check fails open, and
+   local dev always reads as human. **A new public write endpoint needs both
+   halves**: its path in `BOT_PROTECTED_ROUTES` and the `isBlockedBot` call. The
+   call without the path rejects every real visitor.
+3. **Vercel WAF rate limit** on the same three POST paths, per IP. Lives in the
+   Vercel Firewall, not the repo: `vercel firewall rules list --expand`.
+
+Bot Protection and the AI Bots managed rulesets stay off. They act on the whole
+site and would challenge or block the AI agents `robots.txt` welcomes.
+
+To test BotID, submit from a page on a Vercel deployment. `curl` against a
+protected path is refused in production by design.
+
 ## Notification
 
 The submit endpoint sends two emails once the create has returned, and neither

@@ -1,6 +1,12 @@
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
-import type { Block, CollectionAfterChangeHook, Field } from 'payload'
+import type {
+  Block,
+  CollectionAfterChangeHook,
+  CollectionBeforeOperationHook,
+  Field,
+} from 'payload'
+import { APIError } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import type { FormSubmission } from '@/payload-types'
 import {
@@ -10,6 +16,8 @@ import {
   INQUIRY_MESSAGE_MAX_LENGTH,
   INQUIRY_TYPES,
 } from '@/shared/content/inquiry'
+import { BOT_BLOCKED_MESSAGE } from '@/utilities/botid/routes'
+import { isBlockedBot } from '@/utilities/botid/server'
 import { captureServerEvent } from '@/utilities/posthog'
 
 /**
@@ -145,6 +153,20 @@ const EXTRA_FIELDS: Record<string, Field[]> = {
   number: [placeholderField],
   select: [hintField],
   textarea: [placeholderField, hintField, maxLengthField],
+}
+
+/**
+ * Public create is the plugin's default and the one unguarded door it leaves
+ * open, so Vercel BotID stands in front of it. Team members and Local API
+ * writes (scripts, seeds) skip the check. GraphQL is covered on purpose: the
+ * browser SDK only signs the REST path, so an anonymous GraphQL create reads
+ * as a bot and is refused, which is right, since the site never uses it.
+ */
+const refuseBots: CollectionBeforeOperationHook = async ({ args, operation, req }) => {
+  if (operation !== 'create' || req.payloadAPI === 'local') return args
+  if (req.user?.collection === 'users') return args
+  if (await isBlockedBot(req)) throw new APIError(BOT_BLOCKED_MESSAGE, 403, undefined, true)
+  return args
 }
 
 /**
@@ -314,6 +336,7 @@ export const formBuilder = formBuilderPlugin({
     admin: { group: 'Forms' },
     hooks: {
       afterChange: [captureFormSubmission],
+      beforeOperation: [refuseBots],
     },
   },
 })

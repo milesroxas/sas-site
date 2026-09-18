@@ -10,7 +10,9 @@
 // its compression worker off every page (docs/performance-audit-work-pages.md
 // P0-2). Gating and sampling live in ../sentry.shared.
 import * as Sentry from '@sentry/nextjs'
+import { initBotId } from 'botid/client/core'
 import { sentryBaseOptions } from '../sentry.shared'
+import { BOT_PROTECTED_ROUTES } from './utilities/botid/routes'
 
 // NEXT_PUBLIC_VERCEL_ENV is exposed automatically by Vercel's system env
 // vars: 'production' | 'preview' | 'development'. The browser bundle cannot
@@ -27,6 +29,12 @@ Sentry.init({
 
   enableLogs: true,
 })
+
+// Vercel BotID: signs the public form writes so their handlers can tell a
+// browser from a script. Security, not measurement, so it does not wait on
+// consent; it sets no analytics identity. Route list and the crawler-safety
+// contract live in ./utilities/botid/routes.
+initBotId({ protect: BOT_PROTECTED_ROUTES })
 
 // Instruments App Router navigations as pageload/navigation transactions.
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart

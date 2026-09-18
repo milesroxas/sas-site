@@ -3,6 +3,8 @@ import { ValidationError } from 'payload'
 import { Webhook } from 'svix'
 import type { Subscriber } from '@/payload-types'
 import { sendNewsletterConfirmEmail } from '@/shared/email'
+import { BOT_BLOCKED_MESSAGE } from '@/utilities/botid/routes'
+import { isBlockedBot } from '@/utilities/botid/server'
 import { isValidEmailAddress, normalizeEmailAddress } from '@/utilities/emailAddress'
 import { getServerSideURL } from '@/utilities/getURL'
 import { captureServerEvent } from '@/utilities/posthog'
@@ -69,6 +71,11 @@ const subscribe: Endpoint = {
       // Honeypot: humans never see the "company" field; bots that fill it get a fake success.
       if (typeof body?.company === 'string' && body.company.length > 0) {
         return json(SUBSCRIBE_OK)
+      }
+
+      // Vercel BotID: the verdict never depends on the address, so a real error leaks nothing.
+      if (await isBlockedBot(req)) {
+        return json({ error: BOT_BLOCKED_MESSAGE }, 403)
       }
 
       const email = typeof body?.email === 'string' ? normalizeEmailAddress(body.email) : ''

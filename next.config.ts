@@ -2,6 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { withPayload } from '@payloadcms/next/withPayload'
 import { withSentryConfig } from '@sentry/nextjs'
+import { withBotId } from 'botid/next/config'
 import type { NextConfig } from 'next'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -36,7 +37,7 @@ const nextConfig: NextConfig = {
   ],
   // Vercel packs routes into as few functions as fit under the per-function
   // size cap, so anything traced into every route multiplies the function
-  // count (Hobby caps a deployment at 12). Payload's config finder resolves
+  // count and the weight each cold start loads. Payload's config finder resolves
   // process.cwd() against an env var, which makes the tracer include the
   // whole project root in every Payload route, and its migration-dir finder
   // pulls src/migrations (100MB+ of drizzle JSON snapshots that only
@@ -165,7 +166,11 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withSentryConfig(withPayload(nextConfig, { devBundleServerPackages: false }), {
+// withBotId appends the first-party rewrites the BotID challenge script loads
+// through (so ad blockers cannot strip it) after the ones above.
+const appConfig = withBotId(withPayload(nextConfig, { devBundleServerPackages: false }))
+
+export default withSentryConfig(appConfig, {
   // Org and project come from SENTRY_ORG / SENTRY_PROJECT env vars; source map
   // upload needs SENTRY_AUTH_TOKEN as well and is skipped when absent.
   silent: !process.env.CI,

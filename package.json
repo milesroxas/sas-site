@@ -69,6 +69,7 @@
     "@tabler/icons-react": "^3.44.0",
     "@vercel/speed-insights": "^2.0.0",
     "ai": "^7.0.22",
+    "botid": "^1.5.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cross-env": "^10.1.0",
