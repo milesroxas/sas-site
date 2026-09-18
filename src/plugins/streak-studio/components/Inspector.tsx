@@ -30,6 +30,7 @@ import {
   type StreakRecipe,
   validateRecipe,
 } from '@/features/immersive/studio/recipe'
+import { cn } from '@/utilities/ui'
 import { LengthRow, ParameterRow } from './ParameterRow'
 import {
   DEPENDENCIES,
@@ -49,11 +50,11 @@ const sameAsDefault = (key: ParameterKey, value: unknown) =>
 const LENGTH_PAIR: ParameterKey[] = ['minLength', 'maxLength']
 
 /**
- * The Inspector: every authorable parameter as a row in a collapsible group,
- * in the document sidebar so it stays beside the stage on every tab. It is
- * the recipe field's own component: the value it edits is the field's value,
- * so Payload's autosave, versions and validation see every change as they
- * would any other field's.
+ * The Inspector: every authorable parameter as a row, grouped into sections
+ * on the Look tab and flat on the Pointer tab, in the document sidebar so it
+ * stays beside the stage on every tab. It is the recipe field's own
+ * component: the value it edits is the field's value, so Payload's autosave,
+ * versions and validation see every change as they would any other field's.
  */
 export const Inspector: JSONFieldClientComponent = ({ path }) => {
   const { value, setValue, errorMessage } = useField<StreakRecipe>({ path })
@@ -88,27 +89,62 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
   const changedKeys = Object.keys(recipe.deltas) as ParameterKey[]
   const lengthError = validation.startsWith('Minimum length') ? validation : undefined
 
-  // Which sections are open lives here rather than in each group, for three
-  // reasons: a document opens with every section shut, so the panel reads as
-  // a contents page of what this look is set to before it asks anyone to
-  // read a slider; one control can drive them all; and a tab switch, which
-  // unmounts the group it leaves, no longer forgets what was open.
+  // Which sections are open lives here rather than in each group: a document
+  // opens with every section shut, so the panel reads as a contents page of
+  // what this look is set to before it asks anyone to read a slider; one
+  // control can drive them all; and a tab switch, which unmounts the content
+  // it leaves, no longer forgets what was open.
   const [tab, setTab] = useState('look')
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
-  // The label describes what the press does to the sections in view, and the
-  // press itself carries every section in the panel, so the panel has one
-  // resting state rather than one per tab.
-  const tabGroups: readonly string[] =
-    tab === 'look' ? GROUPS : tab === 'pointer' ? [POINTER_GROUP] : []
-  const allOpen = tabGroups.length > 0 && tabGroups.every((name) => openGroups[name])
+  // Sections are the Look tab's structure, so the control that works them is
+  // the Look tab's too. The label names what the press does from here.
+  const allOpen = GROUPS.every((name) => openGroups[name])
   const toggleAll = () =>
-    setOpenGroups(
-      allOpen ? {} : Object.fromEntries([...GROUPS, POINTER_GROUP].map((name) => [name, true])),
-    )
+    setOpenGroups(allOpen ? {} : Object.fromEntries(GROUPS.map((name) => [name, true])))
+
+  // The rows of a group, without the section around them: the Look tab puts
+  // them in a disclosure, the Pointer tab, which is one group, does not.
+  const rows = (keys: ParameterKey[]) =>
+    keys.map((param) => {
+      if (param === 'maxLength') return null
+      if (param === 'minLength')
+        return (
+          <LengthRow
+            key="length"
+            min={tuning.minLength}
+            max={tuning.maxLength}
+            changed={LENGTH_PAIR.some((k) => changedKeys.includes(k))}
+            error={lengthError}
+            onChange={change}
+            onReset={() => reset(LENGTH_PAIR)}
+            onFix={(fix) => fix && change(fix)}
+          />
+        )
+      const dependency = DEPENDENCIES[param]
+      return (
+        <ParameterRow
+          key={param}
+          name={param}
+          value={tuning[param]}
+          changed={changedKeys.includes(param)}
+          inactive={dependency && !dependency.active(tuning) ? dependency : undefined}
+          hint={
+            param === 'noise' && tuning.noise !== 'none'
+              ? `${tuning.noiseOctaves} octaves`
+              : undefined
+          }
+          onChange={(next) => change({ [param]: next })}
+          onReset={() => reset([param])}
+          onFix={(fix) => fix && change(fix)}
+        />
+      )
+    })
+
+  const pointerKeys = parameterKeys(POINTER_GROUP)
+  const pointerChanged = pointerKeys.filter((k) => changedKeys.includes(k)).length
 
   const group = (name: string) => {
     const keys = parameterKeys(name)
-    const changedCount = keys.filter((k) => changedKeys.includes(k)).length
     return (
       <Group
         key={name}
@@ -129,45 +165,12 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
             groupSummary(name, tuning)
           )
         }
-        changed={changedCount}
+        changed={keys.filter((k) => changedKeys.includes(k)).length}
         open={openGroups[name] ?? false}
         onOpenChange={(next) => setOpenGroups((groups) => ({ ...groups, [name]: next }))}
         onReset={() => reset(keys)}
       >
-        {keys.map((param) => {
-          if (param === 'maxLength') return null
-          if (param === 'minLength')
-            return (
-              <LengthRow
-                key="length"
-                min={tuning.minLength}
-                max={tuning.maxLength}
-                changed={LENGTH_PAIR.some((k) => changedKeys.includes(k))}
-                error={lengthError}
-                onChange={change}
-                onReset={() => reset(LENGTH_PAIR)}
-                onFix={(fix) => fix && change(fix)}
-              />
-            )
-          const dependency = DEPENDENCIES[param]
-          return (
-            <ParameterRow
-              key={param}
-              name={param}
-              value={tuning[param]}
-              changed={changedKeys.includes(param)}
-              inactive={dependency && !dependency.active(tuning) ? dependency : undefined}
-              hint={
-                param === 'noise' && tuning.noise !== 'none'
-                  ? `${tuning.noiseOctaves} octaves`
-                  : undefined
-              }
-              onChange={(next) => change({ [param]: next })}
-              onReset={() => reset([param])}
-              onFix={(fix) => fix && change(fix)}
-            />
-          )
-        })}
+        {rows(keys)}
       </Group>
     )
   }
@@ -194,8 +197,10 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
             </TabsList>
             {/* The count and the section control are the strip's right end:
                 what has changed, and how much of the panel is open. The
-                control is left out of Export, which has no sections, rather
-                than shown dimmed. */}
+                control is left out of the tabs that have no sections to
+                work, rather than shown there dimmed; its slot stays, so the
+                count, the one thing on the strip that outlives a tab switch,
+                does not move when the tab changes. */}
             <div className="ml-auto flex items-center gap-2.5">
               <span
                 className="font-mono text-[11px]/3.5 tracking-[0.02em] text-primary tabular-nums"
@@ -203,38 +208,63 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
               >
                 {changedKeys.length ? `${changedKeys.length} changed` : ''}
               </span>
-              {tabGroups.length > 0 && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label={allOpen ? 'Collapse all sections' : 'Expand all sections'}
-                      className="pressable -mr-1 flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
-                      onClick={toggleAll}
-                    >
-                      {allOpen ? (
-                        <IconChevronsUp aria-hidden className="size-3.5" />
-                      ) : (
-                        <IconChevronsDown aria-hidden className="size-3.5" />
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" sideOffset={6}>
-                    {allOpen ? 'Collapse all' : 'Expand all'}
-                  </TooltipContent>
-                </Tooltip>
-              )}
+              <div className="-mr-1 size-6 shrink-0">
+                {tab === 'look' && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label={allOpen ? 'Collapse all sections' : 'Expand all sections'}
+                        className="pressable flex size-full cursor-pointer items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+                        onClick={toggleAll}
+                      >
+                        {allOpen ? (
+                          <IconChevronsUp aria-hidden className="size-3.5" />
+                        ) : (
+                          <IconChevronsDown aria-hidden className="size-3.5" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" sideOffset={6}>
+                      {allOpen ? 'Collapse all' : 'Expand all'}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
             </div>
           </div>
           <TabsContent value="look" className="flex flex-col pt-5">
             {GROUPS.map((name) => group(name))}
           </TabsContent>
+          {/* One group's worth of rows, so they are not put behind a
+              disclosure: a section that opens onto the whole tab is a click
+              between the editor and the only thing there. The tab names the
+              section, the paragraph says when the terms run, and Reset keeps
+              the place it holds in a section header. */}
           <TabsContent value="pointer" className="flex flex-col pt-5">
-            <p className="max-w-[58ch] pb-3 text-xs/5 text-muted-foreground">
-              Pointer terms run only where a placement allows them and the editor enabled them.
-              Radius 0 turns every term off.
-            </p>
-            {group(POINTER_GROUP)}
+            <div className="flex items-start gap-4">
+              <p className="min-w-0 flex-1 text-xs/5 text-muted-foreground">
+                Pointer terms run only where a placement allows them and the editor enabled them.
+                Radius 0 turns every term off.
+              </p>
+              {/* Hidden rather than absent: the note beside it keeps one wrap
+                  whether or not anything has been changed, so a slider does
+                  not push every row down the moment it leaves its default. */}
+              <button
+                type="button"
+                aria-label="Reset pointer terms"
+                className={cn(
+                  'pressable shrink-0 cursor-pointer text-[11px]/5 text-muted-foreground hover:text-foreground',
+                  pointerChanged === 0 && 'invisible',
+                )}
+                onClick={() => reset(pointerKeys)}
+              >
+                Reset
+              </button>
+            </div>
+            <div className="mt-4 flex flex-col gap-0.5 border-t border-border pt-3">
+              {rows(pointerKeys)}
+            </div>
           </TabsContent>
           <TabsContent value="export" className="pt-5">
             <ExportPanel recipe={recipe} validation={validation} />
@@ -254,10 +284,11 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
  * One section of the Inspector. The header is a row, not a single button:
  * the trigger takes the name and, while the group is closed, the one line
  * that says what it is set to. Reset is a real button beside it, and it is
- * there only when the group has something to reset — an always-present,
+ * there only when the group has something to reset: an always-present,
  * always-dimmed control is chrome, not an affordance. Nothing counts the
  * changed values: the dots in the gutter already mark them row by row, and
- * the total lives once, in the tab strip.
+ * the total lives once, in the tab strip. Open is the panel's state, not the
+ * section's, so one control in that strip can work them all.
  */
 function Group({
   name,
