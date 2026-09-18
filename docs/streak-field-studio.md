@@ -4,15 +4,22 @@ Studio lives in Payload under **Assets > Streak Fields**. The plugin is register
 
 ## Editorial workflow
 
-1. Create a look and choose a built-in starter. Give it a title, folder, and tags.
-2. Open the live preview. Tune composition, color, motion, relief, life, and interaction. Switch ground and placement, pause/restart, compare, undo, or reset a group. Native Payload autosave and Versions preserve draft history.
-3. Click **Publish release**. This saves the current draft and queues exact-frame light and dark posters. You can close the browser. Recent renders shows progress, errors, cancellation, and retry.
-4. Choose **Published Studio release** in any Streak Field visual slot, including heroes, blocks, tabs, and menu previews. This pins an immutable version. Existing built-in selections and slot overrides continue to work. Clear a slot seed to inherit the authored seed.
-5. Open **Export artwork** for PNG, WebP, or filled JPEG. Logical width/height, 1x/2x output scale, ground, alpha, seed, and frame determine the result. Finished artwork is filed in Media's Streak Field Studio folder.
+A look opens as a design tool: the Inspector in the document sidebar, the stage on the Studio tab, and the document's own tabs for everything else.
+
+1. **Studio tab.** The stage shows the live field at a placement (hero, block, menu, card) on a dark or light ground, with a budget line under it (particles, DPR, octaves, segments; amber when the placement cap bites). Starters load a shipped look into the draft. Versions lists the draft, a kept comparison and every release; Draft and Kept switch the stage between them. Seed and capture frame sit under the stage. Undo and redo hold fifty steps for the page (⌘Z, ⇧⌘Z). Space pauses, R randomizes the seed, C toggles the comparison while the stage has focus.
+2. **Inspector (sidebar).** Look, Pointer and Export tabs. Every numeric parameter is a slider row: label, a track with an always-visible thumb, and a value field. The label's tooltip carries the parameter's meaning, range, step and default; a dot, blue fill and a tick at the default mark a changed value; option-click the label to reset it, or Reset a group from its header. A row that needs another setting (Flow speed under Drift) shows muted with the reason and a one-click fix. Min and max length share one track with two thumbs that cannot cross; only the fields can, and the server's message shows under the row.
+3. **Publish release** saves the draft and queues exact-frame light and dark posters. Close the page if you like; the Renders tab shows progress, errors, cancellation and retry, and the Releases tab lists every immutable release with its posters.
+4. **Details tab** holds title, description, tags, thumbnail, archive and authorship. Edits there never touch the recipe.
+5. Choose **Published Studio release** in any Streak Field visual slot, including heroes, blocks, tabs, and menu previews. This pins an immutable version. Existing built-in selections and slot overrides continue to work. Clear a slot seed to inherit the authored seed.
+6. **Export** (Inspector tab) renders a PNG, WebP, or filled JPEG still: logical size, 1x or 2x scale, ground and alpha. Finished artwork is filed in Media's Streak Field Studio folder and listed under Renders.
 
 Archive hides a source from new selections. Referenced releases and their posters cannot be edited or deleted, so page version restoration stays valid. Unused drafts can be deleted; looks with release/render history should be archived. A release's Used by panel includes current content and retained page versions.
 
 Publishing does not publish a page. If someone edits a look while its posters render, the completed release remains available and the newer draft stays untouched. Republishing identical settings reuses the completed release. Restoring and publishing older settings does not rewrite earlier releases.
+
+### Admin UI stack
+
+The Studio components (`src/plugins/streak-studio/components`) are built from the site's shadcn primitives in `src/components/ui` (Slider, Tabs, ToggleGroup, Tooltip, Select, Input, Kbd) and Payload's own `Collapsible`, `Button`, `Link` and `toast`. Tailwind reaches the admin through one plugin-owned entry, `components/studio.css`: utilities only (no preflight), sourced from the primitives and the plugin, with the shadcn tokens painted from Payload's `--theme-*` scale so the Studio follows the admin's light and dark toggle. The token map, state variants and press recipe are shared with the site through `src/styles/shadcn-theme.css`. Nothing overrides Payload's own classes, every hook is a public `@payloadcms/ui` export, and components are registered by import-map path, so a Payload upgrade changes nothing here beyond what it changes for any custom field.
 
 ## Single source of truth
 

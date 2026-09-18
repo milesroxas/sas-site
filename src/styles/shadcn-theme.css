@@ -1,0 +1,185 @@
+/* Shared by both Tailwind entries: the site (src/app/(frontend)/globals.css)
+   and the Payload admin surface (src/plugins/streak-studio/components/studio.css).
+   Everything here is declared once and read by the shadcn primitives in
+   src/components/ui: the theme token map, the data-state variants, the
+   `dark` variant on the data-theme mechanism, the press recipe and the
+   settle curve. Palette values are not here on purpose: each entry paints
+   the `--background`-style tokens from its own source (the site palette or
+   Payload's `--theme-*` scale), and this map only points utilities at them. */
+
+/* Matches the themed root element itself as well as descendants
+   (Tailwind v4 data-attribute dark-mode form). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Custom variants */
+@custom-variant data-open {
+  &:where([data-state="open"]),
+  &:where([data-open]:not([data-open="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-closed {
+  &:where([data-state="closed"]),
+  &:where([data-closed]:not([data-closed="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-checked {
+  &:where([data-state="checked"]),
+  &:where([data-checked]:not([data-checked="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-unchecked {
+  &:where([data-state="unchecked"]),
+  &:where([data-unchecked]:not([data-unchecked="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-selected {
+  &:where([data-selected="true"]) {
+    @slot;
+  }
+}
+
+@custom-variant data-disabled {
+  &:where([data-disabled="true"]),
+  &:where([data-disabled]:not([data-disabled="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-active {
+  &:where([data-state="active"]),
+  &:where([data-active]:not([data-active="false"])) {
+    @slot;
+  }
+}
+
+@custom-variant data-horizontal {
+  &:where([data-orientation="horizontal"]) {
+    @slot;
+  }
+}
+
+@custom-variant data-vertical {
+  &:where([data-orientation="vertical"]) {
+    @slot;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-foreground: var(--tertiary-foreground);
+  --color-neutral: var(--neutral);
+  --color-neutral-foreground: var(--neutral-foreground);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-active: var(--active);
+}
+
+@theme {
+  /* Strong ease-out (quint): the site's settle curve for entrances and swaps,
+     as `ease-out-quint`. The reveal and filter-swap rules below spell out the
+     same curve. */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Press micro-interaction — single source of truth for the tuning (Apple-style:
+   quick ease-out press-down, slower spring-back release with slight overshoot).
+   Consumed by the `pressable` utility below and by bespoke wirings that must
+   merge these timings into their own transition lists (see Home FeaturedCard). */
+:root {
+  --press-scale: 0.97;
+  /* Gentler compress for large surfaces (full-width rows, media tiles, heading
+     chips) where 0.97 would translate edges by tens of pixels. Applied via
+     `pressable-subtle`. */
+  --press-scale-subtle: 0.985;
+  --press-duration: 150ms;
+  --press-ease: cubic-bezier(0, 0, 0.2, 1);
+  --press-release-duration: 350ms;
+  --press-release-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Press/release interaction for interactive surfaces (buttons, card links).
+   Owns the element's `transition` — don't stack `transition-*` utilities on a
+   pressable element; colors/opacity ride the same list. The aria-haspopup
+   guard keeps open dropdown/select triggers from sitting compressed. */
+@utility pressable {
+  transition:
+    color var(--press-duration) var(--press-ease),
+    background-color var(--press-duration) var(--press-ease),
+    border-color var(--press-duration) var(--press-ease),
+    opacity var(--press-duration) var(--press-ease),
+    scale var(--press-release-duration) var(--press-release-ease);
+
+  &:active:not([aria-haspopup="true"]) {
+    scale: var(--press-scale);
+    transition-duration: var(--press-duration);
+    transition-timing-function: var(--press-ease);
+  }
+
+  /* A press that became a drag was never a click. Cards on a rail are dragged
+     about as often as they are opened, and one that stays compressed for the
+     length of a drag reads as an accepted click. `useClickableCard` sets the
+     attribute the moment travel passes its slop. It goes quiet on the press
+     curve rather than the springy release curve — a cancelled press should not
+     bounce back as if something completed. */
+  &[data-dragging]:active:not([aria-haspopup="true"]) {
+    scale: 1;
+    transition-duration: var(--press-duration);
+    transition-timing-function: var(--press-ease);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0s;
+  }
+}
+
+/* Modifier for `pressable` on large surfaces — swaps in the subtle scale
+   token; timing and behavior stay owned by `pressable`. */
+@utility pressable-subtle {
+  --press-scale: var(--press-scale-subtle);
+}

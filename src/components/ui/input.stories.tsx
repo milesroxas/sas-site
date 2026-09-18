@@ -62,3 +62,15 @@ export const LineFilled: Story = {
 export const Bare: Story = {
   args: { variant: 'bare', placeholder: 'you@company.com' },
 }
+
+/** The number beside a slider: mono, right-set, tabular, no spinner. */
+export const Value: Story = {
+  args: { variant: 'value', type: 'number', defaultValue: 3.4, placeholder: undefined },
+  decorators: [
+    (Story) => (
+      <div className="w-14">
+        <Story />
+      </div>
+    ),
+  ],
+}

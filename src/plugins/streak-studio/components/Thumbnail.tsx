@@ -1,8 +1,9 @@
-"use client";
+'use client'
 
-import { Link, useConfig } from "@payloadcms/ui";
-import type { DefaultCellComponentProps } from "payload";
-import type { Media } from "@/payload-types";
+import { Link, useConfig } from '@payloadcms/ui'
+import type { DefaultCellComponentProps } from 'payload'
+import { STUDIO_GROUND } from '@/features/immersive'
+import type { Media } from '@/payload-types'
 
 /**
  * Poster cell for the look list. A custom Cell replaces Payload's default
@@ -20,25 +21,23 @@ export function Thumbnail({
     config: {
       routes: { admin: adminRoute },
     },
-  } = useConfig();
-  const media = cellData as Media | null;
-  const url =
-    media && typeof media === "object"
-      ? (media.sizes?.thumbnail?.url ?? media.url)
-      : null;
+  } = useConfig()
+  const media = cellData as Media | null
+  const url = media && typeof media === 'object' ? (media.sizes?.thumbnail?.url ?? media.url) : null
   const content = url ? (
+    // biome-ignore lint/performance/noImgElement: admin-only list cell; next/image is not loaded in the Payload admin
     <img
       src={url}
       alt=""
       width={120}
       height={68}
-      style={{ objectFit: "cover", background: "#090b10", borderRadius: 4 }}
+      style={{ objectFit: 'cover', background: STUDIO_GROUND.dark, borderRadius: 4 }}
     />
   ) : (
     <span>Draft</span>
-  );
+  )
 
-  if (!link || !rowData?.id) return content;
+  if (!link || !rowData?.id) return content
 
   return (
     <Link
@@ -50,5 +49,5 @@ export function Thumbnail({
     >
       {content}
     </Link>
-  );
+  )
 }

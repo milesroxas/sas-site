@@ -35,7 +35,7 @@ const generateURL: GenerateURL<SeoDoc> = ({ collectionConfig, doc }) => {
 }
 
 export const plugins: Plugin[] = [
-  streakStudioPlugin,
+  streakStudioPlugin(),
   redirectsPlugin({
     collections: ['pages', 'posts', 'work-pages', 'lab-pages', 'expertise-pages', 'audience-pages'],
     overrides: {

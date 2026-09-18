@@ -999,7 +999,7 @@ export interface FolderInterface {
   createdAt: string;
 }
 /**
- * Create a look, save its draft, then publish from Studio. Published releases stay pinned on existing pages.
+ * Tune the recipe in the Inspector, watch it on the stage, then publish. Published releases stay pinned on existing pages.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "streak-looks".
@@ -1008,12 +1008,17 @@ export interface StreakLook {
   id: number;
   title: string;
   description?: string | null;
-  thumbnail?: (number | null) | Media;
   tags?: string[] | null;
+  /**
+   * The dark poster of the latest release.
+   */
+  thumbnail?: (number | null) | Media;
   /**
    * Hides the look from new selections. Existing releases keep working.
    */
   archived?: boolean | null;
+  createdBy?: (number | null) | User;
+  updatedBy?: (number | null) | User;
   recipe:
     | {
         [k: string]: unknown;
@@ -1023,8 +1028,6 @@ export interface StreakLook {
     | number
     | boolean
     | null;
-  createdBy?: (number | null) | User;
-  updatedBy?: (number | null) | User;
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -9496,12 +9499,12 @@ export interface UsersSelect<T extends boolean = true> {
 export interface StreakLooksSelect<T extends boolean = true> {
   title?: T;
   description?: T;
-  thumbnail?: T;
   tags?: T;
+  thumbnail?: T;
   archived?: T;
-  recipe?: T;
   createdBy?: T;
   updatedBy?: T;
+  recipe?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;

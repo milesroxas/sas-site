@@ -6,6 +6,9 @@ import { StreakFieldRuntime } from '../ui/streak-field-runtime'
 import type { VisualPlacement } from '../visual/placement'
 import { limitStudioTuning, type StreakRecipe, snapshotRecipe } from './recipe'
 
+/** The grounds the stage paints under a field, and under its poster thumbnails. */
+export const STUDIO_GROUND = { dark: '#090b10', light: '#f6f7fa' } as const
+
 export function StreakStudioPreview({
   recipe,
   placement,
@@ -35,7 +38,7 @@ export function StreakStudioPreview({
         width: '100%',
         height: '100%',
         minHeight: 300,
-        background: surface === 'dark' ? '#090b10' : '#f6f7fa',
+        background: STUDIO_GROUND[surface],
         color: surface === 'dark' ? 'white' : '#111',
       }}
     >

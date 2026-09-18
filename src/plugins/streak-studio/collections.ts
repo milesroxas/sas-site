@@ -2,6 +2,7 @@ import { sql } from '@payloadcms/db-vercel-postgres'
 import { APIError, type CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { emptyRecipe, validateRecipe } from '@/features/immersive/studio/recipe'
+import { LOOKS_SLUG, RECIPE_FIELD, RELEASES_SLUG, RENDERS_SLUG } from './components/paths'
 import { lookEndpoints, renderEndpoints } from './endpoints'
 import { recipeHash, studioInput } from './hash'
 import { lockLook, transactionDB } from './transaction'
@@ -9,7 +10,7 @@ import { releaseUsage } from './usage'
 
 const internal = () => false
 export const StreakLooks: CollectionConfig = {
-  slug: 'streak-looks',
+  slug: LOOKS_SLUG,
   folders: true,
   labels: { singular: 'Streak Field', plural: 'Streak Fields' },
   admin: {
@@ -20,7 +21,7 @@ export const StreakLooks: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'thumbnail', 'tags', '_status', 'archived', 'updatedAt'],
     description:
-      'Create a look, save its draft, then publish from Studio. Published releases stay pinned on existing pages.',
+      'Tune the recipe in the Inspector, watch it on the stage, then publish. Published releases stay pinned on existing pages.',
   },
   access: {
     create: authenticated,
@@ -82,36 +83,115 @@ export const StreakLooks: CollectionConfig = {
     ],
   },
   fields: [
-    { name: 'title', type: 'text', required: true, index: true },
-    { name: 'description', type: 'textarea' },
+    // The stage and the meta live on tabs in the main column; the Inspector
+    // (the recipe field) sits in the sidebar so it stays beside the stage on
+    // every tab. Tabs are unnamed, so the schema is flat and the labels can
+    // change without a migration.
     {
-      name: 'thumbnail',
-      type: 'upload',
-      relationTo: 'media',
-      admin: {
-        readOnly: true,
-        position: 'sidebar',
-        components: { Cell: '@/plugins/streak-studio/components/Thumbnail#Thumbnail' },
-      },
-      access: { create: internal, update: internal },
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Studio',
+          fields: [
+            {
+              name: 'stage',
+              type: 'ui',
+              admin: { components: { Field: '@/plugins/streak-studio/components/Stage#Stage' } },
+            },
+          ],
+        },
+        {
+          label: 'Details',
+          fields: [
+            { name: 'title', type: 'text', required: true, index: true },
+            { name: 'description', type: 'textarea' },
+            { name: 'tags', type: 'text', hasMany: true, index: true },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'thumbnail',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    readOnly: true,
+                    components: {
+                      Cell: '@/plugins/streak-studio/components/Thumbnail#Thumbnail',
+                    },
+                    description: 'The dark poster of the latest release.',
+                  },
+                  access: { create: internal, update: internal },
+                },
+                {
+                  name: 'archived',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  index: true,
+                  admin: {
+                    description:
+                      'Hides the look from new selections. Existing releases keep working.',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'createdBy',
+                  type: 'relationship',
+                  relationTo: 'users',
+                  admin: { readOnly: true },
+                  access: { create: internal, update: internal },
+                },
+                {
+                  name: 'updatedBy',
+                  type: 'relationship',
+                  relationTo: 'users',
+                  admin: { readOnly: true },
+                  access: { create: internal, update: internal },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Releases',
+          description: 'Immutable published artwork. Existing pages keep the release they chose.',
+          fields: [
+            {
+              name: 'releases',
+              type: 'ui',
+              admin: {
+                components: { Field: '@/plugins/streak-studio/components/Releases#Releases' },
+              },
+            },
+          ],
+        },
+        {
+          label: 'Renders',
+          description: 'Poster and export jobs. Failed jobs can be retried here.',
+          fields: [
+            {
+              name: 'renders',
+              type: 'ui',
+              admin: {
+                components: { Field: '@/plugins/streak-studio/components/Renders#Renders' },
+              },
+            },
+          ],
+        },
+      ],
     },
-    { name: 'tags', type: 'text', hasMany: true, index: true },
     {
-      name: 'archived',
-      type: 'checkbox',
-      defaultValue: false,
-      index: true,
-      admin: {
-        position: 'sidebar',
-        description: 'Hides the look from new selections. Existing releases keep working.',
-      },
-    },
-    {
-      name: 'recipe',
+      name: RECIPE_FIELD,
       type: 'json',
       required: true,
       defaultValue: emptyRecipe(),
-      admin: { components: { Field: '@/plugins/streak-studio/components/Studio#Studio' } },
+      admin: {
+        position: 'sidebar',
+        components: { Field: '@/plugins/streak-studio/components/Inspector#Inspector' },
+      },
       validate: (value) => {
         try {
           validateRecipe(value)
@@ -121,25 +201,11 @@ export const StreakLooks: CollectionConfig = {
         }
       },
     },
-    {
-      name: 'createdBy',
-      type: 'relationship',
-      relationTo: 'users',
-      admin: { readOnly: true, position: 'sidebar' },
-      access: { create: internal, update: internal },
-    },
-    {
-      name: 'updatedBy',
-      type: 'relationship',
-      relationTo: 'users',
-      admin: { readOnly: true, position: 'sidebar' },
-      access: { create: internal, update: internal },
-    },
   ],
 }
 
 export const StreakReleases: CollectionConfig = {
-  slug: 'streak-releases',
+  slug: RELEASES_SLUG,
   endpoints: [releaseUsage],
   admin: {
     group: 'Assets',
@@ -208,7 +274,7 @@ export const StreakReleases: CollectionConfig = {
 }
 
 export const StreakRenders: CollectionConfig = {
-  slug: 'streak-renders',
+  slug: RENDERS_SLUG,
   admin: {
     group: 'Assets',
     useAsTitle: 'title',

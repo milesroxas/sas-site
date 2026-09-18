@@ -15,6 +15,9 @@ import { cn } from '@/utilities/ui'
  * - `bare`: no chrome of its own, for an input whose container draws the
  *   field, its focus and its invalid state (a row of an `inset` FieldGroup),
  *   like Textarea's `bare`.
+ * - `value`: the boxed control at inspector density, for the number beside a
+ *   slider: mono, right-set, tabular so a changing figure never shifts its
+ *   neighbours, and no spinner (the slider is the coarse control).
  *
  * `text-base` below md in both: iOS Safari zooms the page when a focused
  * control is under 16px, and the zoom outlives the form.
@@ -28,6 +31,8 @@ const inputVariants = cva(
           'h-7 rounded-md border border-input bg-input/20 px-2 py-0.5 text-base file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-xs/relaxed file:font-medium file:text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 md:text-xs/relaxed dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
         line: 'h-auto rounded-none border-0 border-b border-input bg-transparent px-0 pb-3 text-base not-placeholder-shown:border-b-foreground focus-visible:border-b-primary aria-invalid:border-b-destructive md:text-lg/relaxed',
         bare: 'h-auto rounded-none border-0 bg-transparent p-0 text-base/5 md:text-sm/5',
+        value:
+          'h-6.5 rounded-md border border-input bg-input/20 px-2 text-right font-mono text-xs/relaxed tabular-nums focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
       },
     },
     defaultVariants: {

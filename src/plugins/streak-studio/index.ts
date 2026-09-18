@@ -57,7 +57,33 @@ const hydrateReleases = async ({
   return doc
 }
 
-export const streakStudioPlugin: Plugin = (config) => ({
+export type StreakStudioPluginConfig = {
+  /**
+   * `false` keeps the collections (so the schema and the generated types do
+   * not change) but leaves every hook and endpoint out, the way Payload's
+   * own plugins disable.
+   */
+  enabled?: boolean
+}
+
+/**
+ * Streak Field Studio: looks, immutable releases and render jobs, the
+ * worker endpoints, and the release hydration on every collection and
+ * global. Payload's plugin shape: options in, a function of the config out,
+ * every existing hook and endpoint kept.
+ */
+export const streakStudioPlugin =
+  (options: StreakStudioPluginConfig = {}): Plugin =>
+  (config) => {
+    if (options.enabled === false)
+      return {
+        ...config,
+        collections: [...(config.collections ?? []), StreakLooks, StreakReleases, StreakRenders],
+      }
+    return withStudio(config)
+  }
+
+const withStudio: Plugin = (config) => ({
   ...config,
   endpoints: [...(config.endpoints ?? []), ...workerEndpoints],
   collections: [

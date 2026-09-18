@@ -16,6 +16,8 @@ export {
   STREAK_FIELD_TECHNICAL_LINES,
   STREAK_FIELD_TOPOGRAPHY,
 } from './presets'
+export { StreakCapture } from './studio/capture'
+export { STUDIO_GROUND, StreakStudioPreview } from './studio/preview'
 export {
   CHROMA_SPLIT_TEXT_DEFAULTS,
   ChromaSplitText,
@@ -79,5 +81,3 @@ export {
 } from './ui/text-load-in-raymarched'
 export { WebGlBackdropScene } from './ui/webgl-backdrop-scene'
 export { useWebglMediaLayer } from './use-webgl-media-layer'
-export { StreakCapture } from './studio/capture'
-export { StreakStudioPreview } from './studio/preview'

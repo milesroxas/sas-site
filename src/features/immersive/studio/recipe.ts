@@ -5,6 +5,9 @@ import {
   type StreakFieldTuning,
 } from '../ui/streak-field-tuning'
 import { STREAK_LOOKS, type StreakLookId } from '../visual/looks'
+
+export type { StreakFieldTuning }
+
 import { PLACEMENT_LIMITS, type VisualPlacement } from '../visual/placement'
 
 export const STREAK_RENDERER_VERSION = 'streak-1'
@@ -86,6 +89,10 @@ export const emptyRecipe = (): StreakRecipe => ({
   frame: 150,
 })
 
+/** The effective tuning a recipe asks for, before any placement cap. Never throws. */
+export const resolveRecipeTuning = (recipe: StreakRecipe): StreakFieldTuning =>
+  resolveStreakTuning({ ...recipe.deltas, seed: recipe.seed })
+
 export function validateRecipe(raw: unknown): StreakRecipe {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw))
     throw new Error('A recipe is required.')
@@ -160,6 +167,25 @@ export function snapshotRecipe(raw: unknown): StreakSnapshot {
     dark: limitStudioTuning({ ...base, surface: 'dark' }, 'hero'),
     light: limitStudioTuning({ ...base, ...STREAK_FIELD_PAPER, surface: 'light' }, 'hero'),
   }
+}
+
+/**
+ * The recipe a release was published from, read back out of its snapshot:
+ * every authorable parameter that differs from the default becomes a delta.
+ * Studio uses it to compare a draft against a release on the stage.
+ */
+export function recipeFromSnapshot(snapshot: StreakSnapshot): StreakRecipe {
+  const deltas: Record<string, unknown> = {}
+  for (const key of Object.keys(STREAK_PARAMETERS) as (keyof RecipeDeltas)[]) {
+    const value = snapshot.dark[key]
+    if (JSON.stringify(value) !== JSON.stringify(STREAK_FIELD_DEFAULTS[key])) deltas[key] = value
+  }
+  return validateRecipe({
+    ...emptyRecipe(),
+    seed: snapshot.dark.seed,
+    frame: snapshot.frame,
+    deltas,
+  })
 }
 
 export function starterRecipe(id: StreakLookId): StreakRecipe {

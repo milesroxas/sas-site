@@ -1,0 +1,68 @@
+/* Tailwind for the Streak Field Studio admin surface.
+
+   The Payload admin ships its own CSS (`@payloadcms/next/css`, cascade layers
+   `payload-default` and `payload`), so this entry brings utilities only: no
+   preflight, no base styles, and the utility layer is declared after
+   Payload's so a class on a Studio element wins without `!important`. The
+   shadcn primitives in src/components/ui read the same token map the site
+   uses (src/styles/shadcn-theme.css); here those tokens are painted from
+   Payload's own `--theme-*` scale, so the Studio follows the admin's light
+   and dark toggle and any palette change Payload makes on upgrade, with no
+   colors of its own. Sources are the primitives and this plugin's
+   components, nothing else in the app. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "tw-animate-css";
+@import "../../../styles/shadcn-theme.css";
+@source "../../../components/ui";
+@source "./";
+
+@theme {
+  /* Tailwind's font namespace would repaint Payload's `--font-mono` and
+     `--font-serif` on `:root`. Drop it; the one utility the Studio needs
+     reads Payload's variable below. */
+  --font-*: initial;
+}
+
+@utility font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Payload's elevation scale runs from the ground (0) to the ink (1000) in
+   both polarities, so one map serves light and dark. The only literal is
+   the primary: Payload has no accent, and the Studio needs one for a value
+   that departs from its default. It is the site's primary in light, and a
+   lighter tint of it in dark so 12px changed-value text clears 4.5:1 on
+   the admin's ground. */
+:root {
+  --background: var(--theme-bg);
+  --foreground: var(--theme-text);
+  --card: var(--theme-elevation-50);
+  --card-foreground: var(--theme-text);
+  --popover: var(--theme-elevation-50);
+  --popover-foreground: var(--theme-text);
+  --primary: oklch(42% 0.149 264.4);
+  --primary-foreground: oklch(97% 0.014 254.6);
+  --secondary: var(--theme-elevation-100);
+  --secondary-foreground: var(--theme-text);
+  --muted: var(--theme-elevation-100);
+  --muted-foreground: var(--theme-elevation-650);
+  --accent: var(--theme-elevation-100);
+  --accent-foreground: var(--theme-text);
+  --destructive: var(--theme-error-500);
+  --border: var(--theme-elevation-150);
+  --input: var(--theme-elevation-250);
+  --ring: var(--theme-elevation-500);
+  --success: var(--theme-success-500);
+  --warning: var(--theme-warning-500);
+  --error: var(--theme-error-500);
+  --active: var(--theme-success-500);
+  /* Payload's medium radius is 4px; the map derives `rounded-md` as
+     `--radius` minus 2px. */
+  --radius: 6px;
+}
+
+[data-theme="dark"] {
+  --primary: oklch(78% 0.11 265);
+  --primary-foreground: oklch(20% 0.04 265);
+}
