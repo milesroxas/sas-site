@@ -2,7 +2,7 @@
 
 import './studio.css'
 
-import { Button, toast, useDocumentInfo, useField, useForm } from '@payloadcms/ui'
+import { Button, toast, useDocumentInfo, useForm } from '@payloadcms/ui'
 import { IconChevronsDown, IconChevronsUp } from '@tabler/icons-react'
 import type { JSONFieldClientComponent } from 'payload'
 import { useState } from 'react'
@@ -23,7 +23,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { STREAK_FIELD_DEFAULTS } from '@/features/immersive'
 import {
   type CaptureOptions,
-  emptyRecipe,
   POSTER_CAPTURE,
   type RecipeDeltas,
   resolveRecipeTuning,
@@ -31,6 +30,7 @@ import {
   validateRecipe,
 } from '@/features/immersive/studio/recipe'
 import { cn } from '@/utilities/ui'
+import { useDraft } from './draft'
 import { LengthRow, ParameterRow } from './ParameterRow'
 import {
   DEPENDENCIES,
@@ -41,8 +41,8 @@ import {
   parameterKeys,
   toHex,
 } from './parameters'
+import { refreshStudio } from './polling'
 import { saveAndQueue } from './publish'
-import { sessionKey, studioStore } from './store'
 
 const sameAsDefault = (key: ParameterKey, value: unknown) =>
   JSON.stringify(value) === JSON.stringify(STREAK_FIELD_DEFAULTS[key])
@@ -57,10 +57,7 @@ const LENGTH_PAIR: ParameterKey[] = ['minLength', 'maxLength']
  * versions and validation see every change as they would any other field's.
  */
 export const Inspector: JSONFieldClientComponent = ({ path }) => {
-  const { value, setValue, errorMessage } = useField<StreakRecipe>({ path })
-  const { id } = useDocumentInfo()
-  const key = sessionKey(id)
-  const recipe = value ?? emptyRecipe()
+  const { recipe, update, errorMessage } = useDraft(path)
   const tuning = resolveRecipeTuning(recipe)
   let validation = ''
   try {
@@ -69,10 +66,6 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
     validation = (error as Error).message
   }
 
-  const update = (next: StreakRecipe) => {
-    studioStore.record(key, recipe)
-    setValue(next)
-  }
   const change = (patch: Partial<RecipeDeltas>) => {
     const deltas = { ...recipe.deltas }
     for (const [name, next] of Object.entries(patch) as [ParameterKey, unknown][]) {
@@ -390,6 +383,7 @@ function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation:
     try {
       if (!id) throw new Error('Save this look first.')
       await saveAndQueue(submit, id, recipe, 'export', capture)
+      refreshStudio()
       toast.success('Render queued. The still lands in Media, and in Renders, when it finishes.')
     } catch (error) {
       toast.error((error as Error).message)

@@ -2,7 +2,7 @@
 
 import './studio.css'
 
-import { useDocumentInfo, useField } from '@payloadcms/ui'
+import { toast, useDocumentInfo } from '@payloadcms/ui'
 import {
   IconArrowBackUp,
   IconArrowForwardUp,
@@ -14,7 +14,7 @@ import {
   IconRefresh,
 } from '@tabler/icons-react'
 import type { UIFieldClientComponent } from 'payload'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Kbd } from '@/components/ui/kbd'
@@ -22,15 +22,15 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { STUDIO_GROUND } from '@/features/immersive'
 import {
-  emptyRecipe,
+  canonicalJSON,
   limitStudioTuning,
   recipeFromSnapshot,
   resolveRecipeTuning,
-  STREAK_PARAMETERS,
-  type StreakRecipe,
   type StreakSnapshot,
+  snapshotChanges,
   snapshotRecipe,
   starterRecipe,
+  validateRecipe,
 } from '@/features/immersive/studio/recipe'
 import {
   STREAK_LOOK_OPTIONS,
@@ -42,9 +42,10 @@ import {
 } from '@/features/immersive/visual'
 import type { StreakRelease } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { RECIPE_FIELD } from './paths'
-import { useReleases } from './polling'
-import { sessionKey, studioStore, useStudioSession } from './store'
+import { useDraft } from './draft'
+import { LOOKS_SLUG } from './paths'
+import { refreshStudio, useReleases, useRenders } from './polling'
+import { studioStore, useStudioSession } from './store'
 
 const Preview = lazy(() =>
   import('@/features/immersive').then((module) => ({ default: module.StreakStudioPreview })),
@@ -63,11 +64,9 @@ const timeOf = (iso: string) =>
 const clock = (at: number) =>
   new Date(at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 
-/** Parameters whose effective value differs between two snapshots, seed included. */
-const changesBetween = (a: StreakSnapshot, b: StreakSnapshot) =>
-  (['seed', ...Object.keys(STREAK_PARAMETERS)] as (keyof StreakSnapshot['dark'])[]).filter(
-    (key) => JSON.stringify(a.dark[key]) !== JSON.stringify(b.dark[key]),
-  ).length
+/** `v3`: a release is titled `Look title · v3`, and inside its own look the number is the name. */
+export const versionOf = (release: StreakRelease) =>
+  release.title.split(' · ').at(-1) ?? release.title
 
 function IconAction({
   label,
@@ -106,19 +105,22 @@ function IconAction({
 }
 
 /**
- * The stage: the Studio tab of a look. A library of starters and versions on
- * the left, the live field in the middle at the chosen placement and ground,
- * and the session controls. Edits happen in the Inspector (the recipe field,
- * in the sidebar); the stage reads the same field and shows the result, or
- * the kept comparison when asked.
+ * The stage: the Studio tab of a look. Starters and releases on the left, the
+ * live field in the middle at the chosen placement and ground, and the
+ * session controls. Edits happen in the Inspector (the recipe field, in the
+ * sidebar); the stage reads the same field and shows the result, or a
+ * comparison when asked.
+ *
+ * A look has one draft and a list of immutable releases. Publish freezes the
+ * draft as the next release; Restore and Reset to release copy a release's
+ * settings back into the draft. Nothing here ever edits a release.
  */
 export const Stage: UIFieldClientComponent = () => {
-  const { value, setValue } = useField<StreakRecipe>({ path: RECIPE_FIELD })
-  const { id } = useDocumentInfo()
-  const key = sessionKey(id)
+  const { id, key, recipe, setValue, update, restore } = useDraft()
+  const { setHasPublishedDoc, setUnpublishedVersionCount } = useDocumentInfo()
   const session = useStudioSession(key)
-  const recipe = value ?? emptyRecipe()
-  const releases = useReleases(id)
+  const { docs: releases, loaded } = useReleases(id)
+  const { docs: renders } = useRenders(id)
   const [live, setLive] = useState(true)
 
   let validation = ''
@@ -130,17 +132,50 @@ export const Stage: UIFieldClientComponent = () => {
   }
   const shown = session.showComparison && session.comparison ? session.comparison : recipe
   const latest = releases[0]
-  const sinceRelease =
-    snapshot && latest ? changesBetween(snapshot, latest.snapshot as StreakSnapshot) : null
+  const releaseKeys = useMemo(
+    () => releases.map((release) => canonicalJSON(release.snapshot)),
+    [releases],
+  )
+  // The release the draft is identical to, whichever one it is: a restored v1
+  // matches v1, not "12 changes since v3".
+  const matched = snapshot ? releases[releaseKeys.indexOf(canonicalJSON(snapshot))] : undefined
+  const sinceLatest =
+    snapshot && latest ? snapshotChanges(snapshot, latest.snapshot as StreakSnapshot) : null
+  // The newest publish job, while it is still the author's business: in the
+  // queue, rendering, or failed without a release of the same output since.
+  const job = renders.find((render) => render.kind === 'publish')
+  const rendering = job?.state === 'queued' || job?.state === 'rendering'
+  const failed =
+    job?.state === 'failed' && !releases.some((release) => release.sourceHash === job.sourceHash)
   const requested = resolveRecipeTuning(recipe)
   const budget = snapshot ? limitStudioTuning(snapshot[session.surface], session.placement) : null
   const capped = budget !== null && budget.count < requested.count
 
-  const update = (next: StreakRecipe, restart = false) => {
-    studioStore.record(key, recipe)
-    setValue(next)
-    if (restart) studioStore.restart(key)
-  }
+  // The worker publishes the look when its posters land, which this page only
+  // learns by polling. Tell Payload's own status line, so Changed and Revert
+  // to published are true without a reload.
+  const newestId = latest?.id
+  const matchedId = matched?.id
+  const knownNewest = useRef<number | null | undefined>(null)
+  useEffect(() => {
+    if (!loaded) return
+    if (
+      knownNewest.current !== null &&
+      newestId !== undefined &&
+      newestId !== knownNewest.current
+    ) {
+      setHasPublishedDoc(true)
+      setUnpublishedVersionCount(matchedId === newestId ? 0 : 1)
+    }
+    knownNewest.current = newestId
+  }, [loaded, newestId, matchedId, setHasPublishedDoc, setUnpublishedVersionCount])
+
+  // A finished job means a new release: fetch it now, not at the next tick.
+  const jobState = job ? `${job.id}:${job.state}` : ''
+  useEffect(() => {
+    if (jobState.endsWith(':complete')) refreshStudio()
+  }, [jobState])
+
   const undo = () => {
     const previous = studioStore.undo(key, recipe)
     if (previous) setValue(previous)
@@ -157,11 +192,34 @@ export const Stage: UIFieldClientComponent = () => {
       showComparison: false,
     })
   }
+  const restoreRelease = (release: StreakRelease) => {
+    try {
+      restore(release)
+      toast.success(`${versionOf(release)} is the draft now. Undo brings your changes back.`)
+    } catch {
+      toast.error('This release was published by an older renderer and cannot be restored.')
+    }
+  }
+  // Back to what the look is published at. A look released before every
+  // release published its look has no published recipe, so it takes the
+  // newest release instead.
+  const resetToRelease = async () => {
+    if (!id || !latest) return
+    try {
+      const response = await fetch(`/api/${LOOKS_SLUG}/${id}?draft=false&depth=0`)
+      const published = response.ok ? await response.json() : null
+      if (published?._status === 'published') update(validateRecipe(published.recipe), true)
+      else restore(latest)
+      toast.success('The draft is back at the published release. Undo brings your changes back.')
+    } catch {
+      toast.error('Could not read the published release. Restore one from the list instead.')
+    }
+  }
   const compareRelease = (release: StreakRelease) => {
     try {
       studioStore.patch(key, {
         comparison: recipeFromSnapshot(release.snapshot as StreakSnapshot),
-        comparisonLabel: release.title,
+        comparisonLabel: versionOf(release),
         comparisonAt: new Date(release.createdAt).getTime(),
         showComparison: true,
       })
@@ -221,19 +279,36 @@ export const Stage: UIFieldClientComponent = () => {
                 aria-hidden
                 className={cn(
                   'mr-1.5 inline-block size-1.5 shrink-0 rounded-full align-[0.15em]',
-                  latest ? 'bg-warning' : 'bg-muted-foreground',
+                  matched ? 'bg-success' : latest ? 'bg-warning' : 'bg-muted-foreground',
                 )}
               />
               {!id
                 ? 'Unsaved. Save once to publish and export.'
-                : latest && sinceRelease !== null
-                  ? sinceRelease
-                    ? `Draft, ${sinceRelease} ${sinceRelease === 1 ? 'change' : 'changes'} since ${latest.title}`
-                    : `Draft matches ${latest.title}`
-                  : 'Draft, not yet published'}
+                : matched
+                  ? `Draft matches ${versionOf(matched)}`
+                  : latest && sinceLatest !== null
+                    ? `Draft, ${sinceLatest} ${sinceLatest === 1 ? 'change' : 'changes'} since ${versionOf(latest)}`
+                    : 'Draft, not yet published'}
+              {rendering && ' · rendering posters for the next release'}
+              {failed && (
+                <span className="text-destructive"> · the last release failed, see Renders</span>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {latest && !matched && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button type="button" variant="ghost" size="sm" onClick={resetToRelease}>
+                    Reset to release
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={6} className="max-w-56">
+                  Put the published release's settings back in the draft. Undo brings your changes
+                  back.
+                </TooltipContent>
+              </Tooltip>
+            )}
             <div className="flex h-[34px] items-center divide-x divide-input overflow-hidden rounded-md border border-input">
               <IconAction
                 label="Undo"
@@ -257,14 +332,14 @@ export const Stage: UIFieldClientComponent = () => {
               variant="segmented"
               size="lg"
               className="w-auto"
-              value={session.showComparison ? 'kept' : 'draft'}
+              value={session.showComparison ? 'compare' : 'draft'}
               onValueChange={(next) =>
-                next && studioStore.patch(key, { showComparison: next === 'kept' })
+                next && studioStore.patch(key, { showComparison: next === 'compare' })
               }
             >
               <ToggleGroupItem value="draft">Draft</ToggleGroupItem>
-              <ToggleGroupItem value="kept" disabled={!session.comparison}>
-                Kept
+              <ToggleGroupItem value="compare" disabled={!session.comparison}>
+                Compare
               </ToggleGroupItem>
             </ToggleGroup>
           </div>
@@ -312,7 +387,7 @@ export const Stage: UIFieldClientComponent = () => {
               ))}
             </ul>
             <div className="flex h-10 items-center border-y border-border px-3.5">
-              <h3 className="flex-1 text-xs/4 font-semibold tracking-[0.02em]">Versions</h3>
+              <h3 className="flex-1 text-xs/4 font-semibold tracking-[0.02em]">Releases</h3>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
@@ -361,19 +436,41 @@ export const Stage: UIFieldClientComponent = () => {
                   </button>
                 </li>
               )}
+              {/* A release row does two things, so it is two buttons: the row
+                  puts the release on the stage beside the draft, Restore makes
+                  it the draft. Looking never changes anything. */}
               {releases.map((release) => (
-                <li key={release.id}>
+                <li
+                  key={release.id}
+                  className="flex items-center gap-2 pr-3.5 transition-colors hover:bg-muted"
+                >
                   <button
                     type="button"
-                    className="flex h-10 w-full cursor-pointer items-center gap-2.5 px-3.5 text-left text-[13px]/4 text-foreground/80 transition-colors hover:bg-muted"
+                    className="flex h-10 min-w-0 flex-1 cursor-pointer items-center gap-2.5 pl-3.5 text-left text-[13px]/4 text-foreground/80"
                     onClick={() => compareRelease(release)}
                   >
                     <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-success" />
-                    <span className="flex-1 truncate">{release.title}</span>
-                    <span className="text-[11px]/3.5 text-muted-foreground tabular-nums">
-                      {timeOf(release.createdAt)}
+                    <span className="min-w-0 flex-1 truncate">{versionOf(release)}</span>
+                    <span className="shrink-0 text-[11px]/3.5 text-muted-foreground tabular-nums">
+                      {release.id === matched?.id ? 'matches draft' : timeOf(release.createdAt)}
                     </span>
                   </button>
+                  {release.id !== matched?.id && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="pressable shrink-0 cursor-pointer text-[11px]/3.5 text-muted-foreground hover:text-foreground"
+                          onClick={() => restoreRelease(release)}
+                        >
+                          Restore
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" sideOffset={8} className="max-w-56">
+                        Make these settings the draft. The release itself never changes.
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                 </li>
               ))}
             </ul>

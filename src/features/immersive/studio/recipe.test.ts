@@ -8,9 +8,13 @@ import {
 import { STREAK_LOOK_IDS } from '../visual/looks'
 import { PLACEMENT_LIMITS } from '../visual/placement'
 import {
+  canonicalJSON,
   emptyRecipe,
   limitStudioTuning,
+  recipeFromSnapshot,
   resolveRecipeTuning,
+  sameSnapshot,
+  snapshotChanges,
   snapshotRecipe,
   starterRecipe,
   validateCapture,
@@ -96,6 +100,39 @@ describe('Studio recipes and release contract', () => {
     data.snapshot.dark.count = 100000
     expect(parseRelease(data)).toBeNull()
     expect(resolveStreakDescriptor({ release: 23, preset: 'signal-v1' }).degraded).toBe(true)
+  })
+  it('reads identity in canonical form, whatever order the JSON arrived in', () => {
+    // Postgres jsonb hands keys back by length, then bytewise.
+    expect(canonicalJSON({ version: 1, seed: 7, deltas: { b: [1, 2], a: undefined } })).toBe(
+      canonicalJSON({ seed: 7, deltas: { b: [1, 2] }, version: 1 }),
+    )
+    const snapshot = snapshotRecipe(starterRecipe('signal-v1'))
+    const stored = JSON.parse(canonicalJSON(snapshot))
+    expect(sameSnapshot(snapshot, stored)).toBe(true)
+    expect(snapshotChanges(snapshot, stored)).toBe(0)
+  })
+  it('restores a release as a draft that is the same release', () => {
+    const recipes = [
+      ...STREAK_LOOK_IDS.map(starterRecipe),
+      // A count the hero budget caps: the restored draft keeps the capped
+      // count, which still resolves to the snapshot it came from.
+      { ...emptyRecipe(), seed: 42, frame: 90, deltas: { noise: 'curl', count: 8000 } as const },
+    ]
+    for (const recipe of recipes) {
+      const snapshot = snapshotRecipe(recipe)
+      expect(sameSnapshot(snapshotRecipe(recipeFromSnapshot(snapshot)), snapshot)).toBe(true)
+    }
+    expect(recipeFromSnapshot(snapshotRecipe(recipes.at(-1))).deltas.count).toBe(4000)
+  })
+  it('counts the capture frame and light-only differences as changes', () => {
+    const base = snapshotRecipe(emptyRecipe())
+    expect(snapshotChanges(base, snapshotRecipe({ ...emptyRecipe(), frame: 151 }))).toBe(1)
+    expect(
+      snapshotChanges(base, snapshotRecipe({ ...emptyRecipe(), seed: 9, deltas: { relief: 0.9 } })),
+    ).toBe(2)
+    const light = structuredClone(base)
+    light.light.brightness += 0.1
+    expect(snapshotChanges(base, light)).toBe(1)
   })
   it('bounds pixel count and rejects transparent JPEG', () => {
     const capture = {

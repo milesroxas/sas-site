@@ -67,11 +67,17 @@ export const studioStore = {
     sessions.set(key, { ...session, generation: session.generation + 1 })
     emit()
   },
-  /** Call with the recipe about to be replaced, before the change. */
+  /**
+   * Call with the recipe about to be replaced, before the change. Every change
+   * to the draft, undo and redo included, puts the draft back on the stage:
+   * an edit made while a comparison is showing would otherwise change nothing
+   * the author can see.
+   */
   record(key: string, previous: StreakRecipe) {
     const session = read(key)
     sessions.set(key, {
       ...session,
+      showComparison: false,
       history: [...session.history.slice(-(HISTORY_LIMIT - 1)), previous],
       future: [],
     })
@@ -83,6 +89,7 @@ export const studioStore = {
     if (!previous) return null
     sessions.set(key, {
       ...session,
+      showComparison: false,
       history: session.history.slice(0, -1),
       future: [...session.future, current],
     })
@@ -95,6 +102,7 @@ export const studioStore = {
     if (!next) return null
     sessions.set(key, {
       ...session,
+      showComparison: false,
       future: session.future.slice(0, -1),
       history: [...session.history, current],
     })

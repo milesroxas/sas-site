@@ -1,13 +1,6 @@
 import { randomUUID, timingSafeEqual } from 'node:crypto'
 import { sql } from '@payloadcms/db-vercel-postgres'
-import {
-  APIError,
-  commitTransaction,
-  type Endpoint,
-  initTransaction,
-  killTransaction,
-  type PayloadRequest,
-} from 'payload'
+import { APIError, type Endpoint, type PayloadRequest } from 'payload'
 import sharp from 'sharp'
 import { authenticated } from '@/access/authenticated'
 import {
@@ -20,10 +13,9 @@ import {
 import type { Media, StreakRender } from '@/payload-types'
 import { recipeHash, studioInput } from './hash'
 import { kickStudioWorker } from './kick'
-import { lockLook, transactionDB } from './transaction'
+import { idOf, promoteRelease, releaseOf } from './releases'
+import { inTransaction, transactionDB } from './transaction'
 
-const idOf = (value: unknown): number =>
-  Number(typeof value === 'object' && value && 'id' in value ? value.id : value)
 function team(req: PayloadRequest) {
   if (!authenticated({ req }) || !req.user) throw new APIError('Team sign-in required.', 401)
   return req.user
@@ -78,32 +70,29 @@ async function queue(req: PayloadRequest, kind: 'publish' | 'export') {
   const capture =
     kind === 'publish' ? POSTER_CAPTURE : studioInput(() => validateCapture(data.capture))
   if (kind === 'publish') {
-    const existing = await req.payload.find({
+    // The same output as an existing release renders nothing new: the look points at that release.
+    const release = await releaseOf(req, look.id, sourceHash)
+    if (release) {
+      await inTransaction(req, () => promoteRelease(req, release))
+      return Response.json({ state: 'complete', release: release.id, title: release.title })
+    }
+    const rendering = await req.payload.find({
       collection: 'streak-renders',
       where: {
         and: [
           { look: { equals: look.id } },
           { sourceHash: { equals: sourceHash } },
           { kind: { equals: kind } },
-          { state: { in: ['queued', 'rendering', 'complete'] } },
+          { state: { in: ['queued', 'rendering'] } },
         ],
       },
       limit: 1,
       depth: 0,
       req,
     })
-    if (existing.docs[0]) {
-      if (existing.docs[0].state === 'complete')
-        await req.payload.update({
-          collection: 'streak-looks',
-          id: look.id,
-          data: { ...look, _status: 'published' },
-          req,
-          user: req.user,
-          overrideAccess: false,
-        })
-      else await kickStudioWorker(req)
-      return Response.json(existing.docs[0])
+    if (rendering.docs[0]) {
+      await kickStudioWorker(req)
+      return Response.json(rendering.docs[0])
     }
   }
   const pending = await req.payload.count({
@@ -271,8 +260,7 @@ export const workerEndpoints: Endpoint[] = [
     handler: async (req) => {
       worker(req)
       const data = await body(req)
-      const transaction = await initTransaction(req)
-      try {
+      await inTransaction(req, async () => {
         const db = await transactionDB(req)
         const locked = await db.execute(
           sql`SELECT id FROM streak_renders WHERE id = ${Number(data.id)} AND state = 'rendering' AND lease = ${String(data.lease)} AND lease_expires > NOW() FOR UPDATE`,
@@ -298,12 +286,8 @@ export const workerEndpoints: Endpoint[] = [
         } else {
           await complete(req, job, data)
         }
-        if (transaction) await commitTransaction(req)
-        return Response.json({ ok: true })
-      } catch (error) {
-        if (transaction) await killTransaction(req)
-        throw error
-      }
+      })
+      return Response.json({ ok: true })
     },
   },
 ]
@@ -321,15 +305,7 @@ async function complete(req: PayloadRequest, job: StreakRender, data: Record<str
     return
   }
   const lookId = idOf(job.look)
-  const releaseKey = `${lookId}:${job.sourceHash}`
-  const existing = await req.payload.find({
-    collection: 'streak-releases',
-    where: { releaseKey: { equals: releaseKey } },
-    limit: 1,
-    depth: 0,
-    req,
-  })
-  let release = existing.docs[0]
+  let release = await releaseOf(req, lookId, job.sourceHash)
   if (!release) {
     const versions = await req.payload.count({
       collection: 'streak-releases',
@@ -354,7 +330,7 @@ async function complete(req: PayloadRequest, job: StreakRender, data: Record<str
         title: `${job.title} · v${versions.totalDocs + 1}`,
         look: lookId,
         sourceHash: job.sourceHash,
-        releaseKey,
+        releaseKey: `${lookId}:${job.sourceHash}`,
         snapshot: job.snapshot as unknown as StreakSnapshot,
         posters: { dark: poster(dark), light: poster(light) },
         darkPoster: dark.id,
@@ -371,21 +347,5 @@ async function complete(req: PayloadRequest, job: StreakRender, data: Record<str
     data: { state: 'complete', release: release.id, lease: null, error: null },
     req,
   })
-  await lockLook(req, lookId)
-  const look = await req.payload.findByID({
-    collection: 'streak-looks',
-    id: lookId,
-    draft: true,
-    depth: 0,
-    req,
-  })
-  if (!look.archived && recipeHash(look.recipe) === job.sourceHash) {
-    await req.payload.update({
-      collection: 'streak-looks',
-      id: lookId,
-      data: { ...look, _status: 'published', thumbnail: release.darkPoster },
-      req,
-    })
-  }
-  // If someone edited while this rendered, their newer draft remains untouched.
+  await promoteRelease(req, release)
 }

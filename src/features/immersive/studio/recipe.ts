@@ -180,9 +180,50 @@ export function snapshotRecipe(raw: unknown): StreakSnapshot {
 }
 
 /**
+ * Key-sorted JSON. Postgres `jsonb` hands a stored object back with its keys
+ * reordered, and a recipe built in the browser keeps the order it was built
+ * in, so identity (the release hash, draft matches release) is always taken
+ * over this form, never over `JSON.stringify` of an object as it arrived.
+ */
+export function canonicalJSON(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJSON).join(',')}]`
+  if (value && typeof value === 'object') {
+    const object = value as Record<string, unknown>
+    const entries = Object.keys(object)
+      .filter((key) => object[key] !== undefined)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonicalJSON(object[key])}`)
+    return `{${entries.join(',')}}`
+  }
+  return JSON.stringify(value)
+}
+
+/** A release is its snapshot: two recipes that resolve to the same one draw the same pixels. */
+export const sameSnapshot = (a: StreakSnapshot, b: StreakSnapshot) =>
+  canonicalJSON(a) === canonicalJSON(b)
+
+/**
+ * How many settings separate two snapshots: every dark-ground value (seed
+ * included), the capture frame and the renderer. Never zero for snapshots
+ * that differ, so a change that only shows on the light ground still counts.
+ */
+export function snapshotChanges(a: StreakSnapshot, b: StreakSnapshot): number {
+  if (sameSnapshot(a, b)) return 0
+  const keys = new Set([...Object.keys(a.dark), ...Object.keys(b.dark)]) as Set<
+    keyof StreakFieldTuning
+  >
+  let changes = Number(a.frame !== b.frame) + Number(a.renderer !== b.renderer)
+  for (const key of keys) if (canonicalJSON(a.dark[key]) !== canonicalJSON(b.dark[key])) changes++
+  return Math.max(1, changes)
+}
+
+/**
  * The recipe a release was published from, read back out of its snapshot:
  * every authorable parameter that differs from the default becomes a delta.
- * Studio uses it to compare a draft against a release on the stage.
+ * It resolves to the same snapshot, so it is the same release; the one thing
+ * it does not keep is a count the hero budget had already capped. Studio uses
+ * it to compare a draft against a release and to restore a release as the
+ * draft.
  */
 export function recipeFromSnapshot(snapshot: StreakSnapshot): StreakRecipe {
   const deltas: Record<string, unknown> = {}

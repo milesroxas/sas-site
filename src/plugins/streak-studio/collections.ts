@@ -4,7 +4,8 @@ import { authenticated } from '@/access/authenticated'
 import { emptyRecipe, validateRecipe } from '@/features/immersive/studio/recipe'
 import { LOOKS_SLUG, RECIPE_FIELD, RELEASES_SLUG, RENDERS_SLUG } from './components/paths'
 import { lookEndpoints, renderEndpoints } from './endpoints'
-import { recipeHash, studioInput } from './hash'
+import { recipeHash, storedRecipeHash, studioInput } from './hash'
+import { PROMOTION, releaseOf } from './releases'
 import { lockLook, transactionDB } from './transaction'
 import { releaseUsage } from './usage'
 
@@ -34,7 +35,7 @@ export const StreakLooks: CollectionConfig = {
   endpoints: lookEndpoints,
   hooks: {
     beforeChange: [
-      async ({ data, req, originalDoc, operation }) => {
+      async ({ data, req, originalDoc, operation, context }) => {
         if (originalDoc?.id) {
           await lockLook(req, originalDoc.id)
           if (typeof data.archived === 'boolean' && data.archived !== originalDoc.archived) {
@@ -47,18 +48,26 @@ export const StreakLooks: CollectionConfig = {
         if (data.recipe) studioInput(() => validateRecipe(data.recipe))
         if (operation === 'create') data.createdBy = req.user?.id
         data.updatedBy = req.user?.id ?? originalDoc?.updatedBy
-        if (data._status === 'published') {
+        // A look is only ever published at a release: either this output has
+        // one, or it is what is already published (Payload's Revert to
+        // published, which has to keep working after a defaults change moves
+        // every hash). Anything else goes through Publish in Studio.
+        if (data._status === 'published' && !context[PROMOTION]) {
           const hash = recipeHash(data.recipe ?? originalDoc?.recipe)
-          const release = await req.payload.find({
-            collection: 'streak-releases',
-            where: {
-              and: [{ look: { equals: originalDoc?.id } }, { sourceHash: { equals: hash } }],
-            },
-            limit: 1,
-            depth: 0,
-            req,
-          })
-          if (!release.docs.length)
+          const id: number | undefined = originalDoc?.id
+          const published = id
+            ? await req.payload.findByID({
+                collection: LOOKS_SLUG,
+                id,
+                draft: false,
+                depth: 0,
+                disableErrors: true,
+                req,
+              })
+            : null
+          const unchanged =
+            published?._status === 'published' && storedRecipeHash(published.recipe) === hash
+          if (!unchanged && !(id && (await releaseOf(req, id, hash))))
             throw new APIError(
               'Use Publish in Studio to generate posters before publishing this revision.',
               400,
@@ -118,7 +127,7 @@ export const StreakLooks: CollectionConfig = {
                     components: {
                       Cell: '@/plugins/streak-studio/components/Thumbnail#Thumbnail',
                     },
-                    description: 'The dark poster of the latest release.',
+                    description: 'The dark poster of the published release.',
                   },
                   access: { create: internal, update: internal },
                 },

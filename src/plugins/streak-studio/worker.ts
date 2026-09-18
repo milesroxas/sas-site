@@ -87,7 +87,11 @@ export async function runStudioWorker(
       console.log(`Completed ${job.kind} render #${job.id}.`)
     } catch (error) {
       console.error(`Render #${job.id}: ${String(error)}`)
-      await request('finish', { id: job.id, lease: job.lease, error: String(error) })
+      // A cancelled or reclaimed job has no lease left to report against; the
+      // queue already knows, and the next job should still run.
+      await request('finish', { id: job.id, lease: job.lease, error: String(error) }).catch(
+        (failure) => console.error(`Render #${job.id}: could not report: ${String(failure)}`),
+      )
     } finally {
       await context.close()
     }

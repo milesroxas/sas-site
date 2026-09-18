@@ -1010,7 +1010,7 @@ export interface StreakLook {
   description?: string | null;
   tags?: string[] | null;
   /**
-   * The dark poster of the latest release.
+   * The dark poster of the published release.
    */
   thumbnail?: (number | null) | Media;
   /**

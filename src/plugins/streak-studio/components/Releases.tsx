@@ -2,15 +2,16 @@
 
 import './studio.css'
 
-import { Link, toast, useConfig, useDocumentInfo } from '@payloadcms/ui'
+import { Link, toast, useConfig } from '@payloadcms/ui'
 import type { UIFieldClientComponent } from 'payload'
 import { Button } from '@/components/ui/button'
 import { STUDIO_GROUND } from '@/features/immersive'
 import { recipeFromSnapshot, type StreakSnapshot } from '@/features/immersive/studio/recipe'
 import type { Media, StreakRelease } from '@/payload-types'
+import { useDraft } from './draft'
 import { RELEASES_SLUG } from './paths'
 import { useReleases } from './polling'
-import { sessionKey, studioStore } from './store'
+import { studioStore } from './store'
 
 const posterUrl = (poster: Media | number | null | undefined) =>
   poster && typeof poster === 'object' ? (poster.sizes?.thumbnail?.url ?? poster.url) : null
@@ -23,11 +24,11 @@ const Poster = ({ src }: { src: string }) => (
 /**
  * The Releases tab: every immutable release published from this look, newest
  * first, with its posters. A release opens its own document (usage lives
- * there) or goes to the stage as the comparison.
+ * there), goes to the stage as the comparison, or is restored as the draft.
  */
 export const Releases: UIFieldClientComponent = () => {
-  const { id } = useDocumentInfo()
-  const releases = useReleases(id)
+  const { id, key, restore } = useDraft()
+  const { docs: releases } = useReleases(id)
   const {
     config: {
       routes: { admin },
@@ -36,7 +37,7 @@ export const Releases: UIFieldClientComponent = () => {
 
   const compare = (release: StreakRelease) => {
     try {
-      studioStore.patch(sessionKey(id), {
+      studioStore.patch(key, {
         comparison: recipeFromSnapshot(release.snapshot as StreakSnapshot),
         comparisonLabel: release.title,
         comparisonAt: new Date(release.createdAt).getTime(),
@@ -45,6 +46,15 @@ export const Releases: UIFieldClientComponent = () => {
       toast.success(`${release.title} is on the stage. Open Studio to see it.`)
     } catch {
       toast.error('This release was published by an older renderer and cannot be compared.')
+    }
+  }
+
+  const restoreRelease = (release: StreakRelease) => {
+    try {
+      restore(release)
+      toast.success(`${release.title} is the draft now. Undo in Studio brings your changes back.`)
+    } catch {
+      toast.error('This release was published by an older renderer and cannot be restored.')
     }
   }
 
@@ -87,6 +97,9 @@ export const Releases: UIFieldClientComponent = () => {
             </span>
           </div>
           <div className="flex items-center gap-1">
+            <Button type="button" variant="ghost" size="sm" onClick={() => restoreRelease(release)}>
+              Restore as draft
+            </Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => compare(release)}>
               Compare on stage
             </Button>

@@ -49,6 +49,8 @@ const hydrateReleases = async ({
       where: { id: { in: missing } },
       limit: missing.length,
       depth: 0,
+      // What `parseRelease` reads, and nothing else: this lands in public page responses.
+      select: { sourceHash: true, snapshot: true, posters: true },
       req,
     })
     for (const release of result.docs) cache.set(release.id, release)

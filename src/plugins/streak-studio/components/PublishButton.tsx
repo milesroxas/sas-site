@@ -3,10 +3,11 @@
 import { Button, toast, useDocumentInfo, useForm } from '@payloadcms/ui'
 import { useState } from 'react'
 import type { StreakRecipe } from '@/features/immersive/studio/recipe'
+import { refreshStudio } from './polling'
 import { saveAndQueue } from './publish'
 
 export function PublishButton() {
-  const { id } = useDocumentInfo()
+  const { id, setHasPublishedDoc, setUnpublishedVersionCount } = useDocumentInfo()
   const { submit, getData } = useForm()
   const [busy, setBusy] = useState(false)
   return (
@@ -25,11 +26,15 @@ export function PublishButton() {
             getData().recipe as StreakRecipe,
             'publish-release',
           )
-          toast.success(
-            job.state === 'complete'
-              ? 'This release is already published.'
-              : 'Release queued. Studio will show the finished posters automatically.',
-          )
+          refreshStudio()
+          if (job.state === 'complete') {
+            // Nothing to render: the look was pointed at the release it already has.
+            setHasPublishedDoc(true)
+            setUnpublishedVersionCount(0)
+            toast.success(`${job.title} already has these settings. The look is published at it.`)
+          } else {
+            toast.success('Release queued. Studio shows the posters when they finish rendering.')
+          }
         } catch (error) {
           toast.error((error as Error).message)
         } finally {
