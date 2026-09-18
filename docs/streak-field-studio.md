@@ -31,7 +31,7 @@ The Studio components (`src/plugins/streak-studio/components`) are built from th
 
 Drafts store versioned deltas. Releases store complete light/dark snapshots, a source hash, renderer version, capture build identity, and immutable poster manifests. Server resolution batches nested release references per document and deduplicates them in request context. Public pages receive a compact descriptor, never the library or editor. A server-loaded release renders through the existing poster-first lazy adapter and its admission, pause, visibility, reduced-motion, capability, and fallback behavior.
 
-The initial authoring envelope fixes strokes at one segment and caps noise octaves, count, DPR, and high-overdraw combinations. Limits apply after creative overrides. Studio uses the same effective limits. This conservative envelope is a policy, not proof of 60 fps on every GPU; use the existing performance measurement runbook for target-device qualification. Software Chromium capture is not a real-device benchmark.
+The initial authoring envelope fixes strokes at one segment and caps noise octaves, count, DPR, and high-overdraw combinations. Count is the one resource number the Inspector may set (Composition, 100 to 8000): it is what density reads as, and its range stops at the hero ceiling, so a recipe can ask for less than code allows and never for more. Limits apply after creative overrides. Studio uses the same effective limits. This conservative envelope is a policy, not proof of 60 fps on every GPU; use the existing performance measurement runbook for target-device qualification. Software Chromium capture is not a real-device benchmark.
 
 ## Rendering and operations
 

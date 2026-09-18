@@ -52,6 +52,10 @@ export const PARAMETER_COPY: Record<ParameterKey, ParameterCopy> = {
       dot: 'A disc. Length sets its diameter, cap softens its rim, thickness is unused.',
     },
   },
+  count: {
+    label: 'Count',
+    description: 'Streaks alive in the field. With the pitches, this is what density reads as.',
+  },
   columnPitch: {
     label: 'Column pitch',
     description: 'Horizontal cell spacing. Grid layout only.',

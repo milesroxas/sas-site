@@ -23,10 +23,20 @@ const range = (group: string, min: number, max: number, step = 0.01): Parameter 
   step,
 })
 const unit = (group: string) => range(group, 0, 1)
-/** Shared authoring contract. Resource allocation is deliberately absent. */
+/**
+ * Shared authoring contract. Resource allocation stays code-owned: `dpr`,
+ * `segments` and `noiseOctaves` are absent and are set by the placement.
+ * `count` is the exception, because it is a composition lever before it is a
+ * cost one: at a fixed count, widening `rowPitch` only packs the surviving
+ * rows tighter, so without it a sparse field cannot be authored at all and
+ * every look ships at its placement ceiling. Its range stops at the ceiling
+ * the most generous placement grants (`PLACEMENT_LIMITS.hero`), so a recipe
+ * can ask for less than code allows and never for more.
+ */
 export const STREAK_PARAMETERS = {
   layout: { group: 'Composition', options: ['rows', 'grid'] },
   shape: { group: 'Composition', options: ['dash', 'dot'] },
+  count: range('Composition', 100, 8000, 100),
   columnPitch: range('Composition', 4, 100, 1),
   rowPitch: range('Composition', 4, 100, 1),
   rowJitter: unit('Composition'),

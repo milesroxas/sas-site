@@ -214,7 +214,11 @@ export type StreakFieldProps = {
  * looks live as delta-only presets in `../presets.ts`.
  */
 export const STREAK_FIELD_DEFAULTS = {
-  count: 20000,
+  // The most any placement grants (`PLACEMENT_LIMITS.hero`). Every live path
+  // caps the look's count against its placement before drawing, so a higher
+  // default only ever described a field nothing could render; as the Studio's
+  // ceiling it is also the top of the Inspector's Count slider.
+  count: 8000,
   dpr: 2,
   seed: 694,
   segments: 1,

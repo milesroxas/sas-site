@@ -77,7 +77,7 @@ Every knob is defaulted in `STREAK_FIELD_DEFAULTS` and documented on `StreakFiel
 
 | Control | Default | What it does |
 |---------|---------|--------------|
-| `count` | 20000 | Streaks alive in the buffer. One draw call regardless, so this is density and fill rate, not CPU. On `grid` it caps how many cells fill; the scene widens both pitches (`coveragePitch`) so the frame stays covered instead of rows truncating at the bottom. |
+| `count` | 8000 | Streaks alive in the buffer. One draw call regardless, so this is density and fill rate, not CPU. On `grid` it caps how many cells fill; the scene widens both pitches (`coveragePitch`) so the frame stays covered instead of rows truncating at the bottom. The default is the ceiling the most generous placement grants (`PLACEMENT_LIMITS.hero`), since every live path caps the look's count against its placement first. |
 | `dpr` | 2 | Device-pixel-ratio cap. Streaks are a pixel or two thick, so 2 keeps them crisp and 1 makes them mushy. The single biggest fill-rate lever after `count`. |
 | `seed` | 694 | Seeds the per-streak hashes. Same seed, same composition, every load. |
 | `segments` | 1 | Quads per streak. 1 is a rigid dash. Raise it only when a streak must visibly bend along the flow; it costs vertices, not draw calls. |
@@ -210,7 +210,7 @@ Menu previews use a parallel slot: `menuPreviewType` (`automatic` / `media` / `s
 
 Ranges and membership are validated on the server (`src/fields/visual-validate.ts`), not only hidden by `admin.condition`. A `required` upload becomes required-unless-shader, because hiding a field does not relax `required`.
 
-Code owns what editors never see: particle counts, DPR, segments, noise complexity, simulation, backend, transitions. Raw shader code, arbitrary props and `force` are never accepted from CMS data.
+Code owns what editors never see: particle counts, DPR, segments, noise complexity, simulation, backend, transitions. Raw shader code, arbitrary props and `force` are never accepted from CMS data. Page editors pick a look and its bounded multipliers, nothing else; `count` is authorable one level up, in Studio, bounded by the same ceilings ([Streak Field Studio](streak-field-studio.md)).
 
 ## How a visual resolves
 

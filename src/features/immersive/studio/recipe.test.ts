@@ -10,6 +10,7 @@ import { PLACEMENT_LIMITS } from '../visual/placement'
 import {
   emptyRecipe,
   limitStudioTuning,
+  resolveRecipeTuning,
   snapshotRecipe,
   starterRecipe,
   validateCapture,
@@ -37,9 +38,20 @@ describe('Studio recipes and release contract', () => {
     for (const id of STREAK_LOOK_IDS) {
       const recipe = starterRecipe(id)
       expect(validateRecipe(recipe)).toEqual(recipe)
-      expect(recipe.deltas).not.toHaveProperty('count')
       expect(recipe.deltas).not.toHaveProperty('dpr')
+      expect(recipe.deltas).not.toHaveProperty('segments')
+      expect(recipe.deltas).not.toHaveProperty('noiseOctaves')
     }
+  })
+  it('carries a starter count through, clamped to the ceiling code allows', () => {
+    // The sparse backdrop is sparse because of its count: a starter that drops
+    // it opens nine times as dense as the look it is named after.
+    expect(starterRecipe('backdrop-v1').deltas.count).toBe(900)
+    // A count above the ceiling clamps to it, which is the default, so the
+    // starter carries no delta and still resolves to what hero would render.
+    expect(starterRecipe('topography-v1').deltas).not.toHaveProperty('count')
+    expect(resolveRecipeTuning(starterRecipe('topography-v1')).count).toBe(8000)
+    expect(() => validateRecipe({ ...emptyRecipe(), deltas: { count: 12000 } })).toThrow()
   })
   it.each([
     { force: true },
