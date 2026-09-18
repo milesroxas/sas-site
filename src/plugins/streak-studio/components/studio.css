@@ -26,7 +26,9 @@
    surfaces, and wrapped in `:where()` so it has no specificity: every
    utility class outranks it, exactly as it outranks preflight on the site. */
 :where([data-streak-studio], [data-slot="tooltip-content"], [data-slot="select-content"]) {
-  :where(*, ::before, ::after) {
+  *,
+  ::before,
+  ::after {
     box-sizing: border-box;
     border: 0 solid;
   }
@@ -37,7 +39,9 @@
     padding: 0;
     list-style: none;
   }
-  :where(button, input, select, textarea) {
+  /* Payload's own Button (`.btn`) keeps its chrome: it is the one control
+     the Studio borrows from the admin as is. */
+  :where(button:not(.btn), input, select, textarea) {
     font: inherit;
     color: inherit;
     background-color: transparent;
@@ -46,7 +50,7 @@
     margin: 0;
     letter-spacing: inherit;
   }
-  :where(button, [role="button"]) {
+  :where(button:not(.btn), [role="button"]) {
     cursor: default;
     appearance: button;
   }

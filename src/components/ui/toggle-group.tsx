@@ -37,7 +37,7 @@ const toggleGroupItemVariants = cva(
         default:
           'h-7 px-2 text-muted-foreground hover:bg-muted hover:text-foreground data-[state=on]:bg-muted data-[state=on]:text-foreground',
         segmented:
-          'h-full flex-1 px-2 text-muted-foreground hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-xs',
+          'h-full flex-1 px-2 text-muted-foreground hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-xs data-[state=on]:ring-1 data-[state=on]:ring-border',
       },
       size: {
         default: '',

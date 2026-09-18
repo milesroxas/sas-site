@@ -422,11 +422,16 @@ export const Stage: UIFieldClientComponent = () => {
             {budget && (
               <p
                 className={cn(
-                  'm-0 flex items-center gap-2 border-t border-border px-4 py-2 font-mono text-[11px] tabular-nums',
+                  'm-0 flex items-start gap-2 border-t border-border px-4 py-2 font-mono text-[11px]/4 tabular-nums',
                   capped ? 'text-warning' : 'text-muted-foreground',
                 )}
               >
-                {capped && <span aria-hidden className="size-1.5 rounded-full bg-warning" />}
+                {capped && (
+                  <span
+                    aria-hidden
+                    className="mt-1 size-1.5 shrink-0 self-start rounded-full bg-warning"
+                  />
+                )}
                 {capped
                   ? `${budget.count.toLocaleString()} of ${requested.count.toLocaleString()} particles, capped to the ${session.placement} budget`
                   : `${budget.count.toLocaleString()} particles`}
