@@ -3,6 +3,7 @@
 import './studio.css'
 
 import { Button, toast, useDocumentInfo, useField, useForm } from '@payloadcms/ui'
+import { IconChevronsDown, IconChevronsUp } from '@tabler/icons-react'
 import type { JSONFieldClientComponent } from 'payload'
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -18,7 +19,7 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { TooltipProvider } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { STREAK_FIELD_DEFAULTS } from '@/features/immersive'
 import {
   type CaptureOptions,
@@ -87,7 +88,25 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
   const changedKeys = Object.keys(recipe.deltas) as ParameterKey[]
   const lengthError = validation.startsWith('Minimum length') ? validation : undefined
 
-  const group = (name: string, initCollapsed: boolean) => {
+  // Which sections are open lives here rather than in each group, for three
+  // reasons: a document opens with every section shut, so the panel reads as
+  // a contents page of what this look is set to before it asks anyone to
+  // read a slider; one control can drive them all; and a tab switch, which
+  // unmounts the group it leaves, no longer forgets what was open.
+  const [tab, setTab] = useState('look')
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+  // The label describes what the press does to the sections in view, and the
+  // press itself carries every section in the panel, so the panel has one
+  // resting state rather than one per tab.
+  const tabGroups: readonly string[] =
+    tab === 'look' ? GROUPS : tab === 'pointer' ? [POINTER_GROUP] : []
+  const allOpen = tabGroups.length > 0 && tabGroups.every((name) => openGroups[name])
+  const toggleAll = () =>
+    setOpenGroups(
+      allOpen ? {} : Object.fromEntries([...GROUPS, POINTER_GROUP].map((name) => [name, true])),
+    )
+
+  const group = (name: string) => {
     const keys = parameterKeys(name)
     const changedCount = keys.filter((k) => changedKeys.includes(k)).length
     return (
@@ -111,7 +130,8 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
           )
         }
         changed={changedCount}
-        initCollapsed={initCollapsed}
+        open={openGroups[name] ?? false}
+        onOpenChange={(next) => setOpenGroups((groups) => ({ ...groups, [name]: next }))}
         onReset={() => reset(keys)}
       >
         {keys.map((param) => {
@@ -160,33 +180,61 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
           scroll region's own: the last row of the last group has to clear the
           bottom of the column rather than end on it. */}
       <div data-streak-studio className="flex flex-col gap-3 px-(--row-gutter) pb-16">
-        <Tabs defaultValue="look" className="gap-0">
+        <Tabs value={tab} onValueChange={setTab} className="gap-0">
           {/* The tab strip is the scroll region's header: it names where you
               are and carries the changed count, so it stays put while the
-              groups run under it. */}
-          <TabsList
-            variant="line"
-            className="sticky top-0 z-20 -mx-(--row-gutter) h-(--inspector-tabs) w-[calc(100%+2*var(--row-gutter))] gap-5 bg-background px-(--row-gutter)"
-          >
-            <TabsTrigger value="look">Look</TabsTrigger>
-            <TabsTrigger value="pointer">Pointer</TabsTrigger>
-            <TabsTrigger value="export">Export</TabsTrigger>
-            <span
-              className="ml-auto font-mono text-[11px]/3.5 tracking-[0.02em] text-primary tabular-nums"
-              aria-live="polite"
-            >
-              {changedKeys.length ? `${changedKeys.length} changed` : ''}
-            </span>
-          </TabsList>
+              groups run under it. The strip is the sticky band and owns the
+              hairline; the tab list inside it holds tabs and nothing else,
+              so the controls at its right end stay out of the `tablist`. */}
+          <div className="sticky top-0 z-20 -mx-(--row-gutter) flex h-(--inspector-tabs) items-center gap-5 border-b border-border bg-background px-(--row-gutter)">
+            <TabsList variant="line" className="h-full gap-5 border-b-0">
+              <TabsTrigger value="look">Look</TabsTrigger>
+              <TabsTrigger value="pointer">Pointer</TabsTrigger>
+              <TabsTrigger value="export">Export</TabsTrigger>
+            </TabsList>
+            {/* The count and the section control are the strip's right end:
+                what has changed, and how much of the panel is open. The
+                control is left out of Export, which has no sections, rather
+                than shown dimmed. */}
+            <div className="ml-auto flex items-center gap-2.5">
+              <span
+                className="font-mono text-[11px]/3.5 tracking-[0.02em] text-primary tabular-nums"
+                aria-live="polite"
+              >
+                {changedKeys.length ? `${changedKeys.length} changed` : ''}
+              </span>
+              {tabGroups.length > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label={allOpen ? 'Collapse all sections' : 'Expand all sections'}
+                      className="pressable -mr-1 flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/30"
+                      onClick={toggleAll}
+                    >
+                      {allOpen ? (
+                        <IconChevronsUp aria-hidden className="size-3.5" />
+                      ) : (
+                        <IconChevronsDown aria-hidden className="size-3.5" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" sideOffset={6}>
+                    {allOpen ? 'Collapse all' : 'Expand all'}
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          </div>
           <TabsContent value="look" className="flex flex-col pt-5">
-            {GROUPS.map((name, index) => group(name, index > 2))}
+            {GROUPS.map((name) => group(name))}
           </TabsContent>
           <TabsContent value="pointer" className="flex flex-col pt-5">
             <p className="max-w-[58ch] pb-3 text-xs/5 text-muted-foreground">
               Pointer terms run only where a placement allows them and the editor enabled them.
               Radius 0 turns every term off.
             </p>
-            {group(POINTER_GROUP, false)}
+            {group(POINTER_GROUP)}
           </TabsContent>
           <TabsContent value="export" className="pt-5">
             <ExportPanel recipe={recipe} validation={validation} />
@@ -215,20 +263,21 @@ function Group({
   name,
   summary,
   changed,
-  initCollapsed,
+  open,
+  onOpenChange,
   onReset,
   children,
 }: {
   name: string
   summary: React.ReactNode
   changed: number
-  initCollapsed: boolean
+  open: boolean
+  onOpenChange: (open: boolean) => void
   onReset: () => void
   children: React.ReactNode
 }) {
-  const [open, setOpen] = useState(!initCollapsed)
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="border-b border-border">
+    <Collapsible open={open} onOpenChange={onOpenChange} className="border-b border-border">
       {/* The section header parks under the tab strip while its own rows
           scroll, and hands over when the next group reaches it — so the name
           of the thing being edited is never off screen. */}

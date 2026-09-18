@@ -276,6 +276,10 @@ export const StreakReleases: CollectionConfig = {
 export const StreakRenders: CollectionConfig = {
   slug: RENDERS_SLUG,
   admin: {
+    // The job queue is machinery, not a library: every row, with retry and
+    // cancel, is on the look's Renders tab. Nothing links to a render
+    // document, so it stays out of the nav.
+    hidden: true,
     group: 'Assets',
     useAsTitle: 'title',
     defaultColumns: ['title', 'state', 'attempts', 'createdAt'],
