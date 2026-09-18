@@ -43,16 +43,20 @@ export const Renders: UIFieldClientComponent = () => {
   }
 
   if (!id)
-    return <p className="m-0 text-xs text-muted-foreground">Save this look once to render it.</p>
+    return (
+      <p data-streak-studio className="text-xs text-muted-foreground">
+        Save this look once to render it.
+      </p>
+    )
   if (!jobs.length)
     return (
-      <p className="m-0 text-xs text-muted-foreground">
+      <p data-streak-studio className="text-xs text-muted-foreground">
         No renders yet. Publishing and exporting from Studio queue them here.
       </p>
     )
 
   return (
-    <ul className="m-0 flex list-none flex-col divide-y divide-border p-0">
+    <ul data-streak-studio className="flex flex-col divide-y divide-border">
       {jobs.map((job) => {
         const releaseId =
           job.release && typeof job.release === 'object' ? job.release.id : job.release

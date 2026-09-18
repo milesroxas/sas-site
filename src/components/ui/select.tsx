@@ -122,11 +122,17 @@ function SelectLabel({ className, ...props }: React.ComponentProps<typeof Select
   )
 }
 
+/**
+ * `description` is a second line under the option, for a menu whose options
+ * need a word of explanation (a noise formula, an export format). It sits
+ * outside the item text, so the trigger shows only the option itself.
+ */
 function SelectItem({
   className,
   children,
+  description,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Item>) {
+}: React.ComponentProps<typeof SelectPrimitive.Item> & { description?: React.ReactNode }) {
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
@@ -141,7 +147,10 @@ function SelectItem({
           <IconCheck className="pointer-events-none" />
         </SelectPrimitive.ItemIndicator>
       </span>
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <span className="flex flex-col gap-0.5">
+        <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+        {description && <span className="text-[11px] text-muted-foreground">{description}</span>}
+      </span>
     </SelectPrimitive.Item>
   )
 }

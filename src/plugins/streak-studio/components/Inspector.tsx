@@ -2,10 +2,11 @@
 
 import './studio.css'
 
-import { Button, Collapsible, toast, useDocumentInfo, useField, useForm } from '@payloadcms/ui'
+import { Button, toast, useDocumentInfo, useField, useForm } from '@payloadcms/ui'
 import type { JSONFieldClientComponent } from 'payload'
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -137,7 +138,7 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
 
   return (
     <TooltipProvider delayDuration={400} skipDelayDuration={600}>
-      <div className="studio-inspector flex flex-col gap-4">
+      <div data-streak-studio className="flex flex-col gap-4">
         <Tabs defaultValue="look" className="gap-3">
           <div className="flex items-center justify-between gap-3">
             <TabsList variant="line" className="w-full">
@@ -152,7 +153,7 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
               </span>
             </TabsList>
           </div>
-          <TabsContent value="look" className="flex flex-col">
+          <TabsContent value="look" className="flex flex-col border-t border-border">
             {GROUPS.map((name, index) => group(name, index > 2))}
           </TabsContent>
           <TabsContent value="pointer" className="flex flex-col gap-3">
@@ -160,7 +161,7 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
               Pointer terms run only where a placement allows them and the editor enabled them.
               Radius 0 turns every term off.
             </p>
-            {group(POINTER_GROUP, false)}
+            <div className="border-t border-border">{group(POINTER_GROUP, false)}</div>
           </TabsContent>
           <TabsContent value="export">
             <ExportPanel recipe={recipe} validation={validation} />
@@ -191,39 +192,46 @@ function Group({
   onReset: () => void
   children: React.ReactNode
 }) {
-  const [collapsed, setCollapsed] = useState(initCollapsed)
+  const [open, setOpen] = useState(!initCollapsed)
   return (
-    <Collapsible
-      className="studio-group"
-      header={<span className="text-xs font-semibold">{name}</span>}
-      isCollapsed={collapsed}
-      onToggle={setCollapsed}
-      actions={
-        <span className="flex items-center gap-3 text-[11px] text-muted-foreground">
-          {collapsed ? (
-            <span className="font-mono tabular-nums">{summary}</span>
-          ) : (
+    <Collapsible open={open} onOpenChange={setOpen} className="border-b border-border">
+      <CollapsibleTrigger>
+        {name}
+        <span className="ml-auto flex items-center gap-3 text-[11px] font-normal whitespace-nowrap text-muted-foreground">
+          {open ? (
             <>
               {changed > 0 && (
                 <span className="font-mono text-primary tabular-nums">{changed} changed</span>
               )}
-              <button
-                type="button"
-                className="pressable cursor-pointer rounded-sm px-1 text-muted-foreground hover:text-foreground disabled:cursor-default disabled:opacity-40"
-                disabled={!changed}
+              {/* biome-ignore lint/a11y/useSemanticElements: a nested button cannot sit inside the trigger button; the span carries the role and keys */}
+              <span
+                role="button"
+                tabIndex={changed ? 0 : -1}
+                aria-disabled={!changed || undefined}
+                className="pressable cursor-pointer rounded-sm px-1 hover:text-foreground aria-disabled:cursor-default aria-disabled:opacity-40"
                 onClick={(event) => {
                   event.stopPropagation()
-                  onReset()
+                  if (changed) onReset()
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    if (changed) onReset()
+                  }
                 }}
               >
                 Reset
-              </button>
+              </span>
             </>
+          ) : (
+            <span className="font-mono tabular-nums">{summary}</span>
           )}
         </span>
-      }
-    >
-      <div className="flex flex-col">{children}</div>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="flex flex-col pb-2">{children}</div>
+      </CollapsibleContent>
     </Collapsible>
   )
 }

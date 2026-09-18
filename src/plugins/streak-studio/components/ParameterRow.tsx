@@ -41,6 +41,7 @@ function ValueField({
   disabled,
   invalid,
   label,
+  className,
   onCommit,
 }: {
   value: number
@@ -51,6 +52,7 @@ function ValueField({
   disabled?: boolean
   invalid?: boolean
   label: string
+  className?: string
   onCommit: (next: number) => void
 }) {
   const shown = value.toFixed(places)
@@ -90,6 +92,7 @@ function ValueField({
       variant="value"
       type="number"
       inputMode="decimal"
+      className={className}
       aria-label={label}
       aria-invalid={invalid || undefined}
       min={min}
@@ -189,7 +192,7 @@ function RowShell({
     <div
       data-changed={changed || undefined}
       data-inactive={disabled || undefined}
-      className="group/row grid grid-cols-[6.25rem_minmax(0,1fr)_3.5rem] items-center gap-x-2.5"
+      className="group/row grid grid-cols-[6.25rem_minmax(0,1fr)_auto] items-center gap-x-2.5"
     >
       <ParameterTooltip name={name} changed={changed}>
         <Label
@@ -307,13 +310,8 @@ export function ParameterRow({
           </SelectTrigger>
           <SelectContent align="end">
             {spec.options.map((option) => (
-              <SelectItem key={option} value={option}>
-                <span className="flex flex-col gap-0.5">
-                  <span>{option}</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    {copy.options?.[option]}
-                  </span>
-                </span>
+              <SelectItem key={option} value={option} description={copy.options?.[option]}>
+                {option}
               </SelectItem>
             ))}
           </SelectContent>
@@ -379,6 +377,7 @@ export function ParameterRow({
         onValueChange={([next]) => onChange(next)}
       />
       <ValueField
+        className="w-14"
         value={number}
         min={spec.min}
         max={spec.max}
@@ -497,6 +496,7 @@ export function LengthRow({
       />
       <div className="flex items-center gap-1">
         <ValueField
+          className="w-12"
           value={min}
           min={spec.min}
           max={spec.max}
@@ -507,6 +507,7 @@ export function LengthRow({
           onCommit={(next) => onChange({ minLength: next, maxLength: max })}
         />
         <ValueField
+          className="w-12"
           value={max}
           min={spec.min}
           max={spec.max}

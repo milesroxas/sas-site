@@ -203,6 +203,7 @@ export const Stage: UIFieldClientComponent = () => {
   return (
     <TooltipProvider delayDuration={400}>
       <section
+        data-streak-studio
         aria-label="Streak Field Studio"
         className="@container flex flex-col rounded-lg border border-border bg-card"
         onKeyDown={onStageKey}

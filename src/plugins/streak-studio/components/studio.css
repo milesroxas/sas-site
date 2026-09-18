@@ -2,8 +2,10 @@
 
    The Payload admin ships its own CSS (`@payloadcms/next/css`, cascade layers
    `payload-default` and `payload`), so this entry brings utilities only: no
-   preflight, no base styles, and the utility layer is declared after
-   Payload's so a class on a Studio element wins without `!important`. The
+   preflight, no base styles. The utilities stay unlayered on purpose: an
+   unlayered declaration beats every layered one, so a class on a Studio
+   element wins over Payload's element resets whichever stylesheet the
+   bundler happens to emit first. The
    shadcn primitives in src/components/ui read the same token map the site
    uses (src/styles/shadcn-theme.css); here those tokens are painted from
    Payload's own `--theme-*` scale, so the Studio follows the admin's light
@@ -11,11 +13,59 @@
    colors of its own. Sources are the primitives and this plugin's
    components, nothing else in the app. */
 @import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "tailwindcss/utilities.css" source(none);
 @import "tw-animate-css";
 @import "../../../styles/shadcn-theme.css";
 @source "../../../components/ui";
 @source "./";
+
+/* Tailwind's preflight is left out (Payload's guide: it would reset the
+   admin's own chrome), so the browser's default button, input and list
+   styling still reaches the Studio. This is the slice of preflight the
+   primitives assume, scoped to the Studio's roots and its portaled
+   surfaces, and wrapped in `:where()` so it has no specificity: every
+   utility class outranks it, exactly as it outranks preflight on the site. */
+:where([data-streak-studio], [data-slot="tooltip-content"], [data-slot="select-content"]) {
+  :where(*, ::before, ::after) {
+    box-sizing: border-box;
+    border: 0 solid;
+  }
+  :where(h2, h3, p, ul, ol, figure) {
+    margin: 0;
+  }
+  :where(ul, ol) {
+    padding: 0;
+    list-style: none;
+  }
+  :where(button, input, select, textarea) {
+    font: inherit;
+    color: inherit;
+    background-color: transparent;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    letter-spacing: inherit;
+  }
+  :where(button, [role="button"]) {
+    cursor: default;
+    appearance: button;
+  }
+  :where(input, textarea) {
+    appearance: none;
+  }
+  :where(img, svg, canvas) {
+    display: block;
+    vertical-align: middle;
+    max-width: 100%;
+  }
+  :where(kbd, code) {
+    font-size: 1em;
+  }
+  :where(a) {
+    color: inherit;
+    text-decoration: inherit;
+  }
+}
 
 @theme {
   /* Tailwind's font namespace would repaint Payload's `--font-mono` and

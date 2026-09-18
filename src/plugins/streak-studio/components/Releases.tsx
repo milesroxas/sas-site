@@ -49,16 +49,20 @@ export const Releases: UIFieldClientComponent = () => {
   }
 
   if (!id)
-    return <p className="m-0 text-xs text-muted-foreground">Save this look once to publish it.</p>
+    return (
+      <p data-streak-studio className="text-xs text-muted-foreground">
+        Save this look once to publish it.
+      </p>
+    )
   if (!releases.length)
     return (
-      <p className="m-0 text-xs text-muted-foreground">
+      <p data-streak-studio className="text-xs text-muted-foreground">
         No releases yet. Publish from Studio to make one.
       </p>
     )
 
   return (
-    <ul className="m-0 flex list-none flex-col divide-y divide-border p-0">
+    <ul data-streak-studio className="flex flex-col divide-y divide-border">
       {releases.map((release) => (
         <li key={release.id} className="flex flex-wrap items-center gap-4 py-3">
           <div className="flex gap-1">
