@@ -101,7 +101,7 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
                 <span
                   key={index}
                   aria-hidden
-                  className="size-3 rounded-full"
+                  className="size-3 rounded-[3px] ring-1 ring-border ring-inset"
                   style={{ backgroundColor: toHex(rgb) }}
                 />
               ))}
@@ -154,9 +154,20 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
 
   return (
     <TooltipProvider delayDuration={400} skipDelayDuration={600}>
-      <div data-streak-studio className="flex flex-col gap-3">
+      {/* Payload's sidebar gutter is zeroed for the Studio (studio.css), so
+          the panel owns its margins: content never touches the column edge,
+          and the change dots live in the left one. The trailing space is the
+          scroll region's own: the last row of the last group has to clear the
+          bottom of the column rather than end on it. */}
+      <div data-streak-studio className="flex flex-col gap-3 px-(--row-gutter) pb-16">
         <Tabs defaultValue="look" className="gap-0">
-          <TabsList variant="line" className="w-full">
+          {/* The tab strip is the scroll region's header: it names where you
+              are and carries the changed count, so it stays put while the
+              groups run under it. */}
+          <TabsList
+            variant="line"
+            className="sticky top-0 z-20 -mx-(--row-gutter) h-(--inspector-tabs) w-[calc(100%+2*var(--row-gutter))] gap-5 bg-background px-(--row-gutter)"
+          >
             <TabsTrigger value="look">Look</TabsTrigger>
             <TabsTrigger value="pointer">Pointer</TabsTrigger>
             <TabsTrigger value="export">Export</TabsTrigger>
@@ -167,17 +178,17 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
               {changedKeys.length ? `${changedKeys.length} changed` : ''}
             </span>
           </TabsList>
-          <TabsContent value="look" className="flex flex-col">
+          <TabsContent value="look" className="flex flex-col pt-5">
             {GROUPS.map((name, index) => group(name, index > 2))}
           </TabsContent>
-          <TabsContent value="pointer" className="flex flex-col">
-            <p className="py-3 text-xs/4 text-muted-foreground">
+          <TabsContent value="pointer" className="flex flex-col pt-5">
+            <p className="max-w-[58ch] pb-3 text-xs/5 text-muted-foreground">
               Pointer terms run only where a placement allows them and the editor enabled them.
               Radius 0 turns every term off.
             </p>
             {group(POINTER_GROUP, false)}
           </TabsContent>
-          <TabsContent value="export" className="pt-3">
+          <TabsContent value="export" className="pt-5">
             <ExportPanel recipe={recipe} validation={validation} />
           </TabsContent>
         </Tabs>
@@ -191,6 +202,15 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
   )
 }
 
+/**
+ * One section of the Inspector. The header is a row, not a single button:
+ * the trigger takes the name and, while the group is closed, the one line
+ * that says what it is set to. Reset is a real button beside it, and it is
+ * there only when the group has something to reset — an always-present,
+ * always-dimmed control is chrome, not an affordance. Nothing counts the
+ * changed values: the dots in the gutter already mark them row by row, and
+ * the total lives once, in the tab strip.
+ */
 function Group({
   name,
   summary,
@@ -209,46 +229,66 @@ function Group({
   const [open, setOpen] = useState(!initCollapsed)
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="border-b border-border">
-      <CollapsibleTrigger>
-        {name}
-        <span className="ml-auto flex items-center gap-2.5 text-[11px]/3.5 font-normal whitespace-nowrap text-muted-foreground/70">
-          {open ? (
-            <>
+      {/* The section header parks under the tab strip while its own rows
+          scroll, and hands over when the next group reaches it — so the name
+          of the thing being edited is never off screen. */}
+      <div className="sticky top-(--inspector-tabs) z-10 -mx-(--row-gutter) flex items-center gap-2.5 bg-background px-(--row-gutter)">
+        <CollapsibleTrigger className="w-auto min-w-0 flex-1 text-[11px]/4 tracking-[0.06em] text-muted-foreground uppercase hover:text-foreground data-[state=open]:text-foreground">
+          {name}
+          {!open && (
+            <span className="ml-auto flex items-center gap-2 font-mono text-[11px]/3.5 font-normal tracking-normal whitespace-nowrap text-muted-foreground normal-case tabular-nums">
               {changed > 0 && (
-                <span className="font-mono tracking-[0.02em] text-primary tabular-nums">
-                  {changed} changed
-                </span>
+                <>
+                  <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-primary" />
+                  <span className="sr-only">{changed} changed</span>
+                </>
               )}
-              {/* biome-ignore lint/a11y/useSemanticElements: a nested button cannot sit inside the trigger button; the span carries the role and keys */}
-              <span
-                role="button"
-                tabIndex={changed ? 0 : -1}
-                aria-disabled={!changed || undefined}
-                className="pressable cursor-pointer hover:text-foreground aria-disabled:cursor-default aria-disabled:opacity-40"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  if (changed) onReset()
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    if (changed) onReset()
-                  }
-                }}
-              >
-                Reset
-              </span>
-            </>
-          ) : (
-            <span className="font-mono tabular-nums">{summary}</span>
+              {summary}
+            </span>
           )}
-        </span>
-      </CollapsibleTrigger>
+        </CollapsibleTrigger>
+        {open && changed > 0 && (
+          <button
+            type="button"
+            aria-label={`Reset ${name}`}
+            className="pressable shrink-0 cursor-pointer text-[11px]/3.5 text-muted-foreground hover:text-foreground"
+            onClick={onReset}
+          >
+            Reset
+          </button>
+        )}
+      </div>
       <CollapsibleContent>
         <div className="flex flex-col gap-0.5 pb-3">{children}</div>
       </CollapsibleContent>
     </Collapsible>
+  )
+}
+
+/**
+ * A row of the Export panel on the Inspector's own grid: the same label,
+ * control and value columns the parameter rows use, so a capture setting and
+ * a parameter read as one panel rather than two forms that happen to share a
+ * sidebar. The caller places what follows the label: a control in the middle
+ * column, optionally a readout in the value column, or one element spanning
+ * both.
+ */
+function ExportRow({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string
+  htmlFor?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="grid grid-cols-[var(--row-label)_minmax(0,1fr)_var(--row-value)] items-center gap-x-2.5">
+      <Label htmlFor={htmlFor} className="min-h-9 cursor-default text-xs/4 text-foreground/80">
+        {label}
+      </Label>
+      {children}
+    </div>
   )
 }
 
@@ -279,19 +319,17 @@ function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation:
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-xs/relaxed text-muted-foreground">
+    <div className="flex flex-col">
+      <p className="max-w-[58ch] pb-3 text-xs/5 text-muted-foreground">
         The seed and capture frame come from the recipe. Scale raises resolution without changing
         the composition.
       </p>
-      <div className="grid grid-cols-[6.25rem_minmax(0,1fr)] items-center gap-x-2.5 gap-y-3">
-        <Label htmlFor="streak-capture-width" className="text-xs text-foreground/80">
-          Size
-        </Label>
+      <ExportRow label="Size" htmlFor="streak-capture-width">
         <div className="flex items-center gap-1.5">
           <Input
             id="streak-capture-width"
             variant="value"
+            className="min-w-0 flex-1"
             type="number"
             aria-label="Width"
             min={320}
@@ -299,9 +337,10 @@ function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation:
             value={capture.width}
             onChange={(event) => set({ width: Number(event.target.value) })}
           />
-          <span className="text-[11px] text-muted-foreground">×</span>
+          <span className="shrink-0 text-[11px] text-muted-foreground">×</span>
           <Input
             variant="value"
+            className="min-w-0 flex-1"
             type="number"
             aria-label="Height"
             min={320}
@@ -309,33 +348,36 @@ function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation:
             value={capture.height}
             onChange={(event) => set({ height: Number(event.target.value) })}
           />
-          <span className="ml-auto font-mono text-[11px] text-muted-foreground tabular-nums">
-            {megapixels.toFixed(1)} MP
-          </span>
         </div>
-        <Label className="text-xs text-foreground/80">Scale</Label>
+        <span className="text-right font-mono text-[11px]/3.5 text-muted-foreground tabular-nums">
+          {megapixels.toFixed(1)} MP
+        </span>
+      </ExportRow>
+      <ExportRow label="Scale">
         <ToggleGroup
           type="single"
           variant="segmented"
+          size="sm"
           value={String(capture.scale)}
           onValueChange={(next) => next && set({ scale: Number(next) })}
         >
           <ToggleGroupItem value="1">1×</ToggleGroupItem>
           <ToggleGroupItem value="2">2×</ToggleGroupItem>
         </ToggleGroup>
-        <Label className="text-xs text-foreground/80">Ground</Label>
+      </ExportRow>
+      <ExportRow label="Ground">
         <ToggleGroup
           type="single"
           variant="segmented"
+          size="sm"
           value={capture.surface}
           onValueChange={(next) => next && set({ surface: next as CaptureOptions['surface'] })}
         >
           <ToggleGroupItem value="dark">Dark</ToggleGroupItem>
           <ToggleGroupItem value="light">Light</ToggleGroupItem>
         </ToggleGroup>
-        <Label htmlFor="streak-capture-format" className="text-xs text-foreground/80">
-          Format
-        </Label>
+      </ExportRow>
+      <ExportRow label="Format" htmlFor="streak-capture-format">
         <Select
           value={capture.format}
           onValueChange={(next) =>
@@ -345,7 +387,7 @@ function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation:
             })
           }
         >
-          <SelectTrigger size="sm" id="streak-capture-format" className="w-full">
+          <SelectTrigger size="field" id="streak-capture-format" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent align="end">
@@ -354,22 +396,24 @@ function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation:
             <SelectItem value="jpeg">JPEG</SelectItem>
           </SelectContent>
         </Select>
-        <Label htmlFor="streak-capture-transparent" className="text-xs text-foreground/80">
-          Alpha
-        </Label>
-        <div className="flex items-center gap-2">
+      </ExportRow>
+      {/* The checkbox carries its own sentence, so it takes the control and
+          value columns together rather than leaving a number's worth of space
+          beside a 16px box. */}
+      <ExportRow label="Alpha" htmlFor="streak-capture-transparent">
+        <div className="col-span-2 flex items-center gap-2">
           <Checkbox
             id="streak-capture-transparent"
             checked={capture.transparent}
             disabled={capture.format === 'jpeg'}
             onCheckedChange={(checked) => set({ transparent: checked === true })}
           />
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-[11px]/4 text-muted-foreground">
             {capture.format === 'jpeg' ? 'JPEG is always filled.' : 'Transparent ground.'}
           </span>
         </div>
-      </div>
-      <div>
+      </ExportRow>
+      <div className="mt-4 border-t border-border pt-4">
         <Button
           buttonStyle="secondary"
           size="small"

@@ -42,7 +42,6 @@ import {
 } from '@/features/immersive/visual'
 import type { StreakRelease } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { PublishButton } from './PublishButton'
 import { RECIPE_FIELD } from './paths'
 import { useReleases } from './polling'
 import { sessionKey, studioStore, useStudioSession } from './store'
@@ -212,11 +211,16 @@ export const Stage: UIFieldClientComponent = () => {
         <header className="flex min-h-14 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border py-2 pr-4 pl-5">
           <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2.5">
             <h2 className="text-[15px]/5 font-semibold">Streak Field Studio</h2>
-            <p className="flex items-center gap-1.5 text-xs/4 text-muted-foreground">
+            {/* The status sets on the title's baseline, so the dot rides in
+                the text rather than leading a flex row: a flex container takes
+                its baseline from its first item, and an empty 6px span has
+                none to give — the line would sit a pixel or two off the
+                heading beside it. */}
+            <p className="text-xs/4 text-muted-foreground">
               <span
                 aria-hidden
                 className={cn(
-                  'size-1.5 shrink-0 rounded-full',
+                  'mr-1.5 inline-block size-1.5 shrink-0 rounded-full align-[0.15em]',
                   latest ? 'bg-warning' : 'bg-muted-foreground',
                 )}
               />
@@ -263,15 +267,14 @@ export const Stage: UIFieldClientComponent = () => {
                 Kept
               </ToggleGroupItem>
             </ToggleGroup>
-            <PublishButton />
           </div>
         </header>
 
-        <div className="grid grid-cols-1 @3xl:grid-cols-[15rem_minmax(0,1fr)]">
-          <aside className="flex flex-col border-b border-border bg-card @3xl:border-r @3xl:border-b-0">
+        <div className="grid grid-cols-1 @[768px]:grid-cols-[240px_minmax(0,1fr)]">
+          <aside className="flex flex-col border-b border-border bg-card @[768px]:border-r @[768px]:border-b-0">
             <div className="flex h-10 items-center border-b border-border px-3.5">
               <h3 className="flex-1 text-xs/4 font-semibold tracking-[0.02em]">Starters</h3>
-              <span className="text-[11px]/3.5 text-muted-foreground/70 tabular-nums">
+              <span className="text-[11px]/3.5 text-muted-foreground tabular-nums">
                 {STREAK_LOOK_OPTIONS.length}
               </span>
             </div>
@@ -296,7 +299,7 @@ export const Stage: UIFieldClientComponent = () => {
                           style={{ backgroundColor: STUDIO_GROUND[session.surface] }}
                         />
                         <span className="min-w-0 flex-1 truncate">{look.label}</span>
-                        <span className="font-mono text-[10px]/3 tracking-[0.04em] text-muted-foreground/70 uppercase">
+                        <span className="font-mono text-[10px]/3 tracking-[0.04em] text-muted-foreground uppercase">
                           {STREAK_LOOKS[look.value as StreakLookId].motion}
                         </span>
                       </button>
@@ -314,7 +317,7 @@ export const Stage: UIFieldClientComponent = () => {
                 <TooltipTrigger asChild>
                   <button
                     type="button"
-                    className="pressable cursor-pointer text-[11px]/3.5 text-muted-foreground/70 hover:text-foreground"
+                    className="pressable cursor-pointer text-[11px]/3.5 text-muted-foreground hover:text-foreground"
                     onClick={keep}
                   >
                     Keep
@@ -336,7 +339,7 @@ export const Stage: UIFieldClientComponent = () => {
                 >
                   <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-warning" />
                   <span className="flex-1">Draft</span>
-                  <span className="text-[11px]/3.5 text-muted-foreground/70">now</span>
+                  <span className="text-[11px]/3.5 text-muted-foreground">now</span>
                 </button>
               </li>
               {session.comparison && (
@@ -352,7 +355,7 @@ export const Stage: UIFieldClientComponent = () => {
                       className="size-1.5 shrink-0 rounded-full border border-muted-foreground"
                     />
                     <span className="flex-1 truncate">{session.comparisonLabel}</span>
-                    <span className="text-[11px]/3.5 text-muted-foreground/70 tabular-nums">
+                    <span className="text-[11px]/3.5 text-muted-foreground tabular-nums">
                       {session.comparisonAt ? clock(session.comparisonAt) : ''}
                     </span>
                   </button>
@@ -367,7 +370,7 @@ export const Stage: UIFieldClientComponent = () => {
                   >
                     <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-success" />
                     <span className="flex-1 truncate">{release.title}</span>
-                    <span className="text-[11px]/3.5 text-muted-foreground/70 tabular-nums">
+                    <span className="text-[11px]/3.5 text-muted-foreground tabular-nums">
                       {timeOf(release.createdAt)}
                     </span>
                   </button>
@@ -428,10 +431,13 @@ export const Stage: UIFieldClientComponent = () => {
                   )}
                 </div>
               )}
+              {/* The readout sits over the field it describes, so it takes the
+                  same plate as the placement badge: over a live streak field,
+                  bare text is not readable at any ink. */}
               {budget && (
                 <p
                   className={cn(
-                    'pointer-events-none absolute right-3 bottom-3 left-3 z-10 flex items-start gap-1.5 font-mono text-[11px]/3.5 tracking-[0.02em] tabular-nums',
+                    'pointer-events-none absolute bottom-3 left-3 z-10 flex max-w-[calc(100%-24px)] items-start gap-1.5 rounded-full bg-background/70 py-1 pr-2.5 pl-2 font-mono text-[11px]/3.5 tracking-[0.02em] backdrop-blur-xs tabular-nums',
                     capped ? 'text-warning' : 'text-muted-foreground',
                   )}
                 >

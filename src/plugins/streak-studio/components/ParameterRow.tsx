@@ -20,6 +20,7 @@ import {
   decimals,
   formatValue,
   fromHex,
+  optionLabel,
   PARAMETER_COPY,
   type ParameterKey,
   toHex,
@@ -123,7 +124,7 @@ function ParameterTooltip({
     'color' in spec
       ? toHex(fallback as readonly number[])
       : 'options' in spec
-        ? String(fallback)
+        ? optionLabel(name, String(fallback))
         : formatValue(spec, Number(fallback))
   return (
     <Tooltip>
@@ -132,7 +133,7 @@ function ParameterTooltip({
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline gap-2">
             <span className="flex-1 text-[13px]/4 font-semibold text-foreground">{copy.label}</span>
-            <span className="font-mono text-[11px]/3.5 text-muted-foreground/70">{name}</span>
+            <span className="font-mono text-[11px]/3.5 text-muted-foreground">{name}</span>
           </div>
           <p className="text-pretty text-foreground/80">{copy.description}</p>
           <p className="flex gap-3 font-mono text-[11px]/3.5 whitespace-nowrap text-muted-foreground">
@@ -154,7 +155,7 @@ function ParameterTooltip({
             </p>
           )}
           {'min' in spec && (
-            <p className="border-t border-muted pt-2 font-mono text-[9px]/3 tracking-[0.02em] text-muted-foreground/70 uppercase">
+            <p className="border-t border-muted pt-2 font-mono text-[10px]/3.5 tracking-[0.02em] text-muted-foreground uppercase">
               ↑↓ step · ⇧ ×10 · ⏎ type
             </p>
           )}
@@ -165,11 +166,14 @@ function ParameterTooltip({
 }
 
 /**
- * The frame every parameter shares: a fixed label column with the tooltip
- * on the label and a dot when the value departs from its default, the
- * control, and the value field. A row whose control does nothing until
- * another setting changes shows muted with the reason under it, and a click
- * anywhere on it applies that change.
+ * The frame every parameter shares: a label column, a control column, and a
+ * value column fixed at `--row-value` so that one number, a range pair and a
+ * select's readout all end on the same rule and every slider track stops at
+ * the same place. A value that departs from its default is marked by a dot
+ * before its label, in a slot the label reserves whether or not the dot
+ * shows, so the column reads down one rule as values are edited. A row whose
+ * control does nothing until another setting changes shows muted, with the
+ * reason under it and a button that makes the change.
  */
 function RowShell({
   name,
@@ -195,7 +199,7 @@ function RowShell({
     <div
       data-changed={changed || undefined}
       data-inactive={disabled || undefined}
-      className="group/row grid grid-cols-[6.25rem_minmax(0,1fr)_auto] items-center gap-x-2.5"
+      className="group/row relative grid grid-cols-[var(--row-label)_minmax(0,1fr)_var(--row-value)] items-center gap-x-2.5"
     >
       <ParameterTooltip name={name} changed={changed}>
         <Label
@@ -208,21 +212,29 @@ function RowShell({
             }
           }}
         >
-          {changed && <span aria-hidden className="size-1.25 shrink-0 rounded-full bg-primary" />}
+          {/* The marker holds its place whether or not it shows, so a label's
+              text starts on the same rule in every row and the column stays
+              scannable while values are edited. */}
+          <span
+            aria-hidden
+            className="size-1.5 shrink-0 scale-50 rounded-full bg-primary opacity-0 transition-[opacity,scale] duration-200 ease-out-quint group-data-[changed]/row:scale-100 group-data-[changed]/row:opacity-100 motion-reduce:transition-none"
+          />
           {label ?? PARAMETER_COPY[name].label}
         </Label>
       </ParameterTooltip>
       {children}
+      {/* The reason wraps on a narrow panel, so the line sizes to its content:
+          a fixed height here spills into the row below. */}
       {inactive && (
-        <p className="col-span-2 col-start-2 flex h-4 items-baseline gap-1.5 text-[11px]/3.5 text-muted-foreground/70">
+        <p className="col-span-2 col-start-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 pb-1.5 text-[11px]/4 text-muted-foreground">
           {inactive.reason}
           {inactive.fix && (
             <button
               type="button"
-              className="pressable cursor-pointer text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              className="pressable cursor-pointer whitespace-nowrap text-muted-foreground underline underline-offset-2 hover:text-foreground"
               onClick={() => onFix(inactive.fix)}
             >
-              Turn it on
+              {inactive.fixLabel}
             </button>
           )}
         </p>
@@ -263,6 +275,10 @@ export function ParameterRow({
 
   if ('options' in spec) {
     const current = String(value)
+    // A discrete control fills the control column, the way the slider and the
+    // select beside it do: three controls that stop on the same rule read as
+    // one column, and a two-option toggle at that width is still a control
+    // rather than a target.
     if (spec.options.length <= 2) {
       return (
         <RowShell {...shell}>
@@ -270,7 +286,6 @@ export function ParameterRow({
             type="single"
             variant="segmented"
             size="sm"
-            className="col-span-2"
             value={current}
             disabled={disabled}
             onValueChange={(next) => next && onChange(next)}
@@ -282,7 +297,7 @@ export function ParameterRow({
                     value={option}
                     id={option === current ? `streak-${name}` : undefined}
                   >
-                    {option.replace(/^./, (c) => c.toUpperCase())}
+                    {optionLabel(name, option)}
                   </ToggleGroupItem>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" sideOffset={6}>
@@ -301,20 +316,24 @@ export function ParameterRow({
           disabled={disabled}
           onValueChange={(next) => next && onChange(next)}
         >
-          <SelectTrigger size="field" id={`streak-${name}`} className="col-span-2 w-full">
+          <SelectTrigger size="field" id={`streak-${name}`} className="w-full max-w-56">
             <SelectValue />
-            {hint && (
-              <span className="ml-auto text-[11px]/3.5 text-muted-foreground/70">{hint}</span>
-            )}
           </SelectTrigger>
           <SelectContent align="end">
             {spec.options.map((option) => (
               <SelectItem key={option} value={option} description={copy.options?.[option]}>
-                {option}
+                {optionLabel(name, option)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+        {/* A count the code owns, not a value the editor sets: it belongs in
+            the value column with the numbers, not inside the trigger. */}
+        {hint && (
+          <span className="text-right font-mono text-[11px]/3.5 text-muted-foreground tabular-nums">
+            {hint}
+          </span>
+        )}
       </RowShell>
     )
   }
@@ -324,7 +343,7 @@ export function ParameterRow({
     const hex = toHex(rgb)
     return (
       <RowShell {...shell}>
-        <div className="col-span-2 flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-self-start">
           <label
             className="relative size-6.5 shrink-0 cursor-pointer overflow-hidden rounded-md border border-input"
             style={{ backgroundColor: hex }}
@@ -343,9 +362,6 @@ export function ParameterRow({
             />
           </label>
           <HexField value={hex} disabled={disabled} label={copy.label} onCommit={onChange} />
-          <span className="ml-auto text-[11px]/3.5 text-muted-foreground/70">
-            {name === 'ink' ? 'dark ground' : 'light ground'}
-          </span>
         </div>
       </RowShell>
     )
@@ -376,7 +392,7 @@ export function ParameterRow({
         onValueChange={([next]) => onChange(next)}
       />
       <ValueField
-        className="w-14"
+        className="w-full"
         value={number}
         min={spec.min}
         max={spec.max}
@@ -493,9 +509,11 @@ export function LengthRow({
         formatValue={(v) => formatValue(spec, v)}
         onValueChange={([a, b]) => onChange({ minLength: a, maxLength: b })}
       />
+      {/* The pair shares the one value column, so the track above still ends
+          where every other track ends. */}
       <div className="flex items-center gap-1">
         <ValueField
-          className="w-12"
+          className="min-w-0 flex-1 px-1"
           value={min}
           min={spec.min}
           max={spec.max}
@@ -506,7 +524,7 @@ export function LengthRow({
           onCommit={(next) => onChange({ minLength: next, maxLength: max })}
         />
         <ValueField
-          className="w-12"
+          className="min-w-0 flex-1 px-1"
           value={max}
           min={spec.min}
           max={spec.max}

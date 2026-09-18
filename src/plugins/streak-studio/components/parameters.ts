@@ -22,7 +22,18 @@ export type ParameterCopy = {
   unit?: string
   /** One line per option, for the option tooltips of a select. */
   options?: Record<string, string>
+  /**
+   * Display name for an option whose raw value is not its reading: `fbm` is
+   * fractal Brownian motion, not a word to capitalize. Anything left out
+   * takes the raw value with its first letter capitalized.
+   */
+  optionLabels?: Record<string, string>
 }
+
+/** How an option reads in a control: the authored name, else Capitalized. */
+export const optionLabel = (name: ParameterKey, option: string) =>
+  PARAMETER_COPY[name].optionLabels?.[option] ??
+  option.replace(/^./, (character) => character.toUpperCase())
 
 export const PARAMETER_COPY: Record<ParameterKey, ParameterCopy> = {
   layout: {
@@ -103,6 +114,7 @@ export const PARAMETER_COPY: Record<ParameterKey, ParameterCopy> = {
   noise: {
     label: 'Noise',
     description: 'The field formula. It displaces streaks and supplies the height relief reads.',
+    optionLabels: { fbm: 'fBm' },
     options: {
       none: 'Streaks stay on their rows: no displacement, no relief, no orientation.',
       value: 'A boxy lattice drift.',
@@ -253,17 +265,21 @@ export type Dependency = {
   active: (tuning: StreakFieldTuning) => boolean
   reason: string
   fix?: Partial<RecipeDeltas>
+  /** What the button under the row does, in its own words. */
+  fixLabel?: string
 }
 
 const needsNoise: Dependency = {
   active: (t) => t.noise !== 'none',
   reason: 'Runs when Noise is not None.',
   fix: { noise: 'fbm' },
+  fixLabel: 'Set Noise to fBm',
 }
 const needsPointer: Dependency = {
   active: (t) => t.pointerRadius > 0,
   reason: 'Runs when Radius is above 0.',
   fix: { pointerRadius: STREAK_FIELD_DEFAULTS.pointerRadius },
+  fixLabel: 'Open the radius',
 }
 
 export const DEPENDENCIES: Partial<Record<ParameterKey, Dependency>> = {
@@ -271,16 +287,19 @@ export const DEPENDENCIES: Partial<Record<ParameterKey, Dependency>> = {
     active: (t) => t.layout === 'grid',
     reason: 'Runs when Layout is Grid.',
     fix: { layout: 'grid' },
+    fixLabel: 'Switch to Grid',
   },
   thickness: {
     active: (t) => t.shape === 'dash',
     reason: 'Runs when Shape is Dash.',
     fix: { shape: 'dash' },
+    fixLabel: 'Switch to Dash',
   },
   flowSpeed: {
     active: (t) => t.motion === 'flow',
     reason: 'Runs when Motion is Flow.',
     fix: { motion: 'flow' },
+    fixLabel: 'Switch to Flow',
   },
   noiseScale: needsNoise,
   noiseStrength: needsNoise,
@@ -289,8 +308,9 @@ export const DEPENDENCIES: Partial<Record<ParameterKey, Dependency>> = {
   orient: needsNoise,
   noiseGain: {
     active: (t) => ['fbm', 'ridged', 'curl'].includes(t.noise),
-    reason: 'Runs when Noise has octaves (fbm, ridged, curl).',
+    reason: 'Runs when Noise has octaves (fBm, Ridged, Curl).',
     fix: { noise: 'fbm' },
+    fixLabel: 'Set Noise to fBm',
   },
   relief: needsNoise,
   reliefFloor: needsNoise,
@@ -300,6 +320,7 @@ export const DEPENDENCIES: Partial<Record<ParameterKey, Dependency>> = {
     active: (t) => t.flicker > 0,
     reason: 'Runs when Flicker is above 0.',
     fix: { flicker: STREAK_FIELD_DEFAULTS.flicker },
+    fixLabel: 'Add flicker',
   },
   pointerPush: needsPointer,
   pointerSwirl: needsPointer,
@@ -312,6 +333,7 @@ export const DEPENDENCIES: Partial<Record<ParameterKey, Dependency>> = {
     reason: 'Runs when Radius and Noise strength are above 0.',
     // The default strength is 0, so the fix has to pick a visible amount.
     fix: { pointerRadius: STREAK_FIELD_DEFAULTS.pointerRadius, noiseStrength: 40 },
+    fixLabel: 'Set both',
   },
 }
 
@@ -357,11 +379,13 @@ export const fromHex = (hex: string): [number, number, number] | null => {
 export const groupSummary = (group: string, tuning: StreakFieldTuning): string => {
   switch (group) {
     case 'Composition':
-      return `${tuning.layout} · ${tuning.shape}`
+      return `${optionLabel('layout', tuning.layout)} · ${optionLabel('shape', tuning.shape)}`
     case 'Motion':
-      return tuning.motion
+      return optionLabel('motion', tuning.motion)
     case 'Flow':
-      return tuning.noise === 'none' ? 'none' : `${tuning.noise} · ${tuning.noiseScale}`
+      return tuning.noise === 'none'
+        ? optionLabel('noise', 'none')
+        : `${optionLabel('noise', tuning.noise)} · ${tuning.noiseScale}`
     case 'Relief':
       return `${tuning.relief} · floor ${tuning.reliefFloor}`
     case 'Life':
