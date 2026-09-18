@@ -14,8 +14,6 @@ export type WorksBrowseItem = {
   client: string | null
   /** Industry names in project order; the first one leads the facts line. */
   industries: WorksBrowseFilterOption[]
-  /** Engagement year — endDate when completed, else startDate. */
-  year: string | null
   capabilities: WorksBrowseFilterOption[]
   /** Hero visual, falling back to the cover asset — same as the work hero and menu. */
   visual: Visual | null
@@ -59,9 +57,6 @@ type WorksBrowsePage = Pick<
   'id' | 'title' | 'slug' | 'caseStudy' | 'hero' | 'coverAsset' | 'featured' | 'publishedAt'
 >
 
-const yearOf = (date: string | null | undefined): string | null =>
-  date ? String(new Date(date).getUTCFullYear()) : null
-
 /**
  * A work page fetched with `WORKS_BROWSE_QUERY`, flattened into the
  * serializable row the index and the related-work list render. Null for a
@@ -89,7 +84,6 @@ export const toWorksBrowseItem = (page: WorksBrowsePage): WorksBrowseItem | null
     title: study?.title || page.title,
     client: organization ? organization.shortName || organization.name : null,
     industries,
-    year: yearOf(project?.endDate ?? project?.startDate),
     capabilities,
     visual,
     media: visualMedia(visual),

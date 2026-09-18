@@ -33,7 +33,6 @@ const item = (
   title,
   client,
   industries: worksBrowseIndustries.filter((option) => option.slug === industrySlug),
-  year: '2026',
   capabilities,
   visual: { kind: 'media', media: heroImageFixture },
   media: heroImageFixture,

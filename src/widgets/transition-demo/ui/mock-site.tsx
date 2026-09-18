@@ -70,7 +70,6 @@ type MockWork = {
   client: string
   industry: string
   capabilities: string[]
-  year: string
   image: string
 }
 
@@ -129,7 +128,6 @@ const WORKS: MockWork[] = [
     client: 'Ledger',
     industry: 'Fintech',
     capabilities: ['Brand', 'Product design'],
-    year: '2026',
     image: 'bg-linear-to-br from-chart-3 via-chart-1 to-chart-5',
   },
   {
@@ -138,7 +136,6 @@ const WORKS: MockWork[] = [
     client: 'Northwell',
     industry: 'Health',
     capabilities: ['Service design', 'Content'],
-    year: '2025',
     image: 'bg-linear-to-tr from-chart-2 via-chart-4 to-chart-3',
   },
   {
@@ -147,7 +144,6 @@ const WORKS: MockWork[] = [
     client: 'Meridian',
     industry: 'Energy',
     capabilities: ['Brand', 'Web'],
-    year: '2025',
     image: 'bg-linear-to-bl from-chart-5 via-chart-2 to-chart-1',
   },
 ]
@@ -741,7 +737,7 @@ function MockWorks() {
             />
             <div className="flex min-w-0 grow flex-col gap-1.5">
               <p className={cn(FURNITURE, 'text-muted-foreground')}>
-                {work.client} · {work.industry} · {work.year}
+                {work.client} · {work.industry}
               </p>
               <h4 className="text-base font-medium group-hover:underline">{work.title}</h4>
               <ul className="flex flex-wrap gap-1.5">

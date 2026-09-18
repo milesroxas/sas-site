@@ -52,7 +52,6 @@ export const WorkRow: React.FC<{
   if (industry) {
     facts.push({ label: industry.label, active: highlight?.industries?.includes(industry.slug) })
   }
-  if (item.year) facts.push({ label: item.year })
 
   return (
     <Link
