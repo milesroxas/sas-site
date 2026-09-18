@@ -42,7 +42,7 @@ const tooltipContentVariants = cva(
         default:
           'inline-flex max-w-xs items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs text-background has-data-[slot=kbd]:pr-1.5 data-[state=delayed-open]:zoom-in-95 data-open:zoom-in-95 data-closed:zoom-out-95',
         panel:
-          'max-w-64 rounded-md border border-border bg-popover p-3 text-xs/relaxed text-popover-foreground shadow-md duration-160 ease-out-quint data-[state=delayed-open]:zoom-in-96 data-[state=delayed-open]:blur-in-4 data-open:zoom-in-96 data-open:blur-in-4 data-closed:duration-100 data-closed:zoom-out-98 motion-reduce:zoom-in-100 motion-reduce:blur-in-0 motion-reduce:slide-in-from-top-0 motion-reduce:slide-in-from-bottom-0 motion-reduce:slide-in-from-left-0 motion-reduce:slide-in-from-right-0',
+          'w-63 rounded-lg border border-input bg-popover px-3.5 py-3 text-xs/[17px] text-popover-foreground shadow-[0_8px_24px_rgb(0_0_0/0.5)] duration-160 ease-out-quint data-[state=delayed-open]:zoom-in-96 data-[state=delayed-open]:blur-in-4 data-open:zoom-in-96 data-open:blur-in-4 data-closed:duration-100 data-closed:zoom-out-98 motion-reduce:zoom-in-100 motion-reduce:blur-in-0 motion-reduce:slide-in-from-top-0 motion-reduce:slide-in-from-bottom-0 motion-reduce:slide-in-from-left-0 motion-reduce:slide-in-from-right-0',
       },
     },
     defaultVariants: {

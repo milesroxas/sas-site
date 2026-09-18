@@ -16,11 +16,13 @@ const toggleGroupVariants = cva('group/toggle-group inline-flex items-center', {
   variants: {
     variant: {
       default: 'gap-1',
-      segmented: 'h-7 w-full rounded-md border border-input bg-input/20 p-0.5 dark:bg-input/30',
+      segmented: 'w-full overflow-hidden rounded-md border border-input',
     },
+    /** Control height: inspector row (26), toolbar (30), header (34). */
     size: {
-      default: '',
-      sm: '',
+      sm: 'data-[variant=segmented]:h-6.5',
+      default: 'data-[variant=segmented]:h-[30px]',
+      lg: 'data-[variant=segmented]:h-[34px]',
     },
   },
   defaultVariants: {
@@ -37,11 +39,12 @@ const toggleGroupItemVariants = cva(
         default:
           'h-7 px-2 text-muted-foreground hover:bg-muted hover:text-foreground data-[state=on]:bg-muted data-[state=on]:text-foreground',
         segmented:
-          'h-full flex-1 px-2 text-muted-foreground hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-xs data-[state=on]:ring-1 data-[state=on]:ring-border',
+          'h-full flex-1 rounded-none text-muted-foreground hover:text-foreground data-[state=on]:bg-input/60 data-[state=on]:text-foreground',
       },
       size: {
-        default: '',
-        sm: 'text-[11px]',
+        sm: 'px-2 text-xs/4',
+        default: 'px-2.5 text-xs/4',
+        lg: 'px-3 text-[13px]/4',
       },
     },
     defaultVariants: {

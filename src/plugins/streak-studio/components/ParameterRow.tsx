@@ -2,7 +2,6 @@
 
 import { type KeyboardEvent, type ReactNode, useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
-import { Kbd, KbdGroup } from '@/components/ui/kbd'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -131,29 +130,33 @@ function ParameterTooltip({
       <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent variant="panel" side="left" sideOffset={12} collisionPadding={12}>
         <div className="flex flex-col gap-2">
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="font-medium text-foreground">{copy.label}</span>
-            <span className="font-mono text-[11px] text-muted-foreground">{name}</span>
+          <div className="flex items-baseline gap-2">
+            <span className="flex-1 text-[13px]/4 font-semibold text-foreground">{copy.label}</span>
+            <span className="font-mono text-[11px]/3.5 text-muted-foreground/70">{name}</span>
           </div>
-          <p className="text-pretty">{copy.description}</p>
-          <p className="font-mono text-[11px] text-muted-foreground">
+          <p className="text-pretty text-foreground/80">{copy.description}</p>
+          <p className="flex gap-3 font-mono text-[11px]/3.5 whitespace-nowrap text-muted-foreground">
             {'min' in spec && (
               <>
-                {formatValue(spec, spec.min)} to {formatValue(spec, spec.max)}
-                {copy.unit ? ` ${copy.unit}` : ''} · step {spec.step ?? 0.01} ·{' '}
+                <span>
+                  {spec.min}–{spec.max}
+                  {copy.unit ? ` ${copy.unit}` : ''}
+                </span>
+                <span>step {spec.step ?? 0.01}</span>
               </>
             )}
-            default {defaultText}
+            <span>default {defaultText}</span>
           </p>
           {changed && (
-            <p className="text-primary">
+            <p className="flex items-center gap-1.5 text-[11px]/3.5 text-primary">
+              <span aria-hidden className="size-1.25 shrink-0 rounded-full bg-primary" />
               Changed from {defaultText}. Option-click the label to reset.
             </p>
           )}
           {'min' in spec && (
-            <KbdGroup className="text-[10px] text-muted-foreground">
-              <Kbd>↑↓</Kbd> step <Kbd>⇧</Kbd> ×10 <Kbd>↩</Kbd> type in the field
-            </KbdGroup>
+            <p className="border-t border-muted pt-2 font-mono text-[9px]/3 tracking-[0.02em] text-muted-foreground/70 uppercase">
+              ↑↓ step · ⇧ ×10 · ⏎ type
+            </p>
           )}
         </div>
       </TooltipContent>
@@ -197,7 +200,7 @@ function RowShell({
       <ParameterTooltip name={name} changed={changed}>
         <Label
           htmlFor={`streak-${name}`}
-          className="relative min-h-9 cursor-default pl-2.5 text-xs text-foreground/80 transition-colors group-hover/row:text-foreground group-data-[inactive]/row:text-muted-foreground"
+          className="min-h-9 cursor-default gap-1.5 text-xs/4 text-foreground/80 transition-colors group-hover/row:text-foreground group-data-[changed]/row:text-foreground group-data-[inactive]/row:text-muted-foreground/60"
           onClick={(event) => {
             if (event.altKey) {
               event.preventDefault()
@@ -205,23 +208,18 @@ function RowShell({
             }
           }}
         >
-          {changed && (
-            <span
-              aria-hidden
-              className="absolute top-1/2 left-0 size-1 -translate-y-1/2 rounded-full bg-primary"
-            />
-          )}
+          {changed && <span aria-hidden className="size-1.25 shrink-0 rounded-full bg-primary" />}
           {label ?? PARAMETER_COPY[name].label}
         </Label>
       </ParameterTooltip>
       {children}
       {inactive && (
-        <p className="col-span-3 -mt-2 mb-1 flex items-baseline gap-1.5 pl-2.5 text-[11px]/4 text-muted-foreground">
+        <p className="col-span-2 col-start-2 flex h-4 items-baseline gap-1.5 text-[11px]/3.5 text-muted-foreground/70">
           {inactive.reason}
           {inactive.fix && (
             <button
               type="button"
-              className="pressable cursor-pointer text-foreground underline underline-offset-2 hover:text-primary"
+              className="pressable cursor-pointer text-muted-foreground underline underline-offset-2 hover:text-foreground"
               onClick={() => onFix(inactive.fix)}
             >
               Turn it on
@@ -271,6 +269,7 @@ export function ParameterRow({
           <ToggleGroup
             type="single"
             variant="segmented"
+            size="sm"
             className="col-span-2"
             value={current}
             disabled={disabled}
@@ -302,10 +301,10 @@ export function ParameterRow({
           disabled={disabled}
           onValueChange={(next) => next && onChange(next)}
         >
-          <SelectTrigger size="sm" id={`streak-${name}`} className="col-span-2 w-full">
+          <SelectTrigger size="field" id={`streak-${name}`} className="col-span-2 w-full">
             <SelectValue />
             {hint && (
-              <span className="ml-auto font-mono text-[11px] text-muted-foreground">{hint}</span>
+              <span className="ml-auto text-[11px]/3.5 text-muted-foreground/70">{hint}</span>
             )}
           </SelectTrigger>
           <SelectContent align="end">
@@ -344,7 +343,7 @@ export function ParameterRow({
             />
           </label>
           <HexField value={hex} disabled={disabled} label={copy.label} onCommit={onChange} />
-          <span className="ml-auto text-[11px] text-muted-foreground">
+          <span className="ml-auto text-[11px]/3.5 text-muted-foreground/70">
             {name === 'ink' ? 'dark ground' : 'light ground'}
           </span>
         </div>
@@ -475,7 +474,7 @@ export function LengthRow({
       onFix={onFix}
       note={
         error ? (
-          <p role="alert" className="col-span-3 -mt-2 mb-1 pl-2.5 text-[11px]/4 text-destructive">
+          <p role="alert" className="col-span-2 col-start-2 text-[11px]/3.5 text-destructive">
             {error}
           </p>
         ) : undefined

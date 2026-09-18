@@ -90,6 +90,7 @@ function IconAction({
           type="button"
           variant="ghost"
           size="icon"
+          className="h-full w-8 rounded-none"
           aria-label={label}
           disabled={disabled}
           onClick={onClick}
@@ -205,26 +206,31 @@ export const Stage: UIFieldClientComponent = () => {
       <section
         data-streak-studio
         aria-label="Streak Field Studio"
-        className="@container flex flex-col rounded-lg border border-border bg-card"
+        className="@container flex flex-col overflow-hidden rounded-lg border border-input bg-background"
         onKeyDown={onStageKey}
       >
-        <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border px-4 py-3">
-          <h2 className="m-0 text-sm font-semibold">Streak Field Studio</h2>
-          <p className="m-0 flex items-center gap-2 text-xs text-muted-foreground">
-            <span
-              aria-hidden
-              className={cn('size-1.5 rounded-full', latest ? 'bg-warning' : 'bg-muted-foreground')}
-            />
-            {!id
-              ? 'Unsaved. Save once to publish and export.'
-              : latest && sinceRelease !== null
-                ? sinceRelease
-                  ? `Draft, ${sinceRelease} ${sinceRelease === 1 ? 'change' : 'changes'} since ${latest.title}`
-                  : `Draft matches ${latest.title}`
-                : 'Draft, not yet published'}
-          </p>
-          <div className="ml-auto flex items-center gap-2">
-            <div className="flex items-center rounded-md border border-border">
+        <header className="flex min-h-14 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border py-2 pr-4 pl-5">
+          <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2.5">
+            <h2 className="text-[15px]/5 font-semibold">Streak Field Studio</h2>
+            <p className="flex items-center gap-1.5 text-xs/4 text-muted-foreground">
+              <span
+                aria-hidden
+                className={cn(
+                  'size-1.5 shrink-0 rounded-full',
+                  latest ? 'bg-warning' : 'bg-muted-foreground',
+                )}
+              />
+              {!id
+                ? 'Unsaved. Save once to publish and export.'
+                : latest && sinceRelease !== null
+                  ? sinceRelease
+                    ? `Draft, ${sinceRelease} ${sinceRelease === 1 ? 'change' : 'changes'} since ${latest.title}`
+                    : `Draft matches ${latest.title}`
+                  : 'Draft, not yet published'}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex h-[34px] items-center divide-x divide-input overflow-hidden rounded-md border border-input">
               <IconAction
                 label="Undo"
                 shortcut="⌘Z"
@@ -245,16 +251,15 @@ export const Stage: UIFieldClientComponent = () => {
             <ToggleGroup
               type="single"
               variant="segmented"
+              size="lg"
               className="w-auto"
               value={session.showComparison ? 'kept' : 'draft'}
               onValueChange={(next) =>
                 next && studioStore.patch(key, { showComparison: next === 'kept' })
               }
             >
-              <ToggleGroupItem value="draft" className="px-3">
-                Draft
-              </ToggleGroupItem>
-              <ToggleGroupItem value="kept" className="px-3" disabled={!session.comparison}>
+              <ToggleGroupItem value="draft">Draft</ToggleGroupItem>
+              <ToggleGroupItem value="kept" disabled={!session.comparison}>
                 Kept
               </ToggleGroupItem>
             </ToggleGroup>
@@ -263,21 +268,21 @@ export const Stage: UIFieldClientComponent = () => {
         </header>
 
         <div className="grid grid-cols-1 @3xl:grid-cols-[15rem_minmax(0,1fr)]">
-          <aside className="flex flex-col border-b border-border @3xl:border-r @3xl:border-b-0">
-            <div className="flex items-baseline justify-between px-4 pt-3 pb-2">
-              <h3 className="m-0 text-xs font-semibold">Starters</h3>
-              <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+          <aside className="flex flex-col border-b border-border bg-card @3xl:border-r @3xl:border-b-0">
+            <div className="flex h-10 items-center border-b border-border px-3.5">
+              <h3 className="flex-1 text-xs/4 font-semibold tracking-[0.02em]">Starters</h3>
+              <span className="text-[11px]/3.5 text-muted-foreground/70 tabular-nums">
                 {STREAK_LOOK_OPTIONS.length}
               </span>
             </div>
-            <ul className="m-0 flex list-none flex-col gap-0.5 px-2 pb-2">
+            <ul className="flex flex-col">
               {STREAK_LOOK_OPTIONS.map((look) => (
                 <li key={look.value}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
                         type="button"
-                        className="pressable flex w-full cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted"
+                        className="flex h-11 w-full cursor-pointer items-center gap-2.5 px-3.5 text-left text-[13px]/4 text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
                         onClick={() => update(starterRecipe(look.value as StreakLookId), true)}
                       >
                         {/* biome-ignore lint/performance/noImgElement: admin-only poster thumb; next/image is not loaded in the Payload admin */}
@@ -285,13 +290,13 @@ export const Stage: UIFieldClientComponent = () => {
                           src={streakPosterSrc(look.value as StreakLookId, session.surface)}
                           alt=""
                           width={44}
-                          height={25}
+                          height={26}
                           loading="lazy"
-                          className="h-[25px] w-11 shrink-0 rounded-sm object-cover"
+                          className="h-6.5 w-11 shrink-0 rounded-[3px] border border-input object-cover"
                           style={{ backgroundColor: STUDIO_GROUND[session.surface] }}
                         />
                         <span className="min-w-0 flex-1 truncate">{look.label}</span>
-                        <span className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
+                        <span className="font-mono text-[10px]/3 tracking-[0.04em] text-muted-foreground/70 uppercase">
                           {STREAK_LOOKS[look.value as StreakLookId].motion}
                         </span>
                       </button>
@@ -303,13 +308,17 @@ export const Stage: UIFieldClientComponent = () => {
                 </li>
               ))}
             </ul>
-            <div className="flex items-baseline justify-between border-t border-border px-4 pt-3 pb-2">
-              <h3 className="m-0 text-xs font-semibold">Versions</h3>
+            <div className="flex h-10 items-center border-y border-border px-3.5">
+              <h3 className="flex-1 text-xs/4 font-semibold tracking-[0.02em]">Versions</h3>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button type="button" variant="ghost" size="xs" onClick={keep}>
+                  <button
+                    type="button"
+                    className="pressable cursor-pointer text-[11px]/3.5 text-muted-foreground/70 hover:text-foreground"
+                    onClick={keep}
+                  >
                     Keep
-                  </Button>
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" sideOffset={6}>
                   Keep this draft to compare against while you keep adjusting
@@ -317,33 +326,33 @@ export const Stage: UIFieldClientComponent = () => {
                 </TooltipContent>
               </Tooltip>
             </div>
-            <ul className="m-0 flex list-none flex-col gap-0.5 px-2 pb-3">
+            <ul className="flex flex-col">
               <li>
                 <button
                   type="button"
-                  className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted"
+                  className="flex h-10 w-full cursor-pointer items-center gap-2.5 px-3.5 text-left text-[13px]/4 text-foreground/80 transition-colors hover:bg-muted aria-[current]:text-foreground"
                   aria-current={!session.showComparison || undefined}
                   onClick={() => studioStore.patch(key, { showComparison: false })}
                 >
-                  <span aria-hidden className="size-1.5 rounded-full bg-warning" />
+                  <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-warning" />
                   <span className="flex-1">Draft</span>
-                  <span className="font-mono text-[11px] text-muted-foreground">now</span>
+                  <span className="text-[11px]/3.5 text-muted-foreground/70">now</span>
                 </button>
               </li>
               {session.comparison && (
                 <li>
                   <button
                     type="button"
-                    className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted"
+                    className="flex h-10 w-full cursor-pointer items-center gap-2.5 px-3.5 text-left text-[13px]/4 text-foreground/80 transition-colors hover:bg-muted aria-[current]:text-foreground"
                     aria-current={session.showComparison || undefined}
                     onClick={() => studioStore.patch(key, { showComparison: true })}
                   >
                     <span
                       aria-hidden
-                      className="size-1.5 rounded-full border border-muted-foreground"
+                      className="size-1.5 shrink-0 rounded-full border border-muted-foreground"
                     />
                     <span className="flex-1 truncate">{session.comparisonLabel}</span>
-                    <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+                    <span className="text-[11px]/3.5 text-muted-foreground/70 tabular-nums">
                       {session.comparisonAt ? clock(session.comparisonAt) : ''}
                     </span>
                   </button>
@@ -353,12 +362,12 @@ export const Stage: UIFieldClientComponent = () => {
                 <li key={release.id}>
                   <button
                     type="button"
-                    className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted"
+                    className="flex h-10 w-full cursor-pointer items-center gap-2.5 px-3.5 text-left text-[13px]/4 text-foreground/80 transition-colors hover:bg-muted"
                     onClick={() => compareRelease(release)}
                   >
-                    <span aria-hidden className="size-1.5 rounded-full bg-success" />
+                    <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-success" />
                     <span className="flex-1 truncate">{release.title}</span>
-                    <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+                    <span className="text-[11px]/3.5 text-muted-foreground/70 tabular-nums">
                       {timeOf(release.createdAt)}
                     </span>
                   </button>
@@ -371,16 +380,16 @@ export const Stage: UIFieldClientComponent = () => {
             <div
               className="relative"
               style={{
-                height: session.placement === 'menu' ? 300 : 450,
+                height: session.placement === 'menu' ? 300 : 495,
                 backgroundColor: STUDIO_GROUND[session.surface],
               }}
             >
-              <span className="pointer-events-none absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-sm bg-black/50 px-2 py-1 font-mono text-[10px] tracking-wider text-white uppercase">
+              <span className="pointer-events-none absolute top-3 left-3 z-10 flex h-6 items-center gap-1.5 rounded-full bg-background/70 pr-2.5 pl-2 font-mono text-[11px]/3.5 tracking-[0.04em] text-foreground uppercase backdrop-blur-xs">
                 <span
                   aria-hidden
                   className={cn(
                     'size-1.5 rounded-full',
-                    live && !session.paused ? 'bg-success' : 'bg-muted-foreground',
+                    live && !session.paused ? 'bg-primary' : 'bg-muted-foreground',
                   )}
                 />
                 {live ? (session.paused ? 'Paused' : 'Live') : 'Off'} · {session.placement} ·{' '}
@@ -390,7 +399,7 @@ export const Stage: UIFieldClientComponent = () => {
               {live && !validation ? (
                 <Suspense
                   fallback={
-                    <p className="absolute inset-0 m-0 flex items-center justify-center text-xs text-muted-foreground">
+                    <p className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
                       Loading preview…
                     </p>
                   }
@@ -402,11 +411,12 @@ export const Stage: UIFieldClientComponent = () => {
                     surface={session.surface}
                     paused={session.paused}
                     generation={session.generation}
+                    showStats={false}
                   />
                 </Suspense>
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-xs text-muted-foreground">
-                  <p className="m-0 max-w-xs text-center text-pretty">
+                  <p className="max-w-xs text-center text-pretty">
                     {validation
                       ? validation
                       : 'The live field is off. Turn it on to see the recipe move.'}
@@ -418,28 +428,27 @@ export const Stage: UIFieldClientComponent = () => {
                   )}
                 </div>
               )}
+              {budget && (
+                <p
+                  className={cn(
+                    'pointer-events-none absolute right-3 bottom-3 left-3 z-10 flex items-start gap-1.5 font-mono text-[11px]/3.5 tracking-[0.02em] tabular-nums',
+                    capped ? 'text-warning' : 'text-muted-foreground',
+                  )}
+                >
+                  {capped && (
+                    <span aria-hidden className="mt-1 size-1.5 shrink-0 rounded-full bg-warning" />
+                  )}
+                  <span>
+                    {capped
+                      ? `${budget.count.toLocaleString()} of ${requested.count.toLocaleString()} particles, capped to the ${session.placement} budget`
+                      : `${budget.count.toLocaleString()} particles`}
+                    {' · '}DPR ≤ {budget.dpr} · {budget.noiseOctaves} octaves · {budget.segments}{' '}
+                    segment
+                  </span>
+                </p>
+              )}
             </div>
-            {budget && (
-              <p
-                className={cn(
-                  'm-0 flex items-start gap-2 border-t border-border px-4 py-2 font-mono text-[11px]/4 tabular-nums',
-                  capped ? 'text-warning' : 'text-muted-foreground',
-                )}
-              >
-                {capped && (
-                  <span
-                    aria-hidden
-                    className="mt-1 size-1.5 shrink-0 self-start rounded-full bg-warning"
-                  />
-                )}
-                {capped
-                  ? `${budget.count.toLocaleString()} of ${requested.count.toLocaleString()} particles, capped to the ${session.placement} budget`
-                  : `${budget.count.toLocaleString()} particles`}
-                {' · '}DPR ≤ {budget.dpr} · {budget.noiseOctaves} octaves · {budget.segments}{' '}
-                segment
-              </p>
-            )}
-            <div className="flex flex-wrap items-center gap-2 border-t border-border px-4 py-3">
+            <div className="flex min-h-14 flex-wrap items-center gap-4 border-t border-border px-4 py-3">
               <ToggleGroup
                 type="single"
                 variant="segmented"
@@ -449,12 +458,8 @@ export const Stage: UIFieldClientComponent = () => {
                   next && studioStore.patch(key, { surface: next as 'dark' | 'light' })
                 }
               >
-                <ToggleGroupItem value="dark" className="px-3">
-                  Dark
-                </ToggleGroupItem>
-                <ToggleGroupItem value="light" className="px-3">
-                  Light
-                </ToggleGroupItem>
+                <ToggleGroupItem value="dark">Dark</ToggleGroupItem>
+                <ToggleGroupItem value="light">Light</ToggleGroupItem>
               </ToggleGroup>
               <ToggleGroup
                 type="single"
@@ -468,12 +473,12 @@ export const Stage: UIFieldClientComponent = () => {
                 }}
               >
                 {VISUAL_PLACEMENTS.map((placement) => (
-                  <ToggleGroupItem key={placement} value={placement} className="px-3 capitalize">
+                  <ToggleGroupItem key={placement} value={placement} className="capitalize">
                     {placement}
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
-              <div className="flex items-center rounded-md border border-border">
+              <div className="flex h-[30px] items-center divide-x divide-input overflow-hidden rounded-md border border-input">
                 <IconAction
                   label={session.paused ? 'Play' : 'Pause'}
                   shortcut="Space"
@@ -497,41 +502,46 @@ export const Stage: UIFieldClientComponent = () => {
                   />
                 </IconAction>
               </div>
-              <div className="ml-auto flex items-center gap-2">
+              <div className="ml-auto flex flex-wrap items-center gap-4">
                 <label
                   htmlFor="streak-seed"
-                  className="flex items-center gap-2 text-xs text-muted-foreground"
+                  className="flex items-center gap-2 text-xs/4 text-muted-foreground"
                 >
                   Seed
-                  <Input
-                    id="streak-seed"
-                    variant="value"
-                    type="number"
-                    className="w-24 text-left"
-                    min={0}
-                    max={SEED_MAX}
-                    value={recipe.seed}
-                    onChange={(event) => {
-                      const seed = Math.min(SEED_MAX, Math.max(0, Number(event.target.value) || 0))
-                      update({ ...recipe, seed }, true)
-                    }}
-                  />
+                  <span className="flex h-[30px] items-center divide-x divide-input overflow-hidden rounded-md border border-input">
+                    <Input
+                      id="streak-seed"
+                      variant="value"
+                      type="number"
+                      className="h-full w-23 rounded-none border-0 px-2.5 text-left"
+                      min={0}
+                      max={SEED_MAX}
+                      value={recipe.seed}
+                      onChange={(event) => {
+                        const seed = Math.min(
+                          SEED_MAX,
+                          Math.max(0, Number(event.target.value) || 0),
+                        )
+                        update({ ...recipe, seed }, true)
+                      }}
+                    />
+                    <IconAction label="Randomize seed" shortcut="R" onClick={randomize}>
+                      <IconDice5 />
+                    </IconAction>
+                  </span>
                 </label>
-                <IconAction label="Randomize seed" shortcut="R" onClick={randomize}>
-                  <IconDice5 />
-                </IconAction>
                 <label
                   htmlFor="streak-frame"
-                  className="flex items-center gap-2 text-xs text-muted-foreground"
+                  className="flex items-center gap-2 text-xs/4 text-muted-foreground"
                 >
                   Frame
-                  <span className="flex items-center">
+                  <span className="flex h-[30px] items-center divide-x divide-input overflow-hidden rounded-md border border-input">
                     <Button
                       type="button"
-                      variant="outline"
-                      size="icon-sm"
+                      variant="ghost"
+                      size="icon"
                       aria-label="Earlier frame"
-                      className="rounded-r-none"
+                      className="h-full w-6.5 rounded-none"
                       disabled={recipe.frame <= 1}
                       onClick={() => update({ ...recipe, frame: Math.max(1, recipe.frame - 10) })}
                     >
@@ -541,7 +551,7 @@ export const Stage: UIFieldClientComponent = () => {
                       id="streak-frame"
                       variant="value"
                       type="number"
-                      className="w-14 rounded-none border-x-0 text-center"
+                      className="h-full w-12 rounded-none border-0 text-center"
                       min={1}
                       max={FRAME_MAX}
                       value={recipe.frame}
@@ -554,10 +564,10 @@ export const Stage: UIFieldClientComponent = () => {
                     />
                     <Button
                       type="button"
-                      variant="outline"
-                      size="icon-sm"
+                      variant="ghost"
+                      size="icon"
                       aria-label="Later frame"
-                      className="rounded-l-none"
+                      className="h-full w-6.5 rounded-none"
                       disabled={recipe.frame >= FRAME_MAX}
                       onClick={() =>
                         update({ ...recipe, frame: Math.min(FRAME_MAX, recipe.frame + 10) })

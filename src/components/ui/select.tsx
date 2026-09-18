@@ -35,7 +35,7 @@ const selectTriggerVariants = cva(
     variants: {
       variant: {
         default:
-          'w-fit rounded-md border border-input bg-input/20 px-2 py-1.5 text-xs/relaxed focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 data-[size=default]:h-7 data-[size=sm]:h-6 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
+          'w-fit rounded-md border border-input bg-input/20 px-2 py-1.5 text-xs/relaxed focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 data-[size=default]:h-7 data-[size=sm]:h-6 data-[size=field]:h-6.5 data-[size=field]:px-2.5 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
         line: 'h-auto w-full rounded-none border-0 border-b border-input bg-transparent px-0 pb-3 text-base data-[placeholder]:border-b-input focus-visible:border-b-primary aria-invalid:border-b-destructive md:text-lg/relaxed',
       },
     },
@@ -54,7 +54,7 @@ function SelectTrigger({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Trigger> &
   VariantProps<typeof selectTriggerVariants> & {
-    size?: 'sm' | 'default'
+    size?: 'sm' | 'default' | 'field'
     /** Replaces the default selector glyph — for triggers styled as bare text. */
     icon?: React.ReactNode
   }) {

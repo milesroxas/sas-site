@@ -30,7 +30,7 @@ const tabsListVariants = cva('inline-flex w-fit items-center text-muted-foregrou
   variants: {
     variant: {
       default: 'h-8 gap-1 rounded-md bg-muted p-0.5',
-      line: 'h-9 gap-5 border-b border-border',
+      line: 'h-12 gap-4 border-b border-border',
     },
   },
   defaultVariants: {
@@ -47,7 +47,7 @@ const tabsTriggerVariants = cva(
           'h-full flex-1 rounded-sm px-2 focus-visible:ring-2 focus-visible:ring-ring/30 data-active:bg-background data-active:text-foreground data-active:shadow-xs',
         // The underline is a box-shadow so it sits on the list's hairline
         // without moving the text, and the focus ring stays a ring.
-        line: 'h-full px-0 hover:text-foreground focus-visible:text-foreground data-active:text-foreground data-active:shadow-[inset_0_-1px_0_0_var(--foreground)]',
+        line: 'h-full px-0 text-[13px]/4 font-semibold text-muted-foreground hover:text-foreground focus-visible:text-foreground data-active:text-foreground data-active:shadow-[inset_0_-1px_0_0_var(--foreground)]',
       },
     },
     defaultVariants: {

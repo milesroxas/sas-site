@@ -32,7 +32,7 @@ const inputVariants = cva(
         line: 'h-auto rounded-none border-0 border-b border-input bg-transparent px-0 pb-3 text-base not-placeholder-shown:border-b-foreground focus-visible:border-b-primary aria-invalid:border-b-destructive md:text-lg/relaxed',
         bare: 'h-auto rounded-none border-0 bg-transparent p-0 text-base/5 md:text-sm/5',
         value:
-          'h-6.5 rounded-md border border-input bg-input/20 px-2 text-right font-mono text-xs/relaxed tabular-nums focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+          'h-6.5 rounded-md border border-input bg-input/20 px-2 text-right font-mono text-xs/4 tabular-nums disabled:border-dashed disabled:bg-transparent disabled:text-muted-foreground/60 disabled:opacity-100 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
       },
     },
     defaultVariants: {

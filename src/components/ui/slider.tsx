@@ -165,7 +165,7 @@ function Slider({
       }}
       style={{ ...style, '--slider-overshoot': `${overshoot}px` } as React.CSSProperties}
       className={cn(
-        'group/slider relative flex w-full touch-none items-center select-none data-[disabled]:opacity-60 data-[orientation=horizontal]:h-9 data-[orientation=horizontal]:min-w-20',
+        'group/slider relative flex w-full touch-none items-center select-none data-[orientation=horizontal]:h-9 data-[orientation=horizontal]:min-w-20',
         // The track click and the keyboard step ease the thumb to its point;
         // a drag switches the easing off so the thumb stays on the pointer.
         '[&>span:has(>[data-slot=slider-thumb])]:[transition:left_300ms_var(--ease-out-quint)] data-[dragging]:[&>span:has(>[data-slot=slider-thumb])]:transition-none motion-reduce:[&>span:has(>[data-slot=slider-thumb])]:transition-none',
@@ -175,7 +175,7 @@ function Slider({
     >
       <SliderPrimitive.Track
         data-slot="slider-track"
-        className="relative h-1 w-full grow overflow-visible rounded-full bg-muted"
+        className="relative h-1 w-full grow overflow-visible rounded-full bg-muted group-data-[disabled]/slider:bg-muted/60"
       >
         {origin === undefined || values.length !== 1 ? (
           <SliderPrimitive.Range
@@ -211,7 +211,7 @@ function Slider({
             'relative block size-3.5 shrink-0 rounded-full bg-foreground shadow-[0_1px_2px_rgb(0_0_0/0.4),0_0_0_1px_rgb(0_0_0/0.15)] outline-none',
             // Grow under the pointer, more in the hand; slide with the
             // rubber-band offset past a limit and spring back on release.
-            'translate-x-(--slider-overshoot) [transition:scale_150ms_var(--ease-out-quint),translate_250ms_var(--ease-out-quint)] group-hover/slider:scale-[1.29] group-data-[dragging]/slider:scale-[1.43] group-data-[dragging]/slider:[transition:scale_150ms_var(--ease-out-quint)] group-data-[disabled]/slider:scale-75 group-data-[disabled]/slider:shadow-none group-data-[invalid]/slider:bg-destructive motion-reduce:transition-none',
+            'translate-x-(--slider-overshoot) [transition:scale_150ms_var(--ease-out-quint),translate_250ms_var(--ease-out-quint)] group-hover/slider:scale-[1.29] group-data-[dragging]/slider:scale-[1.43] group-data-[dragging]/slider:[transition:scale_150ms_var(--ease-out-quint)] group-data-[disabled]/slider:scale-[0.71] group-data-[disabled]/slider:bg-input group-data-[disabled]/slider:shadow-none group-data-[invalid]/slider:bg-destructive motion-reduce:transition-none',
             'focus-visible:ring-[3px] focus-visible:ring-ring/50',
           )}
         >

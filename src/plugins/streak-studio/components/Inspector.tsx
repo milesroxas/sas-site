@@ -37,6 +37,7 @@ import {
   type ParameterKey,
   POINTER_GROUP,
   parameterKeys,
+  toHex,
 } from './parameters'
 import { saveAndQueue } from './publish'
 import { sessionKey, studioStore } from './store'
@@ -93,7 +94,22 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
       <Group
         key={name}
         name={name}
-        summary={groupSummary(name, tuning)}
+        summary={
+          name === 'Color' ? (
+            <span className="flex gap-1">
+              {[tuning.ink, tuning.paperInk].map((rgb, index) => (
+                <span
+                  key={index}
+                  aria-hidden
+                  className="size-3 rounded-full"
+                  style={{ backgroundColor: toHex(rgb) }}
+                />
+              ))}
+            </span>
+          ) : (
+            groupSummary(name, tuning)
+          )
+        }
         changed={changedCount}
         initCollapsed={initCollapsed}
         onReset={() => reset(keys)}
@@ -138,32 +154,30 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
 
   return (
     <TooltipProvider delayDuration={400} skipDelayDuration={600}>
-      <div data-streak-studio className="flex flex-col gap-4">
-        <Tabs defaultValue="look" className="gap-3">
-          <div className="flex items-center justify-between gap-3">
-            <TabsList variant="line" className="w-full">
-              <TabsTrigger value="look">Look</TabsTrigger>
-              <TabsTrigger value="pointer">Pointer</TabsTrigger>
-              <TabsTrigger value="export">Export</TabsTrigger>
-              <span
-                className="ml-auto font-mono text-[11px] text-primary tabular-nums"
-                aria-live="polite"
-              >
-                {changedKeys.length ? `${changedKeys.length} changed` : ''}
-              </span>
-            </TabsList>
-          </div>
-          <TabsContent value="look" className="flex flex-col border-t border-border">
+      <div data-streak-studio className="flex flex-col gap-3">
+        <Tabs defaultValue="look" className="gap-0">
+          <TabsList variant="line" className="w-full">
+            <TabsTrigger value="look">Look</TabsTrigger>
+            <TabsTrigger value="pointer">Pointer</TabsTrigger>
+            <TabsTrigger value="export">Export</TabsTrigger>
+            <span
+              className="ml-auto font-mono text-[11px]/3.5 tracking-[0.02em] text-primary tabular-nums"
+              aria-live="polite"
+            >
+              {changedKeys.length ? `${changedKeys.length} changed` : ''}
+            </span>
+          </TabsList>
+          <TabsContent value="look" className="flex flex-col">
             {GROUPS.map((name, index) => group(name, index > 2))}
           </TabsContent>
-          <TabsContent value="pointer" className="flex flex-col gap-3">
-            <p className="text-xs/relaxed text-muted-foreground">
+          <TabsContent value="pointer" className="flex flex-col">
+            <p className="py-3 text-xs/4 text-muted-foreground">
               Pointer terms run only where a placement allows them and the editor enabled them.
               Radius 0 turns every term off.
             </p>
-            <div className="border-t border-border">{group(POINTER_GROUP, false)}</div>
+            {group(POINTER_GROUP, false)}
           </TabsContent>
-          <TabsContent value="export">
+          <TabsContent value="export" className="pt-3">
             <ExportPanel recipe={recipe} validation={validation} />
           </TabsContent>
         </Tabs>
@@ -186,7 +200,7 @@ function Group({
   children,
 }: {
   name: string
-  summary: string
+  summary: React.ReactNode
   changed: number
   initCollapsed: boolean
   onReset: () => void
@@ -197,18 +211,20 @@ function Group({
     <Collapsible open={open} onOpenChange={setOpen} className="border-b border-border">
       <CollapsibleTrigger>
         {name}
-        <span className="ml-auto flex items-center gap-3 text-[11px] font-normal whitespace-nowrap text-muted-foreground">
+        <span className="ml-auto flex items-center gap-2.5 text-[11px]/3.5 font-normal whitespace-nowrap text-muted-foreground/70">
           {open ? (
             <>
               {changed > 0 && (
-                <span className="font-mono text-primary tabular-nums">{changed} changed</span>
+                <span className="font-mono tracking-[0.02em] text-primary tabular-nums">
+                  {changed} changed
+                </span>
               )}
               {/* biome-ignore lint/a11y/useSemanticElements: a nested button cannot sit inside the trigger button; the span carries the role and keys */}
               <span
                 role="button"
                 tabIndex={changed ? 0 : -1}
                 aria-disabled={!changed || undefined}
-                className="pressable cursor-pointer rounded-sm px-1 hover:text-foreground aria-disabled:cursor-default aria-disabled:opacity-40"
+                className="pressable cursor-pointer hover:text-foreground aria-disabled:cursor-default aria-disabled:opacity-40"
                 onClick={(event) => {
                   event.stopPropagation()
                   if (changed) onReset()
@@ -230,7 +246,7 @@ function Group({
         </span>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="flex flex-col pb-2">{children}</div>
+        <div className="flex flex-col gap-0.5 pb-3">{children}</div>
       </CollapsibleContent>
     </Collapsible>
   )

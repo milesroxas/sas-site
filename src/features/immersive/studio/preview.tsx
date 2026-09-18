@@ -15,12 +15,15 @@ export function StreakStudioPreview({
   surface,
   paused,
   generation,
+  showStats = true,
 }: {
   recipe: StreakRecipe
   placement: VisualPlacement
   surface: 'light' | 'dark'
   paused: boolean
   generation: number
+  /** The count, DPR and octave line in the corner. Off when the host draws its own. */
+  showStats?: boolean
 }) {
   const root = useRef<HTMLDivElement>(null)
   const reducedMotion = usePrefersReducedMotion()
@@ -72,10 +75,12 @@ export function StreakStudioPreview({
         <strong style={{ fontSize: 32 }}>Your next visual.</strong>
         <p>Check contrast with real content over the field.</p>
       </div>
-      <small style={{ position: 'absolute', bottom: 12, left: 12 }}>
-        {tuning.count} particles · DPR ≤ {tuning.dpr} · {tuning.noiseOctaves} octaves
-        {reducedMotion ? ' · Reduced motion' : ''}
-      </small>
+      {showStats && (
+        <small style={{ position: 'absolute', bottom: 12, left: 12 }}>
+          {tuning.count} particles · DPR ≤ {tuning.dpr} · {tuning.noiseOctaves} octaves
+          {reducedMotion ? ' · Reduced motion' : ''}
+        </small>
+      )}
     </div>
   )
 }
