@@ -331,7 +331,9 @@ export const decimals = (spec: ParameterSpec): number => {
   return String(spec.step).split('.')[1]?.length ?? 0
 }
 
-export const formatValue = (spec: ParameterSpec, value: number) => value.toFixed(decimals(spec))
+/** A value at the parameter's precision with trailing zeros dropped: 0, 1.2, 0.08. */
+export const formatValue = (spec: ParameterSpec, value: number) =>
+  String(Number(value.toFixed(decimals(spec))))
 
 export const toHex = (rgb: readonly number[]) =>
   `#${rgb

@@ -54,7 +54,7 @@ function ValueField({
   className?: string
   onCommit: (next: number) => void
 }) {
-  const shown = value.toFixed(places)
+  const shown = String(Number(value.toFixed(places)))
   const [draft, setDraft] = useState(shown)
   const [editing, setEditing] = useState(false)
   useEffect(() => {
