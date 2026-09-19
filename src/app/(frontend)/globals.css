@@ -1468,6 +1468,17 @@ html[data-theme="light"] {
   display: block;
 }
 
+/* Visual bleed (src/features/immersive/visual/leak-visual.tsx): a visual that
+   leaves its frame portals its layer onto the block root that spreads
+   `VISUAL_HOST`. Only while it holds one does the root become the layer's
+   containing block and its blend group, so the layer spans the band and its
+   blend lands on the band's own ground, never on a page behind it. Keyed on
+   :has so every other block keeps its stacking untouched. */
+[data-visual-host]:has(> [data-visual-bleed]) {
+  position: relative;
+  isolation: isolate;
+}
+
 /* Takeover-menu media (src/Header/Menu/motion.ts): a Streak Field poster
    painted outside its band (the docked window, a hover preview, the handoff
    traveler) carries alpha, so it paints the ground it was drawn for itself.

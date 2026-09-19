@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useSyncExternalStore } from 'react'
+import { effectOf } from '@/features/immersive/studio/effects'
 import {
   canonicalJSON,
-  type StreakRecipe,
-  type StreakSnapshot,
+  type Recipe,
+  type Snapshot,
   snapshotRecipe,
 } from '@/features/immersive/studio/recipe'
 import type { Media } from '@/payload-types'
@@ -15,7 +16,7 @@ export type PublishedState = {
   /** The version's id, or `live` for the published document itself. */
   id: string
   at: string
-  recipe: StreakRecipe
+  recipe: Recipe
   /** Canonical snapshot: equal keys draw equal pixels. */
   key: string
   poster: string | null
@@ -51,17 +52,18 @@ const posterOf = (media: unknown) =>
 function stateOf(
   id: string,
   at: string,
-  doc: { recipe?: unknown; snapshot?: unknown; thumbnail?: unknown },
+  doc: { effect?: unknown; recipe?: unknown; snapshot?: unknown; thumbnail?: unknown },
 ): PublishedState | null {
   try {
     // The stored snapshot is what the site draws. Looks published under the
     // earlier release model carry none on their versions, so theirs resolves
     // from the recipe.
-    const snapshot = (doc.snapshot as StreakSnapshot | null) ?? snapshotRecipe(doc.recipe)
+    const snapshot =
+      (doc.snapshot as Snapshot | null) ?? snapshotRecipe(effectOf(doc.effect), doc.recipe)
     return {
       id,
       at,
-      recipe: doc.recipe as StreakRecipe,
+      recipe: doc.recipe as Recipe,
       key: canonicalJSON(snapshot),
       poster: posterOf(doc.thumbnail),
     }

@@ -1,52 +1,50 @@
-import { STREAK_FIELD_DEFAULTS, type StreakFieldTuning } from '../ui/streak-field-tuning'
 import type { PosterMediaSource } from '../visual/descriptor'
-import { STREAK_PARAMETERS, type StreakSnapshot } from './recipe'
+import { type EffectContract, parameterError, SURFACES, type Surface, type Tuning } from './effect'
+import { FRAME_MAX, type Snapshot } from './recipe'
 
-export type ReleaseDescriptor = {
+/** A published Studio look as a visual slot receives it: what `hydrateStudioFields` hands over. */
+export type ReleaseDescriptor<T extends Tuning = Tuning> = {
   id: number
   sourceHash: string
-  snapshot: StreakSnapshot
-  posters: { dark: PosterMediaSource; light: PosterMediaSource }
+  snapshot: Snapshot<T>
+  posters: Record<Surface, PosterMediaSource>
 }
 
-function isTuning(raw: unknown): raw is StreakFieldTuning {
+/**
+ * Whether a stored value is a whole tuning for this effect: every knob
+ * present, authorable ones inside their parameter, code-owned ones of the
+ * default's type. Ceilings are not restated here: whatever draws a snapshot
+ * puts it through the effect's `limit` first, which holds both ends.
+ */
+function isTuning<T extends Tuning>(effect: EffectContract<T>, raw: unknown): raw is T {
   if (!raw || typeof raw !== 'object') return false
-  const value = raw as Record<string, unknown>
-  for (const [key, base] of Object.entries(STREAK_FIELD_DEFAULTS)) {
+  const value = raw as Tuning
+  return Object.entries(effect.defaults).every(([key, base]) => {
     const v = value[key]
-    if (typeof base === 'number' && (typeof v !== 'number' || !Number.isFinite(v))) return false
-    if (typeof base === 'string') {
-      const spec = STREAK_PARAMETERS[key as keyof typeof STREAK_PARAMETERS]
-      if (
-        key === 'surface'
-          ? !['dark', 'light'].includes(String(v))
-          : !spec || !('options' in spec) || !(spec.options as readonly unknown[]).includes(v)
+    const spec = effect.parameters[key]
+    if (spec) return parameterError(key, spec, v, { resolved: true }) === null
+    if (typeof base === 'number') return typeof v === 'number' && Number.isFinite(v)
+    if (Array.isArray(base))
+      return (
+        Array.isArray(v) &&
+        v.length === base.length &&
+        v.every((n) => typeof n === 'number' && Number.isFinite(n))
       )
-        return false
-    }
-    if (
-      Array.isArray(base) &&
-      (!Array.isArray(v) ||
-        v.length !== 3 ||
-        v.some((n) => typeof n !== 'number' || !Number.isFinite(n) || n < 0 || n > 1))
-    )
-      return false
-  }
-  return (
-    Number.isInteger(value.count) &&
-    Number(value.count) > 0 &&
-    Number(value.count) <= 8000 &&
-    value.segments === 1 &&
-    Number(value.dpr) <= 1.5 &&
-    Number(value.dpr) >= 1 &&
-    Number(value.noiseOctaves) >= 1 &&
-    Number(value.noiseOctaves) <= 3
-  )
+    return typeof v === typeof base
+  })
 }
 
-export function parseRelease(raw: unknown): ReleaseDescriptor | null {
+/**
+ * Read a hydrated look for one effect. Never throws and never guesses: a look
+ * filed under another effect, a malformed snapshot or a missing poster is
+ * `null`, and the slot falls back to its shipped look.
+ */
+export function parseRelease<T extends Tuning>(
+  effect: EffectContract<T>,
+  raw: unknown,
+): ReleaseDescriptor<T> | null {
   if (!raw || typeof raw !== 'object') return null
-  const release = raw as ReleaseDescriptor
+  const release = raw as ReleaseDescriptor<T>
   if (
     !Number.isInteger(release.id) ||
     typeof release.sourceHash !== 'string' ||
@@ -57,14 +55,13 @@ export function parseRelease(raw: unknown): ReleaseDescriptor | null {
   if (
     !snapshot ||
     typeof snapshot.renderer !== 'string' ||
-    !isTuning(snapshot.dark) ||
-    !isTuning(snapshot.light) ||
+    !SURFACES.every((surface) => isTuning(effect, snapshot[surface])) ||
     !Number.isInteger(snapshot.frame) ||
     snapshot.frame < 1 ||
-    snapshot.frame > 600
+    snapshot.frame > FRAME_MAX
   )
     return null
-  for (const surface of ['dark', 'light'] as const) {
+  for (const surface of SURFACES) {
     const poster = release.posters?.[surface]
     if (
       !poster ||

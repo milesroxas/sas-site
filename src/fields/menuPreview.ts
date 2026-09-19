@@ -1,6 +1,6 @@
 import type { Condition, Field, FilterOptions, SelectField, UploadField } from 'payload'
 import { publicApprovedMediaWhere } from './caseStudyScopedMedia'
-import { streakShaderField } from './visual'
+import { shaderField } from './visual'
 
 type MenuPreviewArgs = {
   /** What the menu shows when this is empty, in the words of the collection. */
@@ -66,7 +66,7 @@ export const menuPreviewFields = (args: MenuPreviewArgs): Field[] => [
   menuPreviewTypeField(),
   menuPreviewField(args),
   {
-    ...streakShaderField({
+    ...shaderField({
       name: 'menuPreviewShader',
       label: 'Menu preview Streak Field',
       condition: previewIsShader,

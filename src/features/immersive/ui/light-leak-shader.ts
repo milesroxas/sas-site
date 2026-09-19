@@ -30,11 +30,15 @@
  */
 
 export const VERTEX_SHADER = /* glsl */ `
+uniform vec2 uMirror; // 1 on an axis the field is mirrored on
+
 varying vec2 vUv;
 
-// Fullscreen quad: bypass camera transforms entirely.
+// Fullscreen quad: bypass camera transforms entirely. The mirror is folded
+// into the interpolated coordinate here, so the fragment stage, which runs the
+// field 36 times per pixel, never sees it.
 void main() {
-  vUv = uv;
+  vUv = mix(uv, 1.0 - uv, uMirror);
   gl_Position = vec4(position.xy, 1.0, 1.0);
 }
 `

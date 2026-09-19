@@ -3,17 +3,18 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
-import { createPointerInput, FieldScene } from '../ui/streak-field-scene'
-import { type CaptureOptions, limitStudioTuning, type StreakSnapshot } from './recipe'
+import { type EffectId, effectOf } from './effects'
+import type { CaptureOptions, Snapshot } from './recipe'
+import { EFFECT_SCENES } from './scenes'
 
-export type CaptureInput = { snapshot: StreakSnapshot; capture: CaptureOptions }
+export type CaptureInput = { effect: EffectId; snapshot: Snapshot; capture: CaptureOptions }
 
 /**
- * One exact still, rendered in this browser: the shared `FieldScene` stepped
- * a fixed number of 1/60 s frames with a neutral pointer, then read back as
- * base64 PNG. It mounts its own offscreen canvas and takes it down again, so
- * the caller needs no element and the website has no readback path. Studio
- * calls it on Publish (the two posters) and on Export.
+ * One exact still, rendered in this browser: the effect's own scene stepped a
+ * fixed number of 1/60 s frames with neutral input, then read back as base64
+ * PNG. It mounts its own offscreen canvas and takes it down again, so the
+ * caller needs no element and the website has no readback path. Studio calls
+ * it on Publish (the two posters) and on Export.
  */
 export function captureStill(input: CaptureInput): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -49,7 +50,7 @@ export function captureStill(input: CaptureInput): Promise<string> {
 }
 
 function CaptureScene({
-  input: { capture, snapshot },
+  input: { effect, capture, snapshot },
   onResult,
   onError,
 }: {
@@ -58,8 +59,8 @@ function CaptureScene({
   onError: (message: string) => void
 }) {
   const rootRef = useRef<HTMLDivElement>(null)
-  const pointer = useRef(createPointerInput())
-  const tuning = limitStudioTuning(snapshot[capture.surface], 'hero')
+  const Scene = EFFECT_SCENES[effect].Capture
+  const tuning = effectOf(effect).limit(snapshot[capture.surface], 'hero')
   return (
     <div ref={rootRef} style={{ width: capture.width, height: capture.height }}>
       <Canvas
@@ -77,19 +78,12 @@ function CaptureScene({
           gl.debug.onShaderError = () => onError('Shader compilation failed.')
         }}
       >
-        <FieldScene
-          rootRef={rootRef}
-          inputRef={pointer}
-          tuning={{ ...tuning, pointerRadius: 0 }}
-          fixedDelta={1 / 60}
-          onFlowUnsupported={() => onError('This browser has no float render targets.')}
-        />
+        <Scene rootRef={rootRef} tuning={tuning} onError={onError} />
         <CaptureFrames frames={snapshot.frame} onResult={onResult} onError={onError} />
       </Canvas>
     </div>
   )
 }
-
 function CaptureFrames({
   frames,
   onResult,

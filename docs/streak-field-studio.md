@@ -1,6 +1,6 @@
 # Streak Field Studio
 
-Studio lives in Payload under **Assets > Streak Fields**. The plugin is registered in `src/plugins/index.ts`.
+Studio lives in Payload under **Assets > Studio Looks**. The plugin is registered in `src/plugins/index.ts`. It authors every effect in `features/immersive/studio/effects` (the Streak Field and the light leak); this page is written around the Streak Field, the workflow is the same for both, and [studio-effects.md](studio-effects.md) covers the contract, the light leak's slot controls and adding an effect.
 
 ## Editorial workflow
 
@@ -33,7 +33,8 @@ The Studio components (`src/plugins/streak-studio/components`) are built from th
 ## Single source of truth
 
 - `features/immersive/ui/streak-field-tuning.ts`: effect defaults.
-- `features/immersive/studio/recipe.ts`: authorable parameters, validation, production envelope, capture limits.
+- `features/immersive/studio/effects/streak-field.ts`: authorable parameters, the light face, the production envelope.
+- `features/immersive/studio/recipe.ts`: the recipe engine every effect shares (validation, snapshot, identity, capture limits).
 - `features/immersive/visual/placement.ts`: existing placement ceilings.
 - `features/immersive/visual/posters.ts`: page and menu poster resolution.
 - `plugins/streak-studio`: the looks collection, authorization, publication, slot hydration, and admin UI.

@@ -95,6 +95,7 @@ import * as migration_20260914_181605_mcp_key_capabilities from './20260914_1816
 import * as migration_20260916_161637_tabs_visual_slots from './20260916_161637_tabs_visual_slots';
 import * as migration_20260917_220809_streak_field_studio from './20260917_220809_streak_field_studio';
 import * as migration_20260919_000344_streak_field_as_media from './20260919_000344_streak_field_as_media';
+import * as migration_20260919_171224_light_leak_visual from './20260919_171224_light_leak_visual';
 
 export const migrations = [
   {
@@ -580,6 +581,11 @@ export const migrations = [
   {
     up: migration_20260919_000344_streak_field_as_media.up,
     down: migration_20260919_000344_streak_field_as_media.down,
-    name: '20260919_000344_streak_field_as_media'
+    name: '20260919_000344_streak_field_as_media',
+  },
+  {
+    up: migration_20260919_171224_light_leak_visual.up,
+    down: migration_20260919_171224_light_leak_visual.down,
+    name: '20260919_171224_light_leak_visual'
   },
 ];

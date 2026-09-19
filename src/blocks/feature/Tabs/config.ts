@@ -3,7 +3,7 @@ import { themeField } from '@/blocks/shared/fields'
 
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
-import { visualSlotFields } from '@/fields/visual'
+import { blockVisualSlotFields } from '@/fields/visual'
 import { featureSourceField } from '../shared'
 
 export const FeatureTabs: Block = {
@@ -48,7 +48,7 @@ export const FeatureTabs: Block = {
         },
         // Each tab is its own visual slot (upload or Streak Field), the same
         // slot the heroes and media blocks carry.
-        ...visualSlotFields({
+        ...blockVisualSlotFields({
           name: 'media',
           type: 'upload',
           relationTo: 'media',

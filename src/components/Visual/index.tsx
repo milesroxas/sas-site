@@ -2,23 +2,24 @@ import type React from 'react'
 import { Media } from '@/components/Media'
 import type { Props as MediaProps } from '@/components/Media/types'
 import {
+  LeakVisual,
   StreakVisual,
-  type StreakVisualSurface,
   type VisualPlacement,
+  type VisualSurface,
   type Visual as VisualValue,
 } from '@/features/immersive/visual'
 
 export type VisualProps = {
   visual: VisualValue
-  /** Which ceiling and admission priority a live field gets here. */
+  /** Which ceiling and admission priority a live effect gets here. */
   placement: VisualPlacement
-  /** Ground polarity for a Streak Field; `auto` follows the site theme. */
-  surface?: StreakVisualSurface
-  /** Hold a live field until the owner's motion (a hero intro) has settled. */
+  /** Ground polarity for an effect; `auto` follows the site theme. */
+  surface?: VisualSurface
+  /** Hold a live effect until the owner's motion (a hero intro) has settled. */
   active?: boolean
-  /** Frame classes for the Streak Field slot; `className` goes to the media wrapper. */
+  /** Frame classes for an effect's slot; `className` goes to the media wrapper. */
   frameClassName?: string
-  /** Poster image classes for the Streak Field slot; defaults to `imgClassName`. */
+  /** Poster image classes for an effect's slot; defaults to `imgClassName`. */
   posterClassName?: string
 } & Pick<
   MediaProps,
@@ -35,9 +36,10 @@ export type VisualProps = {
 
 /**
  * Renders a resolved `Visual`: the existing `Media` element for uploads, the
- * poster-first `StreakVisual` slot for a Streak Field. Media branches keep
- * their loading contract untouched (priority heroes, viewport-gated loops);
- * shader branches never mount a retained upload behind the poster.
+ * effect's own poster-first slot otherwise. Media branches keep their loading
+ * contract untouched (priority heroes, viewport-gated loops); an effect never
+ * mounts a retained upload behind its poster, except a light leak whose editor
+ * asked for the media under it.
  */
 export const Visual: React.FC<VisualProps> = ({
   visual,
@@ -49,17 +51,23 @@ export const Visual: React.FC<VisualProps> = ({
   ...media
 }) => {
   if (visual.kind === 'media') return <Media {...media} resource={visual.media} />
+  const slot = {
+    active,
+    className: frameClassName,
+    fill: media.fill,
+    imgClassName: posterClassName ?? media.imgClassName,
+    placement,
+    priority: media.priority,
+    sizes: media.size,
+    surface,
+  }
+  if (visual.kind === 'streakField')
+    return <StreakVisual {...slot} descriptor={visual.descriptor} />
   return (
-    <StreakVisual
-      active={active}
-      className={frameClassName}
+    <LeakVisual
+      {...slot}
       descriptor={visual.descriptor}
-      fill={media.fill}
-      imgClassName={posterClassName ?? media.imgClassName}
-      placement={placement}
-      priority={media.priority}
-      sizes={media.size}
-      surface={surface}
+      media={visual.descriptor.media && <Media {...media} resource={visual.descriptor.media} />}
     />
   )
 }

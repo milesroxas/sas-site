@@ -1,20 +1,16 @@
 'use client'
 
-import { Button, toast, useDocumentInfo, useForm, useFormFields } from '@payloadcms/ui'
+import { Button, toast, useDocumentInfo, useForm } from '@payloadcms/ui'
 import { useState } from 'react'
-import {
-  canonicalJSON,
-  type StreakRecipe,
-  snapshotRecipe,
-} from '@/features/immersive/studio/recipe'
+import { canonicalJSON, snapshotRecipe } from '@/features/immersive/studio/recipe'
+import { useDraft } from './draft'
 import { refreshStudio, useLook } from './look-store'
-import { RECIPE_FIELD } from './paths'
 import { publishLook } from './publish'
 
 /**
- * Publish, for a field used like a media file: the two posters render in this
+ * Publish, for a look used like a media file: the two posters render in this
  * browser and the look is published with them in one request, so it is done
- * when the button says so. Every place that uses the field shows the result.
+ * when the button says so. Every place that uses the look shows the result.
  */
 export function PublishButton() {
   const {
@@ -24,16 +20,14 @@ export function PublishButton() {
     setMostRecentVersionIsAutosaved,
     setUnpublishedVersionCount,
   } = useDocumentInfo()
-  const { submit, getData, reset } = useForm()
-  const recipe = useFormFields(([fields]) => fields[RECIPE_FIELD]?.value) as
-    | StreakRecipe
-    | undefined
+  const { submit, reset } = useForm()
+  const { effect, effectId, recipe } = useDraft()
   const { live, uses } = useLook(id)
   const [busy, setBusy] = useState(false)
 
   let unchanged = false
   try {
-    unchanged = Boolean(live && recipe && canonicalJSON(snapshotRecipe(recipe)) === live.key)
+    unchanged = Boolean(live && canonicalJSON(snapshotRecipe(effect, recipe)) === live.key)
   } catch {
     // An invalid draft is not what is published; the Inspector says what is wrong.
   }
@@ -49,7 +43,7 @@ export function PublishButton() {
             await submit({ overrides: { _status: 'draft' } })
             return
           }
-          const doc = await publishLook(submit, id, getData().recipe as StreakRecipe)
+          const doc = await publishLook(submit, { id, effect: effectId, recipe })
           await reset(doc)
           setHasPublishedDoc(true)
           setUnpublishedVersionCount(0)
@@ -57,7 +51,7 @@ export function PublishButton() {
           incrementVersionCount()
           refreshStudio()
           toast.success(
-            places > 1 ? `Published. ${places} places now show this field.` : 'Published.',
+            places > 1 ? `Published. ${places} places now show this look.` : 'Published.',
           )
         } catch (error) {
           toast.error((error as Error).message)
@@ -69,7 +63,7 @@ export function PublishButton() {
       {busy
         ? 'Rendering…'
         : !id
-          ? 'Create field'
+          ? 'Create look'
           : unchanged
             ? 'Published'
             : places > 1

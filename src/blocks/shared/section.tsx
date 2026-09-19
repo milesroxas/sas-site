@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { VISUAL_HOST } from '@/features/immersive/visual'
 import { cn } from '@/utilities/ui'
 
 /**
@@ -133,7 +134,10 @@ export const Section = ({
 }) => {
   if (bare) return <>{children}</>
   return (
-    <section className={cn(BAND_SPACING[spacing], sectionThemeClass(theme), className)}>
+    <section
+      className={cn(BAND_SPACING[spacing], sectionThemeClass(theme), className)}
+      {...VISUAL_HOST}
+    >
       {children}
     </section>
   )

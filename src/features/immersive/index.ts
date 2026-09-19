@@ -17,7 +17,7 @@ export {
   STREAK_FIELD_TOPOGRAPHY,
 } from './presets'
 export { captureStill } from './studio/capture'
-export { STUDIO_GROUND, StreakStudioPreview } from './studio/preview'
+export { StudioPreview } from './studio/preview'
 export {
   CHROMA_SPLIT_TEXT_DEFAULTS,
   ChromaSplitText,

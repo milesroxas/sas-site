@@ -1,10 +1,22 @@
 /**
- * Light entry for the Streak Field visual contract: look ids, descriptors,
- * resolvers, posters and placement policy. No Three, R3F or DOM imports, so
- * the Payload config, server components, validation hooks and the menu
- * resolver can use it. The live runtime is reached only through the
- * `StreakVisual` client slot, which imports it on demand.
+ * Light entry for the visual contract: the effects a slot can choose, look
+ * ids, descriptors, resolvers, posters and placement policy. No Three, R3F or
+ * DOM imports, so the Payload config, server components, validation hooks and
+ * the menu resolver can use it. A live runtime is reached only through its
+ * effect's client slot (`StreakVisual`, `LeakVisual`), which imports it on
+ * demand.
  */
+export { type Effect, isLookId } from '../studio/effect'
+export {
+  DEFAULT_EFFECT,
+  EFFECT_IDS,
+  EFFECT_OPTIONS,
+  EFFECTS,
+  type EffectId,
+  effectOf,
+  isEffectId,
+} from '../studio/effects'
+export { LEAK_ORIGINS } from '../ui/light-leak-tuning'
 export {
   isValidStreakSeed,
   MENU_PREVIEW_TYPES,
@@ -32,15 +44,13 @@ export {
   type VisualType,
   visualMedia,
 } from './descriptor'
+export { VISUAL_HOST } from './host'
+export { LeakVisual } from './leak-visual'
 export {
-  isStreakLookId,
   STREAK_FALLBACK_LOOK,
   STREAK_LOOK_IDS,
-  STREAK_LOOK_OPTIONS,
   STREAK_LOOK_REVISION,
-  STREAK_LOOKS,
   type StreakLook,
-  type StreakLookId,
   type StreakLookMotion,
 } from './looks'
 export { VisualMotionToggle } from './motion-toggle'
@@ -49,23 +59,21 @@ export {
   PLACEMENT_LIMITS,
   type PlacementLimits,
   STREAK_LIVE_CEILING,
-  VISUAL_PLACEMENTS,
   type VisualPlacement,
 } from './placement'
+export type { VisualSurface } from './poster'
 export {
-  descriptorPosters,
   mediaPosterImage,
   type PosterImage,
   presetPosterImage,
   STREAK_POSTER_MIME,
   STREAK_POSTER_SIZE,
   type StreakPosterSurface,
-  streakPosterSrc,
+  visualPosters,
 } from './posters'
 export { placementAllowsLive, streakLiveEnabled } from './rollout'
 export {
   StreakVisual,
   type StreakVisualProps,
-  type StreakVisualStatus,
   type StreakVisualSurface,
 } from './streak-visual'

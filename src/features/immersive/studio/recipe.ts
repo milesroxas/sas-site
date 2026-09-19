@@ -1,181 +1,81 @@
-import { STREAK_FIELD_PAPER } from '../presets'
-import {
-  resolveStreakTuning,
-  STREAK_FIELD_DEFAULTS,
-  type StreakFieldTuning,
-} from '../ui/streak-field-tuning'
-import { STREAK_LOOKS, type StreakLookId } from '../visual/looks'
+import { resolveTuning } from '../resolve-tuning'
+import { type EffectContract, parameterError, type Surface, type Tuning } from './effect'
 
-export type { StreakFieldTuning }
-
-import { PLACEMENT_LIMITS, type VisualPlacement } from '../visual/placement'
-
-export const STREAK_RENDERER_VERSION = 'streak-1'
-export const STREAK_RECIPE_VERSION = 1
-type Parameter =
-  | { group: string; min: number; max: number; step?: number }
-  | { group: string; options: readonly string[] }
-  | { group: string; color: true }
-const range = (group: string, min: number, max: number, step = 0.01): Parameter => ({
-  group,
-  min,
-  max,
-  step,
-})
-const unit = (group: string) => range(group, 0, 1)
 /**
- * Shared authoring contract. Resource allocation stays code-owned: `dpr`,
- * `segments` and `noiseOctaves` are absent and are set by the placement.
- * `count` is the exception, because it is a composition lever before it is a
- * cost one: at a fixed count, widening `rowPitch` only packs the surviving
- * rows tighter, so without it a sparse field cannot be authored at all and
- * every look ships at its placement ceiling. Its range stops at the ceiling
- * the most generous placement grants (`PLACEMENT_LIMITS.hero`), so a recipe
- * can ask for less than code allows and never for more.
+ * The recipe engine: what an author stores, what the site draws from, and how
+ * one becomes the other, for whichever effect a look is filed under. Every
+ * function takes the effect's contract (`./effect`); nothing here knows a
+ * parameter by name.
  */
-export const STREAK_PARAMETERS = {
-  layout: { group: 'Composition', options: ['rows', 'grid'] },
-  shape: { group: 'Composition', options: ['dash', 'dot'] },
-  count: range('Composition', 100, 8000, 100),
-  columnPitch: range('Composition', 4, 100, 1),
-  rowPitch: range('Composition', 4, 100, 1),
-  rowJitter: unit('Composition'),
-  thickness: range('Composition', 0.2, 4, 0.1),
-  minLength: range('Composition', 1, 80, 1),
-  maxLength: range('Composition', 1, 80, 1),
-  lengthBias: range('Composition', 1, 10, 0.1),
-  motion: { group: 'Motion', options: ['drift', 'flow'] },
-  flowSpeed: range('Motion', 0, 100, 1),
-  drift: range('Motion', -50, 50, 1),
-  driftSpread: unit('Motion'),
-  timeScale: range('Motion', 0, 1.5, 0.05),
-  noise: {
-    group: 'Flow',
-    options: ['none', 'value', 'simplex', 'fbm', 'ridged', 'curl', 'gradient'],
-  },
-  noiseScale: range('Flow', 100, 2000, 10),
-  noiseStrength: range('Flow', 0, 200, 1),
-  noiseSpeed: range('Flow', 0, 0.5),
-  noiseGain: range('Flow', 0, 0.6),
-  noiseAxis: unit('Flow'),
-  orient: unit('Flow'),
-  relief: unit('Relief'),
-  reliefFloor: unit('Relief'),
-  reliefContrast: range('Relief', 0.5, 5, 0.05),
-  reliefLength: unit('Relief'),
-  ink: { group: 'Color', color: true },
-  paperInk: { group: 'Color', color: true },
-  brightness: range('Color', 0, 1.5),
-  brightnessSpread: unit('Color'),
-  flicker: unit('Color'),
-  flickerRate: range('Color', 0, 2),
-  tail: unit('Color'),
-  cap: range('Color', 0, 8, 0.1),
-  lifetime: range('Life', 2, 30, 0.1),
-  lifeSpread: range('Life', 0, 0.9),
-  fadeIn: range('Life', 0, 0.4),
-  fadeOut: range('Life', 0, 0.4),
-  pointerRadius: range('Interaction', 0, 500, 10),
-  pointerPush: range('Interaction', -100, 100, 1),
-  pointerSwirl: range('Interaction', -100, 100, 1),
-  pointerWake: range('Interaction', 0, 0.2),
-  pointerAgitate: range('Interaction', 0, 4.2, 0.1),
-  pointerGlow: range('Interaction', 0, 3, 0.1),
-  pointerLift: range('Interaction', -1, 1),
-  pointerEase: range('Interaction', 1, 20, 0.5),
-} as const satisfies Partial<Record<keyof StreakFieldTuning, Parameter>>
-export type RecipeDeltas = Partial<Pick<StreakFieldTuning, keyof typeof STREAK_PARAMETERS>>
-export type StreakRecipe = { version: 1; seed: number; deltas: RecipeDeltas; frame: number }
-export type StreakSnapshot = {
+
+export const RECIPE_VERSION = 1
+export const SEED_MAX = 2_147_483_647
+export const FRAME_MAX = 600
+
+/** What the author stores: a seed, the capture frame, and only the parameters that left their default. */
+export type Recipe = { version: 1; seed: number; deltas: Tuning; frame: number }
+
+/** What the site draws from: the resolved tuning for each ground, already at the most generous placement's caps. */
+export type Snapshot<T extends Tuning = Tuning> = {
   renderer: string
-  dark: StreakFieldTuning
-  light: StreakFieldTuning
+  dark: T
+  light: T
   frame: number
 }
-export const emptyRecipe = (): StreakRecipe => ({
-  version: 1,
-  seed: STREAK_FIELD_DEFAULTS.seed,
+
+export const emptyRecipe = <T extends Tuning>(effect: EffectContract<T>): Recipe => ({
+  version: RECIPE_VERSION,
+  seed: effect.seeded ? Number(effect.defaults.seed) : 0,
   deltas: {},
   frame: 150,
 })
 
 /** The effective tuning a recipe asks for, before any placement cap. Never throws. */
-export const resolveRecipeTuning = (recipe: StreakRecipe): StreakFieldTuning =>
-  resolveStreakTuning({ ...recipe.deltas, seed: recipe.seed })
+export const resolveRecipeTuning = <T extends Tuning>(
+  effect: EffectContract<T>,
+  recipe: Recipe,
+): T =>
+  resolveTuning<T>(effect.defaults, {
+    ...recipe.deltas,
+    ...(effect.seeded ? { seed: recipe.seed } : {}),
+  } as Partial<T>)
 
-export function validateRecipe(raw: unknown): StreakRecipe {
+export function validateRecipe<T extends Tuning>(effect: EffectContract<T>, raw: unknown): Recipe {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw))
     throw new Error('A recipe is required.')
   const value = raw as Record<string, unknown>
   if (Object.keys(value).some((key) => !['version', 'seed', 'deltas', 'frame'].includes(key)))
     throw new Error('Unknown recipe property.')
-  if (value.version !== STREAK_RECIPE_VERSION)
+  if (value.version !== RECIPE_VERSION)
     throw new Error('Unsupported recipe version. Duplicate a current starter to upgrade.')
-  if (!Number.isInteger(value.seed) || Number(value.seed) < 0 || Number(value.seed) > 2147483647)
+  if (!Number.isInteger(value.seed) || Number(value.seed) < 0 || Number(value.seed) > SEED_MAX)
     throw new Error('Seed must be a nonnegative 31-bit integer.')
-  if (!Number.isInteger(value.frame) || Number(value.frame) < 1 || Number(value.frame) > 600)
-    throw new Error('Capture frame must be between 1 and 600.')
+  if (!Number.isInteger(value.frame) || Number(value.frame) < 1 || Number(value.frame) > FRAME_MAX)
+    throw new Error(`Capture frame must be between 1 and ${FRAME_MAX}.`)
   if (!value.deltas || typeof value.deltas !== 'object' || Array.isArray(value.deltas))
     throw new Error('Recipe deltas must be an object.')
   for (const [key, val] of Object.entries(value.deltas)) {
-    if (!Object.hasOwn(STREAK_PARAMETERS, key)) throw new Error(`Unsupported parameter: ${key}`)
-    const spec: Parameter = STREAK_PARAMETERS[key as keyof RecipeDeltas]
-    if ('options' in spec) {
-      if (typeof val !== 'string' || !spec.options.includes(val)) throw new Error(`Invalid ${key}.`)
-    } else if ('color' in spec) {
-      if (
-        !Array.isArray(val) ||
-        val.length !== 3 ||
-        val.some((n) => typeof n !== 'number' || !Number.isFinite(n) || n < 0 || n > 1)
-      )
-        throw new Error(`${key} must be three color values from 0 to 1.`)
-    } else if (typeof val !== 'number' || !Number.isFinite(val) || val < spec.min || val > spec.max)
-      throw new Error(`${key} must be between ${spec.min} and ${spec.max}.`)
+    if (!Object.hasOwn(effect.parameters, key)) throw new Error(`Unsupported parameter: ${key}`)
+    const error = parameterError(key, effect.parameters[key], val)
+    if (error) throw new Error(error)
   }
-  const recipe = value as unknown as StreakRecipe
-  const tuning = resolveStreakTuning(recipe.deltas)
-  if (tuning.minLength > tuning.maxLength)
-    throw new Error('Minimum length cannot exceed maximum length.')
+  const recipe = value as unknown as Recipe
+  effect.check?.(resolveRecipeTuning(effect, recipe))
   return recipe
 }
 
-/** Final caps apply after all creative overrides, including slot multipliers. */
-export function limitStudioTuning(
-  tuning: StreakFieldTuning,
-  placement: VisualPlacement,
-): StreakFieldTuning {
-  const limits = PLACEMENT_LIMITS[placement]
-  const expensiveNoise = tuning.noise === 'curl' || tuning.noise === 'gradient'
-  const count = Math.min(
-    tuning.count,
-    limits.count || 1000,
-    expensiveNoise ? 4000 : 8000,
-    Math.floor(
-      800000 /
-        Math.max(
-          1,
-          tuning.maxLength * (tuning.shape === 'dot' ? tuning.maxLength : tuning.thickness),
-        ),
-    ),
-  )
+export function snapshotRecipe<T extends Tuning>(
+  effect: EffectContract<T>,
+  raw: unknown,
+): Snapshot<T> {
+  const recipe = validateRecipe(effect, raw)
+  const base = resolveRecipeTuning(effect, recipe)
+  const face = (surface: Surface) => effect.limit(effect.face(base, surface), 'hero')
   return {
-    ...tuning,
-    count: Math.max(1, count),
-    dpr: Math.min(tuning.dpr, limits.dpr),
-    segments: 1,
-    noiseOctaves: Math.min(tuning.noiseOctaves, expensiveNoise ? 2 : 3),
-    pointerRadius: limits.pointer ? tuning.pointerRadius : 0,
-  }
-}
-
-export function snapshotRecipe(raw: unknown): StreakSnapshot {
-  const recipe = validateRecipe(raw)
-  const base = resolveStreakTuning({ ...recipe.deltas, seed: recipe.seed })
-  return {
-    renderer: STREAK_RENDERER_VERSION,
+    renderer: effect.renderer,
     frame: recipe.frame,
-    dark: limitStudioTuning({ ...base, surface: 'dark' }, 'hero'),
-    light: limitStudioTuning({ ...base, ...STREAK_FIELD_PAPER, surface: 'light' }, 'hero'),
+    dark: face('dark'),
+    light: face('light'),
   }
 }
 
@@ -199,64 +99,66 @@ export function canonicalJSON(value: unknown): string {
 }
 
 /** A release is its snapshot: two recipes that resolve to the same one draw the same pixels. */
-export const sameSnapshot = (a: StreakSnapshot, b: StreakSnapshot) =>
-  canonicalJSON(a) === canonicalJSON(b)
+export const sameSnapshot = (a: Snapshot, b: Snapshot) => canonicalJSON(a) === canonicalJSON(b)
 
 /**
  * How many settings separate two snapshots: every dark-ground value (seed
  * included), the capture frame and the renderer. Never zero for snapshots
  * that differ, so a change that only shows on the light ground still counts.
  */
-export function snapshotChanges(a: StreakSnapshot, b: StreakSnapshot): number {
+export function snapshotChanges(a: Snapshot, b: Snapshot): number {
   if (sameSnapshot(a, b)) return 0
-  const keys = new Set([...Object.keys(a.dark), ...Object.keys(b.dark)]) as Set<
-    keyof StreakFieldTuning
-  >
+  const keys = new Set([...Object.keys(a.dark), ...Object.keys(b.dark)])
   let changes = Number(a.frame !== b.frame) + Number(a.renderer !== b.renderer)
   for (const key of keys) if (canonicalJSON(a.dark[key]) !== canonicalJSON(b.dark[key])) changes++
   return Math.max(1, changes)
+}
+
+const sameValue = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
+
+/** The deltas that carry `tuning`: every authorable parameter that left its default, held to its range. */
+function deltasOf<T extends Tuning>(effect: EffectContract<T>, tuning: Tuning): Tuning {
+  const deltas: Tuning = {}
+  for (const [key, spec] of Object.entries(effect.parameters)) {
+    let value = tuning[key]
+    if ('min' in spec && !('vector' in spec) && typeof value === 'number')
+      value = Math.max(spec.min, Math.min(spec.max, value))
+    if (!sameValue(value, effect.defaults[key])) deltas[key] = value
+  }
+  return deltas
 }
 
 /**
  * The recipe a release was published from, read back out of its snapshot:
  * every authorable parameter that differs from the default becomes a delta.
  * It resolves to the same snapshot, so it is the same release; the one thing
- * it does not keep is a count the hero budget had already capped. Studio uses
+ * it does not keep is a value the hero budget had already capped. Studio uses
  * it to compare a draft against a release and to restore a release as the
  * draft.
  */
-export function recipeFromSnapshot(snapshot: StreakSnapshot): StreakRecipe {
-  const deltas: Record<string, unknown> = {}
-  for (const key of Object.keys(STREAK_PARAMETERS) as (keyof RecipeDeltas)[]) {
-    const value = snapshot.dark[key]
-    if (JSON.stringify(value) !== JSON.stringify(STREAK_FIELD_DEFAULTS[key])) deltas[key] = value
-  }
-  return validateRecipe({
-    ...emptyRecipe(),
-    seed: snapshot.dark.seed,
+export const recipeFromSnapshot = <T extends Tuning>(
+  effect: EffectContract<T>,
+  snapshot: Snapshot,
+): Recipe =>
+  validateRecipe(effect, {
+    ...emptyRecipe(effect),
+    ...(effect.seeded ? { seed: snapshot.dark.seed } : {}),
     frame: snapshot.frame,
-    deltas,
+    deltas: deltasOf(effect, snapshot.dark),
   })
-}
 
-export function starterRecipe(id: StreakLookId): StreakRecipe {
-  const tuning = resolveStreakTuning(STREAK_LOOKS[id].tuning)
-  const deltas: Record<string, unknown> = {}
-  for (const [key, spec] of Object.entries(STREAK_PARAMETERS)) {
-    let value = tuning[key as keyof RecipeDeltas]
-    if ('min' in spec && typeof value === 'number')
-      value = Math.max(spec.min, Math.min(spec.max, value))
-    if (JSON.stringify(value) !== JSON.stringify(STREAK_FIELD_DEFAULTS[key as keyof RecipeDeltas]))
-      deltas[key] = value
-  }
-  return validateRecipe({ ...emptyRecipe(), deltas })
-}
+/** A shipped look as a recipe, so "make it mine" starts where the page already is. */
+export const starterRecipe = <T extends Tuning>(effect: EffectContract<T>, look: string): Recipe =>
+  validateRecipe(effect, {
+    ...emptyRecipe(effect),
+    deltas: deltasOf(effect, resolveTuning<T>(effect.defaults, effect.looks[look]?.tuning ?? {})),
+  })
 
 export type CaptureOptions = {
   width: number
   height: number
   scale: number
-  surface: 'light' | 'dark'
+  surface: Surface
   format: 'png' | 'webp' | 'jpeg'
   transparent: boolean
 }

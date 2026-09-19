@@ -43,7 +43,7 @@ The light entry (`@/features/immersive/visual`) imports no Three, so Payload con
 | Looks, descriptor, compose, placement, admission, capability, posters | `src/features/immersive/visual/` |
 | Payload field factory | `src/fields/visual.ts`, `src/fields/visual-validate.ts` |
 | Admin look picker | `src/components/StreakLookSelect/` |
-| Poster capture script | `scripts/streak-field-posters.ts` |
+| Poster capture script | `scripts/visual-posters.ts` |
 | Playground and its look formatter | `src/widgets/immersive-demo/ui/streak-field-playground.tsx`, `streak-look-snippet.ts` at `/demo/immersive` |
 
 ## Quick start
@@ -293,7 +293,7 @@ A live field is admitted only when **all** of these hold: hydrated, placement al
 
 ```bash
 pnpm storybook -p 6106                                            # another terminal
-pnpm exec tsx scripts/streak-field-posters.ts --base http://localhost:6106
+pnpm exec tsx scripts/visual-posters.ts --base http://localhost:6106
 ```
 
 Headless Chromium renders through SwiftShader. Slow, but it runs the same program.

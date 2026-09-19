@@ -2,24 +2,25 @@
 
 import './studio.css'
 
-import { toast, useDocumentDrawer, useDocumentInfo, useField } from '@payloadcms/ui'
+import { toast, useDocumentDrawer, useDocumentInfo, useField, useFormFields } from '@payloadcms/ui'
 import { IconPlus } from '@tabler/icons-react'
 import type { RelationshipFieldClientComponent } from 'payload'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { STUDIO_GROUND } from '@/features/immersive'
-import { emptyRecipe, starterRecipe } from '@/features/immersive/studio/recipe'
 import {
-  isStreakLookId,
-  STREAK_LOOK_OPTIONS,
-  type StreakLookId,
-  streakPosterSrc,
-  type VisualPlacement,
-} from '@/features/immersive/visual'
+  isLookId,
+  lookOptions,
+  lookPosterSrc,
+  STUDIO_GROUND,
+} from '@/features/immersive/studio/effect'
+import { DEFAULT_EFFECT, effectOf, isEffectId } from '@/features/immersive/studio/effects'
+import { emptyRecipe, starterRecipe } from '@/features/immersive/studio/recipe'
+import type { VisualPlacement } from '@/features/immersive/visual/placement'
 import type { Media, StreakLook } from '@/payload-types'
 import { cn } from '@/utilities/ui'
-import { LOOKS_SLUG } from './paths'
+import { EFFECT_COPY } from './parameters'
+import { EFFECT_FIELD, LOOKS_SLUG } from './paths'
 import { sessionKey, studioStore } from './store'
 
 const idOf = (value: unknown): number | null =>
@@ -34,7 +35,18 @@ const posterOf = (look: StreakLook) =>
     ? ((look.thumbnail as Media).sizes?.thumbnail?.url ?? (look.thumbnail as Media).url)
     : null
 
-/** Where in the document the slot sits, read from the field's path: the new field's name and its stage. */
+/**
+ * The sibling that says which effect the slot chose, from this field's path:
+ * `<slot>.shader.studio` answers to `<slot>.visualType`, and the menu preview's
+ * group to `menuPreviewType`.
+ */
+const slotTypePath = (path: string) => {
+  const segments = path.split('.').slice(0, -1)
+  const group = segments.pop()
+  return [...segments, group === 'menuPreviewShader' ? 'menuPreviewType' : 'visualType'].join('.')
+}
+
+/** Where in the document the slot sits, read from the field's path: the new look's name and its stage. */
 const slotOf = (path: string): { label: string; placement: VisualPlacement } =>
   path.includes('menuPreview')
     ? { label: 'Menu preview', placement: 'menu' }
@@ -90,12 +102,12 @@ function Card({
 }
 
 /**
- * The visual slot's one picker. A Streak Field is used like a media file: the
- * slot holds the field, the site shows what is published, and editing happens
- * in Studio, opened here in a drawer so the editor never leaves the page. A
- * shipped look and a field of your own are chosen from the same grid; the
- * grid writes the sibling `preset` field for the first and this field for the
- * second, and the slot never shows a version.
+ * The visual slot's one picker, for whichever effect the slot chose. A look is
+ * used like a media file: the slot holds it, the site shows what is published,
+ * and editing happens in Studio, opened here in a drawer so the editor never
+ * leaves the page. A shipped look and a look of your own are chosen from the
+ * same grid; the grid writes the sibling `preset` field for the first and this
+ * field for the second, and the slot never shows a version.
  */
 export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }) => {
   const { value, setValue, showError, errorMessage } = useField<number | null>({ path })
@@ -103,6 +115,10 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
   const { title: pageTitle } = useDocumentInfo()
   const id = idOf(value)
   const slot = slotOf(path)
+  const chosen = useFormFields(([fields]) => fields[slotTypePath(path)]?.value)
+  const effectId = isEffectId(chosen) ? chosen : DEFAULT_EFFECT
+  const effect = effectOf(effectId)
+  const { noun } = EFFECT_COPY[effectId]
 
   const [selected, setSelected] = useState<StreakLook | null>(null)
   const [choosing, setChoosing] = useState(false)
@@ -127,7 +143,18 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
     if (!isDrawerOpen) void loadSelected().catch(() => {})
   }, [isDrawerOpen, loadSelected])
 
-  // A field made here opens in Studio as soon as the slot holds it.
+  // The slot's effect changed under what it held: a look filed under another
+  // effect cannot be drawn here, and a shipped look's id means nothing to this
+  // one, so the slot lands on this effect's own default rather than on an error.
+  const presetValue = preset.value
+  const setPreset = preset.setValue
+  useEffect(() => {
+    if (readOnly) return
+    if (selected && selected.id === id && selected[EFFECT_FIELD] !== effectId) setValue(null)
+    else if (!id && !isLookId(effect, presetValue)) setPreset(effect.fallbackLook)
+  }, [readOnly, selected, id, effectId, effect, presetValue, setPreset, setValue])
+
+  // A look made here opens in Studio as soon as the slot holds it.
   useEffect(() => {
     if (opening !== null && opening === id) {
       setOpening(null)
@@ -144,6 +171,7 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
         limit: '24',
         sort: '-updatedAt',
         'where[archived][not_equals]': 'true',
+        [`where[${EFFECT_FIELD}][equals]`]: effectId,
       })
       if (search) params.set('where[title][like]', search)
       const response = await fetch(`/api/${LOOKS_SLUG}?${params}`, { signal: controller.signal })
@@ -153,24 +181,28 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
       controller.abort()
       clearTimeout(timer)
     }
-  }, [choosing, search])
+  }, [choosing, search, effectId])
 
   const create = async () => {
     setBusy(true)
     try {
       // Start from the shipped look the slot shows now, so "make it mine" begins where the page is.
-      const recipe = isStreakLookId(preset.value) ? starterRecipe(preset.value) : emptyRecipe()
+      const recipe = isLookId(effect, preset.value)
+        ? starterRecipe(effect, preset.value)
+        : emptyRecipe(effect)
       const response = await fetch(`/api/${LOOKS_SLUG}?draft=true&depth=0`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: [pageTitle, slot.label].filter(Boolean).join(' · '),
+          [EFFECT_FIELD]: effectId,
           recipe,
           _status: 'draft',
         }),
       })
       const result = await response.json()
-      if (!response.ok) throw new Error(result.errors?.[0]?.message ?? 'Could not create a field.')
+      if (!response.ok)
+        throw new Error(result.errors?.[0]?.message ?? `Could not create a ${noun}.`)
       studioStore.patch(sessionKey(result.doc.id), { placement: slot.placement })
       setValue(result.doc.id)
       setChoosing(false)
@@ -192,7 +224,7 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
 
   return (
     <div data-streak-studio="picker" className="mb-6 flex flex-col gap-3">
-      <span className="text-[13px]/5 text-foreground">Streak field</span>
+      <span className="text-[13px]/5 text-foreground">{effect.label}</span>
 
       {id && !choosing ? (
         <div className="flex flex-wrap items-center gap-4 rounded-md border border-input p-2">
@@ -207,7 +239,7 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="truncate text-[13px]/5 font-medium">
-              {selected?.title ?? `Field #${id}`}
+              {selected?.title ?? `Look #${id}`}
             </span>
             <span className="text-xs/4 text-muted-foreground">
               {live
@@ -217,7 +249,7 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
           </div>
           <div className="flex items-center gap-1">
             <Button type="button" variant="outline" size="sm" onClick={edit}>
-              Edit field
+              Edit {noun}
             </Button>
             {!readOnly && (
               <Button type="button" variant="ghost" size="sm" onClick={() => setChoosing(true)}>
@@ -229,10 +261,10 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
       ) : (
         <>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(132px,1fr))] gap-2">
-            {STREAK_LOOK_OPTIONS.map((look) => (
+            {lookOptions(effect).map((look) => (
               <Card
                 key={look.value}
-                src={streakPosterSrc(look.value as StreakLookId, 'dark')}
+                src={lookPosterSrc(effect, look.value, 'dark')}
                 title={look.label}
                 caption="Shipped look"
                 selected={!id && preset.value === look.value}
@@ -250,7 +282,7 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
                   key={look.id}
                   src={posterOf(look)}
                   title={look.title}
-                  caption={look.snapshot ? 'Your field' : 'Your field, not published'}
+                  caption={look.snapshot ? `Your ${noun}` : `Your ${noun}, not published`}
                   selected={look.id === id}
                   disabled={readOnly}
                   onClick={() => {
@@ -261,7 +293,7 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
               ))}
             {!readOnly && (
               <Card
-                title={busy ? 'Creating…' : 'New field'}
+                title={busy ? 'Creating…' : `New ${noun}`}
                 caption={`For this ${slot.label.toLowerCase()}`}
                 disabled={busy}
                 onClick={create}
@@ -272,8 +304,8 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
           </div>
           {choosing ? (
             <Input
-              aria-label="Search your fields"
-              placeholder="Search your fields"
+              aria-label="Search your looks"
+              placeholder="Search your looks"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="h-8 max-w-xs text-xs"
@@ -285,7 +317,7 @@ export const FieldPicker: RelationshipFieldClientComponent = ({ path, readOnly }
                 className="pressable w-fit cursor-pointer text-xs/4 text-muted-foreground underline hover:text-foreground"
                 onClick={() => setChoosing(true)}
               >
-                Use a field made in Studio
+                Use a {noun} made in Studio
               </button>
             )
           )}

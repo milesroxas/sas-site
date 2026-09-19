@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { STREAK_FIELD_EFFECT as S } from '@/features/immersive/studio/effects'
 import { emptyRecipe, recipeFromSnapshot, snapshotRecipe } from '@/features/immersive/studio/recipe'
 import { recipeHash, storedRecipeHash } from './hash'
 
 describe('Studio release identity', () => {
   const recipe = {
-    ...emptyRecipe(),
+    ...emptyRecipe(S),
     deltas: { relief: 0.4, count: 8000, noise: 'curl' as const },
   }
 
@@ -16,20 +17,28 @@ describe('Studio release identity', () => {
       deltas: { count: 8000, noise: 'curl', relief: 0.4 },
       version: recipe.version,
     }
-    expect(recipeHash(stored)).toBe(recipeHash(recipe))
-    expect(recipeHash(recipe)).toMatch(/^[a-f0-9]{64}$/)
+    expect(recipeHash(S.id, stored)).toBe(recipeHash(S.id, recipe))
+    expect(recipeHash(S.id, recipe)).toMatch(/^[a-f0-9]{64}$/)
   })
   it('gives a restored release the hash of the release, so republishing reuses it', () => {
-    expect(recipeHash(recipeFromSnapshot(snapshotRecipe(recipe)))).toBe(recipeHash(recipe))
+    expect(recipeHash(S.id, recipeFromSnapshot(S, snapshotRecipe(S, recipe)))).toBe(
+      recipeHash(S.id, recipe),
+    )
     // A delta that restates the default is the same output, so the same release.
-    expect(recipeHash({ ...emptyRecipe(), deltas: {} })).toBe(recipeHash(emptyRecipe()))
+    expect(recipeHash(S.id, { ...emptyRecipe(S), deltas: {} })).toBe(
+      recipeHash(S.id, emptyRecipe(S)),
+    )
   })
   it('separates anything that changes the pixels', () => {
-    expect(recipeHash({ ...recipe, frame: recipe.frame + 1 })).not.toBe(recipeHash(recipe))
-    expect(recipeHash({ ...recipe, seed: recipe.seed + 1 })).not.toBe(recipeHash(recipe))
+    expect(recipeHash(S.id, { ...recipe, frame: recipe.frame + 1 })).not.toBe(
+      recipeHash(S.id, recipe),
+    )
+    expect(recipeHash(S.id, { ...recipe, seed: recipe.seed + 1 })).not.toBe(
+      recipeHash(S.id, recipe),
+    )
   })
   it('reads a stored recipe today rejects as no hash, not an error', () => {
-    expect(storedRecipeHash({ ...emptyRecipe(), deltas: { count: 12000 } })).toBeNull()
-    expect(() => recipeHash({ ...emptyRecipe(), deltas: { count: 12000 } })).toThrow()
+    expect(storedRecipeHash(S.id, { ...emptyRecipe(S), deltas: { count: 12000 } })).toBeNull()
+    expect(() => recipeHash(S.id, { ...emptyRecipe(S), deltas: { count: 12000 } })).toThrow()
   })
 })

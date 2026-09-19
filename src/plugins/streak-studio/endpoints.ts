@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto'
 import { APIError, type Endpoint, type PayloadRequest } from 'payload'
 import sharp from 'sharp'
 import { authenticated } from '@/access/authenticated'
+import { STUDIO_GROUND, SURFACES } from '@/features/immersive/studio/effect'
+import { effectOf } from '@/features/immersive/studio/effects'
 import {
   type CaptureOptions,
   POSTER_CAPTURE,
@@ -35,7 +37,7 @@ async function savedDraft(req: PayloadRequest, recipe: unknown): Promise<StreakL
     user: req.user,
     overrideAccess: false,
   })
-  if (recipeHash(recipe) !== recipeHash(look.recipe))
+  if (recipeHash(look.effect, recipe) !== recipeHash(look.effect, look.recipe))
     throw new APIError('The draft changed while the stills rendered. Try again.', 409)
   return look
 }
@@ -50,19 +52,16 @@ export const lookEndpoints: Endpoint[] = [
       return inTransaction(req, async () => {
         await lockLook(req, Number(req.routeParams?.id))
         const look = await savedDraft(req, data.recipe)
-        if (look.archived) throw new APIError('Unarchive this field before publishing.', 400)
-        const dark = await upload(
-          req,
-          data.dark,
-          { ...POSTER_CAPTURE, surface: 'dark' },
-          `${look.title} dark poster`,
-        )
-        const light = await upload(
-          req,
-          data.light,
-          { ...POSTER_CAPTURE, surface: 'light' },
-          `${look.title} light poster`,
-        )
+        if (look.archived) throw new APIError('Unarchive this look before publishing.', 400)
+        // One at a time: each is a storage write inside the look's row lock.
+        const stills = {} as Record<(typeof SURFACES)[number], Media>
+        for (const surface of SURFACES)
+          stills[surface] = await upload(
+            req,
+            data[surface],
+            { ...POSTER_CAPTURE, surface },
+            `${look.title} ${surface} poster`,
+          )
         // Payload merges an operation's context into the request and leaves it
         // there, so the pass is handed over for this one write and taken back.
         try {
@@ -71,11 +70,11 @@ export const lookEndpoints: Endpoint[] = [
             id: look.id,
             data: {
               ...look,
-              snapshot: snapshotRecipe(look.recipe),
-              posters: { dark: poster(dark), light: poster(light) },
-              sourceHash: recipeHash(look.recipe),
-              thumbnail: dark.id,
-              lightPoster: light.id,
+              snapshot: snapshotRecipe(effectOf(look.effect), look.recipe),
+              posters: { dark: poster(stills.dark), light: poster(stills.light) },
+              sourceHash: recipeHash(look.effect, look.recipe),
+              thumbnail: stills.dark.id,
+              lightPoster: stills.light.id,
               _status: 'published',
             },
             context: { [PUBLISH]: true },
@@ -107,11 +106,14 @@ export const lookEndpoints: Endpoint[] = [
     handler: async (req) => {
       team(req)
       const id = Number(req.routeParams?.id)
-      if (!Number.isInteger(id)) throw new APIError('Invalid field.', 400)
+      if (!Number.isInteger(id)) throw new APIError('Invalid look.', 400)
       return Response.json({ usages: await lookUsage(req, id) })
     },
   },
 ]
+
+/** The Media folder every rendered still is filed in. The name predates the second effect and is kept: it is the folder that exists. */
+const MEDIA_FOLDER = 'Streak Field Studio'
 
 /** The browser sends PNG at the capture's exact size; anything else is refused before it is stored. */
 async function upload(
@@ -135,12 +137,12 @@ async function upload(
     throw new APIError('Render dimensions or encoding do not match the capture.', 400)
   let pipeline = sharp(buffer)
   if (!capture.transparent)
-    pipeline = pipeline.flatten({ background: capture.surface === 'dark' ? '#090b10' : '#f6f7fa' })
+    pipeline = pipeline.flatten({ background: STUDIO_GROUND[capture.surface] })
   const output = await pipeline.toFormat(capture.format, { quality: 90 }).toBuffer()
   const folders = await req.payload.find({
     collection: 'payload-folders',
     where: {
-      and: [{ name: { equals: 'Streak Field Studio' } }, { folderType: { contains: 'media' } }],
+      and: [{ name: { equals: MEDIA_FOLDER } }, { folderType: { contains: 'media' } }],
     },
     limit: 1,
     depth: 0,
@@ -150,7 +152,7 @@ async function upload(
     folders.docs[0] ??
     (await req.payload.create({
       collection: 'payload-folders',
-      data: { name: 'Streak Field Studio', folderType: ['media'] },
+      data: { name: MEDIA_FOLDER, folderType: ['media'] },
       req,
     }))
   return req.payload.create({
@@ -161,7 +163,7 @@ async function upload(
       alt: title,
       usageStatus: 'public-approved',
       approvedChannels: ['website', 'social', 'pitch-deck', 'proposal'],
-      description: 'Rendered by Streak Field Studio from the field it is named after.',
+      description: 'Rendered by the Studio from the look it is named after.',
     },
     file: {
       data: output,

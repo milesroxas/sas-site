@@ -3,11 +3,11 @@ import { unstable_cache } from 'next/cache.js'
 import { getPayload } from 'payload'
 import { CONTACT_INDEX_SLUG } from '@/collections/ContactPages/constants'
 import {
-  descriptorPosters,
   resolveMenuPreviewVisual,
   resolveVisual,
   type StoredMenuPreviewSlot,
   type Visual,
+  visualPosters,
 } from '@/features/immersive/visual'
 import { HERO_BAND_THEME } from '@/heros/band-theme'
 import type { Media, WorkPage } from '@/payload-types'
@@ -91,8 +91,8 @@ function menuMedia(media: MediaRef, hero: boolean): MenuMedia | null {
 
 /**
  * Resolved visual → hover-preview source. A media visual goes through
- * `menuMedia`; a Streak Field previews its poster (the approved upload, else
- * the look's stills for both grounds) on `ground`. `hero` follows the same
+ * `menuMedia`; an effect previews its poster (the approved upload, else the
+ * look's stills for both grounds) on `ground`. `hero` follows the same
  * rule as for media: only the destination's own visual, which mounts a
  * poster inside `[data-hero-media]`, can be handed off onto.
  */
@@ -103,8 +103,11 @@ function menuVisual(
 ): MenuMedia | null {
   if (!visual) return null
   if (visual.kind === 'media') return menuMedia(visual.media, hero)
-  const { descriptor } = visual
-  const { dark, light, single } = descriptorPosters(descriptor)
+  // A leak shown over the slot's media previews as that media: the still of a
+  // leak alone is a wash of light with nothing under it.
+  if (visual.kind === 'lightLeak' && visual.descriptor.media)
+    return menuMedia(visual.descriptor.media, hero)
+  const { dark, light, single } = visualPosters(visual)
   return {
     url: dark.src,
     ...(single ? {} : { lightUrl: light.src }),

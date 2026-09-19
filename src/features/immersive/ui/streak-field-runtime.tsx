@@ -1,17 +1,10 @@
 'use client'
 
 import { Canvas, useFrame } from '@react-three/fiber'
-import {
-  Component,
-  type ReactNode,
-  type RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from 'react'
+import { type RefObject, useCallback, useEffect, useMemo, useRef } from 'react'
 import type { WebGLRenderer } from 'three'
 import { ContextGuard } from '@/lib/webgl/components/context-guard'
+import { FailureBoundary } from './failure-boundary'
 import {
   bindPointerInput,
   createPointerInput,
@@ -108,22 +101,6 @@ function FrameWatch({ onSlow }: { onSlow: () => void }) {
   return null
 }
 
-type BoundaryProps = { onError: () => void; children: ReactNode }
-
-/** Catches the renderer constructor and any render-time throw into `onFailure`. */
-class RuntimeBoundary extends Component<BoundaryProps, { failed: boolean }> {
-  state = { failed: false }
-  static getDerivedStateFromError() {
-    return { failed: true }
-  }
-  componentDidCatch() {
-    this.props.onError()
-  }
-  render() {
-    return this.state.failed ? null : this.props.children
-  }
-}
-
 export function StreakFieldRuntime({
   tuning,
   dpr,
@@ -173,7 +150,7 @@ export function StreakFieldRuntime({
   const handleError = useCallback(() => fail('context'), [fail])
 
   return (
-    <RuntimeBoundary onError={handleError}>
+    <FailureBoundary onError={handleError}>
       <Canvas
         dpr={dprRange}
         gl={GL_CONFIG}
@@ -196,7 +173,7 @@ export function StreakFieldRuntime({
         <ContextGuard kind="streak" onLost={handleContextLost} />
         {onSlow && active && animated && <FrameWatch onSlow={onSlow} />}
       </Canvas>
-    </RuntimeBoundary>
+    </FailureBoundary>
   )
 }
 

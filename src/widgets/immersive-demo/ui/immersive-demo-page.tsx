@@ -124,7 +124,7 @@ const SECTIONS: DemoShellSection[] = [
       steps: [
         'Paste the preset block into src/features/immersive/presets.ts beside the other STREAK_FIELD_* presets and write its comment: the art direction, not only the numbers.',
         'Import the preset in src/features/immersive/visual/looks.ts and paste the entry into STREAK_LOOKS. The picker and the server allowlist both read that table; no migration.',
-        'Render both posters (pnpm storybook -p 6106, then pnpm exec tsx scripts/streak-field-posters.ts --base http://localhost:6106) and bump STREAK_LOOK_REVISION.',
+        'Render both posters (pnpm storybook -p 6106, then pnpm exec tsx scripts/visual-posters.ts --base http://localhost:6106) and bump STREAK_LOOK_REVISION.',
         'Add story coverage for the look on dark and light grounds.',
       ],
     },

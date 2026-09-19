@@ -96,10 +96,3 @@ export const STREAK_FALLBACK_LOOK: StreakLookId = 'signal-v1'
 
 export const isStreakLookId = (value: unknown): value is StreakLookId =>
   typeof value === 'string' && Object.hasOwn(STREAK_LOOKS, value)
-
-/** Admin picker options: id plus label, in table order. */
-export const STREAK_LOOK_OPTIONS = STREAK_LOOK_IDS.map((id) => ({
-  value: id,
-  label: STREAK_LOOKS[id].label,
-  description: STREAK_LOOKS[id].description,
-}))

@@ -20,66 +20,83 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { STREAK_FIELD_DEFAULTS } from '@/features/immersive'
+import type { Effect } from '@/features/immersive/studio/effect'
+import type { EffectId } from '@/features/immersive/studio/effects'
 import {
   type CaptureOptions,
   POSTER_CAPTURE,
-  type RecipeDeltas,
+  type Recipe,
   resolveRecipeTuning,
-  type StreakRecipe,
   validateRecipe,
 } from '@/features/immersive/studio/recipe'
 import { cn } from '@/utilities/ui'
 import { useDraft } from './draft'
-import { LengthRow, ParameterRow } from './ParameterRow'
-import {
-  DEPENDENCIES,
-  GROUPS,
-  groupSummary,
-  type ParameterKey,
-  POINTER_GROUP,
-  parameterKeys,
-  toHex,
-} from './parameters'
+import { ParameterRow, RangePairRow, type RowParameter } from './ParameterRow'
+import { EFFECT_COPY, type GroupSummary, lookGroups, parameterKeys, toHex } from './parameters'
 import { exportStill } from './publish'
 
-const sameAsDefault = (key: ParameterKey, value: unknown) =>
-  JSON.stringify(value) === JSON.stringify(STREAK_FIELD_DEFAULTS[key])
+const sameValue = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 
-const LENGTH_PAIR: ParameterKey[] = ['minLength', 'maxLength']
+/** A collapsed group's one line: text, or the colours it is set to. */
+const summaryNode = (summary: GroupSummary) =>
+  typeof summary === 'string' ? (
+    summary
+  ) : (
+    <span className="flex gap-1">
+      {summary.swatches.map((rgb, index) => (
+        <span
+          key={index}
+          aria-hidden
+          className="size-3 rounded-[3px] ring-1 ring-border ring-inset"
+          style={{ backgroundColor: toHex(rgb) }}
+        />
+      ))}
+    </span>
+  )
 
 /**
- * The Inspector: every authorable parameter as a row, grouped into sections
- * on the Look tab and flat on the Pointer tab, in the document sidebar so it
- * stays beside the stage on every tab. It is the recipe field's own
- * component: the value it edits is the field's value, so Payload's autosave,
- * versions and validation see every change as they would any other field's.
+ * The Inspector: every authorable parameter of the look's effect as a row,
+ * grouped into sections on the Look tab and flat on the Pointer tab, in the
+ * document sidebar so it stays beside the stage on every tab. It reads the
+ * rows off the effect's contract and their wording off its copy, so it holds
+ * no parameter by name. It is the recipe field's own component: the value it
+ * edits is the field's value, so Payload's autosave, versions and validation
+ * see every change as they would any other field's.
  */
 export const Inspector: JSONFieldClientComponent = ({ path }) => {
-  const { recipe, update, errorMessage } = useDraft(path)
-  const tuning = resolveRecipeTuning(recipe)
+  const { effect, effectId, recipe, update, errorMessage } = useDraft(path)
+  const copy = EFFECT_COPY[effectId]
+  const tuning = resolveRecipeTuning(effect, recipe)
   let validation = ''
   try {
-    validateRecipe(recipe)
+    validateRecipe(effect, recipe)
   } catch (error) {
     validation = (error as Error).message
   }
 
-  const change = (patch: Partial<RecipeDeltas>) => {
+  const change = (patch: Record<string, unknown>) => {
     const deltas = { ...recipe.deltas }
-    for (const [name, next] of Object.entries(patch) as [ParameterKey, unknown][]) {
-      if (next === undefined || sameAsDefault(name, next)) delete deltas[name]
-      else Object.assign(deltas, { [name]: next })
+    for (const [name, next] of Object.entries(patch)) {
+      if (next === undefined || sameValue(next, effect.defaults[name])) delete deltas[name]
+      else deltas[name] = next
     }
     update({ ...recipe, deltas })
   }
-  const reset = (keys: ParameterKey[]) => {
+  const reset = (keys: readonly string[]) => {
     const deltas = { ...recipe.deltas }
     for (const name of keys) delete deltas[name]
     update({ ...recipe, deltas })
   }
-  const changedKeys = Object.keys(recipe.deltas) as ParameterKey[]
-  const lengthError = validation.startsWith('Minimum length') ? validation : undefined
+  const changedKeys = Object.keys(recipe.deltas)
+  const parameter = (name: string): RowParameter => ({
+    name,
+    spec: effect.parameters[name],
+    copy: copy.parameters[name],
+    fallback: effect.defaults[name],
+  })
+  // A pair out of order is the one rule the effect checks across parameters,
+  // so its message belongs under the pair rather than under the panel.
+  const crossed = copy.ranges?.find(({ keys }) => Number(tuning[keys[0]]) > Number(tuning[keys[1]]))
 
   // Which sections are open lives here rather than in each group: a document
   // opens with every section shut, so the panel reads as a contents page of
@@ -88,78 +105,63 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
   // it leaves, no longer forgets what was open.
   const [tab, setTab] = useState('look')
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+  const groups = lookGroups(effect, copy)
   // Sections are the Look tab's structure, so the control that works them is
   // the Look tab's too. The label names what the press does from here.
-  const allOpen = GROUPS.every((name) => openGroups[name])
+  const allOpen = groups.every((name) => openGroups[name])
   const toggleAll = () =>
-    setOpenGroups(allOpen ? {} : Object.fromEntries(GROUPS.map((name) => [name, true])))
+    setOpenGroups(allOpen ? {} : Object.fromEntries(groups.map((name) => [name, true])))
 
   // The rows of a group, without the section around them: the Look tab puts
   // them in a disclosure, the Pointer tab, which is one group, does not.
-  const rows = (keys: ParameterKey[]) =>
-    keys.map((param) => {
-      if (param === 'maxLength') return null
-      if (param === 'minLength')
+  const rows = (keys: string[]) =>
+    keys.map((name) => {
+      const pair = copy.ranges?.find(({ keys: bounds }) => bounds.includes(name))
+      if (pair) {
+        const [low, high] = pair.keys
+        if (name === high) return null
         return (
-          <LengthRow
-            key="length"
-            min={tuning.minLength}
-            max={tuning.maxLength}
-            changed={LENGTH_PAIR.some((k) => changedKeys.includes(k))}
-            error={lengthError}
+          <RangePairRow
+            key={pair.label}
+            label={pair.label}
+            low={{ ...parameter(low), value: Number(tuning[low]) }}
+            high={{ ...parameter(high), value: Number(tuning[high]) }}
+            changed={pair.keys.some((key) => changedKeys.includes(key))}
+            error={pair === crossed ? validation : undefined}
             onChange={change}
-            onReset={() => reset(LENGTH_PAIR)}
-            onFix={(fix) => fix && change(fix)}
+            onReset={() => reset(pair.keys)}
           />
         )
-      const dependency = DEPENDENCIES[param]
+      }
+      const dependency = copy.dependencies[name]
       return (
         <ParameterRow
-          key={param}
-          name={param}
-          value={tuning[param]}
-          changed={changedKeys.includes(param)}
+          key={name}
+          parameter={parameter(name)}
+          value={tuning[name]}
+          changed={changedKeys.includes(name)}
           inactive={dependency && !dependency.active(tuning) ? dependency : undefined}
-          hint={
-            param === 'noise' && tuning.noise !== 'none'
-              ? `${tuning.noiseOctaves} octaves`
-              : undefined
-          }
-          onChange={(next) => change({ [param]: next })}
-          onReset={() => reset([param])}
+          hint={copy.hint?.(name, tuning)}
+          onChange={(next) => change({ [name]: next })}
+          onReset={() => reset([name])}
           onFix={(fix) => fix && change(fix)}
         />
       )
     })
 
-  const pointerKeys = parameterKeys(POINTER_GROUP)
+  const pointerKeys = parameterKeys(effect, copy.pointerGroup)
   const pointerChanged = pointerKeys.filter((k) => changedKeys.includes(k)).length
 
   const group = (name: string) => {
-    const keys = parameterKeys(name)
+    const keys = parameterKeys(effect, name)
     return (
       <Group
         key={name}
         name={name}
-        summary={
-          name === 'Color' ? (
-            <span className="flex gap-1">
-              {[tuning.ink, tuning.paperInk].map((rgb, index) => (
-                <span
-                  key={index}
-                  aria-hidden
-                  className="size-3 rounded-[3px] ring-1 ring-border ring-inset"
-                  style={{ backgroundColor: toHex(rgb) }}
-                />
-              ))}
-            </span>
-          ) : (
-            groupSummary(name, tuning)
-          )
-        }
+        summary={summaryNode(copy.summary(name, tuning))}
         changed={keys.filter((k) => changedKeys.includes(k)).length}
         open={openGroups[name] ?? false}
-        onOpenChange={(next) => setOpenGroups((groups) => ({ ...groups, [name]: next }))}
+        onOpenChange={(next) => setOpenGroups((state) => ({ ...state, [name]: next }))}
         onReset={() => reset(keys)}
       >
         {rows(keys)}
@@ -226,7 +228,7 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
             </div>
           </div>
           <TabsContent value="look" className="flex flex-col pt-5">
-            {GROUPS.map((name) => group(name))}
+            {groups.map((name) => group(name))}
           </TabsContent>
           {/* One group's worth of rows, so they are not put behind a
               disclosure: a section that opens onto the whole tab is a click
@@ -235,10 +237,7 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
               the place it holds in a section header. */}
           <TabsContent value="pointer" className="flex flex-col pt-5">
             <div className="flex items-start gap-4">
-              <p className="min-w-0 flex-1 text-xs/5 text-muted-foreground">
-                Pointer terms run only where a placement allows them and the editor enabled them.
-                Radius 0 turns every term off.
-              </p>
+              <p className="min-w-0 flex-1 text-xs/5 text-muted-foreground">{copy.pointerNote}</p>
               {/* Hidden rather than absent: the note beside it keeps one wrap
                   whether or not anything has been changed, so a slider does
                   not push every row down the moment it leaves its default. */}
@@ -259,10 +258,15 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
             </div>
           </TabsContent>
           <TabsContent value="export" className="pt-5">
-            <ExportPanel recipe={recipe} validation={validation} />
+            <ExportPanel
+              effect={effect}
+              effectId={effectId}
+              recipe={recipe}
+              validation={validation}
+            />
           </TabsContent>
         </Tabs>
-        {(validation || errorMessage) && !lengthError && (
+        {(validation || errorMessage) && !crossed && (
           <p role="alert" className="text-xs/relaxed text-destructive">
             {validation || errorMessage}
           </p>
@@ -369,7 +373,17 @@ function ExportRow({
  * filed in Media. The seed and the frame come from the recipe; scale raises
  * resolution without changing the composition.
  */
-function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation: string }) {
+function ExportPanel({
+  effect,
+  effectId,
+  recipe,
+  validation,
+}: {
+  effect: Effect
+  effectId: EffectId
+  recipe: Recipe
+  validation: string
+}) {
   const { id } = useDocumentInfo()
   const { submit } = useForm()
   const [capture, setCapture] = useState<CaptureOptions>({ ...POSTER_CAPTURE, format: 'png' })
@@ -381,7 +395,7 @@ function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation:
     setBusy(true)
     try {
       if (!id) throw new Error('Save this look first.')
-      const media = await exportStill(submit, id, recipe, capture)
+      const media = await exportStill(submit, { id, effect: effectId, recipe }, capture)
       // Filed in Media, and handed over now: the editor asked for a file.
       if (media.url) {
         const link = document.createElement('a')
@@ -479,19 +493,23 @@ function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation:
       {/* The checkbox carries its own sentence, so it takes the control and
           value columns together rather than leaving a number's worth of space
           beside a 16px box. */}
-      <ExportRow label="Alpha" htmlFor="streak-capture-transparent">
-        <div className="col-span-2 flex items-center gap-2">
-          <Checkbox
-            id="streak-capture-transparent"
-            checked={capture.transparent}
-            disabled={capture.format === 'jpeg'}
-            onCheckedChange={(checked) => set({ transparent: checked === true })}
-          />
-          <span className="text-[11px]/4 text-muted-foreground">
-            {capture.format === 'jpeg' ? 'JPEG is always filled.' : 'Transparent ground.'}
-          </span>
-        </div>
-      </ExportRow>
+      {/* An effect that draws an opaque frame has no alpha to keep: its ground
+          drops out in the blend, not in the file. */}
+      {!effect.blend && (
+        <ExportRow label="Alpha" htmlFor="streak-capture-transparent">
+          <div className="col-span-2 flex items-center gap-2">
+            <Checkbox
+              id="streak-capture-transparent"
+              checked={capture.transparent}
+              disabled={capture.format === 'jpeg'}
+              onCheckedChange={(checked) => set({ transparent: checked === true })}
+            />
+            <span className="text-[11px]/4 text-muted-foreground">
+              {capture.format === 'jpeg' ? 'JPEG is always filled.' : 'Transparent ground.'}
+            </span>
+          </div>
+        </ExportRow>
+      )}
       <div className="mt-4 border-t border-border pt-4">
         <Button
           buttonStyle="secondary"

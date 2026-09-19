@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { EFFECTS } from '@/features/immersive/visual'
 import {
   shaderSlotOf,
-  slotChoseShader,
+  slotEffect,
   validateIntensityValue,
   validatePresetValue,
   validateSeedValue,
@@ -15,14 +16,14 @@ describe('shaderSlotOf', () => {
   })
 
   it('walks array and block paths', () => {
-    const data = { layout: [{ visualType: 'media' }, { visualType: 'streakField', shader: {} }] }
-    expect(slotChoseShader(shaderSlotOf(data, ['layout', 1, 'shader', 'preset']))).toBe(true)
-    expect(slotChoseShader(shaderSlotOf(data, ['layout', 0, 'shader', 'preset']))).toBe(false)
+    const data = { layout: [{ visualType: 'media' }, { visualType: 'lightLeak', shader: {} }] }
+    expect(slotEffect(shaderSlotOf(data, ['layout', 1, 'shader', 'preset']))).toBe('lightLeak')
+    expect(slotEffect(shaderSlotOf(data, ['layout', 0, 'shader', 'preset']))).toBeNull()
   })
 
   it('reads a root-level menu preview slot', () => {
     const data = { menuPreviewType: 'streakField', menuPreviewShader: {} }
-    expect(slotChoseShader(shaderSlotOf(data, ['menuPreviewShader', 'preset']))).toBe(true)
+    expect(slotEffect(shaderSlotOf(data, ['menuPreviewShader', 'preset']))).toBe('streakField')
   })
 
   it('returns an empty slot for missing data', () => {
@@ -32,11 +33,16 @@ describe('shaderSlotOf', () => {
 })
 
 describe('shader field validators', () => {
-  it('requires a shipped look only when the slot chose the shader', () => {
-    expect(validatePresetValue(null, false)).toBe(true)
-    expect(validatePresetValue(null, true)).toMatch(/Choose/)
-    expect(validatePresetValue('signal-v1', true)).toBe(true)
-    expect(validatePresetValue('aurora-v9', false)).toMatch(/not a shipped/)
+  it('requires a look the chosen effect ships, and only when the slot chose one', () => {
+    expect(validatePresetValue(null, null)).toBe(true)
+    expect(validatePresetValue(null, EFFECTS.streakField)).toMatch(/Choose a Streak Field look/)
+    expect(validatePresetValue('signal-v1', EFFECTS.streakField)).toBe(true)
+    expect(validatePresetValue('aurora-v9', EFFECTS.streakField)).toMatch(/not a shipped/)
+    // A look id belongs to its effect: the other effect's is not a look here.
+    expect(validatePresetValue('signal-v1', EFFECTS.lightLeak)).toMatch(/not a shipped Light leak/)
+    expect(validatePresetValue('amber-v1', EFFECTS.lightLeak)).toBe(true)
+    // A slot back on media keeps whatever preset it last held, unjudged.
+    expect(validatePresetValue('amber-v1', null)).toBe(true)
   })
 
   it('bounds seeds, speed and intensity', () => {

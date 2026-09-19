@@ -1,8 +1,15 @@
 import { sql } from '@payloadcms/db-vercel-postgres'
 import { APIError, type CollectionConfig, type Field } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { DEFAULT_EFFECT, EFFECT_OPTIONS, effectOf } from '@/features/immersive/studio/effects'
 import { emptyRecipe, validateRecipe } from '@/features/immersive/studio/recipe'
-import { LOOKS_SLUG, RECIPE_FIELD, RELEASES_SLUG, RENDERS_SLUG } from './components/paths'
+import {
+  EFFECT_FIELD,
+  LOOKS_SLUG,
+  RECIPE_FIELD,
+  RELEASES_SLUG,
+  RENDERS_SLUG,
+} from './components/paths'
 import { lookEndpoints } from './endpoints'
 import { recipeHash, storedRecipeHash, studioInput } from './hash'
 import { lockLook, PUBLISH, transactionDB } from './transaction'
@@ -23,8 +30,9 @@ const published = (field: Field): Field =>
   }) as Field
 
 /**
- * A Streak Field is used like a media file: a page slot references the
- * document, and the site shows whatever is published. The draft is the working
+ * A look is one effect (`@/features/immersive/studio/effects`), authored. It is
+ * used like a media file: a page slot references the document, and the site
+ * shows whatever is published. The draft is the working
  * copy (autosaved); Publish renders the two posters in the editor's browser
  * and publishes the look with them in one write. History is Payload's own
  * versions, so there is no second version system beside it.
@@ -32,16 +40,18 @@ const published = (field: Field): Field =>
 export const StreakLooks: CollectionConfig = {
   slug: LOOKS_SLUG,
   folders: true,
-  labels: { singular: 'Streak Field', plural: 'Streak Fields' },
+  // The slug predates the second effect. Slugs are never renamed: the table,
+  // its versions and every slot's foreign key carry it.
+  labels: { singular: 'Studio Look', plural: 'Studio Looks' },
   admin: {
     group: 'Assets',
     components: {
       edit: { PublishButton: '@/plugins/streak-studio/components/PublishButton#PublishButton' },
     },
     useAsTitle: 'title',
-    defaultColumns: ['title', 'thumbnail', 'tags', '_status', 'updatedAt'],
+    defaultColumns: ['title', 'thumbnail', EFFECT_FIELD, 'tags', '_status', 'updatedAt'],
     description:
-      'Tune the recipe in the Inspector, watch it on the stage, then publish. Every place that uses the field shows what is published.',
+      'Tune the recipe in the Inspector, watch it on the stage, then publish. Every place that uses the look shows what is published.',
   },
   access: {
     create: authenticated,
@@ -64,7 +74,12 @@ export const StreakLooks: CollectionConfig = {
             )
           }
         }
-        if (data.recipe) studioInput(() => validateRecipe(data.recipe))
+        // The effect is open until the look is first published, then fixed:
+        // every published state, poster and slot that uses the look was made
+        // for that effect. The stage changes it together with the recipe.
+        if (originalDoc?.snapshot) data[EFFECT_FIELD] = originalDoc[EFFECT_FIELD]
+        const effect = effectOf(data[EFFECT_FIELD] ?? originalDoc?.[EFFECT_FIELD])
+        if (data.recipe) studioInput(() => validateRecipe(effect, data.recipe))
         if (operation === 'create') data.createdBy = req.user?.id
         data.updatedBy = req.user?.id ?? originalDoc?.updatedBy
         // A published look always has its posters: Publish in Studio is the
@@ -84,7 +99,8 @@ export const StreakLooks: CollectionConfig = {
             : null
           const unchanged =
             live?._status === 'published' &&
-            storedRecipeHash(live.recipe) === recipeHash(data.recipe ?? originalDoc?.recipe)
+            storedRecipeHash(effect.id, live.recipe) ===
+              recipeHash(effect.id, data.recipe ?? originalDoc?.recipe)
           if (!unchanged)
             throw new APIError('Use Publish in Studio: it renders the posters the site needs.', 400)
         }
@@ -96,7 +112,7 @@ export const StreakLooks: CollectionConfig = {
         const uses = (await lookUsage(req, Number(id))).filter((use) => !use.historical)
         if (uses.length)
           throw new APIError(
-            `This field is in use on ${uses.length === 1 ? uses[0].title : `${uses.length} places`}. Remove it there first.`,
+            `This look is in use on ${uses.length === 1 ? uses[0].title : `${uses.length} places`}. Remove it there first.`,
             400,
           )
         // Rows from the earlier release model still point here until their tables are dropped.
@@ -106,7 +122,7 @@ export const StreakLooks: CollectionConfig = {
           req,
         })
         if (legacy.totalDocs)
-          throw new APIError('Archive this field: its earlier releases are still on record.', 400)
+          throw new APIError('Archive this look: its earlier releases are still on record.', 400)
       },
     ],
   },
@@ -132,6 +148,20 @@ export const StreakLooks: CollectionConfig = {
           label: 'Details',
           fields: [
             { name: 'title', type: 'text', required: true, index: true },
+            {
+              name: EFFECT_FIELD,
+              type: 'select',
+              required: true,
+              index: true,
+              defaultValue: DEFAULT_EFFECT,
+              options: EFFECT_OPTIONS,
+              // Chosen on the stage, with the recipe it invalidates, and fixed
+              // once the look is published (the `beforeChange` hook holds it).
+              admin: {
+                readOnly: true,
+                description: 'What this look draws. Chosen in Studio before the first publish.',
+              },
+            },
             { name: 'description', type: 'textarea' },
             { name: 'tags', type: 'text', hasMany: true, index: true },
             {
@@ -166,7 +196,7 @@ export const StreakLooks: CollectionConfig = {
               defaultValue: false,
               index: true,
               admin: {
-                description: 'Hides the field from the picker. Places that use it keep working.',
+                description: 'Hides the look from the picker. Places that use it keep working.',
               },
             },
             {
@@ -198,7 +228,7 @@ export const StreakLooks: CollectionConfig = {
         {
           label: 'History',
           description:
-            'Every published state of this field. Restore copies one into the draft; nothing changes on the site until you publish.',
+            'Every published state of this look. Restore copies one into the draft; nothing changes on the site until you publish.',
           fields: [
             {
               name: 'history',
@@ -215,14 +245,14 @@ export const StreakLooks: CollectionConfig = {
       name: RECIPE_FIELD,
       type: 'json',
       required: true,
-      defaultValue: emptyRecipe(),
+      defaultValue: emptyRecipe(effectOf(DEFAULT_EFFECT)),
       admin: {
         position: 'sidebar',
         components: { Field: '@/plugins/streak-studio/components/Inspector#Inspector' },
       },
-      validate: (value) => {
+      validate: (value, { siblingData }) => {
         try {
-          validateRecipe(value)
+          validateRecipe(effectOf((siblingData as Record<string, unknown>)[EFFECT_FIELD]), value)
           return true
         } catch (error) {
           return (error as Error).message

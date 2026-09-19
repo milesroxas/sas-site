@@ -1,7 +1,7 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
-import type { StreakRecipe } from '@/features/immersive/studio/recipe'
+import type { Recipe } from '@/features/immersive/studio/recipe'
 import type { VisualPlacement } from '@/features/immersive/visual/placement'
 
 /**
@@ -18,12 +18,12 @@ export type StudioSession = {
   paused: boolean
   /** Bumped to restart the preview from frame zero. */
   generation: number
-  comparison: StreakRecipe | null
+  comparison: Recipe | null
   comparisonLabel: string
   comparisonAt: number | null
   showComparison: boolean
-  history: StreakRecipe[]
-  future: StreakRecipe[]
+  history: Recipe[]
+  future: Recipe[]
 }
 
 const HISTORY_LIMIT = 50
@@ -63,6 +63,12 @@ export const studioStore = {
     sessions.set(key, { ...read(key), ...next })
     emit()
   },
+  /** Forget everything that was made of recipes: the undo stack and the kept comparison. */
+  clear(key: string) {
+    const { history, future, comparison, showComparison, generation, ...kept } = read(key)
+    sessions.set(key, { ...initial(), ...kept, generation: generation + 1 })
+    emit()
+  },
   restart(key: string) {
     const session = read(key)
     sessions.set(key, { ...session, generation: session.generation + 1 })
@@ -74,7 +80,7 @@ export const studioStore = {
    * an edit made while a comparison is showing would otherwise change nothing
    * the author can see.
    */
-  record(key: string, previous: StreakRecipe) {
+  record(key: string, previous: Recipe) {
     const session = read(key)
     sessions.set(key, {
       ...session,
@@ -84,7 +90,7 @@ export const studioStore = {
     })
     emit()
   },
-  undo(key: string, current: StreakRecipe): StreakRecipe | null {
+  undo(key: string, current: Recipe): Recipe | null {
     const session = read(key)
     const previous = session.history.at(-1)
     if (!previous) return null
@@ -97,7 +103,7 @@ export const studioStore = {
     emit()
     return previous
   },
-  redo(key: string, current: StreakRecipe): StreakRecipe | null {
+  redo(key: string, current: Recipe): Recipe | null {
     const session = read(key)
     const next = session.future.at(-1)
     if (!next) return null

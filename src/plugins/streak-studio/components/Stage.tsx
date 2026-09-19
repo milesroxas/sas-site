@@ -20,36 +20,29 @@ import { Input } from '@/components/ui/input'
 import { Kbd } from '@/components/ui/kbd'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { STUDIO_GROUND } from '@/features/immersive'
+import { lookOptions, lookPosterSrc, STUDIO_GROUND } from '@/features/immersive/studio/effect'
+import { EFFECT_OPTIONS, type EffectId } from '@/features/immersive/studio/effects'
 import {
   canonicalJSON,
-  limitStudioTuning,
+  FRAME_MAX,
   resolveRecipeTuning,
-  type StreakSnapshot,
+  SEED_MAX,
+  type Snapshot,
   snapshotChanges,
   snapshotRecipe,
   starterRecipe,
 } from '@/features/immersive/studio/recipe'
-import {
-  STREAK_LOOK_OPTIONS,
-  STREAK_LOOKS,
-  type StreakLookId,
-  streakPosterSrc,
-  VISUAL_PLACEMENTS,
-  type VisualPlacement,
-} from '@/features/immersive/visual'
+import { VISUAL_PLACEMENTS, type VisualPlacement } from '@/features/immersive/visual/placement'
 import { cn } from '@/utilities/ui'
 import { useDraft } from './draft'
 import { when } from './History'
 import { type PublishedState, useLook } from './look-store'
+import { EFFECT_COPY } from './parameters'
 import { studioStore, useStudioSession } from './store'
 
 const Preview = lazy(() =>
-  import('@/features/immersive').then((module) => ({ default: module.StreakStudioPreview })),
+  import('@/features/immersive').then((module) => ({ default: module.StudioPreview })),
 )
-
-const SEED_MAX = 2147483647
-const FRAME_MAX = 600
 
 const isEditing = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
@@ -95,26 +88,29 @@ function IconAction({
 }
 
 /**
- * The stage: the Studio tab of a look. Starters and published history on the
- * left, the live field in the middle at the chosen placement and ground, and
+ * The stage: the Studio tab of a look, for whichever effect it is filed under.
+ * Starters and published history on the left, the live effect in the middle at
+ * the chosen placement and ground, and
  * the session controls. Edits happen in the Inspector (the recipe field, in
  * the sidebar); the stage reads the same field and shows the result, or a
  * comparison when asked.
  *
- * A field has a draft and what is published. Publish puts the draft on the
- * site, everywhere the field is used; Reset to published and Restore copy a
+ * A look has a draft and what is published. Publish puts the draft on the
+ * site, everywhere the look is used; Reset to published and Restore copy a
  * published state back into the draft.
  */
 export const Stage: UIFieldClientComponent = () => {
-  const { id, key, recipe, setValue, update, restore } = useDraft()
+  const { id, key, effect, effectId, recipe, setValue, update, restore, changeEffect } = useDraft()
+  const copy = EFFECT_COPY[effectId]
+  const starters = lookOptions(effect)
   const session = useStudioSession(key)
-  const { live: published, history, uses } = useLook(id)
+  const { loaded, live: published, history, uses } = useLook(id)
   const [live, setLive] = useState(true)
 
   let validation = ''
-  let snapshot: StreakSnapshot | null = null
+  let snapshot: Snapshot | null = null
   try {
-    snapshot = snapshotRecipe(recipe)
+    snapshot = snapshotRecipe(effect, recipe)
   } catch (error) {
     validation = (error as Error).message
   }
@@ -127,9 +123,23 @@ export const Stage: UIFieldClientComponent = () => {
   const sincePublished =
     snapshot && published ? snapshotChanges(snapshot, JSON.parse(published.key)) : null
   const places = uses.filter((use) => !use.historical)
-  const requested = resolveRecipeTuning(recipe)
-  const budget = snapshot ? limitStudioTuning(snapshot[session.surface], session.placement) : null
-  const capped = budget !== null && budget.count < requested.count
+  const budget = snapshot
+    ? effect.budget(
+        effect.limit(snapshot[session.surface], session.placement),
+        resolveRecipeTuning(effect, recipe),
+        session.placement,
+      )
+    : null
+  // A look's effect is open until it is first published; the draft starts over with it.
+  const chooseEffect = (next: EffectId) => {
+    if (next === effectId) return
+    if (
+      Object.keys(recipe.deltas).length &&
+      !window.confirm('Changing the effect starts this draft over. Continue?')
+    )
+      return
+    changeEffect(next)
+  }
 
   const undo = () => {
     const previous = studioStore.undo(key, recipe)
@@ -162,8 +172,10 @@ export const Stage: UIFieldClientComponent = () => {
       comparisonAt: new Date(state.at).getTime(),
       showComparison: true,
     })
-  const randomize = () =>
+  const randomize = () => {
+    if (!effect.seeded) return
     update({ ...recipe, seed: crypto.getRandomValues(new Uint32Array(1))[0] & SEED_MAX }, true)
+  }
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -197,13 +209,13 @@ export const Stage: UIFieldClientComponent = () => {
     <TooltipProvider delayDuration={400}>
       <section
         data-streak-studio
-        aria-label="Streak Field Studio"
+        aria-label={copy.title}
         className="@container flex flex-col overflow-hidden rounded-lg border border-input bg-background"
         onKeyDown={onStageKey}
       >
         <header className="flex min-h-14 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border py-2 pr-4 pl-5">
           <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2.5">
-            <h2 className="text-[15px]/5 font-semibold">Streak Field Studio</h2>
+            <h2 className="text-[15px]/5 font-semibold">{copy.title}</h2>
             {/* The status sets on the title's baseline, so the dot rides in
                 the text rather than leading a flex row: a flex container takes
                 its baseline from its first item, and an empty 6px span has
@@ -226,7 +238,7 @@ export const Stage: UIFieldClientComponent = () => {
                     : published && sincePublished !== null
                       ? `Draft, ${sincePublished} ${sincePublished === 1 ? 'change' : 'changes'} since published`
                       : 'Draft, not yet published'}
-              {/* Where Publish lands. A field is used like a media file: every
+              {/* Where Publish lands. A look is used like a media file: every
                   place that uses it shows what is published. */}
               {id && places.length === 1 && (
                 <>
@@ -240,6 +252,23 @@ export const Stage: UIFieldClientComponent = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {loaded && !published && (
+              <ToggleGroup
+                type="single"
+                variant="segmented"
+                size="lg"
+                className="w-auto"
+                aria-label="Effect"
+                value={effectId}
+                onValueChange={(next) => next && chooseEffect(next as EffectId)}
+              >
+                {EFFECT_OPTIONS.map((option) => (
+                  <ToggleGroupItem key={option.value} value={option.value}>
+                    {option.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            )}
             {published && !unchanged && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -298,22 +327,22 @@ export const Stage: UIFieldClientComponent = () => {
             <div className="flex h-10 items-center border-b border-border px-3.5">
               <h3 className="flex-1 text-xs/4 font-semibold tracking-[0.02em]">Starters</h3>
               <span className="text-[11px]/3.5 text-muted-foreground tabular-nums">
-                {STREAK_LOOK_OPTIONS.length}
+                {starters.length}
               </span>
             </div>
             <ul className="flex flex-col">
-              {STREAK_LOOK_OPTIONS.map((look) => (
+              {starters.map((look) => (
                 <li key={look.value}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
                         type="button"
                         className="flex h-11 w-full cursor-pointer items-center gap-2.5 px-3.5 text-left text-[13px]/4 text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
-                        onClick={() => update(starterRecipe(look.value as StreakLookId), true)}
+                        onClick={() => update(starterRecipe(effect, look.value), true)}
                       >
                         {/* biome-ignore lint/performance/noImgElement: admin-only poster thumb; next/image is not loaded in the Payload admin */}
                         <img
-                          src={streakPosterSrc(look.value as StreakLookId, session.surface)}
+                          src={lookPosterSrc(effect, look.value, session.surface)}
                           alt=""
                           width={44}
                           height={26}
@@ -323,7 +352,7 @@ export const Stage: UIFieldClientComponent = () => {
                         />
                         <span className="min-w-0 flex-1 truncate">{look.label}</span>
                         <span className="font-mono text-[10px]/3 tracking-[0.04em] text-muted-foreground uppercase">
-                          {STREAK_LOOKS[look.value as StreakLookId].motion}
+                          {effect.lookTag?.(effect.looks[look.value])}
                         </span>
                       </button>
                     </TooltipTrigger>
@@ -463,13 +492,13 @@ export const Stage: UIFieldClientComponent = () => {
                   }
                 >
                   <Preview
-                    key={`${session.generation}:${session.placement}`}
+                    key={`${effectId}:${session.generation}:${session.placement}`}
+                    effect={effectId}
                     recipe={shown}
                     placement={session.placement}
                     surface={session.surface}
                     paused={session.paused}
                     generation={session.generation}
-                    showStats={false}
                   />
                 </Suspense>
               ) : (
@@ -477,35 +506,29 @@ export const Stage: UIFieldClientComponent = () => {
                   <p className="max-w-xs text-center text-pretty">
                     {validation
                       ? validation
-                      : 'The live field is off. Turn it on to see the recipe move.'}
+                      : 'The live preview is off. Turn it on to see the recipe move.'}
                   </p>
                   {!validation && (
                     <Button type="button" variant="outline" size="sm" onClick={() => setLive(true)}>
-                      Turn on the live field
+                      Turn on the live preview
                     </Button>
                   )}
                 </div>
               )}
-              {/* The readout sits over the field it describes, so it takes the
-                  same plate as the placement badge: over a live streak field,
-                  bare text is not readable at any ink. */}
+              {/* The readout sits over the effect it describes, so it takes the
+                  same plate as the placement badge: over a live effect, bare
+                  text is not readable at any ink. */}
               {budget && (
                 <p
                   className={cn(
                     'pointer-events-none absolute bottom-3 left-3 z-10 flex max-w-[calc(100%-24px)] items-start gap-1.5 rounded-full bg-background/70 py-1 pr-2.5 pl-2 font-mono text-[11px]/3.5 tracking-[0.02em] backdrop-blur-xs tabular-nums',
-                    capped ? 'text-warning' : 'text-muted-foreground',
+                    budget.capped ? 'text-warning' : 'text-muted-foreground',
                   )}
                 >
-                  {capped && (
+                  {budget.capped && (
                     <span aria-hidden className="mt-1 size-1.5 shrink-0 rounded-full bg-warning" />
                   )}
-                  <span>
-                    {capped
-                      ? `${budget.count.toLocaleString()} of ${requested.count.toLocaleString()} particles, capped to the ${session.placement} budget`
-                      : `${budget.count.toLocaleString()} particles`}
-                    {' · '}DPR ≤ {budget.dpr} · {budget.noiseOctaves} octaves · {budget.segments}{' '}
-                    segment
-                  </span>
+                  <span>{budget.text}</span>
                 </p>
               )}
             </div>
@@ -551,7 +574,7 @@ export const Stage: UIFieldClientComponent = () => {
                   <IconRefresh />
                 </IconAction>
                 <IconAction
-                  label={live ? 'Turn the live field off' : 'Turn the live field on'}
+                  label={live ? 'Turn the live preview off' : 'Turn the live preview on'}
                   onClick={() => setLive((v) => !v)}
                 >
                   <span
@@ -564,33 +587,35 @@ export const Stage: UIFieldClientComponent = () => {
                 </IconAction>
               </div>
               <div className="ml-auto flex flex-wrap items-center gap-4">
-                <label
-                  htmlFor="streak-seed"
-                  className="flex items-center gap-2 text-xs/4 text-muted-foreground"
-                >
-                  Seed
-                  <span className="flex h-[30px] items-center divide-x divide-input overflow-hidden rounded-md border border-input">
-                    <Input
-                      id="streak-seed"
-                      variant="value"
-                      type="number"
-                      className="h-full w-23 rounded-none border-0 px-2.5 text-left"
-                      min={0}
-                      max={SEED_MAX}
-                      value={recipe.seed}
-                      onChange={(event) => {
-                        const seed = Math.min(
-                          SEED_MAX,
-                          Math.max(0, Number(event.target.value) || 0),
-                        )
-                        update({ ...recipe, seed }, true)
-                      }}
-                    />
-                    <IconAction label="Randomize seed" shortcut="R" onClick={randomize}>
-                      <IconDice5 />
-                    </IconAction>
-                  </span>
-                </label>
+                {effect.seeded && (
+                  <label
+                    htmlFor="streak-seed"
+                    className="flex items-center gap-2 text-xs/4 text-muted-foreground"
+                  >
+                    Seed
+                    <span className="flex h-[30px] items-center divide-x divide-input overflow-hidden rounded-md border border-input">
+                      <Input
+                        id="streak-seed"
+                        variant="value"
+                        type="number"
+                        className="h-full w-23 rounded-none border-0 px-2.5 text-left"
+                        min={0}
+                        max={SEED_MAX}
+                        value={recipe.seed}
+                        onChange={(event) => {
+                          const seed = Math.min(
+                            SEED_MAX,
+                            Math.max(0, Number(event.target.value) || 0),
+                          )
+                          update({ ...recipe, seed }, true)
+                        }}
+                      />
+                      <IconAction label="Randomize seed" shortcut="R" onClick={randomize}>
+                        <IconDice5 />
+                      </IconAction>
+                    </span>
+                  </label>
+                )}
                 <label
                   htmlFor="streak-frame"
                   className="flex items-center gap-2 text-xs/4 text-muted-foreground"

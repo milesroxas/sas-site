@@ -2,7 +2,7 @@ import type { Block } from 'payload'
 import { storySourceField, themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
-import { visualSlotFields } from '@/fields/visual'
+import { blockVisualSlotFields } from '@/fields/visual'
 
 /**
  * Media, optionally over a two-column content row (eyebrow + heading beside the
@@ -62,7 +62,7 @@ export const FullMedia: Block = {
           'Shown when source is "Custom", or as a Work or Lab Page override for canonical content.',
       },
     },
-    ...visualSlotFields({
+    ...blockVisualSlotFields({
       name: 'media',
       type: 'upload',
       relationTo: 'media',

@@ -1,13 +1,27 @@
 import type { Media } from '@/payload-types'
 import { populatedDoc } from '@/utilities/relationshipId'
-import { STREAK_RENDERER_VERSION } from '../studio/recipe'
+import { type EffectContract, isLookId, type Tuning } from '../studio/effect'
+import {
+  EFFECT_IDS,
+  type LeakLookId,
+  LIGHT_LEAK_EFFECT,
+  STREAK_FIELD_EFFECT,
+} from '../studio/effects'
 import { parseRelease, type ReleaseDescriptor } from '../studio/release'
-import { isStreakLookId, STREAK_FALLBACK_LOOK, type StreakLookId } from './looks'
+import {
+  isLeakOrigin,
+  LEAK_ORIGINS,
+  type LeakOrigin,
+  type LightLeakTuning,
+} from '../ui/light-leak-tuning'
+import type { StreakFieldTuning } from '../ui/streak-field-tuning'
+import { isStreakLookId, type StreakLookId } from './looks'
 
 /**
  * The application-level visual union that sits above a Payload `Media`
  * document: a slot renders either an uploaded image/video or a code-defined
- * Streak Field look with per-entry art direction. Server resolvers produce
+ * effect (`../studio/effects`) with per-entry art direction, from a shipped
+ * look or from one authored in Studio. Server resolvers produce
  * it; the `Visual` adapter renders it; nothing here touches WebGL, so the
  * poster path and Payload validation can share these rules.
  *
@@ -15,7 +29,7 @@ import { isStreakLookId, STREAK_FALLBACK_LOOK, type StreakLookId } from './looks
  */
 
 /** The visual kinds an editor can choose. Missing/null keeps legacy media behavior. */
-export const VISUAL_TYPES = ['media', 'streakField'] as const
+export const VISUAL_TYPES = ['media', ...EFFECT_IDS] as const
 export type VisualType = (typeof VISUAL_TYPES)[number]
 
 /** Menu preview choice: inherit the destination's visual, or pick one for hover only. */
@@ -42,6 +56,11 @@ export type StoredStreakVisual = {
   intensity?: number | null
   pointerInteraction?: boolean | null
   posterMedia?: number | Media | null
+  /** Show the slot's media upload under the effect, where the effect allows it. */
+  showMedia?: boolean | null
+  /** Let the effect leave its frame and wash across the block. */
+  bleed?: boolean | null
+  origin?: LeakOrigin | string | null
 }
 
 /** A visual slot as Payload stores it: the existing upload plus the new choice. */
@@ -61,11 +80,11 @@ export type PosterMediaSource = Pick<
   'filename' | 'updatedAt' | 'url' | 'width' | 'height' | 'mimeType'
 >
 
-export type StreakVisualDescriptor = {
-  release?: ReleaseDescriptor | null
-  look: StreakLookId
-  /** Integer seed; the same seed lays out the same field on every load. */
-  seed: number
+/** What every effect's descriptor carries: the look, the editor's bounded adjustments, the poster. */
+type EffectDescriptor<Look extends string, T extends Tuning> = {
+  /** The published Studio look the slot uses, when it uses one. */
+  release?: ReleaseDescriptor<T> | null
+  look: Look
   /** Multiplier on the look's time scale, `STREAK_SPEED_RANGE`. */
   speed: number
   /** Multiplier on the look's brightness, `STREAK_INTENSITY_RANGE`. */
@@ -74,16 +93,33 @@ export type StreakVisualDescriptor = {
   /** An approved upload that replaces the look's built-in poster. */
   posterMedia: PosterMediaSource | null
   /**
-   * The stored preset was not a shipped look: the descriptor fell back to
-   * `STREAK_FALLBACK_LOOK` and must render as a poster only. Editing
-   * reports the invalid id; rendering never guesses a live look.
+   * The stored look cannot be drawn: an unknown preset (the descriptor fell
+   * back to the effect's fallback look) or a Studio look from another
+   * renderer. It renders as a poster only. Editing reports the invalid id;
+   * rendering never guesses a live look.
    */
   degraded: boolean
 }
 
+export type StreakVisualDescriptor = EffectDescriptor<StreakLookId, StreakFieldTuning> & {
+  /** Integer seed; the same seed lays out the same field on every load. */
+  seed: number
+}
+
+export type LeakVisualDescriptor = EffectDescriptor<LeakLookId, LightLeakTuning> & {
+  /** Contained in the slot's frame, or washing across the block from `origin`. */
+  bleed: boolean
+  /** The corner the light enters from. */
+  origin: LeakOrigin
+  /** The slot's upload, when the editor chose to show it under the leak. */
+  media: Media | null
+}
+
 export type MediaVisual = { kind: 'media'; media: Media }
 export type StreakFieldVisual = { kind: 'streakField'; descriptor: StreakVisualDescriptor }
-export type Visual = MediaVisual | StreakFieldVisual
+export type LightLeakVisual = { kind: 'lightLeak'; descriptor: LeakVisualDescriptor }
+export type EffectVisual = StreakFieldVisual | LightLeakVisual
+export type Visual = MediaVisual | EffectVisual
 
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value)
@@ -121,45 +157,64 @@ export type ResolveVisualOptions = {
 }
 
 /**
- * Normalize a stored shader group into a descriptor. Never throws: an invalid
- * or missing preset degrades to the fallback look, poster only; out-of-range
- * numbers clamp; a missing seed derives from `seedKey`.
+ * The part of a stored shader group every effect reads the same way. Never
+ * throws: an invalid or missing preset degrades to the effect's fallback look,
+ * poster only; out-of-range numbers clamp.
  */
-export const resolveStreakDescriptor = (
+function resolveEffectDescriptor<Look extends string, T extends Tuning>(
+  effect: EffectContract<T>,
   shader: StoredStreakVisual | null | undefined,
-  options: ResolveVisualOptions = {},
-): StreakVisualDescriptor => {
-  const look = isStreakLookId(shader?.preset) ? shader.preset : STREAK_FALLBACK_LOOK
-  // An unpublished Studio field has nothing to render from yet, so the slot
+): EffectDescriptor<Look, T> {
+  const shipped = isLookId(effect, shader?.preset)
+  // An unpublished Studio look has nothing to render from yet, so the slot
   // reads as if none were chosen and shows its shipped look.
   const published = typeof shader?.studio === 'object' && shader.studio !== null
-  const release = parseRelease(shader?.studio)
-  const degraded = published
-    ? !release || release.snapshot.renderer !== STREAK_RENDERER_VERSION
-    : !isStreakLookId(shader?.preset)
-  const seed = isValidStreakSeed(shader?.seed)
-    ? shader.seed
-    : (release?.snapshot.dark.seed ?? seedFromKey(options.seedKey ?? look))
+  const release = parseRelease(effect, shader?.studio)
   const posterMedia = populatedDoc<Media>(shader?.posterMedia)
   return {
-    look,
+    look: (shipped ? shader?.preset : effect.fallbackLook) as Look,
     ...(release ? { release } : {}),
-    seed,
     speed: normalizeStreakMultiplier(shader?.speed, STREAK_SPEED_RANGE),
     intensity: normalizeStreakMultiplier(shader?.intensity, STREAK_INTENSITY_RANGE),
     pointer: shader?.pointerInteraction === true,
     posterMedia: posterMedia?.mimeType?.startsWith('image/') ? posterMedia : null,
-    degraded,
+    degraded: published ? !release || release.snapshot.renderer !== effect.renderer : !shipped,
   }
 }
+
+/** A Streak Field's descriptor. A missing seed derives from `seedKey`. */
+export const resolveStreakDescriptor = (
+  shader: StoredStreakVisual | null | undefined,
+  options: ResolveVisualOptions = {},
+): StreakVisualDescriptor => {
+  const base = resolveEffectDescriptor<StreakLookId, StreakFieldTuning>(STREAK_FIELD_EFFECT, shader)
+  return {
+    ...base,
+    seed: isValidStreakSeed(shader?.seed)
+      ? shader.seed
+      : (base.release?.snapshot.dark.seed ?? seedFromKey(options.seedKey ?? base.look)),
+  }
+}
+
+/** A light leak's descriptor. `media` is the slot's own upload, already resolved. */
+export const resolveLeakDescriptor = (
+  shader: StoredStreakVisual | null | undefined,
+  media: Media | null,
+): LeakVisualDescriptor => ({
+  ...resolveEffectDescriptor<LeakLookId, LightLeakTuning>(LIGHT_LEAK_EFFECT, shader),
+  bleed: shader?.bleed === true,
+  origin: isLeakOrigin(shader?.origin) ? shader.origin : LEAK_ORIGINS[0],
+  media: shader?.showMedia === true ? media : null,
+})
 
 /**
  * Resolve a visual slot once, at the server boundary.
  *
  * - Missing or `media` visual type keeps the legacy behavior: the slot's own
  *   upload, then `fallbackMedia`, then nothing.
- * - `streakField` wins over a retained upload: that upload is neither
- *   fetched nor mounted just because it is still stored.
+ * - An effect wins over a retained upload: that upload is neither fetched nor
+ *   mounted just because it is still stored. A light leak shows it only when
+ *   the editor asked for it under the leak.
  */
 export const resolveVisual = (
   slot: StoredVisualSlot | null | undefined,
@@ -169,6 +224,9 @@ export const resolveVisual = (
     return { kind: 'streakField', descriptor: resolveStreakDescriptor(slot.shader, options) }
   }
   const media = populatedDoc<Media>(slot?.media) ?? populatedDoc<Media>(options.fallbackMedia)
+  if (slot?.visualType === 'lightLeak') {
+    return { kind: 'lightLeak', descriptor: resolveLeakDescriptor(slot.shader, media) }
+  }
   return media ? { kind: 'media', media } : null
 }
 
@@ -209,9 +267,10 @@ export const parseStreakDescriptor = (
   if (typeof raw !== 'object' || raw === null) return null
   const value = raw as Record<string, unknown>
   if (!isStreakLookId(value.look) || !isValidStreakSeed(value.seed)) return null
+  const release = parseRelease(STREAK_FIELD_EFFECT, value.release)
   return {
     look: value.look,
-    ...(parseRelease(value.release) ? { release: parseRelease(value.release) } : {}),
+    ...(release ? { release } : {}),
     seed: value.seed,
     speed: normalizeStreakMultiplier(value.speed, STREAK_SPEED_RANGE),
     intensity: normalizeStreakMultiplier(value.intensity, STREAK_INTENSITY_RANGE),
@@ -219,15 +278,11 @@ export const parseStreakDescriptor = (
     posterMedia: isPosterMediaSource(value.posterMedia) ? value.posterMedia : null,
     degraded:
       value.degraded === true ||
-      Boolean(
-        value.release &&
-          (!parseRelease(value.release) ||
-            parseRelease(value.release)?.snapshot.renderer !== STREAK_RENDERER_VERSION),
-      ),
+      Boolean(value.release && release?.snapshot.renderer !== STREAK_FIELD_EFFECT.renderer),
   }
 }
 
-/** The media document behind a visual, when it has one. Streak visuals return null. */
+/** The media document behind a visual, when it is one. An effect returns null, whatever it shows under itself. */
 export const visualMedia = (visual: Visual | null | undefined): Media | null =>
   visual?.kind === 'media' ? visual.media : null
 

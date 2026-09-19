@@ -2,7 +2,7 @@
 
 import { Link, useConfig } from '@payloadcms/ui'
 import type { DefaultCellComponentProps } from 'payload'
-import { STUDIO_GROUND } from '@/features/immersive'
+import { STUDIO_GROUND } from '@/features/immersive/studio/effect'
 import type { Media } from '@/payload-types'
 
 /**

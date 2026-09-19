@@ -305,7 +305,7 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
     visualType?: ('media' | 'streakField') | null;
     shader?: StreakVisualConfig;
@@ -999,7 +999,7 @@ export interface FolderInterface {
   createdAt: string;
 }
 /**
- * Tune the recipe in the Inspector, watch it on the stage, then publish. Every place that uses the field shows what is published.
+ * Tune the recipe in the Inspector, watch it on the stage, then publish. Every place that uses the look shows what is published.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "streak-looks".
@@ -1007,6 +1007,10 @@ export interface FolderInterface {
 export interface StreakLook {
   id: number;
   title: string;
+  /**
+   * What this look draws. Chosen in Studio before the first publish.
+   */
+  effect: 'streakField' | 'lightLeak';
   description?: string | null;
   tags?: string[] | null;
   /**
@@ -1018,7 +1022,7 @@ export interface StreakLook {
    */
   lightPoster?: (number | null) | Media;
   /**
-   * Hides the field from the picker. Places that use it keep working.
+   * Hides the look from the picker. Places that use it keep working.
    */
   archived?: boolean | null;
   createdBy?: (number | null) | User;
@@ -1475,7 +1479,7 @@ export interface WorkPage {
     summaryOverride?: string | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
     visualType?: ('media' | 'streakField') | null;
     shader?: StreakVisualConfig;
@@ -1608,11 +1612,11 @@ export interface StreakVisualConfig {
   intensity?: number | null;
   release?: (number | null) | StreakRelease;
   /**
-   * Let the pointer push and light the field on devices that run it live.
+   * Let the pointer move and light the effect on devices that run it live.
    */
   pointerInteraction?: boolean | null;
   /**
-   * Optional still shown before the field runs, and wherever it cannot (reduced motion, no WebGL, menus, social). Images only. Empty uses the look’s built-in poster.
+   * Optional still shown before the effect runs, and wherever it cannot (reduced motion, no WebGL, menus, social). Images only. Empty uses the look’s built-in poster.
    */
   posterMedia?: (number | null) | Media;
 }
@@ -1891,10 +1895,10 @@ export interface WorkFullMediaBlock {
    */
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
@@ -1918,6 +1922,47 @@ export interface WorkFullMediaBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'fullMedia';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PlacedVisualConfig".
+ */
+export interface PlacedVisualConfig {
+  studio?: (number | null) | StreakLook;
+  preset?: string | null;
+  /**
+   * Lays out the field. The same seed always draws the same composition; leave empty to have one assigned when saved.
+   */
+  seed?: number | null;
+  /**
+   * Playback rate as a fraction of the look, 0 to 1. Empty is the look as shipped.
+   */
+  speed?: number | null;
+  /**
+   * Brightness multiplier, 0.5 to 1.25. Empty is the look as shipped.
+   */
+  intensity?: number | null;
+  release?: (number | null) | StreakRelease;
+  /**
+   * Off, the effect is clipped to the media frame. On, it leaves the frame and washes across the whole block, edge to edge of the browser.
+   */
+  bleed?: boolean | null;
+  /**
+   * The corner the light is pinned to, of the frame or, bleeding, of the block.
+   */
+  origin?: ('top-right' | 'top-left' | 'bottom-right' | 'bottom-left') | null;
+  /**
+   * Off, the effect fills the frame on its own. On, the media upload shows under it.
+   */
+  showMedia?: boolean | null;
+  /**
+   * Let the pointer move and light the effect on devices that run it live.
+   */
+  pointerInteraction?: boolean | null;
+  /**
+   * Optional still shown before the effect runs, and wherever it cannot (reduced motion, no WebGL, menus, social). Images only. Empty uses the look’s built-in poster.
+   */
+  posterMedia?: (number | null) | Media;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1965,10 +2010,10 @@ export interface WorkMediaContentSplitBlock {
   } | null;
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
@@ -2035,10 +2080,10 @@ export interface WorkSplitContentNarrowBlock {
   } | null;
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
    */
@@ -2875,10 +2920,10 @@ export interface WorkFeatureTabsBlock {
       | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
     /**
      * Short note shown as a card over the media.
      */
@@ -3029,7 +3074,7 @@ export interface WorkAudienceTabsBlock {
       | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
     visualType?: ('media' | 'streakField') | null;
     shader?: StreakVisualConfig;
@@ -3720,10 +3765,10 @@ export interface FullMediaBlock {
    */
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
   /**
    * Contained keeps the media in the page column. Full width bleeds edge to edge.
    */
@@ -3778,10 +3823,10 @@ export interface MediaContentSplitBlock {
   } | null;
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
   /**
    * Arrange the media on the left or the right of the content.
    */
@@ -3832,10 +3877,10 @@ export interface SplitContentNarrowBlock {
   } | null;
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
   /**
    * Arrange the image on the left or the right of the text.
    */
@@ -4139,10 +4184,10 @@ export interface FeatureTabsBlock {
       | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
     /**
      * Short note shown as a card over the media.
      */
@@ -4262,7 +4307,7 @@ export interface AudienceTabsBlock {
       | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
     visualType?: ('media' | 'streakField') | null;
     shader?: StreakVisualConfig;
@@ -4602,7 +4647,7 @@ export interface LabPage {
     summaryOverride?: string | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
     visualType?: ('media' | 'streakField') | null;
     shader?: StreakVisualConfig;
@@ -5010,10 +5055,10 @@ export interface LabFullMediaBlock {
    */
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
   /**
    * Contained keeps the media in the page column. Full width bleeds edge to edge.
    */
@@ -5080,10 +5125,10 @@ export interface LabMediaContentSplitBlock {
   } | null;
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
   /**
    * Arrange the media on the left or the right of the content.
    */
@@ -5146,10 +5191,10 @@ export interface LabSplitContentNarrowBlock {
   } | null;
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
   /**
    * Arrange the image on the left or the right of the text.
    */
@@ -5404,10 +5449,10 @@ export interface LabFeatureTabsBlock {
       | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
     /**
      * Short note shown as a card over the media.
      */
@@ -5816,7 +5861,7 @@ export interface SegmentHero {
    */
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.
+   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
   visualType?: ('media' | 'streakField') | null;
   shader?: StreakVisualConfig;
@@ -7118,13 +7163,30 @@ export interface FullMediaBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
   width?: T;
   aspectRatio?: T;
   contentPosition?: T;
   theme?: T;
   id?: T;
   blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PlacedVisualConfig_select".
+ */
+export interface PlacedVisualConfigSelect<T extends boolean = true> {
+  studio?: T;
+  preset?: T;
+  seed?: T;
+  speed?: T;
+  intensity?: T;
+  release?: T;
+  bleed?: T;
+  origin?: T;
+  showMedia?: T;
+  pointerInteraction?: T;
+  posterMedia?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7137,7 +7199,7 @@ export interface MediaContentSplitBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
   layout?: T;
   aspectRatio?: T;
   theme?: T;
@@ -7155,7 +7217,7 @@ export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
   imagePosition?: T;
   theme?: T;
   id?: T;
@@ -7300,7 +7362,7 @@ export interface FeatureTabsBlockSelect<T extends boolean = true> {
             };
         media?: T;
         visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
+        shader?: T | PlacedVisualConfigSelect<T>;
         caption?: T;
         id?: T;
       };
@@ -7854,7 +7916,7 @@ export interface WorkFullMediaBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
   browseAllMedia?: T;
   width?: T;
   aspectRatio?: T;
@@ -7877,7 +7939,7 @@ export interface WorkMediaContentSplitBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
   browseAllMedia?: T;
   layout?: T;
   aspectRatio?: T;
@@ -7899,7 +7961,7 @@ export interface WorkSplitContentNarrowBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
   browseAllMedia?: T;
   imagePosition?: T;
   theme?: T;
@@ -8022,7 +8084,7 @@ export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
             };
         media?: T;
         visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
+        shader?: T | PlacedVisualConfigSelect<T>;
         caption?: T;
         id?: T;
       };
@@ -8351,7 +8413,7 @@ export interface LabFullMediaBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
   width?: T;
   aspectRatio?: T;
   contentPosition?: T;
@@ -8373,7 +8435,7 @@ export interface LabMediaContentSplitBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
   layout?: T;
   aspectRatio?: T;
   theme?: T;
@@ -8394,7 +8456,7 @@ export interface LabSplitContentNarrowBlockSelect<T extends boolean = true> {
   body?: T;
   media?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
   imagePosition?: T;
   theme?: T;
   id?: T;
@@ -8480,7 +8542,7 @@ export interface LabFeatureTabsBlockSelect<T extends boolean = true> {
             };
         media?: T;
         visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
+        shader?: T | PlacedVisualConfigSelect<T>;
         caption?: T;
         id?: T;
       };
@@ -9513,6 +9575,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface StreakLooksSelect<T extends boolean = true> {
   title?: T;
+  effect?: T;
   description?: T;
   tags?: T;
   thumbnail?: T;

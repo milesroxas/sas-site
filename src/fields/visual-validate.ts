@@ -1,6 +1,9 @@
 import type { PayloadRequest } from 'payload'
 import {
-  isStreakLookId,
+  type Effect,
+  type EffectId,
+  isEffectId,
+  isLookId,
   isValidStreakSeed,
   STREAK_INTENSITY_RANGE,
   STREAK_SEED_MAX,
@@ -10,9 +13,9 @@ import {
 /**
  * Server-side rules for the shader group, kept as plain functions so they
  * test without Payload. The admin hides fields with `condition`; these are
- * what actually holds: preset membership, finite bounded numbers, integer
- * seeds, image-only posters, and a required look whenever the parent slot
- * chose the shader.
+ * what actually holds: preset membership in the chosen effect's looks, finite
+ * bounded numbers, integer seeds, image-only posters, and a required look
+ * whenever the parent slot chose an effect.
  */
 
 type Path = (string | number)[]
@@ -32,17 +35,15 @@ export const shaderSlotOf = (data: unknown, path: Path | undefined): Record<stri
   return node && typeof node === 'object' ? (node as Record<string, unknown>) : {}
 }
 
-/** Whether the slot two levels up chose the shader, by either slot naming. */
-export const slotChoseShader = (slot: Record<string, unknown>): boolean =>
-  slot.visualType === 'streakField' || slot.menuPreviewType === 'streakField'
+/** The effect the slot two levels up chose, by either slot naming, or `null` for media. */
+export const slotEffect = (slot: Record<string, unknown>): EffectId | null =>
+  [slot.visualType, slot.menuPreviewType].find(isEffectId) ?? null
 
-export const validatePresetValue = (value: unknown, chosen: boolean): true | string => {
-  if (value === null || value === undefined || value === '') {
-    return chosen ? 'Choose a Streak Field look.' : true
-  }
-  if (!isStreakLookId(value)) {
-    return `"${String(value)}" is not a shipped Streak Field look.`
-  }
+/** `effect` is the one the slot chose; `null` when it chose none, or a Studio look stands in for the preset. */
+export const validatePresetValue = (value: unknown, effect: Effect | null): true | string => {
+  if (!effect) return true
+  if (value === null || value === undefined || value === '') return `Choose a ${effect.label} look.`
+  if (!isLookId(effect, value)) return `"${String(value)}" is not a shipped ${effect.label} look.`
   return true
 }
 

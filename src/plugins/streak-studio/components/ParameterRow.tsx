@@ -13,18 +13,24 @@ import {
 import { Slider } from '@/components/ui/slider'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { STREAK_FIELD_DEFAULTS } from '@/features/immersive'
-import { STREAK_PARAMETERS } from '@/features/immersive/studio/recipe'
+import type { Parameter, RangeParameter } from '@/features/immersive/studio/effect'
 import {
   type Dependency,
   decimals,
   formatValue,
   fromHex,
   optionLabel,
-  PARAMETER_COPY,
-  type ParameterKey,
+  type ParameterCopy,
   toHex,
 } from './parameters'
+
+/** A toggle is a two-option control like any other; these are its options. */
+const TOGGLE = ['off', 'on'] as const
+
+/** What a row is about: the parameter's name, its contract, its copy and its default. */
+export type RowParameter = { name: string; spec: Parameter; copy: ParameterCopy; fallback: unknown }
+
+const controlId = (name: string) => `studio-${name}`
 
 /**
  * A number typed into the value field. It commits on Enter or blur, clamped
@@ -109,23 +115,24 @@ function ValueField({
 }
 
 function ParameterTooltip({
-  name,
+  parameter: { name, spec, copy, fallback },
   changed,
   children,
 }: {
-  name: ParameterKey
+  parameter: RowParameter
   changed: boolean
   children: ReactNode
 }) {
-  const spec = STREAK_PARAMETERS[name]
-  const copy = PARAMETER_COPY[name]
-  const fallback = STREAK_FIELD_DEFAULTS[name]
   const defaultText =
     'color' in spec
       ? toHex(fallback as readonly number[])
       : 'options' in spec
-        ? optionLabel(name, String(fallback))
-        : formatValue(spec, Number(fallback))
+        ? optionLabel(copy, String(fallback))
+        : 'toggle' in spec
+          ? optionLabel(copy, TOGGLE[Number(fallback)])
+          : 'vector' in spec
+            ? (fallback as readonly number[]).map((n) => formatValue(spec, n)).join(', ')
+            : formatValue(spec, Number(fallback))
   return (
     <Tooltip>
       <TooltipTrigger asChild>{children}</TooltipTrigger>
@@ -176,7 +183,7 @@ function ParameterTooltip({
  * reason under it and a button that makes the change.
  */
 function RowShell({
-  name,
+  parameter,
   label,
   changed,
   inactive,
@@ -185,7 +192,7 @@ function RowShell({
   note,
   children,
 }: {
-  name: ParameterKey
+  parameter: RowParameter
   label?: string
   changed: boolean
   inactive?: Dependency
@@ -201,9 +208,9 @@ function RowShell({
       data-inactive={disabled || undefined}
       className="group/row relative grid grid-cols-[var(--row-label)_minmax(0,1fr)_var(--row-value)] items-center gap-x-2.5"
     >
-      <ParameterTooltip name={name} changed={changed}>
+      <ParameterTooltip parameter={parameter} changed={changed}>
         <Label
-          htmlFor={`streak-${name}`}
+          htmlFor={controlId(parameter.name)}
           className="min-h-9 cursor-default gap-1.5 text-xs/4 text-foreground/80 transition-colors group-hover/row:text-foreground group-data-[changed]/row:text-foreground group-data-[inactive]/row:text-muted-foreground/60"
           onClick={(event) => {
             if (event.altKey) {
@@ -219,7 +226,7 @@ function RowShell({
             aria-hidden
             className="size-1.5 shrink-0 scale-50 rounded-full bg-primary opacity-0 transition-[opacity,scale] duration-200 ease-out-quint group-data-[changed]/row:scale-100 group-data-[changed]/row:opacity-100 motion-reduce:transition-none"
           />
-          {label ?? PARAMETER_COPY[name].label}
+          {label ?? parameter.copy.label}
         </Label>
       </ParameterTooltip>
       {children}
@@ -245,7 +252,7 @@ function RowShell({
 }
 
 type RowProps = {
-  name: ParameterKey
+  parameter: RowParameter
   value: unknown
   changed: boolean
   inactive?: Dependency
@@ -258,7 +265,7 @@ type RowProps = {
 }
 
 export function ParameterRow({
-  name,
+  parameter,
   value,
   changed,
   inactive,
@@ -268,18 +275,20 @@ export function ParameterRow({
   onReset,
   onFix,
 }: RowProps) {
-  const spec = STREAK_PARAMETERS[name]
-  const copy = PARAMETER_COPY[name]
+  const { name, spec, copy, fallback } = parameter
   const disabled = Boolean(inactive)
-  const shell = { name, changed, inactive, onReset, onFix }
+  const shell = { parameter, changed, inactive, onReset, onFix }
 
-  if ('options' in spec) {
-    const current = String(value)
+  if ('options' in spec || 'toggle' in spec) {
+    const toggle = 'toggle' in spec
+    const options = toggle ? TOGGLE : spec.options
+    const current = toggle ? TOGGLE[Number(value)] : String(value)
+    const choose = (next: string) => next && onChange(toggle ? next === 'on' : next)
     // A discrete control fills the control column, the way the slider and the
     // select beside it do: three controls that stop on the same rule read as
     // one column, and a two-option toggle at that width is still a control
     // rather than a target.
-    if (spec.options.length <= 2) {
+    if (options.length <= 2) {
       return (
         <RowShell {...shell}>
           <ToggleGroup
@@ -288,41 +297,44 @@ export function ParameterRow({
             size="sm"
             value={current}
             disabled={disabled}
-            onValueChange={(next) => next && onChange(next)}
+            onValueChange={choose}
           >
-            {spec.options.map((option) => (
-              <Tooltip key={option}>
-                <TooltipTrigger asChild>
-                  <ToggleGroupItem
-                    value={option}
-                    id={option === current ? `streak-${name}` : undefined}
-                  >
-                    {optionLabel(name, option)}
-                  </ToggleGroupItem>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" sideOffset={6}>
-                  {copy.options?.[option]}
-                </TooltipContent>
-              </Tooltip>
-            ))}
+            {options.map((option) => {
+              const item = (
+                <ToggleGroupItem
+                  key={option}
+                  value={option}
+                  id={option === current ? controlId(name) : undefined}
+                >
+                  {optionLabel(copy, option)}
+                </ToggleGroupItem>
+              )
+              // A toggle's two states say what they are; an option earns a line.
+              return copy.options?.[option] ? (
+                <Tooltip key={option}>
+                  <TooltipTrigger asChild>{item}</TooltipTrigger>
+                  <TooltipContent side="bottom" sideOffset={6}>
+                    {copy.options[option]}
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                item
+              )
+            })}
           </ToggleGroup>
         </RowShell>
       )
     }
     return (
       <RowShell {...shell}>
-        <Select
-          value={current}
-          disabled={disabled}
-          onValueChange={(next) => next && onChange(next)}
-        >
-          <SelectTrigger size="field" id={`streak-${name}`} className="w-full max-w-56">
+        <Select value={current} disabled={disabled} onValueChange={choose}>
+          <SelectTrigger size="field" id={controlId(name)} className="w-full max-w-56">
             <SelectValue />
           </SelectTrigger>
           <SelectContent align="end">
-            {spec.options.map((option) => (
+            {options.map((option) => (
               <SelectItem key={option} value={option} description={copy.options?.[option]}>
-                {optionLabel(name, option)}
+                {optionLabel(copy, option)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -351,7 +363,7 @@ export function ParameterRow({
           >
             <input
               type="color"
-              id={`streak-${name}`}
+              id={controlId(name)}
               className="absolute inset-0 size-full cursor-pointer opacity-0"
               value={hex}
               disabled={disabled}
@@ -367,14 +379,40 @@ export function ParameterRow({
     )
   }
 
+  if ('vector' in spec) {
+    const values = value as readonly number[]
+    const places = decimals(spec)
+    return (
+      <RowShell {...shell}>
+        {/* A vector has no one slider to give: its numbers share the control
+            and value columns, and still end on the rule every row ends on. */}
+        <div className="col-span-2 flex items-center gap-1">
+          {values.map((component, index) => (
+            <ValueField
+              key={index}
+              className="min-w-0 flex-1 px-1"
+              value={component}
+              min={spec.min}
+              max={spec.max}
+              step={spec.step}
+              places={places}
+              disabled={disabled}
+              label={`${copy.label} ${index + 1}`}
+              onCommit={(next) => onChange(values.map((v, i) => (i === index ? next : v)))}
+            />
+          ))}
+        </div>
+      </RowShell>
+    )
+  }
+
   const number = Number(value)
-  const fallback = Number(STREAK_FIELD_DEFAULTS[name])
   const signed = spec.min < 0
   const places = decimals(spec)
   return (
     <RowShell {...shell}>
       <Slider
-        id={`streak-${name}`}
+        id={controlId(name)}
         aria-label={copy.label}
         value={[number]}
         min={spec.min}
@@ -386,7 +424,7 @@ export function ParameterRow({
         origin={signed ? 0 : undefined}
         marks={[
           ...(signed ? [{ value: 0, kind: 'zero' as const }] : []),
-          ...(changed ? [{ value: fallback }] : []),
+          ...(changed ? [{ value: Number(fallback) }] : []),
         ]}
         formatValue={(v) => formatValue(spec, v)}
         onValueChange={([next]) => onChange(next)}
@@ -456,38 +494,51 @@ function HexField({
 }
 
 /**
- * Min and max length on one track with two thumbs. Dragging cannot cross
+ * A low and a high bound on one track with two thumbs. Dragging cannot cross
  * them; only the fields can, and then the server's own message shows under
  * the row and the offending thumb turns red until it is fixed.
  */
-export function LengthRow({
-  min,
-  max,
+export function RangePairRow({
+  low,
+  high,
+  label,
   changed,
   error,
   onChange,
   onReset,
-  onFix,
 }: {
-  min: number
-  max: number
+  low: RowParameter & { value: number }
+  high: RowParameter & { value: number }
+  label: string
   changed: boolean
   error?: string
-  onChange: (next: { minLength: number; maxLength: number }) => void
+  onChange: (next: Record<string, number>) => void
   onReset: () => void
-  onFix: (fix: Dependency['fix']) => void
 }) {
-  const spec = STREAK_PARAMETERS.minLength
-  if (!('min' in spec)) return null
+  const spec = low.spec as RangeParameter
   const places = decimals(spec)
-  const invalid = min > max
+  const invalid = low.value > high.value
+  const set = (a: number, b: number) => onChange({ [low.name]: a, [high.name]: b })
+  const field = (bound: typeof low, commit: (next: number) => void) => (
+    <ValueField
+      className="min-w-0 flex-1 px-1"
+      value={bound.value}
+      min={spec.min}
+      max={spec.max}
+      step={spec.step}
+      places={places}
+      invalid={invalid}
+      label={bound.copy.label}
+      onCommit={commit}
+    />
+  )
   return (
     <RowShell
-      name="minLength"
-      label="Length"
+      parameter={low}
+      label={label}
       changed={changed}
       onReset={onReset}
-      onFix={onFix}
+      onFix={() => {}}
       note={
         error ? (
           <p role="alert" className="col-span-2 col-start-2 text-[11px]/3.5 text-destructive">
@@ -497,9 +548,9 @@ export function LengthRow({
       }
     >
       <Slider
-        id="streak-minLength"
-        aria-label="Length range"
-        value={invalid ? [max, min] : [min, max]}
+        id={controlId(low.name)}
+        aria-label={`${label} range`}
+        value={invalid ? [high.value, low.value] : [low.value, high.value]}
         min={spec.min}
         max={spec.max}
         step={spec.step}
@@ -507,33 +558,13 @@ export function LengthRow({
         invalid={invalid}
         variant={changed ? 'changed' : 'default'}
         formatValue={(v) => formatValue(spec, v)}
-        onValueChange={([a, b]) => onChange({ minLength: a, maxLength: b })}
+        onValueChange={([a, b]) => set(a, b)}
       />
       {/* The pair shares the one value column, so the track above still ends
           where every other track ends. */}
       <div className="flex items-center gap-1">
-        <ValueField
-          className="min-w-0 flex-1 px-1"
-          value={min}
-          min={spec.min}
-          max={spec.max}
-          step={spec.step}
-          places={places}
-          invalid={invalid}
-          label="Min length"
-          onCommit={(next) => onChange({ minLength: next, maxLength: max })}
-        />
-        <ValueField
-          className="min-w-0 flex-1 px-1"
-          value={max}
-          min={spec.min}
-          max={spec.max}
-          step={spec.step}
-          places={places}
-          invalid={invalid}
-          label="Max length"
-          onCommit={(next) => onChange({ minLength: min, maxLength: next })}
-        />
+        {field(low, (next) => set(next, high.value))}
+        {field(high, (next) => set(low.value, next))}
       </div>
     </RowShell>
   )

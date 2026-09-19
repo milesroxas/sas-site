@@ -1,4 +1,5 @@
 import type {
+  CheckboxField,
   Condition,
   Field,
   FilterOptions,
@@ -10,11 +11,21 @@ import type {
   UploadField,
   Validate,
 } from 'payload'
+import {
+  DEFAULT_EFFECT,
+  EFFECT_IDS,
+  EFFECT_OPTIONS,
+  EFFECTS,
+  type EffectId,
+  effectOf,
+  isEffectId,
+  LEAK_ORIGINS,
+} from '@/features/immersive/visual'
 import { publicApprovedMediaWhere } from './caseStudyScopedMedia'
 import {
   randomStreakSeed,
   shaderSlotOf,
-  slotChoseShader,
+  slotEffect,
   validateIntensityValue,
   validatePosterMediaValue,
   validatePresetValue,
@@ -24,56 +35,75 @@ import {
 
 /**
  * A visual slot: the existing media upload plus a choice between it and a
- * code-defined Streak Field look with bounded per-entry art direction. Field
+ * code-defined effect (`@/features/immersive/studio/effects`), from a shipped
+ * look or one authored in Studio, with bounded per-entry art direction. Field
  * names are stable across every parent (`visualType`, `shader`), so one
  * resolver (`@/features/immersive/visual`) reads them all; the upload keeps
  * its name and relation, so nothing renames or migrates.
  *
  * Editorial rules (docs/streak-field-media-plan.md): a missing choice keeps
- * legacy media behavior; an explicit shader wins over a retained upload;
- * editors set look, seed, bounded speed and intensity, pointer interaction
- * and an optional approved poster image. Particle counts, DPR, backend and
+ * legacy media behavior; an explicit effect wins over a retained upload;
+ * editors set look, seed, bounded speed and intensity, pointer interaction,
+ * an optional approved poster image, and the placement controls the effect
+ * declares (`Effect.slot`). Particle counts, sample counts, DPR, backend and
  * transitions are code-owned and never stored.
+ *
+ * A slot offers the effects its renderer can draw. A slot rendered through the
+ * `Visual` adapter can offer all of them; one with a bespoke renderer (the home
+ * hero, an index ground) names the ones it handles.
  */
-
-const VISUAL_TYPE_OPTIONS = [
-  { label: 'Media upload', value: 'media' },
-  { label: 'Streak Field', value: 'streakField' },
-]
 
 const and =
   (...conditions: (Condition | undefined)[]): Condition =>
   (data, siblingData, ctx) =>
     conditions.every((condition) => !condition || Boolean(condition(data, siblingData, ctx)))
 
-const shaderChosen: Condition = (_, siblingData) => siblingData?.visualType === 'streakField'
-const shaderNotChosen: Condition = (_, siblingData) => siblingData?.visualType !== 'streakField'
+const effectChosen: Condition = (_, siblingData) => isEffectId(siblingData?.visualType)
+
+/** The upload shows for a media slot, and under an effect whose editor asked for it. */
+const uploadShown: Condition = (_, siblingData) =>
+  !isEffectId(siblingData?.visualType) ||
+  (EFFECTS[siblingData.visualType as EffectId].slot.media &&
+    siblingData?.shader?.showMedia === true)
 
 /**
- * Whether the parent slot chose the shader, from inside the group. The
- * field's `path` is the reliable route: `siblingData` here is the group.
+ * The effect the parent slot chose, from inside the group. The field's `path`
+ * is the reliable route: `siblingData` here is the group.
  */
 const chosenFromPath = (args: { data?: unknown; path?: (string | number)[] }) =>
-  slotChoseShader(shaderSlotOf(args.data, args.path))
+  slotEffect(shaderSlotOf(args.data, args.path))
 
-/** `media` was `required`; it stays required unless the slot chose the shader. */
-export const requiredUnlessStreak: Validate = (value, args) => {
+/** Shows a group field only for an effect that declares the capability. */
+const slotOffers =
+  (capability: keyof (typeof EFFECTS)[EffectId]['slot']): Condition =>
+  (data, _, { path }) => {
+    const effect = chosenFromPath({ data, path })
+    return effect !== null && EFFECTS[effect].slot[capability]
+  }
+
+/** `media` was `required`; it stays required unless the slot chose an effect. */
+export const requiredUnlessEffect: Validate = (value, args) => {
   if (value !== null && value !== undefined && value !== '') return true
   const siblingData = (args as { siblingData?: { visualType?: unknown } }).siblingData
-  return siblingData?.visualType === 'streakField' ? true : 'This field is required.'
+  return isEffectId(siblingData?.visualType) ? true : 'This field is required.'
 }
 
-export const visualTypeField = ({
+const visualTypeField = ({
+  effects,
   condition,
-  description = 'Leave empty to use the media upload. Streak Field renders a code-defined look with its own poster; a media upload left in place is kept but not shown.',
+  description = 'Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.',
 }: {
+  effects: readonly EffectId[]
   condition?: Condition
   description?: string
-} = {}): SelectField => ({
+}): SelectField => ({
   name: 'visualType',
   type: 'select',
   label: 'Visual',
-  options: VISUAL_TYPE_OPTIONS,
+  options: [
+    { label: 'Media upload', value: 'media' },
+    ...EFFECT_OPTIONS.filter((option) => effects.includes(option.value)),
+  ],
   admin: { description, condition },
 })
 
@@ -81,15 +111,14 @@ const presetField = (): TextField => ({
   name: 'preset',
   type: 'text',
   label: 'Look',
-  // The Streak field picker (the `studio` field's component) writes this one
-  // too, so the editor chooses from one place: a shipped look or a field of
-  // their own.
+  // The look picker (the `studio` field's component) writes this one too, so
+  // the editor chooses from one place: a shipped look or one of their own.
   admin: { hidden: true },
-  validate: (value, args) =>
-    validatePresetValue(
-      value,
-      chosenFromPath(args) && !(args.siblingData as { studio?: unknown })?.studio,
-    ),
+  validate: (value, args) => {
+    const effect = chosenFromPath(args)
+    const studio = (args.siblingData as { studio?: unknown })?.studio
+    return validatePresetValue(value, effect && !studio ? EFFECTS[effect] : null)
+  },
 })
 
 const seedField = (): NumberField => ({
@@ -98,19 +127,21 @@ const seedField = (): NumberField => ({
   min: 0,
   admin: {
     step: 1,
+    condition: slotOffers('seed'),
     description:
       'Lays out the field. The same seed always draws the same composition; leave empty to have one assigned when saved.',
   },
   validate: (value) => validateSeedValue(value),
   hooks: {
     beforeChange: [
-      ({ value, data, path }) =>
-        value ??
-        (chosenFromPath({ data, path }) &&
-        !(shaderSlotOf(data, path)[path?.[path.length - 2] ?? 'shader'] as { studio?: unknown })
-          ?.studio
+      ({ value, data, path }) => {
+        if (value !== null && value !== undefined) return value
+        const effect = chosenFromPath({ data, path })
+        const group = shaderSlotOf(data, path)[path?.[path.length - 2] ?? 'shader']
+        return effect && EFFECTS[effect].slot.seed && !(group as { studio?: unknown })?.studio
           ? randomStreakSeed()
-          : value),
+          : value
+      },
     ],
   },
 })
@@ -147,7 +178,7 @@ const pointerField = (): Field => ({
   defaultValue: false,
   label: 'Respond to the pointer',
   admin: {
-    description: 'Let the pointer push and light the field on devices that run it live.',
+    description: 'Let the pointer move and light the effect on devices that run it live.',
   },
 })
 
@@ -159,111 +190,183 @@ const posterMediaField = (filterOptions: FilterOptions): UploadField => ({
   filterOptions,
   admin: {
     description:
-      'Optional still shown before the field runs, and wherever it cannot (reduced motion, no WebGL, menus, social). Images only. Empty uses the look’s built-in poster.',
+      'Optional still shown before the effect runs, and wherever it cannot (reduced motion, no WebGL, menus, social). Images only. Empty uses the look’s built-in poster.',
   },
   validate: (value, { req }) => validatePosterMediaValue(value, req),
 })
 
-export type StreakShaderFieldArgs = {
+const showMediaField = (): CheckboxField => ({
+  name: 'showMedia',
+  type: 'checkbox',
+  defaultValue: false,
+  label: 'Show the media under the effect',
+  admin: {
+    condition: slotOffers('media'),
+    description: 'Off, the effect fills the frame on its own. On, the media upload shows under it.',
+  },
+})
+
+const bleedField = (): CheckboxField => ({
+  name: 'bleed',
+  type: 'checkbox',
+  defaultValue: false,
+  label: 'Bleed across the block',
+  admin: {
+    condition: slotOffers('bleed'),
+    description:
+      'Off, the effect is clipped to the media frame. On, it leaves the frame and washes across the whole block, edge to edge of the browser.',
+  },
+})
+
+const originField = (): SelectField => ({
+  name: 'origin',
+  type: 'select',
+  defaultValue: LEAK_ORIGINS[0],
+  label: 'Light enters from',
+  options: LEAK_ORIGINS.map((origin) => ({
+    value: origin,
+    label: origin.replace('-', ' ').replace(/^./, (character) => character.toUpperCase()),
+  })),
+  admin: {
+    condition: slotOffers('bleed'),
+    description: 'The corner the light is pinned to, of the frame or, bleeding, of the block.',
+  },
+})
+
+export type ShaderFieldArgs = {
   name?: string
   label?: string
-  /** When the group shows; defaults to the sibling `visualType` being the shader. */
+  /** The effects this slot's renderer can draw. */
+  effects?: readonly EffectId[]
+  /** When the group shows; defaults to the sibling `visualType` being an effect. */
   condition?: Condition
   /** Poster picker filter; the public gate by default, scoped on Work Pages. */
   posterFilterOptions?: FilterOptions
 }
 
-/** The shader group. One interface (`StreakVisualConfig`) across every parent. */
-export const streakShaderField = ({
+/**
+ * The shader group. It carries the placement controls only where one of the
+ * slot's effects declares them, so a slot that cannot draw a light leak stores
+ * no columns for one; the interface name follows, one per shape.
+ */
+export const shaderField = ({
   name = 'shader',
-  label = 'Streak Field',
-  condition = shaderChosen,
+  label = 'Effect',
+  effects = [DEFAULT_EFFECT],
+  condition = effectChosen,
   posterFilterOptions = publicApprovedMediaWhere,
-}: StreakShaderFieldArgs = {}): GroupField => ({
-  name,
-  type: 'group',
-  label,
-  interfaceName: 'StreakVisualConfig',
-  admin: { condition },
-  fields: [
-    {
-      name: 'studio',
-      type: 'relationship',
-      relationTo: 'streak-looks',
-      // Never populated: the Studio plugin hydrates the id with the published
-      // look's snapshot and posters, for every reader alike.
-      maxDepth: 0,
-      index: true,
-      label: 'Streak field',
-      admin: {
-        components: { Field: '@/plugins/streak-studio/components/FieldPicker#FieldPicker' },
+}: ShaderFieldArgs = {}): GroupField => {
+  const offers = (capability: keyof (typeof EFFECTS)[EffectId]['slot']) =>
+    effects.some((effect) => EFFECTS[effect].slot[capability])
+  const placed = offers('media') || offers('bleed')
+  return {
+    name,
+    type: 'group',
+    label,
+    interfaceName: placed ? 'PlacedVisualConfig' : 'StreakVisualConfig',
+    admin: { condition },
+    fields: [
+      {
+        name: 'studio',
+        type: 'relationship',
+        relationTo: 'streak-looks',
+        // Never populated: the Studio plugin hydrates the id with the published
+        // look's snapshot and posters, for every reader alike.
+        maxDepth: 0,
+        index: true,
+        label: 'Look',
+        admin: {
+          components: { Field: '@/plugins/streak-studio/components/FieldPicker#FieldPicker' },
+        },
+        // Runs when the page is published (draft saves skip validation): a look
+        // with nothing published has no poster and no snapshot to render from,
+        // and one filed under another effect cannot be drawn here at all.
+        validate: async (
+          value: unknown,
+          { req, data, path }: { req: PayloadRequest; data?: unknown; path?: (string | number)[] },
+        ) => {
+          if (!value) return true
+          const id = typeof value === 'object' && 'id' in value ? value.id : value
+          const look = await req.payload.findByID({
+            collection: 'streak-looks',
+            id: String(id),
+            draft: false,
+            depth: 0,
+            disableErrors: true,
+            select: { snapshot: true, effect: true },
+            req,
+          })
+          if (!look) return 'Choose an available look.'
+          const effect = chosenFromPath({ data, path })
+          if (effect && effectOf(look.effect).id !== effect)
+            return `This look is a ${effectOf(look.effect).label}. Choose a ${EFFECTS[effect].label} look.`
+          return look.snapshot ? true : 'Publish this look in Studio first, or use a shipped look.'
+        },
       },
-      // Runs when the page is published (draft saves skip validation): a field
-      // with nothing published has no poster and no snapshot to render from.
-      validate: async (value: unknown, { req }: { req: PayloadRequest }) => {
-        if (!value) return true
-        const id = typeof value === 'object' && 'id' in value ? value.id : value
-        const look = await req.payload.findByID({
-          collection: 'streak-looks',
-          id: String(id),
-          draft: false,
-          depth: 0,
-          disableErrors: true,
-          select: { snapshot: true },
-          req,
-        })
-        if (!look) return 'Choose an available Streak field.'
-        return look.snapshot ? true : 'Publish this field in Studio first, or use a shipped look.'
+      presetField(),
+      {
+        type: 'row',
+        // A look made in Studio is tuned in Studio, where its poster is rendered
+        // from the same numbers. These adjust a shipped look, which has no editor.
+        admin: { condition: (_, siblingData) => !siblingData?.studio },
+        fields: [seedField(), speedField(), intensityField()],
       },
-    },
-    presetField(),
-    {
-      type: 'row',
-      // A field made in Studio is tuned in Studio, where its poster is rendered
-      // from the same numbers. These adjust a shipped look, which has no editor.
-      admin: { condition: (_, siblingData) => !siblingData?.studio },
-      fields: [seedField(), speedField(), intensityField()],
-    },
-    // The earlier pinned-release reference. Nothing reads it; the column stays
-    // until the follow-up migration drops the release tables.
-    {
-      name: 'release',
-      type: 'relationship',
-      relationTo: 'streak-releases',
-      maxDepth: 0,
-      index: true,
-      admin: { hidden: true },
-    },
-    pointerField(),
-    posterMediaField(posterFilterOptions),
-  ],
-})
+      // The earlier pinned-release reference. Nothing reads it; the column stays
+      // until the follow-up migration drops the release tables.
+      {
+        name: 'release',
+        type: 'relationship',
+        relationTo: 'streak-releases',
+        maxDepth: 0,
+        index: true,
+        admin: { hidden: true },
+      },
+      ...(offers('bleed') ? [bleedField(), originField()] : []),
+      ...(offers('media') ? [showMediaField()] : []),
+      pointerField(),
+      posterMediaField(posterFilterOptions),
+    ],
+  }
+}
 
-export type VisualSlotArgs = {
+export type VisualSlotArgs = Pick<ShaderFieldArgs, 'effects' | 'posterFilterOptions'> & {
   /** Extra condition on the whole slot (a hero `type` gate). */
   condition?: Condition
   visualTypeDescription?: string
-  posterFilterOptions?: FilterOptions
 }
 
 /**
- * Wrap an existing upload into a visual slot: the upload (hidden once the
- * shader is chosen), the choice, and the shader group. A `required` upload
- * becomes required-unless-shader, since hiding does not relax `required`.
+ * Wrap an existing upload into a visual slot: the upload (hidden once an
+ * effect is chosen, unless it shows under the effect), the choice, and the
+ * shader group. A `required` upload becomes required-unless-effect, since
+ * hiding does not relax `required`.
  */
 export const visualSlotFields = (
   media: UploadField,
-  { condition, visualTypeDescription, posterFilterOptions }: VisualSlotArgs = {},
+  {
+    condition,
+    effects = [DEFAULT_EFFECT],
+    visualTypeDescription,
+    posterFilterOptions,
+  }: VisualSlotArgs = {},
 ): Field[] => {
   const { required, ...rest } = media
   const upload = {
     ...rest,
-    ...(required ? { validate: requiredUnlessStreak } : {}),
-    admin: { ...media.admin, condition: and(media.admin?.condition, condition, shaderNotChosen) },
+    ...(required ? { validate: requiredUnlessEffect } : {}),
+    admin: { ...media.admin, condition: and(media.admin?.condition, condition, uploadShown) },
   } as UploadField
   return [
     upload,
-    visualTypeField({ condition, description: visualTypeDescription }),
-    streakShaderField({ condition: and(condition, shaderChosen), posterFilterOptions }),
+    visualTypeField({ effects, condition, description: visualTypeDescription }),
+    shaderField({ effects, condition: and(condition, effectChosen), posterFilterOptions }),
   ]
 }
+
+/**
+ * The slot of a composition block. A block renders through the `Visual`
+ * adapter inside a `Section`, so it can draw every effect, and a bleeding one
+ * has a block root to wash across.
+ */
+export const blockVisualSlotFields = (media: UploadField, args: VisualSlotArgs = {}): Field[] =>
+  visualSlotFields(media, { effects: EFFECT_IDS, ...args })

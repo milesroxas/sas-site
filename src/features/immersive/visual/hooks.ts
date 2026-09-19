@@ -2,7 +2,6 @@
 
 import { type RefObject, useEffect, useState, useSyncExternalStore } from 'react'
 import { useSiteTheme } from '@/hooks/use-site-theme'
-import { useGpuLease } from '@/lib/webgl/use-gpu-lease'
 import type { Theme } from '@/providers/Theme/types'
 import { NO_STREAK_CAPABILITY, probeStreakCapability, type StreakCapability } from './capability'
 import {
@@ -110,16 +109,6 @@ export function usePageCovered(enabled = true): boolean {
     return () => observer.disconnect()
   }, [enabled])
   return covered
-}
-
-/**
- * Hold a `streak` lease on the document GPU budget while `wanted`, and
- * report whether this slot is among the admitted ones. The budget ranks
- * every canvas on the page together; the Streak Field's own cap is
- * `STREAK_LIVE_CEILING`.
- */
-export function useStreakLease(id: string, wanted: boolean, priority: number): boolean {
-  return useGpuLease(id, wanted, 'streak', priority)
 }
 
 const GROUND_SELECTOR = '[data-theme], .band-dark'

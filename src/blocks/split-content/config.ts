@@ -3,7 +3,7 @@ import { storySourceField, themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 import { contentLexical } from '@/fields/contentLexical'
-import { visualSlotFields } from '@/fields/visual'
+import { blockVisualSlotFields } from '@/fields/visual'
 
 /**
  * Split layout: a narrow text column beside a large image, with the image
@@ -36,7 +36,7 @@ export const SplitContentNarrow: Block = {
           'Shown when source is "Custom", or as a Work or Lab Page override for canonical content.',
       },
     },
-    ...visualSlotFields({
+    ...blockVisualSlotFields({
       name: 'media',
       type: 'upload',
       relationTo: 'media',

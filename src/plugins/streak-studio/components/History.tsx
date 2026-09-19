@@ -5,7 +5,7 @@ import './studio.css'
 import { toast } from '@payloadcms/ui'
 import type { UIFieldClientComponent } from 'payload'
 import { Button } from '@/components/ui/button'
-import { STUDIO_GROUND } from '@/features/immersive'
+import { STUDIO_GROUND } from '@/features/immersive/studio/effect'
 import { canonicalJSON, snapshotRecipe } from '@/features/immersive/studio/recipe'
 import { useDraft } from './draft'
 import { type PublishedState, useLook } from './look-store'
@@ -20,16 +20,16 @@ export const when = (iso: string) =>
   })
 
 /**
- * The History tab: every published state of the field, newest first, read
+ * The History tab: every published state of the look, newest first, read
  * from Payload's own versions. Restore copies one into the draft; Compare
  * shows it on the stage beside the draft. Neither changes the site.
  */
 export const History: UIFieldClientComponent = () => {
-  const { id, key, recipe, restore } = useDraft()
+  const { id, key, effect, recipe, restore } = useDraft()
   const { history, loaded } = useLook(id)
   let draftKey = ''
   try {
-    draftKey = canonicalJSON(snapshotRecipe(recipe))
+    draftKey = canonicalJSON(snapshotRecipe(effect, recipe))
   } catch {
     // An invalid draft matches nothing.
   }
