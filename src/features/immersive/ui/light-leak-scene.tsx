@@ -5,10 +5,17 @@ import type { CSSProperties, RefObject } from 'react'
 import { useMemo, useRef } from 'react'
 import { MathUtils, type ShaderMaterial, Vector2, Vector3 } from 'three'
 import { CANVAS_RESIZE } from '@/lib/webgl/canvas-resize'
-import { LIGHT_LEAK_EXCITE_SELECTOR } from './light-leak-excite'
+import {
+  LIGHT_LEAK_EXCITE_ATTR,
+  LIGHT_LEAK_EXCITE_OFF,
+  LIGHT_LEAK_EXCITE_SELECTOR,
+  LIGHT_LEAK_INTERACTIVE_SELECTOR,
+  LIGHT_LEAK_SCOPE_SELECTOR,
+} from './light-leak-excite'
 import { createFragmentShader, VERTEX_SHADER } from './light-leak-shader'
 import {
   isAbsorptive,
+  type LeakExciteTargets,
   type LeakMirror,
   type LightLeakProps,
   type LightLeakTuning,
@@ -97,6 +104,7 @@ export type LeakInput = {
   /** Overlay-relative pointer, 0..1, y-up (GL convention). */
   x: number
   y: number
+  /** 0 at rest, `sectionExcite` across the band, 1 on a target. */
   exciteTarget: number
 }
 
@@ -110,32 +118,85 @@ export const createLeakInput = (): LeakInput => ({
 })
 
 /**
- * Listen for the pointer and for hover over `data-leak-excite` targets.
- * Overlay-relative mapping happens in `useFrame`; the handlers only record
- * the raw position, so pointermove never touches layout.
+ * The band a leak listens inside: the nearest marked scope, else the
+ * positioned ancestor the overlay was placed to fill — which is the hero
+ * shell, the block's section or the closing band in every shipped placement.
+ * `null` means the whole document, the behavior a leak with neither had.
  */
-export function bindLeakInput(input: LeakInput): () => void {
+export function leakScopeOf(root: HTMLElement | null): HTMLElement | null {
+  const marked = root?.closest<HTMLElement>(LIGHT_LEAK_SCOPE_SELECTOR)
+  if (marked) return marked
+  const offset = root?.offsetParent
+  return offset instanceof HTMLElement ? offset : null
+}
+
+export type LeakInputOptions = {
+  /** Where hover counts. `null` listens on the document and never reads the band. */
+  scope: HTMLElement | null
+  targets: LeakExciteTargets
+  /** Excitement while the pointer is in the scope but not on a target. */
+  section: number
+}
+
+/**
+ * How excited one hovered element makes the leak. A marker wins over
+ * everything, in either direction, so a subtree can be muted inside a band
+ * that answers links; then links and buttons where the look asks for them;
+ * then the band itself.
+ */
+function exciteLevelOf(element: Element | null, options: LeakInputOptions): number {
+  const { scope, targets, section } = options
+  if (!element) return 0
+  // A document-wide leak has no band to speak of, so only targets excite it.
+  if (!scope) return element.closest(LIGHT_LEAK_EXCITE_SELECTOR) ? 1 : 0
+  if (!scope.contains(element)) return 0
+  const marked = element.closest(LIGHT_LEAK_EXCITE_SELECTOR)
+  if (marked) return marked.getAttribute(LIGHT_LEAK_EXCITE_ATTR) === LIGHT_LEAK_EXCITE_OFF ? 0 : 1
+  if (targets === 'interactive' && element.closest(LIGHT_LEAK_INTERACTIVE_SELECTOR)) return 1
+  return section
+}
+
+/**
+ * Listen for the pointer, and for hover inside the leak's band. Overlay-relative
+ * mapping happens in `useFrame`; the handlers only record the raw position, so
+ * pointermove never touches layout.
+ *
+ * `pointerover` and `pointerout` are bound to the scope rather than the
+ * document: both bubble, so one pair of listeners covers every descendant,
+ * including elements mounted long after the leak, and nothing outside the band
+ * is ever evaluated.
+ */
+export function bindLeakInput(input: LeakInput, options: LeakInputOptions): () => void {
+  const host: EventTarget = options.scope ?? document
   const onPointerMove = (event: PointerEvent) => {
     input.clientX = event.clientX
     input.clientY = event.clientY
     input.moved = true
   }
-  const onPointerOver = (event: PointerEvent) => {
-    if ((event.target as Element | null)?.closest(LIGHT_LEAK_EXCITE_SELECTOR))
-      input.exciteTarget = 1
+  // A tap fires pointerover with no pointerout to answer it, so on touch the
+  // flare would simply stay lit — and with a band-wide response, lit over the
+  // whole section. Hover is a pointing-device affordance; pen and mouse keep it.
+  const hovering = (event: Event) => (event as PointerEvent).pointerType !== 'touch'
+  const onPointerOver = (event: Event) => {
+    if (hovering(event)) input.exciteTarget = exciteLevelOf(event.target as Element | null, options)
   }
-  const onPointerOut = (event: PointerEvent) => {
-    const to = event.relatedTarget as Element | null
-    if (!to?.closest(LIGHT_LEAK_EXCITE_SELECTOR)) input.exciteTarget = 0
+  const onPointerOut = (event: Event) => {
+    // Where the pointer is going, not where it was: moving between two
+    // children of the band recomputes rather than dropping to rest.
+    if (hovering(event))
+      input.exciteTarget = exciteLevelOf(
+        (event as PointerEvent).relatedTarget as Element | null,
+        options,
+      )
   }
 
   window.addEventListener('pointermove', onPointerMove, { passive: true })
-  document.addEventListener('pointerover', onPointerOver)
-  document.addEventListener('pointerout', onPointerOut)
+  host.addEventListener('pointerover', onPointerOver)
+  host.addEventListener('pointerout', onPointerOut)
   return () => {
     window.removeEventListener('pointermove', onPointerMove)
-    document.removeEventListener('pointerover', onPointerOver)
-    document.removeEventListener('pointerout', onPointerOut)
+    host.removeEventListener('pointerover', onPointerOver)
+    host.removeEventListener('pointerout', onPointerOut)
     input.exciteTarget = 0
   }
 }

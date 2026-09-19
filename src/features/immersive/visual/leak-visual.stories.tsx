@@ -19,6 +19,8 @@ const descriptor = (over: Partial<LeakVisualDescriptor> = {}): LeakVisualDescrip
   speed: 1,
   intensity: 1,
   pointer: true,
+  targets: null,
+  sectionExcite: null,
   posterMedia: null,
   degraded: false,
   bleed: false,

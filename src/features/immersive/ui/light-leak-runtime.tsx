@@ -13,6 +13,7 @@ import {
   LEAK_RESIZE_OPTIONS,
   type LeakInput,
   LeakScene,
+  leakScopeOf,
 } from './light-leak-scene'
 import type { LeakMirror, LightLeakProps, LightLeakTuning } from './light-leak-tuning'
 
@@ -65,10 +66,20 @@ export function LightLeakRuntime({
     [onFailure],
   )
 
+  // Hover is read out of the tuning rather than off `tuning` itself: the
+  // object is new on every render, and rebinding the band's listeners each
+  // time would drop the pointer state mid-hover.
+  const { excite, exciteTargets, sectionExcite } = tuning
   useEffect(() => {
-    if (!active || !tuning.excite) return
-    return bindLeakInput(inputRef.current)
-  }, [active, tuning.excite])
+    if (!active || !excite) return
+    // Resolved on bind, not on render: the band is whatever positioned
+    // ancestor the overlay ended up inside, which is only true once laid out.
+    return bindLeakInput(inputRef.current, {
+      scope: leakScopeOf(rootRef.current),
+      targets: exciteTargets,
+      section: sectionExcite,
+    })
+  }, [active, excite, exciteTargets, sectionExcite, rootRef])
 
   const handleCreated = useCallback(
     ({ gl }: { gl: WebGLRenderer }) => {

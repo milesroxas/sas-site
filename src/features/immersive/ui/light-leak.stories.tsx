@@ -6,8 +6,13 @@ import { leakExcite } from './light-leak-excite'
 /**
  * A film light leak composited over the surface beneath it. Scroll the frame
  * to agitate the emulsion — velocity drives brightness, spectral split and a
- * domain-warp morph — and hover a card (they spread `leakExcite()`) to
- * gather light under the pointer.
+ * domain-warp morph — and hover to gather light under the pointer: the links
+ * in the copy, which the default `exciteTargets: 'interactive'` answers on its
+ * own, and the cards, which spread `leakExcite()`.
+ *
+ * The leak only listens inside its own band (the positioned ancestor it fills,
+ * or the nearest `leakScope()`), which is what `OverASection` shows: hovering
+ * the plain sections above and below it does nothing.
  *
  * Every story forces the canvas on: in production the effect renders nothing
  * without a GPU or under `prefers-reduced-motion`.
@@ -40,6 +45,10 @@ function Page() {
       <h2 className="max-w-xl text-balance text-heading-2">
         Every leak is the camera failing beautifully.
       </h2>
+      {/* No marker: a link in the leak's own band is a target by default. */}
+      <a className="w-fit underline" href="#leak">
+        Hover this link to flare the leak
+      </a>
       <div className="grid gap-4 sm:grid-cols-2">
         {CARDS.map((title) => (
           <div
@@ -76,6 +85,28 @@ export const OverAPage: Story = {
  * scrolls out of view.
  */
 export const OverASection: Story = {
+  render: (args) => (
+    <div data-theme="dark" className="min-h-svh bg-background text-foreground">
+      <div className="px-10 py-24 text-sm text-muted-foreground">Plain section — no leak here.</div>
+      <section className="relative isolate border-y border-border">
+        <Page />
+        <LightLeak {...args} />
+      </section>
+      <div className="px-10 py-24 text-sm text-muted-foreground">Plain section — no leak here.</div>
+    </div>
+  ),
+}
+
+/**
+ * The band answering the visitor's presence rather than waiting for a target:
+ * `sectionExcite` is what the pointer reads anywhere inside the section, and a
+ * link or a card still reads a full flare on top of it. Keep it low — this is
+ * a wash, not a second state.
+ */
+export const AcrossTheSection: Story = {
+  args: {
+    sectionExcite: 0.45,
+  },
   render: (args) => (
     <div data-theme="dark" className="min-h-svh bg-background text-foreground">
       <div className="px-10 py-24 text-sm text-muted-foreground">Plain section — no leak here.</div>

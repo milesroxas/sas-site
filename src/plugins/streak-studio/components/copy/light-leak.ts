@@ -138,7 +138,21 @@ const PARAMETERS: Record<LeakParameterKey, ParameterCopy> = {
   },
   excite: {
     label: 'Hover flare',
-    description: 'Whether elements marked to excite the leak flare it on hover.',
+    description: 'Whether the leak answers the pointer at all, inside the section it sits in.',
+  },
+  exciteTargets: {
+    label: 'Flares at',
+    description: 'What counts as a full flare, within the section the leak sits in.',
+    optionLabels: { interactive: 'Links and buttons', marked: 'Marked elements' },
+    options: {
+      interactive: 'Every link and button in the section, plus anything marked in code.',
+      marked: 'Only the elements the design marks to excite the leak.',
+    },
+  },
+  sectionExcite: {
+    label: 'Section hover',
+    description:
+      'How far the pointer merely crossing the section flares the leak, as a fraction of a full flare. 0 waits for a target.',
   },
   hoverBloom: {
     label: 'Bloom',
@@ -199,6 +213,8 @@ const DEPENDENCIES: Partial<Record<LeakParameterKey, LeakDependency>> = {
     fix: { morph: LIGHT_LEAK_DEFAULTS.morph },
     fixLabel: 'Add the morph',
   },
+  exciteTargets: needsFlare,
+  sectionExcite: needsFlare,
   hoverBloom: needsFlare,
   exciteEase: needsFlare,
   pointerEase: needsFlare,
@@ -215,7 +231,7 @@ export const LIGHT_LEAK_COPY: EffectCopy<LightLeakTuning, LeakParameterKey> = {
   dependencies: DEPENDENCIES,
   pointerGroup: 'Interaction',
   pointerNote:
-    'The flare runs only where a placement allows the pointer and the editor enabled it. It answers elements marked to excite the leak.',
+    'The flare runs only where a placement allows the pointer and the editor enabled it. It listens inside the section the leak sits in and nowhere else: the links and marked elements of that band, and the pointer crossing it.',
   summary(group, tuning) {
     switch (group) {
       case 'Light':

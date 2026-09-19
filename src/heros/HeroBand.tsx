@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react'
 import { onChromeScroll, pageFrameFrozen } from '@/components/SiteChrome/chrome-scroll'
+import { leakScope } from '@/features/immersive/visual'
 import { CHROME_THEME_SITE, type ChromeBar, useChromeThemeStore } from '@/providers/ChromeTheme'
 import type { Theme } from '@/providers/Theme/types'
 import { HERO_BAND_THEME } from './band-theme'
@@ -257,6 +258,9 @@ export const HeroBand: React.FC<HeroBandProps> = ({
     {
       ...props,
       'data-theme': theme,
+      // The band is the opening's hover scope: a light leak in the hero
+      // answers the hero's own links and copy, and nothing below it.
+      ...leakScope(),
       ...(pinsChromeAtLoad ? { 'data-hero-band-pin': theme } : {}),
       ...(phase ? { 'data-page-intro': phase } : {}),
       ref,

@@ -67,9 +67,11 @@ const ClosingCopy = ({ closing }: { closing: Footer['closing'] }) => {
           {links.map(({ id, link }) => (
             // `contents` wrapper, not the button itself: CMSLink renders
             // its own element and forwards no arbitrary props, and the
-            // leak delegates from the document — so an ancestor carrying
-            // the marker excites on button hover with no layout box of
-            // its own (the button stays the flex item, gap unchanged).
+            // leak delegates from the band — so an ancestor carrying the
+            // marker excites on button hover with no layout box of its own
+            // (the button stays the flex item, gap unchanged). The leak
+            // answers links and buttons in its band anyway; the marker
+            // states it, and holds if the look is narrowed to marked only.
             <span className="contents" key={id} {...leakExcite()}>
               <CMSLink {...link} size="lg" />
             </span>
@@ -225,9 +227,11 @@ export const FooterClosing = ({
             pointer-events-none), and it renders nothing without a GPU or under
             prefers-reduced-motion. The shipped look *is* LightLeak's defaults;
             the wrapper only decides when the pinned band is uncovered enough
-            to be worth rendering. The CTA buttons and the ask panel carry
-            `leakExcite()`, so hovering any of them gathers light under the
-            pointer and widens the spectrum. */}
+            to be worth rendering. The band is the leak's hover scope (it is
+            the overlay's positioned ancestor), so every link and button in
+            it gathers light under the pointer and widens the spectrum; the
+            CTA buttons and the ask panel say so explicitly with
+            `leakExcite()`. */}
         <ClosingLightLeak />
       </ScrollReveal>
     </>

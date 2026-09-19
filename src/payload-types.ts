@@ -1624,9 +1624,17 @@ export interface PlacedVisualConfig {
    */
   showMedia?: boolean | null;
   /**
-   * Let the pointer move and light the effect on devices that run it live.
+   * Let the pointer move and light the effect on devices that run it live. Off, nothing below runs and the effect never listens.
    */
   pointerInteraction?: boolean | null;
+  /**
+   * What lights the effect on hover, within the section it sits in. Links and buttons need no marking; marked elements are the ones the design calls out in code. Empty is the look as shipped.
+   */
+  hoverTargets?: ('interactive' | 'marked') | null;
+  /**
+   * How far the effect answers the pointer merely crossing the section, as a fraction of a full flare. 0 waits for a link or a marked element. Empty is the look as shipped.
+   */
+  sectionHover?: number | null;
   /**
    * Optional still shown before the effect runs, and wherever it cannot (reduced motion, no WebGL, menus, social). Images only. Empty uses the look’s built-in poster.
    */
@@ -2821,7 +2829,7 @@ export interface StreakVisualConfig {
   intensity?: number | null;
   release?: (number | null) | StreakRelease;
   /**
-   * Let the pointer move and light the effect on devices that run it live.
+   * Let the pointer move and light the effect on devices that run it live. Off, nothing below runs and the effect never listens.
    */
   pointerInteraction?: boolean | null;
   /**
@@ -7094,6 +7102,8 @@ export interface PlacedVisualConfigSelect<T extends boolean = true> {
   origin?: T;
   showMedia?: T;
   pointerInteraction?: T;
+  hoverTargets?: T;
+  sectionHover?: T;
   posterMedia?: T;
 }
 /**

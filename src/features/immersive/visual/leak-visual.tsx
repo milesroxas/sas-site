@@ -86,7 +86,7 @@ function LeakLayer({
       kind: 'leak',
       allowed: !descriptor.degraded,
       active,
-      identity: `${descriptor.release?.sourceHash ?? descriptor.look}:${descriptor.speed}:${descriptor.intensity}:${descriptor.pointer}:${descriptor.origin}`,
+      identity: `${descriptor.release?.sourceHash ?? descriptor.look}:${descriptor.speed}:${descriptor.intensity}:${descriptor.pointer}:${descriptor.targets}:${descriptor.sectionExcite}:${descriptor.origin}`,
       admission,
       onStatusChange,
     })

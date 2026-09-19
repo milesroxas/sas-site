@@ -10,6 +10,8 @@ import { LightLeakRuntime } from './light-leak-runtime'
 import { type LightLeakProps, resolveLeakTuning } from './light-leak-tuning'
 
 export {
+  LEAK_EXCITE_TARGETS,
+  type LeakExciteTargets,
   LIGHT_LEAK_DEFAULTS,
   type LightLeakBlendMode,
   type LightLeakProps,
@@ -22,8 +24,15 @@ export {
  * beneath it with a screen-like blend.
  *
  * Scrolling agitates it: velocity drives brightness, spectral split and a
- * domain-warp morph, and slides the field along. Hovering any element marked
- * `data-leak-excite` gathers light under the pointer.
+ * domain-warp morph, and slides the field along.
+ *
+ * Hovering gathers light under the pointer, inside the leak's own band and
+ * nowhere else: the nearest `leakScope()` (every `Section` and `HeroBand`
+ * carries one), else the positioned ancestor the overlay fills. Elements
+ * marked `leakExcite()` flare it, every link and button in the band does too
+ * while `exciteTargets` is `interactive`, and `sectionExcite` is how far the
+ * pointer merely crossing the band carries. `excite: false` binds no listeners
+ * at all.
  *
  * The ground decides the polarity. Over a dark surface the default screen-like
  * blend reads as light striking the film; over a pale one that same frame is

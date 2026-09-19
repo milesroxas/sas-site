@@ -20,15 +20,18 @@ import {
   effectOf,
   isEffectId,
   LEAK_ORIGINS,
+  LEAK_SECTION_HOVER_RANGE,
 } from '@/features/immersive/visual'
 import { publicApprovedMediaWhere } from './caseStudyScopedMedia'
 import {
   randomStreakSeed,
   shaderSlotOf,
   slotEffect,
+  validateHoverTargetsValue,
   validateIntensityValue,
   validatePosterMediaValue,
   validatePresetValue,
+  validateSectionHoverValue,
   validateSeedValue,
   validateSpeedValue,
 } from './visual-validate'
@@ -178,8 +181,53 @@ const pointerField = (): Field => ({
   defaultValue: false,
   label: 'Respond to the pointer',
   admin: {
-    description: 'Let the pointer move and light the effect on devices that run it live.',
+    description:
+      'Let the pointer move and light the effect on devices that run it live. Off, nothing below runs and the effect never listens.',
   },
+})
+
+/** The pointer has to be on before anything it drives is worth showing. */
+const pointerOn: Condition = (_, siblingData) => siblingData?.pointerInteraction === true
+
+/**
+ * What a light leak flares at, inside its own band: the section it sits in,
+ * the hero it fills, the closing band. A leak never answers hover outside
+ * that band, so two leaks on one page respond to their own content only.
+ */
+const hoverTargetsField = (): SelectField => ({
+  name: 'hoverTargets',
+  type: 'select',
+  label: 'Flares at',
+  // One enum for every slot that carries this field, named rather than
+  // derived: the generated name is `enum_<table>_shader_hover_targets`, and
+  // the deepest table (a work page's version of a feature tab's row) puts that
+  // one character past Postgres' 63-character identifier limit. The options
+  // are identical everywhere, so a single shared type is also the honest shape.
+  enumName: 'enum_leak_hover_targets',
+  options: [
+    { label: 'Links and buttons', value: 'interactive' },
+    { label: 'Only marked elements', value: 'marked' },
+  ],
+  admin: {
+    condition: and(slotOffers('hover'), pointerOn),
+    description:
+      'What lights the effect on hover, within the section it sits in. Links and buttons need no marking; marked elements are the ones the design calls out in code. Empty is the look as shipped.',
+  },
+  validate: (value: unknown) => validateHoverTargetsValue(value),
+})
+
+const sectionHoverField = (): NumberField => ({
+  name: 'sectionHover',
+  type: 'number',
+  min: LEAK_SECTION_HOVER_RANGE.min,
+  max: LEAK_SECTION_HOVER_RANGE.max,
+  admin: {
+    step: 0.05,
+    condition: and(slotOffers('hover'), pointerOn),
+    description:
+      'How far the effect answers the pointer merely crossing the section, as a fraction of a full flare. 0 waits for a link or a marked element. Empty is the look as shipped.',
+  },
+  validate: (value: unknown) => validateSectionHoverValue(value),
 })
 
 const posterMediaField = (filterOptions: FilterOptions): UploadField => ({
@@ -329,6 +377,9 @@ export const shaderField = ({
       ...(offers('bleed') ? [bleedField(hosted), originField()] : []),
       ...(offers('media') ? [showMediaField()] : []),
       pointerField(),
+      ...(offers('hover')
+        ? [{ type: 'row' as const, fields: [hoverTargetsField(), sectionHoverField()] }]
+        : []),
       posterMediaField(posterFilterOptions),
     ],
   }

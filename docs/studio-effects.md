@@ -27,7 +27,7 @@ This is a closed authoring contract, not a tuning provider. [immersive-effects.m
 - `limit(tuning, placement)`: code-owned ceilings. Idempotent, holds both ends, and runs before anything is drawn, so the release parser does not restate ceilings.
 - `check`: rules that span parameters (the Streak Field's minimum and maximum length).
 - `blend`: only for an effect that draws an opaque frame. The canvas and every poster are composited with it.
-- `slot`: which per-entry controls a visual slot offers (`seed`, `bleed`, `media`).
+- `slot`: which per-entry controls a visual slot offers (`seed`, `bleed`, `media`, `hover`).
 - `looks`, `fallbackLook`, `lookRevision`, `posterDirectory`: shipped looks and their stills.
 
 A snapshot carries the contract's `renderer`, so a look is only ever read against the effect it is filed under. Streak Field snapshots are byte-identical to what they were before the contract existed, so published looks kept their identity.
@@ -44,13 +44,23 @@ A Studio look's `effect` is chosen on the stage and is open until the look is fi
 
 Authored the same way as a Streak Field: Studio look or shipped look (Film, Amber), speed and intensity on a shipped look, pointer, poster override. It has no seed.
 
-Three slot controls are its own:
+Five slot controls are its own:
 
 | Field | Default | Does |
 |-------|---------|------|
 | `shader.bleed` | off | Off, the leak is clipped to the media frame. On, it leaves the frame and washes across the whole block, edge to edge of the browser. Not offered in a hero. |
 | `shader.origin` | top right | The corner the light enters from, of the frame or, bleeding, of the block. A mirror of the authored field; no second set of numbers. |
 | `shader.showMedia` | off | Off, the leak fills the frame on its own. On, the slot's media upload shows under it. |
+| `shader.hoverTargets` | the look's | What a full flare answers inside the band: links and buttons, or only elements marked in code. Shown once `pointerInteraction` is on. |
+| `shader.sectionHover` | the look's | 0 to 1: how far the pointer merely crossing the band flares the leak. 0 waits for a target. |
+
+**Hover is scoped to a band.** The leak listens inside the nearest element marked `data-leak-scope`, else the positioned ancestor it was placed to fill. `VISUAL_HOST` carries the marker, so every `Section` is a band already, and `HeroBand` spreads it, so an opening answers its own hero. A link in the block above never reaches a leak in the block below, and two leaks on one page answer their own content only.
+
+Three things can excite it, strongest first: an element marked `leakExcite()`, which is also how a subtree opts *out* (`leakExcite(false)`, or `data-leak-excite="off"`); every link and button in the band, when `exciteTargets` is `interactive` (the default, so an opening's calls to action need no wiring); and the pointer crossing the band at all, at `sectionExcite` of a full flare (0 by default). One value reaches the shader, so every flare knob — bloom, gain, colour, split, slat count — scales with it.
+
+Touch is not hover: a tap fires `pointerover` with no `pointerout` to answer it, so touch events are ignored outright and the flare stays a mouse and pen affordance.
+
+`pointerInteraction` is the master switch: off, the scene binds no listeners at all, and the look's hover knobs stay intact for whoever turns it back on. A placement that does not honor the pointer (`PLACEMENT_LIMITS`: menu, card) turns the whole flare off in `limit`.
 
 **Blending.** The leak draws an opaque frame and meets its ground through `mix-blend-mode`. A blend stops at the first ancestor that fades, transforms or clips, and an opaque frame blended over nothing is a black box, so the leak always sits in a stacking context that paints a real ground. Contained, the frame paints `bg-background` and isolates. Bleeding, the layer is portaled onto the nearest block root that spreads `VISUAL_HOST` (`Section`), which becomes the layer's containing block and blend group while it holds one (globals.css, "Visual bleed"). A slot with no such root stays contained; the work-page reveal shell is one, because `ScrollReveal` owns its root.
 

@@ -143,6 +143,40 @@ describe('light leak visual slot', () => {
     })
   })
 
+  it('keeps the look’s own hover until an entry narrows it, and bounds what it stores', () => {
+    const asShipped = resolveLeakDescriptor({ preset: 'film-v1', pointerInteraction: true }, null)
+    expect(asShipped).toMatchObject({ targets: null, sectionExcite: null })
+    const tuning = composeLeakTuning(asShipped, { surface: 'dark', placement: 'block' })
+    expect(tuning.exciteTargets).toBe(LIGHT_LEAK_DEFAULTS.exciteTargets)
+    expect(tuning.sectionExcite).toBe(LIGHT_LEAK_DEFAULTS.sectionExcite)
+
+    const narrowed = resolveLeakDescriptor(
+      {
+        preset: 'film-v1',
+        pointerInteraction: true,
+        hoverTargets: 'marked',
+        sectionHover: 0.4,
+      },
+      null,
+    )
+    expect(composeLeakTuning(narrowed, { surface: 'dark', placement: 'block' })).toMatchObject({
+      exciteTargets: 'marked',
+      sectionExcite: 0.4,
+    })
+
+    // Out of range clamps, nonsense falls back to the look, and a placement
+    // that never sees the pointer reports no band response at all.
+    const wild = resolveLeakDescriptor(
+      { preset: 'film-v1', pointerInteraction: true, hoverTargets: 'everything', sectionHover: 9 },
+      null,
+    )
+    expect(wild).toMatchObject({ targets: null, sectionExcite: 1 })
+    expect(composeLeakTuning(wild, { surface: 'dark', placement: 'menu' })).toMatchObject({
+      excite: false,
+      sectionExcite: 0,
+    })
+  })
+
   it('degrades an unknown look and an unknown origin without guessing', () => {
     const descriptor = resolveLeakDescriptor({ preset: 'signal-v1', origin: 'middle' }, null)
     expect(descriptor).toMatchObject({ look: 'film-v1', degraded: true, origin: 'top-right' })

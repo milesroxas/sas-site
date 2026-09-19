@@ -114,7 +114,7 @@ export const STREAK_FIELD_EFFECT = {
   lookRevision: STREAK_LOOK_REVISION,
   posterDirectory: 'streak-field',
   seeded: true,
-  slot: { seed: true, bleed: false, media: false },
+  slot: { seed: true, bleed: false, media: false, hover: false },
   face: (tuning, surface) => ({
     ...tuning,
     ...(surface === 'light' ? STREAK_FIELD_PAPER : {}),

@@ -16,9 +16,11 @@ export {
   effectOf,
   isEffectId,
 } from '../studio/effects'
-export { LEAK_ORIGINS } from '../ui/light-leak-tuning'
+export { LIGHT_LEAK_SCOPE_ATTR, leakScope } from '../ui/light-leak-excite'
+export { LEAK_EXCITE_TARGETS, LEAK_ORIGINS, type LeakExciteTargets } from '../ui/light-leak-tuning'
 export {
   isValidStreakSeed,
+  LEAK_SECTION_HOVER_RANGE,
   MENU_PREVIEW_TYPES,
   type MediaVisual,
   type MenuPreviewType,

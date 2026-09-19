@@ -1,5 +1,9 @@
 import { LIGHT_LEAK_AMBER, LIGHT_LEAK_PAPER } from '../../presets'
-import { LIGHT_LEAK_DEFAULTS, type LightLeakTuning } from '../../ui/light-leak-tuning'
+import {
+  LEAK_EXCITE_TARGETS,
+  LIGHT_LEAK_DEFAULTS,
+  type LightLeakTuning,
+} from '../../ui/light-leak-tuning'
 import { PLACEMENT_LIMITS, type VisualPlacement } from '../../visual/placement'
 import { type EffectContract, type EffectLook, range, type Tuning, unit, vector } from '../effect'
 
@@ -21,11 +25,15 @@ export function limitLeakTuning(
   placement: VisualPlacement,
 ): LightLeakTuning {
   const limits = LEAK_PLACEMENT_LIMITS[placement]
+  const excite = tuning.excite && PLACEMENT_LIMITS[placement].pointer
   return {
     ...tuning,
     samples: Math.max(1, Math.min(Math.round(tuning.samples), limits.samples)),
     dpr: Math.max(1, Math.min(tuning.dpr, limits.dpr)),
-    excite: tuning.excite && PLACEMENT_LIMITS[placement].pointer,
+    excite,
+    // The band's own answer is part of the flare, so it goes with it: a
+    // placement that never sees the pointer reports no hover response at all.
+    sectionExcite: excite ? tuning.sectionExcite : 0,
   }
 }
 
@@ -127,6 +135,8 @@ export const LIGHT_LEAK_EFFECT = {
     inkChroma: range('Paper', 0, 3),
     inkDensity: range('Paper', 0, 1.5),
     excite: { group: 'Interaction', toggle: true },
+    exciteTargets: { group: 'Interaction', options: LEAK_EXCITE_TARGETS },
+    sectionExcite: unit('Interaction'),
     hoverBloom: range('Interaction', 0, 4),
     exciteEase: range('Interaction', 0.5, 12, 0.1),
     pointerEase: range('Interaction', 0.5, 12, 0.1),
@@ -154,7 +164,7 @@ export const LIGHT_LEAK_EFFECT = {
   lookRevision: 1,
   posterDirectory: 'light-leak',
   seeded: false,
-  slot: { seed: false, bleed: true, media: true },
+  slot: { seed: false, bleed: true, media: true, hover: true },
   face: (tuning, surface) => (surface === 'light' ? paperFace(tuning) : tuning),
   limit: limitLeakTuning,
   blend: (tuning) => tuning.blendMode,

@@ -38,6 +38,8 @@ export {
   type FloatingCardsProps,
 } from './ui/floating-cards'
 export {
+  LEAK_EXCITE_TARGETS,
+  type LeakExciteTargets,
   LIGHT_LEAK_DEFAULTS,
   LightLeak,
   type LightLeakBlendMode,
@@ -46,7 +48,10 @@ export {
 } from './ui/light-leak'
 export {
   LIGHT_LEAK_EXCITE_ATTR,
+  LIGHT_LEAK_INTERACTIVE_SELECTOR,
+  LIGHT_LEAK_SCOPE_ATTR,
   leakExcite,
+  leakScope,
 } from './ui/light-leak-excite'
 export {
   REFRACTION_MEDIA_DEFAULTS,

@@ -87,6 +87,8 @@ export type EffectSlot = {
   bleed: boolean
   /** The slot's media upload may show under the effect. */
   media: boolean
+  /** The effect answers hover, so an entry may say what it answers and how far. */
+  hover: boolean
 }
 
 export type EffectContract<T extends Tuning> = {

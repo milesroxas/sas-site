@@ -43,6 +43,20 @@ export const originMirror = (origin: LeakOrigin): LeakMirror => [
   origin.startsWith('bottom'),
 ]
 
+/**
+ * What the leak answers on hover, inside its scope (`LIGHT_LEAK_SCOPE_ATTR`).
+ *
+ * `marked` is the explicit contract: only elements spreading `leakExcite()`.
+ * `interactive` adds every link and button in the band, so a section's own
+ * calls to action flare the leak with nothing to wire; a marker set to `off`
+ * still mutes one. Neither is the whole story — `sectionExcite` is what
+ * answers the pointer crossing the band at all.
+ */
+export const LEAK_EXCITE_TARGETS = ['marked', 'interactive'] as const
+export type LeakExciteTargets = (typeof LEAK_EXCITE_TARGETS)[number]
+export const isLeakExciteTargets = (value: unknown): value is LeakExciteTargets =>
+  (LEAK_EXCITE_TARGETS as readonly unknown[]).includes(value)
+
 /** A 0 to 2 RGB multiplier, not a colour: values above 1 push the channel hot. */
 export type LightLeakTint = readonly [number, number, number]
 
@@ -101,8 +115,19 @@ export type LightLeakProps = {
   morphScale?: number
 
   // Hover excitement
-  /** Whether elements marked `data-leak-excite` flare the leak on hover. */
+  /** Master switch for everything the pointer drives. Off, the scene binds no listeners. */
   excite?: boolean
+  /**
+   * What counts as a full-strength target: marked elements only, or every
+   * link and button in the leak's scope as well.
+   */
+  exciteTargets?: LeakExciteTargets
+  /**
+   * How excited the leak runs while the pointer is anywhere inside its scope
+   * but not on a target: the band answering the visitor's presence. 0 is off,
+   * and a target always reads 1.
+   */
+  sectionExcite?: number
   /** How fast excitement eases in and out. Low keeps the flare a wash, not a flash. */
   exciteEase?: number
   /** How fast the gathered light follows the pointer. */
@@ -207,6 +232,8 @@ export const LIGHT_LEAK_DEFAULTS = {
   morphScale: 5,
 
   excite: true,
+  exciteTargets: 'interactive',
+  sectionExcite: 0,
   exciteEase: 2.2,
   pointerEase: 5,
   hoverBloom: 0.14,

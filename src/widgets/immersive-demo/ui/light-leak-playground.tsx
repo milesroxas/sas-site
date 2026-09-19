@@ -1,8 +1,13 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import type { LightLeakBlendMode, LightLeakTint } from '@/features/immersive'
-import { LIGHT_LEAK_DEFAULTS as DEFAULTS, LIGHT_LEAK_PAPER, LightLeak } from '@/features/immersive'
+import type { LeakExciteTargets, LightLeakBlendMode, LightLeakTint } from '@/features/immersive'
+import {
+  LIGHT_LEAK_DEFAULTS as DEFAULTS,
+  LEAK_EXCITE_TARGETS,
+  LIGHT_LEAK_PAPER,
+  LightLeak,
+} from '@/features/immersive'
 import type { Theme } from '@/providers/Theme/types'
 import {
   DemoBrowserFrame,
@@ -236,25 +241,51 @@ export function LightLeakPlayground() {
     },
   })
 
-  const [{ hoverBloom, exciteEase, pointerEase, slatFrequencyExcite }, setHover] =
-    useSettableDemoControls('Hover', {
-      hoverBloom: { value: DEFAULTS.hoverBloom, min: 0, max: 4, step: 0.01, label: 'bloom' },
-      exciteEase: { value: DEFAULTS.exciteEase, min: 0.5, max: 12, step: 0.1, label: 'ease' },
-      pointerEase: {
-        value: DEFAULTS.pointerEase,
-        min: 1,
-        max: 20,
-        step: 0.5,
-        label: 'pointer ease',
-      },
-      slatFrequencyExcite: {
-        value: DEFAULTS.slatFrequencyExcite,
-        min: 0,
-        max: 30,
-        step: 0.5,
-        label: 'slat freq excite',
-      },
-    })
+  // The mock page's own links and buttons are what the leak answers here:
+  // `interactive` needs no marking, and the page also carries explicit
+  // `leakExcite()` markers on the cards, which `marked` narrows to.
+  const [
+    {
+      excite,
+      exciteTargets,
+      sectionExcite,
+      hoverBloom,
+      exciteEase,
+      pointerEase,
+      slatFrequencyExcite,
+    },
+    setHover,
+  ] = useSettableDemoControls('Hover', {
+    excite: { value: DEFAULTS.excite, label: 'flare' },
+    exciteTargets: {
+      value: DEFAULTS.exciteTargets,
+      options: [...LEAK_EXCITE_TARGETS],
+      label: 'flares at',
+    },
+    sectionExcite: {
+      value: DEFAULTS.sectionExcite,
+      min: 0,
+      max: 1,
+      step: 0.01,
+      label: 'section hover',
+    },
+    hoverBloom: { value: DEFAULTS.hoverBloom, min: 0, max: 4, step: 0.01, label: 'bloom' },
+    exciteEase: { value: DEFAULTS.exciteEase, min: 0.5, max: 12, step: 0.1, label: 'ease' },
+    pointerEase: {
+      value: DEFAULTS.pointerEase,
+      min: 1,
+      max: 20,
+      step: 0.5,
+      label: 'pointer ease',
+    },
+    slatFrequencyExcite: {
+      value: DEFAULTS.slatFrequencyExcite,
+      min: 0,
+      max: 30,
+      step: 0.5,
+      label: 'slat freq excite',
+    },
+  })
 
   // leva widens the joystick vector to number[]; the component's tuple type is
   // the source of truth for arity.
@@ -322,6 +353,9 @@ export function LightLeakPlayground() {
     scrollDrift,
     morph,
     morphScale,
+    excite,
+    exciteTargets: exciteTargets as LeakExciteTargets,
+    sectionExcite,
     exciteEase,
     pointerEase,
     hoverBloom,

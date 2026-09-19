@@ -5,6 +5,8 @@ import {
   isEffectId,
   isLookId,
   isValidStreakSeed,
+  LEAK_EXCITE_TARGETS,
+  LEAK_SECTION_HOVER_RANGE,
   STREAK_INTENSITY_RANGE,
   STREAK_SEED_MAX,
   STREAK_SPEED_RANGE,
@@ -68,6 +70,16 @@ const validateRange =
 
 export const validateSpeedValue = validateRange('Speed', STREAK_SPEED_RANGE)
 export const validateIntensityValue = validateRange('Intensity', STREAK_INTENSITY_RANGE)
+/** Empty is the look's own reach across the band, so only a stored value is bounded. */
+export const validateSectionHoverValue = validateRange('Section hover', LEAK_SECTION_HOVER_RANGE)
+
+/** Empty keeps what the look answers; anything stored has to be one of the two. */
+export const validateHoverTargetsValue = (value: unknown): true | string => {
+  if (value === null || value === undefined || value === '') return true
+  return (LEAK_EXCITE_TARGETS as readonly unknown[]).includes(value)
+    ? true
+    : `"${String(value)}" is not something a leak can answer.`
+}
 
 const relationId = (value: unknown): number | string | null => {
   if (typeof value === 'number' || typeof value === 'string') return value

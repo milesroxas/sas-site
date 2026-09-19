@@ -66,6 +66,10 @@ export function composeLeakTuning(
       gain: base.gain * descriptor.intensity,
       // Off, the scene binds no listeners; the look's hover knobs stay intact.
       excite: base.excite && descriptor.pointer,
+      // An entry narrows what the look answers and how far the band carries
+      // it; empty on both is the look exactly as authored.
+      exciteTargets: descriptor.targets ?? base.exciteTargets,
+      sectionExcite: descriptor.sectionExcite ?? base.sectionExcite,
     },
     placement,
   )
