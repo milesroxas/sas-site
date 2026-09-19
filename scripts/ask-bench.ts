@@ -13,6 +13,11 @@
  * writes docs/perf/ask-jev/report.md. Numbers are relative: run every label
  * on the same machine against the same database. The endpoint allows 10
  * requests a minute per IP, hence the 7 second pace.
+ *
+ * Against `next dev`: Payload keeps endpoint code across hot reloads, so an
+ * edit to the endpoint or its prompts is not live until the server reloads
+ * (any change to `.env` does it). Confirm the new code answers before a
+ * capture, or the label measures the old code.
  */
 
 import { execSync } from 'node:child_process'

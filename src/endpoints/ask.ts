@@ -98,8 +98,25 @@ import { captureServerEvent } from '@/utilities/posthog'
 
 /** Output budget per answer; includes gpt-5 reasoning tokens, so leave headroom over the ~120-word answer. */
 const MAX_ANSWER_TOKENS = 1_200
+/**
+ * Output budget for a turn the judge routed: no tool and minimal reasoning, so
+ * the budget is the words alone. Measured 2026-09-19 over 43 such answers: 180
+ * tokens at most, 115 at the median.
+ */
+const MAX_WRITING_TOKENS = 400
 /** Source-less follow-up turns are conversational only (a thanks, a rephrase), so cap them hard. */
 const MAX_CHAT_ONLY_TOKENS = 400
+
+/**
+ * Reasoning effort for the writing model. With the tool on offer it also
+ * judges (is a person the next step, do the sources answer this), which is
+ * what `low` was tuned for. A routed turn has had those decisions made and
+ * its passages vetted, so the model only writes: `minimal` spends no
+ * reasoning tokens and took the median time to first word from 4.7 s to
+ * 1.5 s with cards and sources unchanged (docs/perf/ask-jev/report.md).
+ * Rollback is this one value.
+ */
+const REASONING_EFFORT = { deciding: 'low', writing: 'minimal' } as const
 
 const json = (body: unknown, status = 200) => Response.json(body, { status })
 
@@ -476,7 +493,11 @@ const ask: Endpoint = {
       system,
       messages: await convertToModelMessages(messages),
       tools,
-      maxOutputTokens: sources.length > 0 ? MAX_ANSWER_TOKENS : MAX_CHAT_ONLY_TOKENS,
+      maxOutputTokens: !grounded
+        ? MAX_CHAT_ONLY_TOKENS
+        : routed
+          ? MAX_WRITING_TOKENS
+          : MAX_ANSWER_TOKENS,
       // The visitor's Stop (and a dropped connection) aborts the model call,
       // so tokens stop with the reader and the turn is recorded as stopped.
       abortSignal: req.signal,
@@ -486,7 +507,12 @@ const ask: Endpoint = {
       // for 30 days in the dashboard logs. Nothing here needs that: the client
       // resends the transcript each turn, and for reasoning models the SDK asks
       // for encrypted reasoning instead of server-side item references.
-      providerOptions: { openai: { reasoningEffort: 'low', store: false } },
+      providerOptions: {
+        openai: {
+          reasoningEffort: routed ? REASONING_EFFORT.writing : REASONING_EFFORT.deciding,
+          store: false,
+        },
+      },
       onChunk: ({ chunk }) => {
         if (chunk.type === 'text-delta' || chunk.type === 'tool-result') markFirstOutput()
       },

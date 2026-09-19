@@ -1,14 +1,15 @@
 {
   "header": {
-    "label": "after",
-    "date": "2026-09-19T18:40:02.892Z",
+    "label": "after-model",
+    "date": "2026-09-19T18:49:00.557Z",
     "gitSha": "c9227fa",
     "baseUrl": "http://localhost:55010",
     "judgeMode": "on",
     "answerModel": "gpt-5-mini",
     "judgeModel": "jev-1.13.0",
     "runs": 3,
-    "paceMs": 7000
+    "paceMs": 7000,
+    "candidate": "gpt-5-mini, reasoningEffort minimal on routed turns"
   },
   "cases": [
     {
@@ -26,15 +27,15 @@
             {
               "question": "How do we start?",
               "status": 200,
-              "firstOutputMs": 5622,
-              "totalMs": 5979,
+              "firstOutputMs": 1809,
+              "totalMs": 3179,
               "sources": [
                 "/expertise/embedded-creative-digital-services",
                 "/who-we-help/technical-b2b--expert-led-companies",
                 "/posts/the-importance-of-storytelling-in-tech-startup-branding",
                 "/expertise/sales-marketing-investor-communications"
               ],
-              "text": "We start by getting to know you: your organisation, brand, audiences, internal team, technology, existing systems and recurring needs so we can design work that actually fits. For many projects we follow that with stakeholder interviews, audience definition and a communication brief that clarifies what the audience needs to act on and the evidence they’ll trust. \n\nWe don’t publish fixed prices or a one-size project plan online, the next step is described here: /expertise/embedded-creative-digital-services.",
+              "text": "We start by learning your organisation, brand, audiences, internal team, tech and recurring needs so we understand where you’re coming from and what success looks like. \n\nIf you already have history with us, we use existing context; otherwise we run stakeholder interviews, audience definition, communication objectives and reviews to map problems, outcomes and proof points. \n\nIf you want the exact first deliverable or timeline we use, we don’t publish that here — see /expertise/embedded-creative-digital-services for our approach and /expertise/sales-marketing-investor-communications for planning steps.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -46,15 +47,15 @@
             {
               "question": "How do we start?",
               "status": 200,
-              "firstOutputMs": 4384,
-              "totalMs": 4857,
+              "firstOutputMs": 1498,
+              "totalMs": 3463,
               "sources": [
                 "/expertise/embedded-creative-digital-services",
                 "/who-we-help/technical-b2b--expert-led-companies",
                 "/posts/the-importance-of-storytelling-in-tech-startup-branding",
                 "/expertise/sales-marketing-investor-communications"
               ],
-              "text": "We start by getting to know you: your organisation, brand, audiences, internal team, technology, existing systems and recurring needs so we can shape work that fits. For projects focused on sales, marketing or investor comms we also establish what your audience needs to act and map messages, proof points and channels. We don’t publish a fixed onboarding timeline or a step‑by‑step process online, see /expertise/embedded-creative-digital-services for the next step.",
+              "text": "We start by learning your organisation, brand, audiences, internal team, technology and recurring needs so we can align strategy and creative work to what actually moves your people to act.  \n\nIf you already have a working relationship with us, much of that context will already be in place and we’ll build from it.  \n\nIf you want the practical first step we use, see /expertise/sales-marketing-investor-communications for how we establish audience needs and communication objectives, or /expertise/embedded-creative-digital-services to read about establishing the relationship.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -66,15 +67,15 @@
             {
               "question": "How do we start?",
               "status": 200,
-              "firstOutputMs": 5869,
-              "totalMs": 6262,
+              "firstOutputMs": 3176,
+              "totalMs": 6350,
               "sources": [
                 "/expertise/embedded-creative-digital-services",
                 "/who-we-help/technical-b2b--expert-led-companies",
                 "/posts/the-importance-of-storytelling-in-tech-startup-branding",
                 "/expertise/sales-marketing-investor-communications"
               ],
-              "text": "We start by getting to know your organisation: brand, audiences, internal team, technology, existing systems and recurring needs so our work fits your reality. To begin that practical phase we typically run stakeholder interviews, define audiences, set communication objectives, map messages and objections, and review existing material to build a clear brief. We do not publish fixed engagement packages or prices; next step: /expertise/embedded-creative-digital-services.",
+              "text": "We start by establishing the relationship: we learn your organisation, brand, audiences, internal team, technology, existing systems and recurring needs so we understand context before we design anything. \n\nWhat we do next depends on your goals: for technical B2B or expert-led companies we clarify the problem your audience recognises, the outcome they care about, the difference you offer and the evidence they need; for sales, marketing or investor work we run stakeholder interviews, audience definition, message hierarchy and proof‑point planning. \n\nIf you want a specific first step for your project, tell us which page of work you’re after: /expertise/embedded-creative-digital-services or /who-we-help/technical-b2b--expert-led-companies or /expertise/sales-marketing-investor-communications.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -98,15 +99,15 @@
             {
               "question": "Who have you worked with?",
               "status": 200,
-              "firstOutputMs": 5648,
-              "totalMs": 6448,
+              "firstOutputMs": 1518,
+              "totalMs": 2380,
               "sources": [
                 "/expertise/embedded-creative-digital-services",
                 "/",
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/product-ux-ui-design-systems"
               ],
-              "text": "We’ve worked with companies including Gentle Beast, Next Street Financial, ARC Research, Blindcut, Omnibuild and a leading digital marketing agency, among others (see testimonials on our homepage). We also regularly collaborate with media agencies, development firms, photographers, printers, event fabricators and internal teams. We don’t publish a complete client roster; see / for featured clients and quotes.",
+              "text": "We’ve worked with a range of clients across industries; examples on our site include Gentle Beast, Next Street Financial, ARC Research, Blindcut, Omnibuild and several agency and CEO-level clients who praised our collaboration and accountability.  \n\nWe don’t publish a full client directory; see / for more of the work and client quotes.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -118,15 +119,15 @@
             {
               "question": "Who have you worked with?",
               "status": 200,
-              "firstOutputMs": 3291,
-              "totalMs": 4184,
+              "firstOutputMs": 1713,
+              "totalMs": 2742,
               "sources": [
                 "/expertise/embedded-creative-digital-services",
                 "/",
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/product-ux-ui-design-systems"
               ],
-              "text": "We’ve worked with a mix of product and service brands and their leadership teams, including Gentle Beast (Ben Green), Next Street Financial (Cristina Yoder), ARC Research (Andy Tuck), Blindcut (Erika Hemphill), a digital marketing agency (CEO testimonial), and Omnibuild (Bassam Tarazi). \n\nWe don’t publish a full client roster or detailed case list here, see Our work in at /.",
+              "text": "We’ve worked with a wide range of clients across product, marketing, and investor communications, including Gentle Beast, Next Street Financial, ARC Research, Blindcut, Omnibuild, and several agencies and CEOs who praise our collaboration and accountability.  \n\nIf you want a fuller client list or case studies, we don’t publish the complete roster here: / (Home > Our work in).",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -138,15 +139,15 @@
             {
               "question": "Who have you worked with?",
               "status": 200,
-              "firstOutputMs": 4655,
-              "totalMs": 5010,
+              "firstOutputMs": 1659,
+              "totalMs": 2476,
               "sources": [
                 "/expertise/embedded-creative-digital-services",
                 "/",
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/product-ux-ui-design-systems"
               ],
-              "text": "We’ve worked with companies including Gentle Beast, Next Street Financial, ARC Research, Blindcut, Omnibuild, and a digital marketing agency whose CEO shared feedback. We don’t publish a full client roster or every case study here, see our Our work in page at /.",
+              "text": "We’ve worked with a range of clients across sectors, including CEOs and heads of product who call us embedded collaborators and partners that push their business forward.\n\nWe publish client quotes and examples on the home page: /, and we don’t publish a full client roster — see / for named testimonials and case highlights.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -170,15 +171,15 @@
             {
               "question": "What is your process like?",
               "status": 200,
-              "firstOutputMs": 5136,
-              "totalMs": 5533,
+              "firstOutputMs": 1648,
+              "totalMs": 3290,
               "sources": [
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/product-ux-ui-design-systems",
                 "/contact/project-inquiry"
               ],
-              "text": "We start by learning who the communication or product is for and what action it must drive, then develop a clear central argument and information structure, design the visual and interaction system, and produce the deliverables in the exact formats they’ll be used in—then we support rollout, handoff, and ongoing extension. For product work we add research, prototyping, and engineering handoff; for campaign or event bursts we provide connected creative outputs and ongoing embedded production support. We don’t publish exact timelines or pricing; next step: /contact/project-inquiry.",
+              "text": "We start by learning who the work is for, what decision or action it must support, and the specific outcomes you need, then turn that understanding into a clear structure, central argument, and production plan so deliverables are useful in the formats you’ll actually use.\n\nWe don’t publish a single step‑by‑step checklist here; see /expertise/sales-marketing-investor-communications, /expertise/embedded-creative-digital-services, and /expertise/product-ux-ui-design-systems for how we approach discovery, modeling, prototyping, design, and production. If you’d like, tell us about your project and we’ll reply within two business days via /contact/project-inquiry.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -190,15 +191,15 @@
             {
               "question": "What is your process like?",
               "status": 200,
-              "firstOutputMs": 3922,
-              "totalMs": 4930,
+              "firstOutputMs": 1911,
+              "totalMs": 2979,
               "sources": [
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/product-ux-ui-design-systems",
                 "/contact/project-inquiry"
               ],
-              "text": "We start by learning who the work is for and what you need people to do, identify the central idea and evidence, then structure and design communication or product solutions you can actually use: research and modeling, prototypes and templates, production in the formats you need, and ongoing support or embedded capacity so the system stays consistent. For product work we add engineering handoff, specs, and QA; for campaigns we coordinate assets, events, and post-event follow up. We don’t publish detailed fees or exact project timelines, next step: /contact/project-inquiry.",
+              "text": "We begin by understanding the problem, the audience, and the decision the work must support, then translate that into a focused idea, a structured information hierarchy, and deliverables produced in the formats they will actually be used in.\n\nWhat we don’t publish here: detailed step‑by‑step engagement phases, timelines, and pricing — see /contact/project-inquiry for how to start a project and get a straight answer on fit, scope, and a rough range.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -210,15 +211,15 @@
             {
               "question": "What is your process like?",
               "status": 200,
-              "firstOutputMs": 4317,
-              "totalMs": 5061,
+              "firstOutputMs": 1465,
+              "totalMs": 2583,
               "sources": [
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/product-ux-ui-design-systems",
                 "/contact/project-inquiry"
               ],
-              "text": "We start by understanding who the work is for and what decision or action it must support, find the central argument, then structure and design the communication or product: research and user/workflow discovery, modeling and prototypes, design and component systems, production in the formats you’ll actually use, and ongoing support or embedded services so the work stays consistent. We adapt that flow to focused campaigns, events, or product work and hand build developer-ready specs when needed. We don’t publish project-specific timing, scope, or pricing details, next step: /contact/project-inquiry.",
+              "text": "We start by understanding who the communication or product is for and what decision or action it must support, then we shape a clear central argument, structure the information, design the system, and produce the deliverables in the formats they will actually be used in. For product work we add user and stakeholder research, journey and task mapping, prototyping, and handoff-ready assets so engineering can implement what we design.\n\nWe don’t publish a full step‑by‑step timeline or price ranges here, see /contact/project-inquiry for how to start a conversation.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -241,12 +242,12 @@
             {
               "question": "What does it cost?",
               "status": 200,
-              "firstOutputMs": 5995,
-              "totalMs": 6393,
+              "firstOutputMs": 1263,
+              "totalMs": 2442,
               "sources": [
                 "/expertise/embedded-creative-digital-services"
               ],
-              "text": "Cost depends on the amount of reserved capacity, disciplines required, level of senior involvement, technical complexity, and expected mix of work. A useful engagement should be structured around realistic recurring demand rather than choosing an arbitrary package, and ongoing relationships are most effective when they last long enough for the agency to develop context and support more than one isolated request. Ongoing clients receive planned access and priority relative to unscheduled ad hoc work, while substantial assignments still require realistic production time.",
+              "text": "Cost depends on reserved capacity, disciplines needed, seniority level, technical complexity, and expected mix of work. Ongoing fees are structured around realistic recurring demand rather than an arbitrary package, and the initial term, renewal and capacity are defined in the agreement. Every engagement varies, and ongoing clients receive planned access and priority relative to ad hoc work.",
               "reason": "estimate",
               "modelSkipped": false,
               "error": null
@@ -258,12 +259,12 @@
             {
               "question": "What does it cost?",
               "status": 200,
-              "firstOutputMs": 4949,
-              "totalMs": 5310,
+              "firstOutputMs": 1530,
+              "totalMs": 2769,
               "sources": [
                 "/expertise/embedded-creative-digital-services"
               ],
-              "text": "Costs vary with the amount of reserved capacity, the disciplines required, the level of senior involvement, technical complexity, and the expected mix of work. A useful engagement is structured around realistic recurring demand, with the initial term, renewal structure, and capacity defined in the agreement.",
+              "text": "Cost depends on the amount of reserved capacity, disciplines required, level of senior involvement, technical complexity, and expected mix of work. A useful engagement should be structured around realistic recurring demand rather than an arbitrary package. Ongoing terms, renewal structure, and capacity are defined in the agreement to match an organisation’s needs. Ongoing clients receive planned access and priority relative to unscheduled ad hoc work, and substantial assignments still require realistic production time. We can help apply and extend a new system after launch, and embedded relationships work best when they last long enough to establish context and routines.",
               "reason": "estimate",
               "modelSkipped": false,
               "error": null
@@ -275,12 +276,12 @@
             {
               "question": "What does it cost?",
               "status": 200,
-              "firstOutputMs": 4450,
-              "totalMs": 4835,
+              "firstOutputMs": 1834,
+              "totalMs": 2634,
               "sources": [
                 "/expertise/embedded-creative-digital-services"
               ],
-              "text": "Costs vary based on the amount of reserved capacity, disciplines required, level of senior involvement, technical complexity, and expected mix of work. A useful engagement should be structured around realistic recurring demand rather than an arbitrary package, with the initial term, renewal structure, and capacity defined in the agreement.",
+              "text": "Cost depends on reserved capacity, disciplines required, seniority, technical complexity, and expected mix of work. Ongoing engagements should be structured around realistic recurring demand rather than a preset package, and the initial term, renewal and capacity are defined in the agreement. Ongoing clients receive planned access and priority relative to ad hoc work, and substantial assignments still need realistic production time.",
               "reason": "estimate",
               "modelSkipped": false,
               "error": null
@@ -304,8 +305,8 @@
             {
               "question": "How much would a new website for my startup cost?",
               "status": 200,
-              "firstOutputMs": 713,
-              "totalMs": 713,
+              "firstOutputMs": 458,
+              "totalMs": 458,
               "sources": [],
               "text": "",
               "reason": "estimate",
@@ -319,8 +320,8 @@
             {
               "question": "How much would a new website for my startup cost?",
               "status": 200,
-              "firstOutputMs": 342,
-              "totalMs": 342,
+              "firstOutputMs": 382,
+              "totalMs": 382,
               "sources": [],
               "text": "",
               "reason": "estimate",
@@ -334,8 +335,8 @@
             {
               "question": "How much would a new website for my startup cost?",
               "status": 200,
-              "firstOutputMs": 466,
-              "totalMs": 466,
+              "firstOutputMs": 343,
+              "totalMs": 343,
               "sources": [],
               "text": "",
               "reason": "estimate",
@@ -361,8 +362,8 @@
             {
               "question": "Can I talk to someone on the team?",
               "status": 200,
-              "firstOutputMs": 316,
-              "totalMs": 316,
+              "firstOutputMs": 382,
+              "totalMs": 382,
               "sources": [],
               "text": "",
               "reason": "person",
@@ -376,8 +377,8 @@
             {
               "question": "Can I talk to someone on the team?",
               "status": 200,
-              "firstOutputMs": 391,
-              "totalMs": 391,
+              "firstOutputMs": 381,
+              "totalMs": 381,
               "sources": [],
               "text": "",
               "reason": "person",
@@ -391,8 +392,8 @@
             {
               "question": "Can I talk to someone on the team?",
               "status": 200,
-              "firstOutputMs": 464,
-              "totalMs": 464,
+              "firstOutputMs": 473,
+              "totalMs": 473,
               "sources": [],
               "text": "",
               "reason": "person",
@@ -418,14 +419,14 @@
             {
               "question": "Do you work with startups?",
               "status": 200,
-              "firstOutputMs": 3408,
-              "totalMs": 3780,
+              "firstOutputMs": 1312,
+              "totalMs": 2303,
               "sources": [
                 "/posts/building-a-brand-that-resonates-the-ultimate-guide-for-tech-startups",
                 "/posts/the-importance-of-storytelling-in-tech-startup-branding",
                 "/about-us"
               ],
-              "text": "Yes — since 2011 we’ve helped growth-stage businesses and startups clarify positioning, expand brand identities, and bring those brands to life through strategy, design, digital experiences, and creative production. We’re fully remote (since 2019) and work with clients everywhere.\n\nWe don’t publish pricing, availability, or engagement process details online; see /about-us for our company overview and next steps.",
+              "text": "Yes. Since 2011 we’ve helped growth-stage businesses and startups clarify positioning, expand brand identities, and bring them to life across strategy, design, digital, and creative production. \n\nWe don’t publish a full list of services or pricing on the site; see /posts/building-a-brand-that-resonates-the-ultimate-guide-for-tech-startups for the kinds of branding work we do.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -437,14 +438,14 @@
             {
               "question": "Do you work with startups?",
               "status": 200,
-              "firstOutputMs": 3702,
-              "totalMs": 4360,
+              "firstOutputMs": 5107,
+              "totalMs": 17943,
               "sources": [
                 "/posts/building-a-brand-that-resonates-the-ultimate-guide-for-tech-startups",
                 "/posts/the-importance-of-storytelling-in-tech-startup-branding",
                 "/about-us"
               ],
-              "text": "Yes — we’ve worked with growth-stage businesses and startups since 2011, helping them clarify positioning, expand brand identities, and bring those brands to life through strategy, design, digital experiences, and creative production. \n\nWe don’t publish pricing or detailed engagement timelines online, see /about-us for more on who we are and how we work.",
+              "text": "Yes — we work with startups, especially growth‑stage and tech startups, helping them clarify positioning, expand brand identities, and bring those brands to life through strategy, design, digital experiences, and creative production. We don’t publish pricing or engagement timelines on the site; see /about-us for who we are and /posts/building-a-brand-that-resonates-the-ultimate-guide-for-tech-startups for examples of our startup-focused work. Would you like to tell us about your stage and biggest branding challenge?",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -456,14 +457,14 @@
             {
               "question": "Do you work with startups?",
               "status": 200,
-              "firstOutputMs": 5822,
-              "totalMs": 6142,
+              "firstOutputMs": 1486,
+              "totalMs": 2518,
               "sources": [
                 "/posts/building-a-brand-that-resonates-the-ultimate-guide-for-tech-startups",
                 "/posts/the-importance-of-storytelling-in-tech-startup-branding",
                 "/about-us"
               ],
-              "text": "Yes. Since 2011 we’ve worked with growth-stage businesses and startups to clarify positioning and build brand identity through strategy, design, digital experiences, and creative production. We also help tech companies simplify complex messaging so their story resonates.\n\nWe don’t publish pricing or detailed engagement/booking information online, see /about-us for more about who we are and how we work.",
+              "text": "Yes — we’ve worked with growth-stage startups since 2011, helping them clarify positioning, build brand identities, and bring those brands to life through strategy, design, digital experiences, and creative production. \n\nIf you want details we don’t publish here, like pricing or exact engagement timelines, see /about-us for who we are and then /posts/building-a-brand-that-resonates-the-ultimate-guide-for-tech-startups for how we work with tech startups.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -487,13 +488,13 @@
             {
               "question": "Can you fix my Webflow site?",
               "status": 200,
-              "firstOutputMs": 14331,
-              "totalMs": 16005,
+              "firstOutputMs": 1563,
+              "totalMs": 2513,
               "sources": [
                 "/expertise/website-strategy-ux-development",
                 "/expertise/embedded-creative-digital-services"
               ],
-              "text": "We work with Webflow and can support development, quality assurance, and launch within one engagement. We provide Webflow development, CMS enhancements, component development, third‑party integrations, content migration, accessibility improvements, performance optimization, quality assurance, platform upgrades, and technical troubleshooting. We help keep websites useful as the business evolves by adding new pages, campaign and landing pages, and ongoing support across Webflow, WordPress, Craft CMS, headless setups, and Shopify when appropriate. Website strategy work can include audience research, sitemap development, content strategy, user journeys, CMS requirements, and measurement recommendations to inform UX and development.",
+              "text": "We can fix Webflow sites: our team provides Webflow development, CMS and component work, bug fixes, performance and accessibility improvements, integrations, content migration, QA, and technical troubleshooting.  \n\nWe also support ongoing Webflow development as part of embedded creative and digital services, keeping sites useful as the business and content evolve.",
               "reason": "project",
               "modelSkipped": false,
               "error": null
@@ -505,13 +506,13 @@
             {
               "question": "Can you fix my Webflow site?",
               "status": 200,
-              "firstOutputMs": 6752,
-              "totalMs": 7548,
+              "firstOutputMs": 1546,
+              "totalMs": 2543,
               "sources": [
                 "/expertise/website-strategy-ux-development",
                 "/expertise/embedded-creative-digital-services"
               ],
-              "text": "We can support Webflow development and debugging for marketing websites and content-driven digital experiences. We also provide related services often needed when fixing a site, including quality assurance, technical troubleshooting, performance optimization, CMS enhancements, accessibility improvements, third‑party integrations, and platform upgrades. We can act as the primary implementer or collaborate with an internal development team or another implementation partner.",
+              "text": "We build and support Webflow sites as part of our development and ongoing support services, including new pages, component work, CMS changes, integrations, performance, accessibility, troubleshooting, and quality assurance.  \n\nWe can also work on Webflow within longer website builds, or alongside WordPress, Craft, Shopify, and headless implementations.",
               "reason": "project",
               "modelSkipped": false,
               "error": null
@@ -523,13 +524,13 @@
             {
               "question": "Can you fix my Webflow site?",
               "status": 200,
-              "firstOutputMs": 4638,
-              "totalMs": 5320,
+              "firstOutputMs": 1362,
+              "totalMs": 2156,
               "sources": [
                 "/expertise/website-strategy-ux-development",
                 "/expertise/embedded-creative-digital-services"
               ],
-              "text": "We can fix Webflow sites, Webflow is one of our primary platforms for marketing websites and content-driven digital experiences. Our services include Webflow development, technical troubleshooting, CMS enhancements, performance optimization, accessibility improvements, quality assurance, and launch planning and deployment. We can support full website builds or provide selected parts of the process and collaborate with an internal development team or another implementation partner.",
+              "text": "We can fix Webflow sites, including development work, new pages, CMS enhancements, component development, third‑party integrations, performance and accessibility fixes, and quality assurance. Our team also supports Webflow as part of ongoing embedded creative and digital services to keep sites useful as the business evolves.",
               "reason": "project",
               "modelSkipped": false,
               "error": null
@@ -553,8 +554,8 @@
             {
               "question": "How long would it take you to rebrand our company?",
               "status": 200,
-              "firstOutputMs": 338,
-              "totalMs": 338,
+              "firstOutputMs": 440,
+              "totalMs": 440,
               "sources": [],
               "text": "",
               "reason": "estimate",
@@ -568,8 +569,8 @@
             {
               "question": "How long would it take you to rebrand our company?",
               "status": 200,
-              "firstOutputMs": 366,
-              "totalMs": 366,
+              "firstOutputMs": 544,
+              "totalMs": 544,
               "sources": [],
               "text": "",
               "reason": "estimate",
@@ -583,8 +584,8 @@
             {
               "question": "How long would it take you to rebrand our company?",
               "status": 200,
-              "firstOutputMs": 354,
-              "totalMs": 354,
+              "firstOutputMs": 344,
+              "totalMs": 344,
               "sources": [],
               "text": "",
               "reason": "estimate",
@@ -610,24 +611,7 @@
             {
               "question": "When could you start on our project?",
               "status": 200,
-              "firstOutputMs": 6089,
-              "totalMs": 6338,
-              "sources": [
-                "/expertise/embedded-creative-digital-services"
-              ],
-              "text": "When we could start depends on request complexity, required team members, current queue, content readiness, and the agreed level of reserved capacity. Ongoing clients receive planned access and priority relative to unscheduled ad hoc work, but substantial assignments still require realistic production time.",
-              "reason": "estimate",
-              "modelSkipped": false,
-              "error": null
-            }
-          ]
-        },
-        {
-          "turns": [
-            {
-              "question": "When could you start on our project?",
-              "status": 200,
-              "firstOutputMs": 348,
+              "firstOutputMs": 347,
               "totalMs": 348,
               "sources": [],
               "text": "",
@@ -642,8 +626,23 @@
             {
               "question": "When could you start on our project?",
               "status": 200,
-              "firstOutputMs": 312,
-              "totalMs": 312,
+              "firstOutputMs": 639,
+              "totalMs": 639,
+              "sources": [],
+              "text": "",
+              "reason": "estimate",
+              "modelSkipped": true,
+              "error": null
+            }
+          ]
+        },
+        {
+          "turns": [
+            {
+              "question": "When could you start on our project?",
+              "status": 200,
+              "firstOutputMs": 398,
+              "totalMs": 398,
               "sources": [],
               "text": "",
               "reason": "estimate",
@@ -669,8 +668,8 @@
             {
               "question": "I have a project I'd like to talk to you about.",
               "status": 200,
-              "firstOutputMs": 347,
-              "totalMs": 347,
+              "firstOutputMs": 550,
+              "totalMs": 550,
               "sources": [],
               "text": "",
               "reason": "project",
@@ -684,8 +683,8 @@
             {
               "question": "I have a project I'd like to talk to you about.",
               "status": 200,
-              "firstOutputMs": 381,
-              "totalMs": 381,
+              "firstOutputMs": 387,
+              "totalMs": 387,
               "sources": [],
               "text": "",
               "reason": "project",
@@ -699,8 +698,8 @@
             {
               "question": "I have a project I'd like to talk to you about.",
               "status": 200,
-              "firstOutputMs": 508,
-              "totalMs": 508,
+              "firstOutputMs": 384,
+              "totalMs": 384,
               "sources": [],
               "text": "",
               "reason": "project",
@@ -725,14 +724,14 @@
             {
               "question": "Can you build a mobile app for us?",
               "status": 200,
-              "firstOutputMs": 7025,
-              "totalMs": 7918,
+              "firstOutputMs": 2494,
+              "totalMs": 4797,
               "sources": [
                 "/expertise/product-ux-ui-design-systems",
                 "/expertise/embedded-creative-digital-services",
                 "/who-we-help/saas-digital-products"
               ],
-              "text": "We focus on product strategy, UX, UI, prototyping, and design-system development for software products. We can collaborate with your internal engineering team or with a specialized development partner responsible for the product’s technical architecture, back end, and implementation. Deliverables can include development-ready Figma files, component and interaction specifications, responsive behavior documentation, prototypes, design tokens, and implementation QA. We also support continued development with UX audits, workflow improvements, product UI design, and design-system coordination.",
+              "text": "We focus on product strategy, UX, UI, prototyping, and design-system work and collaborate with your internal engineers or a specialized development partner who handles the app’s technical architecture and build. \n\nWe can deliver development-ready Figma files, component specs, interaction documentation, responsive behavior, prototypes, engineering handoff support, and implementation QA to hand decisions to engineering in a buildable form.",
               "reason": "project",
               "modelSkipped": false,
               "error": null
@@ -744,14 +743,14 @@
             {
               "question": "Can you build a mobile app for us?",
               "status": 200,
-              "firstOutputMs": 6614,
-              "totalMs": 7116,
+              "firstOutputMs": 1566,
+              "totalMs": 2626,
               "sources": [
                 "/expertise/product-ux-ui-design-systems",
                 "/expertise/embedded-creative-digital-services",
                 "/who-we-help/saas-digital-products"
               ],
-              "text": "We don’t build mobile-app back ends or ship production code; our primary role for custom software is product strategy, UX, UI, prototyping, and design-system development. We deliver development-ready Figma files, component and interaction specs, responsive behavior docs, state and edge-case planning, and implementation QA to hand decisions to engineering in a buildable form. We support research, prototypes, UX audits, workflow improvements, new features, and ongoing product-design support while collaborating with internal product and engineering teams. We can collaborate with your internal engineers or with a specialized application-development partner responsible for the product’s technical implementation.",
+              "text": "We focus on product strategy, UX, UI, prototyping, and design-system work and typically collaborate with your internal engineers or a specialized development partner to build the app. \n\nWe can deliver development-ready Figma files, component and interaction specs, responsive behavior documentation, state and edge-case planning, engineering handoff and implementation QA, and ongoing product-design support. Every sentence above reflects what we publish.",
               "reason": "project",
               "modelSkipped": false,
               "error": null
@@ -763,14 +762,14 @@
             {
               "question": "Can you build a mobile app for us?",
               "status": 200,
-              "firstOutputMs": 4199,
-              "totalMs": 4718,
+              "firstOutputMs": 1668,
+              "totalMs": 2849,
               "sources": [
                 "/expertise/product-ux-ui-design-systems",
                 "/expertise/embedded-creative-digital-services",
                 "/who-we-help/saas-digital-products"
               ],
-              "text": "We provide product strategy, UX, UI, prototyping, and design-system work for mobile apps, including development-ready Figma files, component and interaction specifications, responsive behavior, state and edge-case planning, and implementation QA. We typically collaborate with your internal engineering team or a specialized development partner to build and implement the application rather than performing the application back-end development ourselves.",
+              "text": "We design product UX, UI, prototypes, and design systems and can hand buildable, development-ready deliverables to your engineering team or a specialized development partner.  \n\nWe do not act as the primary software-build team: our role is product strategy, user research and testing when appropriate, interactive prototypes, organized Figma files, component specs, responsive behavior, state and edge-case planning, engineering handoff, and implementation QA while collaborating with internal engineers or a development partner.",
               "reason": "project",
               "modelSkipped": false,
               "error": null
@@ -794,8 +793,8 @@
             {
               "question": "Can someone call me about this?",
               "status": 200,
-              "firstOutputMs": 375,
-              "totalMs": 375,
+              "firstOutputMs": 318,
+              "totalMs": 318,
               "sources": [],
               "text": "",
               "reason": "person",
@@ -809,8 +808,8 @@
             {
               "question": "Can someone call me about this?",
               "status": 200,
-              "firstOutputMs": 362,
-              "totalMs": 362,
+              "firstOutputMs": 342,
+              "totalMs": 342,
               "sources": [],
               "text": "",
               "reason": "person",
@@ -824,8 +823,8 @@
             {
               "question": "Can someone call me about this?",
               "status": 200,
-              "firstOutputMs": 364,
-              "totalMs": 364,
+              "firstOutputMs": 380,
+              "totalMs": 380,
               "sources": [],
               "text": "",
               "reason": "person",
@@ -851,8 +850,8 @@
             {
               "question": "My email is jane@example.com, can you send me more information?",
               "status": 200,
-              "firstOutputMs": 20,
-              "totalMs": 20,
+              "firstOutputMs": 21,
+              "totalMs": 21,
               "sources": [],
               "text": "",
               "reason": "contact_details",
@@ -881,8 +880,8 @@
             {
               "question": "My email is jane@example.com, can you send me more information?",
               "status": 200,
-              "firstOutputMs": 13,
-              "totalMs": 13,
+              "firstOutputMs": 20,
+              "totalMs": 20,
               "sources": [],
               "text": "",
               "reason": "contact_details",
@@ -908,8 +907,8 @@
             {
               "question": "What is the capital of Mongolia?",
               "status": 200,
-              "firstOutputMs": 385,
-              "totalMs": 385,
+              "firstOutputMs": 378,
+              "totalMs": 378,
               "sources": [],
               "text": "",
               "reason": "no_answer",
@@ -923,8 +922,8 @@
             {
               "question": "What is the capital of Mongolia?",
               "status": 200,
-              "firstOutputMs": 366,
-              "totalMs": 366,
+              "firstOutputMs": 409,
+              "totalMs": 409,
               "sources": [],
               "text": "",
               "reason": "no_answer",
@@ -938,8 +937,8 @@
             {
               "question": "What is the capital of Mongolia?",
               "status": 200,
-              "firstOutputMs": 388,
-              "totalMs": 388,
+              "firstOutputMs": 486,
+              "totalMs": 486,
               "sources": [],
               "text": "",
               "reason": "no_answer",
@@ -965,15 +964,15 @@
             {
               "question": "How do you work, and what would my project cost?",
               "status": 200,
-              "firstOutputMs": 7039,
-              "totalMs": 8246,
+              "firstOutputMs": 1560,
+              "totalMs": 2980,
               "sources": [
                 "/contact/project-inquiry",
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/product-ux-ui-design-systems"
               ],
-              "text": "We work as embedded creative teams, design retainers, or defined projects, with embedded relationships providing multidisciplinary continuity across strategy, design, development, and creative production. We can operate as an extension of internal marketing, product, engineering, or leadership teams and provide senior creative direction or fill capability gaps. Timing and response depend on complexity, current queue, content readiness, and reserved capacity, with ongoing clients receiving planned access and priority while substantial assignments still require realistic production time. Cost depends on the amount of reserved capacity, disciplines required, level of senior involvement, technical complexity, and expected mix of work. A partner reads project inquiries, you get a straight answer on fit, scope, and a rough range, and responses come within two business days.",
+              "text": "We respond to project inquiries within two business days, a partner reads your brief, and we give a straight answer on fit, scope, and a rough range. \n\nCosts depend on reserved capacity, disciplines required, senior involvement, technical complexity, and expected mix of work; embedded relationships are priced around realistic recurring demand while project fees vary with scope and timeline. Every engagement can be a defined project or an ongoing embedded relationship, and timelines depend on deliverables, content readiness, stakeholder count, and complexity.",
               "reason": "estimate",
               "modelSkipped": false,
               "error": null
@@ -985,15 +984,15 @@
             {
               "question": "How do you work, and what would my project cost?",
               "status": 200,
-              "firstOutputMs": 5653,
-              "totalMs": 6314,
+              "firstOutputMs": 1542,
+              "totalMs": 2979,
               "sources": [
                 "/contact/project-inquiry",
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/product-ux-ui-design-systems"
               ],
-              "text": "We work either as defined projects or as embedded creative relationships that act as an extension of your team, bringing strategy, design, UX, development, production, and senior creative direction as needed. Costs aren’t fixed: they depend on reserved capacity, required disciplines, level of senior involvement, technical complexity, and the expected mix of work, and a partner reads your brief and gives a straight answer on fit, scope, and a rough range, typically within two business days.",
+              "text": "We start by assessing fit, scope, and a rough range after a partner reads your brief and replies within two business days. For ongoing work we offer embedded creative teams or retainers with planned recurring capacity covering strategy, design, web, UX, product, motion, video, and collaboration with internal teams; for discrete needs we scope defined projects like presentations, campaigns, or websites.\n\nCost depends on reserved capacity, disciplines, senior involvement, technical complexity, and mix of work; large initiatives may be scoped separately and pricing is set in the agreement.",
               "reason": "estimate",
               "modelSkipped": false,
               "error": null
@@ -1005,15 +1004,15 @@
             {
               "question": "How do you work, and what would my project cost?",
               "status": 200,
-              "firstOutputMs": 6608,
-              "totalMs": 7121,
+              "firstOutputMs": 1458,
+              "totalMs": 2718,
               "sources": [
                 "/contact/project-inquiry",
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/product-ux-ui-design-systems"
               ],
-              "text": "A partner reads your brief and you get a straight answer on fit, scope, and a rough range, with a response within two business days from our Brooklyn and Philadelphia studios. Costs depend on the amount of reserved capacity, disciplines required, level of senior involvement, technical complexity, and the expected mix of work, and an effective engagement is structured around realistic recurring demand rather than an arbitrary package. Timelines depend on the number and type of deliverables, content readiness, stakeholder count, and production complexity, while ongoing retainers provide planned access, priority, and continuity for recurring needs.",
+              "text": "We respond to a project inquiry with a partner reading your brief and giving a straight answer on fit, scope, and a rough range within two business days.  \n\nWe offer both defined projects and ongoing embedded relationships: projects are scoped for specific deliverables and timelines, while embedded teams reserve multidisciplinary capacity (strategy, design, development, video, etc.) and are planned around recurring needs; costs depend on reserved capacity, disciplines, seniority, technical complexity, and expected mix of work.  \n\nEvery sentence above restates what we publish; we can take this to the team.",
               "reason": "estimate",
               "modelSkipped": false,
               "error": null
@@ -1041,12 +1040,72 @@
             {
               "question": "Tell me about your work with Interchecks.",
               "status": 200,
-              "firstOutputMs": 3908,
+              "firstOutputMs": 2345,
+              "totalMs": 4146,
+              "sources": [
+                "/works/interchecks"
+              ],
+              "text": "We refreshed Interchecks’ brand and website with a visual system that makes the movement of money visible, using full-site UI, custom illustration, motion, and a developer-ready style guide so their speed, scale, and flexibility read clearly across pages and interactions.\n\nWe focused the work on a single idea — show money moving at speed and scale — and translated that into reusable rules: interaction prototypes, Figma style‑guide documentation, animated graphics, and templates so the system could be implemented consistently in production. \n\nWe don’t publish project timelines, team members, or budget details here. For that information see /works/interchecks.",
+              "reason": null,
+              "modelSkipped": false,
+              "error": null
+            },
+            {
+              "question": "What results did it get?",
+              "status": 200,
+              "firstOutputMs": 1477,
+              "totalMs": 2131,
+              "sources": [
+                "/works/interchecks"
+              ],
+              "text": "We don’t publish outcome metrics or business results for the Interchecks project. For project timelines, team, or budget details see /works/interchecks. Would you like to know how the visual system was documented for implementation?",
+              "reason": null,
+              "modelSkipped": false,
+              "error": null
+            }
+          ]
+        },
+        {
+          "turns": [
+            {
+              "question": "Tell me about your work with Interchecks.",
+              "status": 200,
+              "firstOutputMs": 1676,
+              "totalMs": 3517,
+              "sources": [
+                "/works/interchecks"
+              ],
+              "text": "We refreshed Interchecks’ brand and website with a visual system built around making the movement of money visible, using full-site UI, custom illustration, motion, and a developer-ready style guide so their speed, scale, and flexibility are clear across pages and interactions.\n\nWe turned the visual idea into reusable rules: interaction prototypes, a Figma style guide, and animated graphics so the look works in production without changing the site’s information architecture. We also aimed the new direction at tech-enabled customers in fintech, sports betting, and crypto.\n\nWe don’t publish implementation details or files here, see /works/interchecks for the project page.",
+              "reason": null,
+              "modelSkipped": false,
+              "error": null
+            },
+            {
+              "question": "What results did it get?",
+              "status": 200,
+              "firstOutputMs": 1819,
+              "totalMs": 2170,
+              "sources": [
+                "/works/interchecks"
+              ],
+              "text": "We don’t publish any performance or business results for the Interchecks project. See /works/interchecks for the project page.",
+              "reason": null,
+              "modelSkipped": false,
+              "error": null
+            }
+          ]
+        },
+        {
+          "turns": [
+            {
+              "question": "Tell me about your work with Interchecks.",
+              "status": 200,
+              "firstOutputMs": 1850,
               "totalMs": 4527,
               "sources": [
                 "/works/interchecks"
               ],
-              "text": "We refreshed Interchecks’ brand and website around a single idea: make the movement of money visible, using a new visual direction, full-site UI, custom illustration, motion, and a developer-ready style guide. The work emphasized speed, scale, and flexibility so the brand better spoke to fintech, sports betting, and crypto customers.\n\nWe don’t publish project pricing, exact timeline, or internal team members; for more detail see /works/interchecks.",
+              "text": "We refreshed Interchecks’ brand and website to make the movement of money visible, using a graphic system, custom illustration, motion, full‑page UI, and a developer‑ready style guide so their speed, scale, and flexibility read clearly across the site.\n\nWhat we did: refreshed the visual identity and website, developed a new visual direction grounded in money moving at speed and scale, created custom illustration and animated graphics, built interaction prototypes, and translated the look into reusable rules in a Figma style guide so the system could be implemented consistently.\n\nWe don’t publish project timing, team size, or pricing details; see /works/interchecks for the full case page.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1054,72 +1113,12 @@
             {
               "question": "What results did it get?",
               "status": 200,
-              "firstOutputMs": 3690,
-              "totalMs": 3961,
+              "firstOutputMs": 2565,
+              "totalMs": 2960,
               "sources": [
                 "/works/interchecks"
               ],
-              "text": "We delivered a refreshed visual identity and complete website design that made Interchecks’ speed, scale, and payout flexibility visible through custom illustration, motion, full-site UI, and a developer-ready Figma style guide. \n\nWe don’t publish performance metrics, business outcomes, pricing, or internal team details; for the project overview see /works/interchecks.",
-              "reason": null,
-              "modelSkipped": false,
-              "error": null
-            }
-          ]
-        },
-        {
-          "turns": [
-            {
-              "question": "Tell me about your work with Interchecks.",
-              "status": 200,
-              "firstOutputMs": 5105,
-              "totalMs": 6369,
-              "sources": [
-                "/works/interchecks"
-              ],
-              "text": "We refreshed Interchecks’ brand and website with a visual system built around making the movement of money visible, using custom illustration, motion, full-page UI, UX consulting, and a developer-ready Figma style guide so the platform’s speed, scale, and flexibility read clearly across pages and interactions. The work focused on payouts for tech-enabled businesses and respected the existing information architecture while creating reusable rules for illustration, motion, and components. \n\nWe don’t publish project timeline, team members, or cost details; see /works/interchecks for the project overview.",
-              "reason": null,
-              "modelSkipped": false,
-              "error": null
-            },
-            {
-              "question": "What results did it get?",
-              "status": 200,
-              "firstOutputMs": 5720,
-              "totalMs": 6085,
-              "sources": [
-                "/works/interchecks"
-              ],
-              "text": "We gave Interchecks a refreshed visual identity and complete website design, with custom illustration, animated graphics, interaction prototypes, and a developer-ready Figma style guide so the system could be implemented consistently and made usable in motion and production—making the platform’s speed and scale visible across pages and interactions. We don’t publish performance metrics, business outcomes, timeline, team, or costs; see /works/interchecks for the project overview.",
-              "reason": null,
-              "modelSkipped": false,
-              "error": null
-            }
-          ]
-        },
-        {
-          "turns": [
-            {
-              "question": "Tell me about your work with Interchecks.",
-              "status": 200,
-              "firstOutputMs": 5159,
-              "totalMs": 5539,
-              "sources": [
-                "/works/interchecks"
-              ],
-              "text": "We refreshed Interchecks’ brand and website with a visual system built around making the movement of money visible, delivering full-site UI, custom illustration, motion, and a developer-ready Figma style guide so the platform’s speed, scale, and flexibility read clearly across pages and interactions. We also produced interaction prototypes and reusable rules that let the look work in static layouts, animated graphics, and production-ready components. We don’t publish detailed project timeline, team or commercial terms; see /works/interchecks.",
-              "reason": null,
-              "modelSkipped": false,
-              "error": null
-            },
-            {
-              "question": "What results did it get?",
-              "status": 200,
-              "firstOutputMs": 3234,
-              "totalMs": 3858,
-              "sources": [
-                "/works/interchecks"
-              ],
-              "text": "We refreshed Interchecks’ brand and website to make the movement of money visible through a visual system, full-site UI, custom illustration, motion, interaction prototypes, and a developer-ready Figma style guide. We do not publish measured results, performance metrics, or commercial outcomes for the project; see /works/interchecks.",
+              "text": "We don’t publish results or performance metrics for Interchecks on the site. See /works/interchecks for the project case page.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1144,12 +1143,12 @@
             {
               "question": "Tell me about your work with Interchecks.",
               "status": 200,
-              "firstOutputMs": 3706,
-              "totalMs": 5032,
+              "firstOutputMs": 1727,
+              "totalMs": 3575,
               "sources": [
                 "/works/interchecks"
               ],
-              "text": "We refreshed Interchecks’ brand and website around one clear idea: make the movement of money visible, using a visual system, custom illustration, motion, full-page UI and UX consulting so the platform’s speed, scale, and flexibility read clearly across the site.\n\nWe documented the work with interaction prototypes and a Figma style guide so the look translates into reusable rules for production, and we applied the system within the existing information architecture to keep pages coherent. We also focused the brand toward tech-enabled customers in fintech, sports betting, and crypto.\n\nWe don’t publish campaign metrics, pricing, or a detailed timeline, see /works/interchecks for the project page.",
+              "text": "We refreshed Interchecks’ brand and website with a visual system built around making the movement of money visible, using full-site UI, custom illustration, motion, and a developer-ready Figma style guide so the platform’s speed, scale, and flexibility read clearly across pages and interactions.\n\nWhat we did: brand identity refresh, UX consulting, full-page UI design, custom illustration and animated graphics, interaction prototypes, and a Figma style guide that documents foundations, elements, modules, and templates so motion and production stay consistent.\n\nWe don’t publish implementation details or timelines, see /works/interchecks for the project page.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1157,15 +1156,15 @@
             {
               "question": "What is your process like?",
               "status": 200,
-              "firstOutputMs": 5287,
-              "totalMs": 5851,
+              "firstOutputMs": 1524,
+              "totalMs": 2540,
               "sources": [
-                "/expertise/sales-marketing-investor-communications",
                 "/expertise/embedded-creative-digital-services",
+                "/expertise/sales-marketing-investor-communications",
                 "/expertise/product-ux-ui-design-systems",
                 "/contact/project-inquiry"
               ],
-              "text": "We start by learning what you need and who your audiences are, then find the central idea that will move those audiences. From there we organize the information, design a coherent visual and interaction system, prototype key experiences, and produce the final assets in the formats you’ll actually use. For product work we add user research, journey mapping, build-ready Figma files, and engineering handoff and QA. For ongoing needs we can embed with reserved capacity so the idea and standards carry across campaigns, events, and production.\n\nWe don’t publish timelines or pricing details, see /contact/project-inquiry to send a brief.",
+              "text": "We start by understanding the product, its users, and the decisions that will make the experience clearer, then translate those findings into models, prototypes, and a design system that engineering can build from.\n\nWe don’t publish a single step‑by‑step timeline for every engagement; see /expertise/product-ux-ui-design-systems for our full approach and FAQs.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1177,12 +1176,12 @@
             {
               "question": "Tell me about your work with Interchecks.",
               "status": 200,
-              "firstOutputMs": 2870,
-              "totalMs": 4148,
+              "firstOutputMs": 1754,
+              "totalMs": 4481,
               "sources": [
                 "/works/interchecks"
               ],
-              "text": "We refreshed Interchecks’ brand and website around one clear idea: make the movement of money visible, using a new visual direction, full-site UI, custom illustration, motion, and a developer-ready style guide so the platform’s speed, scale, and flexibility read clearly across pages and interactions. \n\nWe also did UX consulting, interaction prototypes, and documented reusable rules and templates in Figma so the system could be implemented consistently.\n\nWe don’t publish project metrics, timeline, or commercial terms on the site, see /works/interchecks for the design details we show.",
+              "text": "We refreshed Interchecks’ brand and website with a visual system built around making the movement of money visible, using full-site UI, custom illustration, motion, and a developer-ready style guide so speed, scale, and flexibility read clearly across the product.\n\nWe translated that idea into interaction prototypes, animated graphics, and a Figma style guide documenting foundations, elements, modules, and templates so the design could be implemented consistently in production. \n\nWe don’t publish implementation timelines or pricing, see /works/interchecks for more.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1190,15 +1189,15 @@
             {
               "question": "What is your process like?",
               "status": 200,
-              "firstOutputMs": 5635,
-              "totalMs": 6057,
+              "firstOutputMs": 1712,
+              "totalMs": 3257,
               "sources": [
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/product-ux-ui-design-systems",
                 "/contact/project-inquiry"
               ],
-              "text": "We start by learning the problem and audience, then model workflows and the information architecture, prototype interactions, design interfaces and assets, and systematize reusable patterns before supporting implementation and QA. For communications and campaigns we pair that product work with a clear central argument, structured messaging, and production in the formats you’ll actually use; for ongoing needs we offer reserved capacity, a shared queue, and accumulated context. \n\nWe don’t publish timelines, fees, or availability details online, see /contact/project-inquiry to get a straight answer on fit, scope, and a rough range.",
+              "text": "We start by learning who the work is for and what you need the design to do, then move from research and modeling into prototypes, design, and implementation support so decisions are buildable and consistent.\n\nWe describe that as Understand, Model, Prototype, Design, Systematize, and Support: understand the product and users; model flows and information; prototype interactions; design interfaces and visual hierarchy; identify reusable patterns and build a design system; and support engineering handoff and QA. \n\nWe don’t publish fixed timelines or pricing, see /expertise/product-ux-ui-design-systems for more.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1210,12 +1209,12 @@
             {
               "question": "Tell me about your work with Interchecks.",
               "status": 200,
-              "firstOutputMs": 5450,
-              "totalMs": 5996,
+              "firstOutputMs": 1959,
+              "totalMs": 2838,
               "sources": [
                 "/works/interchecks"
               ],
-              "text": "We refreshed Interchecks’ brand and website with a visual system built around making the movement of money visible: custom illustration, motion, full-site UI and a developer-ready Figma style guide so speed, scale, and flexibility read clearly across pages and interactions. We also provided UX consulting, interaction prototypes, and reusable design rules so the new direction could be implemented consistently without restructuring the site. We don’t publish detailed timelines, pricing, or performance metrics; see /works/interchecks for the case study.",
+              "text": "We refreshed Interchecks’ brand and website with a visual system that makes the movement of money visible, using full-site UI, custom illustration, motion, and a developer-ready style guide so speed, scale, and flexibility feel consistent across the product.\n\nWe created a new visual direction and carried it through UX consulting, page designs, animated graphics, interaction prototypes, and a Figma style guide to turn that direction into reusable rules for production. \n\nWe do not publish case study timelines, team members, or budget details, see /works/interchecks for next steps.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1223,15 +1222,15 @@
             {
               "question": "What is your process like?",
               "status": 200,
-              "firstOutputMs": 4209,
-              "totalMs": 5181,
+              "firstOutputMs": 1396,
+              "totalMs": 2569,
               "sources": [
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/product-ux-ui-design-systems",
                 "/contact/project-inquiry"
               ],
-              "text": "We begin by learning who the work is for and what action it must support, then find the central argument and structure the information; from there we model workflows, prototype interactions, design visual and interaction systems, and produce the final assets in the formats they’ll actually be used in. For ongoing or embedded engagements we reserve capacity, use a shared queue, and build context so decisions compound over time, then support implementation and QA with developer-ready files and templates. We don’t publish detailed timelines or pricing; next step: /contact/project-inquiry.",
+              "text": "We start by learning what people need to do and why, then translate that into a clear argument, structured information, and production-ready outputs your teams can use.\n\nWe research users and product context, model flows and architectures, prototype interactions, design visual systems and components, and hand off buildable Figma files and implementation guidance while supporting QA and iteration.\n\nWe do not publish exact engagement phases or typical timelines, see /expertise/product-ux-ui-design-systems for the next steps.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1256,15 +1255,15 @@
             {
               "question": "What is your process like?",
               "status": 200,
-              "firstOutputMs": 5752,
-              "totalMs": 6429,
+              "firstOutputMs": 1370,
+              "totalMs": 2916,
               "sources": [
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/product-ux-ui-design-systems",
                 "/contact/project-inquiry"
               ],
-              "text": "We start by learning the goal and audience, find the central argument, structure the information, then design and produce the required outputs in the formats you’ll actually use, and—when helpful—create templates, asset libraries, or ongoing embedded support so the system scales and stays consistent. For product work we add discovery (user and stakeholder research), modeling, prototyping, design-system work, and engineering handoff and QA. For concentrated or recurring needs we offer an embedded relationship with reserved capacity and a shared queue. We don’t publish specific timelines or budget ranges, next step: /contact/project-inquiry.",
+              "text": "We learn the problem, model solutions, prototype where useful, then hand build outputs your team can use and support through implementation. \n\nFor product work that means understanding users and workflows, mapping and prototyping, designing reusable components and handing engineering organized Figma files, specs, and implementation QA. For communications and creative work we define the audience and central argument, structure the story, then produce final assets in the formats they will actually be used (presentations, print, video, templates, asset libraries) and can extend with templates and guidance. \n\nWe don’t publish full step‑by‑step timelines or fixed prices; see /contact/project-inquiry for next steps.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1272,10 +1271,10 @@
             {
               "question": "Thanks, that helps!",
               "status": 200,
-              "firstOutputMs": 2565,
-              "totalMs": 2919,
+              "firstOutputMs": 1158,
+              "totalMs": 1738,
               "sources": [],
-              "text": "Great, glad it was useful. Would you like an example timeline for a particular project type or help mapping that process to your goals and budget?",
+              "text": "Great — glad it was useful. Would you like an outline tailored to a specific project type or size so you can see what the steps and deliverables would look like?",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1287,15 +1286,15 @@
             {
               "question": "What is your process like?",
               "status": 200,
-              "firstOutputMs": 4265,
-              "totalMs": 4825,
+              "firstOutputMs": 1489,
+              "totalMs": 2963,
               "sources": [
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/product-ux-ui-design-systems",
                 "/contact/project-inquiry"
               ],
-              "text": "We start by learning who the communication or product is for and what action it must drive, then we find the central argument, organize the information, design the system, and produce deliverables in the formats they will actually be used (presentations, web, video, templates, production files). For product work we add discovery, modeling, prototypes, design, systematization, and engineering handoff; for ongoing needs we embed with reserved capacity so context compounds over time.  \n\nWe don’t publish fixed prices or detailed timelines; for next steps see /contact/project-inquiry.",
+              "text": "We start by learning who the work is for, what decision or action the material should support, and the central argument that will persuade them, then we turn that into a structured system of design and deliverables you can use. For product work that means discovery (interviews, audits, analytics), modelling and prototyping, design and a buildable handoff; for communications it means audience and message, hierarchy and formats, then production in the actual deliverable types you need. \n\nWe don’t publish detailed timelines or fixed prices here, see /contact/project-inquiry for next steps.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1303,10 +1302,10 @@
             {
               "question": "Thanks, that helps!",
               "status": 200,
-              "firstOutputMs": 2673,
-              "totalMs": 2875,
+              "firstOutputMs": 1355,
+              "totalMs": 1726,
               "sources": [],
-              "text": "Glad to hear it — tell us the type of project, target audience, and timeline you have in mind and we’ll outline the right next steps.",
+              "text": "Great — glad it helped. Would you like an example timeline for a specific type of project or a checklist of what we ask for at the start?",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1318,15 +1317,15 @@
             {
               "question": "What is your process like?",
               "status": 200,
-              "firstOutputMs": 4651,
-              "totalMs": 6951,
+              "firstOutputMs": 1509,
+              "totalMs": 2780,
               "sources": [
                 "/expertise/sales-marketing-investor-communications",
                 "/expertise/embedded-creative-digital-services",
                 "/expertise/product-ux-ui-design-systems",
                 "/contact/project-inquiry"
               ],
-              "text": "We begin by learning the problem and audience, find the central argument, and turn that into usable outputs: strategy and hierarchy, prototypes and design, then production in the formats you’ll actually use (presentations, digital assets, video, templates, or product-ready Figma and component specs). For ongoing needs we can embed with reserved capacity and a shared queue so visual systems carry across campaigns and events.  \n\nWe don’t publish fixed timelines or prices here, so if you want fit, scope, and a rough range, send a brief via /contact/project-inquiry.",
+              "text": "We start by learning who the work is for, what decision or action the audience needs to take, and the central argument the communication must carry, then we design the information architecture and produce the deliverables in the formats they will actually be used in (presentations, print, digital assets, video, templates, design systems, etc.), and we can extend the system with templates and embedded support so your teams keep using it consistently.\n\nWe don’t publish a single-step-by-step timeline here — see /contact/project-inquiry for how to start a conversation about scope, fit, and a rough timeline.",
               "reason": null,
               "modelSkipped": false,
               "error": null
@@ -1334,10 +1333,10 @@
             {
               "question": "Thanks, that helps!",
               "status": 200,
-              "firstOutputMs": 2065,
-              "totalMs": 2245,
+              "firstOutputMs": 1148,
+              "totalMs": 1461,
               "sources": [],
-              "text": "Great—glad it helped. Would you like us to outline a rough timeline and deliverables for your project or show examples of similar work?",
+              "text": "You're welcome — glad it was useful. If you want, tell us about a specific project and we’ll outline how we’d approach it.",
               "reason": null,
               "modelSkipped": false,
               "error": null

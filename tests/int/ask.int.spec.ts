@@ -7,6 +7,12 @@ import config from '@/payload.config'
 
 let payload: Payload
 const originalApiKey = process.env.OPENAI_API_KEY
+const originalJudge = { mode: process.env.ASK_JEV, key: process.env.TYPESAFE_API_KEY }
+
+const restoreEnv = (name: string, value: string | undefined) => {
+  if (value === undefined) delete process.env[name]
+  else process.env[name] = value
+}
 
 const handler = (path: string, method = 'post') => {
   const endpoint = askEndpoints.find((e) => e.path === path && e.method === method)
@@ -37,14 +43,15 @@ function makeReq(body: unknown, ip = `ask-int-${Math.random().toString(36).slice
 describe('Ask (RAG)', () => {
   beforeAll(async () => {
     payload = await getPayload({ config: await config })
+    // The judge (src/features/ask/judge.ts) is off unless a test turns it on:
+    // these specs describe the endpoint's own path and never call TypeSafe.
+    process.env.ASK_JEV = 'off'
   })
 
   afterAll(() => {
-    if (originalApiKey === undefined) {
-      delete process.env.OPENAI_API_KEY
-    } else {
-      process.env.OPENAI_API_KEY = originalApiKey
-    }
+    restoreEnv('OPENAI_API_KEY', originalApiKey)
+    restoreEnv('ASK_JEV', originalJudge.mode)
+    restoreEnv('TYPESAFE_API_KEY', originalJudge.key)
   })
 
   describe('extractTerms', () => {
@@ -61,7 +68,11 @@ describe('Ask (RAG)', () => {
   describe('retrieveSources', () => {
     it('returns no sources for terms that match nothing in the index', async () => {
       const retrieval = await retrieveSources(payload, 'zxqvbn flurbish grommetized')
-      expect(retrieval).toEqual({ sources: [], path: 'none' })
+      expect(retrieval).toEqual({
+        sources: [],
+        path: 'none',
+        chunks: { candidates: 0, kept: 0 },
+      })
     })
   })
 
@@ -106,6 +117,43 @@ describe('Ask (RAG)', () => {
       expect(streamText).toContain('"responseTime":')
       expect(streamText).not.toContain('text-delta')
       expect(streamText).not.toContain('source-url')
+    })
+
+    it('with the judge on, finds contact details in code and answers with the card alone', async () => {
+      process.env.OPENAI_API_KEY = 'sk-int-test-not-real'
+      process.env.ASK_JEV = 'on'
+      process.env.TYPESAFE_API_KEY = 'ts-int-test-not-real'
+      try {
+        const res = await askHandler(
+          makeReq({ messages: [userMessage('My email is jane@example.com, send me more info')] }),
+        )
+        expect(res.status).toBe(200)
+        const streamText = await res.text()
+        expect(streamText).toContain('"reason":"contact_details"')
+        expect(streamText).not.toContain('text-delta')
+      } finally {
+        process.env.ASK_JEV = 'off'
+      }
+    })
+
+    it("with the judge on but unavailable, falls open to the endpoint's own path", async () => {
+      process.env.OPENAI_API_KEY = 'sk-int-test-not-real'
+      process.env.ASK_JEV = 'on'
+      // Under jsdom the TypeSafe client refuses to construct (it takes the
+      // runtime for a browser): a judge that cannot even start. The turn must
+      // still end as it would with the judge off, in the no-answer card.
+      process.env.TYPESAFE_API_KEY = 'ts-int-test-not-real'
+      try {
+        const res = await askHandler(
+          makeReq({ messages: [userMessage('zxqvbn flurbish grommetized')] }),
+        )
+        expect(res.status).toBe(200)
+        const streamText = await res.text()
+        expect(streamText).toContain('"reason":"no_answer"')
+        expect(streamText).not.toContain('text-delta')
+      } finally {
+        process.env.ASK_JEV = 'off'
+      }
     })
 
     it('rate limits the 11th request in a minute from one IP', async () => {

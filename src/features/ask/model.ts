@@ -4,7 +4,8 @@ import { openai } from '@ai-sdk/openai'
  * Single seam for the answer model. The AI SDK is provider-agnostic — to swap
  * vendors, change this one line (e.g. `anthropic('...')` from @ai-sdk/anthropic)
  * and set the matching API-key env var; nothing else in the ask feature knows
- * which vendor is underneath.
+ * which vendor is underneath. Its reasoning effort is the endpoint's to set:
+ * `low` while it also decides, `minimal` once the judge has routed the turn.
  */
 export const askModel = openai('gpt-5-mini')
 

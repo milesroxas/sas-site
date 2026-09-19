@@ -61,8 +61,12 @@ export const ASK_JUDGE_THRESHOLDS = {
   act: 0.6,
   /** `request` confidence below which the judgment is set aside for today's path. */
   low: 0.35,
-  /** `own_project` at or above which an estimate turn may be the card alone. */
-  ownProject: 0.7,
+  /**
+   * `own_project` at or above which an estimate turn may be the card alone. Own-price and
+   * own-timing questions read 0.73 to 0.97 and everything else 0.41 or less, so 0.6 sits in
+   * the gap: at 0.7 "When could you start on our project?" (0.73 to 0.76) slipped under once in three.
+   */
+  ownProject: 0.6,
   /** `general_question` at or above which part of the turn is the site's to answer, so never the card alone. */
   generalQuestion: 0.5,
   /** `names_work` at or above which a project turn names work the site may have something to say about. */
@@ -175,14 +179,24 @@ type JudgeCall = {
 
 let client: TypeSafeClient | null = null
 
-function judgeClient(): TypeSafeClient | null {
+/**
+ * The shared client, or null when there is no key or it cannot be built (the
+ * SDK's constructor throws on a bad config or a runtime it takes for a
+ * browser). Null is the judge-off path, like every other failure here.
+ */
+function judgeClient(logger?: JudgeLogger): TypeSafeClient | null {
   if (!process.env[ASK_JUDGE_KEY_VAR]?.trim()) return null
-  client ??= new TypeSafeClient({
-    defaultModel: ASK_JUDGE_MODEL,
-    timeout: ASK_JUDGE_TIMEOUT_MS,
-    retry: { maxRetries: 0 },
-    logLevel: 'error',
-  })
+  try {
+    client ??= new TypeSafeClient({
+      defaultModel: ASK_JUDGE_MODEL,
+      timeout: ASK_JUDGE_TIMEOUT_MS,
+      retry: { maxRetries: 0 },
+      logLevel: 'error',
+    })
+  } catch (err) {
+    logger?.warn({ msg: 'ask judge: client unavailable', error: errorName(err) })
+    return null
+  }
   return client
 }
 
@@ -211,7 +225,7 @@ export async function judgeTurn({
   question: string
   previousQuestion: string | null
 }): Promise<AskTurnJudgment | null> {
-  const jev = judgeClient()
+  const jev = judgeClient(call.logger)
   if (!jev) return null
 
   const startedAt = performance.now()
@@ -266,7 +280,7 @@ export async function judgePassages({
   query: string
   chunks: AskPassage[]
 }): Promise<AskPassageJudgment | null> {
-  const jev = judgeClient()
+  const jev = judgeClient(call.logger)
   if (!jev || chunks.length === 0) return null
 
   const startedAt = performance.now()
