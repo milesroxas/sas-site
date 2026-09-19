@@ -1,6 +1,6 @@
 # Ask — grounded Q&A over site content (RAG)
 
-Visitors ask from the takeover menu, the footer's closing band, or `/ask`. The site answers **only from published content**, with linked sources. Retrieval is embedding-based (pgvector) over every public content surface, with keyword search as a fallback. Stages 1–4 of the [build-up roadmap](../../../docs/ask-rag-roadmap.md) are shipped. Stage 5 (shared rate limiting, retrieval evals, answer caching, a monthly token-budget alarm) is still open; capture, ratings, and the inbox shipped with the [insights work](../../../docs/ask-insights-roadmap.md). Ask is already site-wide; **Site Info › Ask › Hide Ask** takes it off every surface.
+Visitors ask from the takeover menu, the footer's closing band, or `/ask`. The site answers **only from published content**, with linked sources. Retrieval is embedding-based (pgvector) over every public content surface, with keyword search as a fallback. Stages 1–4 of the [build-up roadmap](../../../docs/ask-rag-roadmap.md) are shipped. Stage 5 (shared rate limiting, retrieval evals, answer caching, a monthly token-budget alarm) is still open; capture, ratings, and the inbox shipped with the [insights work](../../../docs/ask-insights-roadmap.md). Ask is already site-wide; **Site Info › Ask › Hide Ask** takes it off every surface. The decisions of a turn (offer a person, say the site has nothing, acknowledge a thanks) can be made by the judge, TypeSafe's Jev, instead of the writing model: see [The judge](#the-judge-jev) and the [Ask + Jev roadmap](../../../docs/ask-jev-roadmap.md).
 
 ## How a request flows
 
@@ -31,11 +31,35 @@ menu / closing band / /ask (useAskChat)
      a stored turn (thumbs, or the contact-page click); the inquiry intake marks `inquiry_sent`
 ```
 
+That is the flow with the judge `off` (the default). With `ASK_JEV=on` the decisions move out of the writing model:
+
+```
+POST /api/ask
+  ├─ hide / config / rate limit / validation          (unchanged)
+  ├─ contact details in the question? (regex, code)   → card `contact_details`, no Jev, no model
+  ├─ in parallel:
+  │    ├─ judgeTurn()      one Jev request: `request` Choice, the `own_project`,
+  │    │                   `general_question` and `names_work` Nouls, and
+  │    │                   `depends_on_previous` on a follow-up
+  │    └─ embedMany()      [question] or, on a follow-up, [question, previous + question]
+  ├─ routeTurn()           plain `if`s over ASK_JUDGE_THRESHOLDS
+  │    ├─ card             → the handoff card, no retrieval, no model
+  │    ├─ conversation     → chat-only prompt, no retrieval, no tool
+  │    ├─ evidence         → pgvector with the query form `depends_on_previous` picked
+  │    └─ fallback         → the flow above, tool and all (unsure or failed judgment)
+  ├─ judgePassages()       one Jev request per candidate chunk, all in parallel:
+  │                        `is_relevant`, `has_evidence` → keep or drop in code
+  │    └─ nothing kept     → card (`no_answer`, or the turn's own reason), no model
+  ├─ streamText()          kept chunks only, NO tools, prompt without the tool rules
+  └─ card after the text   written by code when the route carries a reason
+```
+
 ## Files
 
 | File | Role |
 | --- | --- |
-| [`retrieve.ts`](./retrieve.ts) | Retrieval seam: `retrieveSources(payload, question)` returns the sources (each with its best chunk similarity) and the path that found them. Embedding search primary, keyword fallback. The endpoint knows nothing about how sources are found. |
+| [`retrieve.ts`](./retrieve.ts) | Retrieval seam: `prepareRetrieval(payload, queries)` embeds every query form at once and returns a `search()` that picks one, so the endpoint can decide which while the embedding is in flight; `retrieveSources(payload, question)` is the one-query shorthand. Returns the sources (each with its best chunk similarity), the path that found them, and the chunk counts. Embedding search primary, keyword fallback. A `check` handed to `search()` may veto chunks before they become sources (the judge's passage check; the similarity floor then drops from 0.3 to 0.2, since the check is the real filter); `observe` sees the same chunks and changes nothing. The endpoint knows nothing about how sources are found, and retrieval knows nothing about Jev. `retrievalQueries()` builds the follow-up query forms. |
+| [`judge.ts`](./judge.ts) | The judge, server only: `askJudgeMode()` (`ASK_JEV`, always `off` without `TYPESAFE_API_KEY`), a lazy TypeSafe client pinned to one Jev version with a 400 ms timeout and no retries, `judgeTurn()` and `judgePassages()` (both answer null on any failure and never throw), every threshold in `ASK_JUDGE_THRESHOLDS`, and the pure routing: `routeTurn()`, `routePassage()`, `dependsOnPrevious()`. The question is redacted before it is sent. Tested in `judge.test.ts` (routing, mode parsing, null handling; no network). |
 | [`vocabulary.ts`](./vocabulary.ts) | The words Ask and the team agree on, client-safe: the question length rule, the outcomes a turn can have (`askOutcome()` derives one from what the endpoint knows), retrieval paths, ratings and their reasons, handoff signals, triage statuses. The collection, the endpoint, the composer and the admin panels all read these lists. Tested in `vocabulary.test.ts`. |
 | [`embeddings.ts`](./embeddings.ts) | ask_embeddings storage/query: `embedMany` on write, cosine-distance SQL on read. |
 | [`chunk.ts`](./chunk.ts) | Heading-aware markdown chunker (~500-token chunks, split on h1–h3 first, tiny sections merged). |
@@ -74,6 +98,9 @@ menu / closing band / /ask (useAskChat)
 | [`usage.ts`](./usage.ts) | OpenAI spend (Costs API) and tokens per model (Usage API) over the last 30 days, month-to-date split out. Needs `OPENAI_ADMIN_API_KEY` (an Admin key, not the project key); `OPENAI_PROJECT_ID` optionally scopes it. OpenAI is called only on an explicit refresh (its Admin API allows 30 requests a minute); the last report lives in Payload KV (`ask:usage-report`). OpenAI exposes no remaining-credit balance over the API. |
 | [`admin/UsagePanel.tsx`](./admin/UsagePanel.tsx) | Site Info › Ask usage panel: spend tiles, cost by line item, tokens by model, "last refreshed" note. Opens from the stored report (`GET /api/ask/usage`); only the Refresh button fetches from OpenAI (`POST /api/ask/usage`). Both team-only. |
 | [`../../../scripts/backfill-ask-index.ts`](../../../scripts/backfill-ask-index.ts) | CLI entry for the same pass: `pnpm exec tsx --env-file=.env scripts/backfill-ask-index.ts`. |
+| [`../../../scripts/ask-cases.ts`](../../../scripts/ask-cases.ts) | The shared fixture: what a visitor asks, the card the turn must end in, whether it must have words, and the pages retrieval must find. Read by the three scripts below. |
+| [`../../../scripts/ask-bench.ts`](../../../scripts/ask-bench.ts) | `capture <label> [base-url]` runs the fixture three times against a running site (paced under the rate limit, stream read incrementally for time to first output) into `docs/perf/ask-jev/<label>.json`; `compare <label> <label> ...` prints the table and writes `docs/perf/ask-jev/report.md`. |
+| [`../../../scripts/ask-judge-eval.ts`](../../../scripts/ask-judge-eval.ts) | The judge's tuning tool, no server needed: Jev's probabilities beside the fixture's expectation. `--passages` retrieves candidates and prints per-chunk relevance and evidence; `--from-db` replays stored `ask-questions` rows for an agreement rate. |
 
 ## The corpus
 
@@ -198,6 +225,8 @@ and returns the same shape. 503 with `configured: false` when `OPENAI_ADMIN_API_
 | `OPENAI_API_KEY` | Enables the endpoint, question embedding, and publish-time embedding sync. Unset → 503 answers; hooks skip embedding (warn once) until the backfill script runs. |
 | `OPENAI_ADMIN_API_KEY` | Admin key for the Site Info › Ask usage panel (Costs and Usage APIs). Unset → the panel is marked unconfigured; Refresh returns 503. Not the project key. |
 | `OPENAI_PROJECT_ID` | Optional. Scopes the usage report to one OpenAI project; omit it to read the whole organization. |
+| `TYPESAFE_API_KEY` | The judge's key (TypeSafe, Jev). Unset → the judge is `off`, whatever `ASK_JEV` says. |
+| `ASK_JEV` | The judge's mode: `off` (default; the writing model decides, with the `handoff` tool), `shadow` (Jev runs beside that path and is measured, deciding nothing), `on` (Jev routes the turn and checks passages). Rollback is this value and a redeploy, no code revert. |
 
 Models live in `model.ts`. Changing the **embedding** model or provider means re-embedding the
 corpus: update `EMBEDDING_DIMENSIONS` in `schema.ts` if the size differs, migrate, and run the
@@ -205,13 +234,14 @@ backfill script.
 
 ## What we keep
 
-- **Every turn, for the team.** Each accepted question lands in `ask-questions` (Admin › Inbox › Ask questions) after the response has gone out, so storage never adds latency: the question and the answer (both redacted), the sources with their best chunk similarity and which path found them, the outcome, the handoff reason if one was offered, latency, and tokens. `outcome` is what the visitor got, derived from what the endpoint knows (`askOutcome()`): `answered`, `partial` (a grounded reply that ended in a handoff other than `no_answer`), `no_sources` (a `no_answer` handoff: first-turn miss, or the model found the sources irrelevant), `chat_only` (a source-less follow-up), `stopped`, `error`. It is not a quality signal; the visitor's rating is. `Asked on` is the page path; `Chat` groups one conversation, which the row shows in full. Team agents can read it over MCP when a key is granted the capability.
+- **Every turn, for the team.** Each accepted question lands in `ask-questions` (Admin › Inbox › Ask questions) after the response has gone out, so storage never adds latency: the question and the answer (both redacted), the sources with their best chunk similarity and which path found them, the outcome, the handoff reason if one was offered, latency, and tokens. `outcome` is what the visitor got, derived from what the endpoint knows (`askOutcome()`): `answered`, `partial` (a grounded reply that ended in a handoff other than `no_answer`), `no_sources` (a `no_answer` handoff: first-turn miss, the model found the sources irrelevant, or the judge's passage check kept nothing), `chat_only` (a reply with no sources behind it: a source-less follow-up, or a card the judge routed straight to a person), `stopped`, `error`. It is not a quality signal; the visitor's rating is. `Asked on` is the page path; `Chat` groups one conversation, which the row shows in full. Team agents can read it over MCP when a key is granted the capability.
 - **The visitor's word.** Every settled reply can be rated (thumbs, one-tap reason after a thumbs down) and every handoff leaves a signal: `clicked` when the contact-page fallback was taken, `inquiry_sent` when the intake filed an inquiry from that chat (the inquiry carries `askConversation`, and its document shows the conversation). `POST /api/ask/feedback` finds the row by the chat id and the question's message id, keeps the first rating, and never lets a sent inquiry step back to a click.
 - **Triage.** Status (new, reviewed, content planned, ignored), topic from the site's categories, a note, and the draft that closes the gap. The dashboard card counts the week (asked, answered from the site, gaps, thumbs down, went to a person, inquiries from Ask) and lists the newest gaps nobody has looked at.
 - **Redacted before it lands.** `redactFreeText()` is one layer, not a guarantee: a name or employer in plain words survives. The first line of every transcript (`ASK_NOTICE`) tells people they are chatting with an AI (EU AI Act transparency) and that chats are saved anonymously for `ASK_QUESTION_RETENTION_DAYS` days. It does not ask them to leave personal details out. It is not part of cookie consent: it covers what people type, which is stored whatever they chose on the banner.
 - **Deleted on schedule.** `askQuestionRetention` removes rows older than `ASK_QUESTION_RETENTION_DAYS`. It is queued by Payload's scheduler from the daily cron, so the first run lands a day after deploy and a row can outlive the window by up to a day.
+- **One more processor with the judge on.** In `shadow` and `on` the redacted question (and, for the passage check, the site's own published passages) goes to TypeSafe. It does not train on requests; zero retention is an enterprise plan. The privacy page must list it before the judge sees production traffic.
 - **Nothing at OpenAI.** `store: false` stops the Responses API keeping each exchange for 30 days in the dashboard logs. The client resends the transcript every turn, and for reasoning models the SDK asks for encrypted reasoning instead of server-side item references. `sendReasoning: false` keeps that encrypted blob out of the browser.
-- **Metadata only in PostHog.** `ask_questioned` carries length, source count, the follow-up flag, `outcome`, `retrieval`, `latency_ms`, `page_path` and `handoff_reason`; `ask_rated` carries the rating, its reason and the turn's outcome; `ask_handoff_clicked` the contact-page fallback. Question text never goes to analytics: it could not be held to the retention window there, and it would sit next to a visitor id. PostHog is where the funnel is counted; the admin is where a question is read.
+- **Metadata only in PostHog.** `ask_questioned` carries length, source count, the follow-up flag, `outcome`, `retrieval`, `latency_ms`, `page_path` and `handoff_reason`, plus the judge's facts about the turn (`judge_mode`, `judge_ms`, `judge_failed`, `judge_request`, `judge_confidence`, `judge_agrees`, `chunks_candidates`, `chunks_kept`, `passages_ms`, `first_output_ms`, `model_skipped`, `fell_back`, `answer_model`; the registry in the `posthog-analytics` skill defines each): a label, a count or a duration, never a probability beside text; `ask_rated` carries the rating, its reason and the turn's outcome; `ask_handoff_clicked` the contact-page fallback. Question text never goes to analytics: it could not be held to the retention window there, and it would sit next to a visitor id. PostHog is where the funnel is counted; the admin is where a question is read.
 
 ## Reaching a person
 
@@ -237,6 +267,21 @@ Both paths file the inquiry with the chat id (`askConversation`, with the turn i
 
 **Checking the triggers.** `scripts/ask-eval.ts` asks a running site a fixed set of six questions (three that must stay grounded with no offer, three that must reach a person) and reports the sources retrieved and the reason offered for each. The first three were the closing band's chips when the eval was written; the live chips in `ClosingAsk.tsx` can differ. Run it after any prompt or tool-description edit: `pnpm exec tsx scripts/ask-eval.ts http://localhost:3001`.
 
+## The judge (Jev)
+
+Ask spent a full writing-model call on every turn, including turns whose only output is a decision. Jev (TypeSafe's System One model) cannot write, but it returns typed answers with calibrated probabilities in roughly 150 to 350 ms. With `ASK_JEV=on` the decisions move to Jev and code, and the writing model is left one job: write a grounded answer from passages that were already vetted. Turns that need no writing skip it entirely.
+
+- **Code owns the workflow.** Jev returns probabilities; every number lives in `ASK_JUDGE_THRESHOLDS` and every branch is a plain `if` in `routeTurn()` and `routePassage()`. Changing policy is a number edit, never a reworded question.
+- **The turn, one request, asked beside the embedding call** so it adds no wait: `request` (a Choice: information, estimate, project, person, conversation, other), three Nouls that tell whether only a person could settle it (`own_project`, `general_question`, `names_work`), and on a follow-up `depends_on_previous`.
+- **The route.** `person` at confidence 0.6 or more is the card alone. An `estimate` is the card alone when it is plainly the visitor's own project and no general question rides along; a `project` when it names no kind of work ("I have a project"), where "can you fix my Webflow site?" names work the site may speak to. Every other estimate or project retrieves, answers from what is kept, and closes with its card, written by code after the text, so the partial answer the writing model could not do reliably (words and a tool call in one turn) now always lands. `conversation` on a follow-up is the chat-only prompt with no retrieval. Everything else retrieves and answers.
+- **The passages.** One Jev request per candidate chunk, all in parallel, each judged alone against the query (a large state full of unrelated text costs Jev accuracy): `is_relevant` below 0.45 drops it, `has_evidence` above 0.55 keeps it, otherwise dropped. Sources shown to the visitor are only documents with kept chunks. Nothing kept means the card (`no_answer`, or the turn's own reason) with no model call, on first turns and follow-ups alike.
+- **Fail open.** A missing key, a timeout, a 429, or a `request` confidence under 0.35 is the judge-off path for that turn, tool and all (`fell_back`); a passage whose check failed is kept. A visitor never sees a Jev error.
+- **Contact details stay in code.** `findEmailAddress` and the digit-run rule in `redact.ts` find them before Jev or the model is asked, and the question Jev sees is redacted.
+- **Once the visitor has sent, never a card**, exactly as `offersAskHandoff` rules the tool.
+- **`shadow`** runs both Jev requests beside the judge-off path, awaits neither in the response, and records what Jev would have done (`judge_agrees`, `chunks_kept`, the timings), so latency and agreement are known before Jev decides anything.
+
+Tuning: `pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts [--passages] [--from-db]`. Before and after: `scripts/ask-bench.ts`, captures and the report in [`docs/perf/ask-jev/`](../../../docs/perf/ask-jev/report.md). The model is pinned (`ASK_JUDGE_MODEL`), not `jev-latest`: re-run the eval before bumping it.
+
 ## Turning Ask off
 
 **Site Info › Ask › Hide Ask** removes the feature from the site in one place. Every surface
@@ -259,13 +304,17 @@ the corpus is current the moment Ask comes back.
 - **Rate limiter is per warm serverless instance.** A cost fuse, not a guarantee. Move to a
   shared store (roadmap stage 5) if the endpoint draws real traffic. Ask is already on the
   menu and the closing band; Hide Ask is the off switch.
-- **No retrieval evals yet.** The 0.3 similarity floor and chunk sizes are reasoned defaults,
-  not measured ones — stage 5 adds a question → expected-source fixture set.
+- **Retrieval evals are young.** `scripts/ask-cases.ts` is the question → expected-source
+  fixture, and `scripts/ask-judge-eval.ts --passages` measured the floor once (2026-09-19): 0.3
+  cut a chunk that answers "What does it cost?" (similarity 0.23), so the floor is 0.2 when the
+  judge's passage check runs and 0.3 when nothing else filters. Chunk sizes are still reasoned
+  defaults.
 - **Answers are only as good as what's published.** Empty corpus = refusals; run the backfill
   after seeding content.
 - **Follow-up retrieval is a concatenation, not a rewrite.** The previous user turn is
   prepended to the query. Good enough for one-hop follow-ups; a model-written standalone
   question is the next step if evals show multi-hop misses.
+- **The judge reads literally.** Jev answers the question as written, not as meant: a universal ("is every part of it...") read low on plainly own-project questions, which is why that judgment is three literal Nouls combined in code. It does not count, compare dates, or reason over several hops, and it does not treat state as hostile; the passages it reads are the studio's own published content. Thresholds were tuned on a 19-case fixture and a 370-chunk corpus, not on production traffic: shadow mode is where they meet it.
 - **An abandoned handoff form loses its draft.** The offer follows the latest reply, so a
   form opened and then left for a new question closes. A send already in flight still lands:
   `markSent` lives in the surface hook, so the receipt pins to the reply it was sent from.

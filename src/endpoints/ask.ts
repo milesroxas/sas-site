@@ -6,17 +6,32 @@ import {
   streamText,
   toUIMessageStream,
   type UIMessage,
+  type UIMessageStreamWriter,
 } from 'ai'
 import type { Endpoint, PayloadRequest } from 'payload'
 import { backfillAskIndex, isBackfillRunning, readLastIndexRebuild } from '@/features/ask/backfill'
 import {
   ASK_HANDOFF_STATES,
   type AskHandoff,
+  type AskHandoffReason,
   type AskHandoffState,
   type AskUIMessage,
 } from '@/features/ask/handoff'
 import { askHandoffTool, resolveAskHandoff } from '@/features/ask/handoffTool'
 import { askHistory } from '@/features/ask/history'
+import {
+  type AskPassage,
+  type AskPassageJudgment,
+  type AskTurnJudgment,
+  type AskTurnRoute,
+  askJudgeMode,
+  dependsOnPrevious,
+  judgePassages,
+  judgeTurn,
+  routeCardReason,
+  routePassage,
+  routeTurn,
+} from '@/features/ask/judge'
 import { messageText } from '@/features/ask/messageText'
 import { ASK_MODEL_API_KEY_VAR, askModel } from '@/features/ask/model'
 import { askSystemPrompt, offersAskHandoff } from '@/features/ask/prompts'
@@ -27,7 +42,13 @@ import {
   pagePathFrom,
   recordAskQuestion,
 } from '@/features/ask/questions'
-import { retrieveSources } from '@/features/ask/retrieve'
+import { hasIdentifyingNumber } from '@/features/ask/redact'
+import {
+  type PassageCheck,
+  prepareRetrieval,
+  type RetrievedSource,
+  retrievalQueries,
+} from '@/features/ask/retrieve'
 import {
   isUsageConfigured,
   OPENAI_ADMIN_KEY_VAR,
@@ -41,9 +62,12 @@ import {
   ASK_RATING_REASONS,
   ASK_RATINGS,
   type AskOutcome,
+  type AskRetrievalPath,
   askOutcome,
 } from '@/features/ask/vocabulary'
 import { isOption } from '@/shared/content/options'
+import { afterResponse } from '@/utilities/afterResponse'
+import { findEmailAddress } from '@/utilities/emailAddress'
 import { captureServerEvent } from '@/utilities/posthog'
 
 /**
@@ -61,14 +85,21 @@ import { captureServerEvent } from '@/utilities/posthog'
  * (`no_answer`) with no model call; only follow-up turns reach the model
  * source-less (so "thanks" or "say that again" stay conversational) and those
  * run under a tight output cap.
+ *
+ * The judge (src/features/ask/judge.ts, `ASK_JEV`): `off` is the path above,
+ * unchanged. `shadow` runs Jev beside it and measures, deciding nothing.
+ * `on` moves the decisions out of the writing model: contact details are
+ * found by a regex, Jev classifies the turn while the query is embedded, a
+ * card-only turn is answered with no retrieval and no model, retrieved
+ * passages are vetted before they become sources, and the model writes with
+ * no tool while code appends the card. A failed or unsure judgment is the
+ * path above, so a visitor never sees a Jev error.
  */
 
 /** Output budget per answer; includes gpt-5 reasoning tokens, so leave headroom over the ~120-word answer. */
 const MAX_ANSWER_TOKENS = 1_200
 /** Source-less follow-up turns are conversational only (a thanks, a rephrase), so cap them hard. */
 const MAX_CHAT_ONLY_TOKENS = 400
-/** Cap on the retrieval query built from the last two user turns (embedding tokens, not model tokens). */
-const MAX_RETRIEVAL_QUERY_CHARS = 700
 
 const json = (body: unknown, status = 200) => Response.json(body, { status })
 
@@ -98,19 +129,13 @@ function isRateLimited(req: PayloadRequest, route: string): boolean {
 
 const RATE_LIMITED = 'Too many questions, try again in a minute.'
 
-/**
- * Retrieval query for a turn. Follow-ups like "what about for nonprofits?"
- * embed badly on their own, so the previous user turn is prepended: two
- * user turns, no model rewrite (embedding tokens are the only cost).
- */
-function retrievalQuery(messages: UIMessage[], question: string): string {
+/** The user turn before the current one, or null on a first turn. */
+function previousUserQuestion(messages: UIMessage[]): string | null {
   const previousUser = messages
     .slice(0, -1)
     .filter((message) => message.role === 'user')
     .at(-1)
-  if (!previousUser) return question
-  const previous = messageText(previousUser).trim()
-  return `${previous}\n${question}`.slice(-MAX_RETRIEVAL_QUERY_CHARS)
+  return previousUser ? messageText(previousUser).trim() || null : null
 }
 
 /** Escapes the attribute values interpolated into the source tags. */
@@ -126,19 +151,35 @@ function attr(value: string): string {
 function handoffResponse(handoff: AskHandoff): Response {
   const stream = createUIMessageStream<AskUIMessage>({
     execute: ({ writer }) => {
-      const toolCallId = generateId()
       writer.write({ type: 'start' })
-      writer.write({
-        type: 'tool-input-available',
-        toolCallId,
-        toolName: 'handoff',
-        input: { reason: handoff.reason },
-      })
-      writer.write({ type: 'tool-output-available', toolCallId, output: handoff })
+      writeHandoff(writer, handoff)
       writer.write({ type: 'finish' })
     },
   })
   return createUIMessageStreamResponse({ stream })
+}
+
+/** The `tool-handoff` part as the model's own tool call would stream it, written by code. */
+function writeHandoff(writer: UIMessageStreamWriter<AskUIMessage>, handoff: AskHandoff): void {
+  const toolCallId = generateId()
+  writer.write({
+    type: 'tool-input-available',
+    toolCallId,
+    toolName: 'handoff',
+    input: { reason: handoff.reason },
+  })
+  writer.write({ type: 'tool-output-available', toolCallId, output: handoff })
+}
+
+/**
+ * The card a route would have ended in, for shadow mode's agreement rate: its
+ * own reason, or for an evidence route left with nothing to ground on (the
+ * passage check kept nothing, or nothing was retrieved to check) the card
+ * that stands in for the answer.
+ */
+function shadowCard(route: AskTurnRoute, grounded: boolean): AskHandoffReason | null {
+  if (route.kind === 'evidence' && !grounded) return route.reason ?? 'no_answer'
+  return routeCardReason(route)
 }
 
 const ask: Endpoint = {
@@ -196,11 +237,39 @@ const ask: Endpoint = {
     const startedAt = Date.now()
     const conversation = askIdFrom(body?.id)
     const pagePath = pagePathFrom(body?.pagePath)
-    const { sources, path: retrieval } = await retrieveSources(
-      req.payload,
-      retrievalQuery(messages, question),
-    )
     const isFollowUp = messages.length > 1
+    const previousQuestion = previousUserQuestion(messages)
+    const mode = askJudgeMode()
+
+    // What the judge saw and did this turn, for the log line and PostHog:
+    // metadata only, never the question and never a probability beside it.
+    const judged: {
+      turn: Promise<AskTurnJudgment | null> | null
+      judgment: AskTurnJudgment | null
+      route: AskTurnRoute | null
+      passages: Promise<AskPassageJudgment | null> | null
+      chunksKept: number | null
+      firstOutputMs: number | null
+      modelSkipped: boolean
+    } = {
+      turn: null,
+      judgment: null,
+      route: null,
+      passages: null,
+      chunksKept: null,
+      firstOutputMs: null,
+      modelSkipped: false,
+    }
+    const markFirstOutput = () => {
+      judged.firstOutputMs ??= Date.now() - startedAt
+    }
+    const hasContactDetails =
+      offersAskHandoff(handoffState) &&
+      (findEmailAddress(question) !== null || hasIdentifyingNumber(question))
+
+    let sources: RetrievedSource[] = []
+    let retrieval: AskRetrievalPath = 'none'
+    let chunkCandidates = 0
 
     // One row and one event per turn, whichever callback closes it (a model
     // stream can end in a finish, an error, or the visitor's Stop).
@@ -225,41 +294,154 @@ const ask: Endpoint = {
         latencyMs,
         ...turn,
       })
-      req.payload.logger.info({
-        msg: 'ask answered',
-        questionLength: question.length,
-        sourceCount: sources.length,
-        outcome: turn.outcome,
-        handoffReason: turn.handoffReason,
-        latencyMs,
-      })
-      captureServerEvent({
-        headers: req.headers,
-        fallbackDistinctId: `ask:${crypto.randomUUID()}`,
-        event: 'ask_questioned',
-        properties: {
-          is_follow_up: isFollowUp,
-          source_count: sources.length,
-          question_length: question.length,
-          handoff_reason: turn.handoffReason,
+
+      const report = async () => {
+        // Shadow mode never waits on Jev in the response path, so its answers
+        // are collected here; each is bounded by the judge's own timeout.
+        const judgment = judged.turn ? await judged.turn : judged.judgment
+        const passages = judged.passages ? await judged.passages : null
+        // Shadow's route is what `on` would have decided for this turn.
+        const route =
+          judged.route ??
+          (mode === 'shadow' ? routeTurn(judgment, { isFollowUp, handoffState }) : null)
+        const chunksKept =
+          judged.chunksKept ??
+          (passages
+            ? passages.answers.filter((answers) => routePassage(answers) === 'keep').length
+            : chunkCandidates)
+        const settled = turn.outcome !== 'stopped' && turn.outcome !== 'error'
+        const facts = {
+          judge_mode: mode,
+          judge_ms: judgment?.ms ?? null,
+          judge_failed: mode !== 'off' && judged.turn !== null && judgment === null,
+          judge_request: judgment?.request ?? null,
+          judge_confidence: judgment?.confidence ?? null,
+          judge_agrees:
+            mode === 'shadow' && settled && route && route.kind !== 'fallback'
+              ? (hasContactDetails
+                  ? 'contact_details'
+                  : shadowCard(route, passages ? chunksKept > 0 : sources.length > 0)) ===
+                turn.handoffReason
+              : null,
+          chunks_candidates: chunkCandidates,
+          chunks_kept: chunksKept,
+          passages_ms: passages?.ms ?? null,
+          first_output_ms: judged.firstOutputMs,
+          model_skipped: judged.modelSkipped,
+          fell_back: mode === 'on' && route?.kind === 'fallback',
+          answer_model: judged.modelSkipped ? null : askModel.modelId,
+        }
+        req.payload.logger.info({
+          msg: 'ask answered',
+          questionLength: question.length,
+          sourceCount: sources.length,
           outcome: turn.outcome,
-          retrieval,
-          latency_ms: latencyMs,
-          page_path: pagePath,
-        },
+          handoffReason: turn.handoffReason,
+          latencyMs,
+          ...facts,
+          judge_model: judgment?.model ?? null,
+        })
+        captureServerEvent({
+          headers: req.headers,
+          fallbackDistinctId: `ask:${crypto.randomUUID()}`,
+          event: 'ask_questioned',
+          properties: {
+            is_follow_up: isFollowUp,
+            source_count: sources.length,
+            question_length: question.length,
+            handoff_reason: turn.handoffReason,
+            outcome: turn.outcome,
+            retrieval,
+            latency_ms: latencyMs,
+            page_path: pagePath,
+            ...facts,
+          },
+        })
+      }
+      // Only shadow mode can still be waiting on Jev here; it must not hold the reply.
+      if (mode === 'shadow') afterResponse(report)
+      else void report()
+    }
+
+    /** The card as the whole reply: no retrieval behind it, no model call. */
+    const cardOnly = (reason: AskHandoffReason): Response => {
+      judged.modelSkipped = true
+      markFirstOutput()
+      record({
+        answer: '',
+        outcome: askOutcome({ grounded: false, handoffReason: reason }),
+        handoffReason: reason,
+      })
+      return handoffResponse(resolveAskHandoff(siteInfo, reason))
+    }
+
+    // Contact details are a known rule, so code finds them (the same patterns
+    // that redact them) before Jev or the model is asked anything.
+    if (mode === 'on' && hasContactDetails) return cardOnly('contact_details')
+
+    // The query is embedded while Jev reads the turn: the embedding call is
+    // the slower of the two, so the turn's decision adds no wait. Only `on`
+    // embeds both query forms, to pick once `depends_on_previous` is known.
+    const queries = retrievalQueries(question, previousQuestion)
+    const prepared = prepareRetrieval(req.payload, mode === 'on' ? queries : queries.slice(-1))
+    if (mode !== 'off') {
+      judged.turn = judgeTurn({
+        question,
+        previousQuestion,
+        signal: req.signal,
+        logger: req.payload.logger,
       })
     }
 
-    // First turn with nothing to ground on: the handoff card, no tokens spent.
-    // Follow-ups still reach the model source-less so the conversation can
-    // carry ("thanks", "can you say that more simply?").
-    if (sources.length === 0 && !isFollowUp) {
-      record({
-        answer: '',
-        outcome: askOutcome({ grounded: false, handoffReason: 'no_answer' }),
-        handoffReason: 'no_answer',
+    let route: AskTurnRoute = { kind: 'fallback' }
+    if (mode === 'on') {
+      judged.judgment = await judged.turn
+      route = routeTurn(judged.judgment, { isFollowUp, handoffState })
+      judged.route = route
+    }
+    if (route.kind === 'card') return cardOnly(route.reason)
+
+    // Jev's passage check. `on` hands it to the retrieval seam as a veto and
+    // drops what it drops; `shadow` only watches the same candidates, and
+    // reads the answer when the turn is recorded.
+    const checkPassages = (query: string, chunks: AskPassage[]) => {
+      judged.passages = judgePassages({
+        query,
+        chunks,
+        signal: req.signal,
+        logger: req.payload.logger,
       })
-      return handoffResponse(resolveAskHandoff(siteInfo, 'no_answer'))
+      return judged.passages
+    }
+    const check: PassageCheck = async (query, chunks) => {
+      const passages = await checkPassages(query, chunks)
+      return (
+        passages?.answers.map((answers) => routePassage(answers) === 'keep') ??
+        chunks.map(() => true)
+      )
+    }
+
+    if (route.kind !== 'conversation') {
+      const found = await prepared.search({
+        // A follow-up that stands on its own searches without the old subject attached.
+        query: route.kind === 'evidence' && !dependsOnPrevious(judged.judgment) ? 0 : undefined,
+        check: route.kind === 'evidence' ? check : undefined,
+        observe: mode === 'shadow' ? checkPassages : undefined,
+      })
+      sources = found.sources
+      retrieval = found.path
+      chunkCandidates = found.chunks.candidates
+      if (mode === 'on') judged.chunksKept = found.chunks.kept
+    }
+
+    // Nothing to ground on. Today's path: the card on a first turn, no tokens
+    // spent, while follow-ups still reach the model source-less so the
+    // conversation can carry ("thanks", "can you say that more simply?").
+    // A routed turn: the card on any turn, since Jev already told a thanks
+    // from a question; it carries the turn's own reason when it has one.
+    if (sources.length === 0 && offersAskHandoff(handoffState)) {
+      if (route.kind === 'evidence') return cardOnly(route.reason ?? 'no_answer')
+      if (route.kind === 'fallback' && !isFollowUp) return cardOnly('no_answer')
     }
 
     const sourcesBlock = sources
@@ -270,20 +452,30 @@ const ask: Endpoint = {
       .join('\n\n')
 
     // The prompt and the tool list agree: once the visitor has sent, the
-    // tool is withheld and the prompt stops asking for it.
+    // tool is withheld and the prompt stops asking for it. A routed turn
+    // never has the tool: the decision is made, and code appends the card.
     const grounded = sources.length > 0
+    const routed = route.kind !== 'fallback'
+    const offersTool = !routed && offersAskHandoff(handoffState)
+    const closingCard = routed && grounded ? routeCardReason(route) : null
     const system = [
-      askSystemPrompt({ grounded, handoff: handoffState }),
+      askSystemPrompt({
+        grounded,
+        handoff: handoffState,
+        tool: offersTool,
+        cardFollows: closingCard !== null,
+      }),
       grounded ? `<sources>\n${sourcesBlock}\n</sources>` : null,
     ]
       .filter(Boolean)
       .join('\n\n')
 
+    const tools = offersTool ? { handoff: askHandoffTool(siteInfo) } : undefined
     const result = streamText({
       model: askModel,
       system,
       messages: await convertToModelMessages(messages),
-      tools: offersAskHandoff(handoffState) ? { handoff: askHandoffTool(siteInfo) } : undefined,
+      tools,
       maxOutputTokens: sources.length > 0 ? MAX_ANSWER_TOKENS : MAX_CHAT_ONLY_TOKENS,
       // The visitor's Stop (and a dropped connection) aborts the model call,
       // so tokens stop with the reader and the turn is recorded as stopped.
@@ -295,9 +487,14 @@ const ask: Endpoint = {
       // resends the transcript each turn, and for reasoning models the SDK asks
       // for encrypted reasoning instead of server-side item references.
       providerOptions: { openai: { reasoningEffort: 'low', store: false } },
+      onChunk: ({ chunk }) => {
+        if (chunk.type === 'text-delta' || chunk.type === 'tool-result') markFirstOutput()
+      },
       onFinish: ({ text, totalUsage, staticToolCalls }) => {
         const handoffReason =
-          staticToolCalls.find((call) => call.toolName === 'handoff')?.input.reason ?? null
+          closingCard ??
+          staticToolCalls.find((call) => call.toolName === 'handoff')?.input.reason ??
+          null
         record({
           answer: text,
           outcome: askOutcome({ grounded, handoffReason }),
@@ -317,8 +514,8 @@ const ask: Endpoint = {
       onError: () => record({ answer: '', outcome: 'error', handoffReason: null }),
     })
 
-    const stream = createUIMessageStream({
-      execute: ({ writer }) => {
+    const stream = createUIMessageStream<AskUIMessage>({
+      execute: async ({ writer }) => {
         writer.write({ type: 'start' })
         for (const source of sources) {
           writer.write({
@@ -331,9 +528,36 @@ const ask: Endpoint = {
         // The Ask UI renders text, sources, and the handoff card. Reasoning
         // parts would carry the encrypted reasoning blob to the browser and
         // back on every turn.
-        writer.merge(
-          toUIMessageStream({ stream: result.fullStream, sendStart: false, sendReasoning: false }),
-        )
+        if (!closingCard) {
+          writer.merge(
+            toUIMessageStream<NonNullable<typeof tools>, AskUIMessage>({
+              stream: result.fullStream,
+              sendStart: false,
+              sendReasoning: false,
+            }),
+          )
+          return
+        }
+
+        // The card after the words: the model's stream is forwarded without
+        // its finish, then code writes the same part the tool call would
+        // have, so a partial answer reliably ends in its offer. A reply that
+        // was stopped or failed gets no card.
+        const reader = toUIMessageStream<NonNullable<typeof tools>, AskUIMessage>({
+          stream: result.fullStream,
+          sendStart: false,
+          sendFinish: false,
+          sendReasoning: false,
+        }).getReader()
+        let settled = true
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          if (value.type === 'abort' || value.type === 'error') settled = false
+          writer.write(value)
+        }
+        if (settled) writeHandoff(writer, resolveAskHandoff(siteInfo, closingCard))
+        writer.write({ type: 'finish' })
       },
       onError: (err) => {
         req.payload.logger.error({ msg: 'ask reply failed', err })

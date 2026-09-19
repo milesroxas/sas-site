@@ -70,11 +70,30 @@ There are no client `capture` call sites today: pageviews, `$pageleave`, autocap
 | `newsletter_signup_started` | `audience`, `returning` | `src/endpoints/newsletter.ts` |
 | `newsletter_signup_confirmed` | none | `src/endpoints/newsletter.ts` |
 | `newsletter_unsubscribed` | none | `src/endpoints/newsletter.ts` |
-| `ask_questioned` | `is_follow_up`, `source_count`, `question_length`, `handoff_reason`, `outcome`, `retrieval`, `latency_ms`, `page_path` | `src/endpoints/ask.ts` |
+| `ask_questioned` | `is_follow_up`, `source_count`, `question_length`, `handoff_reason`, `outcome`, `retrieval`, `latency_ms`, `page_path`, plus the judge's facts about the turn (see below) | `src/endpoints/ask.ts` |
 | `ask_rated` | `rating`, `reason`, `outcome`, `source_count` | `src/endpoints/ask.ts` (`captureAskFeedback`) |
 | `ask_handoff_clicked` | `rating`, `reason`, `outcome`, `source_count` | `src/endpoints/ask.ts` (`captureAskFeedback`) |
 
 Verify against code with `grep -rn "captureServerEvent(" src` before relying on this table.
+
+### `ask_questioned`: the judge's properties
+
+Ask's judge (Jev, `src/features/ask/judge.ts`, mode from `ASK_JEV`) adds facts about the turn to the same event. Metadata only: never the question, and never a probability beside text. `latency_ms` measures request start to stream finish; `first_output_ms` is what the visitor feels.
+
+| Property | Type | Meaning |
+|----------|------|---------|
+| `judge_mode` | `off` / `shadow` / `on` | The mode the turn ran under. Split every latency tile by it |
+| `judge_ms` | number, null | Wall time of the turn judgment; null when Jev was not asked |
+| `judge_failed` | boolean | Jev was asked and returned nothing (timeout, 429, error) |
+| `judge_request` | string, null | The `request` Choice's pick: `information`, `estimate`, `project`, `person`, `conversation`, `other` |
+| `judge_confidence` | number, null | That Choice's confidence |
+| `judge_agrees` | boolean, null | Shadow only: the card Jev would have shown equals the writing model's. Null when Jev had no decision |
+| `chunks_candidates`, `chunks_kept` | number | Retrieved chunks before and after the passage check (equal when no check ran) |
+| `passages_ms` | number, null | Wall time of the passage check |
+| `first_output_ms` | number, null | Server time to the first text or card chunk |
+| `model_skipped` | boolean | The turn was answered with no writing-model call |
+| `fell_back` | boolean | Mode `on`, but the turn took the writing model's own path (unsure or failed judgment) |
+| `answer_model` | string, null | The writing model's id; null when skipped |
 
 ## Verifying a change
 

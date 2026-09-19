@@ -2,7 +2,7 @@ import type { Payload, Where } from 'payload'
 import type { Search } from '@/payload-types'
 import { extractDocMarkdown, readPublicDoc } from '@/shared/content/extract'
 import { indexedSourcePath, surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
-import { embedQuestion, type NearestChunk, queryNearestChunks } from './embeddings'
+import { embedQuestions, type NearestChunk, queryNearestChunks } from './embeddings'
 import { ASK_MODEL_API_KEY_VAR } from './model'
 import type { AskRetrievalPath } from './vocabulary'
 
@@ -14,7 +14,35 @@ export type RetrievedSource = {
   similarity: number | null
 }
 
-export type Retrieval = { sources: RetrievedSource[]; path: AskRetrievalPath }
+export type Retrieval = {
+  sources: RetrievedSource[]
+  path: AskRetrievalPath
+  /** Chunks that cleared the similarity floor, and how many a passage check kept (all, without one). */
+  chunks: { candidates: number; kept: number }
+}
+
+/**
+ * A second opinion on the nearest chunks before they become sources: true
+ * keeps a chunk, false drops it. The endpoint hands in Jev's passage check
+ * (judge.ts); retrieval only knows that someone may veto a chunk.
+ */
+export type PassageCheck = (query: string, chunks: NearestChunk[]) => Promise<boolean[]>
+
+export type PreparedRetrieval = {
+  /**
+   * Searches with one of the prepared queries (the last by default), already
+   * embedded. With a `check`, only the chunks it keeps become sources, the
+   * similarity floor drops to `CHECKED_MIN_SIMILARITY`, and a check that
+   * keeps nothing means no sources: the keyword fallback would hand the model
+   * whole documents nobody vetted. `observe` sees the same candidates and
+   * changes nothing (shadow mode).
+   */
+  search: (options?: {
+    query?: number
+    check?: PassageCheck
+    observe?: (query: string, chunks: NearestChunk[]) => void
+  }) => Promise<Retrieval>
+}
 
 /**
  * Retrieval for the /api/ask endpoint. Embedding search over ask_embeddings
@@ -23,9 +51,9 @@ export type Retrieval = { sources: RetrievedSource[]; path: AskRetrievalPath }
  * for when embeddings are unavailable — no API key, empty index (backfill not
  * run), or a transient embedding-API failure.
  *
- * The endpoint knows nothing about any of this: `retrieveSources(payload,
- * question)` is the seam, and an empty result still means "refuse rather
- * than guess".
+ * The endpoint knows nothing about any of this: `prepareRetrieval(payload,
+ * queries)` is the seam (`retrieveSources` for one query, searched at once),
+ * and an empty result still means "refuse rather than guess".
  */
 
 /**
@@ -35,9 +63,20 @@ export type Retrieval = { sources: RetrievedSource[]; path: AskRetrievalPath }
  * is the second line of defense against weak matches.
  */
 const MIN_SIMILARITY = 0.3
+/**
+ * The floor when a passage check vetoes chunks: the check is then the real
+ * filter and the floor only a cheap first cut. Measured 2026-09-19 with
+ * scripts/ask-judge-eval.ts: at 0.3 "What does it cost?" found nothing, while
+ * the FAQ chunk that answers it sat at 0.23 and the check kept it (relevant
+ * 0.97, evidence 0.84) and dropped the eleven chunks around it.
+ */
+const CHECKED_MIN_SIMILARITY = 0.2
 const CHUNK_CANDIDATES = 12
 const TOP_SOURCES = 4
 const MAX_CHUNKS_PER_SOURCE = 3
+
+/** Cap on the follow-up query built from the last two user turns (embedding tokens, not model tokens). */
+const MAX_RETRIEVAL_QUERY_CHARS = 700
 
 // Keyword-fallback tuning (unchanged from the MVP keyword retriever).
 const MAX_TERMS = 8
@@ -132,13 +171,25 @@ function chunksToSources(chunks: NearestChunk[]): RetrievedSource[] {
   })
 }
 
-async function retrieveByEmbedding(payload: Payload, question: string): Promise<RetrievedSource[]> {
-  const questionEmbedding = await embedQuestion(question)
-  const chunks = await queryNearestChunks(payload, questionEmbedding, {
-    limit: CHUNK_CANDIDATES,
-    minSimilarity: MIN_SIMILARITY,
-  })
-  return chunksToSources(chunks)
+/**
+ * The query forms for a turn: the question alone, and on a follow-up the
+ * previous user turn prepended. "What about for nonprofits?" embeds badly on
+ * its own, so today's path searches with the second; a topic switch is
+ * better served by the first. Two user turns, no model rewrite.
+ */
+export function retrievalQueries(question: string, previousQuestion: string | null): string[] {
+  if (!previousQuestion) return [question]
+  return [question, `${previousQuestion}\n${question}`.slice(-MAX_RETRIEVAL_QUERY_CHARS)]
+}
+
+/** The chunks nearest an embedded query that clear the similarity floor. */
+const nearestToEmbedding = (payload: Payload, embedding: number[], minSimilarity: number) =>
+  queryNearestChunks(payload, embedding, { limit: CHUNK_CANDIDATES, minSimilarity })
+
+/** The candidate chunks for a query, as the passage check sees them (scripts/ask-judge-eval.ts). */
+export async function nearestChunks(payload: Payload, query: string): Promise<NearestChunk[]> {
+  const [embedding] = await embedQuestions([query])
+  return nearestToEmbedding(payload, embedding, CHECKED_MIN_SIMILARITY)
 }
 
 async function retrieveByKeywords(payload: Payload, question: string): Promise<RetrievedSource[]> {
@@ -192,17 +243,56 @@ async function retrieveByKeywords(payload: Payload, question: string): Promise<R
   return sources
 }
 
-/** The sources for a question and the path that found them (`none` when nothing did). */
-export async function retrieveSources(payload: Payload, question: string): Promise<Retrieval> {
-  if (process.env[ASK_MODEL_API_KEY_VAR]) {
-    try {
-      const sources = await retrieveByEmbedding(payload, question)
-      if (sources.length > 0) return { sources, path: 'embedding' }
-    } catch (err) {
-      payload.logger.error({ msg: 'embedding retrieval failed, falling back to keywords', err })
-    }
-  }
+/**
+ * Starts retrieval for a turn: every query form is embedded at once, in one
+ * call, so the endpoint can decide which to search with while the embedding
+ * is in flight (judge.ts answers that beside it). A failed embedding is held
+ * until `search`, which then falls back to keywords as it always has.
+ */
+export function prepareRetrieval(payload: Payload, queries: string[]): PreparedRetrieval {
+  const embeddings: Promise<number[][] | Error> = process.env[ASK_MODEL_API_KEY_VAR]
+    ? embedQuestions(queries).catch((err: unknown) =>
+        err instanceof Error ? err : new Error(String(err)),
+      )
+    : Promise.resolve(new Error(`${ASK_MODEL_API_KEY_VAR} is not set`))
 
-  const sources = await retrieveByKeywords(payload, question)
-  return { sources, path: sources.length > 0 ? 'keyword' : 'none' }
+  return {
+    search: async ({ query = queries.length - 1, check, observe } = {}) => {
+      const chunks = { candidates: 0, kept: 0 }
+
+      if (process.env[ASK_MODEL_API_KEY_VAR]) {
+        try {
+          const embedded = await embeddings
+          if (embedded instanceof Error) throw embedded
+
+          const candidates = await nearestToEmbedding(
+            payload,
+            embedded[query],
+            check ? CHECKED_MIN_SIMILARITY : MIN_SIMILARITY,
+          )
+          if (candidates.length > 0) observe?.(queries[query], candidates)
+          const keep =
+            check && candidates.length > 0 ? await check(queries[query], candidates) : null
+          const kept = keep ? candidates.filter((_, i) => keep[i]) : candidates
+          chunks.candidates = candidates.length
+          chunks.kept = kept.length
+
+          const sources = chunksToSources(kept)
+          if (sources.length > 0) return { sources, path: 'embedding', chunks }
+          // Every candidate was vetoed: that is an answer, not a reason to try keywords.
+          if (keep && candidates.length > 0) return { sources: [], path: 'none', chunks }
+        } catch (err) {
+          payload.logger.error({ msg: 'embedding retrieval failed, falling back to keywords', err })
+        }
+      }
+
+      const sources = await retrieveByKeywords(payload, queries[query])
+      return { sources, path: sources.length > 0 ? 'keyword' : 'none', chunks }
+    },
+  }
+}
+
+/** The sources for a question and the path that found them (`none` when nothing did). */
+export function retrieveSources(payload: Payload, question: string): Promise<Retrieval> {
+  return prepareRetrieval(payload, [question]).search()
 }

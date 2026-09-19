@@ -49,9 +49,9 @@ Still open, settle before the phase that needs them:
 
 | # | Decision | Recommendation | Needed by |
 |---|---|---|---|
-| 1 | Add `@typesafe-ai/sdk` (v0.6.0 at time of writing, Node 20+). The workspace has a 24 h pnpm release cooldown | Yes. It is small, typed, and has ESM + CJS builds | Phase 1 |
-| 2 | TypeSafe becomes a processor of visitor questions. It does not train on requests; zero retention is enterprise only. The drafted Privacy page (Pages id 8, unpublished) should list it | Add before Jev sees production traffic | Phase 2 in production |
-| 3 | `TYPESAFE_API_KEY` exists only in local `.env`. Production and preview need it in Vercel | Miles adds it. Until then production behaves as mode `off` | Phase 2 in production |
+| 1 | Add `@typesafe-ai/sdk` (v0.6.0 at time of writing, Node 20+). The workspace has a 24 h pnpm release cooldown | **Done 2026-09-19**: 0.6.0 added (released 2026-09-15, past the cooldown; no dependencies) | Phase 1 |
+| 2 | TypeSafe becomes a processor of visitor questions. It does not train on requests; zero retention is enterprise only. The drafted Privacy page (Pages id 8, unpublished) should list it | Add before Jev sees production traffic. **Still open**: it is the one thing between the shipped code and `ASK_JEV=shadow` in production | Phase 2 in production |
+| 3 | `TYPESAFE_API_KEY` exists only in local `.env`. Production and preview need it in Vercel | Miles adds it. Until then production behaves as mode `off`. **Checked 2026-09-19**: the key is on neither the `sas-site` Vercel project nor the team's shared variables, and `ASK_JEV` is unset, so every deployed environment runs `off` | Phase 2 in production |
 
 ## Target flow (mode `on`)
 
@@ -60,7 +60,8 @@ POST /api/ask
   ├─ hide / config / rate limit / validation          (unchanged)
   ├─ contact details in the question? (regex, code)   → card `contact_details`, no Jev, no model
   ├─ in parallel:
-  │    ├─ judgeTurn()      one Jev request: `request` Choice, `only_a_person` Noul,
+  │    ├─ judgeTurn()      one Jev request: `request` Choice, the `own_project`,
+  │    │                   `general_question` and `names_work` Nouls,
   │    │                   `depends_on_previous` Noul (follow-ups only)
   │    └─ embedMany()      [question] or, on a follow-up, [question, previous + question]
   ├─ route the turn in code (see decision table)
@@ -84,8 +85,8 @@ Jev adds no wait to the turn decision because the embedding call it runs beside 
 | Signals | Action | Outcome recorded |
 |---|---|---|
 | Email or phone in the question (code) | Card only, `contact_details` | `partial` rules unchanged: `askOutcome()` decides |
-| `request = person`, confidence ≥ `T_act` | Card only, `person` | as today |
-| `request = estimate` or `project`, `only_a_person` ≥ `T_only` | Card only, that reason | as today |
+| `request = person`, confidence ≥ `T_act` | Card only, `person` | `chat_only`: `askOutcome()` decides, and no sources were retrieved (it was `partial` when the model decided after retrieval) |
+| `request = estimate` or `project`, and only a person could settle it (see [Questions as built](#questions-as-built-2026-09-19-jev-1130)) | Card only, that reason | `chat_only`: no sources stand behind it |
 | `request = estimate` or `project`, otherwise | Retrieve and check passages. Evidence kept: answer, then card with that reason. None kept: card only | `partial`, or the card-only outcome |
 | `request = conversation`, follow-up turn | Chat-only prompt, no retrieval, no tool | `chat_only` |
 | `request = information` or `other` | Retrieve and check. Evidence kept: answer, quiet offer as today. None kept: `no_answer` card, no model | `answered` / `no_sources` |
@@ -94,21 +95,27 @@ Jev adds no wait to the turn decision because the embedding call it runs beside 
 
 Open design point to settle with the fixture, not by argument: "What does it cost?" is expected to reach a person in `scripts/ask-eval.ts`, while the prompt says general pricing questions are answered from the site. In the table above that tension resolves itself: `estimate` with no kept evidence is card only, and with kept evidence is answer plus card. Confirm against the real corpus.
 
-### Draft questions
+### Questions as built (2026-09-19, `jev-1.13.0`)
 
-Drafts only. Jev reads literally, so the criteria carry the boundary cases; reuse the wording already proven in `handoffTool.ts` and `prompts.ts`. State for the turn: `{ question, previous_question }`. State for a passage: `{ query, passage: { title, heading, text } }`, one chunk per request (large mixed states cost accuracy).
+Tuned with `scripts/ask-judge-eval.ts` against the 19-case fixture and the local production-content corpus (370 chunks). State for the turn: `{ question, previous_question }`, both redacted. State for a passage: `{ query, passage: { title, heading, text } }`, one chunk per request (large mixed states cost accuracy). The exact wording lives in `src/features/ask/judge.ts`; this table is the summary.
 
-| Id | Type | Instructions | Criteria |
+| Id | Type | Asks | Notes |
 |---|---|---|---|
-| `request` | Choice | What is the visitor asking for in `question`? | `information`: a question about the studio, how it works, how projects start, its process, who it has worked with, what it offers, or how it prices in general. `estimate`: what their own project would cost, how long it would take, or when the studio could start. `project`: they say they have a project, or ask the studio to do something for them (not a question about how projects start). `person`: they ask for a person by name or role, or to be called or emailed. `conversation`: a thanks, a greeting, an acknowledgment, or a request to repeat or rephrase an earlier reply. `other`: none of the above |
-| `only_a_person` | Noul | Is every part of `question` something only the studio's team could settle: the visitor's own price, timeline, start date, or taking on their project? | true: no part of it asks about the studio in general. false: at least part of it is a general question about the studio |
-| `depends_on_previous` | Noul | Does `question` need `previous_question` to be understood? | true: it uses a pronoun or an omitted subject that only `previous_question` supplies. false: it is a complete question on its own, even if on a related subject |
-| `is_relevant` | Noul | Does this passage address the subject of the query? | (from the TypeSafe RAG cookbook) |
-| `has_evidence` | Noul | Does this passage state information usable in a direct answer to the query? | (same) |
+| `request` | Choice | What is the visitor asking for in `question`? `information`, `estimate`, `project`, `person`, `conversation`, `other`, with the criteria drafted here (wording from `handoffTool.ts` and `prompts.ts`) | Right on 19 of 19 fixture cases. Lowest confidence 0.45 ("What is the capital of Mongolia?", `other` over `information`) |
+| `own_project` | Noul | Is `question` about the visitor's own project? | Replaces the drafted `only_a_person` together with the two below |
+| `general_question` | Noul | Does any part of `question` ask about the studio in general? | |
+| `names_work` | Noul | Does `question` name the kind of work the visitor wants done? | |
+| `depends_on_previous` | Noul | Does `question` contain a pronoun or leave out its subject, so that it refers back to `previous_question`? | Dependent pairs 0.95 to 0.98, standalone pairs 0.09 to 0.56 |
+| `is_relevant` | Noul | Does this passage address the subject of the query? | From the TypeSafe RAG cookbook |
+| `has_evidence` | Noul | Does this passage state information usable in a direct answer to the query? | Same |
 
-Passage routing, first match wins: `is_relevant < T_relevant` → drop; `has_evidence > T_evidence` → keep; otherwise drop. Cookbook starting values: 0.45 and 0.55. The cookbook's prompt-injection and contradiction questions are left out: the corpus is the studio's own published CMS content.
+**Why `only_a_person` became three questions.** As drafted ("Is every part of `question` something only the studio's team could settle...") it read 0.35 to 0.56 on plainly own-project questions ("How much would a new website for my startup cost?" 0.45), too low to separate from a mixed question. Jev reads literally and a universal is a hop too many, which is what TypeSafe's jaggedness notes say to split. The three literal Nouls separate cleanly (own-price questions: `own_project` 0.73 to 0.97 with `general_question` 0.04 to 0.24; the mixed question: both above 0.9), and code combines them: an `estimate` is the card alone when `own_project` ≥ 0.7 and `general_question` < 0.5; a `project` is the card alone when `names_work` < 0.5 and `general_question` < 0.5 ("I have a project" names no work; "Can you fix my Webflow site?" names work the site may speak to, so it retrieves, answers, then shows the card). A miss is cheap: the turn retrieves, and with no passage kept it still ends in the card alone.
 
-Do not carry a threshold tuned on a Noul to a Choice or the reverse, and do not expect `P(x)` and `1 - P(not x)` to agree. Pin `jev-1.13.0` (not `jev-latest`) once thresholds are tuned, and log the `model` field of each response.
+Thresholds (`ASK_JUDGE_THRESHOLDS`): `act` 0.6, `low` 0.35, `ownProject` 0.7, `generalQuestion` 0.5, `namesWork` 0.5, `dependsOnPrevious` 0.7 (leans toward attaching the previous turn: a wrong yes is the old behavior, a wrong no embeds "what about that?" alone), `relevant` 0.45, `evidence` 0.55 (the cookbook's starting values held on this corpus). Passage routing, first match wins: `is_relevant < relevant` → drop; `has_evidence > evidence` → keep; otherwise drop. The cookbook's prompt-injection and contradiction questions are left out: the corpus is the studio's own published CMS content.
+
+**The similarity floor.** The fixture showed the 0.3 floor cutting a chunk Jev keeps: "What does it cost?" found nothing at 0.3, while the FAQ chunk that answers it sat at 0.23 (relevant 0.97, evidence 0.84) among eleven chunks the check dropped. So the floor is 0.2 when the passage check vetoes chunks and stays 0.3 when nothing else filters (`CHECKED_MIN_SIMILARITY` in `retrieve.ts`).
+
+Do not carry a threshold tuned on a Noul to a Choice or the reverse, and do not expect `P(x)` and `1 - P(not x)` to agree. `jev-1.13.0` is pinned (not `jev-latest`), and the `model` field of each response is logged (`judge_model` in the `ask answered` line).
 
 ## Phases
 

@@ -112,6 +112,8 @@ Optional — each feature is disabled when its variable is unset:
 | `OPENAI_API_KEY` | `/api/ask` answer model and content embeddings; the endpoint returns 503 without it |
 | `OPENAI_ADMIN_API_KEY` | Read-only spend/usage panel in Site Info → Ask; the panel explains setup when unset |
 | `OPENAI_PROJECT_ID` | Optional OpenAI project id (`proj_...`) to scope that usage panel |
+| `TYPESAFE_API_KEY` | Ask's judge (TypeSafe Jev): fast typed decisions beside the writing model. Unset = judge off |
+| `ASK_JEV` | Ask judge mode: `off` (default), `shadow` (measured, decides nothing), `on`. See `src/features/ask/README.md` |
 | `RESEND_WEBHOOK_SECRET` | Svix signing secret for the Resend bounce/complaint webhook |
 | `NEWSLETTER_FROM_ADDRESS`, `NEWSLETTER_FROM_NAME` | Newsletter-specific sender; falls back to `RESEND_FROM_*` |
 | `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` | Sentry monitoring; the DSN enables the SDK, the rest enable build-time source map upload |

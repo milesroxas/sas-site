@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { redactFreeText } from './redact'
+import { hasIdentifyingNumber, redactFreeText } from './redact'
 
 describe('redactFreeText', () => {
   it('leaves an ordinary question alone', () => {
@@ -53,5 +53,20 @@ describe('redactFreeText', () => {
     '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b',
   ])('removes the credential-shaped string "%s"', (secret) => {
     expect(redactFreeText(`my key is ${secret} ok`)).toBe('my key is [secret] ok')
+  })
+})
+
+describe('hasIdentifyingNumber', () => {
+  it.each(['Call me on +1 (555) 123-4567', 'my number is 5551234567'])('finds "%s"', (text) => {
+    expect(hasIdentifyingNumber(text)).toBe(true)
+  })
+
+  it.each([
+    'Do you work with healthtech startups on rebrands?',
+    'Our budget is $50000-100000',
+    'We were founded in 2019-2024',
+    'Can we start on 2026-10-01?',
+  ])('leaves "%s" alone', (text) => {
+    expect(hasIdentifyingNumber(text)).toBe(false)
   })
 })

@@ -1,5 +1,5 @@
 import { sql } from '@payloadcms/db-vercel-postgres'
-import { embed, embedMany } from 'ai'
+import { embedMany } from 'ai'
 import type { Payload } from 'payload'
 import type { MarkdownChunk } from './chunk'
 import { askEmbeddingModel } from './model'
@@ -35,9 +35,10 @@ const drizzle = (payload: Payload) =>
 
 const toVectorLiteral = (embedding: number[]): string => `[${embedding.join(',')}]`
 
-export async function embedQuestion(question: string): Promise<number[]> {
-  const { embedding } = await embed({ model: askEmbeddingModel, value: question })
-  return embedding
+/** Embeds a turn's query forms in one call; vectors come back in the order given. */
+export async function embedQuestions(questions: string[]): Promise<number[][]> {
+  const { embeddings } = await embedMany({ model: askEmbeddingModel, values: questions })
+  return embeddings
 }
 
 /**

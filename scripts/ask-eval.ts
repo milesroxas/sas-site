@@ -8,21 +8,20 @@
  *   pnpm exec tsx scripts/ask-eval.ts [http://localhost:3001]
  *
  * Runs against the endpoint, so the server needs OPENAI_API_KEY and an
- * indexed corpus. Six questions fit under the endpoint's per-minute limit.
+ * indexed corpus. Six questions fit under the endpoint's per-minute limit:
+ * the first six of the shared fixture (scripts/ask-cases.ts), three answered
+ * from the site and three that reach a person. `scripts/ask-bench.ts` runs
+ * the whole fixture, paced, with timings.
  */
+
+import { ASK_CASES } from './ask-cases'
 
 type Case = { question: string; handoff: boolean }
 
-const CASES: Case[] = [
-  // The closing band's chips: answered from the site, never an offer.
-  { question: 'How do we start?', handoff: false },
-  { question: 'Who have you worked with?', handoff: false },
-  { question: 'What is your process like?', handoff: false },
-  // Only a person can settle these.
-  { question: 'What does it cost?', handoff: true },
-  { question: 'How much would a new website for my startup cost?', handoff: true },
-  { question: 'Can I talk to someone on the team?', handoff: true },
-]
+const CASES: Case[] = ASK_CASES.slice(0, 6).map(({ turns, expect }) => ({
+  question: turns[0],
+  handoff: expect.handoff !== null,
+}))
 
 type Outcome = { sources: number; text: string; reason: string | null; status: number }
 
@@ -81,5 +80,3 @@ for (const { question, handoff } of CASES) {
 
 console.log(failures === 0 ? '\nAll cases as expected.' : `\n${failures} case(s) off.`)
 process.exit(failures === 0 ? 0 : 1)
-
-export {}

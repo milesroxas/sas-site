@@ -45,6 +45,15 @@ function redactNumberRun(match: string, offset: number, text: string): string {
   return '[number]'
 }
 
+/**
+ * Whether the text carries a digit run `redactFreeText` would strip: a phone
+ * number, most often. With `findEmailAddress` it is how the endpoint knows a
+ * visitor typed contact details, in code, before any model is asked.
+ */
+export function hasIdentifyingNumber(text: string): boolean {
+  return text.replace(NUMBER_RUN, redactNumberRun) !== text
+}
+
 export function redactFreeText(text: string): string {
   return text
     .replace(EMAIL, '[email]')

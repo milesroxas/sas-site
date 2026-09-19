@@ -7,6 +7,10 @@ import type { AskHandoffState } from './handoff'
  * visitor has sent their details to the team; after that the tool is
  * withheld, and every line that told the model to call it goes with it, so
  * the model is never asked for a tool it does not have.
+ *
+ * When the judge routes the turn (judge.ts, ASK_JEV=on) the tool is withheld
+ * from the start: whether a person is the next step was decided before the
+ * model was asked, and code appends the card. The model only writes.
  */
 
 const VOICE = 'Speak as the studio ("we") in a warm, direct, plain voice.'
@@ -19,16 +23,31 @@ const REACHING_A_PERSON = `Reaching a person:
 - Never describe the offer, its form, or our reply time; the offer says all of that.
 - Never repeat an email address, phone number, or name back. Only the offer passes anything to the team; this chat cannot.`
 
-function groundedPrompt(tool: boolean): string {
+/**
+ * With no tool, and an offer that code appends after the reply: answer what
+ * the sources cover and stop. Left to itself the model closes with its own
+ * invitation ("paste a link and we'll take it to the team"), which promises
+ * what this chat cannot do and doubles the offer under it.
+ */
+const CARD_FOLLOWS = `An offer to take this to the team follows your reply, added for you:
+- Every sentence you write states something the sources say. No sentence tells the visitor what to do next, asks them a question, or invites them to tell, send, or share anything: not "Tell us...", "Send us...", "If you want..." or "If you'd like...".
+- Do not say what we don't publish, and do not name a next step.
+- Do not invite the visitor to share details, a link, or more about their project, and do not offer to pass anything to the team: this chat cannot, and the offer does.
+- Never mention or describe the offer, its form, or our reply time.`
+
+function groundedPrompt(tool: boolean, cardFollows: boolean): string {
   const partial = tool
     ? "If the rest is the visitor's own price, timeline, or start date, call the handoff tool after your answer and leave the rest to it: do not also say what we don't publish or name a next step. Otherwise say"
     : 'Then say'
+  const partialAnswer = cardFollows
+    ? 'If the sources answer only part of the question, answer that part confidently and leave the rest.'
+    : `If the sources answer only part of the question, answer that part confidently. ${partial} in one short sentence what we don't publish and name the page path from the matching source's url as the next step. Never say "browse the site".`
   const nothing = tool
     ? 'If nothing relevant is in the sources, call the handoff tool with reason "no_answer" and write nothing else.'
     : 'If nothing relevant is in the sources, say so in one short sentence and invite a more specific question.'
   const reaching = tool
     ? `\n\n${REACHING_A_PERSON}`
-    : '\n\nNever repeat an email address, phone number, or name back.'
+    : `\n\nNever repeat an email address, phone number, or name back.${cardFollows ? `\n\n${CARD_FOLLOWS}` : ''}`
 
   return `You are the Ask assistant on the Suits & Sandals website. ${VOICE} You are talking with a prospective client or a curious visitor.
 
@@ -38,7 +57,7 @@ Grounding:
 
 How to answer:
 - Lead with the most useful thing the sources say, in one or two sentences.
-- If the sources answer only part of the question, answer that part confidently. ${partial} in one short sentence what we don't publish and name the page path from the matching source's url as the next step. Never say "browse the site".
+- ${partialAnswer}
 - ${nothing}
 - Answer follow-ups in the flow of the conversation; do not restate earlier answers.
 - Under 120 words. Plain text only: no markdown, no headers, no bullet lists unless the visitor asks for steps. No em dashes: use a comma, colon, or period.${reaching}`
@@ -61,11 +80,17 @@ ${reaching}`
  * the request body, see useAskChat), appended under "This conversation:" so
  * the model never offers twice.
  */
-const HANDOFF_STATE_NOTES: Record<AskHandoffState, string | null> = {
-  none: null,
-  offered:
-    "You have already offered to send the visitor's question to the team in this conversation, and that offer is on screen. Answer in words; call the handoff tool again only if this new question itself needs a person.",
-  sent: 'The visitor has already sent their details to the team and will get a reply by email. Do not offer that again and do not ask for their details; answer in words.',
+const OFFERED =
+  "You have already offered to send the visitor's question to the team in this conversation, and that offer is on screen. Answer in words"
+
+const handoffStateNote = (handoff: AskHandoffState, tool: boolean): string | null => {
+  if (handoff === 'none') return null
+  if (handoff === 'sent') {
+    return 'The visitor has already sent their details to the team and will get a reply by email. Do not offer that again and do not ask for their details; answer in words.'
+  }
+  return tool
+    ? `${OFFERED}; call the handoff tool again only if this new question itself needs a person.`
+    : `${OFFERED}.`
 }
 
 /** Whether the handoff tool is on offer this turn: withheld once the visitor has sent. */
@@ -75,13 +100,21 @@ export const offersAskHandoff = (handoff: AskHandoffState) => handoff !== 'sent'
 export function askSystemPrompt({
   grounded,
   handoff,
+  tool = offersAskHandoff(handoff),
+  cardFollows = false,
 }: {
   /** Sources were retrieved for this turn and follow the prompt. */
   grounded: boolean
   handoff: AskHandoffState
+  /** The handoff tool is on offer. False when the judge routed the turn: the model only writes. */
+  tool?: boolean
+  /** Code appends a handoff card after this reply (no-tool turns only), so the reply must not word one. */
+  cardFollows?: boolean
 }): string {
-  const tool = offersAskHandoff(handoff)
-  const prompt = grounded ? groundedPrompt(tool) : chatOnlyPrompt(tool)
-  const note = HANDOFF_STATE_NOTES[handoff]
+  const offersTool = tool && offersAskHandoff(handoff)
+  const prompt = grounded
+    ? groundedPrompt(offersTool, !offersTool && cardFollows)
+    : chatOnlyPrompt(offersTool)
+  const note = handoffStateNote(handoff, offersTool)
   return note ? `${prompt}\n\nThis conversation:\n- ${note}` : prompt
 }
