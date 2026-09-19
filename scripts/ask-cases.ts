@@ -123,3 +123,85 @@ export const ASK_CASES: AskCase[] = [
     expect: { handoff: null, text: true },
   },
 ]
+
+/**
+ * The journey fixture (`scripts/ask-judge-eval.ts --journey`): a question, the
+ * page it was asked on, and whether it leaves its subject to that page, so the
+ * search must also run under the page's title (`open_reference`, judge.ts).
+ * Titles are the index's own. `paths` names a page the pooled search must
+ * find (`--journey --passages`).
+ */
+export type AskJourneyCase = {
+  id: string
+  question: string
+  page: string
+  leans: boolean
+  sources?: string[]
+}
+
+const INTERCHECKS = 'Interchecks'
+const WEBSITES = 'Website Strategy, UX & Development'
+const HEALTHTECH = 'Healthtech & Life Sciences'
+const WEBFLOW_AUDIT = 'Unlocking Webflow Website Potential: A Comprehensive Audit Framework'
+
+export const ASK_JOURNEY_CASES: AskJourneyCase[] = [
+  // The question leaves its subject to the page.
+  {
+    id: 'work-it',
+    question: 'What results did it get?',
+    page: INTERCHECKS,
+    leans: true,
+    sources: ['/works/interchecks'],
+  },
+  { id: 'work-this', question: 'How long did this project take?', page: INTERCHECKS, leans: true },
+  {
+    id: 'work-them',
+    question: 'What did you do for them?',
+    page: INTERCHECKS,
+    leans: true,
+    sources: ['/works/interchecks'],
+  },
+  { id: 'service-this', question: 'Who have you done this for?', page: WEBSITES, leans: true },
+  {
+    id: 'audience-this',
+    question: 'Do you have examples of this kind of work?',
+    page: HEALTHTECH,
+    leans: true,
+    sources: ['/who-we-help/healthtech-life-sciences-branding'],
+  },
+  { id: 'post-this', question: 'Can you do this audit for us?', page: WEBFLOW_AUDIT, leans: true },
+
+  // The question names its own subject, whatever page it was asked on.
+  { id: 'work-process', question: 'What is your process like?', page: INTERCHECKS, leans: false },
+  { id: 'work-clients', question: 'Who have you worked with?', page: INTERCHECKS, leans: false },
+  {
+    id: 'work-other-client',
+    question: 'Tell me about your work with Arturo.',
+    page: INTERCHECKS,
+    leans: false,
+  },
+  {
+    id: 'post-startups',
+    question: 'Do you work with startups?',
+    page: WEBFLOW_AUDIT,
+    leans: false,
+  },
+  { id: 'service-start', question: 'How do we start?', page: WEBSITES, leans: false },
+  {
+    id: 'audience-own-cost',
+    question: 'How much would a new website for my startup cost?',
+    page: HEALTHTECH,
+    leans: false,
+  },
+
+  // The idiom: "it" is nobody. Jev reads it as a reference (0.96), which is
+  // why the page search rides beside the plain one: the plain search must
+  // still find the pricing answer.
+  {
+    id: 'idiom-cost',
+    question: 'What does it cost?',
+    page: INTERCHECKS,
+    leans: true,
+    sources: ['/expertise/embedded-creative-digital-services'],
+  },
+]

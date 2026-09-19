@@ -1,8 +1,120 @@
 # Ask + Jev roadmap
 
-Status: **built 2026-09-19**, Phases 0 to 4, in one session. The code ships dormant: every deployed environment runs mode `off` until `TYPESAFE_API_KEY` and `ASK_JEV` are set in Vercel. What was measured, what changed from the plan, and what is still owed are in the [Build record](#build-record-2026-09-19). Proposed 2026-09-19, scope confirmed the same day (Phases 0 to 4, analytics included). Companion to [ask-rag-roadmap.md](ask-rag-roadmap.md) (stage 5 asks for retrieval evals, which Phase 0 here delivers) and the [feature README](../src/features/ask/README.md), which stays the reference for what ships.
+Status: **built 2026-09-19**, Phases 0 to 4, in one session. The code ships dormant: every deployed environment runs mode `off` until `TYPESAFE_API_KEY` and `ASK_JEV` are set in Vercel. What to do now is in [Next steps](#next-steps), how to check it is in the [Testing guide](#testing-guide), and what was measured and what changed from the plan are in the [Build record](#build-record-2026-09-19). Proposed 2026-09-19, scope confirmed the same day (Phases 0 to 4, analytics included). Companion to [ask-rag-roadmap.md](ask-rag-roadmap.md) (stage 5 asks for retrieval evals, which Phase 0 here delivers) and the [feature README](../src/features/ask/README.md), which stays the reference for what ships.
 
 This document is written to be picked up cold by a later session. Read it, the feature README, and `src/endpoints/ask.ts` before touching code. Load the `typesafe:typesafe-ai` skill and read the live TypeSafe docs it points to before writing any Jev call: the docs are the source of truth for the SDK and for question wording, and they move.
+
+## Next steps
+
+Written for Miles. In order: each step unblocks the next, and nothing here needs a code change. The code is on `main`, `preview` and `dev` (`d7d399c`), and the judge is `off` everywhere it is deployed.
+
+| # | Step | How | Done when |
+|---|---|---|---|
+| 1 | Put the key in Vercel | From the main checkout (`~/SITES/sas-site`): `vercel env add TYPESAFE_API_KEY production`, then again for `preview`. On 2026-09-19 it was on neither the project nor the team's shared variables | `vercel env ls` shows `TYPESAFE_API_KEY` for Production and Preview |
+| 2 | Put the key in the Conductor root `.env` | Add the `TYPESAFE_API_KEY=` line to `~/conductor/repos/sas-site/.env`. New workspaces copy that file, and it does not have the key (the building session copied it into its own workspace by hand) | A new workspace's `.env` has the key |
+| 3 | Capture a preview baseline **before** turning anything on | `pnpm exec tsx scripts/ask-bench.ts capture preview-off https://preview.suits-sandals.com --mode off` (about 9 minutes). Local numbers are a laptop's; this is the like-for-like baseline for step 5 | `docs/perf/ask-jev/preview-off.json` exists |
+| 4 | Turn the judge on for preview | `vercel env add ASK_JEV preview` with the value `on`, then redeploy preview (an env change only reaches new deployments): push to `preview`, or Redeploy in the Vercel dashboard | A preview turn's `ask answered` log line says `judge_mode: "on"` |
+| 5 | Measure preview, then click through it | `... capture preview-on https://preview.suits-sandals.com --mode on`, then `... compare preview-off preview-on`. Then the [manual script](#by-hand-the-ten-minute-script) on the preview site. Pass bars are under [On preview](#on-preview) | The bars pass, or each miss has an explanation you accept |
+| 6 | Read the answers | The "Answers side by side" half of `docs/perf/ask-jev/report.md`: `after` is `gpt-5-mini` at `low`, `after-model` at `minimal`. The building session found no invented facts, but `minimal` is more formulaic and terser on follow-ups. This is the one judgment call left in Phase 4 | You keep `minimal`, or set `REASONING_EFFORT.writing` back to `'low'` in `src/endpoints/ask.ts` (answered turns then start about 3 s later) |
+| 7 | List TypeSafe on the privacy page | The drafted Privacy page (Pages id 8, unpublished): TypeSafe is a processor of the redacted question. It does not train on requests; zero retention is an enterprise plan. Open decision 2 | The page names it. This is the gate on step 8 |
+| 8 | Production: `shadow` first | `vercel env add ASK_JEV production` with the value `shadow`, redeploy. Nothing a visitor sees changes. Leave it a week or 30 turns, whichever comes later | Go and no-go under [In production: reading shadow](#in-production-reading-shadow) |
+| 9 | Production: `on` | Change `ASK_JEV` to `on` for production, redeploy. Run the manual script once on the live site with `?internal=on` set first, so your turns stay out of analytics | The script passes on production |
+| 10 | PostHog: confirm the properties arrive and build the tiles | Start a session with the PostHog MCP connected (`/mcp` to check; its tools only load at session start) and ask it to do the "Owed" half of [Analytics: what is done and what is owed](#analytics-what-is-done-and-what-is-owed). Any time after step 5: preview captures with `environment = preview`, and the bench turns from step 5 have already sent the properties (the bench carries no `sas_internal` cookie; your own browser does if you ever visited `?internal=on`, and `?internal=off` clears it) | `read-data-schema` lists the 13 properties on `ask_questioned`, and the Ask dashboard has the eight tiles |
+
+Rollback at any point is the env value and a redeploy: `ASK_JEV=off` (or remove it) is the old code path exactly. No code revert, no migration.
+
+Later, in no order, none of it blocking: start the passage check as soon as the query is embedded rather than after the route is known (saves up to about 100 ms on first turns); try `gpt-5.4-mini` at `reasoningEffort: 'none'` if `minimal` reads too thin; the four items under [Later](#later-needs-a-migration-ask-first), which need a migration.
+
+## Testing guide
+
+Three layers: a script you run by hand in the browser, the automated checks, and what to read once real traffic flows. Use the first after any change you can see, the second after any change to code, prompts, questions or thresholds, the third before each rollout step.
+
+### Setting the mode locally
+
+In the workspace (or main checkout) `.env`: `TYPESAFE_API_KEY=...` and `ASK_JEV=on` (or `shadow`, or `off`). Saving `.env` reloads the dev server ("Reload env: .env" in its log).
+
+**The trap:** Payload keeps endpoint code across hot reloads, so an edit to `src/endpoints/ask.ts`, `judge.ts`, `prompts.ts` or `retrieve.ts` is **not live** until the server reloads. Touch `.env` (add and remove a blank line), wait a few seconds, and confirm with one question that the new behavior is there before you trust any test. The building session lost a 9 minute capture to this.
+
+The endpoint allows 10 questions a minute per IP. Past that you get "Too many questions, try again in a minute": that is the limiter, not a bug.
+
+### By hand: the ten minute script
+
+Run it on `/ask`, then spot check the takeover menu and the footer's closing band (all three share the transcript, so one full pass plus two spot checks is enough). With the judge `on`:
+
+| # | Type this | Expect |
+|---|---|---|
+| 1 | Can I talk to someone on the team? | The `person` card alone, at once (well under a second). No words, no sources |
+| 2 | How much would a new website for my startup cost? | The `estimate` card alone, at once |
+| 3 | I have a project I'd like to talk to you about. | The `project` card alone, at once |
+| 4 | My email is jane@example.com, can you send me more information? | The `contact_details` card alone, instantly (no Jev call). Open the form: the address is already in the email field, marked "From your message" |
+| 5 | What is the capital of Mongolia? | The `no_answer` card alone |
+| 6 | Do you work with startups? | A grounded answer with sources, then the quiet offer ("Want a person to reply?"). No card |
+| 7 | Can you fix my Webflow site? | A short answer about Webflow work, **then** the `project` card. The answer must not end in its own invitation ("tell us...", "send us...") and must not mention the offer |
+| 8 | How do you work, and what would my project cost? | An answer to the first half, **then** the `estimate` card. Before the judge this got the card and no words, every time |
+| 9 | What does it cost? | A short answer from the FAQ (cost depends on capacity, disciplines, seniority...), then the `estimate` card. Before the judge this got `no_answer` |
+| 10 | New chat. "Tell me about your work with Interchecks." then "What results did it get?" | The second answer is about Interchecks and its sources include `/works/interchecks` (the follow-up leaned on the first turn) |
+| 11 | Same chat: "What is your process like?" | An answer about process, with process sources, not Interchecks ones (the follow-up stood alone) |
+| 12 | Same chat: "Thanks, that helps!" | One or two conversational sentences. No sources, no card |
+| 13 | Open any card's form and send it (use a real inbox you own). Then ask "Can I talk to someone?" | A reply in words and **no second card**: once the visitor has sent, never a card |
+| 14 | Ask a long question (number 6 works) and press Stop mid-answer | The reply stops, no card is appended, and the row in the admin says `stopped` |
+
+Also check on every answer: under 120 words, plain text (no markdown, no bullet lists), no em dashes, never the words "sources" or "documents", every page path it names is a real page, the thumbs still post, and the source rows list only pages that are actually about the question (the judge vets them, so 1 to 4 sources is normal where there used to be 4 every time).
+
+With the judge `off` or `shadow` the same script should behave exactly as the site did before: numbers 1 to 4 take seconds (the writing model decides), and 7 and 8 may come back as a card with no words. That difference is the feature.
+
+**Seeing what the judge did.** Every turn writes one `ask answered` line to the server log (the dev server's terminal locally, the deployment's Logs tab on Vercel):
+
+| Field | Healthy |
+|---|---|
+| `judge_mode` | The mode you set. If it says `off` with the env set, the key is missing |
+| `judge_request`, `judge_confidence` | The pick matches what you asked; confidence mostly above 0.6. Below 0.35 the turn falls back |
+| `judge_failed` | `false`. `true` means a timeout or an API error: the turn still answered, on the old path |
+| `fell_back` | `false` on nearly every turn. `true` is safe but slow |
+| `model_skipped` | `true` on card-only turns (script numbers 1 to 5) |
+| `judge_ms`, `passages_ms` | A few hundred ms each. Near 800 means the timeout is biting |
+| `chunks_candidates`, `chunks_kept` | Kept is usually well under candidates; 0 kept ends in a card |
+| `first_output_ms` | Under 1,000 on card-only turns; about 1,500 on answered turns locally |
+
+The same turn is a row in Admin › Inbox › Ask questions, with the outcome, the card's reason and the sources. A card with no retrieval behind it records `Chat only`; a `no_answer` records `No sources` (a content gap).
+
+**Proving it fails open.** Set `TYPESAFE_API_KEY` to a wrong value with `ASK_JEV=on` and run numbers 1 and 6: both must still answer (slowly, on the old path), with `judge_failed: true` and `fell_back: true` in the log and nothing odd on screen. Remove the key entirely and `judge_mode` reads `off`. Put the real key back afterwards.
+
+### Automated
+
+| When | Run | Passes when |
+|---|---|---|
+| Any change under `src/features/ask` or the endpoint | `pnpm exec vitest run src/features/ask tests/int/ask.int.spec.ts` | 100 of 100. The unit tests need no network; the integration spec needs the database and pins the judge off except in its own two judge cases. CI does not run vitest, so this is on you |
+| A prompt or tool-description edit | `pnpm exec tsx scripts/ask-eval.ts http://localhost:<port>` | "All cases as expected." (6 questions, fits under the rate limit) |
+| A change to a Jev question, a threshold, or before bumping `ASK_JUDGE_MODEL` | `pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts` | "turn routing agrees with the fixture on 19 of 19 cases". No server needed. Read the probabilities it prints: a number that sits close to its threshold is the next bug |
+| New or changed site content, or a change to the similarity floor | `... scripts/ask-judge-eval.ts --passages` | No `MISSING` beside a case, and the kept chunks for each question are the ones you would have picked |
+| Once production has `ask-questions` rows you may send to TypeSafe (after step 7) | `... scripts/ask-judge-eval.ts --from-db` with `POSTGRES_URL` from `.env.production.pulled` and `PAYLOAD_DB_PUSH=false` | The agreement rate it prints, and a read of every `DIFF` line |
+| Before and after anything that could move latency or routing | `pnpm exec tsx --env-file=.env scripts/ask-bench.ts capture <label> <base-url> --mode <off\|shadow\|on>`, then `... compare <label> <label>` | See the bars below. Same machine and same database for every label you compare; about 9 minutes a capture |
+
+When a real question is routed wrongly: add it to `scripts/ask-cases.ts` first, with what it should have ended in. Then run `ask-judge-eval.ts` and look for a number that separates it: changing a value in `ASK_JUDGE_THRESHOLDS` is a policy edit, rewording a question is a last resort (Jev reads literally, and a reworded question moves every other case). Re-run the whole fixture before shipping either, never just the one question.
+
+Bars for a local `compare` against `after-model` (the shipped state): card accuracy 57 of 57, words when expected 57 of 57, the same card on every run for 19 of 19 cases, card-only turns under 1 s median, turns that must have words at or under about 2 s median to first output. The writing model's own speed varies by the hour, so compare captures taken close together and distrust a difference under about 500 ms.
+
+### On preview
+
+After steps 3 to 5 above. `compare preview-off preview-on` should show:
+
+- Card accuracy and words-when-expected at the local numbers (57 of 57). Read every miss in the per-case table: a miss that is also a miss in `preview-off` is the content, not the judge.
+- Card-only turns under 1 s median (they were about 2.7 s with the judge off).
+- Turns that must have words **faster** to first output than `preview-off`. Locally the judge costs about 450 ms and `minimal` reasoning gives back about 3 s; on Vercel the judge's share should be smaller.
+- In the deployment's logs over the capture: `judge_failed` on no more than 1 turn in 20, and `judge_ms` and `passages_ms` p90 comfortably under 800. If they crowd 800, raise `ASK_JUDGE_TIMEOUT_MS` before going further; if they sit near 100 to 200, the timeout can come down.
+
+Bench turns on preview land in the preview database branch and in PostHog as `environment = preview` with `page_path = /bench`, so they are easy to filter. Do not run the bench against production: every turn is a stored row and a production event.
+
+### In production: reading shadow
+
+Shadow changes nothing a visitor sees; it records what Jev would have done beside what the writing model did. After a week or 30 turns (the PostHog tiles from step 10 make this a glance; until then the Vercel logs hold the same fields):
+
+- **`judge_failed`** under about 5 percent of turns. More means the timeout or TypeSafe's availability needs a look before Jev decides anything.
+- **`judge_ms` and `passages_ms`** p90 under 800.
+- **`judge_agrees`**: expect most turns `true`. For every `false`, find the turn in Admin › Inbox › Ask questions (match the time and the page path; analytics never holds the question) and decide who was right. In the local run all eight disagreements were the writing model giving up with `no_answer` where Jev was right. Go when no disagreement is Jev showing a card for a question the site answers, or Jev refusing one it could have answered. A disagreement of that kind goes into `scripts/ask-cases.ts` and through the tuning loop above first.
+- **`chunks_kept` of `chunks_candidates`**: if kept is 0 on questions the site plainly answers, the passage thresholds are too strict for real phrasing; check with `ask-judge-eval.ts --passages`.
+
+After `on`: watch `fell_back` (should be rare), `model_skipped` (the share of turns that cost no model call), thumbs-down on `ask_rated`, and the `No sources` filter in the admin for gaps that are new. Any doubt: `ASK_JEV=shadow` and redeploy puts the writing model back in charge while Jev keeps being measured.
 
 ## The idea in one paragraph
 
@@ -357,11 +469,38 @@ Owed, because the PostHog MCP server was not connected in the building session (
 
 ### Still owed before the judge decides anything in production
 
-1. `TYPESAFE_API_KEY` in Vercel. On 2026-09-19 it was on neither the `sas-site` project nor the team's shared variables (checked over the Vercel API), so deployed environments run `off` whatever else is set. `vercel env add TYPESAFE_API_KEY production` (and `preview`), from the main checkout.
-2. The privacy page lists TypeSafe as a processor (open decision 2).
-3. `ASK_JEV=on` on **preview** first: it is the only place the judge's real latency can be measured (the round trip from a data center, not a laptop). Capture with `scripts/ask-bench.ts capture preview-on https://preview.suits-sandals.com`.
-4. Production: `ASK_JEV=shadow` for a week or 30 turns, read `judge_agrees`, `judge_failed` and `judge_ms`, then `on`. Rollback is the env value and a redeploy.
-5. The PostHog tiles and the schema check above.
+The ordered list, with commands and done-when checks, is [Next steps](#next-steps) at the top of this document. In short: the key in Vercel (it was not there on 2026-09-19), a preview baseline and then `on` for preview, the human read of the answers, TypeSafe on the privacy page, production `shadow` and then `on`, and the PostHog schema check and tiles.
+
+## One session and the journey (built 2026-09-19)
+
+Asked for after Phases 0 to 4: the three surfaces were three conversations, and a question arrived with no idea where the visitor was or what they had read. Reference: the feature README's "One session, and the journey". This section is the record of what was tried.
+
+**One session.** `AskSessionProvider` in the root providers holds one AI SDK `Chat`; `useAskChat` reads it on every surface (`useChat({ chat })`), and keeps a private chat only for a scripted surface (stories, tests). Checked in a headless browser: a question typed in the closing band on `/works/interchecks` was on the menu's transcript, and the follow-up sent from the menu carried the same chat id with three messages. This half ships in every mode, `off` included.
+
+**The journey, and what Jev is asked.** The session records path, visible seconds and scroll depth per page, in memory only, and sends it beside each question. The endpoint resolves paths to titles from the Ask index, so no client words reach a prompt. Read only in `shadow` and `on`.
+
+| Tried | Result | Kept |
+|---|---|---|
+| Probe: journey digest in the state, four questions (page reference, which page, interest, stage) | All four read sensibly on invented titles, about 850 input tokens and 180 to 380 ms a request, $0.0003 for eight | The feasibility answer: yes |
+| `about_page` Noul with `current_page` in the state, real titles | Yes cases 0.35 to 0.87, no cases up to 0.64: no usable threshold. A terse title ("Interchecks", "Work") tells Jev too little to judge fit | No |
+| Split in two literal Nouls: `open_reference` (question alone) and `fits_page` | `open_reference` 0.95 to 0.97 on leaning questions, 0.51 or less on the rest; `fits_page` 0.58 to 0.82 against up to 0.72, useless | `open_reference` only, and the page stays out of Jev's state, so no other answer can move (fixture replayed: 19 of 19) |
+| Page query form "{title}\n{question}" | The passage check kept 0 of 12 for "What results did it get?" | No |
+| Page query form "About {title}: {question}" | Kept the case study's results section (relevant 0.71, evidence 0.85) | Yes (`pageRetrievalQuery`) |
+| Page form instead of the plain form | "What does it cost?" reads 0.96 on `open_reference` (the idiom), and under "About Interchecks:" every pricing chunk was dropped | No: the page form is searched beside the plain one and the kept chunks are pooled (`also` in `prepareRetrieval().search`) |
+
+`scripts/ask-judge-eval.ts --journey --passages`: `open_reference` agrees on 13 of 13 `ASK_JOURNEY_CASES`, every expected page is kept, and the turn fixture with the question added still routes 19 of 19. Live, mode `on`: "What did you do for them?" answered about GentleBeast from `/bench` and about Interchecks from `/works/interchecks`; "What does it cost?" on that page still answered from the FAQ and showed the `estimate` card; "What is your process like?" stayed general.
+
+The prompt note went through two edits from live reads: the model named the page in an unrelated answer ("We don't publish a timeline on the Interchecks page"), so the note now says a question that names its own subject is not about the page; it offered the page as a next step, so the path was taken out of the note.
+
+**By hand**, judge `on`: open a case study, ask "What did you do for them?" in the closing band (the answer is about that client, its page leads the sources, and the log line says `page_attached: true`), open the menu and focus its Ask box (the same exchange is there), ask "What does it cost?" from the menu (pricing answer, `estimate` card), then "New conversation" in the menu and scroll back to the band (its transcript is empty too).
+
+**Not built, and why.** Each needs a decision from Miles or a migration, and none blocks the above:
+
+- *Interest and buying stage.* The probe says Jev can score both from the pages read. Nothing in code yet has a use for the answer that is safe to automate: changing which card a visitor gets by how many pages they read would undo thresholds tuned on the fixture. The writing model already gets the pages read, for free, inside a call that was being paid for. First use worth building: record stage in `shadow` and compare it with who sent an inquiry.
+- *The journey on the inquiry.* "Read Interchecks and Website Strategy before writing in" is worth more to the team than to the model. Needs a field on `inquiries` (additive: **create** if `migrate:create` asks).
+- *Chips chosen by page.* The closing band's three chips are hardcoded; a case study could offer "What did you do for {client}?". No tokens at all, but it is copy, so it is Miles's call.
+- *A transcript that survives a reload.* sessionStorage, the visitor's own words only. The journey should stay memory only.
+- *Privacy page.* The journey is first-party, in memory, unidentified and unstored, but the page that lists TypeSafe (open decision 2) should say Ask reads which pages the visit has covered when a question is asked.
 
 ## Risks
 

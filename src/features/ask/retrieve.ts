@@ -39,6 +39,13 @@ export type PreparedRetrieval = {
    */
   search: (options?: {
     query?: number
+    /**
+     * A second query form searched beside `query`, each form's candidates
+     * checked against its own words and the kept chunks pooled. For a form
+     * that may be wrong (the page form): what it finds is added, and what
+     * the first form finds is never lost to it. Embedding path only.
+     */
+    also?: number
     check?: PassageCheck
     observe?: (query: string, chunks: NearestChunk[]) => void
   }) => Promise<Retrieval>
@@ -182,6 +189,20 @@ export function retrievalQueries(question: string, previousQuestion: string | nu
   return [question, `${previousQuestion}\n${question}`.slice(-MAX_RETRIEVAL_QUERY_CHARS)]
 }
 
+/**
+ * The query form for a question that leaves its subject to the page it was
+ * asked on: "What results did it get?" on a case study embeds as a question
+ * about nothing, so the page's title is put where the subject is missing.
+ * The title is the index's own (journeyPages.ts). Whether to search with it
+ * is the judge's call (`open_reference`), and then only beside the plain
+ * form (`also`). Measured 2026-09-19: as "About Interchecks: What results did
+ * it get?" the passage check kept the case study's results section (relevant
+ * 0.71, evidence 0.85); as the title on a line of its own it kept nothing.
+ */
+export function pageRetrievalQuery(question: string, pageTitle: string): string {
+  return `About ${pageTitle}: ${question}`.slice(-MAX_RETRIEVAL_QUERY_CHARS)
+}
+
 /** The chunks nearest an embedded query that clear the similarity floor. */
 const nearestToEmbedding = (payload: Payload, embedding: number[], minSimilarity: number) =>
   queryNearestChunks(payload, embedding, { limit: CHUNK_CANDIDATES, minSimilarity })
@@ -257,7 +278,7 @@ export function prepareRetrieval(payload: Payload, queries: string[]): PreparedR
     : Promise.resolve(new Error(`${ASK_MODEL_API_KEY_VAR} is not set`))
 
   return {
-    search: async ({ query = queries.length - 1, check, observe } = {}) => {
+    search: async ({ query = queries.length - 1, also, check, observe } = {}) => {
       const chunks = { candidates: 0, kept: 0 }
 
       if (process.env[ASK_MODEL_API_KEY_VAR]) {
@@ -265,22 +286,39 @@ export function prepareRetrieval(payload: Payload, queries: string[]): PreparedR
           const embedded = await embeddings
           if (embedded instanceof Error) throw embedded
 
-          const candidates = await nearestToEmbedding(
-            payload,
-            embedded[query],
-            check ? CHECKED_MIN_SIMILARITY : MIN_SIMILARITY,
+          const forms = also === undefined || also === query ? [query] : [query, also]
+          const found = await Promise.all(
+            forms.map(async (form) => {
+              const candidates = await nearestToEmbedding(
+                payload,
+                embedded[form],
+                check ? CHECKED_MIN_SIMILARITY : MIN_SIMILARITY,
+              )
+              if (candidates.length > 0) observe?.(queries[form], candidates)
+              const keep =
+                check && candidates.length > 0 ? await check(queries[form], candidates) : null
+              return { candidates, kept: keep ? candidates.filter((_, i) => keep[i]) : candidates }
+            }),
           )
-          if (candidates.length > 0) observe?.(queries[query], candidates)
-          const keep =
-            check && candidates.length > 0 ? await check(queries[query], candidates) : null
-          const kept = keep ? candidates.filter((_, i) => keep[i]) : candidates
+          // A chunk both forms found is one chunk, at the better of its two similarities.
+          const pool = (lists: NearestChunk[][]) => {
+            const pooled = new Map<string, NearestChunk>()
+            for (const chunk of lists.flat()) {
+              const key = `${chunk.collection}:${chunk.docId}:${chunk.chunkIndex}`
+              const earlier = pooled.get(key)
+              if (!earlier || chunk.similarity > earlier.similarity) pooled.set(key, chunk)
+            }
+            return [...pooled.values()].sort((a, b) => b.similarity - a.similarity)
+          }
+          const candidates = pool(found.map((form) => form.candidates))
+          const kept = pool(found.map((form) => form.kept))
           chunks.candidates = candidates.length
           chunks.kept = kept.length
 
           const sources = chunksToSources(kept)
           if (sources.length > 0) return { sources, path: 'embedding', chunks }
           // Every candidate was vetoed: that is an answer, not a reason to try keywords.
-          if (keep && candidates.length > 0) return { sources: [], path: 'none', chunks }
+          if (check && candidates.length > 0) return { sources: [], path: 'none', chunks }
         } catch (err) {
           payload.logger.error({ msg: 'embedding retrieval failed, falling back to keywords', err })
         }

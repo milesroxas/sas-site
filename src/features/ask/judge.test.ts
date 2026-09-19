@@ -6,6 +6,7 @@ import {
   dependsOnPrevious,
   judgePassages,
   judgeTurn,
+  leansOnPage,
   routeCardReason,
   routePassage,
   routeTurn,
@@ -30,7 +31,9 @@ function judgment(overrides: Partial<AskTurnJudgment> = {}): AskTurnJudgment {
     generalQuestion: 0.9,
     namesWork: 0.05,
     dependsOnPrevious: null,
+    openReference: null,
     model: 'jev-test',
+    inputTokens: 600,
     ms: 100,
     ...overrides,
   }
@@ -132,6 +135,18 @@ describe('routeCardReason', () => {
     expect(routeCardReason({ kind: 'evidence', reason: null })).toBeNull()
     expect(routeCardReason({ kind: 'conversation' })).toBeNull()
     expect(routeCardReason({ kind: 'fallback' })).toBeNull()
+  })
+})
+
+describe('leansOnPage', () => {
+  it('is no when unknown: the search as it was before the journey', () => {
+    expect(leansOnPage(null)).toBe(false)
+    expect(leansOnPage(judgment({ openReference: null }))).toBe(false)
+  })
+
+  it('adds the page search at the threshold and not under it', () => {
+    expect(leansOnPage(judgment({ openReference: T.openReference }))).toBe(true)
+    expect(leansOnPage(judgment({ openReference: T.openReference - 0.01 }))).toBe(false)
   })
 })
 

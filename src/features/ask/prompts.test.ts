@@ -73,4 +73,45 @@ describe('askSystemPrompt', () => {
       expect(prompt).toContain('Never say "browse the site".')
     }
   })
+
+  describe('the journey', () => {
+    const journey = {
+      current: {
+        path: '/works/interchecks',
+        title: 'Interchecks',
+        section: 'Work',
+        subject: true,
+        engagement: 'read' as const,
+      },
+      read: [
+        {
+          path: '/expertise/webflow',
+          title: 'Webflow development',
+          section: 'Expertise',
+          subject: true,
+          engagement: 'read' as const,
+        },
+      ],
+    }
+
+    it('gives "this" a subject and names what was read, without licence to mention it', () => {
+      const prompt = askSystemPrompt({ grounded: true, handoff: 'none', tool: false, journey })
+      expect(prompt).toContain('This conversation:')
+      expect(prompt).toContain('"Interchecks" (Work)')
+      expect(prompt).toContain('"Webflow development" (Expertise)')
+      expect(prompt).toContain('Never say or hint that you know which pages they viewed.')
+    })
+
+    it('stays out of a chat-only turn, which may state no facts', () => {
+      const prompt = askSystemPrompt({ grounded: false, handoff: 'none', tool: false, journey })
+      expect(prompt).not.toContain('Interchecks')
+    })
+
+    it('changes nothing when empty', () => {
+      const empty = { current: null, read: [] }
+      expect(askSystemPrompt({ grounded: true, handoff: 'none', journey: empty })).toBe(
+        askSystemPrompt({ grounded: true, handoff: 'none' }),
+      )
+    })
+  })
 })

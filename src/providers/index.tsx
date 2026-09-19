@@ -1,5 +1,6 @@
 import type React from 'react'
 
+import { AskSessionProvider } from '@/features/ask/AskSession'
 import { CustomCursorProvider } from '@/features/cursor'
 import { AnalyticsProvider } from './Analytics'
 import { ChromeThemeProvider } from './ChromeTheme'
@@ -18,7 +19,10 @@ export const Providers: React.FC<{
         <AnalyticsProvider>
           <ChromeThemeProvider>
             <SmoothScrollProvider>
-              <CustomCursorProvider>{children}</CustomCursorProvider>
+              <CustomCursorProvider>
+                {/* One Ask conversation and one journey for the menu, the closing band and /ask. */}
+                <AskSessionProvider>{children}</AskSessionProvider>
+              </CustomCursorProvider>
             </SmoothScrollProvider>
           </ChromeThemeProvider>
         </AnalyticsProvider>

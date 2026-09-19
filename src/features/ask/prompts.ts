@@ -1,4 +1,5 @@
 import type { AskHandoffState } from './handoff'
+import type { AskJourneyContext } from './journeyPages'
 
 /**
  * The system prompt /api/ask assembles per turn. Two modes: grounded, with
@@ -93,6 +94,33 @@ const handoffStateNote = (handoff: AskHandoffState, tool: boolean): string | nul
     : `${OFFERED}.`
 }
 
+/** Pages read before the current one that the prompt names, the most recent kept. */
+const MAX_READ_PAGES = 4
+
+/**
+ * Where the visitor is and what they have read (journeyPages.ts), so "this"
+ * and "it" have a subject and the answer leads with what they came for. Every
+ * title is the site's own. The sources stay the only facts: the journey picks
+ * among them, it adds none.
+ */
+const journeyNotes = (journey: AskJourneyContext): string[] => {
+  const notes: string[] = []
+  const { current } = journey
+  if (current) {
+    notes.push(
+      `The visitor is asking from the page "${current.title}" (${current.section}). When the question says "this", "it" or "here" and names no subject, it means that page. A question that names its own subject is not about that page: answer it without bringing the page up, and never name that page as a next step unless it is among the sources.`,
+    )
+  }
+  const read = journey.read.slice(-MAX_READ_PAGES)
+  if (read.length > 0) {
+    const pages = read.map((page) => `"${page.title}" (${page.section})`).join(', ')
+    notes.push(
+      `Earlier on this visit they read: ${pages}. Where the sources allow, lead with what bears on those. Never say or hint that you know which pages they viewed.`,
+    )
+  }
+  return notes
+}
+
 /** Whether the handoff tool is on offer this turn: withheld once the visitor has sent. */
 export const offersAskHandoff = (handoff: AskHandoffState) => handoff !== 'sent'
 
@@ -102,6 +130,7 @@ export function askSystemPrompt({
   handoff,
   tool = offersAskHandoff(handoff),
   cardFollows = false,
+  journey = null,
 }: {
   /** Sources were retrieved for this turn and follow the prompt. */
   grounded: boolean
@@ -110,11 +139,18 @@ export function askSystemPrompt({
   tool?: boolean
   /** Code appends a handoff card after this reply (no-tool turns only), so the reply must not word one. */
   cardFollows?: boolean
+  /** The visitor's journey, for a grounded turn the judge routed. Null changes nothing. */
+  journey?: AskJourneyContext | null
 }): string {
   const offersTool = tool && offersAskHandoff(handoff)
   const prompt = grounded
     ? groundedPrompt(offersTool, !offersTool && cardFollows)
     : chatOnlyPrompt(offersTool)
-  const note = handoffStateNote(handoff, offersTool)
-  return note ? `${prompt}\n\nThis conversation:\n- ${note}` : prompt
+  const notes = [
+    handoffStateNote(handoff, offersTool),
+    ...(grounded && journey ? journeyNotes(journey) : []),
+  ].filter((note) => note !== null)
+  return notes.length > 0
+    ? `${prompt}\n\nThis conversation:\n${notes.map((note) => `- ${note}`).join('\n')}`
+    : prompt
 }

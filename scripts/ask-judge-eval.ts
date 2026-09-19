@@ -7,6 +7,7 @@
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts              # turn judgments
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --passages   # + passage checks
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --from-db    # replay stored questions
+ *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --journey [--passages]   # the page a question is asked on
  *
  * `--passages` and `--from-db` boot Payload, as scripts/backfill-ask-index.ts
  * does, and need an indexed corpus (or stored `ask-questions` rows) in the
@@ -22,11 +23,12 @@ import {
   dependsOnPrevious,
   judgePassages,
   judgeTurn,
+  leansOnPage,
   routeCardReason,
   routePassage,
   routeTurn,
 } from '@/features/ask/judge'
-import { ASK_CASES, type AskCase } from './ask-cases'
+import { ASK_CASES, ASK_JOURNEY_CASES, type AskCase } from './ask-cases'
 
 /** A tuning run must not be colored by the network, so it waits far longer than a visitor would. */
 const TIMEOUT_MS = 10_000
@@ -45,7 +47,7 @@ function describe(judgment: AskTurnJudgment | null): string {
   return [
     `${judgment.request.padEnd(12)} conf ${pct(judgment.confidence)}`,
     `own ${pct(judgment.ownProject)}  general ${pct(judgment.generalQuestion)}  names ${pct(judgment.namesWork)}`,
-    `depends ${pct(judgment.dependsOnPrevious)}`,
+    `depends ${pct(judgment.dependsOnPrevious)}  open ${pct(judgment.openReference)}`,
     `${judgment.ms} ms`,
   ].join('  ')
 }
@@ -71,8 +73,9 @@ function turnAgrees(testCase: AskCase, judgment: AskTurnJudgment | null): boolea
   return true
 }
 
-async function evalTurns(): Promise<Map<string, AskTurnJudgment | null>> {
-  console.log('\nTurn judgments (thresholds:', JSON.stringify(ASK_JUDGE_THRESHOLDS), ')\n')
+async function evalTurns(onKnownPage = false): Promise<Map<string, AskTurnJudgment | null>> {
+  console.log('\nTurn judgments (thresholds:', JSON.stringify(ASK_JUDGE_THRESHOLDS), ')')
+  console.log(onKnownPage ? 'every question asked on a page the index knows\n' : '')
   const judgments = new Map<string, AskTurnJudgment | null>()
   let agreed = 0
 
@@ -82,6 +85,7 @@ async function evalTurns(): Promise<Map<string, AskTurnJudgment | null>> {
     const judgment = await judgeTurn({
       question,
       previousQuestion,
+      onKnownPage,
       timeoutMs: TIMEOUT_MS,
       logger: console,
     })
@@ -113,6 +117,59 @@ async function evalTurns(): Promise<Map<string, AskTurnJudgment | null>> {
 
   console.log(`\nturn routing agrees with the fixture on ${agreed} of ${ASK_CASES.length} cases`)
   return judgments
+}
+
+/**
+ * The journey: `open_reference` on questions that leave their subject to the
+ * page and on ones that name it, then the whole turn fixture replayed with
+ * the question asked, since one more question must move no route. With
+ * `--passages`, the pooled search (plain form and page form) per case.
+ */
+async function evalJourney(payload: Payload | null): Promise<void> {
+  const { nearestChunks, pageRetrievalQuery } = await import('@/features/ask/retrieve')
+  const { indexedSourcePath } = await import('@/shared/content/surfaces')
+
+  console.log(`\nopen_reference (threshold ${ASK_JUDGE_THRESHOLDS.openReference})\n`)
+  let agreed = 0
+  let tokens = 0
+  for (const testCase of ASK_JOURNEY_CASES) {
+    const judgment = await judgeTurn({
+      question: testCase.question,
+      previousQuestion: null,
+      onKnownPage: true,
+      timeoutMs: TIMEOUT_MS,
+      logger: console,
+    })
+    const leans = leansOnPage(judgment)
+    const ok = judgment !== null && leans === testCase.leans
+    if (ok) agreed += 1
+    tokens += judgment?.inputTokens ?? 0
+    console.log(
+      `${ok ? 'ok  ' : 'MISS'} ${testCase.id.padEnd(18)} open ${pct(judgment?.openReference)}  expected ${testCase.leans ? 'yes' : 'no '}  "${testCase.question}" on "${testCase.page}"`,
+    )
+    if (!payload) continue
+
+    const forms = [testCase.question]
+    if (leans) forms.push(pageRetrievalQuery(testCase.question, testCase.page))
+    const kept = new Set<string>()
+    for (const query of forms) {
+      const chunks = await nearestChunks(payload, query)
+      const judged = await judgePassages({ query, chunks, timeoutMs: TIMEOUT_MS, logger: console })
+      const paths = chunks
+        .filter((_, i) => routePassage(judged?.answers[i] ?? null) === 'keep')
+        .map((chunk) => indexedSourcePath(chunk.collection, chunk.slug) ?? '?')
+      for (const path of paths) kept.add(path)
+      console.log(`       "${query}": kept ${paths.length} of ${chunks.length}`)
+    }
+    const missing = (testCase.sources ?? []).filter((path) => !kept.has(path))
+    console.log(
+      `       pages kept: ${[...kept].join(', ') || 'none'}${missing.length > 0 ? `   MISSING ${missing.join(', ')}` : ''}`,
+    )
+  }
+  console.log(
+    `\nopen_reference agrees on ${agreed} of ${ASK_JOURNEY_CASES.length} cases, ${Math.round(tokens / ASK_JOURNEY_CASES.length)} input tokens a turn`,
+  )
+  await evalTurns(true)
 }
 
 async function evalPassages(
@@ -203,6 +260,18 @@ async function evalFromDb(payload: Payload): Promise<void> {
   }
 
   console.log(`\nJev's card matches the recorded one on ${agreed} of ${judged} comparable turns`)
+}
+
+if (args.includes('--journey')) {
+  const bootPayload = async () => {
+    const [{ getPayload }, { default: config }] = await Promise.all([
+      import('payload'),
+      import('@payload-config'),
+    ])
+    return getPayload({ config })
+  }
+  await evalJourney(args.includes('--passages') ? await bootPayload() : null)
+  process.exit(0)
 }
 
 const judgments = args.includes('--from-db') ? new Map() : await evalTurns()

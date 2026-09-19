@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { retrievalQueries } from './retrieve'
+import { pageRetrievalQuery, retrievalQueries } from './retrieve'
 
 describe('retrievalQueries', () => {
   it('is the question alone on a first turn', () => {
@@ -17,5 +17,19 @@ describe('retrievalQueries', () => {
     const [, combined] = retrievalQueries('What results did it get?', 'x'.repeat(900))
     expect(combined).toHaveLength(700)
     expect(combined.endsWith('\nWhat results did it get?')).toBe(true)
+  })
+})
+
+describe('pageRetrievalQuery', () => {
+  it('puts the page title where the question left its subject out', () => {
+    expect(pageRetrievalQuery('What results did it get?', 'Interchecks')).toBe(
+      'About Interchecks: What results did it get?',
+    )
+  })
+
+  it('caps from the front, so the question always survives', () => {
+    const query = pageRetrievalQuery('What results did it get?', 'x'.repeat(900))
+    expect(query).toHaveLength(700)
+    expect(query.endsWith(': What results did it get?')).toBe(true)
   })
 })

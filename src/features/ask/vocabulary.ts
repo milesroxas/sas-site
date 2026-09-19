@@ -82,7 +82,9 @@ export const ASK_TRIAGE_STATUSES = [
  * The outcome of a turn, the one derivation for every path through the
  * endpoint. A `no_answer` handoff is a content gap whether nothing was
  * retrieved (the first-turn card) or the model found the sources
- * irrelevant; a source-less follow-up is conversation only; a reply that
+ * irrelevant, or the judge's passage check kept nothing; a reply with no
+ * sources behind it is conversation only, whether a source-less follow-up
+ * or a card the judge routed straight to a person; a grounded reply that
  * ends in any other handoff was only partly the site's to answer.
  */
 export function askOutcome({

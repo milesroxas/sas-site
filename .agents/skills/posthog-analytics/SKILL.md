@@ -94,6 +94,9 @@ Ask's judge (Jev, `src/features/ask/judge.ts`, mode from `ASK_JEV`) adds facts a
 | `model_skipped` | boolean | The turn was answered with no writing-model call |
 | `fell_back` | boolean | Mode `on`, but the turn took the writing model's own path (unsure or failed judgment) |
 | `answer_model` | string, null | The writing model's id; null when skipped |
+| `journey_pages` | number | Pages of the visitor's journey the index knew and the turn could read: the page asked on plus the pages read before it. 0 in mode `off`, which reads no journey. A count, never the paths |
+| `page_leaned` | boolean, null | Jev read the question as pointing at something it does not name (`open_reference`), on a page about one thing. Null when there was no such page |
+| `page_attached` | boolean | Mode `on`: the search also ran under the page's title |
 
 ## Verifying a change
 

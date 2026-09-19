@@ -19,6 +19,8 @@ import {
 } from '@/features/ask/handoff'
 import { askHandoffTool, resolveAskHandoff } from '@/features/ask/handoffTool'
 import { askHistory } from '@/features/ask/history'
+import { journeyFrom } from '@/features/ask/journey'
+import { EMPTY_JOURNEY, resolveJourney } from '@/features/ask/journeyPages'
 import {
   type AskPassage,
   type AskPassageJudgment,
@@ -28,6 +30,7 @@ import {
   dependsOnPrevious,
   judgePassages,
   judgeTurn,
+  leansOnPage,
   routeCardReason,
   routePassage,
   routeTurn,
@@ -45,6 +48,7 @@ import {
 import { hasIdentifyingNumber } from '@/features/ask/redact'
 import {
   type PassageCheck,
+  pageRetrievalQuery,
   prepareRetrieval,
   type RetrievedSource,
   retrievalQueries,
@@ -227,6 +231,7 @@ const ask: Endpoint = {
       id?: unknown
       pagePath?: unknown
       handoff?: unknown
+      journey?: unknown
     } | null
     const rawMessages = Array.isArray(body?.messages) ? (body.messages as UIMessage[]) : []
     const messages = rawMessages.length <= ASK_MAX_MESSAGES ? askHistory(rawMessages) : null
@@ -257,6 +262,14 @@ const ask: Endpoint = {
     const isFollowUp = messages.length > 1
     const previousQuestion = previousUserQuestion(messages)
     const mode = askJudgeMode()
+    // Where the visitor is and what they have read (journey.ts), in the
+    // index's own words. Off reads none of it: off is the path as it was.
+    const journey =
+      mode === 'off'
+        ? EMPTY_JOURNEY
+        : await resolveJourney(req.payload, journeyFrom(body?.journey), pagePath)
+    // The page the question was asked on, when it is about one thing a question can lean on.
+    const subjectPage = journey.current?.subject ? journey.current : null
 
     // What the judge saw and did this turn, for the log line and PostHog:
     // metadata only, never the question and never a probability beside it.
@@ -264,18 +277,21 @@ const ask: Endpoint = {
       turn: Promise<AskTurnJudgment | null> | null
       judgment: AskTurnJudgment | null
       route: AskTurnRoute | null
-      passages: Promise<AskPassageJudgment | null> | null
+      /** One check per query form searched: two when the page form rides beside the plain one. */
+      passages: Promise<AskPassageJudgment | null>[]
       chunksKept: number | null
       firstOutputMs: number | null
       modelSkipped: boolean
+      pageAttached: boolean
     } = {
       turn: null,
       judgment: null,
       route: null,
-      passages: null,
+      passages: [],
       chunksKept: null,
       firstOutputMs: null,
       modelSkipped: false,
+      pageAttached: false,
     }
     const markFirstOutput = () => {
       judged.firstOutputMs ??= Date.now() - startedAt
@@ -316,7 +332,15 @@ const ask: Endpoint = {
         // Shadow mode never waits on Jev in the response path, so its answers
         // are collected here; each is bounded by the judge's own timeout.
         const judgment = judged.turn ? await judged.turn : judged.judgment
-        const passages = judged.passages ? await judged.passages : null
+        const checks = (await Promise.all(judged.passages)).filter((check) => check !== null)
+        const passages =
+          checks.length > 0
+            ? {
+                answers: checks.flatMap((check) => check.answers),
+                // The checks ran side by side: the wait was the slower one's.
+                ms: Math.max(...checks.map((check) => check.ms)),
+              }
+            : null
         // Shadow's route is what `on` would have decided for this turn.
         const route =
           judged.route ??
@@ -346,6 +370,9 @@ const ask: Endpoint = {
           first_output_ms: judged.firstOutputMs,
           model_skipped: judged.modelSkipped,
           fell_back: mode === 'on' && route?.kind === 'fallback',
+          journey_pages: journey.read.length + (journey.current ? 1 : 0),
+          page_leaned: subjectPage ? leansOnPage(judgment) : null,
+          page_attached: judged.pageAttached,
           answer_model: judged.modelSkipped ? null : askModel.modelId,
         }
         req.payload.logger.info({
@@ -399,12 +426,22 @@ const ask: Endpoint = {
     // The query is embedded while Jev reads the turn: the embedding call is
     // the slower of the two, so the turn's decision adds no wait. Only `on`
     // embeds both query forms, to pick once `depends_on_previous` is known.
+    // A third form waits beside them when the question was asked on a page
+    // about one thing: the question under that page's title, searched only
+    // if `open_reference` says the question leaves its subject to the page.
     const queries = retrievalQueries(question, previousQuestion)
+    const defaultQuery = queries.length - 1
+    let pageQuery: number | null = null
+    if (mode === 'on' && subjectPage) {
+      pageQuery = queries.length
+      queries.push(pageRetrievalQuery(question, subjectPage.title))
+    }
     const prepared = prepareRetrieval(req.payload, mode === 'on' ? queries : queries.slice(-1))
     if (mode !== 'off') {
       judged.turn = judgeTurn({
         question,
         previousQuestion,
+        onKnownPage: subjectPage !== null,
         signal: req.signal,
         logger: req.payload.logger,
       })
@@ -422,13 +459,14 @@ const ask: Endpoint = {
     // drops what it drops; `shadow` only watches the same candidates, and
     // reads the answer when the turn is recorded.
     const checkPassages = (query: string, chunks: AskPassage[]) => {
-      judged.passages = judgePassages({
+      const passages = judgePassages({
         query,
         chunks,
         signal: req.signal,
         logger: req.payload.logger,
       })
-      return judged.passages
+      judged.passages.push(passages)
+      return passages
     }
     const check: PassageCheck = async (query, chunks) => {
       const passages = await checkPassages(query, chunks)
@@ -439,9 +477,24 @@ const ask: Endpoint = {
     }
 
     if (route.kind !== 'conversation') {
+      // A follow-up that leans on the previous turn searches with it, as
+      // before, and any other routed turn searches alone. A turn that points
+      // at something it does not name searches under its page's title as
+      // well: beside, never instead, so a wrong yes loses nothing ("them" in
+      // a follow-up may be the last answer's subject or the page's, and the
+      // pool holds both).
+      let query = mode === 'on' ? defaultQuery : undefined
+      let also: number | undefined
+      if (route.kind === 'evidence') {
+        if (!(isFollowUp && dependsOnPrevious(judged.judgment))) query = 0
+        if (pageQuery !== null && leansOnPage(judged.judgment)) {
+          also = pageQuery
+          judged.pageAttached = true
+        }
+      }
       const found = await prepared.search({
-        // A follow-up that stands on its own searches without the old subject attached.
-        query: route.kind === 'evidence' && !dependsOnPrevious(judged.judgment) ? 0 : undefined,
+        query,
+        also,
         check: route.kind === 'evidence' ? check : undefined,
         observe: mode === 'shadow' ? checkPassages : undefined,
       })
@@ -481,6 +534,7 @@ const ask: Endpoint = {
         handoff: handoffState,
         tool: offersTool,
         cardFollows: closingCard !== null,
+        journey: routed ? journey : null,
       }),
       grounded ? `<sources>\n${sourcesBlock}\n</sources>` : null,
     ]

@@ -76,6 +76,14 @@ export const ASK_JUDGE_THRESHOLDS = {
    * Leans toward attaching: a wrong yes is today's behavior, a wrong no embeds "what about that?" alone.
    */
   dependsOnPrevious: 0.7,
+  /**
+   * `open_reference` at or above which a turn also searches under the title of the page it was
+   * asked on. Measured 2026-09-19 (`scripts/ask-judge-eval.ts --journey`): questions that leave
+   * their subject to the page read 0.95 to 0.97, questions that name it 0.51 or less. The idiom
+   * in "What does it cost?" reads 0.96 too, which is why the page search is added to the plain
+   * one and never replaces it: a wrong yes costs a second search, not the answer.
+   */
+  openReference: 0.8,
   /** `is_relevant` below which a passage is dropped. */
   relevant: 0.45,
   /** `has_evidence` above which a relevant passage is kept. */
@@ -122,8 +130,8 @@ const TURN_QUESTIONS = {
   }),
 }
 
-const FOLLOW_UP_QUESTIONS = {
-  ...TURN_QUESTIONS,
+/** Asked only when there is something for the answer to pick: a previous question, a page asked on. */
+const CONTEXT_QUESTIONS = {
   depends_on_previous: noul(
     'Does `question` contain a pronoun or leave out its subject, so that it refers back to `previous_question`?',
     {
@@ -132,7 +140,23 @@ const FOLLOW_UP_QUESTIONS = {
         '`question` names its own subject and reads as a complete question with `previous_question` removed.',
     },
   ),
+  // The visitor's journey (journey.ts): "What results did it get?" asked on a
+  // case study names nothing, and the page is its subject. Asked of the
+  // question alone: "could this be about `current_page`?" read 0.58 to 0.82 on
+  // page questions and up to 0.72 on plain ones, so the page stays out of the
+  // state and code, which knows the page, draws the conclusion.
+  open_reference: noul(
+    'Does `question` contain a word such as "it", "this", "that", "they", "them", "these" or "here" that points to something `question` itself does not name?',
+    {
+      true: 'A pronoun or "this ..." stands for a project, client, service or article that is not named anywhere in `question`.',
+      false:
+        'Every thing `question` asks about is named in it. "you" and "your" mean the studio and "I", "we", "my", "our", "us" mean the visitor: those do not count.',
+    },
+  ),
 }
+
+const ALL_TURN_QUESTIONS = { ...TURN_QUESTIONS, ...CONTEXT_QUESTIONS }
+type ContextQuestionId = keyof typeof CONTEXT_QUESTIONS
 
 const PASSAGE_QUESTIONS = {
   is_relevant: noul('Does this passage address the subject of the query?'),
@@ -152,8 +176,12 @@ export type AskTurnJudgment = {
   namesWork: number
   /** Null on a first turn, where there is no previous question to depend on. */
   dependsOnPrevious: number | null
+  /** The turn points at something it does not name. Null when there is no known page for it to be. */
+  openReference: number | null
   /** The versioned model that answered. */
   model: string
+  /** What the request cost: Jev bills input tokens only. */
+  inputTokens: number
   ms: number
 }
 
@@ -207,47 +235,56 @@ const requestOptions = ({ signal, timeoutMs }: JudgeCall) => ({
 
 const errorName = (err: unknown) => (err instanceof Error ? err.name : 'unknown')
 
-const askFirstTurn = (jev: TypeSafeClient, state: { question: string }, call: JudgeCall) =>
-  jev.systemOne({ state, questions: TURN_QUESTIONS }, requestOptions(call))
-
 /**
  * One Jev request for the turn: what the visitor is asking for, the three
- * signals that tell whether only a person could settle it, and on a follow-up
- * whether it leans on the previous question. Independent questions over one state, asked together.
+ * signals that tell whether only a person could settle it, on a follow-up
+ * whether it leans on the previous question, and on a page the index knows
+ * whether it points at something it does not name. Independent questions over
+ * one state, asked together; a context question is asked only when code has a
+ * use for its answer. The state stays as small as it was (jev-1.13
+ * jaggedness: large irrelevant state): none of the journey is in it.
  * The question is redacted first; contact details were already found in code.
  * Null on any failure.
  */
 export async function judgeTurn({
   question,
   previousQuestion,
+  onKnownPage = false,
   ...call
 }: JudgeCall & {
   question: string
   previousQuestion: string | null
+  /** The question was asked on a page the index knows, so an open reference has a page to mean. */
+  onKnownPage?: boolean
 }): Promise<AskTurnJudgment | null> {
   const jev = judgeClient(call.logger)
   if (!jev) return null
 
   const startedAt = performance.now()
   try {
-    const state = { question: redactFreeText(question) }
-    let dependsOn: number | null = null
-    let result: Awaited<ReturnType<typeof askFirstTurn>>
-    if (previousQuestion) {
-      const followUp = await jev.systemOne(
-        {
-          state: { ...state, previous_question: redactFreeText(previousQuestion) },
-          questions: FOLLOW_UP_QUESTIONS,
-        },
-        requestOptions(call),
-      )
-      dependsOn = followUp.answers.depends_on_previous.noul
-      result = followUp
-    } else {
-      result = await askFirstTurn(jev, state, call)
+    const asked: Record<ContextQuestionId, boolean> = {
+      depends_on_previous: previousQuestion !== null,
+      open_reference: onKnownPage,
     }
+    const questions = Object.fromEntries(
+      Object.entries(ALL_TURN_QUESTIONS).filter(
+        ([id]) => !(id in asked) || asked[id as ContextQuestionId],
+      ),
+    ) as typeof ALL_TURN_QUESTIONS
+    const result = await jev.systemOne(
+      {
+        state: {
+          question: redactFreeText(question),
+          ...(previousQuestion ? { previous_question: redactFreeText(previousQuestion) } : {}),
+        },
+        questions,
+      },
+      requestOptions(call),
+    )
 
-    const { answers, model } = result
+    // Only what was asked comes back, whatever the cast above says.
+    const answers: Omit<typeof result.answers, ContextQuestionId> &
+      Partial<Pick<typeof result.answers, ContextQuestionId>> = result.answers
     return {
       request: answers.request.choice,
       confidence: answers.request.confidence,
@@ -255,8 +292,10 @@ export async function judgeTurn({
       ownProject: answers.own_project.noul,
       generalQuestion: answers.general_question.noul,
       namesWork: answers.names_work.noul,
-      dependsOnPrevious: dependsOn,
-      model,
+      dependsOnPrevious: answers.depends_on_previous?.noul ?? null,
+      openReference: answers.open_reference?.noul ?? null,
+      model: result.model,
+      inputTokens: result.usage.input_tokens,
       ms: Math.round(performance.now() - startedAt),
     }
   } catch (err) {
@@ -376,6 +415,15 @@ function onlyAPerson(judgment: AskTurnJudgment): boolean {
 export function dependsOnPrevious(judgment: AskTurnJudgment | null): boolean {
   if (judgment?.dependsOnPrevious == null) return true
   return judgment.dependsOnPrevious >= ASK_JUDGE_THRESHOLDS.dependsOnPrevious
+}
+
+/**
+ * Whether a turn also searches under the title of the page it was asked on.
+ * Unknown means no: the search as it was before the journey existed.
+ */
+export function leansOnPage(judgment: AskTurnJudgment | null): boolean {
+  if (judgment?.openReference == null) return false
+  return judgment.openReference >= ASK_JUDGE_THRESHOLDS.openReference
 }
 
 /** A passage's route, first match wins. A failed check keeps the passage: fail open. */

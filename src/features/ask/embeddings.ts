@@ -129,6 +129,20 @@ export async function deleteDocEmbeddings(
   )
 }
 
+/** Every indexed document once: what it is keyed by and the title it was published under. */
+export async function listIndexedDocs(
+  payload: Payload,
+): Promise<Pick<NearestChunk, 'collection' | 'slug' | 'title'>[]> {
+  const { rows } = await drizzle(payload).execute(
+    sql`SELECT DISTINCT collection, slug, title FROM ask_embeddings`,
+  )
+  return (rows as Record<string, unknown>[]).map((row) => ({
+    collection: String(row.collection),
+    slug: String(row.slug),
+    title: String(row.title),
+  }))
+}
+
 export async function queryNearestChunks(
   payload: Payload,
   questionEmbedding: number[],

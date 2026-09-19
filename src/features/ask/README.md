@@ -1,12 +1,12 @@
 # Ask — grounded Q&A over site content (RAG)
 
-Visitors ask from the takeover menu, the footer's closing band, or `/ask`. The site answers **only from published content**, with linked sources. Retrieval is embedding-based (pgvector) over every public content surface, with keyword search as a fallback. Stages 1–4 of the [build-up roadmap](../../../docs/ask-rag-roadmap.md) are shipped. Stage 5 (shared rate limiting, retrieval evals, answer caching, a monthly token-budget alarm) is still open; capture, ratings, and the inbox shipped with the [insights work](../../../docs/ask-insights-roadmap.md). Ask is already site-wide; **Site Info › Ask › Hide Ask** takes it off every surface. The decisions of a turn (offer a person, say the site has nothing, acknowledge a thanks) can be made by the judge, TypeSafe's Jev, instead of the writing model: see [The judge](#the-judge-jev) and the [Ask + Jev roadmap](../../../docs/ask-jev-roadmap.md).
+Visitors ask from the takeover menu, the footer's closing band, or `/ask`, and all three are one conversation ([One session, and the journey](#one-session-and-the-journey)). The site answers **only from published content**, with linked sources. Retrieval is embedding-based (pgvector) over every public content surface, with keyword search as a fallback. Stages 1–4 of the [build-up roadmap](../../../docs/ask-rag-roadmap.md) are shipped. Stage 5 (shared rate limiting, retrieval evals, answer caching, a monthly token-budget alarm) is still open; capture, ratings, and the inbox shipped with the [insights work](../../../docs/ask-insights-roadmap.md). Ask is already site-wide; **Site Info › Ask › Hide Ask** takes it off every surface. The decisions of a turn (offer a person, say the site has nothing, acknowledge a thanks) can be made by the judge, TypeSafe's Jev, instead of the writing model: see [The judge](#the-judge-jev) and the [Ask + Jev roadmap](../../../docs/ask-jev-roadmap.md).
 
 ## How a request flows
 
 ```
 menu / closing band / /ask (useAskChat)
-  └─ POST /api/ask { id, messages, pagePath, handoff } (AI SDK UI-message protocol)
+  └─ POST /api/ask { id, messages, pagePath, journey, handoff } (AI SDK UI-message protocol)
        ├─ hide check        → 404 if Site Info › Ask › Hide Ask is on
        ├─ config check      → 503 if OPENAI_API_KEY unset
        ├─ rate limit        → 429 (10 req/min per IP, per warm instance)
@@ -38,14 +38,18 @@ POST /api/ask
   ├─ hide / config / rate limit / validation          (unchanged)
   ├─ contact details in the question? (regex, code)   → card `contact_details`, no Jev, no model
   ├─ in parallel:
+  │    ├─ resolveJourney() the journey's paths → titles from the Ask index
   │    ├─ judgeTurn()      one Jev request: `request` Choice, the `own_project`,
-  │    │                   `general_question` and `names_work` Nouls, and
-  │    │                   `depends_on_previous` on a follow-up
-  │    └─ embedMany()      [question] or, on a follow-up, [question, previous + question]
+  │    │                   `general_question` and `names_work` Nouls,
+  │    │                   `depends_on_previous` on a follow-up, and
+  │    │                   `open_reference` on a page about one thing
+  │    └─ embedMany()      [question], + [previous + question] on a follow-up,
+  │                        + ["About {page title}: question"] on such a page
   ├─ routeTurn()           plain `if`s over ASK_JUDGE_THRESHOLDS
   │    ├─ card             → the handoff card, no retrieval, no model
   │    ├─ conversation     → chat-only prompt, no retrieval, no tool
-  │    ├─ evidence         → pgvector with the query form `depends_on_previous` picked
+  │    ├─ evidence         → pgvector with the query form `depends_on_previous` picked,
+  │    │                     and the page form beside it when `open_reference` says so
   │    └─ fallback         → the flow above, tool and all (unsure or failed judgment)
   ├─ judgePassages()       one Jev request per candidate chunk, all in parallel:
   │                        `is_relevant`, `has_evidence` → keep or drop in code
@@ -60,6 +64,9 @@ POST /api/ask
 | --- | --- |
 | [`retrieve.ts`](./retrieve.ts) | Retrieval seam: `prepareRetrieval(payload, queries)` embeds every query form at once and returns a `search()` that picks one, so the endpoint can decide which while the embedding is in flight; `retrieveSources(payload, question)` is the one-query shorthand. Returns the sources (each with its best chunk similarity), the path that found them, and the chunk counts. Embedding search primary, keyword fallback. A `check` handed to `search()` may veto chunks before they become sources (the judge's passage check; the similarity floor then drops from 0.3 to 0.2, since the check is the real filter); `observe` sees the same chunks and changes nothing. The endpoint knows nothing about how sources are found, and retrieval knows nothing about Jev. `retrievalQueries()` builds the follow-up query forms. |
 | [`judge.ts`](./judge.ts) | The judge, server only: `askJudgeMode()` (`ASK_JEV`, always `off` without `TYPESAFE_API_KEY`), a lazy TypeSafe client pinned to one Jev version with a 400 ms timeout and no retries, `judgeTurn()` and `judgePassages()` (both answer null on any failure and never throw), every threshold in `ASK_JUDGE_THRESHOLDS`, and the pure routing: `routeTurn()`, `routePassage()`, `dependsOnPrevious()`. The question is redacted before it is sent. Tested in `judge.test.ts` (routing, mode parsing, null handling; no network). |
+| [`AskSession.tsx`](./AskSession.tsx) | The site's one conversation, mounted in the root providers: one AI SDK `Chat`, the handoff the visitor sent, and the ratings, read by every surface through `useAskChat`. Also keeps the journey (in refs, nothing renders from it) and sends it beside every question. |
+| [`journey.ts`](./journey.ts) | The visitor's journey, client-safe and pure: a visit is a path, seconds on screen in a visible tab, and scroll depth. `journeyDigest()` is what the browser sends (one entry per path, the most recent eight), `journeyFrom()` is how the endpoint reads it (plain paths, clamped numbers, anything else dropped), `journeyEngagement()` is the one judgment made of it, in code: `read` or `skimmed`. Tested in `journey.test.ts`. |
+| [`journeyPages.ts`](./journeyPages.ts) | Server half: `resolveJourney()` matches each path to a document in the Ask index, so every title a model or the prompt sees is one the site published, and a path the index does not know is dropped. One `SELECT DISTINCT` per instance per minute. `subject` marks pages about one thing (work, lab, expertise, audience pages, posts): only those can stand in for a question's missing subject. |
 | [`vocabulary.ts`](./vocabulary.ts) | The words Ask and the team agree on, client-safe: the question length rule, the outcomes a turn can have (`askOutcome()` derives one from what the endpoint knows), retrieval paths, ratings and their reasons, handoff signals, triage statuses. The collection, the endpoint, the composer and the admin panels all read these lists. Tested in `vocabulary.test.ts`. |
 | [`embeddings.ts`](./embeddings.ts) | ask_embeddings storage/query: `embedMany` on write, cosine-distance SQL on read. |
 | [`chunk.ts`](./chunk.ts) | Heading-aware markdown chunker (~500-token chunks, split on h1–h3 first, tiny sections merged). |
@@ -68,7 +75,7 @@ POST /api/ask
 | [`../../plugins/ask-index.ts`](../../plugins/ask-index.ts) | Attaches the sync hooks to every surface collection (from the shared surface registry). |
 | [`model.ts`](./model.ts) | Provider seam: answer model (`gpt-5-mini`) and embedding model (`text-embedding-3-small`), both via the Vercel AI SDK. The endpoint sets the reasoning effort: `low` while the model also decides (judge off, or a turn that fell back), `minimal` with a 400-token cap once the judge has routed the turn and the model only writes. |
 | [`AskWidget.tsx`](./AskWidget.tsx) | The `/ask` page surface. Wires `useAskChat` into a standalone card: transcript, shimmer, streamed answers with source links. |
-| [`useAskChat.ts`](./useAskChat.ts) | Chat wiring shared by every surface: `/api/ask` transport, composer state, Stop, one handoff per conversation (`handoff` in the request body), and visitor feedback. |
+| [`useAskChat.ts`](./useAskChat.ts) | Chat wiring shared by every surface: composer state, Stop, one handoff per conversation (`handoff` in the request body), and visitor feedback. On the site it reads the one conversation in `AskSession`; a scripted surface (a `transport` or seeded messages: stories, tests) keeps a chat of its own. |
 | [`MenuAsk.tsx`](./MenuAsk.tsx) | Takeover-menu surface. Composer and transcript sit in the docked preview slot; hidden when Site Info › Ask › Hide Ask is on. |
 | [`../../Footer/Closing/ClosingAsk.tsx`](../../Footer/Closing/ClosingAsk.tsx) | Closing-band surface. Suggestion chips are hardcoded in this file (not a Payload field). From `md` the conversation is an in-card panel; on a phone it is a full-screen sheet. |
 | [`Composer.tsx`](./Composer.tsx) | `AskTextarea`: the composer's text box wherever it is a textarea (the page, the closing band, its phone sheet). Enter sends, Shift+Enter breaks a line, the cap is the endpoint's. |
@@ -183,9 +190,10 @@ to their fixed path).
 ## API contract
 
 `POST /api/ask` with `{ "messages": UIMessage[] }` (what `useChat` + `DefaultChatTransport`
-sends), plus `id`, `pagePath`, and `handoff` from the client body: the AI SDK chat id, the
-page the composer sits on, and where the conversation stands with the team
-(`none` / `offered` / `sent`; anything else reads as `none`). Success responses are AI SDK
+sends), plus `id`, `pagePath`, `journey`, and `handoff` from the client body: the AI SDK chat id, the
+page the composer sits on, the pages this tab has shown (`{ path, seconds, depth }[]`, read by
+`journeyFrom`; malformed entries are dropped and a missing journey is an empty one), and where
+the conversation stands with the team (`none` / `offered` / `sent`; anything else reads as `none`). Success responses are AI SDK
 UI-message SSE streams: `source-url` parts for the retrieved docs, then streamed `text`
 parts, then optionally one `tool-handoff` part whose output is the resolved handoff
 (`AskHandoff`: `reason`, `responseTime`, `scheduleUrl`).
@@ -240,8 +248,9 @@ backfill script.
 - **Redacted before it lands.** `redactFreeText()` is one layer, not a guarantee: a name or employer in plain words survives. The first line of every transcript (`ASK_NOTICE`) tells people they are chatting with an AI (EU AI Act transparency) and that chats are saved anonymously for `ASK_QUESTION_RETENTION_DAYS` days. It does not ask them to leave personal details out. It is not part of cookie consent: it covers what people type, which is stored whatever they chose on the banner.
 - **Deleted on schedule.** `askQuestionRetention` removes rows older than `ASK_QUESTION_RETENTION_DAYS`. It is queued by Payload's scheduler from the daily cron, so the first run lands a day after deploy and a row can outlive the window by up to a day.
 - **One more processor with the judge on.** In `shadow` and `on` the redacted question (and, for the passage check, the site's own published passages) goes to TypeSafe. It does not train on requests; zero retention is an enterprise plan. The privacy page must list it before the judge sees production traffic.
+- **The journey is not kept.** It lives in the tab's memory, is read for the one turn it arrives with, and is not stored on the `ask-questions` row (which keeps `Asked on`, as before). PostHog gets a count (`journey_pages`) and two flags, never the paths. With the judge on, Jev's one journey question reads the question alone, and the only piece of the journey it ever sees is the current page's published title inside a search query it checks passages against; OpenAI sees the titles of the site's own pages in the prompt.
 - **Nothing at OpenAI.** `store: false` stops the Responses API keeping each exchange for 30 days in the dashboard logs. The client resends the transcript every turn, and for reasoning models the SDK asks for encrypted reasoning instead of server-side item references. `sendReasoning: false` keeps that encrypted blob out of the browser.
-- **Metadata only in PostHog.** `ask_questioned` carries length, source count, the follow-up flag, `outcome`, `retrieval`, `latency_ms`, `page_path` and `handoff_reason`, plus the judge's facts about the turn (`judge_mode`, `judge_ms`, `judge_failed`, `judge_request`, `judge_confidence`, `judge_agrees`, `chunks_candidates`, `chunks_kept`, `passages_ms`, `first_output_ms`, `model_skipped`, `fell_back`, `answer_model`; the registry in the `posthog-analytics` skill defines each): a label, a count or a duration, never a probability beside text; `ask_rated` carries the rating, its reason and the turn's outcome; `ask_handoff_clicked` the contact-page fallback. Question text never goes to analytics: it could not be held to the retention window there, and it would sit next to a visitor id. PostHog is where the funnel is counted; the admin is where a question is read.
+- **Metadata only in PostHog.** `ask_questioned` carries length, source count, the follow-up flag, `outcome`, `retrieval`, `latency_ms`, `page_path` and `handoff_reason`, plus the judge's facts about the turn (`judge_mode`, `judge_ms`, `judge_failed`, `judge_request`, `judge_confidence`, `judge_agrees`, `chunks_candidates`, `chunks_kept`, `passages_ms`, `first_output_ms`, `model_skipped`, `fell_back`, `answer_model`, `journey_pages`, `page_leaned`, `page_attached`; the registry in the `posthog-analytics` skill defines each): a label, a count or a duration, never a probability beside text; `ask_rated` carries the rating, its reason and the turn's outcome; `ask_handoff_clicked` the contact-page fallback. Question text never goes to analytics: it could not be held to the retention window there, and it would sit next to a visitor id. PostHog is where the funnel is counted; the admin is where a question is read.
 
 ## Reaching a person
 
@@ -266,6 +275,21 @@ Each state change rides the site's panel swap (`useRevealSwap` with `morphHeight
 Both paths file the inquiry with the chat id (`askConversation`, with the turn it closes), so the inquiry's document shows what the lead asked before reaching out and the turn is marked `inquiry_sent`; `inquiry_submitted` in PostHog carries `from_ask`, derived from that id, so sales can count the leads Ask produced. `ask_questioned` carries `handoff_reason` (null when no offer was shown). Arrows follow one rule across Ask: → stays on the site (source rows, the contact-page fallback), ↗ leaves it ("Book a call", which opens in a new tab so the conversation survives). The prompts never let the model describe the offer or restate the reply time, and never repeat an email, phone number, or name back.
 
 **Checking the triggers.** `scripts/ask-eval.ts` asks a running site a fixed set of six questions (three that must stay grounded with no offer, three that must reach a person) and reports the sources retrieved and the reason offered for each. The first three were the closing band's chips when the eval was written; the live chips in `ClosingAsk.tsx` can differ. Run it after any prompt or tool-description edit: `pnpm exec tsx scripts/ask-eval.ts http://localhost:3001`.
+
+## One session, and the journey
+
+**One conversation.** The menu, the closing band and `/ask` used to mount a chat each, so a question asked in the menu was unknown to the band under the same page, and the log filed them as unrelated chats. `AskSessionProvider` (root providers, above the header and every page) holds one `Chat`; every surface's `useAskChat` reads it. One transcript, one chat id in `ask-questions`, one handoff and one receipt, one set of ratings. Only the composer's draft and what a surface does on send (open its panel) are its own: a question sent from the menu leaves the band closed with "Resume conversation" on its composer. "New conversation" anywhere starts a new chat everywhere. The session survives client-side navigation; a full reload starts over, as before.
+
+**The journey.** The session also keeps which pages this tab has shown, for how long in a visible tab, and how far each was scrolled (`journey.ts`). It is memory only: nothing is written to the device, nothing carries an id, and it leaves the browser only beside a question the visitor chose to ask. The browser sends paths and numbers, never words; the endpoint resolves each path against the Ask index (`journeyPages.ts`), so a made-up path is dropped and no client text reaches a prompt by this route. Code decides `read` or `skimmed` (20 s on screen, or 60 percent deep after 8 s), the order, and the cap: Jev does not count or compare times.
+
+With `ASK_JEV=on` the journey does two things, and in `off` nothing reads it:
+
+- **It gives "it" a subject.** "What did you do for them?" asked on `/works/interchecks` names nobody. Jev answers one more Noul in the turn's one request, `open_reference` (does the question point at something it does not name?), asked only when the page is about one thing. At 0.8 or more the search also runs as "About Interchecks: What did you do for them?", each form's candidates are checked against its own words, and the kept chunks are pooled. Beside, never instead: the idiom in "What does it cost?" reads as a reference too (0.96), and the plain search still finds the pricing answer. Measured live: the same question answered about GentleBeast without the page and about Interchecks with it.
+- **It tells the writing model where the visitor is.** Two lines under "This conversation:" on a grounded, routed turn: the page asked from (title and section, no path), and up to four pages read before it, to pick what to lead with among the sources. The sources stay the only facts, and the model is told never to hint at what the visitor viewed.
+
+What it costs: nothing new is called. One more question in the existing Jev request (about 950 input tokens a turn, $0.00004), one more short string in the existing `embedMany` call, up to twelve more passage checks only on a turn that leans on its page, and about 60 tokens of prompt. No new round trip on the path to first output.
+
+Tuning: `scripts/ask-judge-eval.ts --journey [--passages]` runs `ASK_JOURNEY_CASES` (13 of 13 on 2026-09-19) and replays the turn fixture with the new question asked (19 of 19: no route moved).
 
 ## The judge (Jev)
 

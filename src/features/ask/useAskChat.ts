@@ -3,6 +3,7 @@
 import { useChat } from '@ai-sdk/react'
 import { type ChatTransport, DefaultChatTransport, generateId } from 'ai'
 import { useCallback, useMemo, useState } from 'react'
+import { useAskSession } from './AskSession'
 import { type AskFeedback, type AskRated, postAskFeedback } from './feedback'
 import type { AskHandoffReceipt, AskHandoffSent } from './HandoffPanel'
 import { type AskUIMessage, askHandoffState } from './handoff'
@@ -24,20 +25,32 @@ type UseAskChatOptions = {
  * `stop` for the composer's in-flight Stop button, the one handoff the
  * conversation can send, and the visitor's feedback on each turn.
  *
+ * On the site every surface reads the one conversation in `AskSession`, so
+ * a question asked in the menu is on the closing band's transcript too, in
+ * the same chat in the log; only the composer's draft and `onSend` are the
+ * surface's own. A scripted surface (a `transport` or a seeded transcript:
+ * stories and tests) and anything outside the provider keeps a chat to itself.
+ *
  * Every request carries where the conversation stands with the team
  * (`handoff`: none, offered, sent) next to the page it was asked on, so the
  * endpoint can keep the model from offering twice and drop the offer
  * entirely once the visitor has sent.
  */
 export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOptions) {
+  const session = useAskSession()
+  const shared = transport || initialMessages ? null : session
   const [question, setQuestion] = useState('')
-  const [sent, setSent] = useState<AskHandoffSent | null>(null)
-  const [ratings, setRatings] = useState<AskFeedback['ratings']>({})
+  const [ownSent, setOwnSent] = useState<AskHandoffSent | null>(null)
+  const [ownRatings, setOwnRatings] = useState<AskFeedback['ratings']>({})
+  const sent = shared ? shared.sent : ownSent
+  const setSent = shared ? shared.setSent : setOwnSent
+  const ratings = shared ? shared.ratings : ownRatings
+  const setRatings = shared ? shared.setRatings : setOwnRatings
   // The chat id files every turn of one conversation; a reset mints a new
   // one (which is also what empties the transcript) so two conversations
   // from one open box never share a thread in the log. The seed is spent
   // on the first chat only.
-  const [id, setId] = useState(generateId)
+  const [ownId, setOwnId] = useState(generateId)
   const [seed, setSeed] = useState(initialMessages)
   const chatTransport = useMemo(
     () =>
@@ -50,11 +63,10 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
       }),
     [transport],
   )
-  const { messages, sendMessage, status, error, stop } = useChat<AskUIMessage>({
-    id,
-    transport: chatTransport,
-    messages: seed,
-  })
+  const { messages, sendMessage, status, error, stop } = useChat<AskUIMessage>(
+    shared ? { chat: shared.chat } : { id: ownId, transport: chatTransport, messages: seed },
+  )
+  const id = shared ? shared.chat.id : ownId
 
   const busy = status === 'submitted' || status === 'streaming'
   const canSend = !busy && question.trim().length >= ASK_QUESTION_LENGTH.min
@@ -84,10 +96,11 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
 
   /** A new conversation: the transcript, what it sent, and what it rated go together. */
   function reset() {
-    setId(generateId())
+    if (shared) return shared.reset()
+    setOwnId(generateId())
     setSeed(undefined)
-    setSent(null)
-    setRatings({})
+    setOwnSent(null)
+    setOwnRatings({})
   }
 
   // Shown at once and posted behind it; the server keeps the first rating
@@ -99,7 +112,7 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
       setRatings((current) => ({ ...current, [turn]: rated }))
       postAskFeedback({ id, turn, rating: rated.rating, reason: rated.reason })
     },
-    [id],
+    [id, setRatings],
   )
   const handoff = useCallback(
     (turn: string, signal: AskHandoffSignal) => postAskFeedback({ id, turn, handoff: signal }),
