@@ -75,6 +75,6 @@ Touch is not hover: a tap fires `pointerover` with no `pointerout` to answer it,
 3. Add its `Capture` and `Live` scenes to `studio/scenes.tsx`.
 4. Write the site slot on `useLiveVisual` and `VisualPosterStack`, add the kind to the `Visual` union, a branch in `resolveVisual`, and one in the `Visual` adapter.
 5. Write its Inspector copy and add it to `EFFECT_COPY`. The record is exhaustive over the contract's parameter keys, so a missing row does not compile.
-6. Render its posters: `pnpm exec tsx scripts/visual-posters.ts --effect <id>`.
+6. Render its posters: `pnpm exec tsx scripts/visual-posters.ts --effect <id>`, and add `/images/<posterDirectory>/**` to `images.localPatterns` in `next.config.ts`. Without it the optimizer answers the poster with 400 in production, and the poster is what every touch device sees.
 7. Story the slot and the Studio preview. The contract tests in `studio/effects/light-leak.test.ts` run over every registered effect.
 8. Ask for a migration: a new `visualType` and `effect` value is `ALTER TYPE ... ADD VALUE` on each enum, additive, and must not be used in the same `up()`.

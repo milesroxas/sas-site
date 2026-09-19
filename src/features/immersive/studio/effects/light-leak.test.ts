@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { LIGHT_LEAK_PAPER } from '../../presets'
 import { LIGHT_LEAK_DEFAULTS } from '../../ui/light-leak-tuning'
@@ -59,6 +61,13 @@ describe('every effect contract', () => {
       const once = effect.limit(effect.defaults, placement)
       expect(effect.limit(once, placement)).toEqual(once)
     }
+  })
+  // The poster renders through next/image, which answers 400 for a local path
+  // outside `images.localPatterns`. Read as text: importing the config pulls
+  // the Payload, Sentry and BotID wrappers into the test.
+  it.each(EFFECT_IDS)('%s: next/image may optimize its poster directory', (id) => {
+    const config = readFileSync(path.resolve(process.cwd(), 'next.config.ts'), 'utf8')
+    expect(config).toContain(`pathname: '/images/${effectOf(id).posterDirectory}/**'`)
   })
 })
 

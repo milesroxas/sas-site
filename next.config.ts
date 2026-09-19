@@ -71,10 +71,16 @@ const nextConfig: NextConfig = {
       {
         pathname: '/api/media/file/**',
       },
-      // Code-owned Streak Field posters (src/features/immersive/visual/posters.ts);
-      // the `?v=` query keys the transform to the look revision.
+      // Code-owned effect posters (src/features/immersive/visual/posters.ts),
+      // one entry per effect `posterDirectory`; the `?v=` query keys the
+      // transform to the look revision. A directory missing here ships a
+      // poster the optimizer answers with 400, which is every touch device's
+      // hero. The effect contract test holds the two lists together.
       {
         pathname: '/images/streak-field/**',
+      },
+      {
+        pathname: '/images/light-leak/**',
       },
     ],
     // Media URLs carry `?<updatedAt>`, so a transform can live as long as the
