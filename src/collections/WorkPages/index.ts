@@ -10,7 +10,7 @@ import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/
 import { heroContentCollapsible, heroPresentationFields, pageIntroField } from '@/fields/pageHero'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
-import { visualSlotFields } from '@/fields/visual'
+import { heroVisualSlotFields } from '@/fields/visual'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import { collectionPreview } from '@/utilities/generatePreviewPath'
 import { revalidateWorkPage, revalidateWorkPageDelete } from './hooks/revalidateWorkPage'
@@ -77,7 +77,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
                   type: 'collapsible',
                   label: 'Media & layout',
                   fields: [
-                    ...visualSlotFields(
+                    ...heroVisualSlotFields(
                       {
                         name: 'media',
                         type: 'upload',

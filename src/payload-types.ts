@@ -307,8 +307,8 @@ export interface Page {
     /**
      * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
   };
   layout: (
     | PageSectionBlock
@@ -1481,8 +1481,8 @@ export interface WorkPage {
     /**
      * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
     /**
      * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
      */
@@ -1593,9 +1593,9 @@ export interface WorkPage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "StreakVisualConfig".
+ * via the `definition` "PlacedVisualConfig".
  */
-export interface StreakVisualConfig {
+export interface PlacedVisualConfig {
   studio?: (number | null) | StreakLook;
   preset?: string | null;
   /**
@@ -1611,6 +1611,18 @@ export interface StreakVisualConfig {
    */
   intensity?: number | null;
   release?: (number | null) | StreakRelease;
+  /**
+   * Off, the effect is clipped to the media frame. On, it leaves the frame and washes across the whole block, edge to edge of the browser.
+   */
+  bleed?: boolean | null;
+  /**
+   * The corner the light is pinned to, of the frame or, bleeding, of the block.
+   */
+  origin?: ('top-right' | 'top-left' | 'bottom-right' | 'bottom-left') | null;
+  /**
+   * Off, the effect fills the frame on its own. On, the media upload shows under it.
+   */
+  showMedia?: boolean | null;
   /**
    * Let the pointer move and light the effect on devices that run it live.
    */
@@ -1922,47 +1934,6 @@ export interface WorkFullMediaBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'fullMedia';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "PlacedVisualConfig".
- */
-export interface PlacedVisualConfig {
-  studio?: (number | null) | StreakLook;
-  preset?: string | null;
-  /**
-   * Lays out the field. The same seed always draws the same composition; leave empty to have one assigned when saved.
-   */
-  seed?: number | null;
-  /**
-   * Playback rate as a fraction of the look, 0 to 1. Empty is the look as shipped.
-   */
-  speed?: number | null;
-  /**
-   * Brightness multiplier, 0.5 to 1.25. Empty is the look as shipped.
-   */
-  intensity?: number | null;
-  release?: (number | null) | StreakRelease;
-  /**
-   * Off, the effect is clipped to the media frame. On, it leaves the frame and washes across the whole block, edge to edge of the browser.
-   */
-  bleed?: boolean | null;
-  /**
-   * The corner the light is pinned to, of the frame or, bleeding, of the block.
-   */
-  origin?: ('top-right' | 'top-left' | 'bottom-right' | 'bottom-left') | null;
-  /**
-   * Off, the effect fills the frame on its own. On, the media upload shows under it.
-   */
-  showMedia?: boolean | null;
-  /**
-   * Let the pointer move and light the effect on devices that run it live.
-   */
-  pointerInteraction?: boolean | null;
-  /**
-   * Optional still shown before the effect runs, and wherever it cannot (reduced motion, no WebGL, menus, social). Images only. Empty uses the look’s built-in poster.
-   */
-  posterMedia?: (number | null) | Media;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2828,6 +2799,35 @@ export interface Form {
   };
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StreakVisualConfig".
+ */
+export interface StreakVisualConfig {
+  studio?: (number | null) | StreakLook;
+  preset?: string | null;
+  /**
+   * Lays out the field. The same seed always draws the same composition; leave empty to have one assigned when saved.
+   */
+  seed?: number | null;
+  /**
+   * Playback rate as a fraction of the look, 0 to 1. Empty is the look as shipped.
+   */
+  speed?: number | null;
+  /**
+   * Brightness multiplier, 0.5 to 1.25. Empty is the look as shipped.
+   */
+  intensity?: number | null;
+  release?: (number | null) | StreakRelease;
+  /**
+   * Let the pointer move and light the effect on devices that run it live.
+   */
+  pointerInteraction?: boolean | null;
+  /**
+   * Optional still shown before the effect runs, and wherever it cannot (reduced motion, no WebGL, menus, social). Images only. Empty uses the look’s built-in poster.
+   */
+  posterMedia?: (number | null) | Media;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4649,8 +4649,8 @@ export interface LabPage {
     /**
      * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
      */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
     layout?: ('editorial-split' | 'centered' | 'immersive' | 'media-led') | null;
     /**
      * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
@@ -5863,8 +5863,8 @@ export interface SegmentHero {
   /**
    * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7021,7 +7021,7 @@ export interface PagesSelect<T extends boolean = true> {
             };
         media?: T;
         visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
+        shader?: T | PlacedVisualConfigSelect<T>;
       };
   layout?:
     | T
@@ -7081,15 +7081,18 @@ export interface PagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "StreakVisualConfig_select".
+ * via the `definition` "PlacedVisualConfig_select".
  */
-export interface StreakVisualConfigSelect<T extends boolean = true> {
+export interface PlacedVisualConfigSelect<T extends boolean = true> {
   studio?: T;
   preset?: T;
   seed?: T;
   speed?: T;
   intensity?: T;
   release?: T;
+  bleed?: T;
+  origin?: T;
+  showMedia?: T;
   pointerInteraction?: T;
   posterMedia?: T;
 }
@@ -7170,23 +7173,6 @@ export interface FullMediaBlockSelect<T extends boolean = true> {
   theme?: T;
   id?: T;
   blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "PlacedVisualConfig_select".
- */
-export interface PlacedVisualConfigSelect<T extends boolean = true> {
-  studio?: T;
-  preset?: T;
-  seed?: T;
-  speed?: T;
-  intensity?: T;
-  release?: T;
-  bleed?: T;
-  origin?: T;
-  showMedia?: T;
-  pointerInteraction?: T;
-  posterMedia?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7475,6 +7461,20 @@ export interface AudienceTabsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StreakVisualConfig_select".
+ */
+export interface StreakVisualConfigSelect<T extends boolean = true> {
+  studio?: T;
+  preset?: T;
+  seed?: T;
+  speed?: T;
+  intensity?: T;
+  release?: T;
+  pointerInteraction?: T;
+  posterMedia?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "IndustryWorkBlock_select".
  */
 export interface IndustryWorkBlockSelect<T extends boolean = true> {
@@ -7759,7 +7759,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         summaryOverride?: T;
         media?: T;
         visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
+        shader?: T | PlacedVisualConfigSelect<T>;
         browseAllMedia?: T;
         layout?: T;
         theme?: T;
@@ -8276,7 +8276,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         summaryOverride?: T;
         media?: T;
         visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
+        shader?: T | PlacedVisualConfigSelect<T>;
         layout?: T;
         theme?: T;
         mediaTreatment?: T;
@@ -8749,7 +8749,7 @@ export interface SegmentHeroSelect<T extends boolean = true> {
       };
   media?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

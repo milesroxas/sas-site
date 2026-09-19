@@ -43,3 +43,8 @@ export const Video: Story = {
     media: videoFixture,
   },
 }
+
+/** A light leak as the hero's backdrop: valid without any upload. */
+export const LightLeak: Story = {
+  args: { media: null, visualType: 'lightLeak', shader: { preset: 'film-v1' } },
+}

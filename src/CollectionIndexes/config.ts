@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
+import { DEFAULT_EFFECT } from '@/features/immersive/visual'
 import { menuPreviewFields } from '@/fields/menuPreview'
 import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
 import { heroField } from '@/heros/config'
@@ -63,6 +64,8 @@ const collectionIndexGlobal = ({
             heroField({
               visualCondition: () => true,
               mediaRequired: false,
+              // `IndexBackground` draws a Streak Field and nothing else.
+              visualEffects: [DEFAULT_EFFECT],
               visualTypeDescription:
                 'Streak Field runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.',
             }),

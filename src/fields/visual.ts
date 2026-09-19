@@ -206,13 +206,15 @@ const showMediaField = (): CheckboxField => ({
   },
 })
 
-const bleedField = (): CheckboxField => ({
+const bleedField = (hosted: boolean): CheckboxField => ({
   name: 'bleed',
   type: 'checkbox',
   defaultValue: false,
   label: 'Bleed across the block',
   admin: {
-    condition: slotOffers('bleed'),
+    // A slot with no block root to wash across keeps the column, so the group
+    // stays one shape, and never shows the control.
+    condition: hosted ? slotOffers('bleed') : () => false,
     description:
       'Off, the effect is clipped to the media frame. On, it leaves the frame and washes across the whole block, edge to edge of the browser.',
   },
@@ -238,6 +240,8 @@ export type ShaderFieldArgs = {
   label?: string
   /** The effects this slot's renderer can draw. */
   effects?: readonly EffectId[]
+  /** Whether the slot sits in a block root a bleeding effect can wash across (`VISUAL_HOST`). */
+  hosted?: boolean
   /** When the group shows; defaults to the sibling `visualType` being an effect. */
   condition?: Condition
   /** Poster picker filter; the public gate by default, scoped on Work Pages. */
@@ -253,6 +257,7 @@ export const shaderField = ({
   name = 'shader',
   label = 'Effect',
   effects = [DEFAULT_EFFECT],
+  hosted = true,
   condition = effectChosen,
   posterFilterOptions = publicApprovedMediaWhere,
 }: ShaderFieldArgs = {}): GroupField => {
@@ -321,7 +326,7 @@ export const shaderField = ({
         index: true,
         admin: { hidden: true },
       },
-      ...(offers('bleed') ? [bleedField(), originField()] : []),
+      ...(offers('bleed') ? [bleedField(hosted), originField()] : []),
       ...(offers('media') ? [showMediaField()] : []),
       pointerField(),
       posterMediaField(posterFilterOptions),
@@ -329,7 +334,7 @@ export const shaderField = ({
   }
 }
 
-export type VisualSlotArgs = Pick<ShaderFieldArgs, 'effects' | 'posterFilterOptions'> & {
+export type VisualSlotArgs = Pick<ShaderFieldArgs, 'effects' | 'hosted' | 'posterFilterOptions'> & {
   /** Extra condition on the whole slot (a hero `type` gate). */
   condition?: Condition
   visualTypeDescription?: string
@@ -346,6 +351,7 @@ export const visualSlotFields = (
   {
     condition,
     effects = [DEFAULT_EFFECT],
+    hosted,
     visualTypeDescription,
     posterFilterOptions,
   }: VisualSlotArgs = {},
@@ -359,7 +365,7 @@ export const visualSlotFields = (
   return [
     upload,
     visualTypeField({ effects, condition, description: visualTypeDescription }),
-    shaderField({ effects, condition: and(condition, effectChosen), posterFilterOptions }),
+    shaderField({ effects, hosted, condition: and(condition, effectChosen), posterFilterOptions }),
   ]
 }
 
@@ -370,3 +376,11 @@ export const visualSlotFields = (
  */
 export const blockVisualSlotFields = (media: UploadField, args: VisualSlotArgs = {}): Field[] =>
   visualSlotFields(media, { effects: EFFECT_IDS, ...args })
+
+/**
+ * The slot of a hero drawn through the `Visual` adapter (page, segment, work
+ * and lab heroes), so it can draw every effect. A hero has no block root to
+ * wash across: the effect stays in the hero's frame and offers no bleed.
+ */
+export const heroVisualSlotFields = (media: UploadField, args: VisualSlotArgs = {}): Field[] =>
+  visualSlotFields(media, { effects: EFFECT_IDS, hosted: false, ...args })

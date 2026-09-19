@@ -170,3 +170,20 @@ export const StreakFieldLandscape: Story = {
     },
   },
 }
+
+/** A light leak hero, centered layout: valid without any upload. */
+export const LightLeakCentered: Story = {
+  args: {
+    page: {
+      ...page,
+      coverAsset: null,
+      hero: {
+        ...page.hero,
+        layout: 'centered-media',
+        media: null,
+        visualType: 'lightLeak',
+        shader: { preset: 'amber-v1' },
+      },
+    },
+  },
+}

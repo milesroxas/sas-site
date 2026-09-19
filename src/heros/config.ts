@@ -5,9 +5,9 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { Condition, Field } from 'payload'
-
+import type { EffectId } from '@/features/immersive/visual'
 import { linkGroup } from '@/fields/linkGroup'
-import { visualSlotFields } from '@/fields/visual'
+import { heroVisualSlotFields } from '@/fields/visual'
 
 const mediaHeroTypes: Condition = (_, { type } = {}) =>
   ['highImpact', 'mediumImpact'].includes(type)
@@ -22,6 +22,12 @@ export type HeroFieldArgs = {
   /** Whether the upload is required (unless the shader is chosen). Off where the band never paints it. */
   mediaRequired?: boolean
   visualTypeDescription?: string
+  /**
+   * The effects the visual slot offers. Defaults to all of them: the hero band
+   * draws through the `Visual` adapter. A page that paints the visual with a
+   * bespoke renderer (the index globals) names the ones it handles.
+   */
+  visualEffects?: readonly EffectId[]
 }
 
 /**
@@ -33,6 +39,7 @@ export const heroField = ({
   visualCondition = mediaHeroTypes,
   mediaRequired = true,
   visualTypeDescription,
+  visualEffects,
 }: HeroFieldArgs = {}): Field => ({
   name: 'hero',
   type: 'group',
@@ -108,14 +115,18 @@ export const heroField = ({
         maxRows: 2,
       },
     }),
-    ...visualSlotFields(
+    ...heroVisualSlotFields(
       {
         name: 'media',
         type: 'upload',
         relationTo: 'media',
         required: mediaRequired,
       },
-      { condition: visualCondition, visualTypeDescription },
+      {
+        condition: visualCondition,
+        visualTypeDescription,
+        ...(visualEffects ? { effects: visualEffects } : {}),
+      },
     ),
   ],
   label: false,

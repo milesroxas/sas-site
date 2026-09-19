@@ -67,3 +67,17 @@ export const Centered: Story = {
     },
   },
 }
+
+/** A light leak in the hero's media frame, over the upload. */
+export const LightLeak: Story = {
+  args: {
+    page: {
+      ...page,
+      hero: {
+        ...page.hero,
+        visualType: 'lightLeak',
+        shader: { preset: 'film-v1', showMedia: true },
+      },
+    },
+  },
+}

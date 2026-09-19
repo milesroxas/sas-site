@@ -34,7 +34,7 @@ A snapshot carries the contract's `renderer`, so a look is only ever read agains
 
 ## Choosing an effect in a slot
 
-`visualType` is a select: Media upload, then the effects that slot's renderer can draw. A slot rendered through the `Visual` adapter inside a `Section` offers all of them (`blockVisualSlotFields`: split content, full media, feature tabs, media and content split). A slot with a bespoke renderer names the ones it handles; heroes, index grounds, audience tabs and menu previews offer the Streak Field only.
+`visualType` is a select: Media upload, then the effects that slot's renderer can draw. A slot rendered through the `Visual` adapter inside a `Section` offers all of them (`blockVisualSlotFields`: split content, full media, feature tabs, media and content split). A hero drawn through the adapter offers all of them too (`heroVisualSlotFields`: page, segment, work and lab heroes), without the bleed control: a hero has no block root to wash across, so the effect stays in the hero's frame. A slot with a bespoke renderer names the ones it handles; the home hero, post hero, index grounds, audience tabs and menu previews offer the Streak Field only.
 
 The `shader` group is shared. `shader.studio` holds a Studio look of either effect, so hydration, usage, the publish guard and the poster guard are effect-blind. The picker lists looks filed under the slot's effect, and the server refuses a published page whose slot holds a look of another effect. `shader.preset` holds a shipped look id, validated against the chosen effect's looks.
 
@@ -48,7 +48,7 @@ Three slot controls are its own:
 
 | Field | Default | Does |
 |-------|---------|------|
-| `shader.bleed` | off | Off, the leak is clipped to the media frame. On, it leaves the frame and washes across the whole block, edge to edge of the browser. |
+| `shader.bleed` | off | Off, the leak is clipped to the media frame. On, it leaves the frame and washes across the whole block, edge to edge of the browser. Not offered in a hero. |
 | `shader.origin` | top right | The corner the light enters from, of the frame or, bleeding, of the block. A mirror of the authored field; no second set of numbers. |
 | `shader.showMedia` | off | Off, the leak fills the frame on its own. On, the slot's media upload shows under it. |
 

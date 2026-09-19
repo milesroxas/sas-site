@@ -51,6 +51,19 @@ export const NoLead: Story = {
   args: { lead: null },
 }
 
+/** A light leak as the band's backdrop: valid without any upload. */
+export const LightLeak: Story = {
+  args: { media: null, visualType: 'lightLeak', shader: { preset: 'film-v1' } },
+}
+
+/** The leak over the hero's media, entering from the bottom left. */
+export const LightLeakOverMedia: Story = {
+  args: {
+    visualType: 'lightLeak',
+    shader: { preset: 'amber-v1', origin: 'bottom-left', showMedia: true },
+  },
+}
+
 /**
  * The hero inside the site chrome, as the page renders it: the band pulls
  * under the fixed header and runs under the fixed footer, both bars pinned

@@ -1,6 +1,6 @@
 import type { GroupField } from 'payload'
 import { linkGroup } from '@/fields/linkGroup'
-import { visualSlotFields } from '@/fields/visual'
+import { heroVisualSlotFields } from '@/fields/visual'
 
 /**
  * The opening of a segment page (Who We Help, Expertise). One hero, no type
@@ -59,7 +59,7 @@ export const segmentHero: GroupField = {
       type: 'collapsible',
       label: 'Media & layout',
       fields: [
-        ...visualSlotFields({
+        ...heroVisualSlotFields({
           name: 'media',
           type: 'upload',
           relationTo: 'media',
