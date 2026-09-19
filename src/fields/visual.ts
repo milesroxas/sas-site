@@ -81,14 +81,14 @@ const presetField = (): TextField => ({
   name: 'preset',
   type: 'text',
   label: 'Look',
-  admin: {
-    description: 'A shipped Streak Field look. Tuning lives in code; pick the closest look.',
-    components: { Field: '@/components/StreakLookSelect#StreakLookSelect' },
-  },
+  // The Streak field picker (the `studio` field's component) writes this one
+  // too, so the editor chooses from one place: a shipped look or a field of
+  // their own.
+  admin: { hidden: true },
   validate: (value, args) =>
     validatePresetValue(
       value,
-      chosenFromPath(args) && !(args.siblingData as { release?: unknown })?.release,
+      chosenFromPath(args) && !(args.siblingData as { studio?: unknown })?.studio,
     ),
 })
 
@@ -107,8 +107,8 @@ const seedField = (): NumberField => ({
       ({ value, data, path }) =>
         value ??
         (chosenFromPath({ data, path }) &&
-        !(shaderSlotOf(data, path)[path?.[path.length - 2] ?? 'shader'] as { release?: unknown })
-          ?.release
+        !(shaderSlotOf(data, path)[path?.[path.length - 2] ?? 'shader'] as { studio?: unknown })
+          ?.studio
           ? randomStreakSeed()
           : value),
     ],
@@ -187,33 +187,52 @@ export const streakShaderField = ({
   admin: { condition },
   fields: [
     {
-      name: 'release',
+      name: 'studio',
       type: 'relationship',
-      relationTo: 'streak-releases',
+      relationTo: 'streak-looks',
+      // Never populated: the Studio plugin hydrates the id with the published
+      // look's snapshot and posters, for every reader alike.
       maxDepth: 0,
       index: true,
-      label: 'Published Studio release',
+      label: 'Streak field',
       admin: {
-        description: 'Pinned version from Streak Field Studio. Clear to use a built-in look.',
-        components: { Field: '@/plugins/streak-studio/components/ReleaseSelect#ReleaseSelect' },
+        components: { Field: '@/plugins/streak-studio/components/FieldPicker#FieldPicker' },
       },
+      // Runs when the page is published (draft saves skip validation): a field
+      // with nothing published has no poster and no snapshot to render from.
       validate: async (value: unknown, { req }: { req: PayloadRequest }) => {
         if (!value) return true
         const id = typeof value === 'object' && 'id' in value ? value.id : value
-        const release = await req.payload.findByID({
-          collection: 'streak-releases',
+        const look = await req.payload.findByID({
+          collection: 'streak-looks',
           id: String(id),
+          draft: false,
           depth: 0,
           disableErrors: true,
+          select: { snapshot: true },
           req,
         })
-        return release ? true : 'Choose an available published release.'
+        if (!look) return 'Choose an available Streak field.'
+        return look.snapshot ? true : 'Publish this field in Studio first, or use a shipped look.'
       },
     },
     presetField(),
     {
       type: 'row',
+      // A field made in Studio is tuned in Studio, where its poster is rendered
+      // from the same numbers. These adjust a shipped look, which has no editor.
+      admin: { condition: (_, siblingData) => !siblingData?.studio },
       fields: [seedField(), speedField(), intensityField()],
+    },
+    // The earlier pinned-release reference. Nothing reads it; the column stays
+    // until the follow-up migration drops the release tables.
+    {
+      name: 'release',
+      type: 'relationship',
+      relationTo: 'streak-releases',
+      maxDepth: 0,
+      index: true,
+      admin: { hidden: true },
     },
     pointerField(),
     posterMediaField(posterFilterOptions),

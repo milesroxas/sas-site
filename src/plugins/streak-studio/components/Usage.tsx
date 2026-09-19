@@ -1,54 +1,36 @@
 'use client'
 
-import { useDocumentInfo } from '@payloadcms/ui'
-import { useEffect, useState } from 'react'
+import './studio.css'
 
-export function Usage() {
+import { Link, useDocumentInfo } from '@payloadcms/ui'
+import type { UIFieldClientComponent } from 'payload'
+import { useLook } from './look-store'
+
+/** Where the field is used. A field in use cannot be deleted; remove it there first. */
+export const Usage: UIFieldClientComponent = () => {
   const { id } = useDocumentInfo()
-  const [rows, setRows] = useState<
-    { content: string; title: string; historical: boolean; url: string }[]
-  >([])
-  const [error, setError] = useState('')
-  useEffect(() => {
-    if (!id) return
-    const controller = new AbortController()
-    fetch(`/api/streak-releases/${id}/usage`, { signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) throw new Error('Could not load usage references.')
-        setRows((await response.json()).usages)
-      })
-      .catch((error) => {
-        if (!controller.signal.aborted) setError(String(error))
-      })
-    return () => controller.abort()
-  }, [id])
+  const { uses, loaded } = useLook(id)
+  const current = uses.filter((use) => !use.historical)
+  if (!id || !loaded) return null
   return (
-    <section>
-      <h3>Used by</h3>
-      <p>Includes saved page versions. Releases remain available when a page is restored.</p>
-      {error && <p role="alert">{error}</p>}
-      {!rows.length && !error && <p>No page references yet.</p>}
-      {rows.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Content</th>
-              <th>Page</th>
-              <th>Reference</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={`${row.url}:${row.historical}`}>
-                <td>{row.content}</td>
-                <td>
-                  <a href={row.url}>{row.title}</a>
-                </td>
-                <td>{row.historical ? 'Version history' : 'Current document'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <section data-streak-studio="panel" className="flex flex-col gap-2 text-xs/5">
+      <h3 className="text-xs/4 font-semibold tracking-[0.02em]">Used on</h3>
+      {current.length ? (
+        <ul className="flex flex-col divide-y divide-border border-y border-border">
+          {current.map((use) => (
+            <li key={use.url} className="flex items-center gap-3 py-2">
+              <span className="w-28 shrink-0 text-muted-foreground">{use.content}</span>
+              <Link href={use.url} prefetch={false} className="truncate underline">
+                {use.title}
+              </Link>
+              {use.draft && <span className="text-muted-foreground">in its draft</span>}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-muted-foreground">
+          Nowhere yet. Choose it in a page's Visual slot, or make one from there.
+        </p>
       )}
     </section>
   )

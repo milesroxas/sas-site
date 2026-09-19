@@ -1,6 +1,9 @@
 import { sql } from '@payloadcms/db-vercel-postgres'
 import { commitTransaction, initTransaction, killTransaction, type PayloadRequest } from 'payload'
 
+/** Set on the one write that publishes a look with its posters in hand, so the publish guard lets it through. */
+export const PUBLISH = 'streakPublish'
+
 export async function transactionDB(req: PayloadRequest) {
   const id = await req.transactionID
   return (

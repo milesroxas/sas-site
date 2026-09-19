@@ -36,7 +36,6 @@
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up postgres -d",
     "prepare": "git config core.hooksPath .githooks || true",
-    "streak:worker": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/streak-studio-worker.ts",
     "guard:preview-db": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/guard-preview-db.ts"
   },
   "dependencies": {
@@ -65,7 +64,6 @@
     "@sentry/nextjs": "catalog:",
     "@shadcn/react": "^0.2.1",
     "@sitebytom/payload-media-gallery": "^1.2.0",
-    "@sparticuz/chromium": "^153.0.0",
     "@tabler/icons-react": "^3.44.0",
     "@vercel/speed-insights": "^2.0.0",
     "ai": "^7.0.22",
@@ -84,7 +82,6 @@
     "next": "16.3.4",
     "next-sitemap": "^4.2.3",
     "payload": "3.88.0",
-    "playwright-core": "^1.63.0",
     "posthog-js": "^1.399.2",
     "posthog-node": "^5.51.8",
     "prism-react-renderer": "^2.4.1",

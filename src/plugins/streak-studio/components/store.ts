@@ -58,6 +58,7 @@ const emit = () => {
 }
 
 export const studioStore = {
+  read,
   patch(key: string, next: Partial<StudioSession>) {
     sessions.set(key, { ...read(key), ...next })
     emit()

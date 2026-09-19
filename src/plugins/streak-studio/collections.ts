@@ -1,15 +1,34 @@
 import { sql } from '@payloadcms/db-vercel-postgres'
-import { APIError, type CollectionConfig } from 'payload'
+import { APIError, type CollectionConfig, type Field } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { emptyRecipe, validateRecipe } from '@/features/immersive/studio/recipe'
 import { LOOKS_SLUG, RECIPE_FIELD, RELEASES_SLUG, RENDERS_SLUG } from './components/paths'
-import { lookEndpoints, renderEndpoints } from './endpoints'
+import { lookEndpoints } from './endpoints'
 import { recipeHash, storedRecipeHash, studioInput } from './hash'
-import { PROMOTION, releaseOf } from './releases'
-import { lockLook, transactionDB } from './transaction'
-import { releaseUsage } from './usage'
+import { lockLook, PUBLISH, transactionDB } from './transaction'
+import { lookUsage } from './usage'
 
 const internal = () => false
+
+/**
+ * What the website reads, written only by Publish: the resolved snapshot, the
+ * poster manifest and the hash of the published recipe. They ride on the look
+ * the way image sizes ride on a media document.
+ */
+const published = (field: Field): Field =>
+  ({
+    ...field,
+    admin: { hidden: true },
+    access: { create: internal, update: internal },
+  }) as Field
+
+/**
+ * A Streak Field is used like a media file: a page slot references the
+ * document, and the site shows whatever is published. The draft is the working
+ * copy (autosaved); Publish renders the two posters in the editor's browser
+ * and publishes the look with them in one write. History is Payload's own
+ * versions, so there is no second version system beside it.
+ */
 export const StreakLooks: CollectionConfig = {
   slug: LOOKS_SLUG,
   folders: true,
@@ -20,9 +39,9 @@ export const StreakLooks: CollectionConfig = {
       edit: { PublishButton: '@/plugins/streak-studio/components/PublishButton#PublishButton' },
     },
     useAsTitle: 'title',
-    defaultColumns: ['title', 'thumbnail', 'tags', '_status', 'archived', 'updatedAt'],
+    defaultColumns: ['title', 'thumbnail', 'tags', '_status', 'updatedAt'],
     description:
-      'Tune the recipe in the Inspector, watch it on the stage, then publish. Published releases stay pinned on existing pages.',
+      'Tune the recipe in the Inspector, watch it on the stage, then publish. Every place that uses the field shows what is published.',
   },
   access: {
     create: authenticated,
@@ -48,14 +67,12 @@ export const StreakLooks: CollectionConfig = {
         if (data.recipe) studioInput(() => validateRecipe(data.recipe))
         if (operation === 'create') data.createdBy = req.user?.id
         data.updatedBy = req.user?.id ?? originalDoc?.updatedBy
-        // A look is only ever published at a release: either this output has
-        // one, or it is what is already published (Payload's Revert to
-        // published, which has to keep working after a defaults change moves
-        // every hash). Anything else goes through Publish in Studio.
-        if (data._status === 'published' && !context[PROMOTION]) {
-          const hash = recipeHash(data.recipe ?? originalDoc?.recipe)
+        // A published look always has its posters: Publish in Studio is the
+        // one way to publish new output. Publishing what is already published
+        // (Payload's Revert to published) changes nothing the site shows.
+        if (data._status === 'published' && !context[PUBLISH]) {
           const id: number | undefined = originalDoc?.id
-          const published = id
+          const live = id
             ? await req.payload.findByID({
                 collection: LOOKS_SLUG,
                 id,
@@ -66,28 +83,30 @@ export const StreakLooks: CollectionConfig = {
               })
             : null
           const unchanged =
-            published?._status === 'published' && storedRecipeHash(published.recipe) === hash
-          if (!unchanged && !(id && (await releaseOf(req, id, hash))))
-            throw new APIError(
-              'Use Publish in Studio to generate posters before publishing this revision.',
-              400,
-            )
+            live?._status === 'published' &&
+            storedRecipeHash(live.recipe) === recipeHash(data.recipe ?? originalDoc?.recipe)
+          if (!unchanged)
+            throw new APIError('Use Publish in Studio: it renders the posters the site needs.', 400)
         }
         return data
       },
     ],
     beforeDelete: [
       async ({ id, req }) => {
-        const [releases, jobs] = await Promise.all([
-          req.payload.count({
-            collection: 'streak-releases',
-            where: { look: { equals: id } },
-            req,
-          }),
-          req.payload.count({ collection: 'streak-renders', where: { look: { equals: id } }, req }),
-        ])
-        if (releases.totalDocs || jobs.totalDocs)
-          throw new APIError('Archive this look to preserve its releases and render history.', 400)
+        const uses = (await lookUsage(req, Number(id))).filter((use) => !use.historical)
+        if (uses.length)
+          throw new APIError(
+            `This field is in use on ${uses.length === 1 ? uses[0].title : `${uses.length} places`}. Remove it there first.`,
+            400,
+          )
+        // Rows from the earlier release model still point here until their tables are dropped.
+        const legacy = await req.payload.count({
+          collection: RELEASES_SLUG,
+          where: { look: { equals: id } },
+          req,
+        })
+        if (legacy.totalDocs)
+          throw new APIError('Archive this field: its earlier releases are still on record.', 400)
       },
     ],
   },
@@ -122,26 +141,33 @@ export const StreakLooks: CollectionConfig = {
                   name: 'thumbnail',
                   type: 'upload',
                   relationTo: 'media',
+                  label: 'Dark poster',
                   admin: {
                     readOnly: true,
                     components: {
                       Cell: '@/plugins/streak-studio/components/Thumbnail#Thumbnail',
                     },
-                    description: 'The dark poster of the published release.',
+                    description: 'Rendered on Publish. Also the library thumbnail.',
                   },
                   access: { create: internal, update: internal },
                 },
                 {
-                  name: 'archived',
-                  type: 'checkbox',
-                  defaultValue: false,
-                  index: true,
-                  admin: {
-                    description:
-                      'Hides the look from new selections. Existing releases keep working.',
-                  },
+                  name: 'lightPoster',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: { readOnly: true, description: 'Rendered on Publish.' },
+                  access: { create: internal, update: internal },
                 },
               ],
+            },
+            {
+              name: 'archived',
+              type: 'checkbox',
+              defaultValue: false,
+              index: true,
+              admin: {
+                description: 'Hides the field from the picker. Places that use it keep working.',
+              },
             },
             {
               type: 'row',
@@ -162,30 +188,23 @@ export const StreakLooks: CollectionConfig = {
                 },
               ],
             },
-          ],
-        },
-        {
-          label: 'Releases',
-          description: 'Immutable published artwork. Existing pages keep the release they chose.',
-          fields: [
             {
-              name: 'releases',
+              name: 'usage',
               type: 'ui',
-              admin: {
-                components: { Field: '@/plugins/streak-studio/components/Releases#Releases' },
-              },
+              admin: { components: { Field: '@/plugins/streak-studio/components/Usage#Usage' } },
             },
           ],
         },
         {
-          label: 'Renders',
-          description: 'Poster and export jobs. Failed jobs can be retried here.',
+          label: 'History',
+          description:
+            'Every published state of this field. Restore copies one into the draft; nothing changes on the site until you publish.',
           fields: [
             {
-              name: 'renders',
+              name: 'history',
               type: 'ui',
               admin: {
-                components: { Field: '@/plugins/streak-studio/components/Renders#Renders' },
+                components: { Field: '@/plugins/streak-studio/components/History#History' },
               },
             },
           ],
@@ -210,43 +229,27 @@ export const StreakLooks: CollectionConfig = {
         }
       },
     },
+    published({ name: 'snapshot', type: 'json' }),
+    published({ name: 'posters', type: 'json' }),
+    published({ name: 'sourceHash', type: 'text' }),
   ],
 }
 
+/**
+ * The earlier release model, kept as bare schema so its tables and the
+ * `release` columns on every visual slot survive until the follow-up migration
+ * drops them. Nothing reads or writes these any more.
+ */
 export const StreakReleases: CollectionConfig = {
   slug: RELEASES_SLUG,
-  endpoints: [releaseUsage],
-  admin: {
-    group: 'Assets',
-    useAsTitle: 'title',
-    defaultColumns: ['title', 'look', 'createdAt'],
-    description: 'Immutable published artwork. Edit the source look to create a new release.',
-  },
-  access: { read: () => true, create: internal, update: internal, delete: internal },
-  hooks: {
-    beforeChange: [
-      ({ operation, data }) => {
-        if (operation !== 'create') throw new APIError('Published releases are immutable.', 403)
-        return data
-      },
-    ],
-    beforeDelete: [
-      () => {
-        throw new APIError('Archive the source look. Releases are retained for page history.', 403)
-      },
-    ],
-  },
+  admin: { hidden: true },
+  access: { read: authenticated, create: internal, update: internal, delete: internal },
   fields: [
-    {
-      name: 'usage',
-      type: 'ui',
-      admin: { components: { Field: '@/plugins/streak-studio/components/Usage#Usage' } },
-    },
     { name: 'title', type: 'text', required: true },
     {
       name: 'look',
       type: 'relationship',
-      relationTo: 'streak-looks',
+      relationTo: LOOKS_SLUG,
       required: true,
       index: true,
       maxDepth: 0,
@@ -271,37 +274,22 @@ export const StreakReleases: CollectionConfig = {
       maxDepth: 0,
       index: true,
     },
-    {
-      name: 'publishedBy',
-      type: 'relationship',
-      relationTo: 'users',
-      maxDepth: 0,
-      access: { read: ({ req }) => authenticated({ req }) },
-    },
+    { name: 'publishedBy', type: 'relationship', relationTo: 'users', maxDepth: 0 },
     { name: 'captureBuild', type: 'text', required: true },
   ],
 }
 
+/** The earlier render queue. Bare schema, for the same reason as the releases. */
 export const StreakRenders: CollectionConfig = {
   slug: RENDERS_SLUG,
-  admin: {
-    // The job queue is machinery, not a library: every row, with retry and
-    // cancel, is on the look's Renders tab. Nothing links to a render
-    // document, so it stays out of the nav.
-    hidden: true,
-    group: 'Assets',
-    useAsTitle: 'title',
-    defaultColumns: ['title', 'state', 'attempts', 'createdAt'],
-    description: 'Durable poster and export jobs. Failed jobs can be retried in Studio.',
-  },
+  admin: { hidden: true },
   access: { read: authenticated, create: internal, update: internal, delete: internal },
-  endpoints: renderEndpoints,
   fields: [
     { name: 'title', type: 'text', required: true },
     {
       name: 'look',
       type: 'relationship',
-      relationTo: 'streak-looks',
+      relationTo: LOOKS_SLUG,
       required: true,
       maxDepth: 0,
       index: true,
@@ -323,7 +311,7 @@ export const StreakRenders: CollectionConfig = {
     { name: 'lease', type: 'text', access: { read: internal } },
     { name: 'leaseExpires', type: 'date' },
     { name: 'error', type: 'textarea' },
-    { name: 'release', type: 'relationship', relationTo: 'streak-releases', maxDepth: 0 },
+    { name: 'release', type: 'relationship', relationTo: RELEASES_SLUG, maxDepth: 0 },
     { name: 'output', type: 'upload', relationTo: 'media', maxDepth: 1 },
   ],
 }

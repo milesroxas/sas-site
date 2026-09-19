@@ -204,7 +204,7 @@
    (label + control + value + the gutters below) and does not grow with the
    viewport; the main column keeps `flex-grow`, so every pixel taken off the
    sidebar goes to the stage. */
-.document-fields:has([data-streak-studio]) {
+.document-fields:has([data-streak-studio="inspector"]) {
   --doc-sidebar-width: 376px;
   --sidebar-wrap-width: var(--doc-sidebar-width);
   --sidebar-gutter-h-left: 0px;
@@ -225,7 +225,7 @@
 /* Payload's sidebar gutter is 40px in and 60px out, sized for a stack of
    document fields. The Inspector states its own, once, in `--row-gutter`, so
    the change dots sit in a margin of the panel's own making. */
-.document-fields__sidebar-fields:has([data-streak-studio]) {
+.document-fields__sidebar-fields:has([data-streak-studio="inspector"]) {
   gap: 0;
   /* The top matches the main column's, so both columns' first rule lands on
      the same line; the bottom is the panel's own, sized to clear the end of
@@ -236,6 +236,6 @@
 /* The sidebar is the Inspector's scroll region and stops at its own ends: a
    flick that reaches the last row must not carry on into the document and
    take the stage off screen with it. */
-.document-fields__sidebar:has([data-streak-studio]) {
+.document-fields__sidebar:has([data-streak-studio="inspector"]) {
   overscroll-behavior: contain;
 }

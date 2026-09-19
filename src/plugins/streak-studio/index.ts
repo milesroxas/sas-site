@@ -7,10 +7,16 @@ import {
   type Plugin,
 } from 'payload'
 import { StreakLooks, StreakReleases, StreakRenders } from './collections'
-import { workerEndpoints } from './endpoints'
+import { LOOKS_SLUG } from './components/paths'
 
-/** Walk once at the document boundary and batch every nested visual reference. */
-const hydrateReleases = async ({
+/**
+ * A visual slot stores the id of the Streak Field it uses. Walk once at the
+ * document boundary, batch every nested slot, and hand each one what the site
+ * renders from: the published look's snapshot, posters and hash. A field that
+ * was never published keeps its bare id, and the slot falls back to its
+ * built-in look.
+ */
+const hydrateStudioFields = async ({
   doc,
   req,
 }: {
@@ -30,32 +36,34 @@ const hydrateReleases = async ({
         (key === 'shader' || key === 'menuPreviewShader') &&
         child &&
         typeof child === 'object' &&
-        'release' in child &&
-        typeof child.release === 'number'
+        'studio' in child &&
+        typeof child.studio === 'number'
       )
         slots.push(child as Record<string, unknown>)
       else walk(child)
     }
   }
   walk(doc)
-  const ids = [...new Set(slots.map((slot) => Number(slot.release)))]
+  const ids = [...new Set(slots.map((slot) => Number(slot.studio)))]
   if (!ids.length) return doc
-  req.context.streakReleases ??= new Map()
-  const cache = req.context.streakReleases as Map<number, unknown>
+  req.context.streakFields ??= new Map()
+  const cache = req.context.streakFields as Map<number, unknown>
   const missing = ids.filter((id) => !cache.has(id))
   if (missing.length) {
     const result = await req.payload.find({
-      collection: 'streak-releases',
+      collection: LOOKS_SLUG,
       where: { id: { in: missing } },
       limit: missing.length,
       depth: 0,
-      // What `parseRelease` reads, and nothing else: this lands in public page responses.
+      // The published document, and of it only what `parseRelease` reads: this
+      // lands in public page responses.
+      draft: false,
       select: { sourceHash: true, snapshot: true, posters: true },
       req,
     })
-    for (const release of result.docs) cache.set(release.id, release)
+    for (const look of result.docs) if (look.snapshot) cache.set(look.id, look)
   }
-  for (const slot of slots) slot.release = cache.get(Number(slot.release)) ?? slot.release
+  for (const slot of slots) slot.studio = cache.get(Number(slot.studio)) ?? slot.studio
   return doc
 }
 
@@ -69,10 +77,10 @@ export type StreakStudioPluginConfig = {
 }
 
 /**
- * Streak Field Studio: looks, immutable releases and render jobs, the
- * worker endpoints, and the release hydration on every collection and
- * global. Payload's plugin shape: options in, a function of the config out,
- * every existing hook and endpoint kept.
+ * Streak Field Studio: the looks collection, the hydration of every visual
+ * slot that uses one, and the guard on the posters a published look owns.
+ * Payload's plugin shape: options in, a function of the config out, every
+ * existing hook kept.
  */
 export const streakStudioPlugin =
   (options: StreakStudioPluginConfig = {}): Plugin =>
@@ -87,13 +95,12 @@ export const streakStudioPlugin =
 
 const withStudio: Plugin = (config) => ({
   ...config,
-  endpoints: [...(config.endpoints ?? []), ...workerEndpoints],
   collections: [
     ...(config.collections ?? []).map((collection) => ({
       ...collection,
       hooks: {
         ...collection.hooks,
-        afterRead: [...(collection.hooks?.afterRead ?? []), hydrateReleases],
+        afterRead: [...(collection.hooks?.afterRead ?? []), hydrateStudioFields],
         ...(collection.slug === 'media'
           ? {
               beforeChange: [
@@ -119,7 +126,10 @@ const withStudio: Plugin = (config) => ({
   ],
   globals: (config.globals ?? []).map((global) => ({
     ...global,
-    hooks: { ...global.hooks, afterRead: [...(global.hooks?.afterRead ?? []), hydrateReleases] },
+    hooks: {
+      ...global.hooks,
+      afterRead: [...(global.hooks?.afterRead ?? []), hydrateStudioFields],
+    },
   })),
 })
 
@@ -128,13 +138,13 @@ async function protectPoster(
   req: Parameters<CollectionAfterReadHook>[0]['req'],
 ) {
   const used = await req.payload.count({
-    collection: 'streak-releases',
-    where: { or: [{ darkPoster: { equals: id } }, { lightPoster: { equals: id } }] },
+    collection: LOOKS_SLUG,
+    where: { or: [{ thumbnail: { equals: id } }, { lightPoster: { equals: id } }] },
     req,
   })
   if (used.totalDocs)
     throw new APIError(
-      'This is an immutable Streak Field release poster. Duplicate it to edit.',
+      'This is the poster of a published Streak Field. Publish the field again to replace it.',
       400,
     )
 }

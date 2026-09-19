@@ -30,7 +30,12 @@ export const STREAK_SEED_MAX = 2_147_483_647
 
 /** The shader group as Payload stores it, on any parent. */
 export type StoredStreakVisual = {
-  release?: unknown
+  /**
+   * The Streak Field made in Studio, as the Studio plugin hands it over: the
+   * published look's snapshot and posters. A bare id is a field that was
+   * never published.
+   */
+  studio?: unknown
   preset?: string | null
   seed?: number | null
   speed?: number | null
@@ -125,8 +130,11 @@ export const resolveStreakDescriptor = (
   options: ResolveVisualOptions = {},
 ): StreakVisualDescriptor => {
   const look = isStreakLookId(shader?.preset) ? shader.preset : STREAK_FALLBACK_LOOK
-  const release = parseRelease(shader?.release)
-  const degraded = shader?.release
+  // An unpublished Studio field has nothing to render from yet, so the slot
+  // reads as if none were chosen and shows its shipped look.
+  const published = typeof shader?.studio === 'object' && shader.studio !== null
+  const release = parseRelease(shader?.studio)
+  const degraded = published
     ? !release || release.snapshot.renderer !== STREAK_RENDERER_VERSION
     : !isStreakLookId(shader?.preset)
   const seed = isValidStreakSeed(shader?.seed)

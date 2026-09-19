@@ -2,7 +2,7 @@
 
 import './studio.css'
 
-import { toast, useDocumentInfo } from '@payloadcms/ui'
+import { Link, toast } from '@payloadcms/ui'
 import {
   IconArrowBackUp,
   IconArrowForwardUp,
@@ -14,7 +14,7 @@ import {
   IconRefresh,
 } from '@tabler/icons-react'
 import type { UIFieldClientComponent } from 'payload'
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Kbd } from '@/components/ui/kbd'
@@ -24,13 +24,11 @@ import { STUDIO_GROUND } from '@/features/immersive'
 import {
   canonicalJSON,
   limitStudioTuning,
-  recipeFromSnapshot,
   resolveRecipeTuning,
   type StreakSnapshot,
   snapshotChanges,
   snapshotRecipe,
   starterRecipe,
-  validateRecipe,
 } from '@/features/immersive/studio/recipe'
 import {
   STREAK_LOOK_OPTIONS,
@@ -40,11 +38,10 @@ import {
   VISUAL_PLACEMENTS,
   type VisualPlacement,
 } from '@/features/immersive/visual'
-import type { StreakRelease } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { useDraft } from './draft'
-import { LOOKS_SLUG } from './paths'
-import { refreshStudio, useReleases, useRenders } from './polling'
+import { when } from './History'
+import { type PublishedState, useLook } from './look-store'
 import { studioStore, useStudioSession } from './store'
 
 const Preview = lazy(() =>
@@ -58,15 +55,8 @@ const isEditing = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
   (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
 
-const timeOf = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-
 const clock = (at: number) =>
   new Date(at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-
-/** `v3`: a release is titled `Look title · v3`, and inside its own look the number is the name. */
-export const versionOf = (release: StreakRelease) =>
-  release.title.split(' · ').at(-1) ?? release.title
 
 function IconAction({
   label,
@@ -105,22 +95,20 @@ function IconAction({
 }
 
 /**
- * The stage: the Studio tab of a look. Starters and releases on the left, the
- * live field in the middle at the chosen placement and ground, and the
- * session controls. Edits happen in the Inspector (the recipe field, in the
- * sidebar); the stage reads the same field and shows the result, or a
+ * The stage: the Studio tab of a look. Starters and published history on the
+ * left, the live field in the middle at the chosen placement and ground, and
+ * the session controls. Edits happen in the Inspector (the recipe field, in
+ * the sidebar); the stage reads the same field and shows the result, or a
  * comparison when asked.
  *
- * A look has one draft and a list of immutable releases. Publish freezes the
- * draft as the next release; Restore and Reset to release copy a release's
- * settings back into the draft. Nothing here ever edits a release.
+ * A field has a draft and what is published. Publish puts the draft on the
+ * site, everywhere the field is used; Reset to published and Restore copy a
+ * published state back into the draft.
  */
 export const Stage: UIFieldClientComponent = () => {
   const { id, key, recipe, setValue, update, restore } = useDraft()
-  const { setHasPublishedDoc, setUnpublishedVersionCount } = useDocumentInfo()
   const session = useStudioSession(key)
-  const { docs: releases, loaded } = useReleases(id)
-  const { docs: renders } = useRenders(id)
+  const { live: published, history, uses } = useLook(id)
   const [live, setLive] = useState(true)
 
   let validation = ''
@@ -131,50 +119,17 @@ export const Stage: UIFieldClientComponent = () => {
     validation = (error as Error).message
   }
   const shown = session.showComparison && session.comparison ? session.comparison : recipe
-  const latest = releases[0]
-  const releaseKeys = useMemo(
-    () => releases.map((release) => canonicalJSON(release.snapshot)),
-    [releases],
-  )
-  // The release the draft is identical to, whichever one it is: a restored v1
-  // matches v1, not "12 changes since v3".
-  const matched = snapshot ? releases[releaseKeys.indexOf(canonicalJSON(snapshot))] : undefined
-  const sinceLatest =
-    snapshot && latest ? snapshotChanges(snapshot, latest.snapshot as StreakSnapshot) : null
-  // The newest publish job, while it is still the author's business: in the
-  // queue, rendering, or failed without a release of the same output since.
-  const job = renders.find((render) => render.kind === 'publish')
-  const rendering = job?.state === 'queued' || job?.state === 'rendering'
-  const failed =
-    job?.state === 'failed' && !releases.some((release) => release.sourceHash === job.sourceHash)
+  const draftKey = snapshot ? canonicalJSON(snapshot) : ''
+  const unchanged = Boolean(published && published.key === draftKey)
+  // The published state the draft is identical to, whichever one it is: a
+  // restored state matches itself, not "12 changes since published".
+  const matched = history.find((state) => state.key === draftKey)
+  const sincePublished =
+    snapshot && published ? snapshotChanges(snapshot, JSON.parse(published.key)) : null
+  const places = uses.filter((use) => !use.historical)
   const requested = resolveRecipeTuning(recipe)
   const budget = snapshot ? limitStudioTuning(snapshot[session.surface], session.placement) : null
   const capped = budget !== null && budget.count < requested.count
-
-  // The worker publishes the look when its posters land, which this page only
-  // learns by polling. Tell Payload's own status line, so Changed and Revert
-  // to published are true without a reload.
-  const newestId = latest?.id
-  const matchedId = matched?.id
-  const knownNewest = useRef<number | null | undefined>(null)
-  useEffect(() => {
-    if (!loaded) return
-    if (
-      knownNewest.current !== null &&
-      newestId !== undefined &&
-      newestId !== knownNewest.current
-    ) {
-      setHasPublishedDoc(true)
-      setUnpublishedVersionCount(matchedId === newestId ? 0 : 1)
-    }
-    knownNewest.current = newestId
-  }, [loaded, newestId, matchedId, setHasPublishedDoc, setUnpublishedVersionCount])
-
-  // A finished job means a new release: fetch it now, not at the next tick.
-  const jobState = job ? `${job.id}:${job.state}` : ''
-  useEffect(() => {
-    if (jobState.endsWith(':complete')) refreshStudio()
-  }, [jobState])
 
   const undo = () => {
     const previous = studioStore.undo(key, recipe)
@@ -192,41 +147,21 @@ export const Stage: UIFieldClientComponent = () => {
       showComparison: false,
     })
   }
-  const restoreRelease = (release: StreakRelease) => {
+  const restoreState = (state: PublishedState, label: string) => {
     try {
-      restore(release)
-      toast.success(`${versionOf(release)} is the draft now. Undo brings your changes back.`)
+      restore(state.recipe)
+      toast.success(`The draft is back at ${label}. Undo brings your changes back.`)
     } catch {
-      toast.error('This release was published by an older renderer and cannot be restored.')
+      toast.error('This state holds values the current ranges no longer accept.')
     }
   }
-  // Back to what the look is published at. A look released before every
-  // release published its look has no published recipe, so it takes the
-  // newest release instead.
-  const resetToRelease = async () => {
-    if (!id || !latest) return
-    try {
-      const response = await fetch(`/api/${LOOKS_SLUG}/${id}?draft=false&depth=0`)
-      const published = response.ok ? await response.json() : null
-      if (published?._status === 'published') update(validateRecipe(published.recipe), true)
-      else restore(latest)
-      toast.success('The draft is back at the published release. Undo brings your changes back.')
-    } catch {
-      toast.error('Could not read the published release. Restore one from the list instead.')
-    }
-  }
-  const compareRelease = (release: StreakRelease) => {
-    try {
-      studioStore.patch(key, {
-        comparison: recipeFromSnapshot(release.snapshot as StreakSnapshot),
-        comparisonLabel: versionOf(release),
-        comparisonAt: new Date(release.createdAt).getTime(),
-        showComparison: true,
-      })
-    } catch {
-      // A release from an older renderer may hold values outside today's ranges.
-    }
-  }
+  const compareState = (state: PublishedState) =>
+    studioStore.patch(key, {
+      comparison: state.recipe,
+      comparisonLabel: when(state.at),
+      comparisonAt: new Date(state.at).getTime(),
+      showComparison: true,
+    })
   const randomize = () =>
     update({ ...recipe, seed: crypto.getRandomValues(new Uint32Array(1))[0] & SEED_MAX }, true)
 
@@ -279,33 +214,46 @@ export const Stage: UIFieldClientComponent = () => {
                 aria-hidden
                 className={cn(
                   'mr-1.5 inline-block size-1.5 shrink-0 rounded-full align-[0.15em]',
-                  matched ? 'bg-success' : latest ? 'bg-warning' : 'bg-muted-foreground',
+                  unchanged ? 'bg-success' : published ? 'bg-warning' : 'bg-muted-foreground',
                 )}
               />
               {!id
                 ? 'Unsaved. Save once to publish and export.'
-                : matched
-                  ? `Draft matches ${versionOf(matched)}`
-                  : latest && sinceLatest !== null
-                    ? `Draft, ${sinceLatest} ${sinceLatest === 1 ? 'change' : 'changes'} since ${versionOf(latest)}`
-                    : 'Draft, not yet published'}
-              {rendering && ' · rendering posters for the next release'}
-              {failed && (
-                <span className="text-destructive"> · the last release failed, see Renders</span>
+                : unchanged
+                  ? 'Published, no changes'
+                  : matched
+                    ? `Draft matches what was published ${when(matched.at)}`
+                    : published && sincePublished !== null
+                      ? `Draft, ${sincePublished} ${sincePublished === 1 ? 'change' : 'changes'} since published`
+                      : 'Draft, not yet published'}
+              {/* Where Publish lands. A field is used like a media file: every
+                  place that uses it shows what is published. */}
+              {id && places.length === 1 && (
+                <>
+                  {' · used on '}
+                  <Link href={places[0].url} prefetch={false} className="underline">
+                    {places[0].title}
+                  </Link>
+                </>
               )}
+              {places.length > 1 && ` · used in ${places.length} places`}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {latest && !matched && (
+            {published && !unchanged && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button type="button" variant="ghost" size="sm" onClick={resetToRelease}>
-                    Reset to release
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => restoreState(published, 'what is published')}
+                  >
+                    Reset to published
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" sideOffset={6} className="max-w-56">
-                  Put the published release's settings back in the draft. Undo brings your changes
-                  back.
+                  Put what is on the site back in the draft. Undo brings your changes back.
                 </TooltipContent>
               </Tooltip>
             )}
@@ -387,7 +335,7 @@ export const Stage: UIFieldClientComponent = () => {
               ))}
             </ul>
             <div className="flex h-10 items-center border-y border-border px-3.5">
-              <h3 className="flex-1 text-xs/4 font-semibold tracking-[0.02em]">Releases</h3>
+              <h3 className="flex-1 text-xs/4 font-semibold tracking-[0.02em]">Published</h3>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
@@ -436,38 +384,48 @@ export const Stage: UIFieldClientComponent = () => {
                   </button>
                 </li>
               )}
-              {/* A release row does two things, so it is two buttons: the row
-                  puts the release on the stage beside the draft, Restore makes
-                  it the draft. Looking never changes anything. */}
-              {releases.map((release) => (
+              {/* A published state does two things, so it is two buttons: the
+                  row puts it on the stage beside the draft, Restore makes it
+                  the draft. Looking never changes anything. */}
+              {history.map((state, index) => (
                 <li
-                  key={release.id}
+                  key={state.id}
                   className="flex items-center gap-2 pr-3.5 transition-colors hover:bg-muted"
                 >
                   <button
                     type="button"
                     className="flex h-10 min-w-0 flex-1 cursor-pointer items-center gap-2.5 pl-3.5 text-left text-[13px]/4 text-foreground/80"
-                    onClick={() => compareRelease(release)}
+                    onClick={() => compareState(state)}
                   >
-                    <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-success" />
-                    <span className="min-w-0 flex-1 truncate">{versionOf(release)}</span>
-                    <span className="shrink-0 text-[11px]/3.5 text-muted-foreground tabular-nums">
-                      {release.id === matched?.id ? 'matches draft' : timeOf(release.createdAt)}
-                    </span>
+                    <span
+                      aria-hidden
+                      className={cn(
+                        'size-1.5 shrink-0 rounded-full',
+                        index === 0 ? 'bg-success' : 'border border-muted-foreground',
+                      )}
+                    />
+                    <span className="min-w-0 flex-1 truncate tabular-nums">{when(state.at)}</span>
+                    {/* The filled dot is what is on the site; the column is too
+                        narrow to say so in words beside a date and Restore. */}
+                    {state.key === draftKey && (
+                      <span className="shrink-0 text-[11px]/3.5 text-muted-foreground">
+                        matches draft
+                      </span>
+                    )}
                   </button>
-                  {release.id !== matched?.id && (
+                  {state.key !== draftKey && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <button
                           type="button"
                           className="pressable shrink-0 cursor-pointer text-[11px]/3.5 text-muted-foreground hover:text-foreground"
-                          onClick={() => restoreRelease(release)}
+                          onClick={() => restoreState(state, when(state.at))}
                         >
                           Restore
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="right" sideOffset={8} className="max-w-56">
-                        Make these settings the draft. The release itself never changes.
+                        Make these settings the draft. The site changes when you publish.
                       </TooltipContent>
                     </Tooltip>
                   )}

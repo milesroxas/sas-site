@@ -1,13 +1,7 @@
 'use client'
 
 import { useDocumentInfo, useField } from '@payloadcms/ui'
-import {
-  emptyRecipe,
-  recipeFromSnapshot,
-  type StreakRecipe,
-  type StreakSnapshot,
-} from '@/features/immersive/studio/recipe'
-import type { StreakRelease } from '@/payload-types'
+import { emptyRecipe, type StreakRecipe, validateRecipe } from '@/features/immersive/studio/recipe'
 import { RECIPE_FIELD } from './paths'
 import { sessionKey, studioStore } from './store'
 
@@ -36,11 +30,9 @@ export function useDraft(path: string = RECIPE_FIELD) {
     setValue,
     update,
     /**
-     * Make a release's settings the draft. The release itself never changes;
-     * publishing the restored draft unedited points the look back at it.
-     * Throws for a release whose values today's ranges no longer accept.
+     * Make a published state the draft. Nothing on the site changes until the
+     * draft is published. Throws for a recipe today's ranges no longer accept.
      */
-    restore: (release: StreakRelease) =>
-      update(recipeFromSnapshot(release.snapshot as StreakSnapshot), true),
+    restore: (published: StreakRecipe) => update(validateRecipe(published), true),
   }
 }

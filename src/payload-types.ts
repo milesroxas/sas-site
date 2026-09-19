@@ -999,7 +999,7 @@ export interface FolderInterface {
   createdAt: string;
 }
 /**
- * Tune the recipe in the Inspector, watch it on the stage, then publish. Published releases stay pinned on existing pages.
+ * Tune the recipe in the Inspector, watch it on the stage, then publish. Every place that uses the field shows what is published.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "streak-looks".
@@ -1010,11 +1010,15 @@ export interface StreakLook {
   description?: string | null;
   tags?: string[] | null;
   /**
-   * The dark poster of the published release.
+   * Rendered on Publish. Also the library thumbnail.
    */
   thumbnail?: (number | null) | Media;
   /**
-   * Hides the look from new selections. Existing releases keep working.
+   * Rendered on Publish.
+   */
+  lightPoster?: (number | null) | Media;
+  /**
+   * Hides the field from the picker. Places that use it keep working.
    */
   archived?: boolean | null;
   createdBy?: (number | null) | User;
@@ -1028,6 +1032,25 @@ export interface StreakLook {
     | number
     | boolean
     | null;
+  snapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  posters?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  sourceHash?: string | null;
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -1569,13 +1592,7 @@ export interface WorkPage {
  * via the `definition` "StreakVisualConfig".
  */
 export interface StreakVisualConfig {
-  /**
-   * Pinned version from Streak Field Studio. Clear to use a built-in look.
-   */
-  release?: (number | null) | StreakRelease;
-  /**
-   * A shipped Streak Field look. Tuning lives in code; pick the closest look.
-   */
+  studio?: (number | null) | StreakLook;
   preset?: string | null;
   /**
    * Lays out the field. The same seed always draws the same composition; leave empty to have one assigned when saved.
@@ -1589,6 +1606,7 @@ export interface StreakVisualConfig {
    * Brightness multiplier, 0.5 to 1.25. Empty is the look as shipped.
    */
   intensity?: number | null;
+  release?: (number | null) | StreakRelease;
   /**
    * Let the pointer push and light the field on devices that run it live.
    */
@@ -1599,8 +1617,6 @@ export interface StreakVisualConfig {
   posterMedia?: (number | null) | Media;
 }
 /**
- * Immutable published artwork. Edit the source look to create a new release.
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "streak-releases".
  */
@@ -6274,8 +6290,6 @@ export interface Subscriber {
   createdAt: string;
 }
 /**
- * Durable poster and export jobs. Failed jobs can be retried in Studio.
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "streak-renders".
  */
@@ -7025,11 +7039,12 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "StreakVisualConfig_select".
  */
 export interface StreakVisualConfigSelect<T extends boolean = true> {
-  release?: T;
+  studio?: T;
   preset?: T;
   seed?: T;
   speed?: T;
   intensity?: T;
+  release?: T;
   pointerInteraction?: T;
   posterMedia?: T;
 }
@@ -9501,10 +9516,14 @@ export interface StreakLooksSelect<T extends boolean = true> {
   description?: T;
   tags?: T;
   thumbnail?: T;
+  lightPoster?: T;
   archived?: T;
   createdBy?: T;
   updatedBy?: T;
   recipe?: T;
+  snapshot?: T;
+  posters?: T;
+  sourceHash?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -24,11 +24,6 @@ on:
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
-    inputs:
-      studio_url:
-        description: 'Optional Streak Studio preview URL'
-        required: false
-        type: string
 
 concurrency:
   group: payload-jobs
@@ -71,27 +66,3 @@ jobs:
             exit 0
           fi
           exit "$status"
-
-  streak-studio:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
-      - name: Render queued Streak Field posters and artwork
-        env:
-          STREAK_STUDIO_URL: ${{ inputs.studio_url || vars.STREAK_STUDIO_URL }}
-          PAYLOAD_JOBS_URL: ${{ secrets.PAYLOAD_JOBS_URL }}
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-        run: |
-          if [ -z "$STREAK_STUDIO_URL" ]; then
-            export STREAK_STUDIO_URL="${PAYLOAD_JOBS_URL%/api/payload-jobs/run}"
-          fi
-          pnpm streak:worker

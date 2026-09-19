@@ -84,7 +84,7 @@ describe('Studio recipes and release contract', () => {
     }
   })
   it('inherits release seeds and serializes compact releases for the menu handoff', () => {
-    const descriptor = resolveStreakDescriptor({ release: release() })
+    const descriptor = resolveStreakDescriptor({ studio: release() })
     expect(descriptor.seed).toBe(emptyRecipe().seed)
     expect(descriptor.degraded).toBe(false)
     expect(parseStreakDescriptor(serializeStreakDescriptor(descriptor))).toEqual(descriptor)
@@ -95,11 +95,12 @@ describe('Studio recipes and release contract', () => {
   it('keeps unsupported renderer posters but disables live rendering', () => {
     const data = release()
     data.snapshot.renderer = 'future-renderer'
-    expect(resolveStreakDescriptor({ release: data }).degraded).toBe(true)
+    expect(resolveStreakDescriptor({ studio: data }).degraded).toBe(true)
     expect(parseRelease(data)?.posters).toEqual(data.posters)
     data.snapshot.dark.count = 100000
     expect(parseRelease(data)).toBeNull()
-    expect(resolveStreakDescriptor({ release: 23, preset: 'signal-v1' }).degraded).toBe(true)
+    // A field that was never published arrives as a bare id: the shipped look runs.
+    expect(resolveStreakDescriptor({ studio: 23, preset: 'signal-v1' }).degraded).toBe(false)
   })
   it('reads identity in canonical form, whatever order the JSON arrived in', () => {
     // Postgres jsonb hands keys back by length, then bytewise.

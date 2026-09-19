@@ -41,8 +41,7 @@ import {
   parameterKeys,
   toHex,
 } from './parameters'
-import { refreshStudio } from './polling'
-import { saveAndQueue } from './publish'
+import { exportStill } from './publish'
 
 const sameAsDefault = (key: ParameterKey, value: unknown) =>
   JSON.stringify(value) === JSON.stringify(STREAK_FIELD_DEFAULTS[key])
@@ -175,7 +174,7 @@ export const Inspector: JSONFieldClientComponent = ({ path }) => {
           and the change dots live in the left one. The trailing space is the
           scroll region's own: the last row of the last group has to clear the
           bottom of the column rather than end on it. */}
-      <div data-streak-studio className="flex flex-col gap-3 px-(--row-gutter) pb-16">
+      <div data-streak-studio="inspector" className="flex flex-col gap-3 px-(--row-gutter) pb-16">
         <Tabs value={tab} onValueChange={setTab} className="gap-0">
           {/* The tab strip is the scroll region's header: it names where you
               are and carries the changed count, so it stays put while the
@@ -366,9 +365,9 @@ function ExportRow({
 }
 
 /**
- * A still of this recipe at its capture frame, filed in Media. The seed and
- * the frame come from the recipe; scale raises resolution without changing
- * the composition. Shares the publish path, so a render is a durable job.
+ * A still of this recipe at its capture frame, rendered in this browser and
+ * filed in Media. The seed and the frame come from the recipe; scale raises
+ * resolution without changing the composition.
  */
 function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation: string }) {
   const { id } = useDocumentInfo()
@@ -382,9 +381,15 @@ function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation:
     setBusy(true)
     try {
       if (!id) throw new Error('Save this look first.')
-      await saveAndQueue(submit, id, recipe, 'export', capture)
-      refreshStudio()
-      toast.success('Render queued. The still lands in Media, and in Renders, when it finishes.')
+      const media = await exportStill(submit, id, recipe, capture)
+      // Filed in Media, and handed over now: the editor asked for a file.
+      if (media.url) {
+        const link = document.createElement('a')
+        link.href = media.url
+        link.download = media.filename ?? ''
+        link.click()
+      }
+      toast.success('Saved to Media, in the Streak Field Studio folder.')
     } catch (error) {
       toast.error((error as Error).message)
     } finally {
@@ -495,7 +500,7 @@ function ExportPanel({ recipe, validation }: { recipe: StreakRecipe; validation:
           disabled={!id || busy || Boolean(validation)}
           onClick={render}
         >
-          {busy ? 'Queueing…' : 'Render and save to Media'}
+          {busy ? 'Rendering…' : 'Render and save to Media'}
         </Button>
         {!id && (
           <p className="mt-2 text-[11px]/4 text-muted-foreground">Save this look once to render.</p>

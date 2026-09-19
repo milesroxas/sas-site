@@ -1,31 +1,79 @@
 import type { useForm } from '@payloadcms/ui'
 import {
   type CaptureOptions,
+  POSTER_CAPTURE,
   type StreakRecipe,
+  snapshotRecipe,
   validateRecipe,
 } from '@/features/immersive/studio/recipe'
+import type { Media, StreakLook } from '@/payload-types'
+import { LOOKS_SLUG } from './paths'
+import { sessionKey, studioStore } from './store'
 
-export async function saveAndQueue(
-  submit: ReturnType<typeof useForm>['submit'],
-  id: number | string,
-  recipe: StreakRecipe,
-  kind: 'publish-release' | 'export',
-  capture?: CaptureOptions,
-) {
-  validateRecipe(recipe)
-  const saved = await submit({
-    action: `/api/streak-looks/${id}?draft=true`,
-    method: 'PATCH',
-    overrides: { _status: 'draft' },
-  })
-  if (!saved?.res.ok) throw new Error('Save the draft successfully before publishing.')
-  const response = await fetch(`/api/streak-looks/${id}/${kind}`, {
+type Submit = ReturnType<typeof useForm>['submit']
+
+/**
+ * The stills of a recipe, rendered in this browser one after another (one
+ * extra WebGL context at a time) with the live preview paused for the moment
+ * it takes, so the capture has the GPU to itself.
+ */
+async function stills(id: number | string, recipe: StreakRecipe, captures: CaptureOptions[]) {
+  const key = sessionKey(id)
+  const { captureStill } = await import('@/features/immersive')
+  const snapshot = snapshotRecipe(recipe)
+  const wasPaused = studioStore.read(key).paused
+  studioStore.patch(key, { paused: true })
+  try {
+    const images: string[] = []
+    for (const capture of captures) images.push(await captureStill({ snapshot, capture }))
+    return images
+  } finally {
+    studioStore.patch(key, { paused: wasPaused })
+  }
+}
+
+async function send<T>(id: number | string, action: string, payload: object): Promise<T> {
+  const response = await fetch(`/api/${LOOKS_SLUG}/${id}/${action}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ recipe, capture }),
+    body: JSON.stringify(payload),
   })
   const result = await response.json()
   if (!response.ok)
-    throw new Error(result.errors?.[0]?.message ?? result.error ?? 'Could not queue the render.')
-  return result
+    throw new Error(result.errors?.[0]?.message ?? result.error ?? 'The request failed.')
+  return result.doc
+}
+
+/** The server publishes the saved draft, so the draft is saved before anything is rendered from it. */
+async function saveDraft(submit: Submit, id: number | string, recipe: StreakRecipe) {
+  validateRecipe(recipe)
+  const saved = await submit({
+    action: `/api/${LOOKS_SLUG}/${id}?draft=true`,
+    method: 'PATCH',
+    overrides: { _status: 'draft' },
+    disableSuccessStatus: true,
+  })
+  if (!saved?.res.ok) throw new Error('The draft could not be saved, so nothing was published.')
+}
+
+/** Publish: save, render the dark and light posters here, and publish the look with them in one request. */
+export async function publishLook(submit: Submit, id: number | string, recipe: StreakRecipe) {
+  await saveDraft(submit, id, recipe)
+  const [dark, light] = await stills(id, recipe, [
+    { ...POSTER_CAPTURE, surface: 'dark' },
+    { ...POSTER_CAPTURE, surface: 'light' },
+  ])
+  return send<StreakLook>(id, 'publish', { recipe, dark, light })
+}
+
+/** Export: one still at the chosen size, filed in Media. */
+export async function exportStill(
+  submit: Submit,
+  id: number | string,
+  recipe: StreakRecipe,
+  capture: CaptureOptions,
+) {
+  await saveDraft(submit, id, recipe)
+  const [image] = await stills(id, recipe, [capture])
+  return send<Media>(id, 'export', { recipe, capture, image })
 }
