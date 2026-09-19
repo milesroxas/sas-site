@@ -17,6 +17,7 @@ import { MediaContentSplit } from '@/blocks/media-content-split/MediaContentSpli
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
 import { SectionBand } from '@/blocks/section/SectionBand'
+import { renderContentBlock, sectionChildComponents } from '@/blocks/shared/content-block-renderer'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { resolveStoryBlockCopy, resolveStorySectionCopy } from '@/blocks/shared/story-copy'
@@ -461,6 +462,20 @@ const renderWorkBlock = (
         <CssRevealSection key={block.id}>
           <ContentBlock {...block} bare={bare} />
         </CssRevealSection>
+      )
+    // Code and the figures carry no story copy and no media, so nothing
+    // resolves against the study: they go through the shared renderer and get
+    // the band and CSS entrance they have on every other surface, bare inside
+    // a Section. A diagram's own draw-in keys off that entrance (globals.css).
+    case 'code':
+    case 'chart':
+    case 'diagram':
+    case 'bespokeFigure':
+      return renderContentBlock(
+        block,
+        block.id ?? block.blockType,
+        Boolean(bare),
+        sectionChildComponents,
       )
     case 'audienceTabs':
       // Owns its own GSAP entrance + swap shell — do not wrap again.

@@ -2,6 +2,7 @@
 import { Highlight, themes } from 'prism-react-renderer'
 import type React from 'react'
 import { CopyButton } from './CopyButton'
+import './prism-languages'
 
 type Props = {
   code: string

@@ -1,11 +1,15 @@
 import type { Block } from 'payload'
 
 import { Carousel } from '@/blocks/Carousel/config'
+import { Code } from '@/blocks/Code/config'
 import { Content } from '@/blocks/Content/config'
 import { Faq } from '@/blocks/faq/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
+import { BespokeFigure } from '@/blocks/figures/bespoke/config'
+import { Chart } from '@/blocks/figures/chart/config'
+import { Diagram } from '@/blocks/figures/diagram/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { ImagePair } from '@/blocks/image-pair/config'
 import { InsightList } from '@/blocks/insight-list/config'
@@ -15,6 +19,12 @@ import { RichTextBlock } from '@/blocks/rich-text/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
+
+/**
+ * The figure blocks (docs/figures.md), named so the surfaces that build their
+ * run by hand (Work Pages) or hold blocks back (Home) take the same three.
+ */
+export const figureBlocks: Block[] = [Chart, Diagram, BespokeFigure]
 
 /**
  * The reorganized Section-nestable run (docs/blocks-reorg-roadmap.md), stated
@@ -46,6 +56,9 @@ export const sectionNestableBlocks: Block[] = [
   MediaBlock,
   // Text
   RichTextBlock,
+  Code,
+  // Figures
+  ...figureBlocks,
   // Interactive
   Faq,
   Carousel,

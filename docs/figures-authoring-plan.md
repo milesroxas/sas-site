@@ -1,6 +1,6 @@
 # Figures and agent authoring for long-form Lab content: plan
 
-Status: proposal, 2026-09-19. Nothing here is implemented. No schema, dependency or content change has been made.
+Status: Phases 0 to 4 implemented 2026-09-19 (code, tests, stories, and migration `20260919_213646_figures_blocks`). Phase 5, the acceptance article, is open: it needs the write-up's real data and a person to review and publish. Usage guide: [figures.md](figures.md). What was decided and measured is recorded under [Implementation record](#implementation-record); the sections above it are the proposal as written.
 
 Origin: the Streak Field write-up drafted on 2026-09-19 (8 charts, 8 diagrams, 14 screenshots, about 4,500 words). It was produced as an Obsidian note because the CMS has no way to hold a chart or a diagram as anything but a flat image. This plan makes that kind of piece authorable in Payload, by a team agent over MCP, reviewed and published by a person.
 
@@ -211,8 +211,40 @@ No renames are expected. If a prompt offers a rename for any figures table, the 
 | Converter loses Markdown features | Phase 0 spike lists unsupported nodes; the skill tells the agent which syntax is allowed. |
 | Stored layout goes stale after a renderer change | Layout stores the spec hash and a layout version; a mismatch recomputes on next save, and a one-off script can recompute all. |
 
+## Implementation record
+
+Decisions (2026-09-19):
+
+1. **Where figure data lives: A.** Figure blocks on the page composition.
+2. **Schema library: zod**, confined to `src/features/figures` and server code. One definition yields the TypeScript types, the validator, and (through `z.toJSONSchema`, draft 4) the JSON Schema on the `spec` field, which types `payload-types`, drives the admin editor and documents the MCP tool input.
+3. **Layout engine: elkjs.** Loaded on first use inside the save, never in a page render.
+4. **Mermaid stopgap: skipped.**
+5. **Surface: not Lab only.** The blocks are offered on Posts, Pages, Lab Pages, Work Pages, Expertise and Who We Help (the shared Section run, plus the hand-built Work run). Home holds them back. The skill is `article-authoring`, not `lab-article`, for the same reason.
+
+Spikes, with numbers:
+
+- **Layout.** elkjs 0.12 on Node 22, layered with orthogonal routing: 6 nodes 10ms, 20 nodes and 30 edges 16 to 20ms, the largest legal graph (40 nodes, 80 labelled edges) 30 to 40ms; the first call adds about 35ms to load the engine. Budget set at 2000ms. ELK runs in-process and cannot be interrupted, so the ceilings bound the work and the budget is a tripwire, not a sandbox. Groups and edge labels place without overlap on all eight corpus diagrams (asserted in `layout.test.ts`).
+- **Markdown.** `convertMarkdownToLexical` with `editorConfigFactory.fromField`, on 3.88.0, converts to exactly the nodes the target editor enables. The default editor here is paragraph, bold, italic, underline, link: no lists, no inline code, no headings. So the Rich text block gained list and inline code features, and the input guard reads the editor's own feature map and refuses the rest with the fix. Verified end to end against the real config in `tests/int/figures.int.spec.ts`.
+
+What the build found that the proposal did not know:
+
+- **Draft saves skip field validation**, and the MCP tools relay `error.message` only. Validation therefore runs at the document boundary (`figuresPlugin`) on every full save, and carries its detail in the message. Autosave is exempt.
+- **The Code block has no table today.** It only lived inside post bodies (Lexical JSON), so its `language` enum is new, not altered. Migration note 3 below does not apply.
+- **New media does not default to internal.** `Media.usageStatus` defaults to `public-approved`. `cms:upload` sets `internal` explicitly and verifies it. The claim in the findings table above, in `mcp.md` and in `plugins/mcp.ts` is wrong as written; the default itself was left alone as out of scope.
+- **The diagram's stored field is `geometry`, not `layout`**: `layout` is the page composition field, and the content walk keys on field names.
+- **A virtual field inside a block used twice in a collection forks its table.** Payload's identical-block check counts virtual fields as missing columns, so the Rich text block's second use got `*_rich_text_2` in the first generated migration, which would have orphaned existing Section rich text. Fixed at the source with a one-line vendored patch to `@payloadcms/drizzle` and a guard test ([figures.md](figures.md#vendored-patch-payloadcmsdrizzle)). The migration that ships is purely additive: 48 new tables, no change to any existing one.
+- **AEO does not read composition blocks** on any surface (`llms-full.txt` serializes a post's `content` only), so figures reach Ask but not llms.txt.
+
+Gates:
+
+- Phase 1: met in `tests/int/figures.int.spec.ts` (draft from Markdown and code as a team user with access control on; a second Markdown write is refused without `replace`). The "person edits in the admin" step was not exercised by hand.
+- Phase 2: all eight corpus charts render (Storybook); five broken specs each answer with a specific message (`spec.test.ts`); palette validated on five surfaces. The dataviz anti-pattern checklist was applied during the build, not audited independently.
+- Phase 3: all eight corpus diagrams render; no overlapping nodes or labels (asserted on the geometry, which is width-independent; checked by eye at 390 and 1440); largest spec inside budget; diagrams ship no client JavaScript of their own (they ride the block reveal every block already uses).
+- Phase 4: script and registry built. The upload was not run against a live server (media storage is the shared bucket), so its gate is open.
+
 ## Related
 
+- [figures.md](figures.md): the usage guide for what this plan built.
 - [mcp.md](mcp.md): agent authoring, keys, capability model.
 - [streak-field-studio.md](streak-field-studio.md): the compute on publish, render cheaply pattern this plan reuses.
 - [blocks-reorg-roadmap.md](blocks-reorg-roadmap.md) and [block-grid-roadmap.md](block-grid-roadmap.md): Section and grid contracts figure blocks must follow.

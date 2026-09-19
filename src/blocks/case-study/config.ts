@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { Carousel } from '@/blocks/Carousel/config'
+import { Code } from '@/blocks/Code/config'
 import { Content } from '@/blocks/Content/config'
 import { Faq } from '@/blocks/faq/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
@@ -25,6 +26,7 @@ import {
   transitionFields,
 } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
+import { figureBlocks } from '@/blocks/shared/section-blocks'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { publicApprovedMediaWhere, withCaseStudyScopedMedia } from '@/fields/caseStudyScopedMedia'
@@ -228,6 +230,10 @@ const workSectionBlocks: Block[] = [
   WorkFeatureImageStatement,
   // Caption carries no story copy, so it takes the picker scope only.
   WorkMediaBlock,
+  // Text and Figures: a listing or a figure is the block's own data, never
+  // story copy, and holds no media, so all four are offered plain.
+  Code,
+  ...figureBlocks,
   // Interactive: FAQ copy is the block's own (questions, not story beats) and
   // it has no media, so it is offered plain. Carousel carries no story copy
   // either, so it takes the picker scope only. Tabs pull story copy per tab,

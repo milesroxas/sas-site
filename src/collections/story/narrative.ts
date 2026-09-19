@@ -1,4 +1,5 @@
 import type { GroupField, Tab } from 'payload'
+import { markdownInputFields } from '@/fields/markdownInput'
 import type { NarrativeSection } from '@/payload-types'
 
 /**
@@ -96,6 +97,7 @@ const storyBeatFields = (): GroupField['fields'] => [
       description: 'Optional channel-neutral public heading. A presentation can override it.',
     },
   },
+  ...markdownInputFields('body'),
   {
     name: 'body',
     type: 'richText',
@@ -121,6 +123,7 @@ const storySectionField = (
     description: `${description} The overview and beats are composed in order for whole-section consumers.`,
   },
   fields: [
+    ...markdownInputFields('body'),
     {
       name: 'body',
       type: 'richText',

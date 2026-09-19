@@ -73,7 +73,26 @@
     // the GSAP ref-guard idiom in Header/Menu and Footer/Closing). Every one of
     // them sat below 110, so keeping them would have made those paths stricter
     // than the rest of the repo rather than more lenient.
-    "maxCrap": 110
+    "maxCrap": 110,
+    // Known ceilings, kept visible rather than suppressed. Each names the file
+    // and why its numbers are not ours to lower.
+    "thresholdOverrides": [
+      {
+        // Vendored shadcn chart primitive (`pnpm dlx shadcn add chart`), kept
+        // byte-close to upstream so future diffs stay readable. Its tooltip
+        // content is one large conditional render. Site charts do not grow it:
+        // they go through src/features/figures/ui/chart, which is gated at the
+        // defaults.
+        "files": ["src/components/ui/chart.tsx"],
+        // The tooltip's label memo, its config lookup, and the anonymous row
+        // renderer inside its payload map (which has no name to pin).
+        "functions": ["tooltipLabel", "getPayloadConfigFromPayload", "<arrow>"],
+        "maxCyclomatic": 25,
+        "maxCognitive": 20,
+        "maxCrap": 650,
+        "reason": "Vendored shadcn primitive, kept byte-close to upstream"
+      }
+    ]
   },
   "ignoreExports": [
     // Vendored shadcn primitives (ejected) — keep the full upstream export surface for future diffs

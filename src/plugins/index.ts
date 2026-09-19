@@ -12,6 +12,7 @@ import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import type { AudiencePage, ExpertisePage, LabPage, Page, Post, WorkPage } from '@/payload-types'
 import { aeoPlugin } from '@/plugins/aeo'
 import { askIndexPlugin } from '@/plugins/ask-index'
+import { figuresPlugin } from '@/plugins/figures'
 import { formBuilder } from '@/plugins/form-builder'
 import { mcp } from '@/plugins/mcp'
 import { streakStudioPlugin } from '@/plugins/streak-studio'
@@ -36,6 +37,7 @@ const generateURL: GenerateURL<SeoDoc> = ({ collectionConfig, doc }) => {
 
 export const plugins: Plugin[] = [
   streakStudioPlugin(),
+  figuresPlugin(),
   redirectsPlugin({
     collections: ['pages', 'posts', 'work-pages', 'lab-pages', 'expertise-pages', 'audience-pages'],
     overrides: {

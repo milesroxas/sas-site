@@ -2,6 +2,7 @@
 
 import { type RefObject, useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useHydrated } from '@/hooks/use-hydrated'
+import { useNearViewport } from '@/hooks/use-near-viewport'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { GPU_PRIORITY, type GpuLeaseKind } from '@/lib/webgl/gpu-budget'
 import { useGpuLease } from '@/lib/webgl/use-gpu-lease'
@@ -10,7 +11,6 @@ import {
   useCoarsePointer,
   useDocumentVisible,
   useMotionPaused,
-  useNearViewport,
   usePageCovered,
   useStreakCapability,
 } from './hooks'

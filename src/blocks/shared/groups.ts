@@ -22,6 +22,8 @@ export const BLOCK_GROUPS = {
   split: 'Split layouts',
   /** Large typographic statements, pull quotes, testimonials. */
   statements: 'Statements',
+  /** Data and structure drawn from a spec: charts, diagrams, code-owned figures. */
+  figures: 'Figures',
   /** Tabs, switchers, marquees, carousels, accordions (FAQ). */
   interactive: 'Interactive',
   /** Numbered runs, card grids, listings, facts, metrics, related content. */

@@ -3,6 +3,7 @@ import type { Block } from 'payload'
 import { Archive } from '@/blocks/ArchiveBlock/config'
 import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { CallToAction } from '@/blocks/CallToAction/config'
+import { Code } from '@/blocks/Code/config'
 import { Content } from '@/blocks/Content/config'
 import { DynamicAudience } from '@/blocks/DynamicAudience/config'
 import { FormBlock } from '@/blocks/Form/config'
@@ -14,7 +15,11 @@ import { ImagePair } from '@/blocks/image-pair/config'
 import { NewsletterSignup } from '@/blocks/NewsletterSignup/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
 import { sectionBlock } from '@/blocks/section/config'
-import { sectionChildBlocks, sectionNestableBlocks } from '@/blocks/shared/section-blocks'
+import {
+  figureBlocks,
+  sectionChildBlocks,
+  sectionNestableBlocks,
+} from '@/blocks/shared/section-blocks'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { TestimonialsMarquee } from '@/blocks/TestimonialsMarquee/config'
 
@@ -73,7 +78,8 @@ export const postLayoutBlocks: Block[] = [
  * Section wrapper, which Home does not adopt yet (docs/blocks-reorg-roadmap.md).
  * The two pair blocks and the Standard heading are held back with it: they
  * are case-study grammar that Home has never offered, and adding them here
- * would grow the global's schema for no editorial need.
+ * would grow the global's schema for no editorial need. Code and the figure
+ * blocks are long-form article grammar, held back for the same reason.
  */
 const homeExcludedBlocks = new Set<Block>([
   FeaturedWork,
@@ -81,6 +87,8 @@ const homeExcludedBlocks = new Set<Block>([
   ImagePair,
   SplitImageOffset,
   RichTransition,
+  Code,
+  ...figureBlocks,
 ])
 
 export const homeLayoutBlocks: Block[] = pageLayoutBlocks.filter(

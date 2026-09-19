@@ -61,6 +61,9 @@ const TEXT_KEYS = new Set([
   'summary',
   'tagline',
   'text',
+  // A figure's plain-language description (blocks/figures): what a chart or
+  // diagram shows, which is all of it a text corpus can hold.
+  'textalternative',
   'thesis',
   'title',
 ])
@@ -73,6 +76,8 @@ const SKIP_KEYS = new Set([
   '_status',
   'breadcrumbs',
   'createdat',
+  // A figure's stored diagram geometry: coordinates and wrapped label fragments.
+  'geometry',
   'id',
   'blockname',
   'link',
@@ -83,6 +88,9 @@ const SKIP_KEYS = new Set([
   'publishedat',
   'slug',
   'sluglock',
+  // A figure's chart or diagram spec: data, not prose. Its words are the
+  // block's title, caption and text alternative, which are TEXT_KEYS.
+  'spec',
   'updatedat',
 ])
 
@@ -172,6 +180,21 @@ const STRUCTURED_KEYS: Record<string, (items: unknown[]) => string> = {
   metrics: renderMetrics,
 }
 
+type CodeListing = { blockType: 'code'; code: string; language?: unknown }
+
+const isCodeListing = (value: object): value is CodeListing => {
+  const { blockType, code } = value as Record<string, unknown>
+  return blockType === 'code' && typeof code === 'string'
+}
+
+/**
+ * A composition Code block as a fenced listing: the form the chunker already
+ * keeps whole, and the one an inline post-body Code block takes
+ * (`lexicalToMarkdown`). `code` is not a TEXT_KEY, so only this block emits it.
+ */
+const fencedListing = ({ code, language }: CodeListing): string[] =>
+  code.trim() ? [`\`\`\`${str(language)}\n${code}\n\`\`\``] : []
+
 function walkValue(value: unknown, key: string, out: Part[]): void {
   if (value === null || value === undefined) return
 
@@ -207,6 +230,11 @@ function walkValue(value: unknown, key: string, out: Part[]): void {
   if (isLexicalState(value)) {
     const markdown = lexicalToMarkdownString(value)
     if (markdown) out.push(markdown)
+    return
+  }
+
+  if (isCodeListing(value)) {
+    out.push(...fencedListing(value))
     return
   }
 

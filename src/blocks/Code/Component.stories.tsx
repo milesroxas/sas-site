@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { CodeBlock } from './Component'
+import { CODE_LANGUAGES } from './config'
 
 const tsSample = `type Block = {
   blockType: string
@@ -21,6 +22,17 @@ const cssSample = `.container {
   gap: 1rem;
 }`
 
+const glslSample = `// Curl of an fbm potential: a divergence-free swirl along the contours.
+vec2 curl(vec2 p) {
+  float e = 0.01;
+  float dx = fbm(p + vec2(e, 0.0)) - fbm(p - vec2(e, 0.0));
+  float dy = fbm(p + vec2(0.0, e)) - fbm(p - vec2(0.0, e));
+  return vec2(dy, -dx) / (2.0 * e);
+}`
+
+const shellSample = `pnpm cms:upload ./shots/studio-inspector.png \\
+  --alt "The Studio inspector with the relief group open"`
+
 const meta = {
   title: 'Blocks/Code',
   component: CodeBlock,
@@ -30,7 +42,7 @@ const meta = {
   argTypes: {
     language: {
       control: 'select',
-      options: ['typescript', 'javascript', 'css'],
+      options: CODE_LANGUAGES.map((language) => language.value),
     },
   },
   args: {
@@ -50,5 +62,20 @@ export const CSS: Story = {
   args: {
     language: 'css',
     code: cssSample,
+  },
+}
+
+/** `glsl` and `bash` are registered on top of the highlighter's bundled grammars (`prism-languages.ts`). */
+export const GLSL: Story = {
+  args: {
+    language: 'glsl',
+    code: glslSample,
+  },
+}
+
+export const Shell: Story = {
+  args: {
+    language: 'bash',
+    code: shellSample,
   },
 }

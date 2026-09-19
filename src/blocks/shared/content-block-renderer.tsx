@@ -1,10 +1,14 @@
 import type React from 'react'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
+import { CodeSectionBlock } from '@/blocks/Code/Section'
 import { ContentBlock } from '@/blocks/Content/Component'
 import { FaqBlock } from '@/blocks/faq/Component'
 import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Component'
 import { FeatureTabsBlock } from '@/blocks/feature/Tabs/Component'
+import { BespokeFigureBlock } from '@/blocks/figures/bespoke/Component'
+import { ChartBlock } from '@/blocks/figures/chart/Component'
+import { DiagramBlock } from '@/blocks/figures/diagram/Component'
 import { FullMediaBlock } from '@/blocks/full-media/Component'
 import { ImagePairBlock } from '@/blocks/image-pair/Component'
 import { InsightListBlock } from '@/blocks/insight-list/Component'
@@ -28,8 +32,12 @@ import { blockRevealVariants, type RevealMappedBlockSlug } from './reveal-varian
  * render their own variants (`RenderCaseStudyBlocks`).
  */
 export const sectionChildComponents = {
+  bespokeFigure: BespokeFigureBlock,
   carousel: CarouselBlock,
+  chart: ChartBlock,
+  code: CodeSectionBlock,
   content: ContentBlock,
+  diagram: DiagramBlock,
   faq: FaqBlock,
   featureHeadingOffset: FeatureHeadingOffsetBlock,
   featureImageStatement: FeatureImageStatementBlock,

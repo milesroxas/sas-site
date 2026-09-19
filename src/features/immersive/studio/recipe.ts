@@ -1,3 +1,4 @@
+import { canonicalJSON } from '@/utilities/canonicalJSON'
 import { resolveTuning } from '../resolve-tuning'
 import { type EffectContract, parameterError, type Surface, type Tuning } from './effect'
 
@@ -80,23 +81,13 @@ export function snapshotRecipe<T extends Tuning>(
 }
 
 /**
- * Key-sorted JSON. Postgres `jsonb` hands a stored object back with its keys
- * reordered, and a recipe built in the browser keeps the order it was built
- * in, so identity (the release hash, draft matches release) is always taken
- * over this form, never over `JSON.stringify` of an object as it arrived.
+ * Key-sorted JSON (`@/utilities/canonicalJSON`). Postgres `jsonb` hands a
+ * stored object back with its keys reordered, and a recipe built in the browser
+ * keeps the order it was built in, so identity (the release hash, draft matches
+ * release) is always taken over this form, never over `JSON.stringify` of an
+ * object as it arrived.
  */
-export function canonicalJSON(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonicalJSON).join(',')}]`
-  if (value && typeof value === 'object') {
-    const object = value as Record<string, unknown>
-    const entries = Object.keys(object)
-      .filter((key) => object[key] !== undefined)
-      .sort()
-      .map((key) => `${JSON.stringify(key)}:${canonicalJSON(object[key])}`)
-    return `{${entries.join(',')}}`
-  }
-  return JSON.stringify(value)
-}
+export { canonicalJSON }
 
 /** A release is its snapshot: two recipes that resolve to the same one draw the same pixels. */
 export const sameSnapshot = (a: Snapshot, b: Snapshot) => canonicalJSON(a) === canonicalJSON(b)

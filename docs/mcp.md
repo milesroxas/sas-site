@@ -66,10 +66,19 @@ index), and `payload-mcp-api-keys` itself.
 The server's MCP instructions tell agents to:
 
 - Author page and hub documents as **drafts** (`draft: true`); publish only on explicit request.
-- Send rich text as **Lexical editor state JSON** — never markdown or HTML.
+- Send rich text as **Lexical editor state JSON**, never markdown or HTML. The one exception is a
+  rich text field with a write-only `markdown` sibling (a Rich text block's `body`, a story
+  section's and a story beat's `body`): send Markdown there and the server converts it, refuses
+  syntax the field cannot hold, and will not replace existing content without `replace: true`.
+  See [figures.md](figures.md#markdown-input).
+- Write charts and diagrams as `chart` and `diagram` blocks carrying a JSON `spec`; never send a
+  diagram's `geometry` (computed on save). A save answers an invalid spec with every problem by
+  path in the error message. See [figures.md](figures.md) and the `article-authoring` skill.
 - Find a document first and edit from its current state before updating.
 - Pass document **ids** for relationship fields (look them up with the relevant find tool).
-- Never attempt media upload; reference existing media by id.
+- Never attempt media upload over MCP; reference existing media by id. New images go through
+  `pnpm cms:upload`, which always lands them internal for a person to approve
+  ([figures.md](figures.md#media-upload)).
 - Asset libraries require `organization` and `project` ids; omit `rootFolder` to auto-create one.
 - Case Study and Lab Project narrative is section-owned: `context`, `challenge`, `strategy`,
   `approach`, `outcomeSummary`, and `learnings` each contain `body` plus ordered `storyBeats`.

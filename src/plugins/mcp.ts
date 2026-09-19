@@ -253,7 +253,8 @@ export const mcp: Plugin = mcpPlugin({
       instructions: [
         'Content authoring server for the Suits & Sandals website and Content Hub.',
         'Author page and hub documents as drafts (draft: true); publish only when the user explicitly asks.',
-        'Rich text fields expect Lexical editor state JSON, not markdown or HTML.',
+        "Rich text fields expect Lexical editor state JSON, not markdown or HTML. The exception is a rich text field with a write-only `markdown` sibling (a Rich text block's `body`, a story section's and a story beat's `body`): send Markdown there and the server converts it. It refuses syntax the field cannot hold and says what to use instead, and it will not replace existing content unless `replace: true` is sent beside it.",
+        'Charts and diagrams are `chart` and `diagram` blocks carrying a JSON `spec` (the tool schema documents it). A diagram spec has no coordinates: positions are computed on save, so never send `geometry`. A save answers an invalid spec with every problem by path; fix those paths and resend. Every figure needs a `textAlternative`.',
         'Before updating a document, find it first and edit from its current state.',
         'Relationship fields take document ids — look them up with the relevant find tool.',
         'Omit slug, key, and generateSlug fields on create and update: slugs auto-generate from the title or name, and any value you send is normalized to a URL-safe slug.',

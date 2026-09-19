@@ -59,6 +59,42 @@ describe('extractDocMarkdown', () => {
     expect(find).not.toHaveBeenCalled()
   })
 
+  it('reads a figure through its words and a code block as a fenced listing, inside a Section', async () => {
+    const { payload } = stubPayload({})
+    const markdown = await extractDocMarkdown(payload, walkSurface, {
+      title: 'Streak Field',
+      layout: [
+        {
+          blockType: 'section',
+          blocks: [
+            {
+              blockType: 'diagram',
+              title: 'How a visual resolves',
+              textAlternative: 'A slot checks Studio, then a shipped look, then media.',
+              caption: 'Resolved on the server.',
+              width: 'wide',
+              // Data and coordinates, not prose: neither may leak into the corpus,
+              // even under keys the walk otherwise trusts.
+              spec: { kind: 'flow', nodes: [{ id: 'a', label: 'Slot', text: 'leak' }] },
+              geometry: { wide: { edges: [{ label: { text: 'leak' } }] } },
+            },
+            { blockType: 'code', language: 'glsl', code: 'float h = fbm(p);' },
+          ],
+        },
+      ],
+    } as never)
+
+    expect(markdown).toBe(
+      [
+        '# Streak Field',
+        '## How a visual resolves',
+        'A slot checks Studio, then a shipped look, then media.',
+        'Resolved on the server.',
+        '```glsl\nfloat h = fbm(p);\n```',
+      ].join('\n\n'),
+    )
+  })
+
   it('hydrates relationships as the public and renders their substance in walk order', async () => {
     const { payload, find } = stubPayload({
       testimonials: [

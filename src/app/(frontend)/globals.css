@@ -1487,3 +1487,134 @@ html[data-theme="light"] {
 [data-menu-media-ground] {
   background-color: var(--background);
 }
+
+/* Figures (src/features/figures/ui, docs/figures.md).
+
+   Series colors: four categorical slots, assigned by series order and never
+   cycled, plus a neutral for `reference` series. Light and dark are selected
+   separately, not flipped, and both sets pass the dataviz validator on every
+   surface a figure can sit on: lightness band, chroma floor, CVD separation,
+   normal-vision floor, and 3:1 against the ground (the commands and results
+   are recorded in docs/figures.md). Dark follows the ground, not the site
+   theme, so a chart on a dark band in the light theme takes the dark steps.
+   Re-run the validator before changing a value. */
+:root {
+  --figure-1: #2a78d6;
+  --figure-2: #d95926;
+  --figure-3: #15936a;
+  --figure-4: #b57a00;
+  --figure-reference: var(--muted-foreground);
+}
+:is([data-theme="dark"], .band-dark) {
+  --figure-1: #3987e5;
+  --figure-2: #d95926;
+  --figure-3: #199e70;
+  --figure-4: #c98500;
+}
+
+/* Diagram entrance: explanatory, not decorative. Nodes surface in reading
+   order and each edge draws from its source, so the first thing a reader
+   learns is which way the figure runs. It rides the block's own reveal
+   (`.reveal-section`): nodes only fade, because the block already travels,
+   and a second translate would double the motion. Everything that enters on
+   a beat carries `.figure-step`; `--i` is its reading-order step, capped by the renderer so a 40-node graph still lands
+   inside a second. Outside a reveal shell (Storybook, the admin) nothing is
+   hidden and nothing plays.
+
+   All of it sits under `no-preference`: with reduced motion nothing is ever
+   hidden, drawn or marched, the figure is simply there. */
+/* A live data path is dashed at rest, in every motion setting. */
+.figure-edge[data-march] {
+  stroke-dasharray: 4 6;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-section:not([data-visible="true"]) .figure-step {
+    opacity: 0;
+  }
+  .reveal-section[data-visible="true"] .figure-step {
+    animation: figure-fade 400ms var(--ease-out-quint) both;
+    animation-delay: calc(var(--i, 0) * 40ms + 120ms);
+  }
+  /* A solid edge draws along its length (`pathLength="1"` normalizes every
+     path to the same dash math). A dashed edge cannot be drawn that way
+     without losing its dashes, so it keeps the fade above. */
+  .reveal-section[data-visible="true"] .figure-edge[data-draw] {
+    stroke-dasharray: 1;
+    animation-name: figure-draw;
+    animation-duration: 500ms;
+  }
+  /* An arrowhead and a label arrive as their edge finishes drawing. */
+  .reveal-section[data-visible="true"] .figure-mark {
+    animation-delay: calc(var(--i, 0) * 40ms + 420ms);
+  }
+
+  /* Live data path: dashes march toward the arrowhead. Constant motion, so
+     linear. It runs a few cycles after the reveal and again while the pointer
+     is over the figure, then rests as plain dashes: a loop that never stops
+     keeps repainting a figure nobody is looking at. */
+  .reveal-section[data-visible="true"] .figure-edge[data-march] {
+    animation:
+      figure-fade 400ms var(--ease-out-quint) both,
+      figure-march 900ms linear 6;
+    animation-delay: calc(var(--i, 0) * 40ms + 120ms), calc(var(--i, 0) * 40ms + 520ms);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .reveal-section[data-visible="true"] .figure-diagram:hover .figure-edge[data-march] {
+      animation: figure-march 900ms linear infinite;
+    }
+  }
+}
+@keyframes figure-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes figure-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes figure-march {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+/* The lazy chart replaces its placeholder in place; a short fade keeps that
+   from reading as a pop. The marks themselves do not animate: the chunk
+   mounts before the chart scrolls into view, so a grow-in would play unseen. */
+.figure-chart-canvas {
+  transition: opacity 300ms var(--ease-out-quint);
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+/* Data view disclosure: the chevron turns on the site's settle curve (the FAQ
+   glyph's timing) and the body fades where `::details-content` is supported. */
+.figure-data > summary .figure-data-chevron {
+  transition: rotate 200ms var(--ease-out-quint);
+}
+.figure-data[open] > summary .figure-data-chevron {
+  rotate: 90deg;
+}
+.figure-data::details-content {
+  opacity: 0;
+  transition:
+    opacity 200ms var(--ease-out-quint),
+    content-visibility 200ms allow-discrete;
+}
+.figure-data[open]::details-content {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .figure-chart-canvas,
+  .figure-data > summary .figure-data-chevron,
+  .figure-data::details-content {
+    transition: none;
+  }
+}

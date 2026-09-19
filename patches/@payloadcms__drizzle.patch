@@ -1,0 +1,18 @@
+diff --git a/dist/utilities/validateExistingBlockIsIdentical.js b/dist/utilities/validateExistingBlockIsIdentical.js
+index bd1224b859b9eebfc8560f239898bad0cb23fd49..faaf78ad8219044f6f43f0e829d8e483f819b6aa 100644
+--- a/dist/utilities/validateExistingBlockIsIdentical.js
++++ b/dist/utilities/validateExistingBlockIsIdentical.js
+@@ -43,6 +43,13 @@ const getFlattenedFieldNames = (args)=>{
+                 }, [])
+             ];
+         }
++        // Patched (sas-site): a virtual field has no column, so it can never
++        // be "missing" from the existing table. Without this, a block that
++        // carries one and is used twice in a collection fails the identical
++        // check and is given a second, suffixed table (`<table>_2`).
++        if ('virtual' in field && field.virtual) {
++            return fieldsToUse;
++        }
+         if (fieldAffectsData(field)) {
+             return [
+                 ...fieldsToUse,

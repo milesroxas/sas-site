@@ -48,26 +48,6 @@ export function useCoarsePointer(): boolean {
   )
 }
 
-/**
- * Whether the element is near the viewport. Starts `false`: admission waits
- * until visibility is known rather than assuming it, and without an observer
- * (jsdom) it stays a poster.
- */
-export function useNearViewport(ref: RefObject<HTMLElement | null>, margin = '10%'): boolean {
-  const [near, setNear] = useState(false)
-  useEffect(() => {
-    const node = ref.current
-    if (!node || typeof IntersectionObserver !== 'function') return
-    const observer = new IntersectionObserver(
-      ([entry]) => setNear(entry?.isIntersecting ?? false),
-      { rootMargin: margin },
-    )
-    observer.observe(node)
-    return () => observer.disconnect()
-  }, [ref, margin])
-  return near
-}
-
 const subscribeVisibility = (onChange: () => void) => {
   document.addEventListener('visibilitychange', onChange)
   return () => document.removeEventListener('visibilitychange', onChange)

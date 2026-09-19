@@ -76,6 +76,7 @@ function Slider({
   origin,
   formatValue,
   invalid,
+  thumbLabels,
   onValueChange,
   onPointerDown,
   onPointerMove,
@@ -95,6 +96,8 @@ function Slider({
     formatValue?: (value: number) => string
     /** The value the thumbs hold fails validation elsewhere (a typed range pair that crosses). */
     invalid?: boolean
+    /** Accessible name per thumb, in order. A thumb is the `slider` role, so a label on the root never reaches it. */
+    thumbLabels?: string[]
   }) {
   const [internal, setInternal] = React.useState<number[]>(() =>
     Array.isArray(value) ? value : Array.isArray(defaultValue) ? defaultValue : [min],
@@ -212,6 +215,7 @@ function Slider({
         <SliderPrimitive.Thumb
           key={index}
           data-slot="slider-thumb"
+          aria-label={thumbLabels?.[index]}
           className={cn(
             'relative block size-3.5 shrink-0 rounded-full bg-foreground shadow-[0_1px_2px_rgb(0_0_0/0.4),0_0_0_1px_rgb(0_0_0/0.15)] outline-none',
             // Grow under the pointer, more in the hand; slide with the

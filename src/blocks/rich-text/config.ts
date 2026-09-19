@@ -2,12 +2,16 @@ import {
   BlocksFeature,
   FixedToolbarFeature,
   HeadingFeature,
+  InlineCodeFeature,
   InlineToolbarFeature,
   lexicalEditor,
+  OrderedListFeature,
+  UnorderedListFeature,
 } from '@payloadcms/richtext-lexical'
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
+import { markdownInputFields } from '@/fields/markdownInput'
 import { RichTextInsights } from './insights/config'
 import { RichTextPillList } from './pill-list/config'
 
@@ -22,6 +26,10 @@ import { RichTextPillList } from './pill-list/config'
  *
  * Sits in the shared Section-nestable run (docs/blocks-reorg-roadmap.md),
  * grouped under Text with the legacy multi-column Content block.
+ *
+ * Lists and inline code are on because long-form technical copy needs them
+ * (docs/figures.md). An agent authors the body as Markdown through the
+ * write-only `markdown` field; Lexical stays the only stored form.
  */
 export const RichTextBlock: Block = {
   slug: 'richText',
@@ -32,6 +40,7 @@ export const RichTextBlock: Block = {
   interfaceName: 'RichTextBlock',
   labels: { singular: 'Rich text', plural: 'Rich text' },
   fields: [
+    ...markdownInputFields('body'),
     {
       name: 'body',
       type: 'richText',
@@ -40,6 +49,9 @@ export const RichTextBlock: Block = {
         features: ({ rootFeatures }) => [
           ...rootFeatures,
           HeadingFeature({ enabledHeadingSizes: ['h2', 'h3'] }),
+          UnorderedListFeature(),
+          OrderedListFeature(),
+          InlineCodeFeature(),
           BlocksFeature({ blocks: [RichTextInsights, RichTextPillList] }),
           FixedToolbarFeature(),
           InlineToolbarFeature(),
