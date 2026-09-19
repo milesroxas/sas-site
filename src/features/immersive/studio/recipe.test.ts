@@ -144,7 +144,7 @@ describe('Studio recipes and release contract', () => {
       height: 1080,
       scale: 2,
       surface: 'dark',
-      format: 'png',
+      format: 'webp',
       transparent: true,
     }
     expect(validateCapture(capture)).toEqual(capture)

@@ -5,6 +5,7 @@ import {
   type CaptureOptions,
   POSTER_CAPTURE,
   type Recipe,
+  STILL_UPLOAD_BUDGET,
   snapshotRecipe,
   validateRecipe,
 } from '@/features/immersive/studio/recipe'
@@ -29,7 +30,7 @@ async function stills({ id, effect, recipe }: Draft, captures: CaptureOptions[])
   const wasPaused = studioStore.read(key).paused
   studioStore.patch(key, { paused: true })
   try {
-    const images: string[] = []
+    const images: Blob[] = []
     for (const capture of captures) images.push(await captureStill({ effect, snapshot, capture }))
     return images
   } finally {
@@ -37,15 +38,31 @@ async function stills({ id, effect, recipe }: Draft, captures: CaptureOptions[])
   }
 }
 
-async function send<T>(id: number | string, action: string, payload: object): Promise<T> {
-  const response = await fetch(`/api/${LOOKS_SLUG}/${id}/${action}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  })
-  const result = await response.json()
+/**
+ * One multipart request: the stills travel as the files they are, beside the
+ * JSON fields. A still over the budget is stopped here, where the reason can be
+ * said, since the platform refuses it with a body that is not JSON.
+ */
+async function send<T>(
+  id: number | string,
+  action: string,
+  fields: Record<string, unknown>,
+  images: Record<string, Blob>,
+): Promise<T> {
+  const weight = Object.values(images).reduce((sum, image) => sum + image.size, 0)
+  if (weight > STILL_UPLOAD_BUDGET)
+    throw new Error(
+      `The rendered stills weigh ${(weight / 1024 / 1024).toFixed(1)} MB, over the 4 MB one upload can carry. Choose JPEG or a smaller size.`,
+    )
+  const form = new FormData()
+  for (const [name, value] of Object.entries(fields)) form.set(name, JSON.stringify(value))
+  for (const [name, image] of Object.entries(images)) form.set(name, image)
+  const response = await fetch(`/api/${LOOKS_SLUG}/${id}/${action}`, { method: 'POST', body: form })
+  const result = await response.json().catch(() => null)
   if (!response.ok)
-    throw new Error(result.errors?.[0]?.message ?? result.error ?? 'The request failed.')
+    throw new Error(
+      result?.errors?.[0]?.message ?? result?.error ?? `The request failed (${response.status}).`,
+    )
   return result.doc
 }
 
@@ -68,15 +85,17 @@ export async function publishLook(submit: Submit, draft: Draft) {
     draft,
     SURFACES.map((surface) => ({ ...POSTER_CAPTURE, surface })),
   )
-  return send<StreakLook>(draft.id, 'publish', {
-    recipe: draft.recipe,
-    ...Object.fromEntries(SURFACES.map((surface, index) => [surface, images[index]])),
-  })
+  return send<StreakLook>(
+    draft.id,
+    'publish',
+    { recipe: draft.recipe },
+    Object.fromEntries(SURFACES.map((surface, index) => [surface, images[index]])),
+  )
 }
 
 /** Export: one still at the chosen size, filed in Media. */
 export async function exportStill(submit: Submit, draft: Draft, capture: CaptureOptions) {
   await saveDraft(submit, draft)
   const [image] = await stills(draft, [capture])
-  return send<Media>(draft.id, 'export', { recipe: draft.recipe, capture, image })
+  return send<Media>(draft.id, 'export', { recipe: draft.recipe, capture }, { image })
 }

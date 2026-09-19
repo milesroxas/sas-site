@@ -386,7 +386,7 @@ function ExportPanel({
 }) {
   const { id } = useDocumentInfo()
   const { submit } = useForm()
-  const [capture, setCapture] = useState<CaptureOptions>({ ...POSTER_CAPTURE, format: 'png' })
+  const [capture, setCapture] = useState<CaptureOptions>(POSTER_CAPTURE)
   const [busy, setBusy] = useState(false)
   const set = (patch: Partial<CaptureOptions>) => setCapture((v) => ({ ...v, ...patch }))
   const megapixels = (capture.width * capture.height * capture.scale ** 2) / 1_000_000
@@ -484,7 +484,6 @@ function ExportPanel({
             <SelectValue />
           </SelectTrigger>
           <SelectContent align="end">
-            <SelectItem value="png">PNG</SelectItem>
             <SelectItem value="webp">WebP</SelectItem>
             <SelectItem value="jpeg">JPEG</SelectItem>
           </SelectContent>

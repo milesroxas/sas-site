@@ -7,6 +7,8 @@ import { effectOf } from '@/features/immersive/studio/effects'
 import {
   type CaptureOptions,
   POSTER_CAPTURE,
+  STILL_QUALITY,
+  STILL_UPLOAD_BUDGET,
   snapshotRecipe,
   validateCapture,
 } from '@/features/immersive/studio/recipe'
@@ -20,7 +22,14 @@ function team(req: PayloadRequest) {
   if (!authenticated({ req }) || !req.user) throw new APIError('Team sign-in required.', 401)
   return req.user
 }
-const body = async (req: PayloadRequest) => (req.json ? await req.json() : {})
+/** The multipart body of Publish and Export: JSON fields beside the stills as files. */
+const form = (req: PayloadRequest) =>
+  studioInput(async () => {
+    if (!req.formData) throw new Error('Form data required.')
+    return req.formData()
+  })
+const field = (data: FormData, name: string): unknown =>
+  studioInput(() => JSON.parse(String(data.get(name))))
 
 /**
  * The saved draft, read as the editor. The pixels in the request were rendered
@@ -48,17 +57,17 @@ export const lookEndpoints: Endpoint[] = [
     method: 'post',
     handler: async (req) => {
       team(req)
-      const data = await body(req)
+      const data = await form(req)
       return inTransaction(req, async () => {
         await lockLook(req, Number(req.routeParams?.id))
-        const look = await savedDraft(req, data.recipe)
+        const look = await savedDraft(req, field(data, 'recipe'))
         if (look.archived) throw new APIError('Unarchive this look before publishing.', 400)
         // One at a time: each is a storage write inside the look's row lock.
         const stills = {} as Record<(typeof SURFACES)[number], Media>
         for (const surface of SURFACES)
           stills[surface] = await upload(
             req,
-            data[surface],
+            data.get(surface),
             { ...POSTER_CAPTURE, surface },
             `${look.title} ${surface} poster`,
           )
@@ -93,10 +102,10 @@ export const lookEndpoints: Endpoint[] = [
     method: 'post',
     handler: async (req) => {
       team(req)
-      const data = await body(req)
-      const capture = studioInput(() => validateCapture(data.capture))
-      const look = await savedDraft(req, data.recipe)
-      const output = await upload(req, data.image, capture, `${look.title} artwork`)
+      const data = await form(req)
+      const capture = studioInput(() => validateCapture(field(data, 'capture')))
+      const look = await savedDraft(req, field(data, 'recipe'))
+      const output = await upload(req, data.get('image'), capture, `${look.title} artwork`)
       return Response.json({ doc: output })
     },
   },
@@ -115,16 +124,20 @@ export const lookEndpoints: Endpoint[] = [
 /** The Media folder every rendered still is filed in. The name predates the second effect and is kept: it is the folder that exists. */
 const MEDIA_FOLDER = 'Streak Field Studio'
 
-/** The browser sends PNG at the capture's exact size; anything else is refused before it is stored. */
+/**
+ * The browser sends the capture's own file at its exact size, which is stored
+ * as it arrived. PNG from a browser that cannot encode the format is converted
+ * here. Anything else is refused before it is stored.
+ */
 async function upload(
   req: PayloadRequest,
-  encoded: unknown,
+  file: FormDataEntryValue | null,
   capture: CaptureOptions,
   title: string,
 ): Promise<Media> {
-  if (typeof encoded !== 'string' || encoded.length > 20000000)
+  if (!file || typeof file === 'string' || file.size > STILL_UPLOAD_BUDGET)
     throw new APIError('Invalid image payload.', 400)
-  const buffer = Buffer.from(encoded, 'base64')
+  const buffer = Buffer.from(await file.arrayBuffer())
   const metadata = await sharp(buffer, { limitInputPixels: 8294400 })
     .metadata()
     .catch(() => null)
@@ -132,13 +145,16 @@ async function upload(
     !metadata ||
     metadata.width !== capture.width * capture.scale ||
     metadata.height !== capture.height * capture.scale ||
-    metadata.format !== 'png'
+    (metadata.format !== capture.format && metadata.format !== 'png')
   )
     throw new APIError('Render dimensions or encoding do not match the capture.', 400)
-  let pipeline = sharp(buffer)
-  if (!capture.transparent)
-    pipeline = pipeline.flatten({ background: STUDIO_GROUND[capture.surface] })
-  const output = await pipeline.toFormat(capture.format, { quality: 90 }).toBuffer()
+  let output: Buffer = buffer
+  if (metadata.format !== capture.format) {
+    let pipeline = sharp(buffer)
+    if (!capture.transparent)
+      pipeline = pipeline.flatten({ background: STUDIO_GROUND[capture.surface] })
+    output = await pipeline.toFormat(capture.format, { quality: STILL_QUALITY }).toBuffer()
+  }
   const folders = await req.payload.find({
     collection: 'payload-folders',
     where: {

@@ -3,20 +3,21 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
+import { STUDIO_GROUND } from './effect'
 import { type EffectId, effectOf } from './effects'
-import type { CaptureOptions, Snapshot } from './recipe'
+import { type CaptureOptions, type Snapshot, STILL_QUALITY } from './recipe'
 import { EFFECT_SCENES } from './scenes'
 
 export type CaptureInput = { effect: EffectId; snapshot: Snapshot; capture: CaptureOptions }
 
 /**
  * One exact still, rendered in this browser: the effect's own scene stepped a
- * fixed number of 1/60 s frames with neutral input, then read back as base64
- * PNG. It mounts its own offscreen canvas and takes it down again, so the
- * caller needs no element and the website has no readback path. Studio calls
- * it on Publish (the two posters) and on Export.
+ * fixed number of 1/60 s frames with neutral input, then encoded as the
+ * capture's own file. It mounts its own offscreen canvas and takes it down
+ * again, so the caller needs no element and the website has no readback path.
+ * Studio calls it on Publish (the two posters) and on Export.
  */
-export function captureStill(input: CaptureInput): Promise<string> {
+export function captureStill(input: CaptureInput): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const host = document.createElement('div')
     // Offscreen, not `display: none`: the canvas sizes itself from layout.
@@ -55,7 +56,7 @@ function CaptureScene({
   onError,
 }: {
   input: CaptureInput
-  onResult: (image: string) => void
+  onResult: (image: Blob) => void
   onError: (message: string) => void
 }) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -79,18 +80,53 @@ function CaptureScene({
         }}
       >
         <Scene rootRef={rootRef} tuning={tuning} onError={onError} />
-        <CaptureFrames frames={snapshot.frame} onResult={onResult} onError={onError} />
+        <CaptureFrames
+          frames={snapshot.frame}
+          capture={capture}
+          onResult={onResult}
+          onError={onError}
+        />
       </Canvas>
     </div>
   )
 }
+
+/**
+ * The finished file, encoded here: a lossless PNG of a full frame is several
+ * megabytes, more than a request to the server can carry. A filled capture is
+ * laid over its surface's ground first. A browser that cannot encode the
+ * format answers with PNG, which the server converts.
+ */
+function encodeStill(source: HTMLCanvasElement, capture: CaptureOptions): Promise<Blob> {
+  let canvas = source
+  if (!capture.transparent) {
+    canvas = document.createElement('canvas')
+    canvas.width = source.width
+    canvas.height = source.height
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('The still could not be encoded.')
+    context.fillStyle = STUDIO_GROUND[capture.surface]
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    context.drawImage(source, 0, 0)
+  }
+  return new Promise((resolve, reject) =>
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error('The still could not be encoded.'))),
+      `image/${capture.format}`,
+      STILL_QUALITY / 100,
+    ),
+  )
+}
+
 function CaptureFrames({
   frames,
+  capture,
   onResult,
   onError,
 }: {
   frames: number
-  onResult: (image: string) => void
+  capture: CaptureOptions
+  onResult: (image: Blob) => void
   onError: (message: string) => void
 }) {
   const advance = useThree((state) => state.advance)
@@ -117,8 +153,8 @@ function CaptureFrames({
           if (frame % 20 === 19) await new Promise<void>((resolve) => setTimeout(resolve))
         }
         gl.getContext().finish()
-        if (!cancelled)
-          callbacks.current.onResult(gl.domElement.toDataURL('image/png').split(',')[1])
+        const image = await encodeStill(gl.domElement, capture)
+        if (!cancelled) callbacks.current.onResult(image)
       } catch (error) {
         if (!cancelled) callbacks.current.onError(String(error))
       } finally {
@@ -129,6 +165,6 @@ function CaptureFrames({
       cancelled = true
       cancelAnimationFrame(raf)
     }
-  }, [advance, frames, gl, scene])
+  }, [advance, capture, frames, gl, scene])
   return null
 }

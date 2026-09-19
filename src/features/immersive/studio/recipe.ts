@@ -159,7 +159,8 @@ export type CaptureOptions = {
   height: number
   scale: number
   surface: Surface
-  format: 'png' | 'webp' | 'jpeg'
+  /** Lossy only: a lossless still of a full frame outweighs what one upload can carry. Alpha rides in WebP. */
+  format: 'webp' | 'jpeg'
   transparent: boolean
 }
 export const POSTER_CAPTURE: CaptureOptions = {
@@ -170,6 +171,13 @@ export const POSTER_CAPTURE: CaptureOptions = {
   format: 'webp',
   transparent: true,
 }
+/** Lossy encoder quality of a still, the same in the browser and on the server. */
+export const STILL_QUALITY = 90
+/**
+ * What the stills of one request may weigh together. Vercel refuses a function
+ * request body over 4.5 MB, and the rest of the form needs a little room.
+ */
+export const STILL_UPLOAD_BUDGET = 4 * 1024 * 1024
 export function validateCapture(raw: unknown): CaptureOptions {
   if (!raw || typeof raw !== 'object') throw new Error('Capture settings required.')
   const v = raw as CaptureOptions
@@ -188,7 +196,7 @@ export function validateCapture(raw: unknown): CaptureOptions {
     )
   if (
     !['light', 'dark'].includes(v.surface) ||
-    !['png', 'webp', 'jpeg'].includes(v.format) ||
+    !['webp', 'jpeg'].includes(v.format) ||
     typeof v.transparent !== 'boolean'
   )
     throw new Error('Invalid capture format or surface.')
