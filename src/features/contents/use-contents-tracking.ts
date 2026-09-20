@@ -77,10 +77,15 @@ export function useContentsTracking(
       viewportHeight = window.innerHeight
       tops = entries.map((entry) => entry.element.getBoundingClientRect().top + scrollY)
       articleBottom = article.getBoundingClientRect().bottom + scrollY
-      bands = Array.from(article.querySelectorAll(DARK_BAND_SELECTOR), (band) => {
-        const rect = band.getBoundingClientRect()
-        return [rect.top + scrollY, rect.bottom + scrollY]
-      })
+      bands = Array.from(article.querySelectorAll(DARK_BAND_SELECTOR))
+        // The anchor wears `data-theme="dark"` itself while it floats over a
+        // band, and it is fixed: measured then, it would count as a band of
+        // its own, pinned wherever the button sat at that scroll position.
+        .filter((band) => !anchor.contains(band))
+        .map((band): [top: number, bottom: number] => {
+          const rect = band.getBoundingClientRect()
+          return [rect.top + scrollY, rect.bottom + scrollY]
+        })
       const anchorRect = anchor.getBoundingClientRect()
       anchorCenter = anchorRect.top + anchorRect.height / 2
       stale = false
