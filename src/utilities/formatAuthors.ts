@@ -1,18 +1,16 @@
-import type { Post } from '@/payload-types'
+import type { PopulatedAuthor } from '@/fields/authors'
 
 /**
- * Formats an array of populatedAuthors from Posts into a prettified string.
- * @param authors - The populatedAuthors array from a Post.
- * @returns A prettified string of authors.
- * @example
+ * A record's byline as one readable line.
  *
+ * Reads `populatedAuthors` from any collection that carries the shared byline
+ * pair (`@/fields/authors`), so posts and lab projects print the same line.
+ *
+ * @example
  * [Author1, Author2] becomes 'Author1 and Author2'
  * [Author1, Author2, Author3] becomes 'Author1, Author2, and Author3'
- *
  */
-export const formatAuthors = (
-  authors: NonNullable<NonNullable<Post['populatedAuthors']>[number]>[],
-) => {
+export const formatAuthors = (authors: PopulatedAuthor[]) => {
   // Ensure we don't have any authors without a name
   const authorNames = authors.map((author) => author.name).filter(Boolean)
 

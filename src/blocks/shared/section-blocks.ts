@@ -19,6 +19,7 @@ import { RichTextBlock } from '@/blocks/rich-text/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
+import { YouTube } from '@/blocks/youtube/config'
 
 /**
  * The figure blocks (docs/figures.md), named so the surfaces that build their
@@ -54,6 +55,7 @@ export const sectionNestableBlocks: Block[] = [
   // Media
   FeatureImageStatement,
   MediaBlock,
+  YouTube,
   // Text
   RichTextBlock,
   Code,

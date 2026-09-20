@@ -18,6 +18,7 @@ import { RichTextBlock } from '@/blocks/rich-text/Component'
 import { RichTransitionBlock } from '@/blocks/rich-transition/Component'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
 import { SplitImageOffsetBlock } from '@/blocks/split-image-offset/Component'
+import { YouTubeBlock } from '@/blocks/youtube/Component'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { blockRevealVariants, type RevealMappedBlockSlug } from './reveal-variants'
@@ -51,6 +52,7 @@ export const sectionChildComponents = {
   richTransition: RichTransitionBlock,
   splitContentNarrow: SplitContentNarrowBlock,
   splitImageOffset: SplitImageOffsetBlock,
+  youtube: YouTubeBlock,
 }
 
 /**

@@ -8,16 +8,24 @@ import { lexicalToMarkdownString } from './lexicalToMarkdown'
 export const READING_WORDS_PER_MINUTE = 200
 
 /**
- * Estimated minutes to read a Lexical body, floored at 1 so a short post
- * never advertises "0 min".
+ * Words in a Lexical body.
  *
  * Counts the markdown serialization rather than walking the tree a second
- * time — that walker is already the site's one Lexical reader (and the only
+ * time. That walker is already the site's one Lexical reader (and the only
  * one safe in a Next server bundle; see `lexicalToMarkdown`). Syntax markers
  * it emits are punctuation glued to their word, so they never split one word
  * into two.
  */
-export const readingTimeMinutes = (data: unknown): number => {
-  const words = lexicalToMarkdownString(data).trim().split(/\s+/).filter(Boolean).length
-  return Math.max(1, Math.round(words / READING_WORDS_PER_MINUTE))
-}
+export const readingWords = (data: unknown): number =>
+  lexicalToMarkdownString(data).trim().split(/\s+/).filter(Boolean).length
+
+/**
+ * Minutes for a word count, floored at 1 so a short piece never advertises
+ * "0 min". Separate from `readingWords` so a body split across several fields
+ * (a record's story sections) is counted whole and rounded once.
+ */
+export const readingMinutes = (words: number): number =>
+  Math.max(1, Math.round(words / READING_WORDS_PER_MINUTE))
+
+/** Estimated minutes to read a single Lexical body. */
+export const readingTimeMinutes = (data: unknown): number => readingMinutes(readingWords(data))

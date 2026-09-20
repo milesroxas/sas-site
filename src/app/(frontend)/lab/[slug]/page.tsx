@@ -33,6 +33,7 @@ const queryLabPageBySlug = createSlugQuery('lab-pages', {
       summaries: true,
       capabilities: true,
       technologies: true,
+      populatedAuthors: true,
       ...STORY_SECTION_SELECT,
       coverAsset: true,
       selectedAssets: true,

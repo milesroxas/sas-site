@@ -90,7 +90,8 @@ hero: {
 
 ### Editorial rules
 
-- Missing/null `visualType` preserves current media behavior. Explicit shader selection wins over a retained upload; that upload is not fetched or mounted merely because it remains stored.
+- Missing/null `visualType` preserves current media behavior. In a **block** slot the effect and the upload share one frame, so an explicit shader selection wins over a retained upload and that upload is not fetched or mounted merely because it remains stored.
+- A **hero opening** slot (`heroVisualSlotFields`, `ambient: true`) is the exception: the effect grounds the whole band and the media keeps whatever frame the layout gives it, so the two are independent choices and both may be set. `resolveOpening` returns them as `{ ground, media }`; `openingHandoffVisual` states which of the two the takeover menu dissolves onto (the media plate when there is one, the ground otherwise), so the menu preview and the page's `data-hero-media` can never disagree.
 - Use stable preset IDs in a **text** field with a small custom dropdown and server-side allowlist validation. New look IDs then do not require enum changes in every parent/version table. A native select is suitable for the rarely changing visual kinds.
 - Each visual slot has distinct field names. For example, `menuPreviewType` (`automatic`, `media`, `streakField`) and `menuPreviewShader` accompany the existing `menuPreview` upload. Missing type means legacy resolution, including an existing explicit upload; explicit automatic means inherit even if an old upload remains stored.
 - Editors control preset, integer seed, bounded speed/intensity multipliers, and pointer interaction. Start by visually testing speed 0–1 and intensity 0.5–1.25. These ranges are proposals, not verified art direction. Normalize null overrides to preset values.

@@ -23,6 +23,7 @@ import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { resolveStoryBlockCopy, resolveStorySectionCopy } from '@/blocks/shared/story-copy'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
+import { StoryBeatsBlock } from '@/blocks/story-beats/Component'
 import RichText from '@/components/RichText'
 import { resolveVisual } from '@/features/immersive/visual'
 import type {
@@ -57,6 +58,16 @@ import { RelatedWorkList } from './RelatedWork'
 import { RevealSection } from './RevealSection.client'
 import { StorySection as StorySectionLayout } from './StorySection'
 import { TestimonialBlock as TestimonialQuote } from './Testimonial'
+
+/**
+ * The shared run's components plus Story beats, the Text block only a story
+ * surface offers (`blocks/story-beats/config.ts`). Every entry paints the band
+ * and entrance it has on every other surface.
+ */
+const workContentComponents = {
+  ...sectionChildComponents,
+  storyBeats: StoryBeatsBlock,
+}
 
 const StorySection = ({
   block,
@@ -475,7 +486,17 @@ const renderWorkBlock = (
         block,
         block.id ?? block.blockType,
         Boolean(bare),
-        sectionChildComponents,
+        workContentComponents,
+      )
+    // The study's prose in a reading column: copy resolves against the study
+    // first, then the shared renderer gives it the band and intro reveal it
+    // has on a lab page.
+    case 'storyBeats':
+      return renderContentBlock(
+        resolveStoryBlockCopy(block, study),
+        block.id ?? block.blockType,
+        Boolean(bare),
+        workContentComponents,
       )
     case 'audienceTabs':
       // Owns its own GSAP entrance + swap shell — do not wrap again.

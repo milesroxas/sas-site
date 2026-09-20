@@ -1,23 +1,25 @@
 'use client'
 import type React from 'react'
 import { Container } from '@/components/Container'
-import { Visual } from '@/components/Visual'
+import { Media } from '@/components/Media'
 import { ImmersiveShell, WebGLTunnel, WebGlBackdropScene } from '@/features/immersive'
-import { resolveVisual } from '@/features/immersive/visual'
+import { resolveOpening } from '@/features/immersive/visual'
 import { HeroBand } from '@/heros/HeroBand'
+import { HeroGround } from '@/heros/HeroGround'
 import { HeroDescription, HeroLinks, HeroTitle } from '@/heros/shared'
 import type { Page } from '@/payload-types'
 
 export const HighImpactHero: React.FC<Page['hero']> = (hero) => {
   const { description, links, title } = hero
-  const visual = resolveVisual(hero, { seedKey: title ?? 'hero' })
+  const { ground, media } = resolveOpening(hero, { seedKey: title ?? 'hero' })
   return (
     // The band owns the palette and the header pull; the immersive shell
     // inside it owns the WebGL layer and the layout.
     <HeroBand as="div" className="-mt-(--header-height)">
       <ImmersiveShell
         webgl
-        // isolate: contains the -z-10 image above the page frame's opaque bg-background.
+        // isolate: contains the negative-z media and effect layers above the
+        // page frame's opaque bg-background.
         className="relative isolate flex min-h-[80vh] flex-col items-start overflow-clip bg-background py-12 text-foreground"
       >
         <WebGLTunnel>
@@ -35,20 +37,19 @@ export const HighImpactHero: React.FC<Page['hero']> = (hero) => {
           </div>
         </Container>
 
-        {visual && (
+        {media && (
           // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
           <div data-hero-media className="contents">
-            <Visual
+            <Media
               fill
-              frameClassName="-z-10 opacity-85"
-              imgClassName="-z-10 object-cover opacity-85 mix-blend-soft-light select-none"
-              placement="hero"
-              posterClassName="object-cover select-none"
+              imgClassName="-z-20 object-cover opacity-85 mix-blend-soft-light select-none"
               priority
-              visual={visual}
+              resource={media}
+              videoClassName="-z-20 object-cover opacity-85 mix-blend-soft-light select-none"
             />
           </div>
         )}
+        <HeroGround className="opacity-85" ground={ground} handoff={!media} />
       </ImmersiveShell>
     </HeroBand>
   )

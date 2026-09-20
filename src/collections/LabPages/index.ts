@@ -84,7 +84,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
                 heroContentCollapsible(),
                 {
                   type: 'collapsible',
-                  label: 'Media & layout',
+                  label: 'Media & presentation',
                   fields: [
                     ...heroVisualSlotFields({
                       name: 'media',
@@ -92,12 +92,6 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
                       relationTo: 'media',
                       filterOptions: { usageStatus: { equals: 'public-approved' } },
                     }),
-                    {
-                      name: 'layout',
-                      type: 'select',
-                      defaultValue: 'editorial-split',
-                      options: ['editorial-split', 'centered', 'immersive', 'media-led'],
-                    },
                     ...heroPresentationFields(),
                   ],
                 },

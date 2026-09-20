@@ -56,6 +56,7 @@ export type StoryCopyBlock =
       statement?: StoryBody | null
     })
   | (StoryRef & { blockType: 'featureImageStatement'; caption?: StoryBody | null })
+  | (StoryRef & { blockType: 'storyBeats'; body?: StoryBody | null })
   | {
       blockType: 'featureTabs'
       tabs?: Array<StoryRef & { description?: StoryBody | null; heading?: string | null }> | null
@@ -67,6 +68,7 @@ const STORY_COPY_BLOCK_TYPES: ReadonlySet<string> = new Set<StoryCopyBlock['bloc
   'featureImageStatement',
   'featureStatementGrid',
   'featureTabs',
+  'storyBeats',
 ])
 
 /** True for a block whose copy can come from the page's story record. */
@@ -101,6 +103,10 @@ const resolveCopy = (block: StoryCopyBlock, record: StoryRecord): StoryCopyBlock
       }
     case 'featureImageStatement':
       return { ...block, caption: storyBody(record, block, block.caption) }
+    // The reading column prints the beat's copy and nothing else: no heading,
+    // so a beat is never introduced by the bare name of its section.
+    case 'storyBeats':
+      return { ...block, body: storyBody(record, block, block.body) }
     case 'featureTabs':
       return {
         ...block,

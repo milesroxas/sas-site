@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache.js'
 import { getPayload } from 'payload'
 import { CONTACT_INDEX_SLUG } from '@/collections/ContactPages/constants'
 import {
+  openingHandoffVisual,
   resolveMenuPreviewVisual,
   resolveVisual,
   type StoredMenuPreviewSlot,
@@ -226,7 +227,7 @@ async function getMenuContent(): Promise<MenuContent> {
     if (doc.slug) {
       setPageMedia(
         `/${doc.slug}`,
-        previewOrOwn(doc, resolveVisual(doc.hero, { seedKey: doc.id }), doc.id),
+        previewOrOwn(doc, openingHandoffVisual(doc.hero, { seedKey: doc.id }), doc.id),
       )
     }
   }
@@ -268,12 +269,12 @@ async function getMenuContent(): Promise<MenuContent> {
     expertise: expertise.docs.map((doc) => ({
       title: doc.title,
       href: `/expertise/${doc.slug}`,
-      media: previewOrOwn(doc, resolveVisual(doc.hero, { seedKey: doc.id }), doc.id),
+      media: previewOrOwn(doc, openingHandoffVisual(doc.hero, { seedKey: doc.id }), doc.id),
     })),
     audiences: audiences.docs.map((doc) => ({
       title: doc.title,
       href: `/who-we-help/${doc.slug}`,
-      media: previewOrOwn(doc, resolveVisual(doc.hero, { seedKey: doc.id }), doc.id),
+      media: previewOrOwn(doc, openingHandoffVisual(doc.hero, { seedKey: doc.id }), doc.id),
     })),
     works: workDocs.map((doc) => ({
       title: doc.title,
@@ -284,7 +285,7 @@ async function getMenuContent(): Promise<MenuContent> {
       // Work heroes paint no band of their own: the site theme is the ground.
       media: previewOrOwn(
         doc,
-        resolveVisual(doc.hero, { fallbackMedia: doc.coverAsset, seedKey: doc.id }),
+        openingHandoffVisual(doc.hero, { fallbackMedia: doc.coverAsset, seedKey: doc.id }),
         doc.id,
         { ownGround: 'site' },
       ),

@@ -252,6 +252,60 @@ export const resolveVisual = (
   return media ? { kind: 'media', media } : null
 }
 
+/**
+ * A hero opening, resolved from one slot: the effect that grounds the band and
+ * the media that fills the frame the layout gives it. Either may be absent and
+ * both may be present, unlike a block slot, where the two share one frame and
+ * the effect wins.
+ */
+export type VisualOpening = {
+  /** The effect behind the whole band, when the editor chose one. */
+  ground: EffectVisual | null
+  /** The slot's upload, whenever one is set. Never consumed by the effect. */
+  media: Media | null
+}
+
+/**
+ * Resolve an ambient slot (`heroVisualSlotFields`) into its two layers.
+ *
+ * The media is read the same way `resolveVisual` reads it (the slot's own
+ * upload, then `fallbackMedia`), and it is read whether or not an effect is
+ * chosen. A light leak is resolved without media of its own: the opening
+ * renders the upload in its frame, so handing it to the leak as well would
+ * paint it twice.
+ */
+export const resolveOpening = (
+  slot: StoredVisualSlot | null | undefined,
+  options: ResolveVisualOptions = {},
+): VisualOpening => {
+  const media = populatedDoc<Media>(slot?.media) ?? populatedDoc<Media>(options.fallbackMedia)
+  if (slot?.visualType === 'streakField')
+    return {
+      ground: { kind: 'streakField', descriptor: resolveStreakDescriptor(slot.shader, options) },
+      media,
+    }
+  if (slot?.visualType === 'lightLeak')
+    return {
+      ground: { kind: 'lightLeak', descriptor: resolveLeakDescriptor(slot.shader, null) },
+      media,
+    }
+  return { ground: null, media }
+}
+
+/**
+ * What a hero opening hands off to the takeover menu: the media plate when the
+ * page sets one, the effect grounding the band otherwise. The heroes mark that
+ * same element `data-hero-media` (`HeroGround`'s `handoff`), so the menu's
+ * preview and the page's dissolve target can never disagree.
+ */
+export const openingHandoffVisual = (
+  slot: StoredVisualSlot | null | undefined,
+  options: ResolveVisualOptions = {},
+): Visual | null => {
+  const { ground, media } = resolveOpening(slot, options)
+  return media ? { kind: 'media', media } : ground
+}
+
 const POSTER_MEDIA_KEYS = ['filename', 'updatedAt', 'url', 'width', 'height', 'mimeType'] as const
 
 /**

@@ -19,16 +19,19 @@ export {
 export { LIGHT_LEAK_SCOPE_ATTR, leakScope } from '../ui/light-leak-excite'
 export { LEAK_EXCITE_TARGETS, LEAK_ORIGINS, type LeakExciteTargets } from '../ui/light-leak-tuning'
 export {
+  type EffectVisual,
   isValidStreakSeed,
   LEAK_SECTION_HOVER_RANGE,
   MENU_PREVIEW_TYPES,
   type MediaVisual,
   type MenuPreviewType,
   normalizeStreakMultiplier,
+  openingHandoffVisual,
   type PosterMediaSource,
   parseStreakDescriptor,
   type ResolveVisualOptions,
   resolveMenuPreviewVisual,
+  resolveOpening,
   resolveStreakDescriptor,
   resolveVisual,
   STREAK_INTENSITY_RANGE,
@@ -43,6 +46,7 @@ export {
   serializeStreakDescriptor,
   VISUAL_TYPES,
   type Visual,
+  type VisualOpening,
   type VisualType,
   visualMedia,
 } from './descriptor'

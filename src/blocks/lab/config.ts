@@ -8,6 +8,7 @@ import { sectionBlock } from '@/blocks/section/config'
 import { relatedSelectionFields, storySectionFields, themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
+import { StoryBeats } from '@/blocks/story-beats/config'
 import { hasStorySource, withStoryBeatSource } from '@/fields/storyBeatSource'
 
 export const LabStorySection: Block = withStoryBeatSource(
@@ -111,8 +112,13 @@ const labBlock = (shared: Block): Block => {
  * The shared Section-nestable run (docs/blocks-reorg-roadmap.md) as Lab Pages
  * offer it: in a Section and at the top level while the Section transition is
  * underway, story copy resolving against the related Lab Project.
+ *
+ * Story beats joins the run here rather than in the shared list: it is a Text
+ * block with no copy of its own, so only the two surfaces that present a story
+ * record (Lab and Work Pages) have anything for it to resolve. The drawer
+ * groups by `admin.group`, so it lands under Text wherever it sits here.
  */
-const labSectionBlocks = sectionNestableBlocks.map(labBlock)
+const labSectionBlocks = [...sectionNestableBlocks, StoryBeats].map(labBlock)
 
 export const LabSection = sectionBlock({
   // Content carries no story copy; it closes the nested list under Custom

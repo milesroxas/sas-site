@@ -198,7 +198,7 @@ Where it is used: mostly on pages without media of their own, so Pages (High and
 
 | Field | Type | Rules |
 |-------|------|-------|
-| `visualType` | select: `media` / `streakField` | Empty keeps legacy media behavior. `streakField` wins over a retained upload; that upload is hidden, not deleted, and never fetched or mounted. |
+| `visualType` | select: `media` / effect id | Empty keeps legacy media behavior. In a block slot an effect wins over a retained upload; that upload is hidden, not deleted, and never fetched or mounted. In a hero opening slot (`heroVisualSlotFields`) the effect grounds the band instead of filling the frame, so the upload stays visible and renders beside it. |
 | `shader.preset` | text with `StreakLookSelect` | Must be a shipped look id. Required once the shader is chosen. An unknown stored id degrades to `signal-v1` **poster only**: rendering never guesses a live look. |
 | `shader.seed` | integer 0..2147483647 | Assigned on save when empty. Same seed, same composition. Never derived from array order. |
 | `shader.speed` | 0..1 | Multiplies the look's `timeScale`. 0 freezes the field. Empty is the look as shipped. |

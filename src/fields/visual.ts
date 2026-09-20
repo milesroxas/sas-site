@@ -63,11 +63,18 @@ const and =
 
 const effectChosen: Condition = (_, siblingData) => isEffectId(siblingData?.visualType)
 
-/** The upload shows for a media slot, and under an effect whose editor asked for it. */
-const uploadShown: Condition = (_, siblingData) =>
-  !isEffectId(siblingData?.visualType) ||
-  (EFFECTS[siblingData.visualType as EffectId].slot.media &&
-    siblingData?.shader?.showMedia === true)
+/**
+ * The upload shows for a media slot, and under an effect whose editor asked
+ * for it. An ambient slot always shows it: there the effect grounds the band
+ * and the media keeps its own frame, so the two are independent choices.
+ */
+const uploadShown = (ambient: boolean): Condition =>
+  ambient
+    ? () => true
+    : (_, siblingData) =>
+        !isEffectId(siblingData?.visualType) ||
+        (EFFECTS[siblingData.visualType as EffectId].slot.media &&
+          siblingData?.shader?.showMedia === true)
 
 /**
  * The effect the parent slot chose, from inside the group. The field's `path`
@@ -90,6 +97,13 @@ export const requiredUnlessEffect: Validate = (value, args) => {
   const siblingData = (args as { siblingData?: { visualType?: unknown } }).siblingData
   return isEffectId(siblingData?.visualType) ? true : 'This field is required.'
 }
+
+/**
+ * What the choice means in an ambient slot: the effect is the band's ground,
+ * not a replacement for the frame, so an upload keeps showing beside it.
+ */
+const AMBIENT_VISUAL_DESCRIPTION =
+  'Leave empty for the media alone. An effect grounds the whole opening band behind the copy; the media upload, when one is set, still shows in its own frame.'
 
 const visualTypeField = ({
   effects,
@@ -243,13 +257,16 @@ const posterMediaField = (filterOptions: FilterOptions): UploadField => ({
   validate: (value, { req }) => validatePosterMediaValue(value, req),
 })
 
-const showMediaField = (): CheckboxField => ({
+const showMediaField = (ambient: boolean): CheckboxField => ({
   name: 'showMedia',
   type: 'checkbox',
   defaultValue: false,
   label: 'Show the media under the effect',
   admin: {
-    condition: slotOffers('media'),
+    // An ambient slot renders its media in a frame of its own beside the
+    // effect, so there is nothing to put under anything. The field stays in
+    // the group so every slot stores one shape; the control never shows.
+    condition: ambient ? () => false : slotOffers('media'),
     description: 'Off, the effect fills the frame on its own. On, the media upload shows under it.',
   },
 })
@@ -290,6 +307,12 @@ export type ShaderFieldArgs = {
   effects?: readonly EffectId[]
   /** Whether the slot sits in a block root a bleeding effect can wash across (`VISUAL_HOST`). */
   hosted?: boolean
+  /**
+   * The effect grounds the whole band and the media keeps its own frame, so a
+   * slot may carry both. A hero opening; a block slot draws one or the other
+   * in a single frame.
+   */
+  ambient?: boolean
   /** When the group shows; defaults to the sibling `visualType` being an effect. */
   condition?: Condition
   /** Poster picker filter; the public gate by default, scoped on Work Pages. */
@@ -306,6 +329,7 @@ export const shaderField = ({
   label = 'Effect',
   effects = [DEFAULT_EFFECT],
   hosted = true,
+  ambient = false,
   condition = effectChosen,
   posterFilterOptions = publicApprovedMediaWhere,
 }: ShaderFieldArgs = {}): GroupField => {
@@ -375,7 +399,7 @@ export const shaderField = ({
         admin: { hidden: true },
       },
       ...(offers('bleed') ? [bleedField(hosted), originField()] : []),
-      ...(offers('media') ? [showMediaField()] : []),
+      ...(offers('media') ? [showMediaField(ambient)] : []),
       pointerField(),
       ...(offers('hover')
         ? [{ type: 'row' as const, fields: [hoverTargetsField(), sectionHoverField()] }]
@@ -385,7 +409,10 @@ export const shaderField = ({
   }
 }
 
-export type VisualSlotArgs = Pick<ShaderFieldArgs, 'effects' | 'hosted' | 'posterFilterOptions'> & {
+export type VisualSlotArgs = Pick<
+  ShaderFieldArgs,
+  'ambient' | 'effects' | 'hosted' | 'posterFilterOptions'
+> & {
   /** Extra condition on the whole slot (a hero `type` gate). */
   condition?: Condition
   visualTypeDescription?: string
@@ -400,6 +427,7 @@ export type VisualSlotArgs = Pick<ShaderFieldArgs, 'effects' | 'hosted' | 'poste
 export const visualSlotFields = (
   media: UploadField,
   {
+    ambient = false,
     condition,
     effects = [DEFAULT_EFFECT],
     hosted,
@@ -411,12 +439,25 @@ export const visualSlotFields = (
   const upload = {
     ...rest,
     ...(required ? { validate: requiredUnlessEffect } : {}),
-    admin: { ...media.admin, condition: and(media.admin?.condition, condition, uploadShown) },
+    admin: {
+      ...media.admin,
+      condition: and(media.admin?.condition, condition, uploadShown(ambient)),
+    },
   } as UploadField
   return [
     upload,
-    visualTypeField({ effects, condition, description: visualTypeDescription }),
-    shaderField({ effects, hosted, condition: and(condition, effectChosen), posterFilterOptions }),
+    visualTypeField({
+      effects,
+      condition,
+      description: visualTypeDescription ?? (ambient ? AMBIENT_VISUAL_DESCRIPTION : undefined),
+    }),
+    shaderField({
+      ambient,
+      effects,
+      hosted,
+      condition: and(condition, effectChosen),
+      posterFilterOptions,
+    }),
   ]
 }
 
@@ -429,9 +470,10 @@ export const blockVisualSlotFields = (media: UploadField, args: VisualSlotArgs =
   visualSlotFields(media, { effects: EFFECT_IDS, ...args })
 
 /**
- * The slot of a hero drawn through the `Visual` adapter (page, segment, work
- * and lab heroes), so it can draw every effect. A hero has no block root to
- * wash across: the effect stays in the hero's frame and offers no bleed.
+ * The slot of a hero opening (page, segment, work, lab and post heroes). It can
+ * draw every effect, and it is ambient: the effect grounds the whole band while
+ * the media keeps the frame the layout gives it, so an editor may set both. A
+ * hero has no block root to wash across, so the effect offers no bleed.
  */
 export const heroVisualSlotFields = (media: UploadField, args: VisualSlotArgs = {}): Field[] =>
-  visualSlotFields(media, { effects: EFFECT_IDS, hosted: false, ...args })
+  visualSlotFields(media, { ambient: true, effects: EFFECT_IDS, hosted: false, ...args })

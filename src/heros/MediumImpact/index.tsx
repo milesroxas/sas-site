@@ -1,14 +1,15 @@
 import type React from 'react'
 import { Container } from '@/components/Container'
-import { Visual } from '@/components/Visual'
-import { resolveVisual } from '@/features/immersive/visual'
+import { Media } from '@/components/Media'
+import { resolveOpening } from '@/features/immersive/visual'
 import { HeroBand } from '@/heros/HeroBand'
+import { HeroGround } from '@/heros/HeroGround'
 import { HeroDescription, HeroLinks, HeroTitle } from '@/heros/shared'
 import type { Page } from '@/payload-types'
 
 export const MediumImpactHero: React.FC<Page['hero']> = (hero) => {
   const { description, eyebrow, links, title } = hero
-  const visual = resolveVisual(hero, { seedKey: title ?? 'hero' })
+  const { ground, media } = resolveOpening(hero, { seedKey: title ?? 'hero' })
   return (
     <HeroBand
       as="div"
@@ -29,20 +30,19 @@ export const MediumImpactHero: React.FC<Page['hero']> = (hero) => {
         </div>
       </Container>
 
-      {visual && (
+      {media && (
         // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
         <div data-hero-media className="contents">
-          <Visual
+          <Media
             fill
-            frameClassName="-z-10"
-            imgClassName="-z-10 object-cover select-none"
-            placement="hero"
-            posterClassName="object-cover select-none"
+            imgClassName="-z-20 object-cover select-none"
             priority
-            visual={visual}
+            resource={media}
+            videoClassName="-z-20 object-cover select-none"
           />
         </div>
       )}
+      <HeroGround ground={ground} handoff={!media} />
     </HeroBand>
   )
 }

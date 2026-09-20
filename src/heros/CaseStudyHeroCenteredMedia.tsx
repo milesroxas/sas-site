@@ -1,8 +1,9 @@
-import { Visual } from '@/components/Visual'
+import { Media } from '@/components/Media'
 import type { CaseStudy, Organization, WorkPage } from '@/payload-types'
 import { WorkImageTransition } from '@/shared/lib/view-transition'
 import { pluralLabel } from '@/utilities/pluralLabel'
 import { caseStudyHeroFacts } from './caseStudyHeroFacts'
+import { HeroGround } from './HeroGround'
 
 const MetaGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-2 md:items-end md:text-right">
@@ -63,8 +64,11 @@ const heroEyebrow = (page: WorkPage, organization: Organization | null) =>
 
 /**
  * `centered-media` hero layout: media bands the center of the full first screen,
- * with content anchored around it — headline and taxonomy meta split the top row,
+ * with content anchored around it. Headline and taxonomy meta split the top row,
  * capabilities run along the bottom edge. No summary.
+ *
+ * An effect chosen on the page grounds the whole band behind all of it; the
+ * media keeps its own plate, so a page can carry both.
  */
 export const CaseStudyHeroCenteredMedia = ({
   page,
@@ -73,13 +77,14 @@ export const CaseStudyHeroCenteredMedia = ({
   page: WorkPage
   study: CaseStudy
 }) => {
-  const { capabilities, industries, organization, platforms, visual } = caseStudyHeroFacts(
+  const { capabilities, ground, industries, media, organization, platforms } = caseStudyHeroFacts(
     page,
     study,
   )
 
   return (
-    <header className="-mt-(--header-height) flex min-h-[calc(100svh-var(--footer-height))] flex-col pt-(--header-height)">
+    <header className="relative isolate -mt-(--header-height) flex min-h-[calc(100svh-var(--footer-height))] flex-col overflow-clip pt-(--header-height)">
+      <HeroGround ground={ground} handoff={!media} />
       <div className="container flex min-h-0 flex-1 flex-col justify-between gap-8">
         <div className="flex flex-col gap-8 pt-8 md:flex-row md:items-end md:justify-between lg:items-center">
           <div className="flex flex-col gap-6 md:max-w-md lg:max-w-xl lg:gap-8">
@@ -93,18 +98,16 @@ export const CaseStudyHeroCenteredMedia = ({
           </div>
           <HeroTaxonomy industries={industries} platforms={platforms} />
         </div>
-        {visual && (
+        {media && (
           // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
           <div data-hero-media className="md:px-8 lg:px-0">
             <WorkImageTransition slug={page.slug}>
-              <Visual
+              <Media
                 className="lg:mx-auto lg:w-1/2"
-                frameClassName="aspect-8/5 lg:mx-auto lg:w-1/2"
                 imgClassName="aspect-8/5 w-full object-cover"
-                placement="hero"
                 priority
+                resource={media}
                 videoClassName="aspect-8/5 w-full object-cover"
-                visual={visual}
               />
             </WorkImageTransition>
           </div>

@@ -1,0 +1,20 @@
+/* Overrides on `lite-youtube-embed`'s own stylesheet, which the component
+   imports first.
+   
+   These cannot be Tailwind utilities at the call site: the library's sheet is
+   unlayered, and unlayered CSS beats anything in a layer whatever its
+   specificity, so `max-w-none` on the element loses to `lite-youtube { }`.
+   Same-layer overrides, in import order, are the only ones that land. */
+
+lite-youtube {
+  /* The library caps the embed at 720px. Width belongs to the block's own
+     size setting and the column it sits in. */
+  max-width: none;
+}
+
+/* The gradient strip exists to carry the video's title. With no title
+   authored the element still renders it, as a dark band with nothing in it
+   across the top of the poster. */
+lite-youtube:not([title])::before {
+  content: none;
+}

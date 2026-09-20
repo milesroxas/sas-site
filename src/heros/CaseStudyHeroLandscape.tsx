@@ -1,8 +1,9 @@
-import { Visual } from '@/components/Visual'
+import { Media } from '@/components/Media'
 import type { CaseStudy, WorkPage } from '@/payload-types'
 import { WorkImageTransition } from '@/shared/lib/view-transition'
 import { pluralLabel } from '@/utilities/pluralLabel'
 import { caseStudyHeroFacts } from './caseStudyHeroFacts'
+import { HeroGround } from './HeroGround'
 
 const DetailGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-4">
@@ -42,34 +43,36 @@ const HeroDetails = ({
 
 /**
  * `landscape` hero layout: title on its own row, then detail columns (client,
- * industry, capabilities) right-aligned on the next — guttered top band, then
+ * industry, capabilities) right-aligned on the next: a guttered top band, then
  * an edge-to-edge landscape media strip (21:9 lg / 5:4 below). No summary.
+ *
+ * An effect chosen on the page grounds the whole band behind all of it; the
+ * media keeps its own strip, so a page can carry both.
  */
 export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study: CaseStudy }) => {
-  const { capabilities, industries, organization, visual } = caseStudyHeroFacts(page, study)
+  const { capabilities, ground, industries, media, organization } = caseStudyHeroFacts(page, study)
   const client = organization?.name || organization?.shortName
 
   return (
-    <header className="flex flex-col gap-20 pt-16 pb-16 md:gap-32 lg:gap-8 lg:pt-32">
+    <header className="relative isolate flex flex-col gap-20 overflow-clip pt-16 pb-16 md:gap-32 lg:gap-8 lg:pt-32">
+      <HeroGround ground={ground} handoff={!media} />
       <div className="container flex flex-col gap-10 md:gap-32 lg:gap-8 lg:pb-4">
         <h1 className="max-w-xl text-heading-1 text-foreground">
           {page.hero?.titleOverride || study.title}
         </h1>
         <HeroDetails capabilities={capabilities} client={client} industries={industries} />
       </div>
-      {visual && (
+      {media && (
         // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
         <div data-hero-media className="contents">
-          {/* VT name lands on the visual's own wrapper (the `contents` div above can't snapshot). */}
+          {/* VT name lands on the media's own wrapper (the `contents` div above can't snapshot). */}
           <WorkImageTransition slug={page.slug}>
-            <Visual
-              frameClassName="aspect-5/4 lg:aspect-21/9"
+            <Media
               imgClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
-              placement="hero"
               priority
+              resource={media}
               size="100vw"
               videoClassName="aspect-5/4 w-full object-cover lg:aspect-21/9"
-              visual={visual}
             />
           </WorkImageTransition>
         </div>

@@ -4,8 +4,10 @@ import { authenticatedField } from '@/access/authenticatedField'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { narrativeTab } from '@/collections/story/narrative'
+import { authorFields } from '@/fields/authors'
 import { projectLinksField } from '@/fields/pageFields'
 import { slugField } from '@/fields/slug'
+import { populateAuthors } from '@/hooks/populateAuthors'
 import { populatePublishedAt } from '@/hooks/populatePublishedAt'
 import {
   preventDeletingUsedLabProject,
@@ -198,12 +200,14 @@ export const LabProjects: CollectionConfig<'lab-projects'> = {
         description: 'Set automatically on publish. Override only if needed.',
       },
     },
+    ...authorFields(),
     slugField({ name: 'key', checkboxName: 'generateKey', useAsSlug: 'title' }),
   ],
   hooks: {
     beforeValidate: [validateLabProject],
     beforeChange: [populatePublishedAt],
     afterChange: [revalidateLabProjectConsumers],
+    afterRead: [populateAuthors],
     beforeDelete: [preventDeletingUsedLabProject],
   },
   versions: {

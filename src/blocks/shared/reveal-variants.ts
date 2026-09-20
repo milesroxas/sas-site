@@ -28,6 +28,7 @@ export const blockRevealVariants = {
   richText: 'intro',
   richTransition: 'intro',
   splitImageOffset: 'underMedia',
+  storyBeats: 'intro',
   featureStatementLinks: 'self',
   // Pinned ScrollTrigger shell (sticky viewport + scrubbed list) — a CSS
   // reveal wrapper would put transform/opacity on its ancestor and break the

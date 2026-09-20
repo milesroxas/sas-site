@@ -21,6 +21,7 @@ import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { RichTextActions } from '@/blocks/rich-text/actions/Component'
 import { RichTextInsights } from '@/blocks/rich-text/insights/Component'
 import { RichTextPillList } from '@/blocks/rich-text/pill-list/Component'
+import { YouTubeBlock } from '@/blocks/youtube/Component'
 import type {
   BannerBlock as BannerBlockProps,
   CarouselBlock as CarouselBlockProps,
@@ -30,6 +31,7 @@ import type {
   RichTextActionsBlock as RichTextActionsBlockProps,
   RichTextInsightsBlock as RichTextInsightsBlockProps,
   RichTextPillListBlock as RichTextPillListBlockProps,
+  YouTubeBlock as YouTubeBlockProps,
 } from '@/payload-types'
 import { surfaceByCollection, surfaceDocPath } from '@/shared/content/surfaces'
 import { cn } from '@/utilities/ui'
@@ -47,6 +49,7 @@ type NodeTypes =
       | RichTextActionsBlockProps
       | RichTextInsightsBlockProps
       | RichTextPillListBlockProps
+      | YouTubeBlockProps
     >
 
 type ParagraphNode = Extract<DefaultNodeTypes, { type: 'paragraph' }>
@@ -158,6 +161,7 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
     pillList: ({ node }) => (
       <RichTextPillList eyebrow={node.fields.eyebrow} items={node.fields.items} />
     ),
+    youtube: ({ node }) => <YouTubeBlock {...node.fields} enableGutter={false} />,
   },
 })
 

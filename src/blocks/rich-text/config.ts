@@ -11,6 +11,7 @@ import {
 import type { Block } from 'payload'
 import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
+import { YouTube } from '@/blocks/youtube/config'
 import { markdownInputFields } from '@/fields/markdownInput'
 import { RichTextInsights } from './insights/config'
 import { RichTextPillList } from './pill-list/config'
@@ -52,7 +53,7 @@ export const RichTextBlock: Block = {
           UnorderedListFeature(),
           OrderedListFeature(),
           InlineCodeFeature(),
-          BlocksFeature({ blocks: [RichTextInsights, RichTextPillList] }),
+          BlocksFeature({ blocks: [RichTextInsights, RichTextPillList, YouTube] }),
           FixedToolbarFeature(),
           InlineToolbarFeature(),
         ],

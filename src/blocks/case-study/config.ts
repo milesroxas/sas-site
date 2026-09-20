@@ -29,6 +29,7 @@ import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { figureBlocks } from '@/blocks/shared/section-blocks'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
+import { StoryBeats } from '@/blocks/story-beats/config'
 import { publicApprovedMediaWhere, withCaseStudyScopedMedia } from '@/fields/caseStudyScopedMedia'
 import { withStoryBeatSource } from '@/fields/storyBeatSource'
 
@@ -204,6 +205,7 @@ const WorkFeatureImageStatement = workStoryMediaBlock(
 )
 const WorkFeatureTabs = workStoryMediaBlock(FeatureTabs, 'WorkFeatureTabsBlock')
 const WorkCaseStudyTransition = workStoryBlock(CaseStudyTransition, 'WorkCaseStudyTransitionBlock')
+const WorkStoryBeats = workStoryBlock(StoryBeats, 'WorkStoryBeatsBlock')
 const WorkMediaContentSplit = workStoryMediaBlock(MediaContentSplit, 'WorkMediaContentSplitBlock')
 // Media-only variants: no story copy, so only the picker scope changes.
 const WorkMediaBlock = withCaseStudyScopedMedia(MediaBlock, 'WorkMediaBlock')
@@ -230,9 +232,12 @@ const workSectionBlocks: Block[] = [
   WorkFeatureImageStatement,
   // Caption carries no story copy, so it takes the picker scope only.
   WorkMediaBlock,
-  // Text and Figures: a listing or a figure is the block's own data, never
-  // story copy, and holds no media, so all four are offered plain.
+  // Text: Story beats is the study's own prose in a reading column, so it
+  // takes the story picker. A code listing is the block's own data, never
+  // story copy, and holds no media, so it is offered plain.
+  WorkStoryBeats,
   Code,
+  // Figures: a figure is the block's own data too, and holds no media.
   ...figureBlocks,
   // Interactive: FAQ copy is the block's own (questions, not story beats) and
   // it has no media, so it is offered plain. Carousel carries no story copy

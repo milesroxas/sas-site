@@ -2,12 +2,14 @@ import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import type React from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
 import { Section } from '@/blocks/shared/section'
+import { YouTubeBlock } from '@/blocks/youtube/Component'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import type {
   RichTextBlock as RichTextBlockData,
   RichTextInsightsBlock as RichTextInsightsBlockData,
   RichTextPillListBlock as RichTextPillListBlockData,
+  YouTubeBlock as YouTubeBlockData,
 } from '@/payload-types'
 import { RichTextInsights } from './insights/Component'
 import { RichTextPillList } from './pill-list/Component'
@@ -24,11 +26,12 @@ type Body = NonNullable<RichTextBlockData['body']>
 type RootNode = Body['root']['children'][number]
 
 /** The toolbar blocks this block lifts out of the prose onto its own grid. */
-type BodyBlock = RichTextInsightsBlockData | RichTextPillListBlockData
+type BodyBlock = RichTextInsightsBlockData | RichTextPillListBlockData | YouTubeBlockData
 
 const BODY_BLOCK_TYPES: ReadonlySet<string> = new Set<BodyBlock['blockType']>([
   'insights',
   'pillList',
+  'youtube',
 ])
 
 /**
@@ -92,6 +95,16 @@ const renderBlock = (fields: BodyBlock, index: number) => {
           key={key}
         />
       )
+    case 'youtube':
+      return (
+        <YouTubeBlock
+          {...fields}
+          bare
+          className="md:col-span-4 md:col-start-3"
+          enableGutter={false}
+          key={key}
+        />
+      )
   }
 }
 
@@ -107,9 +120,9 @@ const renderBlock = (fields: BodyBlock, index: number) => {
  *
  * Blocks the editor adds from the toolbar interrupt the column as their own
  * cells. Insights: one fills the column, two share it, three or more open
- * out to column 8 (`insights/Component.tsx`). A Pill list stays in the
- * column (`pill-list/Component.tsx`). The grid's row gap is the only space
- * between a block and the copy around it.
+ * out to column 8 (`insights/Component.tsx`). A Pill list and a YouTube
+ * embed stay in the column. The grid's row gap is the only space between a
+ * block and the copy around it.
  *
  * Each prose run and each block is a `data-reveal` marker for the shared
  * intro reveal the renderer plays; the block itself never animates.

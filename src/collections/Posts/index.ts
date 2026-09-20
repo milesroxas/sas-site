@@ -10,12 +10,14 @@ import {
 } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
+import { authorFields } from '@/fields/authors'
 import { closingTab } from '@/fields/closing'
 import { contentsButtonField, editorialNotesField, relatedPagesField } from '@/fields/pageFields'
 import { postLayoutBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
-import { visualSlotFields } from '@/fields/visual'
+import { heroVisualSlotFields } from '@/fields/visual'
+import { populateAuthors } from '@/hooks/populateAuthors'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Banner } from '../../blocks/Banner/config'
@@ -23,8 +25,8 @@ import { Carousel } from '../../blocks/Carousel/config'
 import { Code } from '../../blocks/Code/config'
 import { FeatureStatementLinks } from '../../blocks/feature/StatementLinks/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { YouTube } from '../../blocks/youtube/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
-import { populateAuthors } from './hooks/populateAuthors'
 import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
 import { validatePublicMedia } from './hooks/validatePublicMedia'
 
@@ -78,7 +80,7 @@ export const Posts: CollectionConfig<'posts'> = {
       tabs: [
         {
           fields: [
-            ...visualSlotFields(
+            ...heroVisualSlotFields(
               {
                 name: 'heroImage',
                 type: 'upload',
@@ -89,7 +91,7 @@ export const Posts: CollectionConfig<'posts'> = {
               },
               {
                 visualTypeDescription:
-                  'Leave empty to use the hero image, then the SEO image. Streak Field fills the portrait frame with a code-defined look; an image left in place is kept but not shown.',
+                  'Leave empty for the picture alone: the hero image, then the SEO image. An effect grounds the whole opening band behind the copy; the portrait crop still shows in its own frame.',
               },
             ),
             {
@@ -112,7 +114,7 @@ export const Posts: CollectionConfig<'posts'> = {
                     UnorderedListFeature(),
                     OrderedListFeature(),
                     BlocksFeature({
-                      blocks: [Banner, Carousel, Code, FeatureStatementLinks, MediaBlock],
+                      blocks: [Banner, Carousel, Code, FeatureStatementLinks, MediaBlock, YouTube],
                     }),
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),
@@ -199,39 +201,7 @@ export const Posts: CollectionConfig<'posts'> = {
         ],
       },
     },
-    {
-      name: 'authors',
-      type: 'relationship',
-      admin: {
-        position: 'sidebar',
-      },
-      hasMany: true,
-      relationTo: 'users',
-    },
-    // This field is only used to populate the user data via the `populateAuthors` hook
-    // This is because the `user` collection has access control locked to protect user privacy
-    // GraphQL will also not return mutated user data that differs from the underlying schema
-    {
-      name: 'populatedAuthors',
-      type: 'array',
-      access: {
-        update: () => false,
-      },
-      admin: {
-        disabled: true,
-        readOnly: true,
-      },
-      fields: [
-        {
-          name: 'id',
-          type: 'text',
-        },
-        {
-          name: 'name',
-          type: 'text',
-        },
-      ],
-    },
+    ...authorFields(),
     slugField(),
   ],
   hooks: {

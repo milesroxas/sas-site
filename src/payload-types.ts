@@ -305,7 +305,7 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
+     * Leave empty for the media alone. An effect grounds the whole opening band behind the copy; the media upload, when one is set, still shows in its own frame.
      */
     visualType?: ('media' | 'streakField' | 'lightLeak') | null;
     shader?: PlacedVisualConfig;
@@ -321,6 +321,7 @@ export interface Page {
     | SplitImageOffsetBlock
     | FeatureImageStatementBlock
     | MediaBlock
+    | YouTubeBlock
     | RichTextBlock
     | CodeBlock
     | ChartBlock
@@ -406,10 +407,10 @@ export interface Post {
    */
   heroImage?: (number | null) | Media;
   /**
-   * Leave empty to use the hero image, then the SEO image. Streak Field fills the portrait frame with a code-defined look; an image left in place is kept but not shown.
+   * Leave empty for the picture alone: the hero image, then the SEO image. An effect grounds the whole opening band behind the copy; the portrait crop still shows in its own frame.
    */
-  visualType?: ('media' | 'streakField') | null;
-  shader?: StreakVisualConfig;
+  visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+  shader?: PlacedVisualConfig;
   /**
    * Editorial sentence under the title in the hero. Distinct from the SEO description — this one is written to be read.
    */
@@ -448,6 +449,7 @@ export interface Post {
         | SplitImageOffsetBlock
         | FeatureImageStatementBlock
         | MediaBlock
+        | YouTubeBlock
         | RichTextBlock
         | CodeBlock
         | ChartBlock
@@ -1507,7 +1509,7 @@ export interface WorkPage {
     summaryOverride?: string | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
+     * Leave empty for the media alone. An effect grounds the whole opening band behind the copy; the media upload, when one is set, still shows in its own frame.
      */
     visualType?: ('media' | 'streakField' | 'lightLeak') | null;
     shader?: PlacedVisualConfig;
@@ -1542,6 +1544,7 @@ export interface WorkPage {
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
         | WorkMediaBlock
+        | WorkStoryBeatsBlock
         | CodeBlock
         | ChartBlock
         | DiagramBlock
@@ -1781,6 +1784,7 @@ export interface WorkSectionBlock {
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
         | WorkMediaBlock
+        | WorkStoryBeatsBlock
         | CodeBlock
         | ChartBlock
         | DiagramBlock
@@ -2358,6 +2362,65 @@ export interface WorkMediaBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkStoryBeatsBlock".
+ */
+export interface WorkStoryBeatsBlock {
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Write-only. Markdown for `body`: converted to rich text on save and never stored. Syntax the field cannot hold is refused with what to use instead.
+   */
+  markdown?: string | null;
+  /**
+   * Write-only. Send true beside `markdown` to overwrite `body` when it already has content.
+   */
+  replace?: boolean | null;
+  /**
+   * Shown when source is "Custom", or as a website-only override of the canonical copy.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Default is article body copy, the size a post renders its main text at. Small steps below it for an aside or a footnote; Lead is the larger standfirst size.
+   */
+  variant?: ('default' | 'small' | 'lead') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'storyBeats';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -6459,6 +6522,7 @@ export interface PageSectionBlock {
         | SplitImageOffsetBlock
         | FeatureImageStatementBlock
         | MediaBlock
+        | YouTubeBlock
         | RichTextBlock
         | CodeBlock
         | ChartBlock
@@ -6909,6 +6973,31 @@ export interface MediaBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "YouTubeBlock".
+ */
+export interface YouTubeBlock {
+  /**
+   * Paste any YouTube link. A start time in the link (the "Start at" box on YouTube's share panel) is kept.
+   */
+  url: string;
+  /**
+   * Optional. Shown over the poster the way YouTube shows it, and read out as the play button's label.
+   */
+  title?: string | null;
+  /**
+   * Presentation for this placement, matching the Caption block.
+   */
+  size?: ('full' | 'inset' | 'small') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'youtube';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7484,11 +7573,10 @@ export interface LabPage {
     summaryOverride?: string | null;
     media?: (number | null) | Media;
     /**
-     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
+     * Leave empty for the media alone. An effect grounds the whole opening band behind the copy; the media upload, when one is set, still shows in its own frame.
      */
     visualType?: ('media' | 'streakField' | 'lightLeak') | null;
     shader?: PlacedVisualConfig;
-    layout?: ('editorial-split' | 'centered' | 'immersive' | 'media-led') | null;
     /**
      * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
      */
@@ -7515,6 +7603,7 @@ export interface LabPage {
         | LabSplitImageOffsetBlock
         | LabFeatureImageStatementBlock
         | MediaBlock
+        | YouTubeBlock
         | RichTextBlock
         | CodeBlock
         | ChartBlock
@@ -7524,6 +7613,7 @@ export interface LabPage {
         | CarouselBlock
         | LabFeatureTabsBlock
         | InsightListBlock
+        | LabStoryBeatsBlock
         | LabMediaShowcaseBlock
         | ScrollGalleryBlock
         | LabStorySectionBlock
@@ -7688,6 +7778,13 @@ export interface LabProject {
    * Set automatically on publish. Override only if needed.
    */
   publishedAt?: string | null;
+  authors?: (number | User)[] | null;
+  populatedAuthors?:
+    | {
+        id?: string | null;
+        name?: string | null;
+      }[]
+    | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -7729,6 +7826,7 @@ export interface LabSectionBlock {
         | LabSplitImageOffsetBlock
         | LabFeatureImageStatementBlock
         | MediaBlock
+        | YouTubeBlock
         | RichTextBlock
         | CodeBlock
         | ChartBlock
@@ -7738,6 +7836,7 @@ export interface LabSectionBlock {
         | CarouselBlock
         | LabFeatureTabsBlock
         | InsightListBlock
+        | LabStoryBeatsBlock
         | ContentBlock
       )[]
     | null;
@@ -8322,6 +8421,65 @@ export interface LabFeatureTabsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabStoryBeatsBlock".
+ */
+export interface LabStoryBeatsBlock {
+  /**
+   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
+   */
+  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
+  /**
+   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
+   */
+  storyScope?: ('overview' | 'section' | 'beat') | null;
+  /**
+   * Choose one reusable beat from the selected section.
+   */
+  storyBeatKey?: string | null;
+  /**
+   * Reveal the website-only override fields. Saved overrides still apply while hidden.
+   */
+  showOverrides?: boolean | null;
+  /**
+   * Write-only. Markdown for `body`: converted to rich text on save and never stored. Syntax the field cannot hold is refused with what to use instead.
+   */
+  markdown?: string | null;
+  /**
+   * Write-only. Send true beside `markdown` to overwrite `body` when it already has content.
+   */
+  replace?: boolean | null;
+  /**
+   * Shown when source is "Custom", or as a website-only override of the canonical copy.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Default is article body copy, the size a post renders its main text at. Small steps below it for an aside or a footnote; Lead is the larger standfirst size.
+   */
+  variant?: ('default' | 'small' | 'lead') | null;
+  /**
+   * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
+   */
+  theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'storyBeats';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LabMediaShowcaseBlock".
  */
 export interface LabMediaShowcaseBlock {
@@ -8586,6 +8744,7 @@ export interface ExpertisePage {
     | SplitImageOffsetBlock
     | FeatureImageStatementBlock
     | MediaBlock
+    | YouTubeBlock
     | RichTextBlock
     | CodeBlock
     | ChartBlock
@@ -8718,7 +8877,7 @@ export interface SegmentHero {
    */
   media?: (number | null) | Media;
   /**
-   * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
+   * Leave empty for the media alone. An effect grounds the whole opening band behind the copy; the media upload, when one is set, still shows in its own frame.
    */
   visualType?: ('media' | 'streakField' | 'lightLeak') | null;
   shader?: PlacedVisualConfig;
@@ -8755,6 +8914,7 @@ export interface SegmentSectionBlock {
         | SplitImageOffsetBlock
         | FeatureImageStatementBlock
         | MediaBlock
+        | YouTubeBlock
         | RichTextBlock
         | CodeBlock
         | ChartBlock
@@ -8808,6 +8968,7 @@ export interface AudiencePage {
     | SplitImageOffsetBlock
     | FeatureImageStatementBlock
     | MediaBlock
+    | YouTubeBlock
     | RichTextBlock
     | CodeBlock
     | ChartBlock
@@ -9909,6 +10070,7 @@ export interface PagesSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
@@ -9996,6 +10158,7 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
@@ -10147,6 +10310,18 @@ export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
   size?: T;
   captionOverride?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "YouTubeBlock_select".
+ */
+export interface YouTubeBlockSelect<T extends boolean = true> {
+  url?: T;
+  title?: T;
+  size?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -10643,7 +10818,7 @@ export interface PostsSelect<T extends boolean = true> {
   title?: T;
   heroImage?: T;
   visualType?: T;
-  shader?: T | StreakVisualConfigSelect<T>;
+  shader?: T | PlacedVisualConfigSelect<T>;
   standfirst?: T;
   showContents?: T;
   content?: T;
@@ -10660,6 +10835,7 @@ export interface PostsSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
@@ -10742,6 +10918,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | WorkMediaBlockSelect<T>;
+        storyBeats?: T | WorkStoryBeatsBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
         diagram?: T | DiagramBlockSelect<T>;
@@ -10825,6 +11002,7 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | WorkMediaBlockSelect<T>;
+        storyBeats?: T | WorkStoryBeatsBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
         diagram?: T | DiagramBlockSelect<T>;
@@ -11007,6 +11185,23 @@ export interface WorkMediaBlockSelect<T extends boolean = true> {
   browseAllMedia?: T;
   size?: T;
   captionOverride?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WorkStoryBeatsBlock_select".
+ */
+export interface WorkStoryBeatsBlockSelect<T extends boolean = true> {
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  markdown?: T;
+  replace?: T;
+  body?: T;
+  variant?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -11248,7 +11443,6 @@ export interface LabPagesSelect<T extends boolean = true> {
         media?: T;
         visualType?: T;
         shader?: T | PlacedVisualConfigSelect<T>;
-        layout?: T;
         theme?: T;
         mediaTreatment?: T;
       };
@@ -11267,6 +11461,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         splitImageOffset?: T | LabSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | LabFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
@@ -11276,6 +11471,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         carousel?: T | CarouselBlockSelect<T>;
         featureTabs?: T | LabFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
+        storyBeats?: T | LabStoryBeatsBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
         scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         labStorySection?: T | LabStorySectionBlockSelect<T>;
@@ -11330,6 +11526,7 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         splitImageOffset?: T | LabSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | LabFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
@@ -11339,6 +11536,7 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         carousel?: T | CarouselBlockSelect<T>;
         featureTabs?: T | LabFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
+        storyBeats?: T | LabStoryBeatsBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -11533,6 +11731,23 @@ export interface LabFeatureTabsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LabStoryBeatsBlock_select".
+ */
+export interface LabStoryBeatsBlockSelect<T extends boolean = true> {
+  source?: T;
+  storyScope?: T;
+  storyBeatKey?: T;
+  showOverrides?: T;
+  markdown?: T;
+  replace?: T;
+  body?: T;
+  variant?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LabMediaShowcaseBlock_select".
  */
 export interface LabMediaShowcaseBlockSelect<T extends boolean = true> {
@@ -11662,6 +11877,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
@@ -11757,6 +11973,7 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
@@ -11802,6 +12019,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
@@ -12133,6 +12351,13 @@ export interface LabProjectsSelect<T extends boolean = true> {
       };
   presentations?: T;
   publishedAt?: T;
+  authors?: T;
+  populatedAuthors?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+      };
   generateKey?: T;
   key?: T;
   updatedAt?: T;
@@ -13227,6 +13452,7 @@ export interface Home {
     | SplitContentNarrowBlock
     | FeatureImageStatementBlock
     | MediaBlock
+    | YouTubeBlock
     | RichTextBlock
     | FaqBlock
     | CarouselBlock
@@ -13891,6 +14117,7 @@ export interface HomeSelect<T extends boolean = true> {
         splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
         featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;

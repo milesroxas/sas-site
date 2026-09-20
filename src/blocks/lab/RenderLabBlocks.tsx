@@ -11,6 +11,7 @@ import {
   resolveStoryBlockCopy,
   resolveStorySectionCopy,
 } from '@/blocks/shared/story-copy'
+import { StoryBeatsBlock } from '@/blocks/story-beats/Component'
 import RichText from '@/components/RichText'
 import type {
   LabFactsBlock,
@@ -29,12 +30,14 @@ import { StorySection as StorySectionLayout } from './StorySection'
 
 /**
  * The shared run's components plus Statement grid, the one story-capable
- * block Lab offers outside the run. Every entry renders exactly as it does on
+ * block Lab offers outside the run, and Story beats, the Text block only a
+ * story surface offers at all. Every entry renders exactly as it does on
  * Pages once its copy is resolved against the Lab Project.
  */
 const labContentComponents = {
   ...sectionChildComponents,
   featureStatementGrid: FeatureStatementGridBlock,
+  storyBeats: StoryBeatsBlock,
 }
 
 const StorySection = ({ block, project }: { block: LabStorySectionBlock; project: LabProject }) => (

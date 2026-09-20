@@ -2,9 +2,10 @@ import type React from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
 import { Container } from '@/components/Container'
 import { CMSLink } from '@/components/Link'
-import { Visual } from '@/components/Visual'
-import { resolveVisual } from '@/features/immersive/visual'
+import { Media } from '@/components/Media'
+import { resolveOpening } from '@/features/immersive/visual'
 import { HeroBand } from '@/heros/HeroBand'
+import { HeroGround } from '@/heros/HeroGround'
 import type { SegmentHero as SegmentHeroData } from '@/payload-types'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 
@@ -35,8 +36,9 @@ const HeroActions: React.FC<{ className?: string; links: SegmentHeroData['links'
 /**
  * Segment-page hero: the page's opening screen. A dark band (`HeroBand`
  * pins the palette and carries the fixed chrome with it) with the media as
- * its backdrop, pulled under the header and running under the footer, so the
- * first screen is the band alone with both bars floating over it.
+ * its backdrop and an effect grounding the band over it, pulled under the
+ * header and running under the footer, so the first screen is the band alone
+ * with both bars floating over it.
  *
  * Laid out on the composition grid (docs/block-grid-roadmap.md):
  * - Eyebrow and title: columns 1-4, top.
@@ -54,7 +56,7 @@ const HeroActions: React.FC<{ className?: string; links: SegmentHeroData['links'
  */
 export const SegmentHero: React.FC<SegmentHeroData> = (hero) => {
   const { description, eyebrow, lead, links, title } = hero
-  const visual = resolveVisual(hero, { seedKey: title })
+  const { ground, media } = resolveOpening(hero, { seedKey: title })
   const hasClosing = Boolean(lead || description)
   return (
     <HeroBand
@@ -106,21 +108,22 @@ export const SegmentHero: React.FC<SegmentHeroData> = (hero) => {
         </Container>
       </ScrollReveal>
 
-      {visual && (
+      {media && (
         // data-hero-media: takeover-menu dissolve source (src/Header/Menu).
         <div data-hero-media className="contents">
-          <Visual
+          {/* Under the effect: the backdrop is the photograph, the effect the
+              light that falls on it. */}
+          <Media
             fill
-            frameClassName="-z-10"
-            imgClassName="-z-10 object-cover select-none"
-            placement="hero"
-            posterClassName="object-cover select-none"
+            imgClassName="-z-20 object-cover select-none"
             priority
+            resource={media}
             size="100vw"
-            visual={visual}
+            videoClassName="-z-20 object-cover select-none"
           />
         </div>
       )}
+      <HeroGround ground={ground} handoff={!media} />
     </HeroBand>
   )
 }
