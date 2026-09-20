@@ -67,6 +67,7 @@ Inbox                                 Newsletter
 | Content Hub | `testimonials` | Approval-gated quotes |
 | Assets | `media` | Uploads; `usageStatus` + `approvedChannels` govern reuse |
 | Assets | `asset-libraries` | Per-project groupings of approved media |
+| Assets | `streak-looks` | Studio looks: authored visual effects a visual slot references by id. Added by the Streak Studio plugin with `streak-releases` and `streak-renders` (Studio machinery). Team-only; an agent may draft one over MCP, publishing is Studio-only. See [streak-field.md](streak-field.md) |
 | Taxonomy | `capabilities`, `industries`, `platforms`, `categories` | Fully public read |
 | Inbox | `inquiries` | Contact-form submissions; team-only (PII). Public create is `POST /api/inquiries/submit` only |
 | Newsletter | `newsletters`, `audiences`, `subscribers` | Email sends via Resend; team-only access (subscribers hold PII) |

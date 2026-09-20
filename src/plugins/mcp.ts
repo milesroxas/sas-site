@@ -2,6 +2,7 @@ import { type MCPPluginConfig, mcpPlugin } from '@payloadcms/plugin-mcp'
 import type { CollectionSlug, Field, GroupField, Plugin } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { ASK_QUESTION_RETENTION_DAYS } from '@/features/ask/retention'
+import { withMcpDeleteConfirmation } from '@/plugins/mcp-delete-confirmation'
 import { CONTENT_SURFACES } from '@/shared/content/surfaces'
 
 /**
@@ -21,8 +22,19 @@ import { CONTENT_SURFACES } from '@/shared/content/surfaces'
  *   widen its own capabilities.
  * - `search` (rebuilt by plugin hooks, so writes are clobbered) and Payload's
  *   internals (`payload-jobs`, `payload-kv`, `payload-folders`,
- *   `payload-locked-documents`, `payload-preferences`, `payload-migrations`) —
+ *   `payload-locked-documents`, `payload-preferences`, `payload-migrations`):
  *   infrastructure, and the migration ledger is CI's.
+ * - `streak-releases` and `streak-renders`: Studio machinery. Nothing reads a
+ *   release any more, and a render row is a poster lease, not content.
+ *
+ * Studio looks (`streak-looks`) are authorable as drafts only. A look is
+ * published from the Studio, where the editor's browser renders its posters,
+ * and the collection's own hook refuses any other publish. So an agent drafts
+ * and tidies looks, and a person looks at the result and publishes it.
+ *
+ * Deletes are never one call: `mcp-delete-confirmation.ts` makes every
+ * delete-enabled collection below answer the first call with what it would
+ * delete and a token, and only the second call, carrying the token, deletes.
  *
  * Visitor-sourced rows are exposed read-only, never for authoring: they carry
  * contact PII (`inquiries`, `form-submissions`, `subscribers`) or visitor
@@ -42,8 +54,8 @@ const READ_ONLY = { find: true } as const
 
 /** Canonical, channel-agnostic source material rendered by website surfaces. */
 const CONTENT_HUB: Record<string, string> = {
-  'case-studies': 'Case studies — canonical client-work narratives rendered by work pages',
-  'lab-projects': 'Lab projects — canonical R&D narratives rendered by lab pages',
+  'case-studies': 'Case studies: canonical client-work narratives rendered by work pages',
+  'lab-projects': 'Lab projects: canonical R&D narratives rendered by lab pages',
   organizations: 'Client and partner organizations referenced across content',
   projects: 'Client projects that case studies and testimonials attach to',
   testimonials: 'Client testimonials referenced by case studies and pages',
@@ -61,7 +73,7 @@ const TAXONOMY: Record<string, string> = {
 const OPERATIONS: Record<string, string> = {
   forms:
     'Form definitions (fields, confirmation behaviour, emails) that pages embed. Submitted data lives in `form-submissions`',
-  redirects: 'URL redirects — a source path pointing at a document or an external URL',
+  redirects: 'URL redirects: a source path pointing at a document or an external URL',
 }
 
 /**
@@ -72,7 +84,7 @@ const OPERATIONS: Record<string, string> = {
 const NEWSLETTER: Record<string, string> = {
   audiences: 'Newsletter audiences (segments) that subscribers belong to',
   newsletters:
-    'Newsletter campaigns — content, subject, and audience selection. Sending is triggered from the admin only; sending and sent campaigns are locked',
+    'Newsletter campaigns: content, subject, and audience selection. Sending is triggered from the admin only; sending and sent campaigns are locked',
 }
 
 /** Visitor-submitted records. Read-only: every one of these carries contact PII. */
@@ -80,9 +92,9 @@ const VISITOR_RECORDS: Record<string, string> = {
   'form-submissions':
     'Data submitted through site forms, including whatever contact details the form collects. Read-only',
   inquiries:
-    'Contact-form inquiries — name, email, message, and triage state for each lead. Read-only',
+    'Contact-form inquiries: name, email, message, and triage state for each lead. Read-only',
   subscribers:
-    'Newsletter subscribers — email address, audience membership, and subscription state. Read-only',
+    'Newsletter subscribers: email address, audience membership, and subscription state. Read-only',
 }
 
 const entries = (records: Record<string, string>, enabled: McpCollectionEntry['enabled']) =>
@@ -96,7 +108,7 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
       [
         surface.collection,
         {
-          description: `${surface.title} — website pages published under ${surface.urlPrefix || '/'}`,
+          description: `${surface.title}: website pages published under ${surface.urlPrefix || '/'}`,
           enabled: AUTHORING,
         },
       ] as const,
@@ -113,12 +125,21 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
     },
     AUTHORING,
   ),
+  // Drafts only: the collection refuses a publish that does not come from the
+  // Studio, where the posters are rendered.
+  ...entries(
+    {
+      'streak-looks':
+        "Studio looks: authored visual effects (streak field, light leak) that a visual slot references by id in its `studio` field. Draft one with a title, an `effect` and a `recipe`; it cannot be published here, a person publishes it in the admin Studio. Set `archived` to retire a look that is still in use. A slot only accepts a published look of the slot's own effect",
+    },
+    AUTHORING,
+  ),
   // Media stays read-only: MCP tools cannot send binary uploads, and new media
   // defaults to the internal `usageStatus` gate anyway.
   ...entries(
     {
       media:
-        'Uploaded media. Read-only over MCP — reference existing documents by id; only `public-approved` items render publicly',
+        'Uploaded media. Read-only over MCP: reference existing documents by id; only `public-approved` items render publicly',
     },
     READ_ONLY,
   ),
@@ -132,20 +153,20 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
 
 const globals: MCPPluginConfig['globals'] = {
   footer: {
-    description: 'Site footer — navigation and contact details',
+    description: 'Site footer: navigation and contact details',
     enabled: { find: true, update: true },
   },
   header: {
-    description: 'Site header — primary navigation',
+    description: 'Site header: primary navigation',
     enabled: { find: true, update: true },
   },
   home: {
-    description: 'Site homepage — hero, layout blocks, and SEO published at /',
+    description: 'Site homepage: hero, layout blocks, and SEO published at /',
     enabled: { find: true, update: true },
   },
   'insights-index': {
     description:
-      'Insights index page — hero and SEO for the listing published at /insights (also /posts). The list itself is code-owned',
+      'Insights index page: hero and SEO for the listing published at /insights (also /posts). The list itself is code-owned',
     enabled: { find: true, update: true },
   },
   'site-info': {
@@ -154,7 +175,7 @@ const globals: MCPPluginConfig['globals'] = {
   },
   'works-index': {
     description:
-      'Work index page — hero and SEO for the listing published at /works. The list itself is code-owned',
+      'Work index page: hero and SEO for the listing published at /works. The list itself is code-owned',
     enabled: { find: true, update: true },
   },
 }
@@ -265,7 +286,14 @@ const uploadMediaCapability: Field = {
   },
 }
 
-export const mcp: Plugin = mcpPlugin({
+/** Every collection a key can be granted `delete` on: the ones the confirmation guards. */
+const deletable = new Set(
+  Object.entries(collections ?? {}).flatMap(([slug, entry]) =>
+    entry?.enabled && typeof entry.enabled === 'object' && entry.enabled.delete ? [slug] : [],
+  ),
+)
+
+const server: Plugin = mcpPlugin({
   collections,
   globals,
   mcp: {
@@ -277,11 +305,15 @@ export const mcp: Plugin = mcpPlugin({
         "Rich text fields expect Lexical editor state JSON, not markdown or HTML. The exception is a rich text field with a write-only `markdown` sibling (a Rich text block's `body`, a story section's and a story beat's `body`): send Markdown there and the server converts it. It refuses syntax the field cannot hold and says what to use instead, and it will not replace existing content unless `replace: true` is sent beside it.",
         'Charts and diagrams are `chart` and `diagram` blocks carrying a JSON `spec` (the tool schema documents it). A diagram spec has no coordinates: positions are computed on save, so never send `geometry`. A save answers an invalid spec with every problem by path; fix those paths and resend. Every figure needs a `textAlternative`.',
         'Before updating a document, find it first and edit from its current state.',
-        'Relationship fields take document ids — look them up with the relevant find tool.',
+        'Relationship fields take document ids: look them up with the relevant find tool.',
         'Omit slug, key, and generateSlug fields on create and update: slugs auto-generate from the title or name, and any value you send is normalized to a URL-safe slug.',
+        "Case Study and Lab Project narrative is section-owned: `context`, `challenge`, `strategy`, `approach`, `outcomeSummary` and `learnings` each hold a `body` plus ordered `storyBeats` with stable keys unique within their section. A Work or Lab Page block points at a beat with the section in `source`, `storyScope: 'beat'` and `storyBeatKey`.",
+        "A visual slot takes a Studio look by id in its `studio` field: find one with the streak-looks find tool. You may draft a look (title, `effect`, and a `recipe` whose `deltas` hold only the parameters that leave their default; the tool schema lists every parameter and range), but you cannot see it and you cannot publish it: say so, and ask the user to open it in the admin Studio, check it and publish. A page only publishes with a published look of the slot's own effect.",
+        'Deleting is permanent and always needs the explicit confirmation of the user in this conversation, for each document by name. The first delete call deletes nothing: it answers with the document and a confirmation token. Show the user that document, wait for their yes, then call again with the token in `confirm`. Never confirm on your own, never delete by `where`, and prefer a reversible step (unpublish, or `archived` on a look) when the user has not asked for a delete.',
         'Asset libraries require organization and project ids; omit rootFolder to auto-create one.',
         'Media cannot be uploaded over MCP; reference existing media documents by id. New images go through `pnpm cms:upload`, which lands them internal for a person to approve.',
         'Inquiries, form submissions, subscribers, and Ask questions are read-only and hold visitor contact details: read them for analysis and triage, and never copy that PII into published content or send it anywhere outside this workspace.',
+        'House style for every piece of copy you write, titles, captions and labels included: never use an em dash. Recast with a comma, a colon, parentheses or a period.',
       ].join(' '),
     },
   },
@@ -302,3 +334,5 @@ export const mcp: Plugin = mcpPlugin({
     fields: [...withCapabilityControls(collection.fields), uploadMediaCapability],
   }),
 })
+
+export const mcp: Plugin = (config) => server(withMcpDeleteConfirmation(config, deletable))
