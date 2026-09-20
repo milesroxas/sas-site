@@ -86,6 +86,14 @@ The server's MCP instructions tell agents to:
   with the section in `source`, `storyScope: 'beat'`, and `storyBeatKey`; there is no global
   `story-beat` source.
 
+## Known issue: an MCP edit does not refresh the rendered page
+
+Found 2026-09-19 publishing the Privacy Policy. An `update*` call that publishes a document runs the collection's revalidation hook, and the log says so ("Revalidated Page at /privacy-policy"), but the CDN keeps serving the old prerender (`x-vercel-cache: HIT`, the age still counting from before the edit). Same on preview and production. The likely cause: `mcp-handler` answers over a stream and returns its `Response` before the tool has run, so Next has already flushed the request's pending revalidations by the time the hook calls `revalidatePath`, and the late call is dropped without an error. Saves from the admin are ordinary requests and are not affected.
+
+Until it is fixed, a document published over MCP goes live on the next deployment (`vercel redeploy <deployment-url>` rebuilds the prerender from the database), or when someone re-saves it in the admin. A fix worth trying: have the hooks, on an MCP request, call a small secret-protected route that does the `revalidatePath` inside its own request.
+
+The configured `sas-cms` server is the **preview** site and its database branch. Production is a separate database: the same key works against `https://www.suits-sandals.com/api/mcp`, and an edit meant for both has to be made twice.
+
 ## Security: the REST-bypass rule
 
 MCP API keys authenticate as `req.user` over Payload's **REST/GraphQL API too**, not just at

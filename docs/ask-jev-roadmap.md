@@ -6,6 +6,9 @@ This document is written to be picked up cold by a later session. Read it, the f
 
 ## Next steps
 
+**Status 2026-09-19, evening.** Done: step 1 (key in Vercel, Production and Preview), step 4 (preview `on`, confirmed by card-only turns in 300 to 565 ms), step 7 (the Privacy Policy, Pages id 8, was already published; it now names TypeSafe in sections 6 and 7, describes the journey, and carries the new effective date, on production and preview), step 8 (production `shadow`, confirmed in the log: `judge_mode: "shadow"`, `judge_failed: false`, `judge_ms: 387`, `page_leaned: true`). Skipped: step 3, the `preview-off` baseline, since preview went `on` first; to get one, set preview `off`, redeploy, capture, and set it back. Open: steps 2, 5, 6, 9 and 10. Production stays `shadow` until Miles moves it: the journey's page search and prompt lines act only in `on`, so on production today they are measured (`page_leaned`), not applied. The single shared conversation is live everywhere.
+
+
 Written for Miles. In order: each step unblocks the next, and nothing here needs a code change. The code is on `main`, `preview` and `dev` (`d7d399c`), and the judge is `off` everywhere it is deployed.
 
 | # | Step | How | Done when |
