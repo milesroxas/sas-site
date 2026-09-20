@@ -24,12 +24,16 @@ const graph = z.strictObject({
   kind: z.enum(['flow', 'state']),
   direction: z
     .enum(['LR', 'TD'])
-    .describe('LR reads left to right and re-lays out top down on narrow screens.'),
+    .describe(
+      'LR reads left to right and re-lays out top down on narrow screens, so it always fits a phone. TD has no second layout: three or more nodes side by side, or wide groups, scroll sideways on a phone. Use LR for a chain; split a TD figure that fans out.',
+    ),
   nodes: z
     .array(
       z.strictObject({
         id,
-        label,
+        label: label.describe(
+          'A caption, not a sentence: it wraps at about four words a line and is cut after three lines.',
+        ),
         shape: z
           .enum(['step', 'decision', 'terminal'])
           .optional()
@@ -45,7 +49,9 @@ const graph = z.strictObject({
       z.strictObject({
         from: id,
         to: id,
-        label: label.optional(),
+        label: label
+          .optional()
+          .describe('One line, never wrapped: a word or two ("yes", "on error").'),
         style: z.enum(['solid', 'dashed']).optional().describe('dashed: optional or async.'),
         animated: z.boolean().optional().describe('Marching dashes along a live data path.'),
       }),
@@ -61,13 +67,20 @@ const sequence = z.strictObject({
   actors: z
     .array(z.strictObject({ id, label, role: z.enum(['person', 'system']).optional() }))
     .min(2)
-    .max(LIMITS.actors),
+    .max(LIMITS.actors)
+    // Said once here, not on the label: the type generator unrolls a short
+    // bounded array into tuples and would repeat a per-item description in each.
+    .describe(
+      'Up to four actors fit a phone with their lifelines intact; five or more scroll sideways there, so split the figure instead. Name each in one to three short words: a phone header holds two short lines and cuts the rest. role person draws the header as a pill.',
+    ),
   messages: z
     .array(
       z.strictObject({
         from: id,
         to: id,
-        label,
+        label: label.describe(
+          'A short phrase. It wraps to two lines, and a self message gets one line on a phone; the rest is cut.',
+        ),
         style: z
           .enum(['call', 'reply', 'self'])
           .optional()
@@ -94,7 +107,8 @@ const timeline = z.strictObject({
       }),
     )
     .min(1)
-    .max(LIMITS.events),
+    .max(LIMITS.events)
+    .describe('An event label is a short phrase: it wraps to two lines and the rest is cut.'),
 })
 
 type Graph = z.infer<typeof graph>

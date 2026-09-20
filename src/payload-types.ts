@@ -2475,7 +2475,7 @@ export interface ChartBlock {
     href?: string | null;
   };
   /**
-   * Columns of the page grid: the reading column, the reading column plus one each side, or all eight.
+   * How wide the drawing runs: the reading column, that column plus one each side, or all eight. Wide keeps the title, caption and description on the reading column.
    */
   width?: ('text' | 'wide' | 'full') | null;
   /**
@@ -2486,7 +2486,7 @@ export interface ChartBlock {
     specVersion: 1;
     kind: 'bar' | 'line' | 'area' | 'scatter' | 'diverging-bar';
     /**
-     * Bar kinds only. Horizontal suits long category labels. Default vertical.
+     * Bar kinds only. Default vertical. Use horizontal for long category labels or more than about six categories: vertical bands get too thin to label on a phone.
      */
     orientation?: 'horizontal' | 'vertical';
     x: {
@@ -2654,7 +2654,7 @@ export interface ChartBlock {
       }[]
     ];
     /**
-     * A labelled reference line at an x position, a y value, or a point at both.
+     * A labelled reference line at an x position, a y value, or a point at both. The label sits inside the plot: two or three words.
      *
      * @maxItems 6
      */
@@ -2807,7 +2807,7 @@ export interface DiagramBlock {
     href?: string | null;
   };
   /**
-   * Columns of the page grid: the reading column, the reading column plus one each side, or all eight.
+   * How wide the drawing runs: the reading column, that column plus one each side, or all eight. Wide keeps the title, caption and description on the reading column.
    */
   width?: ('text' | 'wide' | 'full') | null;
   /**
@@ -2819,7 +2819,7 @@ export interface DiagramBlock {
         specVersion: 1;
         kind: 'flow' | 'state';
         /**
-         * LR reads left to right and re-lays out top down on narrow screens.
+         * LR reads left to right and re-lays out top down on narrow screens, so it always fits a phone. TD has no second layout: three or more nodes side by side, or wide groups, scroll sideways on a phone. Use LR for a chain; split a TD figure that fans out.
          */
         direction: 'LR' | 'TD';
         /**
@@ -2829,6 +2829,9 @@ export interface DiagramBlock {
         nodes: [
           {
             id: string;
+            /**
+             * A caption, not a sentence: it wraps at about four words a line and is cut after three lines.
+             */
             label: string;
             /**
              * Default step. Shape is a second channel beside color, so use it.
@@ -2845,6 +2848,9 @@ export interface DiagramBlock {
           },
           {
             id: string;
+            /**
+             * A caption, not a sentence: it wraps at about four words a line and is cut after three lines.
+             */
             label: string;
             /**
              * Default step. Shape is a second channel beside color, so use it.
@@ -2861,6 +2867,9 @@ export interface DiagramBlock {
           },
           ...{
             id: string;
+            /**
+             * A caption, not a sentence: it wraps at about four words a line and is cut after three lines.
+             */
             label: string;
             /**
              * Default step. Shape is a second channel beside color, so use it.
@@ -2884,6 +2893,9 @@ export interface DiagramBlock {
           {
             from: string;
             to: string;
+            /**
+             * One line, never wrapped: a word or two ("yes", "on error").
+             */
             label?: string;
             /**
              * dashed: optional or async.
@@ -2897,6 +2909,9 @@ export interface DiagramBlock {
           ...{
             from: string;
             to: string;
+            /**
+             * One line, never wrapped: a word or two ("yes", "on error").
+             */
             label?: string;
             /**
              * dashed: optional or async.
@@ -3078,6 +3093,8 @@ export interface DiagramBlock {
         specVersion: 1;
         kind: 'sequence';
         /**
+         * Up to four actors fit a phone with their lifelines intact; five or more scroll sideways there, so split the figure instead. Name each in one to three short words: a phone header holds two short lines and cuts the rest. role person draws the header as a pill.
+         *
          * @minItems 2
          * @maxItems 8
          */
@@ -3279,6 +3296,9 @@ export interface DiagramBlock {
           {
             from: string;
             to: string;
+            /**
+             * A short phrase. It wraps to two lines, and a self message gets one line on a phone; the rest is cut.
+             */
             label: string;
             /**
              * Default call. reply draws dashed. self needs from and to to match.
@@ -3288,6 +3308,9 @@ export interface DiagramBlock {
           ...{
             from: string;
             to: string;
+            /**
+             * A short phrase. It wraps to two lines, and a self message gets one line on a phone; the rest is cut.
+             */
             label: string;
             /**
              * Default call. reply draws dashed. self needs from and to to match.
@@ -3426,6 +3449,8 @@ export interface DiagramBlock {
               }
             ];
         /**
+         * An event label is a short phrase: it wraps to two lines and the rest is cut.
+         *
          * @minItems 1
          * @maxItems 20
          */
@@ -5193,7 +5218,7 @@ export interface BespokeFigureBlock {
     href?: string | null;
   };
   /**
-   * Columns of the page grid: the reading column, the reading column plus one each side, or all eight.
+   * How wide the drawing runs: the reading column, that column plus one each side, or all eight. Wide keeps the title, caption and description on the reading column.
    */
   width?: ('text' | 'wide' | 'full') | null;
   /**

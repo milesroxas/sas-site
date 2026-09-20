@@ -45,7 +45,9 @@ const shape = z.strictObject({
   orientation: z
     .enum(['horizontal', 'vertical'])
     .optional()
-    .describe('Bar kinds only. Horizontal suits long category labels. Default vertical.'),
+    .describe(
+      'Bar kinds only. Default vertical. Use horizontal for long category labels or more than about six categories: vertical bands get too thin to label on a phone.',
+    ),
   x: z.strictObject({
     key: dataKey.describe('The row column plotted on x.'),
     label: label.optional(),
@@ -93,7 +95,9 @@ const shape = z.strictObject({
     )
     .max(FIGURE_LIMITS.chart.annotations)
     .optional()
-    .describe('A labelled reference line at an x position, a y value, or a point at both.'),
+    .describe(
+      'A labelled reference line at an x position, a y value, or a point at both. The label sits inside the plot: two or three words.',
+    ),
 })
 
 type Shape = z.infer<typeof shape>

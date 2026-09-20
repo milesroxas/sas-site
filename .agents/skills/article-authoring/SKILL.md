@@ -163,12 +163,13 @@ The MCP tool schema documents every field of `spec`, with descriptions and limit
 
 Choosing well:
 
-- Pick the kind from the data's job. Magnitude across categories: `bar` (`orientation: "horizontal"` for long labels). Change over an ordered x: `line`. Cumulative or share: `area`. Two measures against each other: `scatter` (x must be `number`). Above and below a baseline: `diverging-bar`.
+- Pick the kind from the data's job. Magnitude across categories: `bar` (`orientation: "horizontal"` for long category labels or more than about six categories, which a phone cannot label standing up). Change over an ordered x: `line`. Cumulative or share: `area`. Two measures against each other: `scatter` (x must be `number`). Above and below a baseline: `diverging-bar`.
 - One y axis, always. Two measures on different scales are two charts.
 - Series order is identity: color follows position. Never reorder series to restyle. A baseline, target or prior period is `role: "reference"` and draws neutral.
 - Every row carries the x key plus a number or `null` per series key. A gap is `null`, never `0`. Column names must match exactly; an unknown column is an error, not ignored.
 - `time` x values are `YYYY-MM-DD`. Rows under `line` and `area` run in increasing x order.
 - `format: "percent"` reads values as fractions of 1: `0.42` is 42%.
+- An annotation label sits inside the plot: two or three words.
 - Put the unit in `y.label`. Use real numbers from a named source and say where they came from in `dataSource` or `caption`. Never invent data; if you do not have the numbers, ask.
 
 ## Diagrams
@@ -191,14 +192,15 @@ Choosing well:
 ```
 
 - `flow` and `state`: list nodes and edges in reading order; that order drives both the layout and the entrance. `shape`: `step` (default), `decision`, `terminal`. `emphasis` on the one or two nodes the figure is about. `style: "dashed"` for optional or async. `animated: true` only for a live data path. `groups` plus a node's `group` frame a cluster. A state may return to itself; a flow edge may not.
-- `sequence`: `actors` (`role: "person"` draws a pill) and `messages` in order. `style`: `call` (default), `reply` (dashed), `self` (needs `from` equal to `to`).
+- Direction decides how a graph meets a phone. `LR` is stored with a top-down twin and always fits. `TD` has no twin: three or more nodes side by side, or wide groups, scroll sideways on a phone. Use `LR` for a chain, and split a `TD` figure that fans out rather than letting it scroll.
+- `sequence`: `actors` (`role: "person"` draws a pill) and `messages` in order. `style`: `call` (default), `reply` (dashed), `self` (needs `from` equal to `to`). Keep it to four actors: that many hold their lifelines on a phone, and a fifth makes the figure scroll sideways there. More participants is two figures.
 - `timeline`: `range`, optional `eras`, and `events` (`at`, `label`, optional short `ref`). Dates are `YYYY-MM-DD` and must sit inside `range`.
-- Labels are short: a node wraps at about four words a line and is cut after three lines. The full label always survives in the figure's list view.
+- Every label is short, not only a node's: an edge label is a word or two on one line, an actor is one to three short words, a message or an event is a phrase. Each wraps to a few lines and is then cut with an ellipsis; the schema descriptions say how much room each gets. The full label survives in the figure's list view, but that is the fallback, not the plan: an ellipsis in the drawing means shorten the label.
 - Never send `geometry`. It is computed on save and anything you send is discarded.
 
 ## Bespoke figures
 
-`{ "blockType": "bespokeFigure", "figure": "<id>", "props": { } }`. The ids and their props are listed in the field description and in `src/features/figures/registry/definitions.ts`. You cannot create one over MCP: it is code. Leave `textAlternative` empty to take the registry's.
+`{ "blockType": "bespokeFigure", "figure": "<id>", "props": { } }`. The ids and their props are listed in the field description and in `src/features/figures/registry/definitions.ts`. You cannot create one over MCP: it is code. Leave `textAlternative` empty to take the registry's. When the user asks a coding agent for a new one, the steps are "Adding one" in `docs/figures.md`, including the phone-width canvas rule.
 
 ## When a save is refused
 
@@ -223,4 +225,11 @@ Before uploading a screenshot of the admin or a terminal, look at it: no email a
 
 ## Checking your work
 
-Open the draft's preview URL and look at it, at a desktop and a phone width. Check that every figure drew (a figure that says its drawing is missing has a spec problem), that labels did not collide, and that the text alternative still matches the data. Then tell the user what you drafted, which media ids need approval, and anything you could not source.
+Open the draft's preview URL and look at it at a desktop width and at two phone widths, 390 and 320. Use Safari or a WebKit browser when you can: it is what every iPhone runs, and it is stricter about SVG text than Chromium. For every figure:
+
+- It drew. A figure that says its drawing is missing has a spec problem.
+- It does not scroll sideways on the phone. If it does, it has too many actors or fans out too wide: split it or turn a `TD` graph to `LR`.
+- No label ends in an ellipsis and no two labels touch. Shorten the label; do not leave it to the list view.
+- The text alternative still matches the data.
+
+Then tell the user what you drafted, which media ids need approval, and anything you could not source.
