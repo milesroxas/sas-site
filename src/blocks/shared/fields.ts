@@ -136,6 +136,26 @@ export const transitionFields = (): Field[] => [
       },
     ],
   },
+  {
+    name: 'headingLevel',
+    type: 'select',
+    label: 'Heading level',
+    defaultValue: 'h2',
+    // Prose only: the other layouts are page furniture and always render an
+    // h2. Inside an article the opener has to say where it sits in the
+    // outline, and that choice also sets the type size (see `RichTransition`).
+    options: [
+      { label: 'H2 (opens a section)', value: 'h2' },
+      { label: 'H3 (opens a subsection)', value: 'h3' },
+      { label: 'H4 (opens a passage)', value: 'h4' },
+    ],
+    admin: {
+      condition: (_, siblingData) => siblingData?.layout === 'prose',
+      description:
+        'Outline level and type size for the Prose layout, set against the article body rather than the page headings.',
+      width: '50%',
+    },
+  },
   { name: 'body', type: 'richText' },
 ]
 

@@ -17,10 +17,16 @@ import { Section } from '../shared/section'
  */
 export type RichTransitionFields = Pick<
   RichTransitionBlock,
-  'body' | 'eyebrow' | 'heading' | 'layout' | 'theme'
+  'body' | 'eyebrow' | 'heading' | 'headingLevel' | 'layout' | 'theme'
 >
 
 type Layout = NonNullable<RichTransitionFields['layout']>
+
+/**
+ * `stacked` is a render flag, not a CMS field: it says the block sits in a
+ * Section block's stack, which owns the gap below it (see `Prose`).
+ */
+type LayoutProps = RichTransitionFields & { stacked?: boolean }
 
 const eyebrowClassName = 'text-sm uppercase tracking-[0.2em]'
 
@@ -144,36 +150,97 @@ const Statement = ({ body, eyebrow, heading }: RichTransitionFields) => (
   </Container>
 )
 
-/**
- * Prose: the heading cluster and body on the Story beats reading column
- * (columns 3-6), so a Standard heading can open a passage of beats without
- * the copy stepping sideways between blocks. The body carries `text-lead`,
- * the standfirst token the Story beats `lead` variant uses, so the opening
- * line reads a step above the beats that follow it.
- */
-const Prose = ({ body, eyebrow, heading }: RichTransitionFields) => (
-  <Container>
-    <BlockGrid>
-      <div className="text-stack md:col-span-4 md:col-start-3">
-        {eyebrow ? (
-          <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
-            {eyebrow}
-          </p>
-        ) : null}
-        <h2 className="text-heading-1" data-reveal data-reveal-group="heading">
-          {heading}
-        </h2>
-      </div>
-      {body ? (
-        <div className="md:col-span-4 md:col-start-3">
-          <Body className="text-lead" data={body} />
-        </div>
-      ) : null}
-    </BlockGrid>
-  </Container>
-)
+type ProseHeadingLevel = NonNullable<RichTransitionFields['headingLevel']>
 
-const layouts: Record<Layout, (props: RichTransitionFields) => ReactNode> = {
+/**
+ * Prose type scale. The opener is measured against the copy it opens (Story
+ * beats and Rich text render Tailwind Typography's `prose` base: 16px on a
+ * 28px line), not against the page type scale: `text-heading-1` beside 16px
+ * body is a page title standing inside an article, and the two read as
+ * separate documents rather than one passage.
+ *
+ * So the levels are plain Tailwind sizes, a 1.25 ladder over that body:
+ * 30 / 24 / 20px. Their default line heights (2.25rem, 2rem, 1.75rem) sit on
+ * or just above the body's 28px line, so the passage keeps one rhythm, and
+ * the two larger steps take `tracking-tight` because the text-box-trimmed
+ * cluster otherwise reads loose at those sizes. At h4 the step over the body
+ * is only 4px, so weight carries the hierarchy instead, the way the in-prose
+ * headings do (`prose-h4:font-medium` in components/RichText).
+ *
+ * The deck steps with the heading: 18px under an h2 is a standfirst, body
+ * size under the lower two, both on the body's 28px line so the deck and the
+ * beats below it share a baseline.
+ *
+ * Levels are not restated in `em`: the gaps inside the cluster already are
+ * (`text-stack`), so the whole ladder tracks whichever level the editor picks.
+ */
+const proseHeadingClasses: Record<ProseHeadingLevel, string> = {
+  h2: 'text-3xl tracking-tight',
+  h3: 'text-2xl tracking-tight',
+  h4: 'text-xl font-medium',
+}
+
+const proseBodyClasses: Record<ProseHeadingLevel, string> = {
+  h2: 'text-lg/7',
+  h3: 'text-base/7',
+  h4: 'text-base/7',
+}
+
+/**
+ * A prose opener binds to the passage it opens, so the gap below it is two
+ * body lines (40px, 56px from `md`) rather than a full step of rhythm.
+ *
+ * Who sets it depends on what the block is standing in, because only one of
+ * the two shells can state the gap honestly:
+ *
+ * - In a Section (`stacked`), the Section's stack owns every gap between its
+ *   children and the block cannot see which step the editor chose, so the
+ *   exception lives with the stack: `stack-binds-opener` in globals.css,
+ *   applied by `SectionBand`, keyed on the `data-prose-opener` marker below.
+ *   The block adds nothing, or the two would stack up.
+ * - In its own band, the gap below is the next band's top step. Nothing can
+ *   restyle that block, so this one cancels the step it knows every text
+ *   block carries (`normal`, SPACING_SCALE) and restates its own: padding
+ *   first, then a negative margin of exactly the cancelled step.
+ *
+ * Both classes sit on the block's own root rather than the `Section`, because
+ * a Prose heading in a Section renders `bare` and has no band to carry them.
+ */
+const proseBandBottomClassName = 'pb-10 -mb-16 md:pb-14 md:-mb-24'
+
+/**
+ * Prose: the whole cluster (eyebrow, heading, deck) on the Story beats
+ * reading column (columns 3-6), so a Standard heading can open a passage of
+ * beats without the copy stepping sideways between blocks.
+ *
+ * One cell, not two: `text-stack` owns eyebrow to heading to deck in the
+ * heading's own em, which keeps the cluster proportional at every level. The
+ * two-cell version took the grid's fixed 32px row gap between heading and
+ * deck, which outgrew an h4 and crowded an h2.
+ */
+const Prose = ({ body, eyebrow, heading, headingLevel, stacked }: LayoutProps) => {
+  const level = headingLevel || 'h2'
+  const Heading = level
+  return (
+    <Container className={stacked ? undefined : proseBandBottomClassName}>
+      <BlockGrid data-prose-opener>
+        <div className="text-stack md:col-span-4 md:col-start-3">
+          {eyebrow ? (
+            <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
+              {eyebrow}
+            </p>
+          ) : null}
+          <Heading className={proseHeadingClasses[level]} data-reveal data-reveal-group="heading">
+            {heading}
+          </Heading>
+          {body ? <Body className={proseBodyClasses[level]} data={body} /> : null}
+        </div>
+      </BlockGrid>
+    </Container>
+  )
+}
+
+const layouts: Record<Layout, (props: LayoutProps) => ReactNode> = {
   offset: Offset,
   left: Left,
   centered: Centered,
@@ -203,10 +270,11 @@ const layouts: Record<Layout, (props: RichTransitionFields) => ReactNode> = {
  */
 export const RichTransition = ({
   bare = false,
+  stacked = false,
   ...block
-}: RichTransitionFields & { bare?: boolean }) => {
+}: RichTransitionFields & { bare?: boolean; stacked?: boolean }) => {
   const Layout = layouts[block.layout ?? 'centered']
-  const inner = <Layout {...block} />
+  const inner = <Layout {...block} stacked={stacked} />
   if (bare) return inner
   return (
     <Section className="pb-0 md:pb-0" theme={block.theme}>

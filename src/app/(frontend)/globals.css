@@ -970,6 +970,38 @@
   }
 }
 
+/* A Prose section heading is an opener: it belongs to the passage under it,
+   rather than sitting between two passages. Inside a Section block the stack
+   owns every gap between children, so the one exception is stated here, beside
+   the stack it overrides, and applied by `SectionBand` — the block cannot see
+   which step (tight / default / loose) its Section chose, so it cannot cancel
+   one on its own.
+
+   Keyed on the marker the Prose layout renders (`data-prose-opener` in
+   blocks/rich-transition/RichTransition.tsx), matched through whatever reveal
+   wrapper the renderer put around the block.
+
+   It restates the step as `margin-block-end` on the opener's own stack child
+   because that is where `space-y-*` puts it (Tailwind writes the gap as a
+   bottom margin on every child but the last, inside `:where()`), so this rule
+   outranks it on specificity alone, at every stack step and in any source
+   order, without `!important`. `:not(:last-child)` keeps a Section that ends
+   on a heading from growing a trailing gap the stack never gave it.
+
+   Two body lines (40px, 56px from `md`), the same gap the block sets for
+   itself when it stands in its own band instead of a stack. */
+@utility stack-binds-opener {
+  > :has([data-prose-opener]):not(:last-child) {
+    margin-block-end: --spacing(10);
+  }
+
+  @media (width >= 48rem) {
+    > :has([data-prose-opener]):not(:last-child) {
+      margin-block-end: --spacing(14);
+    }
+  }
+}
+
 :root {
   /* Fixed site header (Header/Component.client.tsx); page frame + heroes offset by it. */
   --header-height: 4rem;

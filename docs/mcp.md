@@ -95,7 +95,7 @@ Found 2026-09-19 publishing the Privacy Policy. An `update*` call that publishes
 
 Until it is fixed, a document published over MCP goes live on the next deployment (`vercel redeploy <deployment-url>` rebuilds the prerender from the database), or when someone re-saves it in the admin. A fix worth trying: have the hooks, on an MCP request, call a small secret-protected route that does the `revalidatePath` inside its own request.
 
-The configured `sas-cms` server is the **preview** site and its database branch. Production is a separate database: the same key works against `https://www.suits-sandals.com/api/mcp`, and an edit meant for both has to be made twice.
+The configured `sas-cms` server is **production** (`https://www.suits-sandals.com/api/mcp`), as of 2026-09-20. Authoring over MCP therefore writes production content; keep drafts as drafts and publish only on request. Preview is a separate database branch at `https://preview.suits-sandals.com/api/mcp` and the same key works there, so an edit meant for both has to be made twice. Preview is not registered by default: add it as `sas-cms-preview` when you need it.
 
 ## Security: the REST-bypass rule
 

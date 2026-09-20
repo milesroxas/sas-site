@@ -8,10 +8,10 @@ const DAY_MS = 86_400_000
  * visitor notice promises is enforced by the system rather than by policy.
  *
  * Scheduled for 05:00 in the server's timezone, which is UTC on Vercel. The
- * cron that already calls /api/payload-jobs/run daily at 06:00 UTC (vercel.json)
+ * cron that already calls /api/payload-jobs/run every 10 minutes (vercel.json)
  * queues each run for the next 05:00 slot and executes the one that is due, so
- * no extra cron entry is needed. The first cleanup lands a day after deploy, and
- * a row can outlive the window by up to a day.
+ * no extra cron entry is needed. The first cleanup lands at the first 05:00
+ * after deploy, and a row can outlive the window by up to a day.
  */
 export const askQuestionRetentionTask: TaskConfig = {
   slug: 'askQuestionRetention',

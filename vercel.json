@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm run ci",
   "installCommand": "pnpm install",
+  "ignoreCommand": "bash scripts/vercel-ignore-build.sh",
   "git": {
     "deploymentEnabled": {
       "*": false,
@@ -12,7 +13,7 @@
   "crons": [
     {
       "path": "/api/payload-jobs/run",
-      "schedule": "0 6 * * *"
+      "schedule": "*/10 * * * *"
     }
   ]
 }

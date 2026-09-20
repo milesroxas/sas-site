@@ -1,12 +1,13 @@
-# Payload jobs runner — external scheduler for /api/payload-jobs/run.
+# Payload jobs runner: best-effort backstop for /api/payload-jobs/run.
 #
 # Why this exists: the Payload jobs queue powers newsletter sends and scheduled
 # publishing (schedulePublish). Immediate newsletter sends self-kick via
 # `after()` in src/collections/Newsletters/endpoints.ts, but future-dated jobs
 # (scheduled publishes) and crashed-send recovery need a periodic runner.
-# Vercel Hobby allows only daily crons, so vercel.json keeps a daily backstop
-# and this workflow provides the every-10-minutes cadence for free.
-# GitHub cron is best-effort — runs can drift by a few minutes, which is fine here.
+# The Vercel cron in vercel.json is that runner, every 10 minutes (Pro plan).
+# This workflow declares the same cadence but GitHub drops most scheduled runs
+# on shared runners (about 8 a day in practice), so never rely on it alone.
+# Retire it once the Vercel cron has a clean run history.
 #
 # Required repo secrets (Settings → Secrets and variables → Actions):
 #   PAYLOAD_JOBS_URL              e.g. https://<production-domain>/api/payload-jobs/run

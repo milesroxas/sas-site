@@ -58,10 +58,31 @@ export const Statement: Story = {
   },
 }
 
-/** Prose: on the Story beats reading column, body at the standfirst size. */
+/**
+ * Prose: the article opener, on the Story beats reading column at a size set
+ * against the 16px body it opens rather than the page type scale.
+ */
 export const Prose: Story = {
   args: {
     heading: 'From positioning to product story',
+    layout: 'prose',
+  },
+}
+
+/** Prose at h3: a subsection inside the same passage. */
+export const ProseHeadingThree: Story = {
+  args: {
+    heading: 'From positioning to product story',
+    headingLevel: 'h3',
+    layout: 'prose',
+  },
+}
+
+/** Prose at h4: the smallest opener, a step above the body it introduces. */
+export const ProseHeadingFour: Story = {
+  args: {
+    heading: 'From positioning to product story',
+    headingLevel: 'h4',
     layout: 'prose',
   },
 }
