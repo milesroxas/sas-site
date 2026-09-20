@@ -107,6 +107,7 @@ import * as migration_20260920_202930_heading_level from './20260920_202930_head
 import * as migration_20260920_203257_mcp_streak_looks_capabilities from './20260920_203257_mcp_streak_looks_capabilities';
 import * as migration_20260920_203528_lab_index_global from './20260920_203528_lab_index_global';
 import * as migration_20260920_223253_visual_surface from './20260920_223253_visual_surface';
+import * as migration_20260920_232046_index_light_leak from './20260920_232046_index_light_leak';
 
 export const migrations = [
   {
@@ -652,6 +653,11 @@ export const migrations = [
   {
     up: migration_20260920_223253_visual_surface.up,
     down: migration_20260920_223253_visual_surface.down,
-    name: '20260920_223253_visual_surface'
+    name: '20260920_223253_visual_surface',
+  },
+  {
+    up: migration_20260920_232046_index_light_leak.up,
+    down: migration_20260920_232046_index_light_leak.down,
+    name: '20260920_232046_index_light_leak'
   },
 ];

@@ -13693,10 +13693,10 @@ export interface InsightsIndex {
       | null;
     media?: (number | null) | Media;
     /**
-     * Streak Field runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
+     * An effect runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
      */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
   };
   meta?: {
     /**
@@ -13811,10 +13811,10 @@ export interface LabIndex {
       | null;
     media?: (number | null) | Media;
     /**
-     * Streak Field runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
+     * An effect runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
      */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
   };
   meta?: {
     /**
@@ -13929,10 +13929,10 @@ export interface WorksIndex {
       | null;
     media?: (number | null) | Media;
     /**
-     * Streak Field runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
+     * An effect runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
      */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
   };
   meta?: {
     /**
@@ -14401,7 +14401,7 @@ export interface InsightsIndexSelect<T extends boolean = true> {
             };
         media?: T;
         visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
+        shader?: T | PlacedVisualConfigSelect<T>;
       };
   meta?:
     | T
@@ -14457,7 +14457,7 @@ export interface LabIndexSelect<T extends boolean = true> {
             };
         media?: T;
         visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
+        shader?: T | PlacedVisualConfigSelect<T>;
       };
   meta?:
     | T
@@ -14513,7 +14513,7 @@ export interface WorksIndexSelect<T extends boolean = true> {
             };
         media?: T;
         visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
+        shader?: T | PlacedVisualConfigSelect<T>;
       };
   meta?:
     | T

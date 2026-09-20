@@ -3,6 +3,7 @@ import type { Metadata } from 'next/types'
 import { IndexBackground } from '@/CollectionIndexes/IndexBackground'
 import { queryWorksIndex, worksIndexHeroFallback } from '@/CollectionIndexes/queries'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
+import { leakScope } from '@/features/immersive/visual'
 import { WorksBrowse } from '@/sections/WorksBrowse'
 import { queryWorksBrowseData } from '@/sections/WorksBrowse/queries'
 import { generateMeta } from '@/utilities/generateMeta'
@@ -17,7 +18,8 @@ export default async function WorksPage() {
 
   return (
     // relative isolate: the index ground's -z-10 layer sits above the page frame's opaque bg.
-    <main className="relative isolate">
+    // leakScope: a light leak ground answers hover across the whole listing, not its sticky frame.
+    <main className="relative isolate" {...leakScope()}>
       {draft && <LivePreviewListener />}
       <IndexBackground hero={worksIndex?.hero} seedKey="works-index" />
       <WorksBrowse

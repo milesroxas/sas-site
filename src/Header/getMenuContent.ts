@@ -66,6 +66,13 @@ export type MenuContent = {
   fallbackMedia: MenuMedia | null
 }
 
+/**
+ * Whether an index page paints this visual itself. `IndexBackground` draws the
+ * effect and never the media, so only an effect can be handed off onto.
+ */
+const mountsIndexGround = (visual: Visual | null): boolean =>
+  visual !== null && visual.kind !== 'media'
+
 /** Industry eyebrow via work page → case study → project → first industry. */
 function workEyebrow(doc: WorkPage): string | null {
   const caseStudy = doc.caseStudy
@@ -239,19 +246,19 @@ async function getMenuContent(): Promise<MenuContent> {
     menuVisual(resolveVisual(home.hero, { seedKey: 'home' }), true, HERO_BAND_THEME),
   )
   // Index globals: an explicit preview (hover-only), else the hero's visual,
-  // which the page mounts only when it is a Streak Field, behind the whole
-  // listing on the site theme (no band).
+  // which the page mounts only when it is an effect (`IndexBackground`), behind
+  // the whole listing on the site theme (no band).
   const worksVisual = resolveVisual(worksIndex.hero, { seedKey: 'works-index' })
   setPageMedia(
     '/works',
     previewOrOwn(worksIndex, worksVisual, 'works-index', {
-      ownMountsHero: worksVisual?.kind === 'streakField',
+      ownMountsHero: mountsIndexGround(worksVisual),
       ownGround: 'site',
     }),
   )
   const insightsVisual = resolveVisual(insightsIndex.hero, { seedKey: 'insights-index' })
   const insightsMedia = previewOrOwn(insightsIndex, insightsVisual, 'insights-index', {
-    ownMountsHero: insightsVisual?.kind === 'streakField',
+    ownMountsHero: mountsIndexGround(insightsVisual),
     ownGround: 'site',
   })
   // `/posts` renders the same index view, so the docked window rests on the same media there.
@@ -261,7 +268,7 @@ async function getMenuContent(): Promise<MenuContent> {
   setPageMedia(
     '/lab',
     previewOrOwn(labIndex, labVisual, 'lab-index', {
-      ownMountsHero: labVisual?.kind === 'streakField',
+      ownMountsHero: mountsIndexGround(labVisual),
       ownGround: 'site',
     }),
   )

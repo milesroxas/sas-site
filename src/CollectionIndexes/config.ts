@@ -2,7 +2,6 @@ import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
-import { DEFAULT_EFFECT } from '@/features/immersive/visual'
 import { menuPreviewFields } from '@/fields/menuPreview'
 import { seoMetaTabFields } from '@/fields/seoMetaTabFields'
 import { heroField } from '@/heros/config'
@@ -60,23 +59,23 @@ const collectionIndexGlobal = ({
         {
           fields: [
             // The index renders the hero as copy only, so the upload never
-            // paints here and is not required; a Streak Field runs behind the
+            // paints here and is not required; an effect runs behind the
             // whole page instead, and the menu previews either as its poster.
             heroField({
               visualCondition: () => true,
               mediaRequired: false,
-              // `IndexBackground` draws a Streak Field and nothing else.
-              visualEffects: [DEFAULT_EFFECT],
-              // The field grounds the whole listing, which paints in the
+              // Every effect: `IndexBackground` draws the slot's effect behind
+              // the listing, whichever it is, and never the media.
+              // The effect grounds the whole listing, which paints in the
               // visitor's theme: there is no band here for a pinned face.
               visualThemed: false,
               visualTypeDescription:
-                'Streak Field runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.',
+                'An effect runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.',
             }),
           ],
           label: 'Hero',
           description:
-            'The opening of the index page. Low Impact fits archive listings best; a Streak Field visual runs behind the whole page whatever the type.',
+            'The opening of the index page. Low Impact fits archive listings best; an effect visual runs behind the whole page whatever the type.',
         },
         {
           name: 'meta',

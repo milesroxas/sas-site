@@ -5,7 +5,6 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import type { Condition, Field } from 'payload'
-import type { EffectId } from '@/features/immersive/visual'
 import { linkGroup } from '@/fields/linkGroup'
 import { heroVisualSlotFields } from '@/fields/visual'
 
@@ -23,12 +22,6 @@ export type HeroFieldArgs = {
   mediaRequired?: boolean
   visualTypeDescription?: string
   /**
-   * The effects the visual slot offers. Defaults to all of them: the hero band
-   * draws through the `Visual` adapter. A page that paints the visual with a
-   * bespoke renderer (the index globals) names the ones it handles.
-   */
-  visualEffects?: readonly EffectId[]
-  /**
    * Whether the editor may pin the effect to its light or dark face. Off where
    * the visual grounds a whole page in the visitor's theme (the index globals).
    */
@@ -44,7 +37,6 @@ export const heroField = ({
   visualCondition = mediaHeroTypes,
   mediaRequired = true,
   visualTypeDescription,
-  visualEffects,
   visualThemed,
 }: HeroFieldArgs = {}): Field => ({
   name: 'hero',
@@ -132,7 +124,6 @@ export const heroField = ({
         condition: visualCondition,
         visualTypeDescription,
         themed: visualThemed,
-        ...(visualEffects ? { effects: visualEffects } : {}),
       },
     ),
   ],
