@@ -8,11 +8,22 @@ export type FigureWidth = 'full' | 'text' | 'wide'
  * A figure's span on the composition grid (docs/block-grid-roadmap.md):
  * the reading column rich text sets, that column plus one each side, or all
  * eight. Literal strings so Tailwind sees them.
+ *
+ * A wide figure widens the drawing, not the words: the frame adopts the page
+ * tracks as a subgrid (`BlockGrid`'s rule for a cell that is a run of cells),
+ * the visual spans all six columns it was given, and the title, caption and
+ * description stay on the reading column's four. Row gap is zeroed because the
+ * parts already carry their own rhythm; the column gap stays inherited, which
+ * is what lines the words up with the rich text around them.
  */
-const WIDTH_CLASS: Record<FigureWidth, string> = {
-  full: 'md:col-span-8',
-  text: 'md:col-span-4 md:col-start-3',
-  wide: 'md:col-span-6 md:col-start-2',
+const WIDTH_CLASS: Record<FigureWidth, { frame: string; text: string; visual: string }> = {
+  full: { frame: 'md:col-span-8', text: '', visual: '' },
+  text: { frame: 'md:col-span-4 md:col-start-3', text: '', visual: '' },
+  wide: {
+    frame: 'md:col-span-6 md:col-start-2 md:grid md:grid-cols-subgrid md:gap-y-0',
+    text: 'md:col-span-4 md:col-start-2',
+    visual: 'md:col-span-full',
+  },
 }
 
 /** The ids one figure's parts refer to each other by, from its block id. */
@@ -40,8 +51,8 @@ export type FigureFrameProps = {
 type Ids = ReturnType<typeof figureIds>
 
 /** The title with its anchor: a plain hash link, so copying a figure's address needs no script. */
-const Title = ({ ids, title }: { ids: Ids; title: string }) => (
-  <div className="group/title mb-6 flex items-baseline gap-2">
+const Title = ({ className, ids, title }: { className?: string; ids: Ids; title: string }) => (
+  <div className={cn('group/title mb-6 flex items-baseline gap-2', className)}>
     <h3 className="text-heading-3" id={ids.title}>
       {title}
     </h3>
@@ -76,12 +87,16 @@ const Source = ({ href, label }: { href?: null | string; label: string }) => (
 
 /** The text alternative and the data view, behind a native `<details>`: no script, and findable in page. */
 const Disclosure = ({
+  className,
   dataView,
   dataViewLabel,
   ids,
   textAlternative,
-}: Pick<FigureFrameProps, 'dataView' | 'dataViewLabel' | 'textAlternative'> & { ids: Ids }) => (
-  <details className="figure-data mt-4 text-sm">
+}: Pick<FigureFrameProps, 'dataView' | 'dataViewLabel' | 'textAlternative'> & {
+  className?: string
+  ids: Ids
+}) => (
+  <details className={cn('figure-data mt-4 text-sm', className)}>
     <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-sm text-muted-foreground [&::-webkit-details-marker]:hidden">
       <IconChevronRight aria-hidden className="figure-data-chevron size-4" />
       {dataView ? `Description and ${dataViewLabel}` : 'Description'}
@@ -117,17 +132,21 @@ export const FigureFrame = ({
   width,
 }: FigureFrameProps) => {
   const ids = figureIds(blockId)
+  const place = WIDTH_CLASS[width ?? 'wide']
   return (
-    <figure className={cn('min-w-0 scroll-mt-28', WIDTH_CLASS[width ?? 'wide'])} id={ids.anchor}>
-      {title ? <Title ids={ids} title={title} /> : null}
-      {children}
+    <figure className={cn('min-w-0 scroll-mt-28', place.frame)} id={ids.anchor}>
+      {title ? <Title className={place.text} ids={ids} title={title} /> : null}
+      {/* The visual is wrapped so it is one cell of the frame's subgrid: a figure
+          kind hands its legend, axis labels and drawing over as siblings. */}
+      <div className={cn('min-w-0', place.visual)}>{children}</div>
       {caption || source?.label ? (
-        <figcaption className="mt-4 text-sm text-muted-foreground">
+        <figcaption className={cn('mt-4 text-sm text-muted-foreground', place.text)}>
           {caption}
           {source?.label ? <Source href={source.href} label={source.label} /> : null}
         </figcaption>
       ) : null}
       <Disclosure
+        className={place.text}
         dataView={dataView}
         dataViewLabel={dataViewLabel}
         ids={ids}

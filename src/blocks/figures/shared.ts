@@ -90,7 +90,7 @@ export const figureFrameFields = (): Field[] => {
           admin: {
             width: '50%',
             description:
-              'Columns of the page grid: the reading column, the reading column plus one each side, or all eight.',
+              'How wide the drawing runs: the reading column, that column plus one each side, or all eight. Wide keeps the title, caption and description on the reading column.',
           },
         },
         { ...theme, admin: { ...theme.admin, width: '50%' } },
