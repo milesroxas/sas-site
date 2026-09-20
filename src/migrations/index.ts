@@ -105,7 +105,7 @@ import * as migration_20260920_180758_youtube_ambient_hero from './20260920_1807
 import * as migration_20260920_184518_heading_prose_layout from './20260920_184518_heading_prose_layout';
 import * as migration_20260920_202930_heading_level from './20260920_202930_heading_level';
 import * as migration_20260920_203257_mcp_streak_looks_capabilities from './20260920_203257_mcp_streak_looks_capabilities';
-import * as migration_20260920_203401_lab_index_global from './20260920_203401_lab_index_global';
+import * as migration_20260920_203528_lab_index_global from './20260920_203528_lab_index_global';
 
 export const migrations = [
   {
@@ -641,11 +641,11 @@ export const migrations = [
   {
     up: migration_20260920_203257_mcp_streak_looks_capabilities.up,
     down: migration_20260920_203257_mcp_streak_looks_capabilities.down,
-    name: '20260920_203257_mcp_streak_looks_capabilities'
+    name: '20260920_203257_mcp_streak_looks_capabilities',
   },
   {
-    up: migration_20260920_203401_lab_index_global.up,
-    down: migration_20260920_203401_lab_index_global.down,
-    name: '20260920_203401_lab_index_global'
+    up: migration_20260920_203528_lab_index_global.up,
+    down: migration_20260920_203528_lab_index_global.down,
+    name: '20260920_203528_lab_index_global'
   },
 ];

@@ -114369,6 +114369,34 @@
           "notNull": false,
           "default": false
         },
+        "streak_looks_find": {
+          "name": "streak_looks_find",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "streak_looks_create": {
+          "name": "streak_looks_create",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "streak_looks_update": {
+          "name": "streak_looks_update",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "streak_looks_delete": {
+          "name": "streak_looks_delete",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
         "media_find": {
           "name": "media_find",
           "type": "boolean",
@@ -152007,6 +152035,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "7e371057-51da-498f-b8de-ea4e171eb190",
+  "id": "da2ced9e-f7ae-447c-9016-1889dc7264e1",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }
