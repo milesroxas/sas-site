@@ -1,5 +1,5 @@
 import type React from 'react'
-import { storyReadingMinutes } from '@/collections/story/reading-time'
+import { composedReadingMinutes } from '@/blocks/shared/reading-time'
 import { Media } from '@/components/Media'
 import { resolveOpening } from '@/features/immersive/visual'
 import type { LabPage, LabProject } from '@/payload-types'
@@ -68,6 +68,10 @@ export const LabHero = ({ page, project }: { page: LabPage; project: LabProject 
   })
   const authors = formatAuthors(project.populatedAuthors ?? [])
   const published = formatPublishedDate(project.publishedAt ?? page.publishedAt)
+  // The figure promises this page's read, so it counts what this page renders:
+  // the blocks below, each resolved against the project the same way the
+  // renderer resolves them. The project's own narrative is not the page.
+  const minutes = composedReadingMinutes([page.intro, page.layout], project)
 
   return (
     // The band pulls under the fixed header and runs under the fixed footer,
@@ -104,7 +108,7 @@ export const LabHero = ({ page, project }: { page: LabPage; project: LabProject 
             {published && <MetaEntry label="Published">{published}</MetaEntry>}
             <BuiltWith technologies={project.technologies} />
             <MetaEntry label="Read">
-              <span className="font-mono font-normal">{storyReadingMinutes(project)} MIN</span>
+              <span className="font-mono font-normal">{minutes} MIN</span>
             </MetaEntry>
           </dl>
         </div>

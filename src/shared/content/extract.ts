@@ -1,6 +1,12 @@
 import type { CollectionSlug, Payload } from 'payload'
 import type { SiteInfo } from '@/payload-types'
 import { relationshipIds } from '@/utilities/relationshipId'
+import {
+  CONTENT_HEADING_KEYS,
+  CONTENT_SKIP_KEYS,
+  CONTENT_TEXT_KEYS,
+  normalizeKey,
+} from './content-keys'
 import { lexicalToMarkdownString, type SerializedLexicalState } from './lexicalToMarkdown'
 import type { ContentSurface, GlobalSurface } from './surfaces'
 
@@ -31,68 +37,6 @@ import type { ContentSurface, GlobalSurface } from './surfaces'
  * admin-only fields (anything starting with `internal`) never reach a public
  * answer.
  */
-
-/** String fields whose values are reader-facing content. Compared lowercase, with a trailing 'override' stripped. */
-const TEXT_KEYS = new Set([
-  'answer',
-  'body',
-  'caption',
-  'decision',
-  'description',
-  'excerpt',
-  'eyebrow',
-  'footnote',
-  'heading',
-  'impact',
-  'intro',
-  'lead',
-  'medium',
-  'oneline',
-  'problem',
-  'question',
-  'quote',
-  'rationale',
-  'secondline',
-  'short',
-  'standfirst',
-  'statement',
-  'subheading',
-  'subtitle',
-  'summary',
-  'tagline',
-  'text',
-  // A figure's plain-language description (blocks/figures): what a chart or
-  // diagram shows, which is all of it a text corpus can hold.
-  'textalternative',
-  'thesis',
-  'title',
-])
-
-/** Keys emitted as markdown headings — natural chunk boundaries. */
-const HEADING_KEYS = new Set(['title', 'heading'])
-
-/** Subtrees that never carry body content (system, SEO, navigation, media). */
-const SKIP_KEYS = new Set([
-  '_status',
-  'breadcrumbs',
-  'createdat',
-  // A figure's stored diagram geometry: coordinates and wrapped label fragments.
-  'geometry',
-  'id',
-  'blockname',
-  'link',
-  'links',
-  'media',
-  'meta',
-  'parent',
-  'publishedat',
-  'slug',
-  'sluglock',
-  // A figure's chart or diagram spec: data, not prose. Its words are the
-  // block's title, caption and text alternative, which are TEXT_KEYS.
-  'spec',
-  'updatedat',
-])
 
 type RelationCollection =
   | 'capabilities'
@@ -126,8 +70,6 @@ type RelationRef = { collection: RelationCollection; id: number }
 type Part = string | RelationRef
 
 type Doc = Record<string, unknown>
-
-const normalizeKey = (key: string): string => key.toLowerCase().replace(/override$/, '')
 
 const isLexicalState = (value: unknown): value is SerializedLexicalState =>
   typeof value === 'object' &&
@@ -190,7 +132,7 @@ const isCodeListing = (value: object): value is CodeListing => {
 /**
  * A composition Code block as a fenced listing: the form the chunker already
  * keeps whole, and the one an inline post-body Code block takes
- * (`lexicalToMarkdown`). `code` is not a TEXT_KEY, so only this block emits it.
+ * (`lexicalToMarkdown`). `code` is not a content text key, so only this block emits it.
  */
 const fencedListing = ({ code, language }: CodeListing): string[] =>
   code.trim() ? [`\`\`\`${str(language)}\n${code}\n\`\`\``] : []
@@ -199,7 +141,7 @@ function walkValue(value: unknown, key: string, out: Part[]): void {
   if (value === null || value === undefined) return
 
   const normalized = normalizeKey(key)
-  if (SKIP_KEYS.has(normalized) || normalized.startsWith('internal')) return
+  if (CONTENT_SKIP_KEYS.has(normalized) || normalized.startsWith('internal')) return
 
   const relation = RELATION_KEYS[normalized]
   if (relation) {
@@ -209,8 +151,8 @@ function walkValue(value: unknown, key: string, out: Part[]): void {
 
   if (typeof value === 'string') {
     const text = value.trim()
-    if (!text || !TEXT_KEYS.has(normalized)) return
-    out.push(HEADING_KEYS.has(normalized) ? `## ${text}` : text)
+    if (!text || !CONTENT_TEXT_KEYS.has(normalized)) return
+    out.push(CONTENT_HEADING_KEYS.has(normalized) ? `## ${text}` : text)
     return
   }
 
