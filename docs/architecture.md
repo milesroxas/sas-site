@@ -73,7 +73,7 @@ Inbox                                 Newsletter
 | System | `users` | Admin auth |
 | System | `payload-mcp-api-keys` | Per-key capabilities for the `/api/mcp` agent server — see [mcp.md](mcp.md) |
 
-Globals: `home` (`/`), `insights-index` (`/insights`), `works-index` (`/works`), `header`, `footer`, and `site-info` (added by the AEO plugin).
+Globals: `home` (`/`), `insights-index` (`/insights`), `lab-index` (`/lab`), `works-index` (`/works`), `header`, `footer`, and `site-info` (added by the AEO plugin).
 
 ## How a Work Page resolves content
 
@@ -131,7 +131,7 @@ Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `ap
 ## Publishing pipeline
 
 - **Drafts & versions** — Website collections and Content Hub narrative collections use drafts with autosave, version history (max 50), and scheduled publishing. The jobs runner hits `/api/payload-jobs/run` every 10 minutes from GitHub Actions (`.github/workflows/payload-jobs.yml`), with a daily Vercel cron as backstop; both authenticate with `CRON_SECRET`.
-- **Preview** — `generatePreviewPath` maps collections to URL prefixes (`work-pages` → `/works`, `lab-pages` → `/lab`, `expertise-pages` → `/expertise`, `audience-pages` → `/who-we-help`, `posts` → `/posts`, `pages` → `/`). Globals use `generateGlobalPreviewPath` (`home` → `/`, `insights-index` → `/insights`, `works-index` → `/works`). Draft preview and live preview (mobile/tablet/desktop breakpoints) use `/next/preview` guarded by `PREVIEW_SECRET`.
+- **Preview** — `generatePreviewPath` maps collections to URL prefixes (`work-pages` → `/works`, `lab-pages` → `/lab`, `expertise-pages` → `/expertise`, `audience-pages` → `/who-we-help`, `posts` → `/posts`, `pages` → `/`). Globals use `generateGlobalPreviewPath` (`home` → `/`, `insights-index` → `/insights`, `lab-index` → `/lab`, `works-index` → `/works`). Draft preview and live preview (mobile/tablet/desktop breakpoints) use `/next/preview` guarded by `PREVIEW_SECRET`.
 - **Revalidation** — `afterChange`/`afterDelete` hooks revalidate the document's path, its index page, and its sitemap tag. Case Study edits revalidate every published Work Page that consumes them (`revalidateCaseStudyConsumers`).
 - **Sitemaps** — one route handler per listing surface (`pages`, `posts`, `works`, `lab`, `expertise`, `who-we-help`), stitched together by `next-sitemap` in `postbuild`, which also generates robots.txt. Contact pages are not a listing sitemap.
 - **SEO** — plugin generates titles (`{title} | Suits & Sandals`) and per-collection URLs from `CONTENT_SURFACES`.
@@ -148,7 +148,7 @@ Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `ap
 | `/posts`, `/posts/[slug]` | `posts` | Archive / `PostHero` + rich text |
 | `/insights`, `/insights/[topic]` | `insights-index` global + `categories` + `posts` | Topic hubs |
 | `/works`, `/works/[slug]` | `works-index` global / `work-pages` (+ `case-studies`) | Browse grid / `CaseStudyHero` + `RenderCaseStudyBlocks` |
-| `/lab`, `/lab/[slug]` | `lab-pages` (+ `lab-projects`) | Lab index / lab detail resolving canonical R&D content |
+| `/lab`, `/lab/[slug]` | `lab-index` global / `lab-pages` (+ `lab-projects`) | Browse list / lab detail resolving canonical R&D content |
 | `/expertise`, `/expertise/[slug]` | `expertise-pages` | `RenderBlocks` + related work by capability |
 | `/who-we-help`, `/who-we-help/[slug]` | `audience-pages` | `RenderBlocks` + related work by industry |
 | `/contact`, `/contact/[slug]` | `contact-pages` | Contact template (form → in-place receipt) |

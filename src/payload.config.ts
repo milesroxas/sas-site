@@ -6,7 +6,7 @@ import { s3Storage } from '@payloadcms/storage-s3'
 import { buildConfig, type PayloadRequest } from 'payload'
 import sharp from 'sharp'
 import { defaultLexical } from '@/fields/defaultLexical'
-import { InsightsIndex, WorksIndex } from './CollectionIndexes/config'
+import { InsightsIndex, LabIndex, WorksIndex } from './CollectionIndexes/config'
 import { AskQuestions } from './collections/AskQuestions'
 import { AssetLibraries } from './collections/AssetLibraries'
 import { AudiencePages } from './collections/AudiencePages'
@@ -190,7 +190,7 @@ export default buildConfig({
       },
     }),
   ],
-  globals: [Home, InsightsIndex, WorksIndex, Header, Footer],
+  globals: [Home, InsightsIndex, LabIndex, WorksIndex, Header, Footer],
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {

@@ -11,6 +11,13 @@ export const insightsIndexHeroFallback: Page['hero'] = {
   title: 'News & Insights',
 }
 
+/** Rendered until an editor publishes the Lab Index global. */
+export const labIndexHeroFallback: Page['hero'] = {
+  type: 'lowImpact',
+  eyebrow: 'Lab',
+  title: 'The lab',
+}
+
 /** Rendered until an editor publishes the Works Index global. */
 export const worksIndexHeroFallback: Page['hero'] = {
   type: 'lowImpact',
@@ -18,7 +25,7 @@ export const worksIndexHeroFallback: Page['hero'] = {
   title: 'Selected work',
 }
 
-const queryIndexGlobal = async (slug: 'insights-index' | 'works-index') => {
+const queryIndexGlobal = async (slug: 'insights-index' | 'lab-index' | 'works-index') => {
   const { isEnabled: draft } = await draftMode()
   const payload = await getPayload({ config: configPromise })
 
@@ -31,5 +38,7 @@ const queryIndexGlobal = async (slug: 'insights-index' | 'works-index') => {
 }
 
 export const queryInsightsIndex = cache(() => queryIndexGlobal('insights-index'))
+
+export const queryLabIndex = cache(() => queryIndexGlobal('lab-index'))
 
 export const queryWorksIndex = cache(() => queryIndexGlobal('works-index'))

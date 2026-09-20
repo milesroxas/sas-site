@@ -148,6 +148,11 @@ const globals: MCPPluginConfig['globals'] = {
       'Insights index page — hero and SEO for the listing published at /insights (also /posts). The list itself is code-owned',
     enabled: { find: true, update: true },
   },
+  'lab-index': {
+    description:
+      'Lab index page — hero and SEO for the listing published at /lab. The list itself is code-owned',
+    enabled: { find: true, update: true },
+  },
   'site-info': {
     description: 'Company identity used for JSON-LD, llms.txt, and default page metadata',
     enabled: { find: true, update: true },

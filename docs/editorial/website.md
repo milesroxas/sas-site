@@ -7,7 +7,7 @@ The website is a presentation layer. Website collections decide *how* content ap
 | Admin section | URL | Purpose |
 | --- | --- | --- |
 | Website: Landing → **Home** | `/` | Homepage (hero + composition). Not a Pages document. |
-| Website: Landing → **Insights Index** / **Works Index** | `/insights`, `/works` | Hero and SEO for those indexes; the lists themselves are automatic |
+| Website: Landing → **Insights Index** / **Lab Index** / **Works Index** | `/insights`, `/lab`, `/works` | Hero and SEO for those indexes; the lists themselves are automatic |
 | Website: Pages → **Pages** | `/[slug]` | General pages built with layout blocks |
 | Website: Pages → **Posts** | `/posts/[slug]` | Blog articles; topic hubs at `/insights/[topic]` |
 | Website: Pages → **Work Pages** | `/works/[slug]` | Public case studies, composed from Case Study Content |

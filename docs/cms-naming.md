@@ -71,7 +71,7 @@ One pattern everywhere (`src/fields/overrides.ts`):
 | Group | Holds |
 |-------|-------|
 | `Website: Pages` | Publishing surfaces with public URLs (Pages, Posts, Work, Lab, Expertise, Who We Help, Contact) |
-| `Website: Landing` | Editor-configured entry points (Home, Insights Index, Works Index) |
+| `Website: Landing` | Editor-configured entry points (Home, Insights Index, Lab Index, Works Index) |
 | `Website: Globals` | Site-wide chrome and identity (Header, Footer, Site Info) |
 | `Inbox` | Inquiries (contact-form submissions; PII, team-only), Ask questions (what visitors asked Ask; redacted, deleted after 90 days, team-only) |
 

@@ -10,7 +10,7 @@ import { generateGlobalPreviewPath } from '@/utilities/generatePreviewPath'
 import { revalidateCollectionIndex } from './hooks/revalidateCollectionIndex'
 
 type CollectionIndexArgs = {
-  slug: 'insights-index' | 'works-index'
+  slug: 'insights-index' | 'lab-index' | 'works-index'
   label: string
   /** Site-relative path the index publishes at, e.g. `/insights`. */
   path: string
@@ -20,7 +20,8 @@ type CollectionIndexArgs = {
 }
 
 /**
- * Editor-configured singleton for a collection index page (`/insights`, `/works`).
+ * Editor-configured singleton for a collection index page (`/insights`,
+ * `/works`, `/lab`).
  * Mirrors the Home global: hero + SEO only — the listing itself stays
  * code-owned.
  */
@@ -109,6 +110,13 @@ export const InsightsIndex = collectionIndexGlobal({
   extraPaths: ['/posts', '/post'],
   description:
     'The insights hub published at /insights (also at /posts). Hero and SEO only — the lists are automatic.',
+})
+
+export const LabIndex = collectionIndexGlobal({
+  slug: 'lab-index',
+  label: 'Lab Index',
+  path: '/lab',
+  description: 'The lab index published at /lab. Hero and SEO only — the list is automatic.',
 })
 
 export const WorksIndex = collectionIndexGlobal({

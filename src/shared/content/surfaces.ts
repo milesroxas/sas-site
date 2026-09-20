@@ -120,6 +120,7 @@ export type GlobalSurface = {
 export const GLOBAL_SURFACES: GlobalSurface[] = [
   { global: 'home', title: 'Home', path: '/', drafts: true },
   { global: 'insights-index', title: 'Insights', path: '/insights', drafts: true },
+  { global: 'lab-index', title: 'Lab', path: '/lab', drafts: true },
   { global: 'works-index', title: 'Work', path: '/works', drafts: true },
   { global: 'site-info', title: 'About Suits & Sandals', path: '/contact', drafts: false },
 ]

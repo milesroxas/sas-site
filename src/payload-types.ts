@@ -169,6 +169,7 @@ export interface Config {
   globals: {
     home: Home;
     'insights-index': InsightsIndex;
+    'lab-index': LabIndex;
     'works-index': WorksIndex;
     header: Header;
     footer: Footer;
@@ -178,6 +179,7 @@ export interface Config {
   globalsSelect: {
     home: HomeSelect<false> | HomeSelect<true>;
     'insights-index': InsightsIndexSelect<false> | InsightsIndexSelect<true>;
+    'lab-index': LabIndexSelect<false> | LabIndexSelect<true>;
     'works-index': WorksIndexSelect<false> | WorksIndexSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
@@ -292,7 +294,7 @@ export interface Page {
             /**
              * Home (/), Works Index (/works), or Insights Index (/insights).
              */
-            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+            sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
             url?: string | null;
             label: string;
             /**
@@ -5255,7 +5257,7 @@ export interface FaqBlock {
     /**
      * Home (/), Works Index (/works), or Insights Index (/insights).
      */
-    sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+    sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
     url?: string | null;
     label: string;
   };
@@ -5329,7 +5331,7 @@ export interface ContactPage {
       /**
        * Home (/), Works Index (/works), or Insights Index (/insights).
        */
-      sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+      sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
       url?: string | null;
     };
   };
@@ -5916,7 +5918,7 @@ export interface ContentBlock {
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
            */
-          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
           url?: string | null;
           label: string;
           /**
@@ -6289,7 +6291,7 @@ export interface FeatureStatementLinksBlock {
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
            */
-          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
           url?: string | null;
           label: string;
         };
@@ -6461,7 +6463,7 @@ export interface PageClosing {
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
            */
-          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
           url?: string | null;
           label: string;
           /**
@@ -7291,7 +7293,7 @@ export interface TestimonialsMarqueeBlock {
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
            */
-          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
           url?: string | null;
           label: string;
           /**
@@ -7447,7 +7449,7 @@ export interface CallToActionBlock {
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
            */
-          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
           url?: string | null;
           label: string;
           /**
@@ -8865,7 +8867,7 @@ export interface SegmentHero {
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
            */
-          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
           url?: string | null;
           label: string;
         };
@@ -9692,6 +9694,10 @@ export interface PayloadMcpApiKey {
     update?: boolean | null;
   };
   insightsIndex?: {
+    find?: boolean | null;
+    update?: boolean | null;
+  };
+  labIndex?: {
     find?: boolean | null;
     update?: boolean | null;
   };
@@ -13307,6 +13313,12 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         find?: T;
         update?: T;
       };
+  labIndex?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+      };
   siteInfo?:
     | T
     | {
@@ -13593,7 +13605,125 @@ export interface InsightsIndex {
             /**
              * Home (/), Works Index (/works), or Insights Index (/insights).
              */
-            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+            sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * Streak Field runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
+  };
+  meta?: {
+    /**
+     * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
+     */
+    title?: string | null;
+    /**
+     * Default image for search and social previews. Landscape, at least 1200×630px. Also used for share cards unless an Open Graph image is set below.
+     */
+    image?: (number | null) | Media;
+    /**
+     * The short summary under the title in Google results. Aim for 100–150 characters — front-load the most important message.
+     */
+    description?: string | null;
+    /**
+     * Controls how this page looks when shared on LinkedIn, Facebook, Slack, iMessage, etc. Every field is optional — anything left blank falls back to the SEO fields above.
+     */
+    og?: {
+      /**
+       * Headline on the share card. Can be punchier than the SEO title — no need to include "| Suits & Sandals". Blank = SEO title.
+       */
+      title?: string | null;
+      /**
+       * One or two sentences under the share-card headline. Keep it under ~200 characters; platforms truncate longer text. Blank = SEO description.
+       */
+      description?: string | null;
+      /**
+       * Share-card image. Landscape 1200×630px (1.91:1) — square or portrait images get cropped by most platforms. Blank = SEO image.
+       */
+      image?: (number | null) | Media;
+    };
+  };
+  /**
+   * Automatic follows this page’s own visual. Media upload and Streak Field set an independent, hover-only preview.
+   */
+  menuPreviewType?: ('automatic' | 'media' | 'streakField') | null;
+  /**
+   * Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the Header's menu fallback.
+   */
+  menuPreview?: (number | null) | Media;
+  menuPreviewShader?: StreakVisualConfig;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * The lab index published at /lab. Hero and SEO only — the list is automatic.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lab-index".
+ */
+export interface LabIndex {
+  id: number;
+  title: string;
+  hero: {
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    /**
+     * Small label above the title, e.g. an area of expertise.
+     */
+    eyebrow?: string | null;
+    title?: string | null;
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Short supporting paragraph anchored to the bottom of the hero.
+     */
+    description?: string | null;
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'site' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'contact-pages';
+                  value: number | ContactPage;
+                } | null);
+            /**
+             * Home (/), Works Index (/works), or Insights Index (/insights).
+             */
+            sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
             url?: string | null;
             label: string;
             /**
@@ -13711,7 +13841,7 @@ export interface WorksIndex {
             /**
              * Home (/), Works Index (/works), or Insights Index (/insights).
              */
-            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+            sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
             url?: string | null;
             label: string;
             /**
@@ -13800,7 +13930,7 @@ export interface Header {
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
            */
-          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
           url?: string | null;
           label: string;
         };
@@ -13831,7 +13961,7 @@ export interface Header {
       /**
        * Home (/), Works Index (/works), or Insights Index (/insights).
        */
-      sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+      sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
       url?: string | null;
     };
   };
@@ -13878,7 +14008,7 @@ export interface Footer {
     /**
      * Home (/), Works Index (/works), or Insights Index (/insights).
      */
-    sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+    sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
     url?: string | null;
     label: string;
   };
@@ -13918,7 +14048,7 @@ export interface Footer {
             /**
              * Home (/), Works Index (/works), or Insights Index (/insights).
              */
-            sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+            sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
             url?: string | null;
             label: string;
             /**
@@ -14053,7 +14183,7 @@ export interface SiteInfo {
           /**
            * Home (/), Works Index (/works), or Insights Index (/insights).
            */
-          sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
           url?: string | null;
           label: string;
         };
@@ -14169,6 +14299,62 @@ export interface HomeStatementSelect<T extends boolean = true> {
  * via the `definition` "insights-index_select".
  */
 export interface InsightsIndexSelect<T extends boolean = true> {
+  title?: T;
+  hero?:
+    | T
+    | {
+        type?: T;
+        eyebrow?: T;
+        title?: T;
+        richText?: T;
+        description?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    sitePage?: T;
+                    url?: T;
+                    label?: T;
+                    appearance?: T;
+                  };
+              id?: T;
+            };
+        media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+        og?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+      };
+  menuPreviewType?: T;
+  menuPreview?: T;
+  menuPreviewShader?: T | StreakVisualConfigSelect<T>;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lab-index_select".
+ */
+export interface LabIndexSelect<T extends boolean = true> {
   title?: T;
   hero?:
     | T
@@ -14530,7 +14716,7 @@ export interface TaskSchedulePublish {
           relationTo: 'testimonials';
           value: number | Testimonial;
         } | null);
-    global?: ('home' | 'insights-index' | 'works-index') | null;
+    global?: ('home' | 'insights-index' | 'lab-index' | 'works-index') | null;
     user?: (number | null) | User;
   };
   output?: unknown;
@@ -14563,7 +14749,7 @@ export interface RichTextActionsBlock {
       /**
        * Home (/), Works Index (/works), or Insights Index (/insights).
        */
-      sitePage?: ('home' | 'works-index' | 'insights-index') | null;
+      sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
       url?: string | null;
       label: string;
       /**

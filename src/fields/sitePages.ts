@@ -6,6 +6,7 @@ export const SITE_PAGE_OPTIONS = [
   { label: 'Home', value: 'home' },
   { label: 'Works Index', value: 'works-index' },
   { label: 'Insights Index', value: 'insights-index' },
+  { label: 'Lab Index', value: 'lab-index' },
 ] as const
 
 export type SitePage = (typeof SITE_PAGE_OPTIONS)[number]['value']
@@ -14,4 +15,5 @@ export const SITE_PAGE_HREFS: Record<SitePage, string> = {
   home: '/',
   'works-index': '/works',
   'insights-index': '/insights',
+  'lab-index': '/lab',
 }

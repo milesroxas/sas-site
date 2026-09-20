@@ -169,7 +169,7 @@ async function getMenuContent(): Promise<MenuContent> {
     .map((work) => (typeof work === 'object' ? work.id : work))
     .slice(0, MENU_WORKS_LIMIT)
 
-  const [expertise, audiences, works, pages, home, worksIndex, insightsIndex, contacts] =
+  const [expertise, audiences, works, pages, home, worksIndex, insightsIndex, labIndex, contacts] =
     await Promise.all([
       payload.find({
         collection: 'expertise-pages',
@@ -210,6 +210,7 @@ async function getMenuContent(): Promise<MenuContent> {
       // so that one can be handed off onto; an upload cannot (see MenuMedia).
       payload.findGlobal({ slug: 'works-index', depth: 1, select: PREVIEW_SELECT }),
       payload.findGlobal({ slug: 'insights-index', depth: 1, select: PREVIEW_SELECT }),
+      payload.findGlobal({ slug: 'lab-index', depth: 1, select: PREVIEW_SELECT }),
       payload.find({
         collection: 'contact-pages',
         where: published,
@@ -254,6 +255,14 @@ async function getMenuContent(): Promise<MenuContent> {
   // `/posts` renders the same index view, so the docked window rests on the same media there.
   setPageMedia('/insights', insightsMedia)
   setPageMedia('/posts', insightsMedia)
+  const labVisual = resolveVisual(labIndex.hero, { seedKey: 'lab-index' })
+  setPageMedia(
+    '/lab',
+    previewOrOwn(labIndex, labVisual, 'lab-index', {
+      ownMountsHero: labVisual?.kind === 'streakField',
+      ownGround: 'site',
+    }),
+  )
   for (const doc of contacts.docs) {
     if (!doc.slug) continue
     const href = doc.slug === CONTACT_INDEX_SLUG ? '/contact' : `/contact/${doc.slug}`

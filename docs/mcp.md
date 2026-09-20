@@ -42,11 +42,12 @@ Local dev serves the same endpoint at `http://localhost:3001/api/mcp`.
 | Assets | `asset-libraries` | Full authoring (find, create, update, delete) |
 | Assets | `media` | **Read-only** (find) |
 | Inbox | `ask-questions` | **Read-only** (find) |
-| Globals | `home`, `header`, `footer`, `site-info` | Find + update |
+| Globals | `home`, `header`, `footer`, `site-info`, `insights-index`, `lab-index`, `works-index` | Find + update |
 
 "Offered" means the checkbox exists on the key — each key still gets only what an admin turns on.
 
-`insights-index` and `works-index` are not exposed over MCP (hero/SEO only; lists are code-owned).
+The index globals (`insights-index`, `lab-index`, `works-index`) carry hero and SEO only: the listings
+themselves are code-owned, so an agent can edit the opening copy but not the set.
 
 Media is read-only by design: MCP tools cannot send binary uploads, and new media defaults to
 the internal `usageStatus` gate anyway (see [architecture.md](architecture.md) access rules).
