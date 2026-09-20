@@ -91,8 +91,11 @@ function ContentsCard({
             density="card"
             entries={entries}
             onJump={onJump}
-            // The button sits over the end of this row as the close control.
-            topRowClassName="mr-12 h-14 w-auto"
+            // The button sits over the end of this row as the close control:
+            // the bottom margin centers the row's fill on the close circle
+            // while the row keeps every other row's height, so the fill never
+            // runs taller than the list or up against the rule above it.
+            topRowClassName="mr-12 mb-1.5 w-auto"
           />
         </nav>
       </div>

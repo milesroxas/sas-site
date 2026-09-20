@@ -1258,12 +1258,19 @@ html {
 
 /* Floating surfaces that are objects in their own right, not controls: the
    Contents index card, and a phone sheet that floats inside the screen's own
-   corners. Absolute, so they do not tighten with `--radius`. A plain `@theme`,
-   not `inline`: the Contents clip reads `--radius-menu-card` through `var()`,
-   and an inline token is never emitted as a variable. */
+   corners. One step softer than a control (`--radius` 0.45rem), not a rounder
+   scale of their own: an object that reads as a pill or a lozenge stops
+   belonging to this system. Each is set so its rows can be concentric with it
+   across the surface's own padding (card 12px over `p-2` → rows on
+   `rounded-md`; sheet 16px over `px-2` → rows on `rounded-lg`), which is what
+   keeps the nesting from reading as two unrelated radii and keeps the two
+   surfaces' rows one step apart rather than a scale apart. Absolute, so they do
+   not tighten with `--radius`. A plain `@theme`, not `inline`: the Contents
+   clip reads `--radius-menu-card` through `var()`, and an inline token is
+   never emitted as a variable. */
 @theme {
-  --radius-menu-card: 1.5rem;
-  --radius-sheet: 2.375rem;
+  --radius-menu-card: 0.75rem;
+  --radius-sheet: 1rem;
 }
 
 /* Scroll-reveal sections (see shared/ui/reveal-section/RevealSection.tsx) */
@@ -1395,11 +1402,21 @@ html {
    seed), the brand's mask reveal, so nothing inside scales or reflows. A clip
    cuts off the element's own box-shadow, so the edge comes from a
    `drop-shadow` on the parent, which follows the clipped shape, and the wide
-   ambient shadow is a separate layer that only fades. Enter is
-   `@starting-style` on the spring, exit a shorter ease-out off `data-open`:
-   both plain transitions, so a reversal mid-flight retargets from where it
-   is. `data-animating` (use-presence) holds `will-change` for exactly the
-   length of a run. */
+   ambient shadow is a separate layer that only fades. Both directions are the
+   site's settle curve, an `ease-out` strong enough that most of the travel is
+   over in the first third: this is a popover, so it stays inside the 300ms a
+   popover gets, and a critically damped spring's long tail (500ms, the last
+   13% dribbling out after the eye has called it arrived) is what made it read
+   slow. Enter is `@starting-style` at 300ms, orchestrated: the content leads
+   (it is what the reader came for), the ambient shadow waits for a shape
+   that has all but arrived. Exit is one clock instead — 200ms, the same
+   200ms the button's own surface and glyph run — so the shape, its content
+   and the button read as a single object being drawn back in rather than
+   five sub-animations ending at five different moments; only the ambient
+   shadow leads out, since it belongs to a card that is no longer there.
+   Enter and exit are both plain transitions, so a reversal mid-flight
+   retargets from where it is. `data-animating` (use-presence) holds
+   `will-change` for exactly the length of a run. */
 .contents-card-layer {
   --contents-seed: inset(calc(100% - 4rem) 0.5rem 0.5rem calc(100% - 4rem) round 1.75rem);
   /* The card stays between the bars; past that the list scrolls inside it. */
@@ -1423,10 +1440,16 @@ html {
 
 .contents-card {
   clip-path: var(--contents-seed);
-  transition: clip-path 250ms var(--ease-out-quint);
+  transition: clip-path 200ms var(--ease-out-quint);
 }
 
-.contents-card-body,
+/* The body dims on the shape's own clock, so the text is wiped back into the
+   button with the card instead of blinking out ahead of it. */
+.contents-card-body {
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out-quint);
+}
+
 .contents-card-ambient {
   opacity: 0;
   transition: opacity 120ms var(--ease-out-quint);
@@ -1439,20 +1462,20 @@ html {
 .contents-card-layer[data-open="true"] {
   .contents-card {
     clip-path: inset(0 round var(--radius-menu-card));
-    transition: clip-path 500ms var(--ease-spring);
+    transition: clip-path 300ms var(--ease-out-quint);
   }
 
   .contents-card-body,
   .contents-card-ambient {
     opacity: 1;
-    transition: opacity 220ms var(--ease-out-quint) 60ms;
+    transition: opacity 180ms var(--ease-out-quint) 40ms;
   }
 
   /* The ambient shadow is drawn for the finished card, so it waits until the
      shape has all but arrived; any sooner and it outlines a card that is not
      there yet. */
   .contents-card-ambient {
-    transition-delay: 220ms;
+    transition: opacity 160ms var(--ease-out-quint) 180ms;
   }
 
   @starting-style {

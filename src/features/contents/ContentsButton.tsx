@@ -12,7 +12,6 @@ import {
   useState,
 } from 'react'
 import { onChromeScroll } from '@/components/SiteChrome/chrome-scroll'
-import { cursorTarget } from '@/features/cursor'
 import { focusForKeyboard, trackInputModality } from '@/Header/Menu/focus'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/utilities/ui'
@@ -212,7 +211,6 @@ export function ContentsButton() {
             onPointerEnter={warmPanel}
             ref={triggerRef}
             type="button"
-            {...cursorTarget()}
           >
             <span
               className={cn(

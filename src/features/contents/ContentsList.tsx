@@ -12,11 +12,14 @@ export const CONTENTS_LIST_LABEL = 'On this page'
 /**
  * The two surfaces are one list at two sizes: the card's rows are pointer
  * rows, the sheet's are thumb rows (taller, larger type, rounder to stay
- * concentric with the sheet's corners).
+ * concentric with the sheet's corners). Each corner is the surface's own
+ * radius less its padding, so a highlighted row nests in the surface rather
+ * than floating as a lozenge inside it: the card is `--radius-menu-card`
+ * (12px) over `p-2`, the sheet `--radius-sheet` (16px) over `px-2`.
  */
 const DENSITY = {
-  card: 'h-11 rounded-3xl text-sm/5',
-  sheet: 'h-13 rounded-4xl text-base/6',
+  card: 'h-11 rounded-md text-sm/5',
+  sheet: 'h-13 rounded-lg text-base/6',
 } as const
 
 export type ContentsDensity = keyof typeof DENSITY
@@ -126,7 +129,9 @@ export function ContentsList({
           })}
         </ol>
       </ScrollArea>
-      <div className={cn('shrink-0 px-3 pt-2', density === 'sheet' && 'pb-2')}>
+      {/* The rule spans exactly the rows' own width, so its ends and a
+          highlighted row's edges agree, with equal air on both sides. */}
+      <div className="shrink-0 py-1.5">
         <div className="h-px bg-border" />
       </div>
       <button
