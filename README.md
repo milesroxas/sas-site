@@ -226,7 +226,7 @@ Full detail in [docs/architecture.md](docs/architecture.md).
 | Newsletter | `newsletters`, `audiences`, `subscribers` | Email sends via Resend; team-only access |
 | System | `users` | Admin auth |
 
-Plugins add `redirects`, `forms`, `form-submissions`, `search`, and `payload-mcp-api-keys` ([docs/mcp.md](docs/mcp.md)).
+Plugins add `redirects`, `forms`, `form-submissions`, `search`, `streak-looks`, `streak-releases`, `streak-renders` ([docs/streak-field.md](docs/streak-field.md)), and `payload-mcp-api-keys` ([docs/mcp.md](docs/mcp.md)).
 
 Globals: `home`, `insights-index`, `lab-index`, `works-index`, `header`, `footer`, and `site-info` (added by the AEO plugin). Each Work Page presents exactly one Case Study and each Lab Page exactly one Lab Project (unique relationships); both records share the canonical narrative sections (optional section bodies plus reusable Story Beats), and Work and Lab blocks resolve either a full section or one stable beat at render time without copying it.
 

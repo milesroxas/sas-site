@@ -28,11 +28,50 @@ index 90e88990230ca66a3f9a549387cfa0ebc5225b1b..c812ed33591157828089203794911598
              depth: z.number().int().min(0).max(10).optional().default(0).describe('How many levels deep to populate relationships in response'),
              draft: z.boolean().optional().default(false).describe('Whether to create the document as a draft'),
              fallbackLocale: z.string().optional().describe('Optional: fallback locale code to use when requested locale is not available'),
+diff --git a/dist/mcp/tools/resource/delete.js b/dist/mcp/tools/resource/delete.js
+index 9a134688f4964b51a65f07260f0e559baff58bfe..09f4f4ab8385128a7a0630f632148311c11538cb 100644
+--- a/dist/mcp/tools/resource/delete.js
++++ b/dist/mcp/tools/resource/delete.js
+@@ -1,8 +1,13 @@
+ import { toCamelCase } from '../../../utils/camelCase.js';
+ import { toolSchemas } from '../schemas.js';
+ export const deleteResourceTool = (server, req, user, verboseLogs, collectionSlug, collections)=>{
+-    const tool = async (id, where, depth = 0, locale, fallbackLocale)=>{
++    const tool = async (id, where, depth = 0, locale, fallbackLocale, confirm)=>{
+         const payload = req.payload;
++        // Read by the host app's beforeDelete hook, which owns the confirmation rule.
++        req.context = {
++            ...req.context,
++            mcpDeleteConfirm: confirm
++        };
+         if (verboseLogs) {
+             payload.logger.info(`[payload-mcp] Deleting resource from collection: ${collectionSlug}${id ? ` with ID: ${id}` : ' with where clause'}${locale ? `, locale: ${locale}` : ''}`);
+         }
+@@ -140,10 +145,15 @@ ${JSON.stringify(errors)}
+     };
+     if (collections?.[collectionSlug]?.enabled) {
+         server.registerTool(`delete${collectionSlug.charAt(0).toUpperCase() + toCamelCase(collectionSlug).slice(1)}`, {
+-            description: `${collections?.[collectionSlug]?.description || toolSchemas.deleteResource.description.trim()}`,
+-            inputSchema: toolSchemas.deleteResource.parameters.shape
+-        }, async ({ id, depth, fallbackLocale, locale, where })=>{
+-            return await tool(id, where, depth, locale, fallbackLocale);
++            description: `${toolSchemas.deleteResource.description.trim()}${collections?.[collectionSlug]?.description ? ` Collection: ${collections[collectionSlug].description}` : ''}`,
++            inputSchema: toolSchemas.deleteResource.parameters.shape,
++            annotations: {
++                destructiveHint: true,
++                idempotentHint: false,
++                readOnlyHint: false
++            }
++        }, async ({ id, confirm, depth, fallbackLocale, locale, where })=>{
++            return await tool(id, where, depth, locale, fallbackLocale, confirm);
+         });
+     }
+ };
 diff --git a/dist/mcp/tools/resource/update.js b/dist/mcp/tools/resource/update.js
-index 1a81ee7d67a25c6a993a6c081c2f87469c4e584d..5b31a83de5787b17ba5ca147c394ef45900736c6 100644
+index 37fe57411613fb0bb6b93cf2e8a3aba07c2222e5..d4337fcd9d66029822cb9feddab0b5325413703a 100644
 --- a/dist/mcp/tools/resource/update.js
 +++ b/dist/mcp/tools/resource/update.js
-@@ -226,7 +226,7 @@ ${JSON.stringify(errors)}
+@@ -214,7 +214,7 @@ ${JSON.stringify(errors)}
          // Create a new schema that combines the converted fields with update-specific parameters
          // Use .partial() to make all fields optional for partial updates
          const updateResourceSchema = z.object({
@@ -41,6 +80,30 @@ index 1a81ee7d67a25c6a993a6c081c2f87469c4e584d..5b31a83de5787b17ba5ca147c394ef45
              id: z.union([
                  z.string(),
                  z.number()
+diff --git a/dist/mcp/tools/schemas.js b/dist/mcp/tools/schemas.js
+index 539ba847006d92e0aeb6d0c255b038abf08ef145..93c9d4486ff4400ca2b5a2b8b94fdbf90b31bf1e 100644
+--- a/dist/mcp/tools/schemas.js
++++ b/dist/mcp/tools/schemas.js
+@@ -56,8 +56,9 @@ export const toolSchemas = {
+         })
+     },
+     deleteResource: {
+-        description: 'Delete documents in a collection by ID or where clause.',
++        description: 'Permanently delete one document by ID. The first call deletes nothing: it answers with what would be deleted and a confirmation token. Show that to the user, and only after their explicit yes call again with the same id and the token in `confirm`.',
+         parameters: z.object({
++            confirm: z.string().optional().describe('The confirmation token the first call answered with. Send it only after the user has explicitly approved deleting this exact document'),
+             id: z.union([
+                 z.string(),
+                 z.number()
+@@ -65,7 +66,7 @@ export const toolSchemas = {
+             depth: z.number().int().min(0).max(10).optional().default(0).describe('Depth of population for relationships in response'),
+             fallbackLocale: z.string().optional().describe('Optional: fallback locale code to use when requested locale is not available'),
+             locale: z.string().optional().describe('Optional: locale code for the operation (e.g., "en", "es"). Defaults to the default locale'),
+-            where: z.string().optional().describe('Optional: JSON string for where clause to delete multiple documents')
++            where: z.string().optional().describe('Not usable on this server: every delete is confirmed one document at a time, so send id')
+         })
+     },
+     updateGlobal: {
 diff --git a/dist/utils/schemaConversion/convertCollectionSchemaToZod.js b/dist/utils/schemaConversion/convertCollectionSchemaToZod.js
 index 07a2628fdc987d663885c7e918152539ca7c1766..fdfd9c0df4921f27fa5b69216032764a918d5e82 100644
 --- a/dist/utils/schemaConversion/convertCollectionSchemaToZod.js

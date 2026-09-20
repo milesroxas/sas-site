@@ -3,6 +3,7 @@ import { APIError, type CollectionConfig, type Field } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { DEFAULT_EFFECT, EFFECT_OPTIONS, effectOf } from '@/features/immersive/studio/effects'
 import { emptyRecipe, validateRecipe } from '@/features/immersive/studio/recipe'
+import { recipeJsonSchema } from '@/features/immersive/studio/recipe-schema'
 import {
   EFFECT_FIELD,
   LOOKS_SLUG,
@@ -246,6 +247,8 @@ export const StreakLooks: CollectionConfig = {
       type: 'json',
       required: true,
       defaultValue: emptyRecipe(effectOf(DEFAULT_EFFECT)),
+      // For an agent drafting a look over MCP; the Inspector replaces the JSON editor here.
+      jsonSchema: recipeJsonSchema,
       admin: {
         position: 'sidebar',
         components: { Field: '@/plugins/streak-studio/components/Inspector#Inspector' },

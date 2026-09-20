@@ -1043,15 +1043,26 @@ export interface StreakLook {
   archived?: boolean | null;
   createdBy?: (number | null) | User;
   updatedBy?: (number | null) | User;
-  recipe:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+  /**
+   * What a Studio look draws. A draft can be written over the API; publishing happens in the admin Studio, where the posters are rendered.
+   */
+  recipe: {
+    version: 1;
+    /**
+     * Lays out a seeded effect: a different seed is a different arrangement of the same look. Send 0 for an effect no seed changes (Light leak).
+     */
+    seed: number;
+    /**
+     * The animation frame the posters are captured at.
+     */
+    frame: number;
+    /**
+     * Only the parameters that leave their default, by name. `{}` is the effect as it ships, and the `snapshot.dark` of any published look of the same effect shows every resolved value to start from. An unknown name or a value out of range is refused on save with the reason. When `effect` is "streakField" (Streak Field): Composition: layout: "rows" | "grid"; shape: "dash" | "dot"; count: 100 to 8000; columnPitch: 4 to 100; rowPitch: 4 to 100; rowJitter: 0 to 1; thickness: 0.2 to 4; minLength: 1 to 80; maxLength: 1 to 80; lengthBias: 1 to 10. Motion: motion: "drift" | "flow"; flowSpeed: 0 to 100; drift: -50 to 50; driftSpread: 0 to 1; timeScale: 0 to 1.5. Flow: noise: "none" | "value" | "simplex" | "fbm" | "ridged" | "curl" | "gradient"; noiseScale: 100 to 2000; noiseStrength: 0 to 200; noiseSpeed: 0 to 0.5; noiseGain: 0 to 0.6; noiseAxis: 0 to 1; orient: 0 to 1. Relief: relief: 0 to 1; reliefFloor: 0 to 1; reliefContrast: 0.5 to 5; reliefLength: 0 to 1. Color: ink: [r, g, b], each 0 to 1; paperInk: [r, g, b], each 0 to 1; brightness: 0 to 1.5; brightnessSpread: 0 to 1; flicker: 0 to 1; flickerRate: 0 to 2; tail: 0 to 1; cap: 0 to 8. Life: lifetime: 2 to 30; lifeSpread: 0 to 0.9; fadeIn: 0 to 0.4; fadeOut: 0 to 0.4. Interaction: pointerRadius: 0 to 500; pointerPush: -100 to 100; pointerSwirl: -100 to 100; pointerWake: 0 to 0.2; pointerAgitate: 0 to 4.2; pointerGlow: 0 to 3; pointerLift: -1 to 1; pointerEase: 1 to 20. When `effect` is "lightLeak" (Light leak): Light: blendMode: "plus-lighter" | "screen" | "lighten"; gain: 0 to 3; gainEnergy: 0 to 2; saturation: 0 to 3; vignette: 0 to 2; grain: 0 to 0.2; grainLuminance: 0 to 0.3. Field: blobWarm: 0 to 3; blobCool: 0 to 3; streak: 0 to 3; streakAngle: -3.14 to 3.14; streakSpread: 0.005 to 0.5; slats: 0 to 3; slatAngle: -3.14 to 3.14; slatTopSpread: 0.01 to 1.2; slatBottomSpread: 0.01 to 1.2; slatFrequency: 1 to 60; slatSharpness: 0.5 to 8. Color: coolTint: 3 numbers, each 0 to 2; warmTint: 3 numbers, each 0 to 2; amber: 3 numbers, each 0 to 1. Dispersion: dispersion: 0 to 0.08; dispersionEnergy: 0 to 0.2; dispersionDirection: 2 numbers, each -3 to 3. Motion: timeScale: 0 to 2; warpAmount: 0 to 1.5; warpScale: 0.1 to 8. Scroll: scrollSpeed: 100 to 3000; scrollCurve: 0.3 to 3; scrollDecay: 0.1 to 12; scrollIntensity: 0 to 1; scrollSmooth: 0.1 to 12; scrollDrift: 0 to 2; morph: 0 to 2; morphScale: 0.1 to 12. Paper: inkChroma: 0 to 3; inkDensity: 0 to 1.5. Interaction: excite: true | false; exciteTargets: "marked" | "interactive"; sectionExcite: 0 to 1; hoverBloom: 0 to 4; exciteEase: 0.5 to 12; pointerEase: 0.5 to 12; gainExcite: 0 to 2; saturationExcite: 0 to 2; dispersionExcite: 0 to 0.2; slatFrequencyExcite: 0 to 20.
+     */
+    deltas: {
+      [k: string]: unknown;
+    };
+  };
   snapshot?:
     | {
         [k: string]: unknown;
@@ -9687,6 +9698,12 @@ export interface PayloadMcpApiKey {
     update?: boolean | null;
     delete?: boolean | null;
   };
+  streakLooks?: {
+    find?: boolean | null;
+    create?: boolean | null;
+    update?: boolean | null;
+    delete?: boolean | null;
+  };
   media?: {
     find?: boolean | null;
   };
@@ -13287,6 +13304,14 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         find?: T;
       };
   assetLibraries?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+        delete?: T;
+      };
+  streakLooks?:
     | T
     | {
         find?: T;

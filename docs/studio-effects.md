@@ -78,3 +78,4 @@ Touch is not hover: a tap fires `pointerover` with no `pointerout` to answer it,
 6. Render its posters: `pnpm exec tsx scripts/visual-posters.ts --effect <id>`, and add `/images/<posterDirectory>/**` to `images.localPatterns` in `next.config.ts`. Without it the optimizer answers the poster with 400 in production, and the poster is what every touch device sees.
 7. Story the slot and the Studio preview. The contract tests in `studio/effects/light-leak.test.ts` run over every registered effect.
 8. Ask for a migration: a new `visualType` and `effect` value is `ALTER TYPE ... ADD VALUE` on each enum, additive, and must not be used in the same `up()`.
+9. Nothing to do for MCP: the recipe's tool schema (`studio/recipe-schema.ts`) reads its parameter table out of `EFFECTS`, so an agent drafting a look sees the new effect's names and ranges on the next deploy. Run `pnpm generate:types` so `payload-types.ts` carries the same text. See [mcp.md](mcp.md).
