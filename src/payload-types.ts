@@ -1831,6 +1831,10 @@ export interface WorkCaseStudyTransitionBlock {
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  /**
+   * Outline level and type size for the Prose layout, set against the article body rather than the page headings.
+   */
+  headingLevel?: ('h2' | 'h3' | 'h4') | null;
   body?: {
     root: {
       type: string;
@@ -6554,6 +6558,10 @@ export interface RichTransitionBlock {
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  /**
+   * Outline level and type size for the Prose layout, set against the article body rather than the page headings.
+   */
+  headingLevel?: ('h2' | 'h3' | 'h4') | null;
   body?: {
     root: {
       type: string;
@@ -7875,6 +7883,10 @@ export interface LabRichTransitionBlock {
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */
   theme?: ('light' | 'dark' | 'neutral' | 'brand') | null;
+  /**
+   * Outline level and type size for the Prose layout, set against the article body rather than the page headings.
+   */
+  headingLevel?: ('h2' | 'h3' | 'h4') | null;
   body?: {
     root: {
       type: string;
@@ -10182,6 +10194,7 @@ export interface RichTransitionBlockSelect<T extends boolean = true> {
   heading?: T;
   layout?: T;
   theme?: T;
+  headingLevel?: T;
   body?: T;
   id?: T;
   blockName?: T;
@@ -11029,6 +11042,7 @@ export interface WorkCaseStudyTransitionBlockSelect<T extends boolean = true> {
   heading?: T;
   layout?: T;
   theme?: T;
+  headingLevel?: T;
   body?: T;
   id?: T;
   blockName?: T;
@@ -11555,6 +11569,7 @@ export interface LabRichTransitionBlockSelect<T extends boolean = true> {
   heading?: T;
   layout?: T;
   theme?: T;
+  headingLevel?: T;
   body?: T;
   id?: T;
   blockName?: T;

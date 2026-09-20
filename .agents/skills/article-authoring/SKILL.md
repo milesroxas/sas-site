@@ -84,6 +84,8 @@ Always write `heading` yourself (a beat's `heading` is a good source). An empty 
 - `source: "<section>"`, `storyScope: "overview"`, `body` empty: the section's overview becomes the standfirst. Use it on the first Section of a story part when the overview has copy.
 - `source: "custom"`, `body` empty: heading only. Use it on every other Section, and whenever the beats below use `storyScope: "section"` (that scope already includes the overview, so the other option would print it twice).
 
+`headingLevel` sets the outline level and the type size, and only the Prose layout shows it: `h2` (default, opens a section), `h3` (a subsection inside the same idea), `h4` (a short passage). Leave it unset for the Sections that carry the story's parts; step down only when a Section sits inside the idea above it. The sizes are set against the article body, so a lower level is a smaller heading, not a quieter colour.
+
 Never give the heading `storyScope: "beat"` or `"section"` with an empty body: it prints the whole passage at standfirst size and repeats the Story beats block under it.
 
 ### The beats

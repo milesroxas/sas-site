@@ -72,7 +72,9 @@ The default Standard arrangement (Layout: Offset) on the 8-column grid:
 
 Layout: Left (added 2026-09-04) is the same stack flush with the page column: heading columns 1-4, body columns 1-3. Offset was stored as `left` until 2026-09-04; rows migrate `left` -> `offset` so nothing re-renders.
 
-Layout: Prose (added 2026-09-20) borrows the Story beats reading column so a heading can open a passage of beats without the copy stepping sideways: heading cluster and body both columns 3-6, body at the `text-lead` standfirst token (the size the Story beats `lead` variant renders at).
+Layout: Prose (added 2026-09-20) borrows the Story beats reading column so a heading can open a passage of beats without the copy stepping sideways: the whole cluster (eyebrow, heading, deck) is one cell on columns 3-6, spaced by `text-stack`.
+
+Prose is the one layout sized against the copy it opens rather than the page type scale. Story beats and Rich text render Tailwind Typography's `prose` base (16px on a 28px line), so the opener uses plain Tailwind steps over that body: `text-3xl` / `text-2xl` / `text-xl` for the `headingLevel` select (h2 / h3 / h4, shown only for Prose), with the deck at `text-lg/7` under an h2 and `text-base/7` under the lower two. It also owns the gap below it: `pb-10 -mb-16 md:pb-14 md:-mb-24` cancels the following band's `normal` top step and restates two body lines (56px; 40px below `md`), so the heading binds to its passage instead of sitting 96px off it. The pull is on the block's own root, not the `Section`, because a Prose heading nested in a Section block renders `bare`.
 
 ---
 
@@ -82,7 +84,7 @@ Layout: Prose (added 2026-09-20) borrows the Story beats reading column so a hea
 |---|---|---|---|---|
 | Standard, Offset (stored `left` before 2026-09-04) | `rich-transition/RichTransition.tsx` | `md:grid-cols-[12.9%_minmax(0,61%)_1fr]` + spacer div + `max-w-120` body inside `text-stack` | heading cols 2-5, body cols 2-4 as its own cell | DONE 2026-09-02 |
 | Standard, Left | same file | new 2026-09-04 | heading cols 1-4, body cols 1-3 | DONE 2026-09-04 |
-| Standard, Prose | same file | new 2026-09-20 | heading cols 3-6, body cols 3-6 at `text-lead`; same column as a Story beat (`story-beats/Component.tsx`) | DONE 2026-09-20 |
+| Standard, Prose | same file | new 2026-09-20 | one cell, cols 3-6; article type scale by `headingLevel`, deck 18/16px, bottom pull onto the passage; same column as a Story beat (`story-beats/Component.tsx`) | DONE 2026-09-20 |
 | Standard, Split | same file | `lg:grid-cols-12 lg:gap-24`, span 6 + span 4 start 9 | heading cols 1-4, body cols 6-8; mounts `md` (was `lg`) | DONE 2026-09-02 |
 | Standard, Centered / Statement | same file | centered `text-stack` + reading measures (`max-w-3xl` / `max-w-160` / `max-w-xl`) | unchanged: measure-based by design, exempt per rule 2 | DONE (no change) |
 | Offset | `feature/HeadingOffset/Component.tsx` | duplicated 12-col pattern, `lg` mount, `lg:pt-24` | heading cols 1-4, body cols 6-8 + `md:pt-24`; mounts `md` | DONE 2026-09-02 |

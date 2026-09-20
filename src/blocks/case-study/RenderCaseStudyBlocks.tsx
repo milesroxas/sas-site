@@ -294,7 +294,9 @@ const Transition = ({
   study: CaseStudy
 }) => (
   <RevealSection bare={bare} className="pb-0 md:pb-0" theme={block.theme} variant="intro">
-    <RichTransition bare {...resolveStoryBlockCopy(block, study)} />
+    {/* Always `bare` (the reveal band above paints the surface); `stacked`
+        is the narrower question of whether a Section's stack sits under it. */}
+    <RichTransition bare stacked={bare} {...resolveStoryBlockCopy(block, study)} />
   </RevealSection>
 )
 
