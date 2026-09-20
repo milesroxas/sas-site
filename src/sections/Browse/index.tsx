@@ -40,6 +40,13 @@ type SortControl<K extends string> = {
  * set (filters leading, sort trailing), then the set itself as `children`.
  * The intro plays the site's intro reveal as one cluster; the set owns its
  * own entrance and its in-place filter swap.
+ *
+ * An index may put a `banner` between the header and the strip. It renders
+ * inside the intro shell, which tweens every `[data-reveal]` under it, so a
+ * banner owns its entrance under markers of its own (`IndexBanner`).
+ *
+ * `controls={false}` drops the strip for a set too small to need one: the
+ * strong rule stays, since it is what closes the header and opens the set.
  */
 export function BrowseIndex<K extends string>({
   eyebrow,
@@ -49,6 +56,8 @@ export function BrowseIndex<K extends string>({
   total,
   filters,
   sort,
+  banner,
+  controls = true,
   children,
 }: {
   /** Kicker above the index title: CMS hero copy. */
@@ -61,6 +70,10 @@ export function BrowseIndex<K extends string>({
   total: number
   filters: ReactNode
   sort: SortControl<K>
+  /** A slab between the header and the strip; it owns its own entrance. */
+  banner?: ReactNode
+  /** Whether the filter and sort strip shows. Off, only its opening rule remains. */
+  controls?: boolean
   children: ReactNode
 }) {
   return (
@@ -88,40 +101,46 @@ export function BrowseIndex<K extends string>({
           </p>
         </header>
 
+        {banner}
+
         {/* The strong rule sits on top: the strip closes the header and opens
             the set, so its lower edge is the set's own hairline weight. */}
-        <div
-          className="flex flex-col gap-4 border-t border-foreground border-b border-b-border py-3 lg:flex-row lg:items-center lg:justify-between"
-          data-reveal
-        >
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <span className={cn(LABEL, 'text-muted-foreground')}>Filter</span>
-            {filters}
+        {controls ? (
+          <div
+            className="flex flex-col gap-4 border-t border-foreground border-b border-b-border py-3 lg:flex-row lg:items-center lg:justify-between"
+            data-reveal
+          >
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <span className={cn(LABEL, 'text-muted-foreground')}>Filter</span>
+              {filters}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <span className={cn(LABEL, 'text-muted-foreground')}>Sort</span>
+              {sortKeys(sort.orders).map((key) => {
+                const active = sort.value === key
+                return (
+                  <button
+                    aria-pressed={active}
+                    className={cn(
+                      CONTROL,
+                      'pressable underline-offset-4',
+                      active
+                        ? 'text-foreground underline'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    key={key}
+                    onClick={() => sort.onChange(key)}
+                    type="button"
+                  >
+                    {sort.orders[key].label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <span className={cn(LABEL, 'text-muted-foreground')}>Sort</span>
-            {sortKeys(sort.orders).map((key) => {
-              const active = sort.value === key
-              return (
-                <button
-                  aria-pressed={active}
-                  className={cn(
-                    CONTROL,
-                    'pressable underline-offset-4',
-                    active
-                      ? 'text-foreground underline'
-                      : 'text-muted-foreground hover:text-foreground',
-                  )}
-                  key={key}
-                  onClick={() => sort.onChange(key)}
-                  type="button"
-                >
-                  {sort.orders[key].label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        ) : (
+          <hr className="border-foreground" data-reveal />
+        )}
       </ScrollReveal>
 
       <p aria-live="polite" className="sr-only">

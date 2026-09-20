@@ -260,6 +260,7 @@ Precedence per consumer is deliberately not flattened: the menu uses `menuPrevie
 | Work Page heroes, both layouts (occasional; case studies usually keep client media) | yes (`hero`) | yes |
 | Works and Insights index pages (`IndexBackground`, one-screen sticky frame behind the listing) | yes (`hero`) | yes |
 | Stacked (`fullMedia`), Split narrow, Media split, top level or inside a Section | yes (`block`) | yes |
+| Lab index banner (`IndexBanner`, the slab between the title and the list; held until its entrance lands, and yields the one live slot to a Streak Field index ground) | yes (`block`) | yes |
 | Takeover menu docked window, resting on a page whose hero is a Streak Field (`Menu/LiveVisual`) | yes (`menu`) | yes |
 | Takeover menu hover previews and the handoff traveler | no | yes |
 | Work entries, Industry Work panels, Works browse rows, featured work | no | yes |

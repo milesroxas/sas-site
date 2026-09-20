@@ -4,6 +4,7 @@ import type React from 'react'
 import { type CSSProperties, useMemo } from 'react'
 import { ALL, BrowseIndex, FilterSelect, IndexEmpty, matchesOption } from '@/sections/Browse'
 import { DATED_SORTS, newestFirst, type SortRegistry } from '@/sections/Browse/sorts'
+import { IndexBanner, type Props as IndexBannerProps } from '@/sections/IndexBanner'
 import { FILTER_SWAP_MAX_STAGGER_STEPS, useFilterSwap } from '@/shared/ui/filter-swap'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
 import { LabRow } from './LabRow'
@@ -28,6 +29,13 @@ type LabQuery = { kind: string; capability: string; sort: LabSortKey }
 
 const INITIAL_QUERY: LabQuery = { kind: ALL, capability: ALL, sort: 'listed' }
 
+/**
+ * The set size at which filtering and sorting start to earn their strip. Under
+ * it the whole set is on screen at once, and a strip of controls over a
+ * handful of rows is chrome with nothing to narrow.
+ */
+const CONTROLS_MIN_ITEMS = 5
+
 /** The underlying record is a Lab Project, whatever kind it is. */
 const NOUN = { one: 'Project', other: 'Projects' }
 
@@ -35,6 +43,8 @@ export type Props = {
   /** Kicker above the index title: CMS hero copy. */
   eyebrow?: string | null
   title?: string | null
+  /** The slab between the title and the set: the way into the Playground. */
+  banner?: IndexBannerProps | null
 } & LabBrowseData
 
 /**
@@ -43,9 +53,18 @@ export type Props = {
  * (no navigation) and the first paint plays the site's under-media reveal per
  * row (each row gates on its own scroll position, so the list cascades as it
  * is read); afterwards a swap is the faster in-place filter fade, never a
- * replay of the entrance.
+ * replay of the entrance. The strip shows once the set reaches
+ * `CONTROLS_MIN_ITEMS`; it counts the whole set, never the filtered one, so
+ * narrowing the list cannot take away the control that narrowed it.
  */
-export const LabBrowse: React.FC<Props> = ({ eyebrow, title, items, kinds, capabilities }) => {
+export const LabBrowse: React.FC<Props> = ({
+  eyebrow,
+  title,
+  banner,
+  items,
+  kinds,
+  capabilities,
+}) => {
   const { selected, rendered, exiting, hasFiltered, apply } = useFilterSwap(INITIAL_QUERY)
 
   const visibleItems = useMemo(() => {
@@ -64,6 +83,8 @@ export const LabBrowse: React.FC<Props> = ({ eyebrow, title, items, kinds, capab
 
   return (
     <BrowseIndex
+      banner={banner && <IndexBanner {...banner} />}
+      controls={items.length >= CONTROLS_MIN_ITEMS}
       count={count}
       eyebrow={eyebrow}
       filters={

@@ -108,6 +108,7 @@ import * as migration_20260920_203257_mcp_streak_looks_capabilities from './2026
 import * as migration_20260920_203528_lab_index_global from './20260920_203528_lab_index_global';
 import * as migration_20260920_223253_visual_surface from './20260920_223253_visual_surface';
 import * as migration_20260920_232046_index_light_leak from './20260920_232046_index_light_leak';
+import * as migration_20260920_235043_lab_index_banner from './20260920_235043_lab_index_banner';
 
 export const migrations = [
   {
@@ -658,6 +659,11 @@ export const migrations = [
   {
     up: migration_20260920_232046_index_light_leak.up,
     down: migration_20260920_232046_index_light_leak.down,
-    name: '20260920_232046_index_light_leak'
+    name: '20260920_232046_index_light_leak',
+  },
+  {
+    up: migration_20260920_235043_lab_index_banner.up,
+    down: migration_20260920_235043_lab_index_banner.down,
+    name: '20260920_235043_lab_index_banner'
   },
 ];

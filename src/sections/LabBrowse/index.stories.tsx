@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
+import { indexBannerFixture } from '@/sections/IndexBanner/fixtures'
 import { labBrowseCapabilities, labBrowseItems, labBrowseKinds } from './fixtures'
 import { LabBrowse } from './index'
 
@@ -21,6 +22,19 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
+
+/** The Playground banner sits between the title and the strip. */
+export const WithBanner: Story = {
+  args: { banner: indexBannerFixture },
+}
+
+/**
+ * Under five entries the filter and sort strip is dropped: the strong rule
+ * still closes the header and opens the set.
+ */
+export const FewProjects: Story = {
+  args: { banner: indexBannerFixture, items: labBrowseItems.slice(0, 4) },
+}
 
 /** Sole row: the count line reads singular and the list keeps its hairlines. */
 export const SingleProject: Story = {

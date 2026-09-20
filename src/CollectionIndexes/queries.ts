@@ -25,7 +25,10 @@ export const worksIndexHeroFallback: Page['hero'] = {
   title: 'Selected work',
 }
 
-const queryIndexGlobal = async (slug: 'insights-index' | 'lab-index' | 'works-index') => {
+/** Generic over the slug, so each index reads as its own type (the lab index carries a banner). */
+const queryIndexGlobal = async <Slug extends 'insights-index' | 'lab-index' | 'works-index'>(
+  slug: Slug,
+) => {
   const { isEnabled: draft } = await draftMode()
   const payload = await getPayload({ config: configPromise })
 

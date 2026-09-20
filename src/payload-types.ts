@@ -13743,7 +13743,7 @@ export interface InsightsIndex {
   createdAt?: string | null;
 }
 /**
- * The lab index published at /lab. Hero and SEO only — the list is automatic.
+ * The lab index published at /lab. Hero, banner and SEO: the list is automatic, and its filter and sort strip appears once there are five entries.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "lab-index".
@@ -13816,6 +13816,7 @@ export interface LabIndex {
     visualType?: ('media' | 'streakField' | 'lightLeak') | null;
     shader?: PlacedVisualConfig;
   };
+  banner?: IndexBanner;
   meta?: {
     /**
      * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
@@ -13859,6 +13860,50 @@ export interface LabIndex {
   _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IndexBanner".
+ */
+export interface IndexBanner {
+  /**
+   * Hiding the banner never clears its fields. It also stays hidden until it has a heading and a working link.
+   */
+  show?: boolean | null;
+  heading?: string | null;
+  /**
+   * One or two supporting sentences under the heading. Optional.
+   */
+  body?: string | null;
+  link?: {
+    type?: ('reference' | 'site' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'contact-pages';
+          value: number | ContactPage;
+        } | null);
+    /**
+     * Home (/), Works Index (/works), or Insights Index (/insights).
+     */
+    sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
+    url?: string | null;
+    label: string;
+  };
+  media?: (number | null) | Media;
+  /**
+   * What runs behind the banner copy. Leave empty for the plain dark slab. A Streak Field runs live here only while the Hero tab has no Streak Field of its own: a page draws one live field at a time, and the index ground outranks the banner, which then rests on its poster.
+   */
+  visualType?: ('media' | 'streakField') | null;
+  shader?: StreakVisualConfig;
 }
 /**
  * The works index published at /works. Hero and SEO only — the list is automatic.
@@ -14459,6 +14504,7 @@ export interface LabIndexSelect<T extends boolean = true> {
         visualType?: T;
         shader?: T | PlacedVisualConfigSelect<T>;
       };
+  banner?: T | IndexBannerSelect<T>;
   meta?:
     | T
     | {
@@ -14480,6 +14526,28 @@ export interface LabIndexSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IndexBanner_select".
+ */
+export interface IndexBannerSelect<T extends boolean = true> {
+  show?: T;
+  heading?: T;
+  body?: T;
+  link?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        sitePage?: T;
+        url?: T;
+        label?: T;
+      };
+  media?: T;
+  visualType?: T;
+  shader?: T | StreakVisualConfigSelect<T>;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
