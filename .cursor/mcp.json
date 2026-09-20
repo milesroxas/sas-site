@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "sas-cms": {
-      "url": "https://preview.suits-sandals.com/api/mcp",
+      "url": "https://www.suits-sandals.com/api/mcp",
       "headers": {
         "Authorization": "Bearer ${env:SAS_CMS_MCP_KEY}"
       }
