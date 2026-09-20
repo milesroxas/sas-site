@@ -794,7 +794,7 @@
   --text-lead: clamp(1.25rem, 1.16rem + 0.38vw, 1.5rem); /* intro/standfirst body */
   --text-lead--line-height: 1.5;
   /* Code surface type (components/ui/code-block.tsx): 13px on a 24px line.
-     Fixed, not fluid — a code listing's measure is its characters, so it must
+     Fixed, not fluid: a code listing's measure is its characters, so it must
      not restate itself between breakpoints. It sits between `text-xs` and
      `text-sm`, which is why it is a token and not an arbitrary value at the
      call site. */
