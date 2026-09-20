@@ -36,7 +36,7 @@ Canonical client-work content (clients, projects, case studies, testimonials, ap
 | Motion / 3D | Lenis, Tempus, GSAP, React Three Fiber, Three.js |
 | AI | Vercel AI SDK + OpenAI, pgvector embeddings (`/ask`) |
 | Analytics / monitoring | PostHog (analytics + replay), Sentry (errors), Vercel Speed Insights, c15t consent |
-| Tooling | pnpm, Biome, Vitest, Playwright, Storybook + Chromatic |
+| Tooling | pnpm, Biome, Vitest, Playwright, Storybook |
 
 ## Features
 
@@ -122,7 +122,6 @@ Optional — each feature is disabled when its variable is unset:
 | `NEXT_PUBLIC_REB2B_KEY` | Reb2b B2B visitor identification |
 | `NEXT_PUBLIC_C15T_URL` | c15t consent backend; unset = consent stored in the browser only |
 | `INDEXNOW_KEY` | Served at `/indexnow.txt`; pings only fire in production |
-| `CHROMATIC_PROJECT_TOKEN` | Storybook publishing (`pnpm chromatic`) |
 
 `.env` is the single env file for local dev (gitignored). Avoid `.env.local`: it silently outranks `.env`, and a bare `vercel env pull` writes a full cloud-env dump there — including a `POSTGRES_URL` that hijacks your DB. Pull cloud envs through the dev TUI instead; it writes them to `.env.*.pulled` files that Next.js never auto-loads.
 
@@ -252,7 +251,7 @@ Globals: `home`, `insights-index`, `works-index`, `header`, `footer`, and `site-
 | `pnpm payload` | Payload CLI (e.g. `pnpm payload generate:db-schema`) |
 | `pnpm lint` / `pnpm lint:fix` | Biome check / fix |
 | `pnpm test:int` / `pnpm test:e2e` / `pnpm test` | Vitest integration / Playwright E2E / both |
-| `pnpm storybook` / `pnpm chromatic` | Storybook dev server / publish to Chromatic |
+| `pnpm storybook` / `pnpm storybook:build` | Storybook dev server / static build |
 | `pnpm email` | React Email template dev server |
 | `pnpm ci` | `payload migrate` then `pnpm build` (deploy pipeline) |
 

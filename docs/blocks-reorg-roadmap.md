@@ -364,7 +364,6 @@ Sections-only top level per collection once every remaining block is nestable or
 - 2026-09-04 adds to `Blocks/Text/RichText`: one insight, two insights, many insights, insights between copy, pill list, pill list no eyebrow, pill list with insights, dark (the Paper one-, two- and many-insight frames and the "Chip List" frame).
 - B4 (2026-09-04) adds `Blocks/Lists/InsightList` (side by side, stacked, small and large marks, no marks, five insights, dark); the six Paper marks are data-URL SVG fixtures (`insightMarkFixtures`).
 - Fixtures: add `sectionFixture(blocks, overrides)` builder to `src/blocks/fixtures.ts`; regenerated payload-types will type it for free.
-- Chromatic: expect one baseline-reset PR (A) and one additive PR (B). TurboSnap runs on every push regardless.
 
 ---
 
@@ -378,7 +377,6 @@ Sections-only top level per collection once every remaining block is nestable or
 | migrate:create drift vs main (parallel workspaces) | `pnpm check:migrations:drift`; regenerate after rebase per conductor rules |
 | Enum hazards in D | normalize-first UPDATEs, one enum change per migration, `check:migrations` gate |
 | Version history restores after D drop columns | Accepted; documented above; keep snapshot file |
-| Chromatic baseline churn | isolate retitles in one PR |
 | Editors confused mid-transition (Section plus legacy top-level blocks) | Section listed first, button says Add Section; short Loom/notes for editors; Phase D removes the duplicates from the drawer |
 
 ---
