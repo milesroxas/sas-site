@@ -9522,6 +9522,10 @@ export interface PayloadMcpApiKey {
     find?: boolean | null;
     update?: boolean | null;
   };
+  /**
+   * Allow `pnpm cms:upload` with this key. Uploads always land internal: nothing renders publicly until a person approves it.
+   */
+  uploadMedia?: boolean | null;
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
@@ -13065,6 +13069,7 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         find?: T;
         update?: T;
       };
+  uploadMedia?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;

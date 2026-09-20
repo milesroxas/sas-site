@@ -18,7 +18,7 @@ The principle: model the author's mental model, and the author is an LLM. It is 
 | Document boundary | `src/plugins/figures/index.ts` | Validation that answers on drafts, save-time diagram geometry |
 | Markdown input | `src/fields/markdownInput.ts` | The write-only `markdown` and `replace` pair |
 | Code block | `src/blocks/Code/` | One config, offered inline in a post body and in the Section run; `prism-languages.ts` adds GLSL and shell |
-| Upload script | `scripts/cms-upload.ts` | `pnpm cms:upload`, always internal |
+| Upload | `scripts/cms-upload.ts`, `src/endpoints/agentMedia.ts` | `pnpm cms:upload` with the MCP key; the endpoint enforces internal |
 | Corpus | `src/features/figures/corpus.ts` | Eight charts and eight diagrams: fixtures for stories and tests |
 
 Import the server-safe surface from `@/features/figures` (no React). Renderers import from `@/features/figures/ui/...` directly.
@@ -126,14 +126,22 @@ Rules live in `globals.css` under "Figures".
 ## Media upload
 
 ```bash
-pnpm cms:upload <file> --alt "<text>" [--caption "<text>"] [--library <id>]
+pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"]
 ```
 
-REST as a named team member (`CMS_UPLOAD_EMAIL`, `CMS_UPLOAD_PASSWORD`), never the Local API. Requires alt text, caps size, re-encodes through sharp (which drops EXIF and GPS), and sets `usageStatus: internal` explicitly, then refuses to report success for anything that did not land internal. Prints the id. A person approves in the admin before the image can render publicly. Look at a screenshot of the admin before uploading it: metadata is stripped, pixels are not.
+MCP cannot carry a binary, so this is the one way an agent adds media. It uses the MCP API key the agent already has (`CMS_MCP_API_KEY`, the same string the MCP client sends) and posts to `POST /api/agent/media` (`src/endpoints/agentMedia.ts`). Target site: `CMS_UPLOAD_SERVER`, else `NEXT_PUBLIC_SERVER_URL`. Prints the media id.
+
+An MCP key fails every team-only REST rule by design, so plain `POST /api/media` stays closed to it. The endpoint is the narrow door instead of a wider rule:
+
+- It authenticates the way `/api/mcp` does (`Authorization: Bearer <key>`, looked up by HMAC index) and then acts as the team member the key is linked to, with access control on.
+- The key needs its own capability, **Upload media** (System, API Keys), off by default like every other capability. A key that can read media cannot add it until a team member ticks it.
+- Everything that matters is enforced on the server, where a client cannot skip it: alt text required, an Asset Library required (every media document is filed; find the id with the `asset-libraries` find tool), the type decided from the bytes and never from the filename or declared mimetype, a size ceiling, re-encoding through sharp (which drops EXIF and GPS), and `usageStatus: internal`. Only `alt`, `caption` and `assetLibrary` are read from the request; asking for `public-approved` does nothing.
+
+A person approves in the admin before the image can render publicly. Look at a screenshot of the admin before uploading it: metadata is stripped, pixels are not.
 
 ## The MCP key for article authoring
 
-Create a dedicated key (admin, System, API Keys) linked to the team member whose name should be on the drafts. Grant: find, create and update on the surface being authored and on `lab-projects` or `case-studies` when the piece has a story record; find on `media`. No delete. Publishing stays a human action.
+Any key works, and an existing authoring key needs nothing new for figures or Markdown: the blocks live inside collections it already covers. Tick **Upload media** on it to let `pnpm cms:upload` use it. For least privilege, a key for article work wants find, create and update on the surface being authored and on `lab-projects` or `case-studies` when the piece has a story record, find on `media` and `asset-libraries`, and no delete. Publishing stays a human action.
 
 ## Acceptance corpus and what is still open
 

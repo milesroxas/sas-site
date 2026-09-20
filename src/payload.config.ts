@@ -31,6 +31,7 @@ import { Subscribers } from './collections/Subscribers'
 import { Testimonials } from './collections/Testimonials'
 import { Users } from './collections/Users'
 import { WorkPages } from './collections/WorkPages'
+import { agentMediaEndpoint } from './endpoints/agentMedia'
 import { askEndpoints } from './endpoints/ask'
 import { geoEndpoint } from './endpoints/geo'
 import { newsletterPublicEndpoints } from './endpoints/newsletter'
@@ -168,7 +169,7 @@ export default buildConfig({
     Users,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  endpoints: [...newsletterPublicEndpoints, ...askEndpoints, geoEndpoint],
+  endpoints: [...newsletterPublicEndpoints, ...askEndpoints, geoEndpoint, agentMediaEndpoint],
   plugins: [
     ...plugins,
     s3Storage({

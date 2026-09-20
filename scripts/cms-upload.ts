@@ -1,33 +1,34 @@
-import { readFile, stat } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { basename, extname } from 'node:path'
-import sharp from 'sharp'
 
 /**
  * Uploads one image to the CMS media library as INTERNAL, for an agent's
  * screenshots and figures (docs/figures.md). MCP cannot carry a binary, so this
  * is the one way an agent adds media.
  *
- * It goes through REST as a named team member, never the Local API: access
- * control, the alt-text rule and the folder hooks all apply exactly as they do
- * to a person in the admin. Every upload lands `usageStatus: internal`, set
- * here explicitly because the collection's own default is public. Nothing this
- * script uploads renders on the site until a person opens it in the admin and
- * approves it. That gate is the point; do not add a flag around it.
+ * It uses the MCP API key the agent already has. The key is sent to
+ * `POST /api/agent/media`, which acts as the team member the key is linked to
+ * and needs the key's "Upload media" capability ticked (System, API Keys).
+ * That endpoint, not this script, enforces what matters: alt text, an allowed
+ * image type, the size ceiling, re-encoding that drops EXIF and GPS, and
+ * `usageStatus: internal`. Nothing uploaded here renders on the site until a
+ * person approves it in the admin. That gate is the point.
  *
- * The image is re-encoded through sharp, which drops EXIF, GPS and every other
- * metadata block. A screenshot of the admin can still show an email address or
- * a key in its pixels: look at the image before uploading it.
+ * Metadata is stripped for you; pixels are not. A screenshot of the admin or a
+ * terminal can still show an email address or a key: look at it first.
  *
- *   pnpm cms:upload <file> --alt "<text>" [--caption "<text>"] [--library <id>]
+ *   pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"]
  *
- * Env: CMS_UPLOAD_EMAIL and CMS_UPLOAD_PASSWORD (a team member's login), and
- * NEXT_PUBLIC_SERVER_URL for the target (the workspace dev server by default).
- * Prints the new media id on stdout and nothing else, so it can be captured.
+ * `--library` is the Asset Library the image is filed under (every media
+ * document is filed). Find its id with the MCP `asset-libraries` find tool.
+ *
+ * Env: CMS_MCP_API_KEY (the same key the MCP client uses), and the site to
+ * upload to: CMS_UPLOAD_SERVER, else NEXT_PUBLIC_SERVER_URL (the workspace dev
+ * server). Prints the new media id on stdout and nothing else, so it can be
+ * captured.
  */
 
-/** Screenshots and figures. Anything heavier is a video or a mistake, and belongs in the admin. */
-const MAX_BYTES = 8 * 1024 * 1024
-
+/** Only to label the multipart part. The server decides the type from the bytes. */
 const TYPES: Record<string, string> = {
   '.jpeg': 'image/jpeg',
   '.jpg': 'image/jpeg',
@@ -50,95 +51,56 @@ const flag = (name: string): string | undefined => {
 const alt = flag('alt')?.trim()
 const caption = flag('caption')?.trim()
 const library = flag('library')
-const { CMS_UPLOAD_EMAIL: email, CMS_UPLOAD_PASSWORD: password } = process.env
-const server = process.env.NEXT_PUBLIC_SERVER_URL?.replace(/\/$/, '')
+const key = process.env.CMS_MCP_API_KEY
+const server = (process.env.CMS_UPLOAD_SERVER ?? process.env.NEXT_PUBLIC_SERVER_URL)?.replace(
+  /\/$/,
+  '',
+)
 
-if (!file)
-  fail('usage: pnpm cms:upload <file> --alt "<text>" [--caption "<text>"] [--library <id>]')
+if (!file) fail('usage: pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"]')
 if (!alt) fail('--alt is required: say what the image shows, for someone who cannot see it.')
-if (library && !/^\d+$/.test(library)) fail('--library takes a numeric asset library id.')
-if (!email || !password) fail('set CMS_UPLOAD_EMAIL and CMS_UPLOAD_PASSWORD (a team member login).')
-if (!server) fail('set NEXT_PUBLIC_SERVER_URL to the site to upload to.')
+if (!library || !/^\d+$/.test(library))
+  fail(
+    '--library <id> is required: the Asset Library to file this under (asset-libraries find tool).',
+  )
+if (!key) fail('set CMS_MCP_API_KEY to the MCP API key (the one the MCP client uses).')
+if (!server) fail('set CMS_UPLOAD_SERVER (or NEXT_PUBLIC_SERVER_URL) to the site to upload to.')
 
 const type = TYPES[extname(file).toLowerCase()]
 if (!type) fail(`unsupported file type. Use one of: ${Object.keys(TYPES).join(', ')}`)
-const { size } = await stat(file).catch(() => fail(`cannot read ${file}`))
-if (size > MAX_BYTES) fail(`${file} is ${size} bytes; the ceiling is ${MAX_BYTES}.`)
-
-// Re-encoding in the same format is what strips the metadata: sharp writes
-// none unless asked to keep it.
-const clean = await sharp(await readFile(file))
-  .rotate() // bake the EXIF orientation in before it is dropped
-  .toFormat(type === 'image/jpeg' ? 'jpeg' : type === 'image/png' ? 'png' : 'webp')
-  .toBuffer()
-
-/** Payload's error envelope, reduced to the messages a person can act on. */
-const errorsOf = async (response: Response): Promise<string> => {
-  const body = (await response.json().catch(() => null)) as {
-    errors?: { data?: { errors?: { message: string; path: string }[] }; message: string }[]
-  } | null
-  const messages = body?.errors?.flatMap((error) => [
-    error.message,
-    ...(error.data?.errors?.map((field) => `${field.path}: ${field.message}`) ?? []),
-  ])
-  return messages?.join('; ') || `${response.status} ${response.statusText}`
-}
-
-const login = await fetch(`${server}/api/users/login`, {
-  body: JSON.stringify({ email, password }),
-  headers: { 'Content-Type': 'application/json' },
-  method: 'POST',
-})
-if (!login.ok) fail(`login failed: ${await errorsOf(login)}`)
-const { token } = (await login.json()) as { token?: string }
-if (!token) fail('login returned no token.')
-
-/** Media captions are rich text; a script caption is one plain paragraph of it. */
-const paragraph = (text: string) => ({
-  root: {
-    children: [
-      {
-        children: [
-          { detail: 0, format: 0, mode: 'normal', style: '', text, type: 'text', version: 1 },
-        ],
-        direction: 'ltr',
-        format: '',
-        indent: 0,
-        type: 'paragraph',
-        version: 1,
-      },
-    ],
-    direction: 'ltr',
-    format: '',
-    indent: 0,
-    type: 'root',
-    version: 1,
-  },
-})
+const bytes = await readFile(file).catch(() => fail(`cannot read ${file}`))
 
 const form = new FormData()
-form.set('file', new Blob([new Uint8Array(clean)], { type }), basename(file))
+form.set('file', new Blob([new Uint8Array(bytes)], { type }), basename(file))
 form.set(
   '_payload',
   JSON.stringify({
     alt,
-    usageStatus: 'internal',
-    ...(caption ? { caption: paragraph(caption) } : {}),
-    ...(library ? { assetLibrary: Number(library) } : {}),
+    assetLibrary: Number(library),
+    ...(caption ? { caption } : {}),
   }),
 )
 
-const upload = await fetch(`${server}/api/media`, {
+const response = await fetch(`${server}/api/agent/media`, {
   body: form,
-  headers: { Authorization: `JWT ${token}` },
+  headers: { Authorization: `Bearer ${key}` },
   method: 'POST',
-})
-if (!upload.ok) fail(`upload failed: ${await errorsOf(upload)}`)
+}).catch((error: Error) => fail(`cannot reach ${server}: ${error.message}`))
 
-const { doc } = (await upload.json()) as { doc?: { id: number; usageStatus?: string } }
-// Belt and braces on the one property that matters: refuse to report success
-// for anything that did not land internal.
-if (doc?.usageStatus !== 'internal')
-  fail(`uploaded media ${doc?.id ?? '(unknown)'} is not internal. Fix it in the admin now.`)
+const body = (await response.json().catch(() => null)) as {
+  errors?: { message: string }[]
+  id?: number
+  usageStatus?: string
+} | null
 
-console.log(doc.id)
+if (!response.ok)
+  fail(
+    body?.errors?.map((error) => error.message).join('; ') ||
+      `${response.status} ${response.statusText}`,
+  )
+// Belt and braces on the one property that matters: never report success for
+// anything that did not land internal.
+if (body?.usageStatus !== 'internal')
+  fail(`uploaded media ${body?.id ?? '(unknown)'} is not internal. Fix it in the admin now.`)
+
+console.log(body.id)

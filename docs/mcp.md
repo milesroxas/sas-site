@@ -77,8 +77,10 @@ The server's MCP instructions tell agents to:
 - Find a document first and edit from its current state before updating.
 - Pass document **ids** for relationship fields (look them up with the relevant find tool).
 - Never attempt media upload over MCP; reference existing media by id. New images go through
-  `pnpm cms:upload`, which always lands them internal for a person to approve
-  ([figures.md](figures.md#media-upload)).
+  `pnpm cms:upload`, which sends the same key to `POST /api/agent/media`. That endpoint needs the
+  key's **Upload media** capability, acts as the key's linked team member, and always lands the
+  file internal for a person to approve ([figures.md](figures.md#media-upload)). It is the one
+  REST door open to an MCP key; every team-only rule stays closed to it.
 - Asset libraries require `organization` and `project` ids; omit `rootFolder` to auto-create one.
 - Case Study and Lab Project narrative is section-owned: `context`, `challenge`, `strategy`,
   `approach`, `outcomeSummary`, and `learnings` each contain `body` plus ordered `storyBeats`.

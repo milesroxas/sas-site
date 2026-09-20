@@ -244,6 +244,27 @@ const withCapabilityControls = (fields: Field[]): Field[] => {
   return transformed
 }
 
+/**
+ * The one capability that is not an MCP tool. MCP cannot carry a binary, so
+ * media is added through `POST /api/agent/media` (`endpoints/agentMedia.ts`)
+ * with the same key, and that endpoint reads this checkbox. It is its own
+ * field rather than `create` on the media entry above because that would
+ * register a create tool that can never receive a file. Off by default, like
+ * every capability: a key that can read media cannot add it until a team
+ * member says so.
+ */
+const uploadMediaCapability: Field = {
+  name: 'uploadMedia',
+  type: 'checkbox',
+  label: 'Upload media',
+  defaultValue: false,
+  admin: {
+    position: 'sidebar',
+    description:
+      'Allow `pnpm cms:upload` with this key. Uploads always land internal: nothing renders publicly until a person approves it.',
+  },
+}
+
 export const mcp: Plugin = mcpPlugin({
   collections,
   globals,
@@ -259,7 +280,7 @@ export const mcp: Plugin = mcpPlugin({
         'Relationship fields take document ids — look them up with the relevant find tool.',
         'Omit slug, key, and generateSlug fields on create and update: slugs auto-generate from the title or name, and any value you send is normalized to a URL-safe slug.',
         'Asset libraries require organization and project ids; omit rootFolder to auto-create one.',
-        'Media cannot be uploaded here; reference existing media documents by id.',
+        'Media cannot be uploaded over MCP; reference existing media documents by id. New images go through `pnpm cms:upload`, which lands them internal for a person to approve.',
         'Inquiries, form submissions, subscribers, and Ask questions are read-only and hold visitor contact details: read them for analysis and triage, and never copy that PII into published content or send it anywhere outside this workspace.',
       ].join(' '),
     },
@@ -278,6 +299,6 @@ export const mcp: Plugin = mcpPlugin({
       update: authenticated,
     },
     admin: { ...collection.admin, group: 'System' },
-    fields: withCapabilityControls(collection.fields),
+    fields: [...withCapabilityControls(collection.fields), uploadMediaCapability],
   }),
 })

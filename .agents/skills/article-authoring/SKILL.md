@@ -11,7 +11,7 @@ You write drafts. A person reviews in live preview and publishes. Everything bel
 
 - **Drafts only.** Create and update with `draft: true`. Never publish, never set `_status: 'published'`, unless the user explicitly asks in this conversation.
 - **Find first.** Read the document, edit from its current state, keep every block's `id`. A blocks array sent without ids replaces the rows wholesale, including a person's edits.
-- **Never make media public.** Upload with `pnpm cms:upload` only. It lands internal; a person approves it. Do not set `usageStatus`.
+- **Never make media public.** Upload with `pnpm cms:upload` only. It lands internal whatever you send; a person approves it.
 - **Specs say what, never where.** No coordinates, colors, sizes or styling in a spec: those keys do not exist and are refused. If a figure needs something the spec cannot say, it is a bespoke figure (code), so ask.
 - **Every figure needs a `textAlternative`**: what it shows and the takeaway, in plain sentences, for someone who cannot see it. It is what search and Ask index.
 - **Voice rules from `AGENTS.md` apply to content**: no em dashes anywhere, including titles, captions and labels.
@@ -137,10 +137,13 @@ layout.0.blocks.2.spec (x.type: a scatter chart needs x.type number; rows[3].ms:
 ## Screenshots and images
 
 ```bash
-pnpm cms:upload ./shots/inspector.png --alt "The Studio inspector with the relief group open"
+pnpm cms:upload ./shots/inspector.png --library 12 \
+  --alt "The Studio inspector with the relief group open"
 ```
 
-Prints the media id. Before uploading a screenshot of the admin or a terminal, look at it: no email addresses, keys, tokens or client names that are not public. Metadata is stripped for you; pixels are not. Reference the id in a media block. It will not render publicly until a person approves it, and that is correct: tell the user which ids are waiting.
+It uses your MCP key (`CMS_MCP_API_KEY`) and prints the media id. `--library` is required: every media document is filed under an Asset Library, so find the right one first with the `asset-libraries` find tool (the piece's project usually has one). If the upload is refused because the key may not upload, tell the user: a team member ticks "Upload media" on the key. Do not look for another way in.
+
+Before uploading a screenshot of the admin or a terminal, look at it: no email addresses, keys, tokens or client names that are not public. Metadata is stripped for you; pixels are not. Reference the id in a media block. It lands internal and will not render publicly until a person approves it, and that is correct: tell the user which ids are waiting.
 
 ## Checking your work
 

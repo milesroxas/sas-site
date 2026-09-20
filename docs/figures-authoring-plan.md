@@ -240,7 +240,7 @@ Gates:
 - Phase 1: met in `tests/int/figures.int.spec.ts` (draft from Markdown and code as a team user with access control on; a second Markdown write is refused without `replace`). The "person edits in the admin" step was not exercised by hand.
 - Phase 2: all eight corpus charts render (Storybook); five broken specs each answer with a specific message (`spec.test.ts`); palette validated on five surfaces. The dataviz anti-pattern checklist was applied during the build, not audited independently.
 - Phase 3: all eight corpus diagrams render; no overlapping nodes or labels (asserted on the geometry, which is width-independent; checked by eye at 390 and 1440); largest spec inside budget; diagrams ship no client JavaScript of their own (they ride the block reveal every block already uses).
-- Phase 4: script and registry built. The upload was not run against a live server (media storage is the shared bucket), so its gate is open.
+- Phase 4: met. `pnpm cms:upload` was revised to use the agent's own MCP key through `POST /api/agent/media` (a per-key Upload media capability, acting as the key's linked team member, internal enforced on the server) and run against a live server: a key without the capability is refused, an allowed key lands the file internal and filed, and an anonymous read of it is 404. The first live run also found that every media document must be filed, so `--library` is required.
 
 ## Related
 
