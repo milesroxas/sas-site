@@ -6,7 +6,12 @@ import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { closingTab } from '@/fields/closing'
 import { menuPreviewFields } from '@/fields/menuPreview'
-import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/fields/pageFields'
+import {
+  contentsButtonField,
+  editorialNotesField,
+  pagePublishingFields,
+  relatedPagesField,
+} from '@/fields/pageFields'
 import { heroContentCollapsible, heroPresentationFields, pageIntroField } from '@/fields/pageHero'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
@@ -104,6 +109,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
         {
           label: 'Composition',
           fields: [
+            contentsButtonField(),
             {
               name: 'layout',
               type: 'blocks',

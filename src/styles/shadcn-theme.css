@@ -125,6 +125,27 @@
      as `ease-out-quint`. The reveal and filter-swap rules below spell out the
      same curve. */
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Critically damped spring (damping 1.0, response 0.35s, so ω = 2π / 0.35),
+     sampled as x(t) = 1 - (1 + ωt)e^(-ωt) across 500ms: no overshoot, 87% of
+     the way by 200ms, a long soft settle. For a surface that grows out of its
+     trigger. The samples assume a 500ms duration; change the two together. */
+  --ease-spring: linear(
+    0,
+    0.0755 5%,
+    0.2275 10%,
+    0.3908 15%,
+    0.5372 20%,
+    0.6575 25%,
+    0.7513 30%,
+    0.8222 35%,
+    0.8743 40%,
+    0.9389 50%,
+    0.9711 60%,
+    0.9866 70%,
+    0.9939 80%,
+    0.9972 90%,
+    1
+  );
 }
 
 /* Press micro-interaction — single source of truth for the tuning (Apple-style:

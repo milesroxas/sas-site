@@ -6,6 +6,7 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
+import { ContentsButton } from '@/features/contents'
 import { SegmentHero } from '@/heros/SegmentHero'
 import type { AudiencePage } from '@/payload-types'
 import { RelatedWorkSection, relatedWorkTerms } from '@/sections/RelatedWork'
@@ -51,6 +52,7 @@ export default async function AudiencePageRoute({ params }: SlugRouteArgs) {
           filter={{ kind: 'industries', terms: relatedWorkTerms(page.industries) }}
           items={relatedWork}
         />
+        {page.showContents && <ContentsButton />}
       </article>
       <FooterClosingSection closing={page.closing} />
     </>

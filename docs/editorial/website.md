@@ -96,6 +96,15 @@ Both work like Pages (hero + composition blocks, minus Newsletter Signup) plus a
 
 Contact is a fixed template, not a layout of blocks. Edit **Intro** (the column beside the form), pick the **Form** (questions live on Forms), and write **After sending** (the in-place receipt). The page slugged `contact` is `/contact`; every other slug is `/contact/[slug]`. Response-time copy and the default booking link come from Site Info → Inquiries. Full detail: [inquiries.md](../inquiries.md).
 
+## The Contents button
+
+Long pages can carry a floating **Contents** button: bottom right, with a ring that fills as the reader moves through the page. It opens an "On this page" list of the page's section headings and jumps to the one picked.
+
+- It is off by default. Turn on **Contents button** at the top of the **Composition** tab (Work Pages, Lab Pages, Expertise and Audience Pages) or above the body in a Post's **Content** tab.
+- The list is built from the section headings the page actually shows (the large headings that open a section), in order. There is nothing to maintain: add, rename, or reorder sections and the list follows.
+- A page with fewer than three section headings never shows the button, even when the switch is on.
+- The button stays out of the way over the opening hero and the closing band.
+
 ## Previewing and publishing
 
 - **Autosave** runs continuously while you edit; drafts are invisible to the public.

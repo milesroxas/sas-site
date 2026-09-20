@@ -8,6 +8,7 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
+import { ContentsButton } from '@/features/contents'
 import { CaseStudyHero } from '@/heros/CaseStudyHero'
 import type { CaseStudy } from '@/payload-types'
 import { introSummary, WorkIntro } from '@/sections/WorkIntro'
@@ -84,6 +85,7 @@ export default async function WorkPageRoute({ params }: SlugRouteArgs) {
           <RenderCaseStudyBlocks blocks={page.layout} page={page} study={study} />
         ) : null}
         <FeaturedWorkSection eyebrow="Explore More Work" entries={relatedEntries} />
+        {page.showContents && <ContentsButton />}
       </article>
       <FooterClosingSection closing={page.closing} />
     </>

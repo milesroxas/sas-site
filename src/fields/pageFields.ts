@@ -1,4 +1,4 @@
-import type { ArrayField, Field, RelationshipField, TextareaField } from 'payload'
+import type { ArrayField, CheckboxField, Field, RelationshipField, TextareaField } from 'payload'
 import { authenticatedField } from '@/access/authenticatedField'
 
 /**
@@ -55,6 +55,23 @@ export const relatedPagesField = (
   relationTo,
   hasMany: true,
   filterOptions: ({ id }) => ({ id: { not_in: id ? [id] : [] } }),
+})
+
+/**
+ * Opt-in for the floating Contents button on a long-form page. It sits in the
+ * tab that holds the headings it indexes (Composition, or a post's Content),
+ * so the switch is next to what it lists. Off by default: the button is for
+ * pages long enough to need it, and the editor is the judge of that.
+ */
+export const contentsButtonField = (): CheckboxField => ({
+  name: 'showContents',
+  type: 'checkbox',
+  label: 'Contents button',
+  defaultValue: false,
+  admin: {
+    description:
+      'Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.',
+  },
 })
 
 /** Sidebar publishing controls every website page collection carries. */

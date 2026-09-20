@@ -9,7 +9,7 @@ import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
 import { menuPreviewFields } from '@/fields/menuPreview'
-import { editorialNotesField } from '@/fields/pageFields'
+import { contentsButtonField, editorialNotesField } from '@/fields/pageFields'
 import { segmentPageBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
@@ -83,6 +83,7 @@ export const segmentPageCollection = <S extends SegmentPageSlug>({
         {
           label: 'Composition',
           fields: [
+            contentsButtonField(),
             {
               name: 'layout',
               type: 'blocks',

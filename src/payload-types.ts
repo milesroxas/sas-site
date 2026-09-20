@@ -414,6 +414,10 @@ export interface Post {
    * Editorial sentence under the title in the hero. Distinct from the SEO description — this one is written to be read.
    */
   standfirst?: string | null;
+  /**
+   * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
+   */
+  showContents?: boolean | null;
   content: {
     root: {
       type: string;
@@ -1519,6 +1523,10 @@ export interface WorkPage {
     mediaTreatment?: ('contained' | 'full-bleed' | 'floating' | 'background') | null;
   };
   intro?: WorkIntro;
+  /**
+   * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
+   */
+  showContents?: boolean | null;
   /**
    * Website composition only. Canonical narrative remains in the related Case Study Content record.
    */
@@ -7489,6 +7497,10 @@ export interface LabPage {
   };
   intro?: WorkIntro;
   /**
+   * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
+   */
+  showContents?: boolean | null;
+  /**
    * Website composition only. Canonical narrative remains in the related Lab Project record.
    */
   layout?:
@@ -8559,6 +8571,10 @@ export interface ExpertisePage {
   _order?: string | null;
   title: string;
   hero: SegmentHero;
+  /**
+   * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
+   */
+  showContents?: boolean | null;
   layout: (
     | SegmentSectionBlock
     | RichTransitionBlock
@@ -8777,6 +8793,10 @@ export interface AudiencePage {
   _order?: string | null;
   title: string;
   hero: SegmentHero;
+  /**
+   * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
+   */
+  showContents?: boolean | null;
   layout: (
     | SegmentSectionBlock
     | RichTransitionBlock
@@ -10625,6 +10645,7 @@ export interface PostsSelect<T extends boolean = true> {
   visualType?: T;
   shader?: T | StreakVisualConfigSelect<T>;
   standfirst?: T;
+  showContents?: T;
   content?: T;
   layout?:
     | T
@@ -10707,6 +10728,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         mediaTreatment?: T;
       };
   intro?: T | WorkIntroSelect<T>;
+  showContents?: T;
   layout?:
     | T
     | {
@@ -11231,6 +11253,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         mediaTreatment?: T;
       };
   intro?: T | WorkIntroSelect<T>;
+  showContents?: T;
   layout?:
     | T
     | {
@@ -11625,6 +11648,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
   _order?: T;
   title?: T;
   hero?: T | SegmentHeroSelect<T>;
+  showContents?: T;
   layout?:
     | T
     | {
@@ -11764,6 +11788,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
   _order?: T;
   title?: T;
   hero?: T | SegmentHeroSelect<T>;
+  showContents?: T;
   layout?:
     | T
     | {

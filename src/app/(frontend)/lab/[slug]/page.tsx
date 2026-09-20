@@ -6,6 +6,7 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
+import { ContentsButton } from '@/features/contents'
 import { LabHero } from '@/heros/LabHero'
 import type { LabProject } from '@/payload-types'
 import { introSummary, WorkIntro } from '@/sections/WorkIntro'
@@ -79,6 +80,7 @@ export default async function LabPageRoute({ params }: SlugRouteArgs) {
         {page.layout?.length ? (
           <RenderLabBlocks blocks={page.layout} page={page} project={project} />
         ) : null}
+        {page.showContents && <ContentsButton />}
       </article>
       <FooterClosingSection closing={page.closing} />
     </>

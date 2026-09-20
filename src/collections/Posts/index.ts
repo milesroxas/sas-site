@@ -11,7 +11,7 @@ import {
 import type { CollectionConfig } from 'payload'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
-import { editorialNotesField, relatedPagesField } from '@/fields/pageFields'
+import { contentsButtonField, editorialNotesField, relatedPagesField } from '@/fields/pageFields'
 import { postLayoutBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
@@ -100,6 +100,7 @@ export const Posts: CollectionConfig<'posts'> = {
                   'Editorial sentence under the title in the hero. Distinct from the SEO description — this one is written to be read.',
               },
             },
+            contentsButtonField(),
             {
               name: 'content',
               type: 'richText',

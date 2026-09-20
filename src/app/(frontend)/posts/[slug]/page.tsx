@@ -10,6 +10,7 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import RichText from '@/components/RichText'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
+import { ContentsButton } from '@/features/contents'
 
 import { PostHero } from '@/heros/PostHero'
 import { RelatedPostsSection } from '@/sections/RelatedPosts'
@@ -98,6 +99,7 @@ export default async function Post({ params: paramsPromise }: Args) {
           )}
         </div>
         <RelatedPostsSection posts={relatedPosts} />
+        {post.showContents && <ContentsButton />}
       </article>
       <FooterClosingSection closing={post.closing} />
     </>

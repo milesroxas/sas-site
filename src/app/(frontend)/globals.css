@@ -793,6 +793,13 @@
   --text-heading-3--font-weight: var(--font-weight-normal);
   --text-lead: clamp(1.25rem, 1.16rem + 0.38vw, 1.5rem); /* intro/standfirst body */
   --text-lead--line-height: 1.5;
+  /* Code surface type (components/ui/code-block.tsx): 13px on a 24px line.
+     Fixed, not fluid — a code listing's measure is its characters, so it must
+     not restate itself between breakpoints. It sits between `text-xs` and
+     `text-sm`, which is why it is a token and not an arbitrary value at the
+     call site. */
+  --text-code: 0.8125rem;
+  --text-code--line-height: 1.5rem;
 }
 
 @media (width >= 48rem) {
@@ -1183,6 +1190,26 @@ html[data-scrolled] :is([data-site-header], [data-site-footer]) {
   --input: oklch(1 0 0 / 15%);
 }
 
+/* Syntax ink for the code surface (components/ui/code-block.tsx).
+
+   The panel always renders as a dark band (`data-band="dark"`, so its ground
+   is --tertiary: 0.22 inside the light theme, 0.08 inside the dark one), which
+   is why this palette is stated once and never flips with the site theme.
+   Structural ink is deliberately absent: plain text, comments, punctuation and
+   the line-number gutter read the band's own --foreground / --muted-foreground,
+   so the surface stays one system with the rest of the site.
+
+   Hues are the site's. Keywords and entities take the two chart blues,
+   strings the --active green at its dark-theme step, numbers --brand. Every
+   step clears 4.5:1 against the lighter of the two grounds (keyword, the
+   tightest, is 4.6:1). */
+:root {
+  --syntax-keyword: var(--chart-2);
+  --syntax-entity: var(--chart-1);
+  --syntax-string: oklch(0.75 0.16 150);
+  --syntax-number: oklch(0.87 0.14 85);
+}
+
 /* Neutral composition band (`themeClasses.neutral`). Only remaps the canvas
    pair so `bg-background` / `text-foreground` inherit the stripe. Nested
    muted/secondary/accent stay on the site theme — the light stripe is close
@@ -1207,6 +1234,16 @@ html {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Floating surfaces that are objects in their own right, not controls: the
+   Contents index card, and a phone sheet that floats inside the screen's own
+   corners. Absolute, so they do not tighten with `--radius`. A plain `@theme`,
+   not `inline`: the Contents clip reads `--radius-menu-card` through `var()`,
+   and an inline token is never emitted as a variable. */
+@theme {
+  --radius-menu-card: 1.5rem;
+  --radius-sheet: 2.375rem;
 }
 
 /* Scroll-reveal sections (see shared/ui/reveal-section/RevealSection.tsx) */
@@ -1329,6 +1366,174 @@ html {
   .disclosure-body,
   .disclosure-body > * {
     transition: none;
+  }
+}
+
+/* Contents button (src/features/contents): the index card grows out of the
+   button and returns into it. The card is laid out at full size from the
+   start and revealed by a clip that opens from the button's own circle (the
+   seed), the brand's mask reveal, so nothing inside scales or reflows. A clip
+   cuts off the element's own box-shadow, so the edge comes from a
+   `drop-shadow` on the parent, which follows the clipped shape, and the wide
+   ambient shadow is a separate layer that only fades. Enter is
+   `@starting-style` on the spring, exit a shorter ease-out off `data-open`:
+   both plain transitions, so a reversal mid-flight retargets from where it
+   is. `data-animating` (use-presence) holds `will-change` for exactly the
+   length of a run. */
+.contents-card-layer {
+  --contents-seed: inset(calc(100% - 4rem) 0.5rem 0.5rem calc(100% - 4rem) round 1.75rem);
+  /* The card stays between the bars; past that the list scrolls inside it. */
+  --contents-list-max: calc(100svh - var(--header-height) - var(--footer-height) - 11rem);
+}
+
+.contents-sheet {
+  --contents-list-max: calc(100svh - 16rem);
+}
+
+.contents-shape-shadow {
+  --contents-edge: drop-shadow(0 0 1px color-mix(in oklab, var(--foreground) 22%, transparent))
+    drop-shadow(0 2px 6px rgb(0 0 0 / 0.08));
+  filter: var(--contents-edge);
+}
+
+/* The pill has no ambient layer of its own, so it carries the button's lift. */
+.contents-shape-shadow[data-lift] {
+  filter: var(--contents-edge) drop-shadow(0 8px 24px rgb(0 0 0 / 0.12));
+}
+
+.contents-card {
+  clip-path: var(--contents-seed);
+  transition: clip-path 250ms var(--ease-out-quint);
+}
+
+.contents-card-body,
+.contents-card-ambient {
+  opacity: 0;
+  transition: opacity 120ms var(--ease-out-quint);
+}
+
+.contents-card-layer[data-animating] .contents-card {
+  will-change: clip-path;
+}
+
+.contents-card-layer[data-open="true"] {
+  .contents-card {
+    clip-path: inset(0 round var(--radius-menu-card));
+    transition: clip-path 500ms var(--ease-spring);
+  }
+
+  .contents-card-body,
+  .contents-card-ambient {
+    opacity: 1;
+    transition: opacity 220ms var(--ease-out-quint) 60ms;
+  }
+
+  /* The ambient shadow is drawn for the finished card, so it waits until the
+     shape has all but arrived; any sooner and it outlines a card that is not
+     there yet. */
+  .contents-card-ambient {
+    transition-delay: 220ms;
+  }
+
+  @starting-style {
+    .contents-card {
+      clip-path: var(--contents-seed);
+    }
+
+    .contents-card-body,
+    .contents-card-ambient {
+      opacity: 0;
+    }
+  }
+}
+
+/* Arrival: the first showing of a visit is a labeled pill, swept back into
+   the button's circle from its far edge. Same clip and parent-shadow pair. */
+.contents-arrival {
+  clip-path: inset(0 0 0 calc(100% - 3.5rem) round 1.75rem);
+  transition: clip-path 500ms var(--ease-spring) 100ms;
+}
+
+.contents-arrival > * {
+  opacity: 0;
+  transition: opacity 150ms var(--ease-out-quint);
+}
+
+.contents-arrival[data-open="true"] {
+  clip-path: inset(0 round 1.75rem);
+}
+
+.contents-arrival[data-open="true"] > * {
+  opacity: 1;
+}
+
+.contents-arrival[data-animating] {
+  will-change: clip-path;
+}
+
+/* The anchor rises 12px as it fades in and leaves the same way; visibility
+   flips after the fade out so the hidden button is out of the tab order. */
+.contents-anchor {
+  visibility: hidden;
+  opacity: 0;
+  translate: 0 0.75rem;
+  transition:
+    opacity 200ms var(--ease-out-quint),
+    translate 200ms var(--ease-out-quint),
+    visibility 0s 200ms;
+}
+
+.contents-anchor[data-visible="true"] {
+  visibility: visible;
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 300ms var(--ease-out-quint),
+    translate 300ms var(--ease-out-quint),
+    visibility 0s;
+}
+
+@media (min-width: 48rem) {
+  /* The admin bar lifts the footer bar (below); the button sits on it. */
+  html[data-admin-bar] .contents-anchor {
+    bottom: calc(var(--footer-height) + var(--admin-bar-height) + 1rem);
+  }
+}
+
+/* Reduced motion: the card and the pill cross-fade in 150ms with no growth,
+   the anchor fades in place. The ring still fills, since it tracks scroll 1:1. */
+@media (prefers-reduced-motion: reduce) {
+  .contents-card-layer .contents-card,
+  .contents-card-layer[data-open="true"] .contents-card {
+    clip-path: inset(0 round var(--radius-menu-card));
+    transition: none;
+  }
+
+  .contents-card-layer .contents-shape-shadow {
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+
+  .contents-card-layer[data-open="true"] .contents-shape-shadow {
+    opacity: 1;
+
+    @starting-style {
+      opacity: 0;
+    }
+  }
+
+  .contents-card-layer .contents-card-body,
+  .contents-card-layer .contents-card-ambient {
+    transition: opacity 150ms ease;
+  }
+
+  .contents-arrival {
+    transition: none;
+  }
+
+  .contents-anchor,
+  .contents-anchor[data-visible="true"] {
+    translate: 0 0;
   }
 }
 

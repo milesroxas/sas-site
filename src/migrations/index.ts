@@ -100,6 +100,7 @@ import * as migration_20260919_184229_hero_light_leak from './20260919_184229_he
 import * as migration_20260919_200709_leak_hover_scope from './20260919_200709_leak_hover_scope';
 import * as migration_20260919_213646_figures_blocks from './20260919_213646_figures_blocks';
 import * as migration_20260920_131252_mcp_key_upload_media from './20260920_131252_mcp_key_upload_media';
+import * as migration_20260920_155431_contents_button from './20260920_155431_contents_button';
 
 export const migrations = [
   {
@@ -610,6 +611,11 @@ export const migrations = [
   {
     up: migration_20260920_131252_mcp_key_upload_media.up,
     down: migration_20260920_131252_mcp_key_upload_media.down,
-    name: '20260920_131252_mcp_key_upload_media'
+    name: '20260920_131252_mcp_key_upload_media',
+  },
+  {
+    up: migration_20260920_155431_contents_button.up,
+    down: migration_20260920_155431_contents_button.down,
+    name: '20260920_155431_contents_button'
   },
 ];

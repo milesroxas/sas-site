@@ -10,26 +10,13 @@ import {
   INTERNAL_TRAFFIC_COOKIE,
   INTERNAL_TRAFFIC_PARAM,
 } from '@/utilities/analyticsScope'
+import { whenIdle } from '@/utilities/whenIdle'
 
 const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
 const ingestHost = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com'
 
 const MISSING_KEY_MESSAGE =
   'NEXT_PUBLIC_POSTHOG_KEY variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once NEXT_PUBLIC_POSTHOG_KEY is configured'
-
-/**
- * Run once the main thread is free, so the SDK download never competes with
- * hero media during the hydration commit (audit P1-7). The timeout keeps a
- * busy page from starving analytics entirely.
- */
-function whenIdle(run: () => void): () => void {
-  if (typeof window.requestIdleCallback !== 'function') {
-    const timer = window.setTimeout(run, 1)
-    return () => window.clearTimeout(timer)
-  }
-  const handle = window.requestIdleCallback(run, { timeout: 2000 })
-  return () => window.cancelIdleCallback(handle)
-}
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000
 

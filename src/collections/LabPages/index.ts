@@ -4,7 +4,12 @@ import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { labBlocks } from '@/blocks/lab/config'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
-import { editorialNotesField, pagePublishingFields, relatedPagesField } from '@/fields/pageFields'
+import {
+  contentsButtonField,
+  editorialNotesField,
+  pagePublishingFields,
+  relatedPagesField,
+} from '@/fields/pageFields'
 import { heroContentCollapsible, heroPresentationFields, pageIntroField } from '@/fields/pageHero'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
@@ -104,6 +109,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
         {
           label: 'Composition',
           fields: [
+            contentsButtonField(),
             {
               name: 'layout',
               type: 'blocks',
