@@ -1174,7 +1174,9 @@ html[data-scrolled] :is([data-site-header], [data-site-footer]) {
 /* Pre-hydration chrome pin, plate half: the store's pinned state is a
    transparent plate (`bg-transparent` in HeaderBar / FooterBar) so the band's
    media runs under the bar. Match it for the same window. Unlayered on
-   purpose: it has to beat the `bg-background` utility the bars render with. */
+   purpose: it has to beat the `bg-background` utility the bars render with.
+   This is the whole pin for a `site` band (the lab opening): its bars keep
+   the visitor's palette from `html[data-theme]`, so only the plate lifts. */
 :root:has([data-hero-band-pin])
   :is([data-site-header], [data-site-footer]):not([data-chrome-live]) {
   background-color: transparent;

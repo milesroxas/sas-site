@@ -2,7 +2,7 @@
 
 import type React from 'react'
 import { useHydrated } from '@/hooks/use-hydrated'
-import { useChromeBarTheme } from '@/providers/ChromeTheme'
+import { chromePinPalette, useChromeBarTheme } from '@/providers/ChromeTheme'
 import { cn } from '@/utilities/ui'
 
 /**
@@ -28,7 +28,7 @@ export const FooterBar: React.FC<{ children: React.ReactNode }> = ({ children })
     <footer
       data-site-footer
       data-chrome-live={live ? '' : undefined}
-      data-theme={heroTheme ?? undefined}
+      data-theme={chromePinPalette(heroTheme)}
       className={cn(
         'fixed inset-x-0 bottom-0 z-30 h-(--footer-bar-height) text-foreground transition-[height,background-color,color] duration-300 motion-reduce:transition-none',
         heroTheme ? 'bg-transparent' : 'bg-background',

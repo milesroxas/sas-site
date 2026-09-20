@@ -67,6 +67,14 @@ type Story = StoryObj<typeof meta>
 /** The media variant: copy low on the left, a 16:9 plate holding the right half. */
 export const Default: Story = {}
 
+/**
+ * The opening paints in the visitor's theme (`HeroBand` `theme="site"`), so
+ * every story follows the toolbar; this one holds the dark side for review.
+ */
+export const DarkTheme: Story = {
+  globals: { theme: 'dark' },
+}
+
 /** No upload and no effect: the copy column alone on an open field. */
 export const NoMedia: Story = {
   args: {

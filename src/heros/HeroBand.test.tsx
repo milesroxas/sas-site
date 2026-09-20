@@ -24,7 +24,9 @@ const rect = (top: number, bottom: number) =>
 const measure = function (this: Element) {
   if (this.hasAttribute('data-site-header')) return rect(0, 64)
   if (this.hasAttribute('data-site-footer')) return rect(VIEWPORT - 56, VIEWPORT)
-  if (this.hasAttribute('data-theme')) return rect(band.top - scrollY, band.bottom - scrollY)
+  // The band: a fixed palette stamps `data-theme`, a `site` band only its pin.
+  if (this.hasAttribute('data-theme') || this.hasAttribute('data-hero-band-pin'))
+    return rect(band.top - scrollY, band.bottom - scrollY)
   return rect(0, 0)
 }
 
@@ -102,6 +104,21 @@ describe('HeroBand', () => {
     const { getByTestId, getByText } = mountWithProbe()
     expect(getByText('band').getAttribute('data-theme')).toBe('dark')
     expect(getByTestId('probe').textContent).toBe('dark/dark')
+  })
+
+  it('pins the bars to the site theme and stamps no palette for a site band', () => {
+    const { getByTestId, getByText } = render(
+      <ChromeThemeProvider>
+        <ChromeProbe />
+        <HeroBand pinsChromeAtLoad theme="site">
+          band
+        </HeroBand>
+      </ChromeThemeProvider>,
+    )
+    expect(getByText('band').hasAttribute('data-theme')).toBe(false)
+    expect(getByTestId('probe').textContent).toBe('site/site')
+    scrollTo(VIEWPORT)
+    expect(getByTestId('probe').textContent).toBe('null/null')
   })
 
   it('releases the footer first, then the header, as the band scrolls out', () => {
@@ -212,6 +229,11 @@ describe('HeroBand', () => {
     it('stamps a light palette when the band is light', () => {
       const { getByText } = mountBand({ pinsChromeAtLoad: true, theme: 'light' })
       expect(getByText('band').getAttribute('data-hero-band-pin')).toBe('light')
+    })
+
+    it('stamps the site pin, which lifts the plates and restates no palette', () => {
+      const { getByText } = mountBand({ pinsChromeAtLoad: true, theme: 'site' })
+      expect(getByText('band').getAttribute('data-hero-band-pin')).toBe('site')
     })
   })
 

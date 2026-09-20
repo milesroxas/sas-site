@@ -5,18 +5,29 @@ import { createContext, use, useState, useSyncExternalStore } from 'react'
 import type { Theme } from '@/providers/Theme/types'
 
 /**
- * The palette each fixed chrome bar paints in: `null` follows the visitor's
- * site theme (`html[data-theme]`), a `Theme` pins the bar to that palette
- * while something underneath it (a dark hero band) asks for it.
+ * What a hero band pins a bar to: a fixed palette, or `site` for a band that
+ * paints in the visitor's own theme. Either way the bar lifts its plate so
+ * the band runs under it; only a fixed palette restates the bar's ink.
+ */
+export type ChromePin = Theme | 'site'
+
+/**
+ * The palette each fixed chrome bar paints in: `null` is the resting state
+ * (the visitor's site theme, `html[data-theme]`, on a solid plate), a
+ * `ChromePin` holds the bar over a hero band while the band is under it.
  *
  * Header and footer are separate values because they leave a hero at
  * different scroll positions: the footer clears the band first, the header
  * last.
  */
 export type ChromeTheme = {
-  header: Theme | null
-  footer: Theme | null
+  header: ChromePin | null
+  footer: ChromePin | null
 }
+
+/** The `data-theme` a pinned bar stamps: none for `site`, which inherits `html[data-theme]`. */
+export const chromePinPalette = (pin: ChromePin | null): Theme | undefined =>
+  pin === null || pin === 'site' ? undefined : pin
 
 export type ChromeBar = keyof ChromeTheme
 
@@ -81,8 +92,8 @@ export const useChromeThemeStore = (): ChromeThemeStore =>
 
 const getServerSnapshot = () => null
 
-/** The palette one bar is pinned to, or `null` for the site theme. Re-renders only when that bar's value changes. */
-export function useChromeBarTheme(bar: ChromeBar): Theme | null {
+/** What one bar is pinned to, or `null` at rest. Re-renders only when that bar's value changes. */
+export function useChromeBarTheme(bar: ChromeBar): ChromePin | null {
   const store = useChromeThemeStore()
   return useSyncExternalStore(store.subscribe, () => store.read()[bar], getServerSnapshot)
 }

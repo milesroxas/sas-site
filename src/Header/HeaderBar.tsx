@@ -2,7 +2,7 @@
 
 import type React from 'react'
 import { useHydrated } from '@/hooks/use-hydrated'
-import { useChromeBarTheme } from '@/providers/ChromeTheme'
+import { chromePinPalette, useChromeBarTheme } from '@/providers/ChromeTheme'
 import { cn } from '@/utilities/ui'
 
 /**
@@ -31,7 +31,7 @@ export const HeaderBar: React.FC<{ menuOpen: boolean; children: React.ReactNode 
     <header
       data-site-header
       data-chrome-live={live ? '' : undefined}
-      data-theme={pinned ?? undefined}
+      data-theme={chromePinPalette(pinned)}
       className={cn(
         'fixed inset-x-0 top-0 z-50 h-(--header-bar-height) text-foreground transition-[height,background-color,color] duration-300 motion-reduce:transition-none',
         menuOpen || pinned ? 'bg-transparent' : 'bg-background',

@@ -46,7 +46,7 @@ const BuiltWith: React.FC<{ technologies: LabProject['technologies'] }> = ({ tec
 }
 
 /**
- * Lab page opening (Paper "Lab Page Hero", light and media variants).
+ * Lab page opening (Paper "Lab Page Hero", media and no-media variants).
  *
  * One composition, no layout variants: the copy sits low on the left of a
  * full-viewport field, the effect grounds that whole field behind it, and the
@@ -76,7 +76,9 @@ export const LabHero = ({ page, project }: { page: LabPage; project: LabProject 
       as="header"
       className="relative isolate -mt-(--header-height) flex min-h-svh flex-col overflow-clip bg-background pt-(--header-height) pb-(--footer-height) text-foreground"
       pinsChromeAtLoad
-      theme="light"
+      // The lab opening is a page surface, not a fixed-palette band: it
+      // paints in the visitor's theme, like the article under it.
+      theme="site"
     >
       <HeroGround ground={ground} handoff={!media} />
 

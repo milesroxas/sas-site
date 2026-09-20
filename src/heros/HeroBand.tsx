@@ -13,8 +13,13 @@ import {
 } from 'react'
 import { onChromeScroll, pageFrameFrozen } from '@/components/SiteChrome/chrome-scroll'
 import { leakScope } from '@/features/immersive/visual'
-import { CHROME_THEME_SITE, type ChromeBar, useChromeThemeStore } from '@/providers/ChromeTheme'
-import type { Theme } from '@/providers/Theme/types'
+import {
+  CHROME_THEME_SITE,
+  type ChromeBar,
+  type ChromePin,
+  chromePinPalette,
+  useChromeThemeStore,
+} from '@/providers/ChromeTheme'
 import { HERO_BAND_THEME } from './band-theme'
 
 /** How a band plays the page intro (globals.css "Page intro"). */
@@ -138,7 +143,7 @@ function scrolledBarHeight(bar: ChromeBar, element: HTMLElement): number {
  * before the next paint: the bars go straight to the band's palette instead
  * of painting the site theme for a frame and then fading.
  */
-function useHeroChromeTheme(ref: RefObject<HTMLElement | null>, theme: Theme) {
+function useHeroChromeTheme(ref: RefObject<HTMLElement | null>, theme: ChromePin) {
   const store = useChromeThemeStore()
 
   useLayoutEffect(() => {
@@ -214,8 +219,12 @@ function useHeroChromeTheme(ref: RefObject<HTMLElement | null>, theme: Theme) {
 type HeroBandProps = React.HTMLAttributes<HTMLElement> & {
   /** Root element; heroes are landmarks or sections, never anonymous boxes by default. */
   as?: 'div' | 'header' | 'section'
-  /** The band's own palette. Pinned on the element and mirrored onto the chrome above it. */
-  theme?: Theme
+  /**
+   * The band's palette, mirrored onto the chrome above it. A fixed palette is
+   * pinned on the element; `site` pins nothing, so the band (and the bars
+   * over it) paint in the visitor's theme and follow the toggle.
+   */
+  theme?: ChromePin
   /**
    * The band sits under both fixed bars at rest (it pulls under the header
    * and fills the first screen), so the bars should already be on its
@@ -237,10 +246,11 @@ type HeroBandProps = React.HTMLAttributes<HTMLElement> & {
 }
 
 /**
- * The root of a hero that paints its own palette: stamps `data-theme` on the
- * band (the same section-level pin every hero uses) and keeps the fixed
- * header and footer on that palette while they sit fully over it. One prop
- * drives both, so the band and the chrome over it can never disagree.
+ * The root of a hero band: stamps `data-theme` on the band when it paints its
+ * own palette (the same section-level pin every hero uses; a `site` band
+ * inherits `html[data-theme]` instead) and keeps the fixed header and footer
+ * on the band's palette while they sit fully over it. One prop drives both,
+ * so the band and the chrome over it can never disagree.
  */
 export const HeroBand: React.FC<HeroBandProps> = ({
   as = 'section',
@@ -257,7 +267,7 @@ export const HeroBand: React.FC<HeroBandProps> = ({
     as,
     {
       ...props,
-      'data-theme': theme,
+      'data-theme': chromePinPalette(theme),
       // The band is the opening's hover scope: a light leak in the hero
       // answers the hero's own links and copy, and nothing below it.
       ...leakScope(),
