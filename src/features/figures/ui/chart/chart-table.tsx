@@ -10,7 +10,9 @@ import { formatValue, formatX } from './model'
 export const ChartTable = ({ caption, spec }: { caption: string; spec: ChartSpec }) => (
   <section
     aria-label={`${caption}, data table`}
-    className="max-h-96 overflow-auto rounded-md border border-border"
+    className="max-h-96 overflow-auto overscroll-contain rounded-md border border-border"
+    // Root Lenis preventDefaults wheel and touch to drive the page; this hands both axes back to the table.
+    data-lenis-prevent
     // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be keyboard reachable (WCAG 2.1.1).
     tabIndex={0}
   >

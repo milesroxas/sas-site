@@ -13,7 +13,7 @@ The principle: model the author's mental model, and the author is an LLM. It is 
 | Spec schemas | `src/features/figures/spec/` | `chart.ts`, `diagram.ts` (zod), `limits.ts` (every ceiling, stated once), `read.ts` (the one parser), `json-schema.ts` (the same schemas as JSON Schema for the admin editor, `payload-types` and MCP) |
 | Save-time layout | `src/features/figures/layout/` | `graph.ts` (ELK, flow and state), `sequence.ts` and `timeline.ts` (arithmetic, computed at render), `index.ts` (`LAYOUT_VERSION`, spec hash, budget, `currentLayout`) |
 | Bespoke registry | `src/features/figures/registry/` | `definitions.ts` (ids, prop schemas, text alternatives: data only), `components.tsx` (the component per id) |
-| Renderers | `src/features/figures/ui/` | `figure-frame.tsx` (shared shell), `chart/` (model, table, legend, lazy canvas), `diagram/` (server SVG), `bespoke/` |
+| Renderers | `src/features/figures/ui/` | `figure-frame.tsx` (shared shell), `canvas.ts` (how a drawing sizes to its frame), `text-lines.tsx` (the one way SVG type is set), `chart/` (model, table, legend, lazy canvas), `diagram/` (server SVG), `bespoke/` |
 | Blocks | `src/blocks/figures/` | `chart`, `diagram`, `bespokeFigure` configs and components, `shared.ts` (frame fields), `spec-field.ts` |
 | Document boundary | `src/plugins/figures/index.ts` | Validation that answers on drafts, save-time diagram geometry |
 | Markdown input | `src/fields/markdownInput.ts` | The write-only `markdown` and `replace` pair |
@@ -68,7 +68,9 @@ Flow and state are laid out by ELK when the document is saved, and the result is
 
 `geometry` is never read from the request. The plugin reuses the saved geometry when the spec hash and layout version still match and recomputes otherwise, so it cannot be forged or hand-placed. The page checks the same thing before drawing (`currentLayout`); a stale or unreadable layout falls back to the list view, which only happens in a draft preview between an autosave and the next full save.
 
-Narrow frames: a figure with two forms shows whichever fits its own width, by container query (`TwoForms` in `diagram-figure.tsx`), so a `text`-width figure on a desktop gets the narrow form too. A drawing never shrinks below 80% (14px labels stay above 11px). One without a second form scrolls sideways inside its frame, which is focusable: the one accepted exception to no horizontal scroll.
+Narrow frames: a figure with two forms shows whichever fits its own width, by container query (`TwoForms` in `diagram-figure.tsx`), so a `text`-width figure on a desktop gets the narrow form too. A left-to-right graph swaps to its stored top-down twin, a timeline to a stepped run down one rail, and a sequence to lifelines on a phone's pitch with each label run across the canvas above its arrow (four actors fit a 320px phone). A drawing fills its frame up to 1:1 and never shrinks below 80% (14px labels stay above 11px): `ui/canvas.ts`, which bespoke drawings use too. What still cannot fit (a top-down graph wider than a small phone, a sequence of five or more actors) scrolls sideways inside its frame, which is focusable and carries `scroll-fade-x`, so the cut edge reads as "more this way": the one accepted exception to no horizontal scroll.
+
+SVG type goes through `TextLines` (`ui/text-lines.tsx`): pre-wrapped lines centred on a point with an explicit `dy`. Do not centre with `dominant-baseline`: WebKit does not pass it from a `<text>` to its `<tspan>`s, so wrapped labels sit high in Safari and on every iOS browser.
 
 Bump `LAYOUT_VERSION` when node metrics, spacing or routing change. Stored geometry from the old version stops drawing (list view) until the document is next saved.
 
@@ -83,7 +85,8 @@ Adding one:
 1. Add the id, label, prop schema and text alternative to `registry/definitions.ts`. Ids end in a version and are permanent: a changed figure is a new id.
 2. Add the component to `registry/components.tsx`. The `satisfies` check fails the build if an id has no component or the props disagree.
 3. Build it as a client component whose server render at the starting props is a complete drawing: that render is the static fallback. Put its controls in the first render so hydration never moves the page.
-4. Add a story.
+4. Draw it on a canvas a phone can hold (about 340 units wide) and size it with `canvasStyle`, so its labels are the page's own small type at every width instead of scaling with the drawing. Set labels with `TextLines`, and check that no slider position pushes a label past the canvas or into another label. Controls are `FigureControl` rows, which stack on a phone so the track gets the full width.
+5. Add a story, and look at it at 320, 390 and desktop widths in WebKit as well as Chromium.
 
 Removing an id is a content change: keep it until no document uses it, or the block renders nothing. `figure` is validated text, not a select, so a new figure is not a migration.
 

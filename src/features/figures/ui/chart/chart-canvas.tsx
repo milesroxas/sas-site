@@ -44,6 +44,20 @@ const SURFACE = 'var(--background)'
 const INK = 'var(--foreground)'
 const MUTED = 'var(--muted-foreground)'
 const TICK = { fill: MUTED, fontSize: 12 }
+/**
+ * A label drawn over the plot wears a halo in the ground color (the diagram
+ * labels' rule), so a line passing under it breaks cleanly around the glyphs.
+ */
+const PLOT_LABEL = {
+  fill: INK,
+  fontSize: 12,
+  paintOrder: 'stroke',
+  stroke: SURFACE,
+  strokeLinejoin: 'round' as const,
+  strokeWidth: 4,
+}
+/** Room past the plot for a value label that sits outside it: a line's end, a horizontal bar's tip. */
+const LABEL_ROOM = 48
 
 /** What every mark component draws from. */
 type Drawing = { labels: ReturnType<typeof directLabels>; model: ChartModel; spec: ChartSpec }
@@ -105,7 +119,7 @@ const annotationX = ({ model, spec }: Drawing, x: number | string): number | str
 
 const Annotations = (drawing: Drawing) =>
   drawing.spec.annotations?.map((annotation, index) => {
-    const label = { fill: INK, fontSize: 12, value: annotation.label }
+    const label = { ...PLOT_LABEL, value: annotation.label }
     // Recharts names axes by screen position, so a horizontal chart swaps them.
     const [position, measure] = drawing.model.horizontal
       ? (['y', 'x'] as const)
@@ -340,6 +354,8 @@ export default function ChartCanvas({ spec }: { spec: ChartSpec }) {
   const model = chartModel(spec)
   const labels = directLabels(spec, model)
   const Marks = MARKS[spec.kind]
+  // A vertical bar's tip label sits above it, inside the plot's own top margin.
+  const labelsPastPlot = labels === 'line-ends' || (labels === 'bar-tips' && model.horizontal)
   // Keyed by slot, never by an authored series key: see `chartModel`.
   const config: ChartConfig = Object.fromEntries(
     model.slots.map((slot) => [slot.key, { color: slot.color, label: slot.label }]),
@@ -350,8 +366,7 @@ export default function ChartCanvas({ spec }: { spec: ChartSpec }) {
         drawing={{ labels, model, spec }}
         frame={{
           data: model.data,
-          // Room on the right for the end labels, when they are drawn.
-          margin: { bottom: 4, left: 4, right: labels === 'line-ends' ? 48 : 12, top: 12 },
+          margin: { bottom: 4, left: 4, right: labelsPastPlot ? LABEL_ROOM : 12, top: 12 },
         }}
       />
     </ChartContainer>

@@ -1,7 +1,8 @@
-import { cn } from '@/utilities/ui'
 import { formatDate, layoutTimeline, type TimelineLayout } from '../../layout/timeline'
 import type { TimelineSpec } from '../../spec/diagram'
-import { canvasStyle, HALO, stepStyle } from './svg'
+import { TextLines } from '../text-lines'
+import { type DiagramNaming, DiagramSvg } from './diagram-svg'
+import { stepStyle } from './svg'
 
 const LINE_HEIGHT = 18
 type WideEvent = TimelineLayout['wide']['events'][number]
@@ -9,8 +10,6 @@ type WideEvent = TimelineLayout['wide']['events'][number]
 /** Height of an event's label block: its lines, plus its tag when it has one. */
 const blockHeight = (event: WideEvent, spec: TimelineSpec): number =>
   (event.lines.length + (spec.events[event.index]?.ref ? 1 : 0)) * LINE_HEIGHT + 4
-
-type SvgProps = { describedBy: string; label: string; labelledBy?: string; spec: TimelineSpec }
 
 /** Proportional axis: events sit where their dates fall, labels stacked into lanes so none overlap. */
 const Wide = ({ layout, spec }: { layout: TimelineLayout['wide']; spec: TimelineSpec }) => (
@@ -67,27 +66,22 @@ const Wide = ({ layout, spec }: { layout: TimelineLayout['wide']; spec: Timeline
             r={5}
             strokeWidth={2}
           />
-          <text
-            {...HALO}
-            className={cn('fill-foreground text-sm', HALO.className)}
-            textAnchor="middle"
-          >
-            {event.lines.map((line, index) => (
-              <tspan key={index} x={event.labelX} y={event.labelY + 14 + index * LINE_HEIGHT}>
-                {line}
-              </tspan>
-            ))}
-          </text>
+          <TextLines
+            className="fill-foreground text-sm"
+            halo
+            lineHeight={LINE_HEIGHT}
+            lines={event.lines}
+            x={event.labelX}
+            y={event.labelY + (event.lines.length * LINE_HEIGHT) / 2}
+          />
           {source.ref ? (
-            <text
-              {...HALO}
-              className={cn('fill-muted-foreground text-xs', HALO.className)}
-              textAnchor="middle"
+            <TextLines
+              className="fill-muted-foreground text-xs"
+              halo
+              lines={[source.ref]}
               x={event.labelX}
-              y={event.labelY + 14 + event.lines.length * LINE_HEIGHT}
-            >
-              {source.ref}
-            </text>
+              y={event.labelY + (event.lines.length + 0.5) * LINE_HEIGHT}
+            />
           ) : null}
         </g>
       )
@@ -136,13 +130,14 @@ const Narrow = ({ layout, spec }: { layout: TimelineLayout['narrow']; spec: Time
               {formatDate(source.at)}
               {source.ref ? ` · ${source.ref}` : ''}
             </text>
-            <text className="fill-foreground text-sm">
-              {row.lines.map((line, index) => (
-                <tspan key={index} x={rail + 18} y={row.y + 32 + index * LINE_HEIGHT}>
-                  {line}
-                </tspan>
-              ))}
-            </text>
+            <TextLines
+              anchor="start"
+              className="fill-foreground text-sm"
+              lineHeight={LINE_HEIGHT}
+              lines={row.lines}
+              x={rail + 18}
+              y={row.y + 18 + (row.lines.length * LINE_HEIGHT) / 2}
+            />
           </g>
         )
       })}
@@ -155,28 +150,19 @@ const Narrow = ({ layout, spec }: { layout: TimelineLayout['narrow']; spec: Time
  * Layout is arithmetic (`layout/timeline`), computed here.
  */
 export const TimelineSvg = ({
-  describedBy,
-  label,
-  labelledBy,
   spec,
   variant,
-}: SvgProps & { variant: 'narrow' | 'wide' }) => {
-  const layout = layoutTimeline(spec)[variant]
-  return (
-    <svg
-      aria-describedby={describedBy}
-      aria-label={labelledBy ? undefined : label}
-      aria-labelledby={labelledBy}
-      className="figure-diagram mx-auto block font-sans"
-      role="img"
-      style={canvasStyle(layout.width)}
-      viewBox={`0 0 ${layout.width} ${layout.height}`}
-    >
-      {variant === 'wide' ? (
-        <Wide layout={layout as TimelineLayout['wide']} spec={spec} />
-      ) : (
-        <Narrow layout={layout as TimelineLayout['narrow']} spec={spec} />
-      )}
-    </svg>
+  ...naming
+}: DiagramNaming & { spec: TimelineSpec; variant: keyof TimelineLayout }) => {
+  const layout = layoutTimeline(spec)
+  // The stepped run reads down its left edge, so it keeps the text's margin rather than centring.
+  return variant === 'wide' ? (
+    <DiagramSvg {...naming} height={layout.wide.height} width={layout.wide.width}>
+      <Wide layout={layout.wide} spec={spec} />
+    </DiagramSvg>
+  ) : (
+    <DiagramSvg {...naming} align="start" height={layout.narrow.height} width={layout.narrow.width}>
+      <Narrow layout={layout.narrow} spec={spec} />
+    </DiagramSvg>
   )
 }

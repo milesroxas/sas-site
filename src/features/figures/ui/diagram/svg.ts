@@ -71,29 +71,3 @@ export function arrowHead(points: readonly Point[]): string {
     `${baseX + uy * half},${baseY - ux * half}`,
   ].join(' ')
 }
-
-/** How far a drawing may shrink: 14px labels stay above 11px. Past this it swaps form or scrolls. */
-const MIN_SCALE = 0.8
-
-/** The narrowest frame a drawing of this natural width still reads in. */
-export const minReadableWidth = (width: number): number => Math.ceil(width * MIN_SCALE)
-
-/** Sizing for a drawn layout: fill the frame up to 1:1, and stop shrinking while type is still readable. */
-export const canvasStyle = (width: number): CSSProperties => ({
-  height: 'auto',
-  maxWidth: width,
-  minWidth: minReadableWidth(width),
-  width: '100%',
-})
-
-/**
- * A halo in the ground color behind a label's glyphs (stroke painted first),
- * so a line that has to pass under a label breaks cleanly around it. Lighter
- * than a plate: no box appears where nothing crosses.
- */
-export const HALO = {
-  className: 'stroke-background',
-  paintOrder: 'stroke',
-  strokeLinejoin: 'round',
-  strokeWidth: 5,
-} as const

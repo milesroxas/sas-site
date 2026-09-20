@@ -4,7 +4,7 @@ import type { DiagramSpec, GraphSpec } from '../spec/diagram'
 import { FIGURE_LIMITS } from '../spec/limits'
 import { currentLayout, LAYOUT_BUDGET_MS, LAYOUT_VERSION, layoutDiagram, specHash } from './index'
 import { layoutSequence } from './sequence'
-import { wrapLabel } from './text'
+import { TEXT_METRICS, textWidth, wrapLabel } from './text'
 import { layoutTimeline } from './timeline'
 import type { Box } from './types'
 
@@ -101,10 +101,31 @@ describe('currentLayout', () => {
 describe('arithmetic layouts', () => {
   it('spaces sequence columns so the longest label fits the span it sits over', () => {
     const spec = DIAGRAM_CORPUS.authoringPath?.spec as Extract<DiagramSpec, { kind: 'sequence' }>
-    const layout = layoutSequence(spec)
+    const layout = layoutSequence(spec).wide
     const [first, second] = layout.actors
     expect((second?.x ?? 0) - (first?.x ?? 0)).toBeGreaterThanOrEqual(148)
     expect(layout.messages).toHaveLength(spec.messages.length)
+  })
+  it('holds a narrow sequence to a phone column with every label inside the canvas', () => {
+    const spec = DIAGRAM_CORPUS.publishSequence?.spec as Extract<DiagramSpec, { kind: 'sequence' }>
+    const longest = {
+      ...spec,
+      messages: spec.messages.map((message) => ({
+        ...message,
+        label: 'word '.repeat(FIGURE_LIMITS.label / 5).trim(),
+      })),
+    }
+    for (const candidate of [spec, longest]) {
+      const layout = layoutSequence(candidate).narrow
+      // Four actors at 80%, the furthest a drawing shrinks, fit a 320px phone's 288px column.
+      expect(layout.width * 0.8).toBeLessThanOrEqual(288)
+      for (const { label } of layout.messages) {
+        const half =
+          Math.max(...label.lines.map((line) => textWidth(line, TEXT_METRICS.smallCharWidth))) / 2
+        expect(label.x - half).toBeGreaterThanOrEqual(0)
+        expect(label.x + half).toBeLessThanOrEqual(layout.width)
+      }
+    }
   })
   it('stacks timeline labels into lanes so none overlap', () => {
     const spec = DIAGRAM_CORPUS.studioTimeline?.spec as Extract<DiagramSpec, { kind: 'timeline' }>

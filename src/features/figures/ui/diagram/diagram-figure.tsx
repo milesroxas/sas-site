@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/utilities/ui'
+import { layoutSequence } from '../../layout/sequence'
 import { layoutTimeline } from '../../layout/timeline'
 import type { StoredLayout } from '../../layout/types'
 import type { DiagramSpec } from '../../spec/diagram'
+import { minReadableWidth } from '../canvas'
 import { FigureFrame, type FigureFrameProps, figureIds } from '../figure-frame'
 import { DIAGRAM_LIST_LABEL, DiagramList } from './diagram-list'
 import { GraphSvg } from './graph-svg'
 import { SequenceSvg } from './sequence-svg'
-import { minReadableWidth } from './svg'
 import { TimelineSvg } from './timeline-svg'
 
 type DiagramFigureProps = Omit<FigureFrameProps, 'children' | 'dataView' | 'dataViewLabel'> & {
@@ -72,6 +73,11 @@ const TwoForms = ({
  * The frame a drawing sits in. It scrolls sideways when the drawing cannot
  * shrink any further and stay readable (`canvasStyle`): the one accepted
  * exception to no horizontal scroll, contained here and reachable by keyboard.
+ * `scroll-fade-x` softens whichever edge has more drawing past it, so a cut
+ * reads as "more this way" and never as a broken figure; a drawing that fits
+ * has no scroll range and gets no fade. `data-lenis-prevent-horizontal` hands
+ * sideways pans back to the browser (root Lenis would preventDefault them to
+ * drive the page), while a vertical gesture over the drawing still scrolls it.
  */
 const Canvas = ({
   children,
@@ -84,7 +90,8 @@ const Canvas = ({
 }) => (
   <section
     aria-label={`${label}, scrollable`}
-    className={cn('overflow-x-auto pb-2', className)}
+    className={cn('scroll-fade-x overflow-x-auto overscroll-x-contain pb-2', className)}
+    data-lenis-prevent-horizontal
     // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be keyboard reachable (WCAG 2.1.1).
     tabIndex={0}
   >
@@ -94,8 +101,9 @@ const Canvas = ({
 
 /**
  * A diagram in its frame: server SVG from a stored or arithmetic layout, zero
- * client JavaScript. A kind with a narrow form shows whichever fits the
- * figure's own width (`TwoForms`); one without scrolls inside its frame.
+ * client JavaScript. Every kind but a top-down graph has a narrow form and
+ * shows whichever fits the figure's own width (`TwoForms`); what still cannot
+ * fit scrolls inside its frame.
  */
 export const DiagramFigure = ({ layout, spec, ...frame }: DiagramFigureProps) => {
   const ids = figureIds(frame.blockId)
@@ -109,9 +117,12 @@ export const DiagramFigure = ({ layout, spec, ...frame }: DiagramFigureProps) =>
   const drawing = (() => {
     if (spec.kind === 'sequence')
       return (
-        <Canvas label={name}>
-          <SequenceSvg {...a11y} spec={spec} />
-        </Canvas>
+        <TwoForms
+          label={name}
+          narrow={<SequenceSvg {...a11y} spec={spec} variant="narrow" />}
+          wide={<SequenceSvg {...a11y} spec={spec} variant="wide" />}
+          wideWidth={layoutSequence(spec).wide.width}
+        />
       )
     if (spec.kind === 'timeline')
       return (

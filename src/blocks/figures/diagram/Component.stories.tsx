@@ -52,6 +52,9 @@ export const Sequence: Story = { args: figure('publishSequence') }
 
 export const SequenceWithReplies: Story = { args: figure('authoringPath') }
 
+/** Below the width its wide form reads at, a sequence keeps its lifelines on a phone's pitch and runs each label across the canvas. */
+export const SequenceNarrowFrame: Story = { args: { ...figure('publishSequence'), width: 'text' } }
+
 export const Timeline: Story = { args: figure('studioTimeline') }
 
 /** At the reading column's width a left-to-right flow swaps to its top-down twin. */

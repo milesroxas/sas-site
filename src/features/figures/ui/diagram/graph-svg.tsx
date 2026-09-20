@@ -1,11 +1,14 @@
 import { cn } from '@/utilities/ui'
 import type { GraphLayout } from '../../layout/types'
 import type { GraphSpec } from '../../spec/diagram'
-import { arrowHead, canvasStyle, HALO, roundedPath, stepStyle } from './svg'
+import { TextLines } from '../text-lines'
+import { type DiagramNaming, DiagramSvg } from './diagram-svg'
+import { arrowHead, roundedPath, stepStyle } from './svg'
 
-const LINE_HEIGHT = 20
 /** Node outlines and edges share one weight, so neither reads as the louder mark. */
 const NODE_STROKE = 1.5
+/** A group's label, from the group's corner: in the room the layout leaves above its children. */
+const GROUP_LABEL = { x: 16, y: 20 }
 
 type Node = GraphSpec['nodes'][number]
 type Placed = GraphLayout['nodes'][number]
@@ -57,31 +60,15 @@ const NodeShape = ({
  * wraps or routes.
  */
 export const GraphSvg = ({
-  describedBy,
-  label,
-  labelledBy,
   layout,
   spec,
-}: {
-  describedBy: string
-  label: string
-  labelledBy?: string
-  layout: GraphLayout
-  spec: GraphSpec
-}) => {
+  ...naming
+}: DiagramNaming & { layout: GraphLayout; spec: GraphSpec }) => {
   const order = new Map(spec.nodes.map((node, index) => [node.id, index]))
   const nodes = new Map(spec.nodes.map((node) => [node.id, node]))
 
   return (
-    <svg
-      aria-describedby={describedBy}
-      aria-label={labelledBy ? undefined : label}
-      aria-labelledby={labelledBy}
-      className="figure-diagram mx-auto block font-sans"
-      role="img"
-      style={canvasStyle(layout.width)}
-      viewBox={`0 0 ${layout.width} ${layout.height}`}
-    >
+    <DiagramSvg {...naming} height={layout.height} width={layout.width}>
       {layout.groups.map((group) => (
         <g className="figure-step" key={group.id}>
           <rect
@@ -127,15 +114,12 @@ export const GraphSvg = ({
                     x={edge.label.x}
                     y={edge.label.y}
                   />
-                  <text
+                  <TextLines
                     className="fill-muted-foreground text-xs"
-                    dominantBaseline="central"
-                    textAnchor="middle"
+                    lines={[edge.label.text]}
                     x={edge.label.x + edge.label.width / 2}
                     y={edge.label.y + edge.label.height / 2}
-                  >
-                    {edge.label.text}
-                  </text>
+                  />
                 </>
               ) : null}
             </g>
@@ -145,21 +129,20 @@ export const GraphSvg = ({
 
       {/* After the edges: an edge entering a group passes under its label, and the halo breaks it cleanly. */}
       {layout.groups.map((group) => (
-        <text
-          {...HALO}
-          className={cn('figure-step fill-muted-foreground text-xs', HALO.className)}
+        <TextLines
+          anchor="start"
+          className="figure-step fill-muted-foreground text-xs"
+          halo
           key={group.id}
-          x={group.x + 16}
-          y={group.y + 24}
-        >
-          {group.label}
-        </text>
+          lines={[group.label]}
+          x={group.x + GROUP_LABEL.x}
+          y={group.y + GROUP_LABEL.y}
+        />
       ))}
 
       {layout.nodes.map((placed) => {
         const node = nodes.get(placed.id)
         if (!node) return null
-        const top = placed.y + placed.height / 2 - ((placed.lines.length - 1) * LINE_HEIGHT) / 2
         return (
           <g className="figure-step" key={placed.id} style={stepStyle(order.get(placed.id) ?? 0)}>
             <NodeShape
@@ -171,20 +154,15 @@ export const GraphSvg = ({
               node={placed}
               shape={node.shape}
             />
-            <text
+            <TextLines
               className={cn('text-sm', node.emphasis ? 'fill-background' : 'fill-foreground')}
-              dominantBaseline="central"
-              textAnchor="middle"
-            >
-              {placed.lines.map((line, index) => (
-                <tspan key={index} x={placed.x + placed.width / 2} y={top + index * LINE_HEIGHT}>
-                  {line}
-                </tspan>
-              ))}
-            </text>
+              lines={placed.lines}
+              x={placed.x + placed.width / 2}
+              y={placed.y + placed.height / 2}
+            />
           </g>
         )
       })}
-    </svg>
+    </DiagramSvg>
   )
 }

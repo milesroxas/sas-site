@@ -2,55 +2,58 @@
 
 import { useId, useState } from 'react'
 import type { BespokeFigureProps } from '../../registry/definitions'
+import { canvasStyle } from '../canvas'
+import { TextLines } from '../text-lines'
 import { FigureControl } from './control'
 
 type Props = BespokeFigureProps<'streak-dash-anatomy-v1'>
 
-const VIEW = { height: 220, width: 520 }
+/**
+ * The canvas is a phone's column, so the drawing is 1:1 where it is hardest to
+ * fit and never scales up past it: its labels stay the size of the page's own
+ * small type at every width (`canvasStyle`).
+ */
+const VIEW = { height: 176, width: 340 }
 const DEFAULTS = { length: 220, tail: 0.42, thickness: 10 } satisfies Required<Props>
-/** The dash is drawn enlarged so its parts can carry labels. */
-const SCALE = 1.5
+/**
+ * Control values to canvas units. An anatomy, not a ruler: length is drawn
+ * short so the longest dash still leaves its labels room, thickness is drawn
+ * large so its parts can carry them.
+ */
+const DRAW = { length: 0.75, thickness: 1.5 }
+/** Room left of the dash for the thickness dimension and its label. */
+const GUTTER = 84
+const ROWS = { ends: 46, dash: 84, cap: 122, length: 144 }
+const LABEL = 'fill-muted-foreground text-xs'
 
-/** A dimension line with end ticks and a label: the drafting mark for "this distance". */
+/** A dimension line with end ticks: the drafting mark for "this distance". */
 const Dimension = ({
+  at,
   from,
-  label,
   to,
   vertical = false,
 }: {
+  at: number
   from: number
-  label: string
   to: number
   vertical?: boolean
-}) => {
-  const at = vertical ? 60 : 168
-  const mid = (from + to) / 2
-  return (
-    <g className="stroke-muted-foreground">
-      {vertical ? (
-        <>
-          <line x1={at} x2={at} y1={from} y2={to} />
-          <line x1={at - 4} x2={at + 4} y1={from} y2={from} />
-          <line x1={at - 4} x2={at + 4} y1={to} y2={to} />
-        </>
-      ) : (
-        <>
-          <line x1={from} x2={to} y1={at} y2={at} />
-          <line x1={from} x2={from} y1={at - 4} y2={at + 4} />
-          <line x1={to} x2={to} y1={at - 4} y2={at + 4} />
-        </>
-      )}
-      <text
-        className="fill-muted-foreground stroke-none text-xs"
-        textAnchor={vertical ? 'end' : 'middle'}
-        x={vertical ? at - 10 : mid}
-        y={vertical ? mid + 4 : at + 18}
-      >
-        {label}
-      </text>
-    </g>
-  )
-}
+}) => (
+  <g className="stroke-muted-foreground">
+    {vertical ? (
+      <>
+        <line x1={at} x2={at} y1={from} y2={to} />
+        <line x1={at - 4} x2={at + 4} y1={from} y2={from} />
+        <line x1={at - 4} x2={at + 4} y1={to} y2={to} />
+      </>
+    ) : (
+      <>
+        <line x1={from} x2={to} y1={at} y2={at} />
+        <line x1={from} x2={from} y1={at - 4} y2={at + 4} />
+        <line x1={to} x2={to} y1={at - 4} y2={at + 4} />
+      </>
+    )}
+  </g>
+)
 
 /**
  * Bespoke figure `streak-dash-anatomy-v1`: one streak drawn large, its
@@ -58,6 +61,10 @@ const Dimension = ({
  * the server render at the starting values is the static fallback: a reader
  * without JavaScript gets the labelled drawing. The sliders are in that first
  * render too, so hydrating never moves the page.
+ *
+ * The dash and its gutter centre as one group, which keeps the dash's middle
+ * on one x at every length: the labels hung on that middle never move, and no
+ * label can reach a canvas edge or another label at any slider position.
  */
 export default function DashAnatomy({ props }: { props?: Props }) {
   const gradient = useId()
@@ -65,17 +72,18 @@ export default function DashAnatomy({ props }: { props?: Props }) {
   const [thickness, setThickness] = useState(props?.thickness ?? DEFAULTS.thickness)
   const [tail, setTail] = useState(props?.tail ?? DEFAULTS.tail)
 
-  const height = thickness * SCALE
-  const left = (VIEW.width - length) / 2
-  const right = left + length
-  const top = 96 - height / 2
+  const width = length * DRAW.length
+  const height = thickness * DRAW.thickness
+  const left = (VIEW.width - GUTTER - width) / 2 + GUTTER
+  const right = left + width
+  const top = ROWS.dash - height / 2
 
   return (
     <div className="space-y-5">
       <svg
         aria-hidden="true"
-        className="mx-auto block w-full font-sans"
-        style={{ maxWidth: VIEW.width }}
+        className="mx-auto block font-sans"
+        style={canvasStyle(VIEW.width)}
         viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
       >
         <defs>
@@ -89,18 +97,34 @@ export default function DashAnatomy({ props }: { props?: Props }) {
           fill={`url(#${gradient})`}
           height={height}
           rx={height / 2}
-          width={length}
+          width={width}
           x={left}
           y={top}
         />
-        <Dimension from={left} label="length (minLength to maxLength)" to={right} />
-        <Dimension from={top} label="thickness" to={top + height} vertical />
-        <text className="fill-muted-foreground text-xs" textAnchor="start" x={left} y={top - 14}>
-          tail
-        </text>
-        <text className="fill-muted-foreground text-xs" textAnchor="end" x={right} y={top - 14}>
-          head (cap rounds both ends)
-        </text>
+        <TextLines anchor="start" className={LABEL} lines={['tail']} x={left} y={ROWS.ends} />
+        <TextLines anchor="end" className={LABEL} lines={['head']} x={right} y={ROWS.ends} />
+        <TextLines
+          anchor="end"
+          className={LABEL}
+          lines={['cap (rounds both ends)']}
+          x={right}
+          y={ROWS.cap}
+        />
+        <Dimension at={left - 14} from={top} to={top + height} vertical />
+        <TextLines
+          anchor="end"
+          className={LABEL}
+          lines={['thickness']}
+          x={left - 26}
+          y={ROWS.dash}
+        />
+        <Dimension at={ROWS.length} from={left} to={right} />
+        <TextLines
+          className={LABEL}
+          lines={['length (minLength to maxLength)']}
+          x={(left + right) / 2}
+          y={ROWS.length + 18}
+        />
       </svg>
 
       <div className="mx-auto max-w-md space-y-3">
