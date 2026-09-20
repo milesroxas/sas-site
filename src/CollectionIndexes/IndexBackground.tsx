@@ -32,7 +32,9 @@ export const IndexBackground: React.FC<{
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" data-hero-media>
         <div className="sticky top-(--header-height) h-[calc(100svh-var(--header-height)-var(--footer-height))]">
           <StreakVisual
-            descriptor={visual.descriptor}
+            // The listing over this ground paints in the visitor's theme, so
+            // the field always follows it (the slot offers no pin).
+            descriptor={{ ...visual.descriptor, surface: null }}
             fill
             imgClassName="object-cover select-none"
             placement="hero"

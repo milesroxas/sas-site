@@ -1,6 +1,12 @@
 import type { Media } from '@/payload-types'
 import { populatedDoc } from '@/utilities/relationshipId'
-import { type EffectContract, isLookId, type Tuning } from '../studio/effect'
+import {
+  type EffectContract,
+  isLookId,
+  SURFACES,
+  type Surface,
+  type Tuning,
+} from '../studio/effect'
 import {
   EFFECT_IDS,
   type LeakLookId,
@@ -49,6 +55,13 @@ export const LEAK_SECTION_HOVER_RANGE = { min: 0, max: 1 } as const
 /** Seeds are non-negative 31-bit integers: they feed a 32-bit hash. */
 export const STREAK_SEED_MAX = 2_147_483_647
 
+/** The ground a visual is drawn for. `auto` follows whatever the slot lands on. */
+export type VisualSurface = Surface | 'auto'
+export const VISUAL_SURFACES = ['auto', ...SURFACES] as const satisfies readonly VisualSurface[]
+
+const isSurface = (value: unknown): value is Surface =>
+  (SURFACES as readonly unknown[]).includes(value)
+
 /** The shader group as Payload stores it, on any parent. */
 export type StoredStreakVisual = {
   /**
@@ -72,6 +85,8 @@ export type StoredStreakVisual = {
   hoverTargets?: LeakExciteTargets | string | null
   /** How far the pointer crossing the band excites it; empty keeps the look's own. */
   sectionHover?: number | null
+  /** The face the editor pinned; `auto` or empty follows the ground the slot lands on. */
+  surface?: VisualSurface | string | null
 }
 
 /** A visual slot as Payload stores it: the existing upload plus the new choice. */
@@ -101,6 +116,13 @@ type EffectDescriptor<Look extends string, T extends Tuning> = {
   /** Multiplier on the look's brightness, `STREAK_INTENSITY_RANGE`. */
   intensity: number
   pointer: boolean
+  /**
+   * The face the editor pinned this use to, whatever the visitor's theme and
+   * whatever band it sits in, or `null` to follow the ground it lands on. A
+   * pinned slot paints that ground itself; a band it grounds adopts it
+   * (`resolveOpening`'s `surface`).
+   */
+  surface: Surface | null
   /** An approved upload that replaces the look's built-in poster. */
   posterMedia: PosterMediaSource | null
   /**
@@ -195,6 +217,7 @@ function resolveEffectDescriptor<Look extends string, T extends Tuning>(
     speed: normalizeStreakMultiplier(shader?.speed, STREAK_SPEED_RANGE),
     intensity: normalizeStreakMultiplier(shader?.intensity, STREAK_INTENSITY_RANGE),
     pointer: shader?.pointerInteraction === true,
+    surface: isSurface(shader?.surface) ? shader.surface : null,
     posterMedia: posterMedia?.mimeType?.startsWith('image/') ? posterMedia : null,
     degraded: published ? !release || release.snapshot.renderer !== effect.renderer : !shipped,
   }
@@ -220,6 +243,9 @@ export const resolveLeakDescriptor = (
   media: Media | null,
 ): LeakVisualDescriptor => ({
   ...resolveEffectDescriptor<LeakLookId, LightLeakTuning>(LIGHT_LEAK_EFFECT, shader),
+  // A bleeding leak washes the block's own band, which it cannot repaint: the
+  // band is the ground, so it is the face.
+  ...(shader?.bleed === true ? { surface: null } : {}),
   targets: isLeakExciteTargets(shader?.hoverTargets) ? shader.hoverTargets : null,
   sectionExcite: isFiniteNumber(shader?.sectionHover)
     ? clamp(shader.sectionHover, LEAK_SECTION_HOVER_RANGE.min, LEAK_SECTION_HOVER_RANGE.max)
@@ -263,6 +289,12 @@ export type VisualOpening = {
   ground: EffectVisual | null
   /** The slot's upload, whenever one is set. Never consumed by the effect. */
   media: Media | null
+  /**
+   * The palette the editor pinned the ground to, or `null`. The effect sits
+   * under the band's copy, so the band takes it as its own palette: the copy
+   * stays legible over the face it was pinned to.
+   */
+  surface: Surface | null
 }
 
 /**
@@ -279,17 +311,13 @@ export const resolveOpening = (
   options: ResolveVisualOptions = {},
 ): VisualOpening => {
   const media = populatedDoc<Media>(slot?.media) ?? populatedDoc<Media>(options.fallbackMedia)
-  if (slot?.visualType === 'streakField')
-    return {
-      ground: { kind: 'streakField', descriptor: resolveStreakDescriptor(slot.shader, options) },
-      media,
-    }
-  if (slot?.visualType === 'lightLeak')
-    return {
-      ground: { kind: 'lightLeak', descriptor: resolveLeakDescriptor(slot.shader, null) },
-      media,
-    }
-  return { ground: null, media }
+  const ground: EffectVisual | null =
+    slot?.visualType === 'streakField'
+      ? { kind: 'streakField', descriptor: resolveStreakDescriptor(slot.shader, options) }
+      : slot?.visualType === 'lightLeak'
+        ? { kind: 'lightLeak', descriptor: resolveLeakDescriptor(slot.shader, null) }
+        : null
+  return { ground, media, surface: visualSurface(ground) }
 }
 
 /**
@@ -351,12 +379,17 @@ export const parseStreakDescriptor = (
     speed: normalizeStreakMultiplier(value.speed, STREAK_SPEED_RANGE),
     intensity: normalizeStreakMultiplier(value.intensity, STREAK_INTENSITY_RANGE),
     pointer: value.pointer === true,
+    surface: isSurface(value.surface) ? value.surface : null,
     posterMedia: isPosterMediaSource(value.posterMedia) ? value.posterMedia : null,
     degraded:
       value.degraded === true ||
       Boolean(value.release && release?.snapshot.renderer !== STREAK_FIELD_EFFECT.renderer),
   }
 }
+
+/** The face an effect's editor pinned it to. Media, and an effect that follows its ground, are `null`. */
+export const visualSurface = (visual: Visual | null | undefined): Surface | null =>
+  visual && visual.kind !== 'media' ? visual.descriptor.surface : null
 
 /** The media document behind a visual, when it is one. An effect returns null, whatever it shows under itself. */
 export const visualMedia = (visual: Visual | null | undefined): Media | null =>

@@ -14,7 +14,7 @@ import { populatedDoc } from '@/utilities/relationshipId'
 export function caseStudyHeroFacts(page: WorkPage, study: CaseStudy) {
   const project = populatedDoc<Project>(study.project)
   const organization = populatedDoc<Organization>(project?.organization)
-  const { ground, media } = resolveOpening(page.hero, {
+  const { ground, media, surface } = resolveOpening(page.hero, {
     fallbackMedia: page.coverAsset,
     seedKey: page.id,
   })
@@ -30,5 +30,7 @@ export function caseStudyHeroFacts(page: WorkPage, study: CaseStudy) {
     organization,
     platforms: termNames(project?.platforms),
     project,
+    /** The palette the editor pinned the ground to, which the opening takes with it. */
+    surface,
   }
 }

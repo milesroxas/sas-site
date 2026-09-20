@@ -3,7 +3,7 @@ import type { CaseStudy, Organization, WorkPage } from '@/payload-types'
 import { WorkImageTransition } from '@/shared/lib/view-transition'
 import { pluralLabel } from '@/utilities/pluralLabel'
 import { caseStudyHeroFacts } from './caseStudyHeroFacts'
-import { HeroGround } from './HeroGround'
+import { HeroGround, pinnedOpening } from './HeroGround'
 
 const MetaGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-2 md:items-end md:text-right">
@@ -77,13 +77,16 @@ export const CaseStudyHeroCenteredMedia = ({
   page: WorkPage
   study: CaseStudy
 }) => {
-  const { capabilities, ground, industries, media, organization, platforms } = caseStudyHeroFacts(
-    page,
-    study,
-  )
+  const { capabilities, ground, industries, media, organization, platforms, surface } =
+    caseStudyHeroFacts(page, study)
 
   return (
-    <header className="relative isolate -mt-(--header-height) flex min-h-[calc(100svh-var(--footer-height))] flex-col overflow-clip pt-(--header-height)">
+    <header
+      {...pinnedOpening(
+        surface,
+        'relative isolate -mt-(--header-height) flex min-h-[calc(100svh-var(--footer-height))] flex-col overflow-clip pt-(--header-height)',
+      )}
+    >
       <HeroGround ground={ground} handoff={!media} />
       <div className="container flex min-h-0 flex-1 flex-col justify-between gap-8">
         <div className="flex flex-col gap-8 pt-8 md:flex-row md:items-end md:justify-between lg:items-center">

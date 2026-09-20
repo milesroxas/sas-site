@@ -6,6 +6,7 @@ import type {
   GroupField,
   NumberField,
   PayloadRequest,
+  RadioField,
   SelectField,
   TextField,
   UploadField,
@@ -21,6 +22,8 @@ import {
   isEffectId,
   LEAK_ORIGINS,
   LEAK_SECTION_HOVER_RANGE,
+  VISUAL_SURFACES,
+  type VisualSurface,
 } from '@/features/immersive/visual'
 import { publicApprovedMediaWhere } from './caseStudyScopedMedia'
 import {
@@ -300,6 +303,38 @@ const originField = (): SelectField => ({
   },
 })
 
+const SURFACE_LABELS: Record<VisualSurface, string> = {
+  auto: 'Follow the visitor’s theme',
+  light: 'Always light',
+  dark: 'Always dark',
+}
+
+/**
+ * Every effect has a light and a dark face, and a slot draws the one for the
+ * ground it lands on: the visitor's theme, or the band's palette where a band
+ * pins one. This pins the face for one use instead.
+ */
+const surfaceField = (themed: boolean): RadioField => ({
+  name: 'surface',
+  type: 'radio',
+  label: 'Appearance',
+  defaultValue: VISUAL_SURFACES[0],
+  // One named enum for every slot, as for `hoverTargets`: the options are the
+  // same everywhere, and the derived name overruns Postgres' identifier limit
+  // on the deepest tables.
+  enumName: 'enum_visual_surface',
+  options: VISUAL_SURFACES.map((value) => ({ value, label: SURFACE_LABELS[value] })),
+  admin: {
+    layout: 'horizontal',
+    // A bleeding effect washes the block's own band and cannot repaint it, so
+    // the band stays its ground. A slot whose renderer grounds a whole page
+    // keeps the column, so the group stays one shape, and never shows the control.
+    condition: themed ? (_, siblingData) => siblingData?.bleed !== true : () => false,
+    description:
+      'Which face of the effect shows. Following, it is light for a visitor in the light theme and dark for one in the dark theme, or the palette of the band it sits in. Always light or always dark holds that face for every visitor, on its own ground: a hero takes the same palette so its copy stays legible.',
+  },
+})
+
 export type ShaderFieldArgs = {
   name?: string
   label?: string
@@ -313,6 +348,12 @@ export type ShaderFieldArgs = {
    * in a single frame.
    */
   ambient?: boolean
+  /**
+   * Whether an editor may pin the effect's face here. Off for a renderer that
+   * grounds a whole page in the visitor's theme (an index ground), where a
+   * pinned palette would sit under copy it cannot repaint.
+   */
+  themed?: boolean
   /** When the group shows; defaults to the sibling `visualType` being an effect. */
   condition?: Condition
   /** Poster picker filter; the public gate by default, scoped on Work Pages. */
@@ -330,6 +371,7 @@ export const shaderField = ({
   effects = [DEFAULT_EFFECT],
   hosted = true,
   ambient = false,
+  themed = true,
   condition = effectChosen,
   posterFilterOptions = publicApprovedMediaWhere,
 }: ShaderFieldArgs = {}): GroupField => {
@@ -400,6 +442,7 @@ export const shaderField = ({
       },
       ...(offers('bleed') ? [bleedField(hosted), originField()] : []),
       ...(offers('media') ? [showMediaField(ambient)] : []),
+      surfaceField(themed),
       pointerField(),
       ...(offers('hover')
         ? [{ type: 'row' as const, fields: [hoverTargetsField(), sectionHoverField()] }]
@@ -411,7 +454,7 @@ export const shaderField = ({
 
 export type VisualSlotArgs = Pick<
   ShaderFieldArgs,
-  'ambient' | 'effects' | 'hosted' | 'posterFilterOptions'
+  'ambient' | 'effects' | 'hosted' | 'posterFilterOptions' | 'themed'
 > & {
   /** Extra condition on the whole slot (a hero `type` gate). */
   condition?: Condition
@@ -431,6 +474,7 @@ export const visualSlotFields = (
     condition,
     effects = [DEFAULT_EFFECT],
     hosted,
+    themed,
     visualTypeDescription,
     posterFilterOptions,
   }: VisualSlotArgs = {},
@@ -455,6 +499,7 @@ export const visualSlotFields = (
       ambient,
       effects,
       hosted,
+      themed,
       condition: and(condition, effectChosen),
       posterFilterOptions,
     }),

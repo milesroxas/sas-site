@@ -62,7 +62,7 @@ const BuiltWith: React.FC<{ technologies: LabProject['technologies'] }> = ({ tec
  * the design leaves over the bar.
  */
 export const LabHero = ({ page, project }: { page: LabPage; project: LabProject }) => {
-  const { ground, media } = resolveOpening(page.hero, {
+  const { ground, media, surface } = resolveOpening(page.hero, {
     fallbackMedia: page.coverAsset,
     seedKey: page.id,
   })
@@ -77,8 +77,9 @@ export const LabHero = ({ page, project }: { page: LabPage; project: LabProject 
       className="relative isolate -mt-(--header-height) flex min-h-svh flex-col overflow-clip bg-background pt-(--header-height) pb-(--footer-height) text-foreground"
       pinsChromeAtLoad
       // The lab opening is a page surface, not a fixed-palette band: it
-      // paints in the visitor's theme, like the article under it.
-      theme="site"
+      // paints in the visitor's theme, like the article under it, unless the
+      // editor pinned the effect grounding it to one face.
+      theme={surface ?? 'site'}
     >
       <HeroGround ground={ground} handoff={!media} />
 

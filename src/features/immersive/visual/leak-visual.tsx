@@ -16,11 +16,11 @@ import { FailureBoundary } from '../ui/failure-boundary'
 import type { LeakFailureReason, LightLeakRuntimeProps } from '../ui/light-leak-runtime'
 import { originMirror } from '../ui/light-leak-tuning'
 import { composeLeakTuning } from './compose'
-import type { LeakVisualDescriptor } from './descriptor'
+import type { LeakVisualDescriptor, VisualSurface } from './descriptor'
 import { useGroundSurface } from './hooks'
 import { VISUAL_BLEED_ATTR, VISUAL_HOST_ATTR } from './host'
 import type { VisualPlacement } from './placement'
-import { crossfadeClass, VisualPosterStack, type VisualSurface } from './poster'
+import { crossfadeClass, VisualPosterStack } from './poster'
 import { visualPosters } from './posters'
 import { type LiveVisualOptions, useLiveVisual } from './use-live-visual'
 
@@ -149,7 +149,7 @@ function LeakLayer({
 export function LeakVisual({
   descriptor,
   placement,
-  surface = 'auto',
+  surface: landed = 'auto',
   priority = false,
   sizes = '100vw',
   active = true,
@@ -160,6 +160,9 @@ export function LeakVisual({
   admission,
   onStatusChange,
 }: LeakVisualProps) {
+  // The editor's pin outranks the ground the slot landed on. A bleeding leak
+  // never carries one (`resolveLeakDescriptor`): its band is its ground.
+  const surface = descriptor.surface ?? landed
   const frameRef = useRef<HTMLDivElement>(null)
   // `undefined` until looked for: a bleeding leak never paints contained first.
   const [host, setHost] = useState<Element | null | undefined>(undefined)
@@ -193,6 +196,8 @@ export function LeakVisual({
         !bleeding && 'isolate bg-background',
         className,
       )}
+      // Pinned, the frame's own ground (`bg-background`) is the pinned palette's.
+      data-theme={descriptor.surface ?? undefined}
       data-visual="lightLeak"
       data-visual-look={descriptor.look}
     >

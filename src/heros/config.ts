@@ -28,6 +28,11 @@ export type HeroFieldArgs = {
    * bespoke renderer (the index globals) names the ones it handles.
    */
   visualEffects?: readonly EffectId[]
+  /**
+   * Whether the editor may pin the effect to its light or dark face. Off where
+   * the visual grounds a whole page in the visitor's theme (the index globals).
+   */
+  visualThemed?: boolean
 }
 
 /**
@@ -40,6 +45,7 @@ export const heroField = ({
   mediaRequired = true,
   visualTypeDescription,
   visualEffects,
+  visualThemed,
 }: HeroFieldArgs = {}): Field => ({
   name: 'hero',
   type: 'group',
@@ -125,6 +131,7 @@ export const heroField = ({
       {
         condition: visualCondition,
         visualTypeDescription,
+        themed: visualThemed,
         ...(visualEffects ? { effects: visualEffects } : {}),
       },
     ),

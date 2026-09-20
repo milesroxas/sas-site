@@ -19,6 +19,7 @@ const descriptor = (over: Partial<LeakVisualDescriptor> = {}): LeakVisualDescrip
   speed: 1,
   intensity: 1,
   pointer: true,
+  surface: null,
   targets: null,
   sectionExcite: null,
   posterMedia: null,
@@ -94,6 +95,24 @@ export const OnLightBand: Story = {
     <Section theme="light">
       <div className="container grid items-center gap-10 md:grid-cols-2">
         <h2 className="text-heading-2">A warm shadow across the sheet.</h2>
+        <LeakVisual {...args} />
+      </div>
+    </Section>
+  ),
+}
+
+/** Pinned to its paper face on a dark band: the frame paints the light ground the face multiplies over. */
+export const PinnedLight: Story = {
+  args: { descriptor: descriptor({ surface: 'light' }) },
+}
+
+/** Pinned dark on a pale band: the frame holds the dark ground in either site theme. */
+export const PinnedDark: Story = {
+  args: { descriptor: descriptor({ surface: 'dark' }) },
+  render: (args) => (
+    <Section theme="light">
+      <div className="container grid items-center gap-10 md:grid-cols-2">
+        <h2 className="text-heading-2">One face, whatever the theme.</h2>
         <LeakVisual {...args} />
       </div>
     </Section>

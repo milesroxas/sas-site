@@ -1,10 +1,8 @@
 import Image from 'next/image'
 import { cn } from '@/utilities/ui'
 import type { BlendMode, Surface } from '../studio/effect'
+import type { VisualSurface } from './descriptor'
 import type { PosterImage, VisualPosters } from './posters'
-
-/** The ground a visual sits on. `auto` follows whatever the slot lands on. */
-export type VisualSurface = Surface | 'auto'
 
 /** The poster/canvas crossfade, as the class both layers carry and the time the release waits out. */
 export const CROSSFADE_MS = 500

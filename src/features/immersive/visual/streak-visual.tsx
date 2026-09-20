@@ -5,11 +5,15 @@ import { cn } from '@/utilities/ui'
 import { FailureBoundary } from '../ui/failure-boundary'
 import type { StreakFailureReason, StreakFieldRuntimeProps } from '../ui/streak-field-runtime'
 import { composeStreakTuning } from './compose'
-import { type StreakVisualDescriptor, serializeStreakDescriptor } from './descriptor'
+import {
+  type StreakVisualDescriptor,
+  serializeStreakDescriptor,
+  type VisualSurface,
+} from './descriptor'
 import { useGroundSurface } from './hooks'
 import { STREAK_LOOKS } from './looks'
 import { degradedLimits, PLACEMENT_LIMITS, type VisualPlacement } from './placement'
-import { crossfadeClass, VisualPosterStack, type VisualSurface } from './poster'
+import { crossfadeClass, VisualPosterStack } from './poster'
 import { visualPosters } from './posters'
 import { type LiveVisualOptions, useLiveVisual } from './use-live-visual'
 
@@ -36,7 +40,8 @@ export type StreakVisualProps = {
   placement: VisualPlacement
   /**
    * The ground the field sits on. `auto` follows the visitor's site theme
-   * (page-level surfaces); a Section band passes its own polarity.
+   * (page-level surfaces); a Section band passes its own polarity. A face the
+   * editor pinned (`descriptor.surface`) wins over both.
    */
   surface?: VisualSurface
   /** The visual is the page's first-paint media: preload its poster. */
@@ -55,7 +60,7 @@ export type StreakVisualProps = {
 export function StreakVisual({
   descriptor,
   placement,
-  surface = 'auto',
+  surface: landed = 'auto',
   priority = false,
   sizes = '100vw',
   active = true,
@@ -65,6 +70,8 @@ export function StreakVisual({
   onStatusChange,
   admission,
 }: StreakVisualProps) {
+  // The editor's pin outranks the ground the slot landed on.
+  const surface = descriptor.surface ?? landed
   const rootRef = useRef<HTMLDivElement>(null)
   const posters = useMemo(() => visualPosters({ kind: 'streakField', descriptor }), [descriptor])
   const serialized = useMemo(() => serializeStreakDescriptor(descriptor), [descriptor])
@@ -110,8 +117,12 @@ export function StreakVisual({
       className={cn(
         'pointer-events-none overflow-hidden',
         fill ? 'absolute inset-0' : 'relative w-full',
+        // The field carries alpha, so a pinned one paints the ground it was
+        // pinned to: `data-theme` resolves `--background` on the frame.
+        descriptor.surface && 'bg-background',
         className,
       )}
+      data-theme={descriptor.surface ?? undefined}
       data-visual="streakField"
       data-visual-descriptor={serialized}
       data-visual-look={descriptor.look}

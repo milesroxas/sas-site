@@ -6,7 +6,7 @@
  * effect's client slot (`StreakVisual`, `LeakVisual`), which imports it on
  * demand.
  */
-export { type Effect, isLookId } from '../studio/effect'
+export { type Effect, isLookId, type Surface } from '../studio/effect'
 export {
   DEFAULT_EFFECT,
   EFFECT_IDS,
@@ -44,11 +44,14 @@ export {
   type StreakVisualDescriptor,
   seedFromKey,
   serializeStreakDescriptor,
+  VISUAL_SURFACES,
   VISUAL_TYPES,
   type Visual,
   type VisualOpening,
+  type VisualSurface,
   type VisualType,
   visualMedia,
+  visualSurface,
 } from './descriptor'
 export { VISUAL_HOST } from './host'
 export { LeakVisual } from './leak-visual'
@@ -67,7 +70,6 @@ export {
   STREAK_LIVE_CEILING,
   type VisualPlacement,
 } from './placement'
-export type { VisualSurface } from './poster'
 export {
   mediaPosterImage,
   type PosterImage,

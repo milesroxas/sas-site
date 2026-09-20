@@ -286,6 +286,7 @@ describe('readHeroStreakSource', () => {
     speed: 0.5,
     intensity: 1,
     pointer: false,
+    surface: null,
     posterMedia: null,
     degraded: false,
   }

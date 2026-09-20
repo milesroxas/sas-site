@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import type { Media } from '@/payload-types'
 import {
   parseStreakDescriptor,
+  resolveLeakDescriptor,
   resolveMenuPreviewVisual,
+  resolveOpening,
   resolveStreakDescriptor,
   resolveVisual,
   STREAK_SEED_MAX,
@@ -196,8 +198,39 @@ describe('serializeStreakDescriptor / parseStreakDescriptor', () => {
       speed: 1,
       intensity: 0.5,
       pointer: false,
+      surface: null,
       posterMedia: null,
       degraded: false,
     })
+  })
+
+  it('carries a pinned face across the DOM boundary', () => {
+    const pinned = resolveStreakDescriptor({ preset: 'signal-v1', seed: 7, surface: 'light' })
+    expect(parseStreakDescriptor(serializeStreakDescriptor(pinned))?.surface).toBe('light')
+  })
+})
+
+describe('the pinned face', () => {
+  it('follows the ground unless the editor pinned light or dark', () => {
+    expect(resolveStreakDescriptor({ preset: 'signal-v1' }).surface).toBeNull()
+    expect(resolveStreakDescriptor({ preset: 'signal-v1', surface: 'auto' }).surface).toBeNull()
+    expect(resolveStreakDescriptor({ preset: 'signal-v1', surface: 'sepia' }).surface).toBeNull()
+    expect(resolveStreakDescriptor({ preset: 'signal-v1', surface: 'dark' }).surface).toBe('dark')
+  })
+
+  it('never pins a bleeding leak: the band it washes is its ground', () => {
+    expect(resolveLeakDescriptor({ preset: 'film-v1', surface: 'light' }, null).surface).toBe(
+      'light',
+    )
+    expect(
+      resolveLeakDescriptor({ preset: 'film-v1', surface: 'light', bleed: true }, null).surface,
+    ).toBeNull()
+  })
+
+  it('hands an opening the palette its ground was pinned to', () => {
+    const slot = { visualType: 'streakField', shader: { preset: 'signal-v1', surface: 'light' } }
+    expect(resolveOpening(slot).surface).toBe('light')
+    expect(resolveOpening({ ...slot, shader: { preset: 'signal-v1' } }).surface).toBeNull()
+    expect(resolveOpening({ media: image(1) }).surface).toBeNull()
   })
 })

@@ -136,6 +136,7 @@ const streakHero: StreakVisualDescriptor = {
   speed: 1,
   intensity: 1,
   pointer: false,
+  surface: null,
   posterMedia: null,
   degraded: false,
 }

@@ -40,6 +40,21 @@ The `shader` group is shared. `shader.studio` holds a Studio look of either effe
 
 A Studio look's `effect` is chosen on the stage and is open until the look is first published, then fixed. Changing it starts the draft over.
 
+## Light and dark faces
+
+Every effect has two faces (`face(tuning, surface)`), and a slot draws the one for the ground it lands on. `surface="auto"` reads the nearest `[data-theme]` or `.band-dark` ancestor, else the visitor's site theme (`useGroundSurface`), and re-reads when the theme flips; the poster pair is gated the same way in CSS (globals.css, "Visual posters"), so the server HTML is already right. A hero band that pins a palette is a ground like any other: the effect follows the band, not the visitor.
+
+`shader.surface` ("Appearance") pins one use instead: Follow the visitor's theme (`auto`, the default), Always light, Always dark. The resolver carries it as `descriptor.surface` (`Surface | null`), and it outranks the `surface` a call site passes. Who honors it:
+
+| Where the effect sits | What a pin does |
+|-----------------------|-----------------|
+| A frame the slot owns (block slots, cards, menu previews) | The slot stamps `data-theme` on its frame and paints `bg-background`, so the face sits on the ground it was drawn for whatever band is around it. |
+| Under a hero's copy (`resolveOpening`) | The opening returns the pin as `surface` and the band takes it: `HeroBand theme={surface ?? ...}`, or `pinnedOpening(surface, className)` on a hero with no band. Copy and fixed chrome follow through the one `theme` prop. |
+| A bleeding light leak | Never pinned (`resolveLeakDescriptor` drops it, the control hides): the block's band is its ground, and the block's own theme select decides it. |
+| An index ground (`IndexBackground`) | Not offered (`visualThemed: false`): the listing over it paints in the visitor's theme. The column stays so the group is one shape. |
+
+The takeover menu previews a pinned effect on the pinned ground (`menuVisual`), and the docked window reads it off the slot's own `data-theme`.
+
 ## Light leak
 
 Authored the same way as a Streak Field: Studio look or shipped look (Film, Amber), speed and intensity on a shipped look, pointer, poster override. It has no seed.

@@ -232,7 +232,7 @@ STREAK_FIELD_DEFAULTS
 
 That is `composeStreakTuning`. Nothing along the chain restates a default, and ceilings only ever lower a look, never raise it.
 
-The ground polarity is read from the DOM: the nearest `[data-theme]` or `.band-dark` ancestor, falling back to the site theme (`useGroundSurface`). A Section band can therefore pin a dark field on a light page.
+The ground polarity is read from the DOM: the nearest `[data-theme]` or `.band-dark` ancestor, falling back to the site theme (`useGroundSurface`). A Section band can therefore pin a dark field on a light page. An editor can pin one use to a face instead (`shader.surface`, "Appearance"): see [studio-effects.md](studio-effects.md#light-and-dark-faces).
 
 Precedence per consumer is deliberately not flattened: the menu uses `menuPreview` then hero then cover, work entries use cover then hero, Industry Work overrides with `menuPreview`.
 

@@ -3,7 +3,7 @@ import { ViewTransition } from 'react'
 import { Media } from '@/components/Media'
 import { resolveOpening, VisualMotionToggle } from '@/features/immersive/visual'
 import { HERO_FURNITURE } from '@/heros/furniture'
-import { HeroGround } from '@/heros/HeroGround'
+import { HeroGround, pinnedOpening } from '@/heros/HeroGround'
 import type { Post } from '@/payload-types'
 import { readingTimeMinutes } from '@/shared/content/reading-time'
 import { POST_IMAGE_FRAME, postImageShare, postImageVtName } from '@/shared/lib/view-transition'
@@ -59,7 +59,7 @@ export const PostHero: React.FC<{
    * inside `data-hero-media` (an effect's poster included), so its docked
    * window inherits the same fallback (src/Header/Menu).
    */
-  const { ground, media } = resolveOpening(
+  const { ground, media, surface } = resolveOpening(
     { media: heroImage, shader, visualType },
     { fallbackMedia: meta?.image, seedKey: post.id },
   )
@@ -75,7 +75,7 @@ export const PostHero: React.FC<{
   )
 
   return (
-    <header className="relative isolate overflow-clip">
+    <header {...pinnedOpening(surface, 'relative isolate overflow-clip')}>
       <HeroGround ground={ground} handoff={!media} />
       {/* The effect is pointer-transparent, so its pause control sits over the
           band it grounds, clear of the copy column. */}

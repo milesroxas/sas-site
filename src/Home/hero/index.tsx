@@ -1,7 +1,7 @@
 import type React from 'react'
 import type { CSSProperties } from 'react'
 import { Container } from '@/components/Container'
-import { resolveVisual, VisualMotionToggle } from '@/features/immersive/visual'
+import { resolveVisual, VisualMotionToggle, visualSurface } from '@/features/immersive/visual'
 import { HeroBand, type HeroIntroMode } from '@/heros/HeroBand'
 import type { Home, Post } from '@/payload-types'
 import { populatedDoc } from '@/utilities/relationshipId'
@@ -121,6 +121,8 @@ const HomeHero: React.FC<HomeHeroProps> = ({
       className="relative isolate -mt-(--header-height) flex h-[calc(100svh-var(--footer-height))] flex-col overflow-clip bg-background text-foreground"
       intro={intro}
       pinsChromeAtLoad
+      // A pinned field takes the band with it, so the copy stays on its ground.
+      theme={visualSurface(visual) ?? undefined}
     >
       {visual?.kind === 'media' && <HeroBackground media={visual.media} />}
       {visual?.kind === 'streakField' && <HeroStreakBackground descriptor={visual.descriptor} />}

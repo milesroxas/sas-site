@@ -9,11 +9,13 @@ import type { Page } from '@/payload-types'
 
 export const MediumImpactHero: React.FC<Page['hero']> = (hero) => {
   const { description, eyebrow, links, title } = hero
-  const { ground, media } = resolveOpening(hero, { seedKey: title ?? 'hero' })
+  const { ground, media, surface } = resolveOpening(hero, { seedKey: title ?? 'hero' })
   return (
     <HeroBand
       as="div"
       className="relative isolate flex min-h-[37.5rem] flex-col items-start overflow-clip bg-background py-12 text-foreground"
+      // A pinned effect takes the band with it, so the copy stays on its ground.
+      theme={surface ?? undefined}
     >
       <Container className="relative z-10 flex w-full flex-1 flex-col items-start justify-between gap-6">
         {eyebrow && (

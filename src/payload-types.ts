@@ -1676,6 +1676,10 @@ export interface PlacedVisualConfig {
    */
   showMedia?: boolean | null;
   /**
+   * Which face of the effect shows. Following, it is light for a visitor in the light theme and dark for one in the dark theme, or the palette of the band it sits in. Always light or always dark holds that face for every visitor, on its own ground: a hero takes the same palette so its copy stays legible.
+   */
+  surface?: ('auto' | 'dark' | 'light') | null;
+  /**
    * Let the pointer move and light the effect on devices that run it live. Off, nothing below runs and the effect never listens.
    */
   pointerInteraction?: boolean | null;
@@ -5750,6 +5754,10 @@ export interface StreakVisualConfig {
    */
   intensity?: number | null;
   release?: (number | null) | StreakRelease;
+  /**
+   * Which face of the effect shows. Following, it is light for a visitor in the light theme and dark for one in the dark theme, or the palette of the band it sits in. Always light or always dark holds that face for every visitor, on its own ground: a hero takes the same palette so its copy stays legible.
+   */
+  surface?: ('auto' | 'dark' | 'light') | null;
   /**
    * Let the pointer move and light the effect on devices that run it live. Off, nothing below runs and the effect never listens.
    */
@@ -10192,6 +10200,7 @@ export interface PlacedVisualConfigSelect<T extends boolean = true> {
   bleed?: T;
   origin?: T;
   showMedia?: T;
+  surface?: T;
   pointerInteraction?: T;
   hoverTargets?: T;
   sectionHover?: T;
@@ -10663,6 +10672,7 @@ export interface StreakVisualConfigSelect<T extends boolean = true> {
   speed?: T;
   intensity?: T;
   release?: T;
+  surface?: T;
   pointerInteraction?: T;
   posterMedia?: T;
 }

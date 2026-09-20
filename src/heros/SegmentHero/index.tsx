@@ -56,7 +56,7 @@ const HeroActions: React.FC<{ className?: string; links: SegmentHeroData['links'
  */
 export const SegmentHero: React.FC<SegmentHeroData> = (hero) => {
   const { description, eyebrow, lead, links, title } = hero
-  const { ground, media } = resolveOpening(hero, { seedKey: title })
+  const { ground, media, surface } = resolveOpening(hero, { seedKey: title })
   const hasClosing = Boolean(lead || description)
   return (
     <HeroBand
@@ -64,6 +64,8 @@ export const SegmentHero: React.FC<SegmentHeroData> = (hero) => {
       // Pull under the fixed header and run under the fixed footer: the band
       // is one full viewport, and both bars float over its edges.
       className="relative isolate -mt-(--header-height) flex min-h-svh flex-col overflow-clip bg-background pt-(--header-height) pb-(--footer-height) text-foreground"
+      // A pinned effect takes the band with it, so the copy stays on its ground.
+      theme={surface ?? undefined}
     >
       <ScrollReveal as="div" className="relative z-10 flex flex-1 flex-col" variant="intro">
         <Container className="flex w-full flex-1 flex-col py-24">

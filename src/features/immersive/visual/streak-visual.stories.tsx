@@ -18,6 +18,7 @@ const descriptor = (over: Partial<StreakVisualDescriptor> = {}): StreakVisualDes
   speed: 1,
   intensity: 1,
   pointer: true,
+  surface: null,
   posterMedia: null,
   degraded: false,
   ...over,
@@ -73,6 +74,21 @@ export const OnDarkBand: Story = {
   render: (args) => (
     <div className="band-dark relative isolate min-h-svh bg-tertiary text-tertiary-foreground">
       <StreakVisual {...args} />
+    </div>
+  ),
+}
+
+/**
+ * The editor pinned this use to its light face: it holds that face in either
+ * site theme and paints its own ground, so it reads the same on a dark band.
+ */
+export const PinnedLight: Story = {
+  args: { descriptor: descriptor({ surface: 'light' }), fill: false, className: 'aspect-video' },
+  render: (args) => (
+    <div className="band-dark min-h-svh bg-tertiary text-tertiary-foreground">
+      <div className="container py-16">
+        <StreakVisual {...args} />
+      </div>
     </div>
   ),
 }

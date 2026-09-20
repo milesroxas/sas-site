@@ -3,7 +3,7 @@ import type { CaseStudy, WorkPage } from '@/payload-types'
 import { WorkImageTransition } from '@/shared/lib/view-transition'
 import { pluralLabel } from '@/utilities/pluralLabel'
 import { caseStudyHeroFacts } from './caseStudyHeroFacts'
-import { HeroGround } from './HeroGround'
+import { HeroGround, pinnedOpening } from './HeroGround'
 
 const DetailGroup = ({ label, values }: { label: string; values: string[] }) => (
   <div className="flex flex-col gap-4">
@@ -50,11 +50,19 @@ const HeroDetails = ({
  * media keeps its own strip, so a page can carry both.
  */
 export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study: CaseStudy }) => {
-  const { capabilities, ground, industries, media, organization } = caseStudyHeroFacts(page, study)
+  const { capabilities, ground, industries, media, organization, surface } = caseStudyHeroFacts(
+    page,
+    study,
+  )
   const client = organization?.name || organization?.shortName
 
   return (
-    <header className="relative isolate flex flex-col gap-20 overflow-clip pt-16 pb-16 md:gap-32 lg:gap-8 lg:pt-32">
+    <header
+      {...pinnedOpening(
+        surface,
+        'relative isolate flex flex-col gap-20 overflow-clip pt-16 pb-16 md:gap-32 lg:gap-8 lg:pt-32',
+      )}
+    >
       <HeroGround ground={ground} handoff={!media} />
       <div className="container flex flex-col gap-10 md:gap-32 lg:gap-8 lg:pb-4">
         <h1 className="max-w-xl text-heading-1 text-foreground">

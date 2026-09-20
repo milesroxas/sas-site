@@ -11,11 +11,12 @@ import type { Page } from '@/payload-types'
 
 export const HighImpactHero: React.FC<Page['hero']> = (hero) => {
   const { description, links, title } = hero
-  const { ground, media } = resolveOpening(hero, { seedKey: title ?? 'hero' })
+  const { ground, media, surface } = resolveOpening(hero, { seedKey: title ?? 'hero' })
   return (
     // The band owns the palette and the header pull; the immersive shell
     // inside it owns the WebGL layer and the layout.
-    <HeroBand as="div" className="-mt-(--header-height)">
+    // A pinned effect takes the band with it, so the copy stays on its ground.
+    <HeroBand as="div" className="-mt-(--header-height)" theme={surface ?? undefined}>
       <ImmersiveShell
         webgl
         // isolate: contains the negative-z media and effect layers above the

@@ -67,6 +67,9 @@ const collectionIndexGlobal = ({
               mediaRequired: false,
               // `IndexBackground` draws a Streak Field and nothing else.
               visualEffects: [DEFAULT_EFFECT],
+              // The field grounds the whole listing, which paints in the
+              // visitor's theme: there is no band here for a pinned face.
+              visualThemed: false,
               visualTypeDescription:
                 'Streak Field runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.',
             }),

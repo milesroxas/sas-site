@@ -9,6 +9,7 @@ import {
   type StoredMenuPreviewSlot,
   type Visual,
   visualPosters,
+  visualSurface,
 } from '@/features/immersive/visual'
 import { HERO_BAND_THEME } from '@/heros/band-theme'
 import type { Media, WorkPage } from '@/payload-types'
@@ -114,7 +115,8 @@ function menuVisual(
     ...(single ? {} : { lightUrl: light.src }),
     mime: dark.mime,
     hero,
-    ground,
+    // A face the editor pinned is the ground the page paints under it too.
+    ground: visualSurface(visual) ?? ground,
   }
 }
 

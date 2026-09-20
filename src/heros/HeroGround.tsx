@@ -1,6 +1,18 @@
 import type React from 'react'
 import { Visual } from '@/components/Visual'
-import type { EffectVisual } from '@/features/immersive/visual'
+import type { EffectVisual, Surface } from '@/features/immersive/visual'
+
+/**
+ * Root props for an opening that paints no band of its own (a post, a case
+ * study): it sits on the page's ground, in the visitor's theme. When the
+ * editor pinned the effect grounding it to one face (`resolveOpening`'s
+ * `surface`), the root takes that palette and paints it, so the copy over the
+ * effect stays legible. A `HeroBand` takes the same value as its `theme`.
+ */
+export const pinnedOpening = (surface: Surface | null, className: string) => ({
+  className: surface ? `${className} bg-background text-foreground` : className,
+  'data-theme': surface ?? undefined,
+})
 
 /**
  * The effect behind a hero band: a Streak Field or a light leak filling the
