@@ -144,12 +144,42 @@ const Statement = ({ body, eyebrow, heading }: RichTransitionFields) => (
   </Container>
 )
 
+/**
+ * Prose: the heading cluster and body on the Story beats reading column
+ * (columns 3-6), so a Standard heading can open a passage of beats without
+ * the copy stepping sideways between blocks. The body carries `text-lead`,
+ * the standfirst token the Story beats `lead` variant uses, so the opening
+ * line reads a step above the beats that follow it.
+ */
+const Prose = ({ body, eyebrow, heading }: RichTransitionFields) => (
+  <Container>
+    <BlockGrid>
+      <div className="text-stack md:col-span-4 md:col-start-3">
+        {eyebrow ? (
+          <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
+            {eyebrow}
+          </p>
+        ) : null}
+        <h2 className="text-heading-1" data-reveal data-reveal-group="heading">
+          {heading}
+        </h2>
+      </div>
+      {body ? (
+        <div className="md:col-span-4 md:col-start-3">
+          <Body className="text-lead" data={body} />
+        </div>
+      ) : null}
+    </BlockGrid>
+  </Container>
+)
+
 const layouts: Record<Layout, (props: RichTransitionFields) => ReactNode> = {
   offset: Offset,
   left: Left,
   centered: Centered,
   split: Split,
   statement: Statement,
+  prose: Prose,
 }
 
 /**

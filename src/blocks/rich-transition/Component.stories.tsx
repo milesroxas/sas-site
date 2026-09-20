@@ -58,6 +58,14 @@ export const Statement: Story = {
   },
 }
 
+/** Prose: on the Story beats reading column, body at the standfirst size. */
+export const Prose: Story = {
+  args: {
+    heading: 'From positioning to product story',
+    layout: 'prose',
+  },
+}
+
 export const Dark: Story = {
   args: {
     heading: 'From positioning to product story',

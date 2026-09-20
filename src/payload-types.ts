@@ -1826,7 +1826,7 @@ export interface WorkCaseStudyTransitionBlock {
   /**
    * How the copy sits on the band.
    */
-  layout?: ('offset' | 'left' | 'centered' | 'split' | 'statement') | null;
+  layout?: ('offset' | 'left' | 'centered' | 'split' | 'statement' | 'prose') | null;
   /**
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */
@@ -6549,7 +6549,7 @@ export interface RichTransitionBlock {
   /**
    * How the copy sits on the band.
    */
-  layout?: ('offset' | 'left' | 'centered' | 'split' | 'statement') | null;
+  layout?: ('offset' | 'left' | 'centered' | 'split' | 'statement' | 'prose') | null;
   /**
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */
@@ -7870,7 +7870,7 @@ export interface LabRichTransitionBlock {
   /**
    * How the copy sits on the band.
    */
-  layout?: ('offset' | 'left' | 'centered' | 'split' | 'statement') | null;
+  layout?: ('offset' | 'left' | 'centered' | 'split' | 'statement' | 'prose') | null;
   /**
    * Section surface within the visitor's site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.
    */

@@ -111,13 +111,16 @@ export const transitionFields = (): Field[] => [
         // column in); `left` now starts on column 1. Existing rows migrate
         // `left` -> `offset` so their rendering does not change. `centered` is
         // labelled "Center"; retiring `split`/`statement` is a later contract
-        // step (see docs/blocks-reorg-roadmap.md, Phase D).
+        // step (see docs/blocks-reorg-roadmap.md, Phase D). `prose` puts the
+        // heading on the Story beats reading column so it can open a passage
+        // of beats.
         options: [
           { label: 'Offset', value: 'offset' },
           { label: 'Left', value: 'left' },
           { label: 'Center', value: 'centered' },
           { label: 'Split', value: 'split' },
           { label: 'Statement', value: 'statement' },
+          { label: 'Prose', value: 'prose' },
         ],
         admin: {
           width: '50%',
