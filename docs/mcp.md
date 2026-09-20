@@ -33,7 +33,7 @@ claude mcp add sas-cms --transport http https://<site-url>/api/mcp \
 Local dev serves the same endpoint at `http://localhost:3001/api/mcp` (in a Conductor workspace,
 whichever port that workspace's own `pnpm dev` is on).
 
-Cursor reads the project server from `.cursor/mcp.json`, which points at the **preview** site and
+Cursor reads the project server from `.cursor/mcp.json`, which points at **production** and
 takes the key from `SAS_CMS_MCP_KEY` ([agent-skills.md](agent-skills.md#mcp-servers)).
 `pnpm cms:upload` reads the same key from `CMS_MCP_API_KEY`.
 
