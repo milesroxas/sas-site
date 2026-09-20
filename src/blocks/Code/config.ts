@@ -5,7 +5,7 @@ import { BLOCK_GROUPS } from '@/blocks/shared/groups'
  * Languages the block highlights. Values are stored (a Postgres enum where the
  * block sits in a composition, a JSON string inside a post body), so relabel
  * freely but never re-value. `glsl` and `bash` are not in the highlighter's
- * bundled set; `prism-languages.ts` registers them.
+ * bundled set; `components/ui/code-block-languages.ts` registers them.
  */
 export const CODE_LANGUAGES = [
   { label: 'TypeScript', value: 'typescript' },

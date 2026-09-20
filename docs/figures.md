@@ -17,7 +17,7 @@ The principle: model the author's mental model, and the author is an LLM. It is 
 | Blocks | `src/blocks/figures/` | `chart`, `diagram`, `bespokeFigure` configs and components, `shared.ts` (frame fields), `spec-field.ts` |
 | Document boundary | `src/plugins/figures/index.ts` | Validation that answers on drafts, save-time diagram geometry |
 | Markdown input | `src/fields/markdownInput.ts` | The write-only `markdown` and `replace` pair |
-| Code block | `src/blocks/Code/` | One config, offered inline in a post body and in the Section run; `prism-languages.ts` adds GLSL and shell |
+| Code block | `src/blocks/Code/` | One config, offered inline in a post body and in the Section run; the listing itself is the `components/ui/code-block.tsx` surface, whose `code-block-languages.ts` adds GLSL and shell |
 | Upload | `scripts/cms-upload.ts`, `src/endpoints/agentMedia.ts` | `pnpm cms:upload` with the MCP key; the endpoint enforces internal |
 | Corpus | `src/features/figures/corpus.ts` | Eight charts and eight diagrams: fixtures for stories and tests |
 

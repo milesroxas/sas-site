@@ -65,7 +65,7 @@ export const CSS: Story = {
   },
 }
 
-/** `glsl` and `bash` are registered on top of the highlighter's bundled grammars (`prism-languages.ts`). */
+/** `glsl` and `bash` are registered on top of the highlighter's bundled grammars (`components/ui/code-block-languages.ts`). */
 export const GLSL: Story = {
   args: {
     language: 'glsl',

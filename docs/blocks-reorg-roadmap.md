@@ -75,6 +75,7 @@ New `BLOCK_GROUPS` entries: `sectionHeading: 'Section heading'`, `mediaContent: 
 |---|---|---|---|
 | `richTransition` | Section heading / Standard | 2026-09-03 | Generic Standard for every surface but Work; replaced `labTransition` (zero rows) |
 | `richText` | Text / Rich text | 2026-09-03 | Born on the Section and grid contracts; Text now holds only this block. 2026-09-04: the editor toolbar's block menu adds Insights (Lexical block `insights`, `RichTextInsightsBlock`, stored in the body JSON, no table); each item is the Insight list item (`insight-list/Insight.tsx`, `insightItemFields`), and Pill list (Lexical block `pillList`, `RichTextPillListBlock`, eyebrow plus wrapping mono pills, Paper "Chip List") |
+| `code` | Text / Code | 2026-09-19 | Was Posts-only, inside the article's Lexical editor (no table). Joined the run with the figures work (`15e2666`, tables in migration `20260919_213646_figures_blocks`); composition placement is `Code/Section.tsx` (reading column 3-6), the Lexical copy stays inline. 2026-09-20: the surface moved to `components/ui/code-block.tsx` (band panel on `data-band="dark"`, ScrollArea, `scroll-fade-x`, `--syntax-*` ink) and the old `Component.client.tsx` / `CopyButton.tsx` went with it; no schema change |
 | `content` | Custom / Content | 2026-09-03 | Nested in every Section via `sectionChildBlocks`; not in the run so Custom still closes the top-level drawer |
 | NEW `faq` | Interactive / FAQ | 2026-09-03 (B3) | Two-column accordion from the Paper frame `Block=FAQ, Layout=Compact`; per-parent `*_faq` + `*_faq_items` tables |
 | `carousel` | Interactive / Carousel | 2026-09-03 (B3) | Moved from the legacy top-level lists into the run; keeps its bespoke embla layout and its existing tables (`*_blocks_carousel`), only Posts gains it as new |
@@ -137,6 +138,7 @@ The Section-nestable run is defined once in `src/blocks/shared/section-blocks.ts
 | Statement (`featureImageStatement`) | yes | yes | yes (story variant) | yes (story variant) | yes | yes | yes |
 | Caption (`mediaBlock`) | yes | yes | yes | yes | yes | yes | yes |
 | Rich text (`richText`) | yes | yes | no (hand-built run) | yes | yes | yes | yes |
+| Code (`code`) | yes | yes | yes (plain) | yes | yes | yes | held |
 | FAQ (`faq`) | yes | yes | yes (plain) | yes | yes | yes | yes |
 | Carousel (`carousel`) | yes | yes (new in B3) | yes (plain) | yes | yes | yes | yes |
 | Insight list (`insightList`) | yes | yes | yes (plain) | yes | yes | yes | yes |

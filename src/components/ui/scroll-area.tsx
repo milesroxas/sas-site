@@ -9,6 +9,7 @@ function ScrollArea({
   className,
   viewportClassName,
   viewportRef,
+  orientation = 'vertical',
   children,
   ...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.Root> & {
@@ -20,6 +21,8 @@ function ScrollArea({
   viewportClassName?: string
   /** The viewport is the element that actually scrolls — expose it for scroll libraries. */
   viewportRef?: React.Ref<HTMLDivElement>
+  /** Which scrollbars the area carries. Vertical is the common case. */
+  orientation?: 'vertical' | 'horizontal' | 'both'
 }) {
   return (
     <ScrollAreaPrimitive.Root
@@ -37,7 +40,8 @@ function ScrollArea({
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
-      <ScrollBar />
+      {orientation !== 'horizontal' ? <ScrollBar /> : null}
+      {orientation !== 'vertical' ? <ScrollBar orientation="horizontal" /> : null}
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>
   )
