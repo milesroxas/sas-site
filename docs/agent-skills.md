@@ -24,7 +24,7 @@ Plugins are declared in `.claude/settings.json` (`extraKnownMarketplaces` + `ena
 | `cms-migration` | payloadcms/skills | Importing content from another CMS |
 | `creative-webgl-shaders` | Local | Shaders, R3F, TSL, post-processing, spring motion |
 | `posthog-analytics` | Local | Consent-gated PostHog setup, adding conversions via `captureServerEvent`, event naming and PII rules, event registry, dashboards. Update its registry when events change |
-| `article-authoring` | Local | Drafting long-form pieces over MCP: where a piece goes, Markdown input, chart and diagram specs, reading a validation error, `pnpm cms:upload`. Contracts live in `docs/figures.md` |
+| `article-authoring` | Local | Drafting long-form pieces over MCP: where a piece goes, Lab Page composition (Story beats, Prose headings, one reading column, default bands), Markdown input, chart and diagram specs, reading a validation error, `pnpm cms:upload`. Contracts live in `docs/figures.md` |
 | `r3f-best-practices` | emalorenzo/three-agent-skills | R3F render loop, drei, zustand, perf rules |
 | `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-react` | greensock/gsap-skills | Tweens, timelines, ScrollTrigger (routed through Lenis, see `docs/animations.md`), `useGSAP` cleanup |
 | `vercel-react-view-transitions` | vercel-labs/agent-skills | `<ViewTransition>` work (route template, work image morph) |

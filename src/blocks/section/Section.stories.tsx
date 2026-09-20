@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { FullMediaBlock } from '@/blocks/full-media/Component'
+import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
+import { StoryBeatsBlock } from '@/blocks/story-beats/Component'
 import { mediaFixture, paragraph, richText, text } from '../fixtures'
 import { SectionBand } from './SectionBand'
 
@@ -31,6 +33,35 @@ const children = (
       aspectRatio="16-9"
       contentPosition="left"
     />
+    <SplitContentNarrowBlock
+      bare
+      blockType="splitContentNarrow"
+      source="custom"
+      eyebrow="About"
+      heading="Nested beneath the same surface"
+      body={body}
+      media={mediaFixture}
+      imagePosition="right"
+    />
+  </>
+)
+
+/**
+ * The one exception to the stack: a Standard heading in the Prose layout
+ * opens the passage under it, so the Section binds the two at two body lines
+ * instead of a full stack step (`stack-binds-opener`, globals.css).
+ */
+const opensWithProseHeading = (
+  <>
+    <RichTransition
+      bare
+      stacked
+      body={body}
+      eyebrow="Approach"
+      heading="One band, many blocks"
+      layout="prose"
+    />
+    <StoryBeatsBlock bare blockType="storyBeats" body={body} variant="default" />
     <SplitContentNarrowBlock
       bare
       blockType="splitContentNarrow"
@@ -87,6 +118,10 @@ export const TightStack: Story = {
 
 export const LooseStack: Story = {
   args: { customize: true, stack: 'loose' },
+}
+
+export const OpensWithProseHeading: Story = {
+  args: { children: opensWithProseHeading },
 }
 
 /** Unchecking Customize must ignore whatever the hidden fields still store. */

@@ -103,7 +103,7 @@ import * as migration_20260920_131252_mcp_key_upload_media from './20260920_1312
 import * as migration_20260920_155431_contents_button from './20260920_155431_contents_button';
 import * as migration_20260920_180758_youtube_ambient_hero from './20260920_180758_youtube_ambient_hero';
 import * as migration_20260920_184518_heading_prose_layout from './20260920_184518_heading_prose_layout';
-import * as migration_20260920_193811_mcp_streak_looks_capabilities from './20260920_193811_mcp_streak_looks_capabilities';
+import * as migration_20260920_202930_heading_level from './20260920_202930_heading_level';
 
 export const migrations = [
   {
@@ -632,8 +632,8 @@ export const migrations = [
     name: '20260920_184518_heading_prose_layout',
   },
   {
-    up: migration_20260920_193811_mcp_streak_looks_capabilities.up,
-    down: migration_20260920_193811_mcp_streak_looks_capabilities.down,
-    name: '20260920_193811_mcp_streak_looks_capabilities'
+    up: migration_20260920_202930_heading_level.up,
+    down: migration_20260920_202930_heading_level.down,
+    name: '20260920_202930_heading_level'
   },
 ];

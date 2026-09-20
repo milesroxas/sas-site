@@ -314,6 +314,14 @@
           "notNull": false,
           "default": "'light'"
         },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum_pages_transition_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
+        },
         "body": {
           "name": "body",
           "type": "jsonb",
@@ -8858,6 +8866,14 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'light'"
+        },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum___pages_v_transition_v_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
         },
         "body": {
           "name": "body",
@@ -17687,6 +17703,14 @@
           "notNull": false,
           "default": "'light'"
         },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum_posts_transition_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
+        },
         "body": {
           "name": "body",
           "type": "jsonb",
@@ -23508,6 +23532,14 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'light'"
+        },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum___posts_v_transition_v_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
         },
         "body": {
           "name": "body",
@@ -29657,6 +29689,14 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'light'"
+        },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum_wp_transition_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
         },
         "body": {
           "name": "body",
@@ -38339,6 +38379,14 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'light'"
+        },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum__wp_transition_v_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
         },
         "body": {
           "name": "body",
@@ -47410,6 +47458,14 @@
           "notNull": false,
           "default": "'light'"
         },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum_lab_pages_transition_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
+        },
         "body": {
           "name": "body",
           "type": "jsonb",
@@ -54638,6 +54694,14 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'light'"
+        },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum___lab_pages_v_transition_v_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
         },
         "body": {
           "name": "body",
@@ -62288,6 +62352,14 @@
           "notNull": false,
           "default": "'light'"
         },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum_expertise_pages_transition_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
+        },
         "body": {
           "name": "body",
           "type": "jsonb",
@@ -69633,6 +69705,14 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'light'"
+        },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum___expertise_pages_v_transition_v_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
         },
         "body": {
           "name": "body",
@@ -77320,6 +77400,14 @@
           "notNull": false,
           "default": "'light'"
         },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum_audience_pages_transition_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
+        },
         "body": {
           "name": "body",
           "type": "jsonb",
@@ -84665,6 +84753,14 @@
           "primaryKey": false,
           "notNull": false,
           "default": "'light'"
+        },
+        "heading_level": {
+          "name": "heading_level",
+          "type": "enum___audience_pages_v_transition_v_heading_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'h2'"
         },
         "body": {
           "name": "body",
@@ -114273,34 +114369,6 @@
           "notNull": false,
           "default": false
         },
-        "streak_looks_find": {
-          "name": "streak_looks_find",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "streak_looks_create": {
-          "name": "streak_looks_create",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "streak_looks_update": {
-          "name": "streak_looks_update",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
-        "streak_looks_delete": {
-          "name": "streak_looks_delete",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
         "media_find": {
           "name": "media_find",
           "type": "boolean",
@@ -135760,6 +135828,15 @@
         "brand"
       ]
     },
+    "public.enum_pages_transition_heading_level": {
+      "name": "enum_pages_transition_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
+      ]
+    },
     "public.enum_pages_blocks_feature_heading_offset_source": {
       "name": "enum_pages_blocks_feature_heading_offset_source",
       "schema": "public",
@@ -136777,6 +136854,15 @@
         "brand"
       ]
     },
+    "public.enum___pages_v_transition_v_heading_level": {
+      "name": "enum___pages_v_transition_v_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
+      ]
+    },
     "public.enum__pages_v_blocks_feature_heading_offset_source": {
       "name": "enum__pages_v_blocks_feature_heading_offset_source",
       "schema": "public",
@@ -137760,6 +137846,15 @@
         "brand"
       ]
     },
+    "public.enum_posts_transition_heading_level": {
+      "name": "enum_posts_transition_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
+      ]
+    },
     "public.enum_posts_blocks_feature_heading_offset_source": {
       "name": "enum_posts_blocks_feature_heading_offset_source",
       "schema": "public",
@@ -138505,6 +138600,15 @@
         "dark",
         "neutral",
         "brand"
+      ]
+    },
+    "public.enum___posts_v_transition_v_heading_level": {
+      "name": "enum___posts_v_transition_v_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
       ]
     },
     "public.enum__posts_v_blocks_feature_heading_offset_source": {
@@ -139274,6 +139378,15 @@
         "dark",
         "neutral",
         "brand"
+      ]
+    },
+    "public.enum_wp_transition_heading_level": {
+      "name": "enum_wp_transition_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
       ]
     },
     "public.enum_work_pages_blocks_feature_heading_offset_source": {
@@ -140431,6 +140544,15 @@
         "brand"
       ]
     },
+    "public.enum__wp_transition_v_heading_level": {
+      "name": "enum__wp_transition_v_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
+      ]
+    },
     "public.enum__work_pages_v_blocks_feature_heading_offset_source": {
       "name": "enum__work_pages_v_blocks_feature_heading_offset_source",
       "schema": "public",
@@ -141586,6 +141708,15 @@
         "brand"
       ]
     },
+    "public.enum_lab_pages_transition_heading_level": {
+      "name": "enum_lab_pages_transition_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
+      ]
+    },
     "public.enum_lab_pages_blocks_feature_heading_offset_source": {
       "name": "enum_lab_pages_blocks_feature_heading_offset_source",
       "schema": "public",
@@ -142621,6 +142752,15 @@
         "brand"
       ]
     },
+    "public.enum___lab_pages_v_transition_v_heading_level": {
+      "name": "enum___lab_pages_v_transition_v_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
+      ]
+    },
     "public.enum__lab_pages_v_blocks_feature_heading_offset_source": {
       "name": "enum__lab_pages_v_blocks_feature_heading_offset_source",
       "schema": "public",
@@ -143652,6 +143792,15 @@
         "brand"
       ]
     },
+    "public.enum_expertise_pages_transition_heading_level": {
+      "name": "enum_expertise_pages_transition_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
+      ]
+    },
     "public.enum_expertise_pages_blocks_feature_heading_offset_source": {
       "name": "enum_expertise_pages_blocks_feature_heading_offset_source",
       "schema": "public",
@@ -144547,6 +144696,15 @@
         "dark",
         "neutral",
         "brand"
+      ]
+    },
+    "public.enum___expertise_pages_v_transition_v_heading_level": {
+      "name": "enum___expertise_pages_v_transition_v_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
       ]
     },
     "public.enum__expertise_pages_v_blocks_feature_heading_offset_source": {
@@ -145446,6 +145604,15 @@
         "brand"
       ]
     },
+    "public.enum_audience_pages_transition_heading_level": {
+      "name": "enum_audience_pages_transition_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
+      ]
+    },
     "public.enum_audience_pages_blocks_feature_heading_offset_source": {
       "name": "enum_audience_pages_blocks_feature_heading_offset_source",
       "schema": "public",
@@ -146341,6 +146508,15 @@
         "dark",
         "neutral",
         "brand"
+      ]
+    },
+    "public.enum___audience_pages_v_transition_v_heading_level": {
+      "name": "enum___audience_pages_v_transition_v_heading_level",
+      "schema": "public",
+      "values": [
+        "h2",
+        "h3",
+        "h4"
       ]
     },
     "public.enum__audience_pages_v_blocks_feature_heading_offset_source": {
@@ -149820,6 +149996,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "80fc4c63-47b6-455b-8f14-90fdcbc03cc7",
+  "id": "9ca57653-e1ad-4657-bfd0-6475af78f584",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }
