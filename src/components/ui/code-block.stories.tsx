@@ -27,6 +27,62 @@ const cssSample = `@utility scroll-fade-x {
   mask-image: var(--scroll-fade-mask, var(--scroll-fade-inline));
 }`
 
+/**
+ * One short listing per language `CODE_LANGUAGES` offers (blocks/Code/config.ts),
+ * chosen so each exercises the ink the others cannot: JSON is all keys and
+ * literals, GLSL all types and swizzles, Shell all flags and expansions.
+ */
+const languageSamples = [
+  {
+    language: 'tsx',
+    code: `export const Badge = ({ label, tone = 'neutral' }: Props) => (
+  <span className={cn('badge', tone)} data-tone={tone}>
+    {label}
+  </span>
+)`,
+  },
+  {
+    language: 'javascript',
+    code: `const looks = new Map()
+export function register(id, tuning) {
+  if (looks.has(id)) throw new Error(\`duplicate look: \${id}\`)
+  return looks.set(id, { id, ...tuning })
+}`,
+  },
+  { language: 'css', code: cssSample },
+  {
+    language: 'json',
+    code: `{
+  "id": "technical-b2b-v1",
+  "count": 1500,
+  "layout": "grid",
+  "poster": null,
+  "enabled": true
+}`,
+  },
+  {
+    language: 'glsl',
+    code: `precision highp float;
+uniform float uTime;
+in vec2 vUv;
+out vec4 fragColor;
+
+void main() {
+  float d = smoothstep(0.0, 1.0, vUv.x + uTime);
+  fragColor = vec4(vec3(d), 1.0);
+}`,
+  },
+  {
+    language: 'bash',
+    code: `#!/usr/bin/env bash
+set -euo pipefail
+
+for file in src/**/*.stories.tsx; do
+  echo "checking \${file##*/}" && pnpm exec tsc --noEmit
+done`,
+  },
+]
+
 const meta = {
   title: 'UI/CodeBlock',
   component: CodeBlock,
@@ -35,7 +91,7 @@ const meta = {
   },
   args: {
     code: shortSample,
-    language: 'typescript',
+    language: 'tsx',
   },
 } satisfies Meta<typeof CodeBlock>
 
@@ -68,6 +124,21 @@ export const OnDarkBand: Story = {
   render: (args) => (
     <div className="bg-background p-12" data-band="dark">
       <CodeBlock {...args} />
+    </div>
+  ),
+}
+
+/**
+ * Every language the block offers, in one frame: the six syntax inks have to
+ * mean the same thing in each, and a regression in the token map shows up here
+ * as a listing that has gone flat.
+ */
+export const Languages: Story = {
+  render: () => (
+    <div className="flex flex-col gap-8">
+      {languageSamples.map((sample) => (
+        <CodeBlock key={sample.language} {...sample} />
+      ))}
     </div>
   ),
 }

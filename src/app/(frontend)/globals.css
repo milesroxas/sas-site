@@ -1195,17 +1195,37 @@ html[data-scrolled] :is([data-site-header], [data-site-footer]) {
    The panel always renders as a dark band (`data-band="dark"`, so its ground
    is --tertiary: 0.22 inside the light theme, 0.08 inside the dark one), which
    is why this palette is stated once and never flips with the site theme.
-   Structural ink is deliberately absent: plain text, comments, punctuation and
-   the line-number gutter read the band's own --foreground / --muted-foreground,
-   so the surface stays one system with the rest of the site.
+   Comments, punctuation and the line-number gutter stay absent on purpose:
+   they read the band's own --muted-foreground, so the quiet ink tracks the
+   ground it sits on and the surface stays one system with the rest of the site.
 
-   Hues are the site's. Keywords and entities take the two chart blues,
-   strings the --active green at its dark-theme step, numbers --brand. Every
-   step clears 4.5:1 against the lighter of the two grounds (keyword, the
-   tightest, is 4.6:1). */
+   Six inks, one per role a reader scans for, because a listing is only as
+   legible as the distance between the roles:
+
+     operator   the glue (= => && ... |). Achromatic and brighter than
+                punctuation, dimmer than an identifier: present without
+                competing, and no sixth hue spent on a glyph.
+     keyword    the language, including the words it defines as values
+                (export, const, @media, uniform, true, null). --primary's
+                blue.
+     entity     things that are called or named (functions, types, JSX tags,
+                CSS selectors). --success's teal.
+     property   members (object keys, attr names, CSS properties, $vars).
+                --chart-1's pale blue: kin to keyword, since both are names
+                the language itself defines, separated by lightness.
+     string     --active's green at its dark-theme step.
+     number     data literals: numbers, units, CSS colors. --brand.
+
+   Hues are the site's own and sit 50deg or more apart, except keyword and
+   property, which are family on purpose and rarely meet on one line. Every
+   step is inside sRGB and clears 4.5:1 against the lighter of the two grounds
+   (string, the tightest, is 8.3:1; keyword, formerly the dimmest ink on the
+   panel at 4.6:1, is 6.9:1). */
 :root {
-  --syntax-keyword: var(--chart-2);
-  --syntax-entity: var(--chart-1);
+  --syntax-operator: oklch(0.8 0 0);
+  --syntax-keyword: oklch(0.72 0.14 260);
+  --syntax-entity: oklch(0.82 0.1 200);
+  --syntax-property: var(--chart-1);
   --syntax-string: oklch(0.75 0.16 150);
   --syntax-number: oklch(0.87 0.14 85);
 }

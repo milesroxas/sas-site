@@ -29,10 +29,21 @@ import './code-block-languages'
  */
 
 /**
- * Prism token types mapped onto the site's tokens. Structural ink (plain text,
- * comments, punctuation) reads the band's own --foreground / --muted-foreground
- * so the listing stays part of the surface; only the four --syntax-* steps are
- * specific to code.
+ * Prism token types mapped onto the site's tokens. Plain text, comments and
+ * punctuation read the band's own --foreground / --muted-foreground so the
+ * listing stays part of the surface; the six --syntax-* steps (globals.css,
+ * where the palette and its contrast are argued) are specific to code.
+ *
+ * Grouped by the role a reader scans for rather than by grammar, so one ink
+ * means one thing across all seven languages the block offers: a JSX tag, a
+ * CSS selector and a function name are all things that are named or called,
+ * and take --syntax-entity in each.
+ *
+ * Every type listed is one these grammars actually emit (typescript, tsx,
+ * javascript, css, json, glsl, bash). Nested tokens inherit their parent's
+ * style, so a `selector`'s `class` and a `regex`'s `regex-source` need no
+ * entry of their own; `color` and `hexcode` do, because a CSS color literal
+ * is the one leaf no ancestor reaches, and it rendered as plain text.
  *
  * These are the raw palette variables, not the `--color-*` theme names: the
  * theme map is `@theme inline` (styles/shadcn-theme.css), so `--color-*` is
@@ -46,24 +57,49 @@ const codeTheme: PrismTheme = {
       types: ['comment', 'prolog', 'doctype', 'cdata'],
       style: { color: 'var(--muted-foreground)' },
     },
+    // Structure the eye steps over, and the glue it should not.
     {
-      types: ['punctuation', 'operator'],
+      types: ['punctuation'],
       style: { color: 'var(--muted-foreground)' },
     },
     {
-      types: ['keyword', 'builtin', 'atrule', 'important', 'tag', 'selector'],
+      types: ['operator', 'combinator'],
+      style: { color: 'var(--syntax-operator)' },
+    },
+    // `boolean` sits with the keywords, not the literals, because Prism gives
+    // `null` and `undefined` a `keyword` alias and an alias always wins over
+    // the type it decorates. Ranking booleans as literals would leave
+    // `"enabled": true` gold beside `"poster": null` blue, two words of the
+    // same kind painted differently on adjacent lines. The rule that holds:
+    // words the language defines are keywords, data is a literal.
+    {
+      types: ['keyword', 'builtin', 'atrule', 'important', 'boolean'],
       style: { color: 'var(--syntax-keyword)' },
     },
+    // `tag` and `selector` sit here rather than with the keywords: both name a
+    // thing, and both share a line with an attr-name or a property, which is
+    // exactly the pair that has to stay told apart.
     {
-      types: ['function', 'class-name', 'attr-name', 'property', 'variable'],
+      types: ['function', 'class-name', 'tag', 'selector'],
       style: { color: 'var(--syntax-entity)' },
+    },
+    {
+      types: ['property', 'attr-name', 'variable', 'parameter'],
+      style: { color: 'var(--syntax-property)' },
     },
     {
       types: ['string', 'char', 'attr-value', 'regex', 'url'],
       style: { color: 'var(--syntax-string)' },
     },
+    // A `${...}` hole is code, not literal text, and it inherits the template
+    // string's green without this. Its own `${` and `}` keep the punctuation
+    // ink, which the accumulated types already resolve to last.
     {
-      types: ['number', 'boolean', 'constant', 'symbol', 'unit'],
+      types: ['interpolation'],
+      style: { color: 'var(--foreground)' },
+    },
+    {
+      types: ['number', 'constant', 'symbol', 'unit', 'color', 'hexcode'],
       style: { color: 'var(--syntax-number)' },
     },
   ],
