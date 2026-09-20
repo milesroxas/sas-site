@@ -26,6 +26,14 @@ import './code-block-languages'
  * carries `scroll-fade-x`: the edge a line runs past softens instead of being
  * cut, and the fade is scroll-driven, so it only appears on a side there is
  * actually more content on.
+ *
+ * `data-lenis-prevent-horizontal` on that scroller is the same fix the rails
+ * carry (sections/RelatedPosts/PostRail.client, blocks/TestimonialsMarquee):
+ * root Lenis preventDefaults wheel and touchmove to drive the page itself, so
+ * without it a sideways trackpad swipe never reaches the listing and its
+ * vertical component scrolls the page instead. The attribute releases only
+ * the gestures Lenis reads as horizontal, so panning the code is native while
+ * an up/down gesture started over it still smooth-scrolls the page.
  */
 
 /**
@@ -182,9 +190,13 @@ function CodeBlock({
       <Highlight code={code.trimEnd()} language={language ?? ''} theme={codeTheme}>
         {({ getLineProps, getTokenProps, tokens }) => (
           <ScrollArea
+            data-lenis-prevent-horizontal
             orientation="horizontal"
             type="auto"
-            viewportClassName="scroll-fade-x scroll-fade-16"
+            // overscroll-x-contain: at either end of a long line the pan stops
+            // there rather than chaining out to the page or the browser's
+            // back gesture.
+            viewportClassName="scroll-fade-x scroll-fade-16 overscroll-x-contain"
           >
             {/* No tabIndex here: the viewport is a scroll container with no
                 focusable children, so the browser makes it keyboard-focusable
