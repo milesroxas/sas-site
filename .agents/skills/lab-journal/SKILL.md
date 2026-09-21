@@ -28,6 +28,7 @@ pnpm lab:journal resume [slug]                    # live again, and on this bran
 pnpm lab:journal status                           # entries, sessions, token totals
 pnpm lab:journal pause                            # stop capturing on this branch
 pnpm lab:journal sync                             # recount sessions from their transcripts
+pnpm lab:journal window --from <iso> --to <iso>   # this journal's share of the running session
 pnpm lab:journal wrap                             # the feature is done
 pnpm lab:journal:digest [slug]                    # Jev reads the raw record into a brief
 ```
@@ -35,6 +36,21 @@ pnpm lab:journal:digest [slug]                    # Jev reads the raw record int
 A journal is live only on the branches it was started or resumed on, so work on another branch is never captured by accident. On `main` it captures every session until paused: pause it when the session turns to something else.
 
 `start` keeps the prompts of the session that ran it, so the conversation that led to the feature is part of the record.
+
+## One journal per feature, even inside one session
+
+A journal belongs to one feature, and a feature is what would be one Lab Project entry. Tooling built along the way, a refactor the work uncovered, or a second idea that grew out of the first is its own feature if it would be written up on its own. The first journal kept with this tooling mixed two, and had to be split.
+
+When a session turns from one feature to another, stop and say so before logging anything more. Then:
+
+```sh
+pnpm lab:journal window --to <iso time of the prompt that changed the subject>   # closes this journal's share of the session
+pnpm lab:journal pause
+pnpm lab:journal start <other-slug> --title "<Title>"                          # or resume it
+pnpm lab:journal window --from <the same iso time>
+```
+
+The window keeps the session's tokens and prompts from being counted into both journals; every recount, the prompt hook and the digest honor it. Find the time in `prompts.jsonl`. When it is not clear which feature an entry belongs to, ask Miles.
 
 ## Logging an entry
 

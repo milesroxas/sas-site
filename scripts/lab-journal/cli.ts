@@ -9,9 +9,11 @@ import {
   ENTRY_KINDS,
   type EntryKind,
   formatEntry,
+  inWindow,
   JOURNAL_ROOT,
   type JournalMeta,
   journalDir,
+  type PromptRow,
   parseEntries,
   promptsFromTranscript,
   promptsPath,
@@ -19,9 +21,11 @@ import {
   readMetas,
   repoRoot,
   type SessionRow,
+  type SessionWindow,
   sessionOf,
   sessionRow,
   sessionsPath,
+  sessionWindow,
   totalUsage,
   transcriptDir,
   upsertSession,
@@ -35,6 +39,7 @@ import {
  *   pnpm lab:journal start <slug> --title "<title>"
  *   pnpm lab:journal log --kind <kind> --title "<title>" < body.md
  *   pnpm lab:journal status | pause | resume [slug] | wrap | sync
+ *   pnpm lab:journal window [--from <iso>] [--to <iso>]
  *
  * `log` appends, so an entry costs the same on day five as on day one: the
  * agent never has to read the journal back to add to it.
@@ -49,10 +54,11 @@ function fail(message: string): never {
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 /** One session's prompts and token counts, from its transcript. Safe to repeat: both are keyed. */
-function capture(slug: string, transcript: string | null): void {
+function capture(slug: string, transcript: string | null, given?: SessionWindow): void {
   if (!transcript || !existsSync(transcript)) return
-  addPrompts(root, slug, promptsFromTranscript(readFileSync(transcript, 'utf8')))
-  const row = sessionRow(transcript)
+  const window = given ?? sessionWindow(root, slug, sessionOf(transcript))
+  addPrompts(root, slug, promptsFromTranscript(readFileSync(transcript, 'utf8'), window))
+  const row = sessionRow(transcript, window)
   if (row) upsertSession(root, slug, row)
 }
 
@@ -157,6 +163,29 @@ function sync(): void {
   status()
 }
 
+/**
+ * One session, two features: says which part of the running session is this
+ * journal's, so its tokens and prompts are not counted into both. Prompts
+ * already captured outside the window are removed.
+ */
+function setWindow(from: string | undefined, to: string | undefined): void {
+  const journal = requireActive()
+  const transcript = currentTranscript(process.cwd(), root)
+  if (!transcript) fail('No transcript found for the running session.')
+  for (const value of [from, to]) {
+    if (value && Number.isNaN(Date.parse(value))) fail(`Not an ISO time: ${value}`)
+  }
+  const window: SessionWindow = { ...(from ? { from } : {}), ...(to ? { to } : {}) }
+  const session = sessionOf(transcript)
+  const path = promptsPath(root, journal.slug)
+  const kept = readJsonl<PromptRow>(path).filter(
+    (row) => row.session !== session || inWindow(row.at, window),
+  )
+  writeFileSync(path, kept.map((row) => `${JSON.stringify(row)}\n`).join(''))
+  capture(journal.slug, transcript, window)
+  status()
+}
+
 function status(): void {
   const journal = activeJournal(root)
   if (!journal) {
@@ -187,7 +216,12 @@ function status(): void {
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
-  options: { kind: { type: 'string' }, title: { type: 'string' } },
+  options: {
+    kind: { type: 'string' },
+    title: { type: 'string' },
+    from: { type: 'string' },
+    to: { type: 'string' },
+  },
 })
 const [command, slug] = positionals
 
@@ -210,9 +244,12 @@ switch (command) {
   case 'sync':
     sync()
     break
+  case 'window':
+    setWindow(values.from, values.to)
+    break
   case 'status':
     status()
     break
   default:
-    fail('Usage: pnpm lab:journal start|log|status|pause|resume|wrap|sync')
+    fail('Usage: pnpm lab:journal start|log|status|pause|resume|wrap|sync|window')
 }

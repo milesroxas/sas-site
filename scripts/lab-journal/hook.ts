@@ -6,10 +6,13 @@ import {
   addPrompts,
   cleanPromptText,
   currentBranch,
+  inWindow,
   JOURNAL_ROOT,
   parseEntries,
   repoRoot,
+  sessionOf,
   sessionRow,
+  sessionWindow,
   upsertSession,
 } from './lib'
 
@@ -67,11 +70,14 @@ function run(input: HookInput): void {
     case 'UserPromptSubmit': {
       const text = input.prompt ? cleanPromptText(input.prompt) : null
       if (!text || !input.session_id) return
+      const at = new Date().toISOString()
+      // A session whose window for this journal has closed is another feature's now.
+      if (!inWindow(at, sessionWindow(root, journal.slug, input.session_id))) return
       addPrompts(root, journal.slug, [
         {
           id: input.prompt_id ?? `${input.session_id}:${Date.now()}`,
           session: input.session_id,
-          at: new Date().toISOString(),
+          at,
           branch: currentBranch(root),
           text: redactFreeText(text),
         },
@@ -80,7 +86,8 @@ function run(input: HookInput): void {
     }
     case 'Stop':
     case 'SessionEnd': {
-      const row = input.transcript_path ? sessionRow(input.transcript_path) : null
+      const path = input.transcript_path
+      const row = path ? sessionRow(path, sessionWindow(root, journal.slug, sessionOf(path))) : null
       if (row) upsertSession(root, journal.slug, row)
       return
     }

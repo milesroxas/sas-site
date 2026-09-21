@@ -68,6 +68,20 @@ export type SessionRow = {
   prompts: number
   /** Per model, subagents included: a subagent on another model is its own key. */
   models: Record<string, TokenCounts>
+  /**
+   * The part of the session that belongs to this journal, when one session
+   * served two features (`pnpm lab:journal window`). Kept on every recount.
+   */
+  window?: SessionWindow
+}
+
+/** ISO times: `from` inclusive, `to` exclusive, either may be open. */
+export type SessionWindow = { from?: string; to?: string }
+
+export const inWindow = (at: string | undefined, window?: SessionWindow): boolean => {
+  if (!window?.from && !window?.to) return true
+  if (!at) return false
+  return (!window.from || at >= window.from) && (!window.to || at < window.to)
 }
 
 export type PromptRow = {
@@ -98,11 +112,12 @@ type TranscriptRow = {
   }
 }
 
-function parseRows(jsonl: string): TranscriptRow[] {
+function parseRows(jsonl: string, window?: SessionWindow): TranscriptRow[] {
   return jsonl.split('\n').flatMap((line) => {
     if (!line.trim()) return []
     try {
-      return [JSON.parse(line) as TranscriptRow]
+      const row = JSON.parse(line) as TranscriptRow
+      return inWindow(row.timestamp, window) ? [row] : []
     } catch {
       return []
     }
@@ -123,9 +138,13 @@ const rowText = (row: TranscriptRow): string => {
  * lines (one per content block), each carrying the same usage, so a message
  * id counts once. `seen` is shared across a session's files.
  */
-export function sumUsage(jsonl: string, seen = new Set<string>()): Record<string, TokenCounts> {
+export function sumUsage(
+  jsonl: string,
+  seen = new Set<string>(),
+  window?: SessionWindow,
+): Record<string, TokenCounts> {
   const models: Record<string, TokenCounts> = {}
-  for (const row of parseRows(jsonl)) {
+  for (const row of parseRows(jsonl, window)) {
     const { id, model, usage } = row.message ?? {}
     if (row.type !== 'assistant' || !usage || !id || !model || model === '<synthetic>') continue
     if (seen.has(id)) continue
@@ -171,8 +190,8 @@ export function cleanPromptText(raw: string): string | null {
   return text
 }
 
-export function promptsFromTranscript(jsonl: string): PromptRow[] {
-  return parseRows(jsonl).flatMap((row): PromptRow[] => {
+export function promptsFromTranscript(jsonl: string, window?: SessionWindow): PromptRow[] {
+  return parseRows(jsonl, window).flatMap((row): PromptRow[] => {
     if (row.type !== 'user' || row.isMeta || row.isSidechain) return []
     const text = cleanPromptText(rowText(row))
     if (!text || !row.sessionId || !row.timestamp) return []
@@ -191,9 +210,9 @@ export function promptsFromTranscript(jsonl: string): PromptRow[] {
 export type AssistantText = { id: string; session: string; at: string; text: string }
 
 /** The agent's prose per API message, tool calls and thinking left out. For the digest. */
-export function assistantTexts(jsonl: string): AssistantText[] {
+export function assistantTexts(jsonl: string, window?: SessionWindow): AssistantText[] {
   const byMessage = new Map<string, AssistantText>()
-  for (const row of parseRows(jsonl)) {
+  for (const row of parseRows(jsonl, window)) {
     const id = row.message?.id
     if (row.type !== 'assistant' || row.isSidechain || !id || !row.sessionId) continue
     const text = rowText(row)
@@ -362,22 +381,22 @@ export function currentTranscript(...cwds: string[]): string | null {
 export const sessionOf = (transcriptPath: string) => basename(transcriptPath, '.jsonl')
 
 /** One session's row: its own transcript plus every subagent transcript beside it. */
-export function sessionRow(transcriptPath: string): SessionRow | null {
+export function sessionRow(transcriptPath: string, window?: SessionWindow): SessionRow | null {
   if (!existsSync(transcriptPath)) return null
   const main = readFileSync(transcriptPath, 'utf8')
   const seen = new Set<string>()
-  const models = sumUsage(main, seen)
+  const models = sumUsage(main, seen, window)
 
   const subagents = join(dirname(transcriptPath), sessionOf(transcriptPath), 'subagents')
   if (existsSync(subagents)) {
     for (const name of readdirSync(subagents)) {
       if (name.endsWith('.jsonl')) {
-        mergeUsage(models, sumUsage(readFileSync(join(subagents, name), 'utf8'), seen))
+        mergeUsage(models, sumUsage(readFileSync(join(subagents, name), 'utf8'), seen, window))
       }
     }
   }
 
-  const rows = parseRows(main)
+  const rows = parseRows(main, window)
   const stamps = rows.flatMap((row) => (row.timestamp ? [row.timestamp] : []))
   const last = rows.filter((row) => row.gitBranch || row.version).at(-1)
   return {
@@ -386,13 +405,18 @@ export function sessionRow(transcriptPath: string): SessionRow | null {
     version: last?.version ?? null,
     startedAt: stamps[0] ?? null,
     endedAt: stamps.at(-1) ?? null,
-    prompts: promptsFromTranscript(main).length,
+    prompts: promptsFromTranscript(main, window).length,
     models,
+    ...(window?.from || window?.to ? { window } : {}),
   }
 }
 
 export const sessionsPath = (root: string, slug: string) =>
   join(journalDir(root, slug), 'sessions.jsonl')
+
+/** The window this journal holds for a session, if it was ever given one. */
+export const sessionWindow = (root: string, slug: string, session: string) =>
+  readJsonl<SessionRow>(sessionsPath(root, slug)).find((row) => row.session === session)?.window
 
 export function upsertSession(root: string, slug: string, row: SessionRow): void {
   const path = sessionsPath(root, slug)

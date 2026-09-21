@@ -133,4 +133,6 @@ What Miles decided and what Claude decided: Miles set the goal and its priority 
 
 Moved to the feature's lab journal, [lab-journal/typesafe-mcp/](lab-journal/typesafe-mcp/): `journal.md` holds the decisions, challenges, insights and measurements as they happened, `sessions.jsonl` one row per session with its model and token counts (written by a hook from the session transcript, subagents included), `jev.jsonl` Jev's usage. `pnpm lab:journal status` prints the totals. How the journal works: the `lab-journal` skill (`.agents/skills/lab-journal/SKILL.md`).
 
+The session that produced this review went on to build the lab journal tooling, which is a separate feature with its own journal, [lab-journal/lab-journal/](lab-journal/lab-journal/). This feature's share of that session ends at 16:33 UTC.
+
 What the counts leave out: `WebFetch` summarises a page with a small model inside the tool, and those tokens are not in a transcript; sessions in Codex or Cursor's own agent are not captured.

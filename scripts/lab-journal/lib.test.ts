@@ -56,6 +56,21 @@ describe('sumUsage', () => {
     expect(main['claude-fable-5-1']?.messages).toBe(1)
   })
 
+  it('counts only the part of a session inside the window', () => {
+    const at = (id: string, timestamp: string) => ({
+      ...assistant(id, 'claude-fable-5-1', id, usage),
+      timestamp,
+    })
+    const jsonl = lines(
+      at('m1', '2026-09-21T16:00:00.000Z'),
+      at('m2', '2026-09-21T16:33:08.762Z'),
+      at('m3', '2026-09-21T17:00:00.000Z'),
+    )
+    const boundary = '2026-09-21T16:33:08.762Z'
+    expect(sumUsage(jsonl, new Set(), { to: boundary })['claude-fable-5-1']?.messages).toBe(1)
+    expect(sumUsage(jsonl, new Set(), { from: boundary })['claude-fable-5-1']?.messages).toBe(2)
+  })
+
   it('skips synthetic messages and lines that are not JSON', () => {
     const jsonl = `${lines(assistant('m1', '<synthetic>', 'a', usage))}\nnot json`
     expect(sumUsage(jsonl)).toEqual({})

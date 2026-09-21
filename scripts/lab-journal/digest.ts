@@ -204,11 +204,11 @@ async function main(): Promise<void> {
   const entries = existsSync(journalPath) ? parseEntries(readFileSync(journalPath, 'utf8')) : []
   const sessions = readJsonl<SessionRow>(sessionsPath(root, journal.slug))
   const messages = sessions
-    .flatMap(({ session }) => {
+    .flatMap(({ session, window }) => {
       const path = [transcriptDir(process.cwd()), transcriptDir(root)]
         .map((dir) => join(dir, `${session}.jsonl`))
         .find((candidate) => existsSync(candidate))
-      return path ? assistantTexts(readFileSync(path, 'utf8')) : []
+      return path ? assistantTexts(readFileSync(path, 'utf8'), window) : []
     })
     .filter((message) => message.text.length >= MIN_MESSAGE_CHARS)
 
