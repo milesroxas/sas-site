@@ -221,3 +221,13 @@ Where things stand: the digest's figure plan, pnpm lab:journal:verify, pnpm lab:
 Not yet done, and the place to start next time: the first real writer run. Start Claude Code with claude --chrome on this branch, sign in to the CMS admin in Chrome, and run the lab-project-writer agent on lab-journal. That run answers the open question of whether a subagent gets the claude-in-chrome tools; if it does not, the calling session takes the shots and hands over media ids. It is also the first real data for tuning the untuned thresholds in the digest's figure plan (0.5) and in verify (checkable 0.25, confidence 0.6).
 
 <!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 23:08 UTC | milestone | Merged to main as PR 18; the feature carries on from this branch
+
+Miles started a new Conductor workspace and found none of this work in it: a workspace starts from main, and everything was on lab-journal-workspace-setup with no pull request. His call: merge now, keep working after.
+
+PR 18 was merged into main with a merge commit (2054ae1), not a squash, so this branch and main share history and later work on the branch merges cleanly again. The branch was kept and fast-forwarded to main. GitHub's merge call answered with a server error twice and then with an empty body, yet the merge had gone through: the PR's state, not the command's output, was the thing to check.
+
+The feature is not finished and the journal is not wrapped. It stays live on this branch only; on main it refuses to go live. To continue from another workspace: bring in main, run pnpm lab:journal resume lab-journal on that workspace's branch, and start a new chat so the hooks load. Next step is unchanged: the first real writer run from a session started with claude --chrome.
+
+<!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
