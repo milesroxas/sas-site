@@ -30,14 +30,7 @@ Each folder beside this file is one feature's journal.
 2. Start a **new** Claude Code session in the project. Hooks load when a session starts. If Claude Code asks whether to trust the project's hooks, accept; `/hooks` lists them (SessionStart, UserPromptSubmit, Stop, SessionEnd, all pointing at `scripts/lab-journal/hook.ts`).
 3. For the digest: `TYPESAFE_API_KEY` in `.env`. Without it everything still works and the writer reads the raw record instead.
 4. For the write-up: the `sas-cms` MCP server connected ([mcp.md](../mcp.md#connecting-a-client)), with a key that has find, create and update on `lab-projects` and `lab-pages`, find on `media` and `asset-libraries`, and **Upload media** ticked. The server writes to **production**, as drafts.
-5. For screenshots and the draft check, the same key and site in `.env`, so uploads land where the drafts are:
-
-   ```sh
-   CMS_MCP_API_KEY=<the MCP key>
-   CMS_UPLOAD_SERVER=https://www.suits-sandals.com
-   ```
-
-   `pnpm cms:upload` refuses a local site without `--local`: a media id from a workspace database does not exist on production.
+5. Nothing more for uploads and the draft check: `pnpm cms:upload` and `pnpm lab:journal:verify` read the site and the key from the `sas-cms` server in your Claude Code config, so they always talk to the site the MCP drafts on. Outside Claude Code (CI, Codex, Cursor), set `CMS_MCP_API_KEY` and `CMS_UPLOAD_SERVER`; a local site is refused without `--local`, because a media id from a workspace database does not exist on production.
 6. For screenshots: the [Claude in Chrome extension](https://code.claude.com/docs/en/chrome), and Claude Code started with `claude --chrome` (or `/chrome`, "Enabled by default"). The agent drives the Chrome you are signed into, so there is no password to give it.
 
 ## The order of things

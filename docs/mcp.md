@@ -43,7 +43,7 @@ whichever port that workspace's own `pnpm dev` is on).
 
 Cursor reads the project server from `.cursor/mcp.json`, which points at **production** and
 takes the key from `SAS_CMS_MCP_KEY` ([agent-skills.md](agent-skills.md#mcp-servers)).
-`pnpm cms:upload` and `pnpm lab:journal:verify` read the same key from `CMS_MCP_API_KEY`, else `SAS_CMS_MCP_KEY`.
+`pnpm cms:upload` and `pnpm lab:journal:verify` take the site and the key from Claude Code's `sas-cms` entry, or from `CMS_MCP_API_KEY` (else `SAS_CMS_MCP_KEY`) and `CMS_UPLOAD_SERVER` when set.
 
 ## What is exposed
 

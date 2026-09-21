@@ -199,3 +199,15 @@ Not verified: the Chrome capture itself. This Conductor session has no claude-in
 Next: commit, then run the writer on this journal from a session started with claude --chrome, as the first real test.
 
 <!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 20:21 UTC | decision | Scripts take the site and key from the MCP client's own config
+
+Reverses part of the earlier upload entry. That version made a person copy the MCP key and the production URL into .env before an upload or a draft check would run. Miles pointed out that the sas-cms MCP is already configured for the whole machine and the agent already has it.
+
+He is right about the design, not only the chore. The scripts are plain processes with no MCP connection, so they do need an address and a key, but the right source is where the MCP client keeps them: the sas-cms entry in ~/.claude.json (this project's entry first, then the machine-wide one, with ${VAR} expanded). Read from there, the script cannot disagree with the MCP about which database it is in, which was the whole problem, and there is nothing to set up.
+
+Kept: env overrides (CMS_MCP_API_KEY, CMS_UPLOAD_SERVER) for CI, Codex and Cursor, and the refusal of a local site without --local on that path.
+Verified with no variables set: the upload passed target resolution, and verify read Lab Project 2 from production.
+Cost: the script reads a file that holds a secret. It uses the key only for the server it was issued for and never prints it.
+
+<!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->

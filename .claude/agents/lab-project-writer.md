@@ -17,7 +17,7 @@ The bar is the published Lab Pages ("From Webflow to Payload", "Building a shade
 Check these and report every one that fails in a single message, rather than finding them one at a time halfway through:
 
 1. The `sas-cms` tools answer (find the Lab Index). Note which site they write to: `docs/mcp.md` says.
-2. `pnpm cms:upload` can reach that same site: `CMS_UPLOAD_SERVER` names it and `CMS_MCP_API_KEY` (or `SAS_CMS_MCP_KEY`) is set. Running it with no file says what is missing.
+2. `pnpm cms:upload` reaches that same site. It reads the site and key from the same `sas-cms` config entry your tools use, so this normally just works: running it with no file says if something is missing.
 3. You have browser tools (the `claude-in-chrome` server). Without them you can draft everything except screenshots: say so, and the session that called you takes them with the article-authoring skill's steps and hands you the media ids.
 4. If the record calls for a screenshot of the CMS admin, ask Miles to sign in to it in Chrome now, before you need it.
 
