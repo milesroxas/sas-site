@@ -186,7 +186,7 @@ The configured `sas-cms` server is **production** (`https://www.suits-sandals.co
 ## Security: the REST-bypass rule
 
 MCP API keys authenticate as `req.user` over Payload's **REST/GraphQL API too**, not just at
-`/api/mcp`. Per-key capability checkboxes only gate the MCP endpoint. Two defenses keep keys
+`/api/mcp`. Per-key capability checkboxes only gate the MCP endpoint. Three defenses keep keys
 from gaining team-level REST access:
 
 1. [`src/access/authenticated.ts`](../src/access/authenticated.ts) counts only
@@ -195,10 +195,15 @@ from gaining team-level REST access:
 2. Plugin-created collections that default to `Boolean(req.user)` writes (redirects, forms,
    search) are overridden to `authenticated` in
    [`src/plugins/index.ts`](../src/plugins/index.ts).
+3. Reads with a public subset (published documents, approved quotes, public-approved media,
+   active libraries) go through [`authenticatedOr(where)`](../src/access/authenticatedOr.ts):
+   team members read everything, every other caller gets `where`. Media, Testimonials and
+   Asset Libraries used a hand-rolled `req.user ? true : …` until 2026-09-21, which let keys
+   read internal media and unapproved quotes over REST.
 
 **Rule for new code:** any new collection, global, or plugin override whose access uses
 "any logged-in user" semantics must use the `authenticated` helper (or an equally strict
-check), never `Boolean(req.user)`.
+check), never `Boolean(req.user)`. A read with a public subset uses `authenticatedOr(where)`.
 
 ## Versions and the vendored patch
 

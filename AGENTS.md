@@ -67,7 +67,7 @@ Run when ready: `pnpm migrate:create home-global`
 
 ### Never `Boolean(req.user)` for team-only access
 
-This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL too. `Boolean(req.user)` would grant MCP keys team access. Use `authenticated` from `src/access/authenticated.ts` (`user.collection === 'users'`) for team-only rules — including plugin-created collections. See [docs/mcp.md](docs/mcp.md).
+This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL too. `Boolean(req.user)` would grant MCP keys team access. Use `authenticated` from `src/access/authenticated.ts` (`user.collection === 'users'`) for team-only rules — including plugin-created collections. A read with a public subset uses `authenticatedOr(where)` from `src/access/authenticatedOr.ts`, never a hand-rolled `req.user ? true : …`. See [docs/mcp.md](docs/mcp.md).
 
 ## Stack conventions
 

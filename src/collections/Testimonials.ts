@@ -1,12 +1,13 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
+import { authenticatedOr } from '@/access/authenticatedOr'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 
-const publicApprovedTestimonial: Access = ({ req }) => {
-  if (req.user) return true
-  return { _status: { equals: 'published' }, approvalStatus: { equals: 'approved-public' } }
-}
+const publicApprovedTestimonial = authenticatedOr({
+  _status: { equals: 'published' },
+  approvalStatus: { equals: 'approved-public' },
+})
 
 export const Testimonials: CollectionConfig<'testimonials'> = {
   slug: 'testimonials',

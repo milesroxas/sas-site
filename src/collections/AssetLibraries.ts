@@ -1,13 +1,9 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedField } from '@/access/authenticatedField'
+import { authenticatedOr } from '@/access/authenticatedOr'
 import { slugField } from '@/fields/slug'
 import { ensureLibraryRootFolder } from '@/hooks/assetLibraryFolders'
-
-const activeOrAuthenticated: Access = ({ req }) => {
-  if (req.user) return true
-  return { libraryStatus: { equals: 'active' } }
-}
 
 export const AssetLibraries: CollectionConfig<'asset-libraries'> = {
   slug: 'asset-libraries',
@@ -17,7 +13,7 @@ export const AssetLibraries: CollectionConfig<'asset-libraries'> = {
   access: {
     create: authenticated,
     delete: authenticated,
-    read: activeOrAuthenticated,
+    read: authenticatedOr({ libraryStatus: { equals: 'active' } }),
     update: authenticated,
   },
   hooks: { beforeChange: [ensureLibraryRootFolder] },

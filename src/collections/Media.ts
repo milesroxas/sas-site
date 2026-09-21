@@ -6,6 +6,7 @@ import {
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '../access/authenticated'
+import { authenticatedOr } from '../access/authenticatedOr'
 import { ensureMediaFolder } from '../hooks/assetLibraryFolders'
 import { generateVideoPoster } from '../hooks/generateVideoPoster'
 import { resolveVideoAdminThumbnail } from '../hooks/resolveVideoAdminThumbnail'
@@ -42,7 +43,7 @@ export const Media: CollectionConfig = {
   access: {
     create: authenticated,
     delete: authenticated,
-    read: ({ req }) => (req.user ? true : { usageStatus: { equals: 'public-approved' } }),
+    read: authenticatedOr({ usageStatus: { equals: 'public-approved' } }),
     update: authenticated,
   },
   hooks: {
