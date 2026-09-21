@@ -121,6 +121,19 @@ const journeyNotes = (journey: AskJourneyContext): string[] => {
   return notes
 }
 
+/**
+ * A question about a case study whose story is still thin (storyBrief.ts).
+ * Its brief leads the sources, so the kinds of work are always there to name.
+ * That the story is unfinished is said once, by whoever says it reliably: the
+ * card's own line when one follows, the reply when none does.
+ */
+const thinStoryNote = (title: string, cardFollows: boolean): string => {
+  const unfinished = cardFollows
+    ? 'Do not say the case study is unfinished, what it leaves out, or that anything is coming: the offer under your reply says so.'
+    : 'Close with one short sentence saying the full case study is still being written.'
+  return `The visitor is asking about our work on "${title}". Its case study is still being written, so its source is an outline: the client, the kinds of work we did, a summary, and sometimes the deliverables. Answer from that outline: open with one sentence that names every capability on its "Capabilities:" line as the work we did for them, then say what the summary or the deliverables add. Do not apologize and do not pad. ${unfinished}`
+}
+
 /** Whether the handoff tool is on offer this turn: withheld once the visitor has sent. */
 export const offersAskHandoff = (handoff: AskHandoffState) => handoff !== 'sent'
 
@@ -131,6 +144,7 @@ export function askSystemPrompt({
   tool = offersAskHandoff(handoff),
   cardFollows = false,
   journey = null,
+  thinStory = null,
 }: {
   /** Sources were retrieved for this turn and follow the prompt. */
   grounded: boolean
@@ -141,6 +155,8 @@ export function askSystemPrompt({
   cardFollows?: boolean
   /** The visitor's journey, for a grounded turn the judge routed. Null changes nothing. */
   journey?: AskJourneyContext | null
+  /** The title of the thin case study this grounded turn is about, its brief leading the sources. */
+  thinStory?: string | null
 }): string {
   const offersTool = tool && offersAskHandoff(handoff)
   const prompt = grounded
@@ -149,6 +165,7 @@ export function askSystemPrompt({
   const notes = [
     handoffStateNote(handoff, offersTool),
     ...(grounded && journey ? journeyNotes(journey) : []),
+    grounded && thinStory ? thinStoryNote(thinStory, !offersTool && cardFollows) : null,
   ].filter((note) => note !== null)
   return notes.length > 0
     ? `${prompt}\n\nThis conversation:\n${notes.map((note) => `- ${note}`).join('\n')}`

@@ -91,12 +91,15 @@ export const ASK_JUDGE_THRESHOLDS = {
 } as const
 
 const REQUEST_CRITERIA = {
+  // "What did you do for Arturo?" read as no request at all (confidence 0.15 to
+  // 0.22, measured 2026-09-21) until past work was named here and ruled out of
+  // `project`: "did for a client" sits next to "do for me".
   information:
-    'A question about the studio: how it works, how projects start, its process, who it has worked with, what it offers, what kinds of clients or platforms it works with, or how it prices in general.',
+    'A question about the studio: how it works, how projects start, its process, who it has worked with, what it did for a client it names or on a past project, what it offers, what kinds of clients or platforms it works with, or how it prices in general.',
   estimate:
     "A question about the visitor's own project: what it would cost, how long it would take, or when the studio could start.",
   project:
-    'The visitor says they have a project, or asks the studio to do something for them. Not a question about how projects start.',
+    'The visitor says they have a project, or asks the studio to do something for them. Not a question about how projects start, and not a question about work the studio already did for a client.',
   person: 'The visitor asks for a person by name or role, or asks to be called or emailed.',
   conversation:
     'A thanks, a greeting, an acknowledgment, or a request to repeat or rephrase an earlier reply.',

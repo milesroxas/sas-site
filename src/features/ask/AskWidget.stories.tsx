@@ -217,6 +217,33 @@ export const PartialAnswerHandoff: Story = {
   },
 }
 
+/**
+ * A question about a work page whose case study is still being written: the
+ * kinds of work from the record's brief, then the offer that says the story
+ * is on its way and that a partner can walk through it.
+ */
+const thinCaseStudyChat = createAskChat()
+  .user('What did you do for them?')
+  .assistant(({ writer }) => {
+    writer
+      .sourceUrl({
+        sourceId: '/works/gentlebeast',
+        title: 'GentleBeast',
+        url: '/works/gentlebeast',
+      })
+      .text(
+        'For Gentle Beast we worked across product design, web design, UX strategy and brand identity. We carried their existing identity into a richer website: an expanded visual language on a flexible Webflow system, with a structured course catalog that makes lessons, instructors and common questions easy to explore.',
+      )
+      .tool('handoff', { input: { reason: 'case_study' }, output: askHandoffFixture('case_study') })
+  })
+
+export const ThinCaseStudyHandoff: Story = {
+  args: {
+    transport: thinCaseStudyChat.transport(),
+    initialMessages: thinCaseStudyChat.get(),
+  },
+}
+
 /** Retrieval came back empty on a first question: the no-answer lead and offer, no model call. */
 const noSourcesChat = createAskChat().assistant(({ writer }) => {
   writer.tool('handoff', { input: { reason: 'no_answer' }, output: askHandoffFixture('no_answer') })

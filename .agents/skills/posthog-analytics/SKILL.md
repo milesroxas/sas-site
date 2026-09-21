@@ -97,6 +97,7 @@ Ask's judge (Jev, `src/features/ask/judge.ts`, mode from `ASK_JEV`) adds facts a
 | `journey_pages` | number | Pages of the visitor's journey the index knew and the turn could read: the page asked on plus the pages read before it. 0 in mode `off`, which reads no journey. A count, never the paths |
 | `page_leaned` | boolean, null | Jev read the question as pointing at something it does not name (`open_reference`), on a page about one thing. Null when there was no such page |
 | `page_attached` | boolean | Mode `on`: the search also ran under the page's title |
+| `story_thin` | boolean | Mode `on`: the turn was about a work page whose case study story is still thin, and was answered from the record's brief. With `handoff_reason = case_study` and `page_path`, the case studies visitors ask about before they are written |
 
 ## Verifying a change
 
@@ -107,7 +108,9 @@ Ask's judge (Jev, `src/features/ask/judge.ts`, mode from `ASK_JEV`) adds facts a
 
 ## Dashboards and insights
 
-Dashboards are tagged `sas-analytics`: Leads and acquisition, UX friction, Content engagement, Ask, Data health. Tiles filter `environment = production` and "filter out internal users".
+Dashboards are tagged `sas-analytics`: Leads and acquisition, UX friction, Content engagement, Ask, Data health. Tiles filter `environment = production` and "filter out internal users". The Ask dashboard (2088105) holds the judge's nine tiles since 2026-09-21 (latency by `judge_mode`, Jev failure rate and time, passages kept, model skipped, fallback rate, first output by `answer_model`, thin case study turns by page): extend one of those before adding a tenth.
+
+To check that a team browser is marked internal: a production turn stored in `ask-questions` (sas-cms MCP `findAskQuestions`) with no `ask_questioned` event at the same second came from a browser carrying `sas_internal`. Server capture has no consent gate, so an unmarked browser always yields the event.
 
 When a new event matters to the business, add or update a tile on the matching dashboard in the same piece of work. With the PostHog MCP server connected (`claude mcp add --transport http --scope local posthog https://mcp.posthog.com/mcp --header "x-posthog-project-id: 512227"`, then authenticate via `/mcp` and start a new session):
 

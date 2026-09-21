@@ -9223,7 +9223,7 @@ export interface AskQuestion {
   /**
    * Why the reply offered a person, if it did.
    */
-  handoffReason?: ('estimate' | 'project' | 'person' | 'contact_details' | 'no_answer') | null;
+  handoffReason?: ('estimate' | 'project' | 'person' | 'contact_details' | 'no_answer' | 'case_study') | null;
   /**
    * The page the visitor was on.
    */

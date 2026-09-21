@@ -53,6 +53,7 @@ import {
   type RetrievedSource,
   retrievalQueries,
 } from '@/features/ask/retrieve'
+import { namesStory, resolveStoryBrief, withStoryBrief } from '@/features/ask/storyBrief'
 import {
   isUsageConfigured,
   OPENAI_ADMIN_KEY_VAR,
@@ -98,6 +99,12 @@ import { captureServerEvent } from '@/utilities/posthog'
  * passages are vetted before they become sources, and the model writes with
  * no tool while code appends the card. A failed or unsure judgment is the
  * path above, so a visitor never sees a Jev error.
+ *
+ * A thin case study (src/features/ask/storyBrief.ts, mode `on`): a question
+ * about the work page it was asked on, where the case study's story is not
+ * written yet, is answered from the record's brief (the client, the kinds of
+ * work, the summary) and closes with the `case_study` card, which says the
+ * story is on its way and offers a partner to walk through it.
  */
 
 /** Output budget per answer; includes gpt-5 reasoning tokens, so leave headroom over the ~120-word answer. */
@@ -203,6 +210,19 @@ function shadowCard(route: AskTurnRoute, grounded: boolean): AskHandoffReason | 
   return routeCardReason(route)
 }
 
+/**
+ * The card a grounded, routed reply closes with. The turn's own reason comes
+ * first: a visitor pricing their project on a thin case study is still an
+ * estimate. A turn with none, answered from a thin story's brief, closes with
+ * the offer to be walked through it.
+ */
+function closingCardReason(
+  route: AskTurnRoute,
+  { thinStory, mayOffer }: { thinStory: boolean; mayOffer: boolean },
+): AskHandoffReason | null {
+  return routeCardReason(route) ?? (thinStory && mayOffer ? 'case_study' : null)
+}
+
 const ask: Endpoint = {
   path: '/ask',
   method: 'post',
@@ -270,6 +290,10 @@ const ask: Endpoint = {
         : await resolveJourney(req.payload, journeyFrom(body?.journey), pagePath)
     // The page the question was asked on, when it is about one thing a question can lean on.
     const subjectPage = journey.current?.subject ? journey.current : null
+    // What the record behind that page can say when its story is thin, read
+    // while Jev and the embedding are in flight. Null for any page but a work page.
+    const storyBrief =
+      mode === 'on' && subjectPage ? resolveStoryBrief(req.payload, subjectPage.path) : null
 
     // What the judge saw and did this turn, for the log line and PostHog:
     // metadata only, never the question and never a probability beside it.
@@ -283,6 +307,8 @@ const ask: Endpoint = {
       firstOutputMs: number | null
       modelSkipped: boolean
       pageAttached: boolean
+      /** The turn was answered from a thin case study's brief. */
+      thinStory: boolean
     } = {
       turn: null,
       judgment: null,
@@ -292,6 +318,7 @@ const ask: Endpoint = {
       firstOutputMs: null,
       modelSkipped: false,
       pageAttached: false,
+      thinStory: false,
     }
     const markFirstOutput = () => {
       judged.firstOutputMs ??= Date.now() - startedAt
@@ -373,6 +400,7 @@ const ask: Endpoint = {
           journey_pages: journey.read.length + (journey.current ? 1 : 0),
           page_leaned: subjectPage ? leansOnPage(judgment) : null,
           page_attached: judged.pageAttached,
+          story_thin: judged.thinStory,
           answer_model: judged.modelSkipped ? null : askModel.modelId,
         }
         req.payload.logger.info({
@@ -504,6 +532,25 @@ const ask: Endpoint = {
       if (mode === 'on') judged.chunksKept = found.chunks.kept
     }
 
+    // A question about the page's own case study, where that story is still
+    // thin: the record's brief leads the sources, so the answer can always
+    // name the kinds of work, and a passage check that kept nothing no longer
+    // means "the site doesn't cover that". The page is the subject when the
+    // question leaves its subject to it (Jev's `open_reference`) or names it
+    // (code's lookup); a follow-up that leans on the turn before it is about
+    // that turn's subject, which may be another client.
+    const brief = route.kind === 'evidence' ? await storyBrief : null
+    const thinStory =
+      brief?.thin &&
+      (namesStory(question, brief) ||
+        (leansOnPage(judged.judgment) && !(isFollowUp && dependsOnPrevious(judged.judgment))))
+        ? brief
+        : null
+    if (thinStory) {
+      sources = withStoryBrief(sources, thinStory)
+      judged.thinStory = true
+    }
+
     // Nothing to ground on. Today's path: the card on a first turn, no tokens
     // spent, while follow-ups still reach the model source-less so the
     // conversation can carry ("thanks", "can you say that more simply?").
@@ -527,7 +574,13 @@ const ask: Endpoint = {
     const grounded = sources.length > 0
     const routed = route.kind !== 'fallback'
     const offersTool = !routed && offersAskHandoff(handoffState)
-    const closingCard = routed && grounded ? routeCardReason(route) : null
+    const closingCard =
+      routed && grounded
+        ? closingCardReason(route, {
+            thinStory: thinStory !== null,
+            mayOffer: offersAskHandoff(handoffState),
+          })
+        : null
     const system = [
       askSystemPrompt({
         grounded,
@@ -535,6 +588,7 @@ const ask: Endpoint = {
         tool: offersTool,
         cardFollows: closingCard !== null,
         journey: routed ? journey : null,
+        thinStory: thinStory?.title ?? null,
       }),
       grounded ? `<sources>\n${sourcesBlock}\n</sources>` : null,
     ]

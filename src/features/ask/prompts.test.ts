@@ -114,4 +114,29 @@ describe('askSystemPrompt', () => {
       )
     })
   })
+
+  it('answers a thin case study from its outline, and lets the card say it is unfinished', () => {
+    const withCard = askSystemPrompt({
+      grounded: true,
+      handoff: 'none',
+      tool: false,
+      cardFollows: true,
+      thinStory: 'GentleBeast',
+    })
+    expect(withCard).toContain('our work on "GentleBeast"')
+    expect(withCard).toContain('names every capability')
+    expect(withCard).toContain('Do not say the case study is unfinished')
+
+    // Once the visitor has sent there is no card, so the reply says it.
+    const noCard = askSystemPrompt({
+      grounded: true,
+      handoff: 'sent',
+      tool: false,
+      thinStory: 'GentleBeast',
+    })
+    expect(noCard).toContain('saying the full case study is still being written')
+    expect(
+      askSystemPrompt({ grounded: false, handoff: 'none', thinStory: 'GentleBeast' }),
+    ).not.toContain('GentleBeast')
+  })
 })

@@ -12,12 +12,12 @@ import { messageText } from './messageText'
 export const ASK_HANDOFF_HREF = '/contact'
 
 /**
- * Why a reply hands the visitor to a person. The model names one when it
- * calls the `handoff` tool (`handoffTool.ts`), and everything the transcript
- * then says is keyed by it in `ASK_HANDOFFS`: the model decides that a person
+ * Why a reply hands the visitor to a person, as the model may name it when it
+ * calls the `handoff` tool (`handoffTool.ts`). Everything the transcript then
+ * says is keyed by it in `ASK_HANDOFFS`: the model decides that a person
  * should take it from here, but never words the reply or the promise itself.
  */
-export const ASK_HANDOFF_REASONS = [
+export const ASK_TOOL_HANDOFF_REASONS = [
   'estimate',
   'project',
   'person',
@@ -25,7 +25,16 @@ export const ASK_HANDOFF_REASONS = [
   'no_answer',
 ] as const
 
+/**
+ * Every reason a reply can carry. `case_study` is code's alone: the question
+ * is about a case study whose story is still thin (storyBrief.ts), which is a
+ * fact about the record and never the model's to decide.
+ */
+export const ASK_HANDOFF_REASONS = [...ASK_TOOL_HANDOFF_REASONS, 'case_study'] as const
+
 export type AskHandoffReason = (typeof ASK_HANDOFF_REASONS)[number]
+
+export type AskToolHandoffReason = (typeof ASK_TOOL_HANDOFF_REASONS)[number]
 
 /** What Site Info promises whoever reaches a person: the reply time and the booking link. */
 export type AskHandoffTerms = {
@@ -117,6 +126,12 @@ export const ASK_HANDOFFS: Record<AskHandoffKind, AskHandoffCopy> = {
     form: 'general',
     lead: "The site doesn't cover that, but the team can.",
     offer: 'Want a person to answer?',
+  },
+  case_study: {
+    form: 'general',
+    lead: 'We have not published the full story of this project yet.',
+    offer:
+      'The full case study is still being written. A partner can walk you through it and similar work.',
   },
   none: { form: 'general', lead: null, offer: 'Want a person to reply?' },
 }

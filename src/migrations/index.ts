@@ -109,6 +109,7 @@ import * as migration_20260920_203528_lab_index_global from './20260920_203528_l
 import * as migration_20260920_223253_visual_surface from './20260920_223253_visual_surface';
 import * as migration_20260920_232046_index_light_leak from './20260920_232046_index_light_leak';
 import * as migration_20260920_235043_lab_index_banner from './20260920_235043_lab_index_banner';
+import * as migration_20260921_153357_ask_case_study_handoff from './20260921_153357_ask_case_study_handoff';
 
 export const migrations = [
   {
@@ -664,6 +665,11 @@ export const migrations = [
   {
     up: migration_20260920_235043_lab_index_banner.up,
     down: migration_20260920_235043_lab_index_banner.down,
-    name: '20260920_235043_lab_index_banner'
+    name: '20260920_235043_lab_index_banner',
+  },
+  {
+    up: migration_20260921_153357_ask_case_study_handoff.up,
+    down: migration_20260921_153357_ask_case_study_handoff.down,
+    name: '20260921_153357_ask_case_study_handoff'
   },
 ];

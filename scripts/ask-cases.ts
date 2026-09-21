@@ -122,6 +122,20 @@ export const ASK_CASES: AskCase[] = [
     turns: ['What is your process like?', 'Thanks, that helps!'],
     expect: { handoff: null, text: true },
   },
+
+  // Past work for a client the question names: the site's to answer, never a
+  // card. Jev read these as no request at all (confidence 0.15 to 0.22) until
+  // the `information` criterion named past work (judge.ts, 2026-09-21).
+  {
+    id: 'past-work-named',
+    turns: ['What did you do for Arturo?'],
+    expect: { handoff: null, text: true, sources: ['/works/arturo'] },
+  },
+  {
+    id: 'past-work-project',
+    turns: ['Tell me about the GentleBeast project.'],
+    expect: { handoff: null, text: true, sources: ['/works/gentlebeast'] },
+  },
 ]
 
 /**

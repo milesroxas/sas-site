@@ -1,9 +1,10 @@
 import { jsonSchema, tool } from 'ai'
 import type { SiteInfo } from '@/payload-types'
 import {
-  ASK_HANDOFF_REASONS,
+  ASK_TOOL_HANDOFF_REASONS,
   type AskHandoff,
   type AskHandoffReason,
+  type AskToolHandoffReason,
   resolveAskHandoffTerms,
 } from './handoff'
 
@@ -26,13 +27,13 @@ export function askHandoffTool(siteInfo: SiteInfo) {
   return tool({
     description:
       'Offers the visitor a way to send their question to the team: a line under your reply with a button that opens a name and email form, filed to our inbox, with our reply time on it. Call it at most once, after any text, and only when a person is the best next step. Most answers need no offer. Never call it for a question the sources answer, such as how we work, how projects start, who we have worked with, or what we offer.',
-    inputSchema: jsonSchema<{ reason: AskHandoffReason }>(
+    inputSchema: jsonSchema<{ reason: AskToolHandoffReason }>(
       {
         type: 'object',
         properties: {
           reason: {
             type: 'string',
-            enum: [...ASK_HANDOFF_REASONS],
+            enum: [...ASK_TOOL_HANDOFF_REASONS],
             description:
               'estimate: what their own project would cost, how long it would take, or when we could start. project: they say they have a project, or ask us to do something for them (not a question about how we work or how projects start). person: they ask for a person by name or role, or to be called or emailed. contact_details: they shared an email address or phone number (a name alone is not a request). no_answer: nothing in the sources answers the question.',
           },
@@ -46,8 +47,8 @@ export function askHandoffTool(siteInfo: SiteInfo) {
         // reaching `execute`.
         validate: (value) => {
           const reason = (value as { reason?: unknown } | null)?.reason
-          return ASK_HANDOFF_REASONS.includes(reason as AskHandoffReason)
-            ? { success: true, value: { reason: reason as AskHandoffReason } }
+          return ASK_TOOL_HANDOFF_REASONS.includes(reason as AskToolHandoffReason)
+            ? { success: true, value: { reason: reason as AskToolHandoffReason } }
             : { success: false, error: new Error(`Unknown handoff reason: ${String(reason)}`) }
         },
       },
