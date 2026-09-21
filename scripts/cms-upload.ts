@@ -2,20 +2,14 @@ import { readFile } from 'node:fs/promises'
 import { basename, extname } from 'node:path'
 
 /**
- * Uploads one image to the CMS media library as INTERNAL, for an agent's
- * screenshots and figures (docs/figures.md). MCP cannot carry a binary, so this
- * is the one way an agent adds media.
+ * Uploads one image to the CMS media library, for an agent's screenshots and
+ * figures (docs/figures.md). MCP cannot carry a binary, so this is the one way
+ * an agent adds media.
  *
- * It uses the MCP API key the agent already has. The key is sent to
- * `POST /api/agent/media`, which acts as the team member the key is linked to
- * and needs the key's "Upload media" capability ticked (System, API Keys).
- * That endpoint, not this script, enforces what matters: alt text, an allowed
- * image type, the size ceiling, re-encoding that drops EXIF and GPS, and
- * `usageStatus: internal`. Nothing uploaded here renders on the site until a
- * person approves it in the admin. That gate is the point.
- *
- * Metadata is stripped for you; pixels are not. A screenshot of the admin or a
- * terminal can still show an email address or a key: look at it first.
+ * It sends the MCP API key the agent already has to `POST /api/agent/media`
+ * (`src/endpoints/agentMedia.ts`), which decides everything about the stored
+ * file and needs the key's "Upload media" capability ticked (System, API
+ * Keys). This script only reads the flags and the file.
  *
  *   pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"]
  *
@@ -90,7 +84,6 @@ const response = await fetch(`${server}/api/agent/media`, {
 const body = (await response.json().catch(() => null)) as {
   errors?: { message: string }[]
   id?: number
-  usageStatus?: string
 } | null
 
 if (!response.ok)
@@ -98,9 +91,6 @@ if (!response.ok)
     body?.errors?.map((error) => error.message).join('; ') ||
       `${response.status} ${response.statusText}`,
   )
-// Belt and braces on the one property that matters: never report success for
-// anything that did not land internal.
-if (body?.usageStatus !== 'internal')
-  fail(`uploaded media ${body?.id ?? '(unknown)'} is not internal. Fix it in the admin now.`)
+if (!body?.id) fail('the server accepted the upload but answered without a media id.')
 
 console.log(body.id)

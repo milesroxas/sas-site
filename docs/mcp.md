@@ -1,7 +1,7 @@
 # MCP: internal agent authoring
 
 The site runs an internal-team [Model Context Protocol](https://modelcontextprotocol.io) server
-at **`/api/mcp`** so agents (Claude Code, Claude Desktop, custom tooling) can author and manage
+at **`/api/mcp`** so agents (Claude Code, Codex, Cursor, custom tooling) can author and manage
 CMS content through Payload's access-control layer instead of raw REST calls.
 
 Implementation: [`src/plugins/mcp.ts`](../src/plugins/mcp.ts), built on
@@ -28,7 +28,15 @@ It is registered in [`src/plugins/index.ts`](../src/plugins/index.ts).
 # Claude Code
 claude mcp add sas-cms --transport http https://<site-url>/api/mcp \
   --header "Authorization: Bearer <api-key>"
+
+# Codex (CLI and the ChatGPT desktop app share ~/.codex/config.toml)
+codex mcp add sas-cms --url https://<site-url>/api/mcp \
+  --bearer-token-env-var SAS_CMS_MCP_KEY
 ```
+
+Every client registers **production** (`https://www.suits-sandals.com`) under the one name
+`sas-cms`. Preview is a separate database: a draft written there never reaches production. Register
+it only when needed, as `sas-cms-preview`.
 
 Local dev serves the same endpoint at `http://localhost:3001/api/mcp` (in a Conductor workspace,
 whichever port that workspace's own `pnpm dev` is on).
@@ -60,10 +68,10 @@ and every call still runs through the linked team member's own access rules.
 The index globals (`insights-index`, `lab-index`, `works-index`) carry hero and SEO only: the listings
 themselves are code-owned, so an agent can edit the opening copy but not the set.
 
-Media is read-only by design: MCP tools cannot send binary uploads, and new media defaults to
-the internal `usageStatus` gate anyway (see [architecture.md](architecture.md) access rules).
-Agents reference existing media documents by id. Asset libraries are metadata (name, organization,
-project, status); creating one also creates its root folder via the collection hook.
+Media is read-only by design: MCP tools cannot send binary uploads. Agents reference existing
+media documents by id and add images with `pnpm cms:upload` ([figures.md](figures.md#media-upload)).
+Asset libraries are metadata (name, organization, project, status); creating one also creates its
+root folder via the collection hook.
 
 Studio looks (`streak-looks`) are authorable as drafts. An agent can create one (a title, an
 `effect` and a `recipe`), retune it, archive it, and delete it, and it can look one up to put its
@@ -74,7 +82,7 @@ person looks at it on the stage and publishes. A page only publishes with a publ
 slot's own effect ([streak-field.md](streak-field.md)).
 
 Two things an agent drafting a look works without. It cannot see the result, so it tunes from the
-numbers and the brief, and the server instructions tell it to say so and hand over to the Studio.
+numbers and the brief, and the `streak-looks` description tells it to say so and hand over to the Studio.
 And a recipe's `deltas` depend on the look's `effect`, which JSON Schema cannot express, so the
 tool schema carries every parameter and range as text, generated from the effect contracts
 ([`recipe-schema.ts`](../src/features/immersive/studio/recipe-schema.ts)); `validateRecipe`
@@ -123,9 +131,8 @@ case study that is still in use answers "in use" without asking for a confirmati
 
 What is enforced and what is not. The server guarantees two deliberate calls and that the agent
 has seen exactly what it is about to remove. It cannot prove a person said yes; nothing on the
-server can. That half is the server instruction (never confirm on your own, prefer a reversible
-step such as unpublishing or `archived` on a look) and the client's own approval prompt, which
-the delete tools now ask for with the `destructiveHint` annotation. Keep delete tools out of any
+server can. That half is the first call's own answer, the server instructions, and the client's
+own approval prompt, which the delete tools ask for with the `destructiveHint` annotation. Keep delete tools out of any
 client allowlist that skips prompts.
 
 The rule lives in [`src/plugins/mcp-delete-confirmation.ts`](../src/plugins/mcp-delete-confirmation.ts),
@@ -135,45 +142,21 @@ vendored patch below.
 
 ## Authoring rules baked into the server
 
-The server's MCP instructions tell agents to:
+Agents get their ground rules from the server itself, in two places and nowhere else:
 
-- Author page and hub documents as **drafts** (`draft: true`); publish only on explicit request.
-- Send rich text as **Lexical editor state JSON**, never markdown or HTML. The one exception is a
-  rich text field with a write-only `markdown` sibling (a Rich text block's `body`, a story
-  section's and a story beat's `body`): send Markdown there and the server converts it, refuses
-  syntax the field cannot hold, and will not replace existing content without `replace: true`.
-  See [figures.md](figures.md#markdown-input).
-- Write charts and diagrams as `chart` and `diagram` blocks carrying a JSON `spec`; never send a
-  diagram's `geometry` (computed on save). A save answers an invalid spec with every problem by
-  path in the error message. See [figures.md](figures.md) and the `article-authoring` skill.
-- Find a document first and edit from its current state before updating.
-- Pass document **ids** for relationship fields (look them up with the relevant find tool).
-- Omit `slug`, `key` and `generateSlug` on create and update: slugs generate from the title or
-  name, and any value sent is normalized to a URL-safe slug ([`src/fields/slug.ts`](../src/fields/slug.ts)).
-- Reference a Studio look by id in a visual slot's `studio` field; find one with the
-  `streak-looks` find tool. A look may be drafted, never published: hand it to a person to check
-  in the Studio.
-- Never delete without the user's explicit confirmation of each document by name; see
-  [Deleting](#deleting).
-- Never attempt media upload over MCP; reference existing media by id. New images go through
-  `pnpm cms:upload`, which sends the same key to `POST /api/agent/media`. That endpoint needs the
-  key's **Upload media** capability, acts as the key's linked team member, and always lands the
-  file internal for a person to approve ([figures.md](figures.md#media-upload)). It is the one
-  REST door open to an MCP key; every team-only rule stays closed to it.
-- Asset libraries require `organization` and `project` ids; omit `rootFolder` to auto-create one.
-- Case Study and Lab Project narrative is section-owned: `context`, `challenge`, `strategy`,
-  `approach`, `outcomeSummary`, and `learnings` each contain `body` plus ordered `storyBeats`.
-  Beat keys are stable and unique within their section. Work and Lab Page blocks reference a beat
-  with the section in `source`, `storyScope: 'beat'`, and `storyBeatKey`; there is no global
-  `story-beat` source.
-- Treat visitor records as read-only PII: read them for analysis and triage, never copy them
-  into published content or send them outside the workspace.
-- Follow the house style in every piece of copy, titles, captions and labels included: no em
-  dashes ([AGENTS.md](../AGENTS.md)).
+- The MCP instructions in [`src/plugins/mcp-instructions.ts`](../src/plugins/mcp-instructions.ts),
+  sent to every client when it connects. Rules that cut across tools go here.
+- Each collection's `description` in [`mcp.ts`](../src/plugins/mcp.ts), which becomes the
+  description of that collection's tools. A rule for one collection goes here, so it arrives with
+  the tool.
 
-Collection and global descriptions in `mcp.ts` are what an agent reads when choosing a tool, so
-they follow the same style. The `article-authoring` skill is the long-form companion to these
-rules.
+This page and the `article-authoring` skill point at them rather than restating them. The skill is
+the long-form companion: how to compose a piece, not the rules again.
+
+Keep the instructions under 2048 characters (`mcp-instructions.test.ts` fails first). Claude Code
+keeps the first 2048 and drops the rest without a warning: until 2026-09-21 they ran to 3182, and
+the delete, media, visitor data and house style rules never reached Claude. Descriptions follow
+the house style too: they are copy an agent reads.
 
 ## Known issue: an MCP edit does not refresh the rendered page
 
@@ -200,6 +183,9 @@ from gaining team-level REST access:
    team members read everything, every other caller gets `where`. Media, Testimonials and
    Asset Libraries used a hand-rolled `req.user ? true : …` until 2026-09-21, which let keys
    read internal media and unapproved quotes over REST.
+
+The one REST route built for keys is `POST /api/agent/media`, behind its own capability
+([figures.md](figures.md#media-upload)).
 
 **Rule for new code:** any new collection, global, or plugin override whose access uses
 "any logged-in user" semantics must use the `authenticated` helper (or an equally strict

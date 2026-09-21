@@ -9,12 +9,10 @@ You write drafts. A person reviews in live preview and publishes. Everything bel
 
 ## Invariants
 
-- **Drafts only.** Create and update with `draft: true`. Never publish, never set `_status: 'published'`, unless the user explicitly asks in this conversation.
-- **Find first.** Read the document, edit from its current state, keep every block's `id`. A blocks array sent without ids replaces the rows wholesale, including a person's edits.
-- **Never make media public.** Upload with `pnpm cms:upload` only. It lands internal whatever you send; a person approves it.
+The sas-cms server's instructions are the ground rules. They arrive with every MCP session from `src/plugins/mcp-instructions.ts`, and this skill does not repeat them. On top of them:
+
 - **Specs say what, never where.** No coordinates, colors, sizes or styling in a spec: those keys do not exist and are refused. If a figure needs something the spec cannot say, it is a bespoke figure (code), so ask.
-- **Every figure needs a `textAlternative`**: what it shows and the takeaway, in plain sentences, for someone who cannot see it. It is what search and Ask index.
-- **Voice rules from `AGENTS.md` apply to content**: no em dashes anywhere, including titles, captions and labels.
+- **A `textAlternative` says what the figure shows and the takeaway**, in plain sentences, for someone who cannot see it. It is what search and Ask index.
 
 ## Where a piece goes
 
@@ -196,7 +194,6 @@ Choosing well:
 - `sequence`: `actors` (`role: "person"` draws a pill) and `messages` in order. `style`: `call` (default), `reply` (dashed), `self` (needs `from` equal to `to`). Keep it to four actors: that many hold their lifelines on a phone, and a fifth makes the figure scroll sideways there. More participants is two figures.
 - `timeline`: `range`, optional `eras`, and `events` (`at`, `label`, optional short `ref`). Dates are `YYYY-MM-DD` and must sit inside `range`.
 - Every label is short, not only a node's: an edge label is a word or two on one line, an actor is one to three short words, a message or an event is a phrase. Each wraps to a few lines and is then cut with an ellipsis; the schema descriptions say how much room each gets. The full label survives in the figure's list view, but that is the fallback, not the plan: an ellipsis in the drawing means shorten the label.
-- Never send `geometry`. It is computed on save and anything you send is discarded.
 
 ## Bespoke figures
 
@@ -219,9 +216,9 @@ pnpm cms:upload ./shots/inspector.png --library 12 \
   --alt "The Studio inspector with the relief group open"
 ```
 
-It uses your MCP key (`CMS_MCP_API_KEY`) and prints the media id. `--library` is required: every media document is filed under an Asset Library, so find the right one first with the `asset-libraries` find tool (the piece's project usually has one). If the upload is refused because the key may not upload, tell the user: a team member ticks "Upload media" on the key. Do not look for another way in.
+It uses your MCP key (`CMS_MCP_API_KEY`) and prints the media id: reference it in a media block. Find the Asset Library for `--library` with the `asset-libraries` find tool (the piece's project usually has one). If the upload is refused, pass the error on to the user and do not look for another way in. What the server does with the file is `src/endpoints/agentMedia.ts`.
 
-Before uploading a screenshot of the admin or a terminal, look at it: no email addresses, keys, tokens or client names that are not public. Metadata is stripped for you; pixels are not. Reference the id in a media block. It lands internal and will not render publicly until a person approves it, and that is correct: tell the user which ids are waiting.
+Look at every image before uploading it: no email addresses, keys, tokens, visitor data or client names that are not public. The server cleans the file, not what it shows.
 
 ## Checking your work
 
@@ -232,4 +229,4 @@ Open the draft's preview URL and look at it at a desktop width and at two phone 
 - No label ends in an ellipsis and no two labels touch. Shorten the label; do not leave it to the list view.
 - The text alternative still matches the data.
 
-Then tell the user what you drafted, which media ids need approval, and anything you could not source.
+Then tell the user what you drafted, which media ids you uploaded, and anything you could not source.

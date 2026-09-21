@@ -1,10 +1,14 @@
 import crypto from 'node:crypto'
+import { parse } from 'node:path'
 import { APIError, addDataAndFileToRequest, type Endpoint, type PayloadRequest } from 'payload'
 import sharp from 'sharp'
-import type { User } from '@/payload-types'
+import type { Media, User } from '@/payload-types'
 
 /**
- * POST /api/agent/media: the one way an agent adds media (docs/figures.md).
+ * POST /api/agent/media: the one way an agent adds media, and the one place
+ * that decides what an agent upload becomes. The docs, the skill and the MCP
+ * descriptions point here instead of restating it (docs/figures.md).
+ *
  * MCP tools cannot carry a binary, and an MCP key fails every team-only REST
  * rule by design (`access/authenticated.ts`), so plain `POST /api/media` is
  * closed to it. This endpoint is the narrow door instead of a wider rule.
@@ -15,12 +19,11 @@ import type { User } from '@/payload-types'
  * `uploadMedia`, off by default like every other capability: a key that can
  * read media cannot add it until a team member says so.
  *
- * Everything that matters is enforced here, not in the client: alt text and
- * an Asset Library to file it under are required, the bytes must decode as an allowed image type whatever the
- * request claims, the image is re-encoded (which drops EXIF, GPS and every
- * other metadata block), and the document is created `usageStatus: internal`
- * with no way to ask for anything else. Nothing uploaded here renders on the
- * site until a person approves it in the admin.
+ * Everything that matters is decided here, not in the client: alt text and
+ * an Asset Library to file it under are required, the bytes must decode as an
+ * allowed image type whatever the request claims, the image is stored as WebP
+ * (which compresses it and drops EXIF, GPS and every other metadata block),
+ * and it lands as `AGENT_UPLOAD_STATUS`.
  */
 
 /** The key collection the MCP plugin creates (`plugins/mcp.ts`). */
@@ -31,12 +34,21 @@ const MAX_BYTES = 8 * 1024 * 1024
 const MAX_ALT = 300
 const MAX_CAPTION = 300
 
-/** What the bytes may decode as, and the mimetype each is stored under. */
-const FORMATS = { jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp' } as const
-type Format = keyof typeof FORMATS
+/**
+ * What every agent upload lands as. Public on arrival, like any approved
+ * asset: the agent's look at the pixels before uploading is the only check.
+ */
+export const AGENT_UPLOAD_STATUS = 'public-approved' satisfies Media['usageStatus']
 
-const isFormat = (value: unknown): value is Format =>
-  typeof value === 'string' && Object.hasOwn(FORMATS, value)
+/** What the bytes may decode as. Every one is stored as WebP. */
+const ACCEPTED = ['jpeg', 'png', 'webp'] as const
+
+/**
+ * Measured on the Lab screenshots (2026-09-21): 86% smaller than the PNG and
+ * JPEG sources, and small grey UI text still matches the source at 2x zoom.
+ * `smartSubsample` keeps coloured text and hairlines sharp.
+ */
+const WEBP = { quality: 85, smartSubsample: true } as const
 
 /**
  * The team member a key acts as, if the key exists and may upload. Same lookup
@@ -106,20 +118,25 @@ const paragraph = (value: string) => ({
 })
 
 /**
- * The upload as clean bytes. The format comes from decoding the image, never
- * from the filename or the declared mimetype, and re-encoding in that format
- * is what strips the metadata: sharp writes none unless asked to keep it.
+ * The upload as clean WebP. Whether it is an image at all comes from decoding
+ * the bytes, never from the filename or the declared mimetype. Re-encoding is
+ * what compresses it and what strips the metadata: sharp writes none unless
+ * asked to keep it.
  */
-async function cleanImage(data: Buffer): Promise<{ data: Buffer; mimetype: string }> {
-  if (data.length > MAX_BYTES)
-    throw new APIError(`The file is ${data.length} bytes; the ceiling is ${MAX_BYTES}.`, 413)
-  const { format } = await sharp(data)
+async function cleanImage(file: {
+  data: Buffer
+  name: string
+}): Promise<{ data: Buffer; mimetype: string; name: string }> {
+  if (file.data.length > MAX_BYTES)
+    throw new APIError(`The file is ${file.data.length} bytes; the ceiling is ${MAX_BYTES}.`, 413)
+  const { format } = await sharp(file.data)
     .metadata()
     .catch(() => ({ format: undefined }))
-  if (!isFormat(format))
-    throw new APIError(`Upload a ${Object.keys(FORMATS).join(', ')} image.`, 415)
+  if (!ACCEPTED.some((accepted) => accepted === format))
+    throw new APIError(`Upload a ${ACCEPTED.join(', ')} image.`, 415)
   // `rotate()` bakes the EXIF orientation in before the tag is dropped.
-  return { data: await sharp(data).rotate().toFormat(format).toBuffer(), mimetype: FORMATS[format] }
+  const data = await sharp(file.data).rotate().webp(WEBP).toBuffer()
+  return { data, mimetype: 'image/webp', name: `${parse(file.name).name || 'upload'}.webp` }
 }
 
 export const agentMediaEndpoint: Endpoint = {
@@ -146,7 +163,7 @@ export const agentMediaEndpoint: Endpoint = {
       )
     if (!req.file) throw new APIError('Send the image as the multipart field "file".', 400)
 
-    const clean = await cleanImage(req.file.data)
+    const clean = await cleanImage(req.file)
     // From here on the request is the linked team member's, as it is at
     // `/api/mcp`: access control, the folder hooks and validation all apply.
     req.user = uploader
@@ -166,9 +183,11 @@ export const agentMediaEndpoint: Endpoint = {
         // Only the fields named here are ever read from the request.
         assetLibrary: library.id,
         ...(captionText ? { caption: paragraph(captionText) } : {}),
-        usageStatus: 'internal',
+        usageStatus: AGENT_UPLOAD_STATUS,
       },
-      file: { ...req.file, ...clean, size: clean.data.length },
+      // Built from the clean bytes alone: a spread `tempFilePath` would make
+      // Payload read the original upload from disk instead.
+      file: { ...clean, size: clean.data.length },
       overrideAccess: false,
       req,
     })

@@ -1,6 +1,6 @@
 # Figures and agent authoring for long-form Lab content: plan
 
-Status: Phases 0 to 4 implemented 2026-09-19 (code, tests, stories, and migration `20260919_213646_figures_blocks`). Phase 5, the acceptance article, is open: it needs the write-up's real data and a person to review and publish. Usage guide: [figures.md](figures.md). What was decided and measured is recorded under [Implementation record](#implementation-record); the sections above it are the proposal as written.
+Status: Phases 0 to 4 implemented 2026-09-19 (code, tests, stories, and migration `20260919_213646_figures_blocks`). Phase 5, the acceptance article, is open: it needs the write-up's real data and a person to review and publish. Usage guide: [figures.md](figures.md). What was decided and measured is recorded under [Implementation record](#implementation-record); the sections above it are the proposal as written. Media upload has changed since (2026-09-21): [`src/endpoints/agentMedia.ts`](../src/endpoints/agentMedia.ts) is the current contract, and the upload notes below record the first design.
 
 Origin: the Streak Field write-up drafted on 2026-09-19 (8 charts, 8 diagrams, 14 screenshots, about 4,500 words). It was produced as an Obsidian note because the CMS has no way to hold a chart or a diagram as anything but a flat image. This plan makes that kind of piece authorable in Payload, by a team agent over MCP, reviewed and published by a person.
 

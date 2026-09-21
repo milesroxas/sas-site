@@ -1,8 +1,10 @@
 import { type MCPPluginConfig, mcpPlugin } from '@payloadcms/plugin-mcp'
 import type { CollectionSlug, Field, GroupField, Plugin } from 'payload'
 import { authenticated } from '@/access/authenticated'
+import { AGENT_UPLOAD_STATUS } from '@/endpoints/agentMedia'
 import { ASK_QUESTION_RETENTION_DAYS } from '@/features/ask/retention'
 import { withMcpDeleteConfirmation } from '@/plugins/mcp-delete-confirmation'
+import { MCP_INSTRUCTIONS } from '@/plugins/mcp-instructions'
 import { CONTENT_SURFACES } from '@/shared/content/surfaces'
 
 /**
@@ -121,7 +123,7 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
   ...entries(
     {
       'asset-libraries':
-        'Asset library folders organizing media per client/project. Creating one auto-creates a root folder; pass organization and project ids',
+        'Asset library folders organizing media per client/project. Pass organization and project ids and omit rootFolder: creating one auto-creates its root folder',
     },
     AUTHORING,
   ),
@@ -130,16 +132,16 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
   ...entries(
     {
       'streak-looks':
-        "Studio looks: authored visual effects (streak field, light leak) that a visual slot references by id in its `studio` field. Draft one with a title, an `effect` and a `recipe`; it cannot be published here, a person publishes it in the admin Studio. Set `archived` to retire a look that is still in use. A slot only accepts a published look of the slot's own effect",
+        "Studio looks: authored visual effects (streak field, light leak) that a visual slot references by id in its `studio` field. Draft one with a title, an `effect` and a `recipe` whose `deltas` hold only the parameters that leave their default. You cannot see a look and cannot publish it here: say so, and ask the user to open it in the admin Studio, check it and publish. Set `archived` to retire a look that is still in use. A slot only accepts a published look of the slot's own effect, so a page only publishes with one",
     },
     AUTHORING,
   ),
-  // Media stays read-only: MCP tools cannot send binary uploads, and new media
-  // defaults to the internal `usageStatus` gate anyway.
+  // Media stays read-only: MCP tools cannot send binary uploads. Images come in
+  // through `pnpm cms:upload` (`uploadMediaCapability` below).
   ...entries(
     {
       media:
-        'Uploaded media. Read-only over MCP: reference existing documents by id; only `public-approved` items render publicly',
+        'Uploaded media. Read-only over MCP: reference existing documents by id; only `public-approved` items render publicly. New images go through `pnpm cms:upload`',
     },
     READ_ONLY,
   ),
@@ -286,8 +288,7 @@ const uploadMediaCapability: Field = {
   defaultValue: false,
   admin: {
     position: 'sidebar',
-    description:
-      'Allow `pnpm cms:upload` with this key. Uploads always land internal: nothing renders publicly until a person approves it.',
+    description: `Allow \`pnpm cms:upload\` with this key. Its uploads land with Usage Status ${AGENT_UPLOAD_STATUS}.`,
   },
 }
 
@@ -304,22 +305,7 @@ const server: Plugin = mcpPlugin({
   mcp: {
     serverOptions: {
       serverInfo: { name: 'Suits & Sandals CMS', version: '1.0.0' },
-      instructions: [
-        'Content authoring server for the Suits & Sandals website and Content Hub.',
-        'Author page and hub documents as drafts (draft: true); publish only when the user explicitly asks.',
-        "Rich text fields expect Lexical editor state JSON, not markdown or HTML. The exception is a rich text field with a write-only `markdown` sibling (a Rich text block's `body`, a story section's and a story beat's `body`): send Markdown there and the server converts it. It refuses syntax the field cannot hold and says what to use instead, and it will not replace existing content unless `replace: true` is sent beside it.",
-        'Charts and diagrams are `chart` and `diagram` blocks carrying a JSON `spec` (the tool schema documents it). A diagram spec has no coordinates: positions are computed on save, so never send `geometry`. A save answers an invalid spec with every problem by path; fix those paths and resend. Every figure needs a `textAlternative`.',
-        'Before updating a document, find it first and edit from its current state.',
-        'Relationship fields take document ids: look them up with the relevant find tool.',
-        'Omit slug, key, and generateSlug fields on create and update: slugs auto-generate from the title or name, and any value you send is normalized to a URL-safe slug.',
-        "Case Study and Lab Project narrative is section-owned: `context`, `challenge`, `strategy`, `approach`, `outcomeSummary` and `learnings` each hold a `body` plus ordered `storyBeats` with stable keys unique within their section. A Work or Lab Page block points at a beat with the section in `source`, `storyScope: 'beat'` and `storyBeatKey`.",
-        "A visual slot takes a Studio look by id in its `studio` field: find one with the streak-looks find tool. You may draft a look (title, `effect`, and a `recipe` whose `deltas` hold only the parameters that leave their default; the tool schema lists every parameter and range), but you cannot see it and you cannot publish it: say so, and ask the user to open it in the admin Studio, check it and publish. A page only publishes with a published look of the slot's own effect.",
-        'Deleting is permanent and always needs the explicit confirmation of the user in this conversation, for each document by name. The first delete call deletes nothing: it answers with the document and a confirmation token. Show the user that document, wait for their yes, then call again with the token in `confirm`. Never confirm on your own, never delete by `where`, and prefer a reversible step (unpublish, or `archived` on a look) when the user has not asked for a delete.',
-        'Asset libraries require organization and project ids; omit rootFolder to auto-create one.',
-        'Media cannot be uploaded over MCP; reference existing media documents by id. New images go through `pnpm cms:upload`, which lands them internal for a person to approve.',
-        'Inquiries, form submissions, subscribers, and Ask questions are read-only and hold visitor contact details: read them for analysis and triage, and never copy that PII into published content or send it anywhere outside this workspace.',
-        'House style for every piece of copy you write, titles, captions and labels included: never use an em dash. Recast with a comma, a colon, parentheses or a period.',
-      ].join(' '),
+      instructions: MCP_INSTRUCTIONS,
     },
   },
   // The key collection is the capability control plane: only team members may

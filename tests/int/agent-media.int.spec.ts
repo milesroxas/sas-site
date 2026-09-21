@@ -139,17 +139,17 @@ describe.sequential('POST /api/agent/media', () => {
     expect(written).not.toHaveBeenCalled()
   })
 
-  it('writes as the linked team member, internal, with the metadata gone', async () => {
+  it('writes as the linked team member, public-approved WebP, with the metadata gone', async () => {
     expect((await sharp(jpeg).metadata()).exif).toBeDefined()
 
     const response = await post({
       alt: '  The Studio inspector  ',
-      // Nothing outside the allowlist is read: a client cannot ask for public.
-      extra: { caption: 'Relief group open', usageStatus: 'public-approved', allChannels: true },
+      // Nothing outside the allowlist is read: a client cannot pick the status.
+      extra: { caption: 'Relief group open', usageStatus: 'internal', allChannels: false },
       key: allowedKey,
     })
     expect(response.status).toBe(201)
-    expect(await response.json()).toEqual({ id: 4242, usageStatus: 'internal' })
+    expect(await response.json()).toEqual({ id: 4242, usageStatus: 'public-approved' })
 
     const [args] = written.mock.calls.at(-1) ?? []
     expect(args).toMatchObject({ collection: 'media', overrideAccess: false })
@@ -157,10 +157,18 @@ describe.sequential('POST /api/agent/media', () => {
     expect(args.data).toMatchObject({
       alt: 'The Studio inspector',
       assetLibrary: libraryId,
-      usageStatus: 'internal',
+      usageStatus: 'public-approved',
     })
     expect(args.req.user).toMatchObject({ collection: 'users', id: user.id })
-    expect(args.file).toMatchObject({ mimetype: 'image/jpeg', size: args.file.data.length })
-    expect((await sharp(args.file.data).metadata()).exif).toBeUndefined()
+    // Only the clean bytes travel: no temp path Payload could read the original from.
+    expect(Object.keys(args.file).sort()).toEqual(['data', 'mimetype', 'name', 'size'])
+    expect(args.file).toMatchObject({
+      mimetype: 'image/webp',
+      name: 'shot.webp',
+      size: args.file.data.length,
+    })
+    const stored = await sharp(args.file.data).metadata()
+    expect(stored.format).toBe('webp')
+    expect(stored.exif).toBeUndefined()
   })
 })

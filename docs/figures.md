@@ -18,7 +18,7 @@ The principle: model the author's mental model, and the author is an LLM. It is 
 | Document boundary | `src/plugins/figures/index.ts` | Validation that answers on drafts, save-time diagram geometry |
 | Markdown input | `src/fields/markdownInput.ts` | The write-only `markdown` and `replace` pair |
 | Code block | `src/blocks/Code/` | One config, offered inline in a post body and in the Section run; the listing itself is the `components/ui/code-block.tsx` surface, whose `code-block-languages.ts` adds GLSL and shell |
-| Upload | `scripts/cms-upload.ts`, `src/endpoints/agentMedia.ts` | `pnpm cms:upload` with the MCP key; the endpoint enforces internal |
+| Upload | `scripts/cms-upload.ts`, `src/endpoints/agentMedia.ts` | `pnpm cms:upload` with the MCP key; the endpoint decides what an upload becomes |
 | Corpus | `src/features/figures/corpus.ts` | Eight charts and eight diagrams: fixtures for stories and tests |
 
 Import the server-safe surface from `@/features/figures` (no React). Renderers import from `@/features/figures/ui/...` directly.
@@ -132,15 +132,11 @@ Rules live in `globals.css` under "Figures".
 pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"]
 ```
 
-MCP cannot carry a binary, so this is the one way an agent adds media. It uses the MCP API key the agent already has (`CMS_MCP_API_KEY`, the same string the MCP client sends) and posts to `POST /api/agent/media` (`src/endpoints/agentMedia.ts`). Target site: `CMS_UPLOAD_SERVER`, else `NEXT_PUBLIC_SERVER_URL`. Prints the media id.
+MCP cannot carry a binary, so this is the one way an agent adds media. It uses the MCP API key the agent already has (`CMS_MCP_API_KEY`, the same string the MCP client sends) and posts to `POST /api/agent/media`. Target site: `CMS_UPLOAD_SERVER`, else `NEXT_PUBLIC_SERVER_URL`. Prints the media id.
 
-An MCP key fails every team-only REST rule by design, so plain `POST /api/media` stays closed to it. The endpoint is the narrow door instead of a wider rule:
+An MCP key fails every team-only REST rule by design, so plain `POST /api/media` stays closed to it. The endpoint is the narrow door instead of a wider rule. It acts as the team member the key is linked to, with access control on, and needs the key's own **Upload media** capability (System, API Keys), off by default like every other capability.
 
-- It authenticates the way `/api/mcp` does (`Authorization: Bearer <key>`, looked up by HMAC index) and then acts as the team member the key is linked to, with access control on.
-- The key needs its own capability, **Upload media** (System, API Keys), off by default like every other capability. A key that can read media cannot add it until a team member ticks it.
-- Everything that matters is enforced on the server, where a client cannot skip it: alt text required, an Asset Library required (every media document is filed; find the id with the `asset-libraries` find tool), the type decided from the bytes and never from the filename or declared mimetype, a size ceiling, re-encoding through sharp (which drops EXIF and GPS), and `usageStatus: internal`. Only `alt`, `caption` and `assetLibrary` are read from the request; asking for `public-approved` does nothing.
-
-A person approves in the admin before the image can render publicly. Look at a screenshot of the admin before uploading it: metadata is stripped, pixels are not.
+[`src/endpoints/agentMedia.ts`](../src/endpoints/agentMedia.ts) decides everything about the stored file: what is required, which images it accepts, how it encodes them and the usage status they land with. Read it there; this page does not restate it. The request carries only `alt`, `caption` and `assetLibrary`, so a client cannot choose any of the rest.
 
 ## The MCP key for article authoring
 
