@@ -3,9 +3,8 @@ import { IndexRow, type IndexRowFact } from '@/sections/Browse/IndexRow'
 import type { LabBrowseItem } from './queries'
 
 /**
- * A lab page as an index row: kind, lifecycle status and the byline on the
- * facts line, demonstrated capabilities as the chips. The row itself is
- * `IndexRow`.
+ * A lab page as an index row: kind and lifecycle status on the facts line,
+ * demonstrated capabilities as the chips. The row itself is `IndexRow`.
  */
 export const LabRow: React.FC<{
   item: LabBrowseItem
@@ -16,7 +15,6 @@ export const LabRow: React.FC<{
   const facts: IndexRowFact[] = []
   if (item.kind) facts.push({ label: item.kind.label })
   if (item.status) facts.push({ label: item.status })
-  if (item.author) facts.push({ label: item.author })
 
   return (
     <IndexRow

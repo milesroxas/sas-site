@@ -104,7 +104,7 @@ export const LabHero = ({ page, project }: { page: LabPage; project: LabProject 
           {/* The staff rule: the single line in the composition, so the meta
               reads as a masthead bar rather than as a table. */}
           <dl className="mt-11.5 flex w-fit flex-col gap-4 border-t border-foreground pt-4">
-            {authors && <MetaEntry label="Written by">{authors}</MetaEntry>}
+            {authors && <MetaEntry label="Editor">{authors}</MetaEntry>}
             {published && <MetaEntry label="Published">{published}</MetaEntry>}
             <BuiltWith technologies={project.technologies} />
             <MetaEntry label="Read">

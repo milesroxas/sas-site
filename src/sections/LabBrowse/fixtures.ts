@@ -32,7 +32,6 @@ const item = (
   title,
   kind: labBrowseKinds.find((option) => option.slug === kindSlug) ?? null,
   status,
-  author: 'Miles Roxas',
   capabilities,
   visual: { kind: 'media', media: heroImageFixture },
   media: heroImageFixture,
@@ -50,18 +49,15 @@ export const labBrowseItems: LabBrowseItem[] = [
     capability('web-design', 'website-production'),
     { featured: true },
   ),
-  item(2, 'Streak Field studio', 'tool', 'Active', capability('website-production'), {
-    author: 'Miles Roxas and Dana Okoye',
-  }),
+  item(2, 'Streak Field studio', 'tool', 'Active', capability('website-production')),
   item(
     3,
     'Type scale under motion',
     'experiment',
     'Completed',
     capability('web-design', 'brand-expansion'),
-    // No media and no byline: the row falls back to the muted placeholder
-    // frame and the facts line drops to kind and status.
-    { media: null, visual: null, author: null },
+    // No media: the row falls back to the muted placeholder frame.
+    { media: null, visual: null },
   ),
   item(4, 'Route transition sandbox', 'prototype', 'Completed', capability('web-strategy')),
   item(5, 'Cursor grammar', 'showcase', 'Archived', capability('web-design')),
