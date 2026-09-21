@@ -6,6 +6,12 @@ import { cn } from '@/utilities/ui'
 import { useMotionPaused } from './hooks'
 
 /**
+ * Temporarily off: the floating per-effect button reads as a stray control.
+ * A single site-chrome toggle replaces it later; flip this to restore.
+ */
+const MOTION_TOGGLE_ENABLED = false
+
+/**
  * Pause and resume for sustained automatic motion (WCAG 2.2.2). One switch
  * for the document, so pausing a hero also parks every other live field.
  * Hidden under `prefers-reduced-motion`, where nothing animates to pause.
@@ -16,7 +22,7 @@ import { useMotionPaused } from './hooks'
 export function VisualMotionToggle({ className }: { className?: string }) {
   const [paused, setPaused] = useMotionPaused()
   const reducedMotion = usePrefersReducedMotion()
-  if (reducedMotion) return null
+  if (!MOTION_TOGGLE_ENABLED || reducedMotion) return null
   const Icon = paused ? IconPlayerPlay : IconPlayerPause
   return (
     <button
