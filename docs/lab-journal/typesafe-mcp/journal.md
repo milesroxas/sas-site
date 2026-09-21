@@ -46,3 +46,10 @@ Exists: docs/typesafe-mcp-roadmap.md, a ranked list of nine opportunities with a
 Next: a feature branch in a Conductor workspace, then the roadmap's first step, the outline, get-block and patch-block tools, starting with a baseline capture of Claude tokens per authoring task on a fixed set of tasks, so the write-up can report measured before and after numbers.
 
 <!-- session: b7777b4e-b883-4269-88eb-e1738d94a25f, branch: main -->
+
+## 2026-09-21 23:03 UTC | note | Work moved to a Conductor workspace
+
+The journal was paused on main after the review. It is resumed in the Conductor workspace kampala, on the feature branch resume-typesafe-mcp-journal, so sessions and prompts on this branch are captured again. The prompt hook was checked: this session's first prompt landed in the private prompts file.
+State on pickup: docs/typesafe-mcp-roadmap.md is the plan, no MCP code has changed. The next step is still the roadmap's first: a baseline capture of Claude tokens per authoring task, then the outline, get-block and patch-block tools. Miles gives the next steps from here.
+
+<!-- session: 4ad25f66-d8cd-4f8d-ad48-53462d601df6, branch: resume-typesafe-mcp-journal -->
