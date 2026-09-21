@@ -75,3 +75,20 @@ Fix: a session row can carry a window (`pnpm lab:journal window --from/--to`), h
 Still manual: nothing detects that a session has changed subject. The skill now tells the agent to ask which journal an entry belongs to when a session turns to other work.
 
 <!-- session: b7777b4e-b883-4269-88eb-e1738d94a25f, branch: main -->
+
+## 2026-09-21 17:35 UTC | milestone | A team guide, and what writing it exposed
+
+Miles asked for a guide he and the team can follow in order, ending with the feature as a Lab Project and a new Lab Page. It is docs/lab-journal/README.md, beside the journals: setup per machine, the order of a feature (start, each session, moving branch, changing subject, pausing), the eight finishing steps from final milestone to publish and wrap, team rules, a symptom table and a checklist. The skill stays the agent's contract and the guide points at it rather than repeating it.
+Writing the steps down exposed two gaps, both fixed: there was no way to capture a session the hooks had missed (now `pnpm lab:journal sync <session-id>`), and the writer agent said nothing about images (it now places media ids it is given and otherwise leaves hero, visuals, SEO and related projects to a person). One claim in the first draft was wrong and was corrected: a wrapped journal can be resumed, so it "stops capturing", it is not "never live again".
+For a team, the limit worth knowing: prompts and transcripts stay on the machine that produced them, so the digest and the writer should run where most of the work happened.
+Verified: tsc, biome, 11 tests. Not verified: the finishing steps end to end, since no feature has been written up yet.
+
+<!-- session: b7777b4e-b883-4269-88eb-e1738d94a25f, branch: main -->
+
+## 2026-09-21 17:42 UTC | challenge | A worktree session could not see the sessions before it
+
+Miles asked whether the feature could continue in a new session in a Claude worktree. Checking that found a gap: Claude Code files transcripts under the path of the directory a session ran in, and the tooling only looked under the current directory and its own checkout root. From a worktree, `sync` and the digest would not have found the sessions that ran in the main checkout, so their tokens could never be recounted and their agent messages never judged.
+Fix: transcripts are now looked for under every checkout of the repository, from `git worktree list` (the main checkout and each worktree). Verified by resolving this session's transcript from inside the existing contents-button worktree. Conductor workspaces are separate clones, not worktrees, so sessions there are still only found from their own workspace.
+Also confirmed for this session: the journal was paused between tasks and this session started before the hooks existed, so nothing here was captured live. Every prompt was recovered from the transcript on each resume.
+
+<!-- session: b7777b4e-b883-4269-88eb-e1738d94a25f, branch: main -->
