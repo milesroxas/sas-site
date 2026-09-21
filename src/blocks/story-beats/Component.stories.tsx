@@ -57,6 +57,16 @@ export const Lead: Story = {
   args: { variant: 'lead' },
 }
 
+/** An editor heading at the default level, on the Prose Standard heading scale. */
+export const WithHeading: Story = {
+  args: { heading: 'Leading with one idea', headingLevel: 'h3' },
+}
+
+/** The smallest heading level: a step above the body, carried by weight. */
+export const WithHeadingFour: Story = {
+  args: { heading: 'Leading with one idea', headingLevel: 'h4' },
+}
+
 /** Entire section scope: the overview and its beats in one column. */
 export const EntireSection: Story = {
   args: { body: section },

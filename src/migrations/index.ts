@@ -110,6 +110,7 @@ import * as migration_20260920_223253_visual_surface from './20260920_223253_vis
 import * as migration_20260920_232046_index_light_leak from './20260920_232046_index_light_leak';
 import * as migration_20260920_235043_lab_index_banner from './20260920_235043_lab_index_banner';
 import * as migration_20260921_153357_ask_case_study_handoff from './20260921_153357_ask_case_study_handoff';
+import * as migration_20260921_225556_story_beats_heading from './20260921_225556_story_beats_heading';
 
 export const migrations = [
   {
@@ -670,6 +671,11 @@ export const migrations = [
   {
     up: migration_20260921_153357_ask_case_study_handoff.up,
     down: migration_20260921_153357_ask_case_study_handoff.down,
-    name: '20260921_153357_ask_case_study_handoff'
+    name: '20260921_153357_ask_case_study_handoff',
+  },
+  {
+    up: migration_20260921_225556_story_beats_heading.up,
+    down: migration_20260921_225556_story_beats_heading.down,
+    name: '20260921_225556_story_beats_heading'
   },
 ];

@@ -1,6 +1,6 @@
 import type { Block } from 'payload'
 import { featureSourceField } from '@/blocks/feature/shared'
-import { themeField } from '@/blocks/shared/fields'
+import { proseHeadingLevelField, themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { markdownInputFields } from '@/fields/markdownInput'
 
@@ -19,6 +19,10 @@ import { markdownInputFields } from '@/fields/markdownInput'
  * in order. `body` is the copy under `Source: Custom` and the website-only
  * override otherwise, exactly as on every other story-capable block.
  *
+ * `heading` is the editor's own and never falls back to the story record: a
+ * beat is usually opened by a Prose Standard heading that already prints the
+ * beat's heading, and a second copy under it would repeat it.
+ *
  * `variant` is the type size and nothing else: the measure, the column, and
  * the band rhythm are the same at every size.
  */
@@ -32,6 +36,33 @@ export const StoryBeats: Block = {
   labels: { singular: 'Story beats', plural: 'Story beats' },
   fields: [
     featureSourceField(),
+    // Not an override of canonical copy, so it stays visible at every source:
+    // `withStoryBeatSource` gates only the copy fields beside `source`, and a
+    // row's fields are not among them.
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'heading',
+          type: 'text',
+          admin: {
+            width: '50%',
+            description:
+              'Optional heading above the copy. Never taken from the story record: a Prose heading opening the beat already prints it.',
+          },
+        },
+        // A beat sits under the Prose heading of its Section, hence h3.
+        proseHeadingLevelField({
+          defaultValue: 'h3',
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.heading),
+            description:
+              'Outline level and type size, on the same scale as a Prose Standard heading.',
+            width: '50%',
+          },
+        }),
+      ],
+    },
     ...markdownInputFields('body'),
     {
       name: 'body',

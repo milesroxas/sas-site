@@ -2406,6 +2406,14 @@ export interface WorkStoryBeatsBlock {
    */
   showOverrides?: boolean | null;
   /**
+   * Optional heading above the copy. Never taken from the story record: a Prose heading opening the beat already prints it.
+   */
+  heading?: string | null;
+  /**
+   * Outline level and type size, on the same scale as a Prose Standard heading.
+   */
+  headingLevel?: ('h2' | 'h3' | 'h4') | null;
+  /**
    * Write-only. Markdown for `body`: converted to rich text on save and never stored. Syntax the field cannot hold is refused with what to use instead.
    */
   markdown?: string | null;
@@ -8499,6 +8507,14 @@ export interface LabStoryBeatsBlock {
    */
   showOverrides?: boolean | null;
   /**
+   * Optional heading above the copy. Never taken from the story record: a Prose heading opening the beat already prints it.
+   */
+  heading?: string | null;
+  /**
+   * Outline level and type size, on the same scale as a Prose Standard heading.
+   */
+  headingLevel?: ('h2' | 'h3' | 'h4') | null;
+  /**
    * Write-only. Markdown for `body`: converted to rich text on save and never stored. Syntax the field cannot hold is refused with what to use instead.
    */
   markdown?: string | null;
@@ -11270,6 +11286,8 @@ export interface WorkStoryBeatsBlockSelect<T extends boolean = true> {
   storyScope?: T;
   storyBeatKey?: T;
   showOverrides?: T;
+  heading?: T;
+  headingLevel?: T;
   markdown?: T;
   replace?: T;
   body?: T;
@@ -11811,6 +11829,8 @@ export interface LabStoryBeatsBlockSelect<T extends boolean = true> {
   storyScope?: T;
   storyBeatKey?: T;
   showOverrides?: T;
+  heading?: T;
+  headingLevel?: T;
   markdown?: T;
   replace?: T;
   body?: T;

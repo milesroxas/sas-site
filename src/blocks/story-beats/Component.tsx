@@ -1,10 +1,12 @@
 import type React from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
 import { Section } from '@/blocks/shared/section'
+import { proseHeadingClassNames } from '@/blocks/shared/typography'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import type { LabStoryBeatsBlock, WorkStoryBeatsBlock } from '@/payload-types'
 import { hasRichTextContent } from '@/utilities/hasRichTextContent'
+import { cn } from '@/utilities/ui'
 
 /**
  * Only the story surfaces offer this block, so the two generated interfaces
@@ -16,7 +18,7 @@ import { hasRichTextContent } from '@/utilities/hasRichTextContent'
  */
 type StoryBeatsBlockProps = Pick<
   LabStoryBeatsBlock | WorkStoryBeatsBlock,
-  'blockType' | 'body' | 'theme' | 'variant'
+  'blockType' | 'body' | 'heading' | 'headingLevel' | 'theme' | 'variant'
 > & {
   bare?: boolean
 }
@@ -49,16 +51,33 @@ const variantClasses = {
  * Story Beat, a section overview, or a whole section composed in order, all
  * the same shape.
  *
+ * An optional heading sits on the same column, sized from the prose scale a
+ * Prose Standard heading uses (`proseHeadingClassNames`), so a beat heading
+ * reads as the next step down the same outline. The column becomes a
+ * `text-stack` only when there is one, which owns the heading-to-body gap in
+ * the heading's em; without one the passage stays untrimmed.
+ *
  * The column is a `data-reveal` marker for the shared intro reveal the
  * renderer plays; the block itself never animates.
  */
-export const StoryBeatsBlock: React.FC<StoryBeatsBlockProps> = ({ bare, body, theme, variant }) => {
+export const StoryBeatsBlock: React.FC<StoryBeatsBlockProps> = ({
+  bare,
+  body,
+  heading,
+  headingLevel,
+  theme,
+  variant,
+}) => {
   if (!body || !hasRichTextContent(body)) return null
+  const Heading = headingLevel || 'h3'
   return (
     <Section bare={bare} theme={theme}>
       <Container>
         <BlockGrid>
-          <div className="md:col-span-4 md:col-start-3" data-reveal>
+          <div className={cn('md:col-span-4 md:col-start-3', heading && 'text-stack')} data-reveal>
+            {heading ? (
+              <Heading className={proseHeadingClassNames[Heading]}>{heading}</Heading>
+            ) : null}
             <RichText
               className={variantClasses[variant || 'default']}
               data={body}

@@ -1,4 +1,5 @@
 import type { Condition, Field, SelectField } from 'payload'
+import type { ProseHeadingLevel } from '@/blocks/shared/typography'
 import { STORY_SECTIONS, STORY_SOURCE_OPTIONS } from '@/collections/story/narrative'
 import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 
@@ -92,6 +93,32 @@ export const storySectionFields = (): Field[] => [
 ]
 
 /**
+ * The outline level of a heading on the reading column (a Prose Standard
+ * heading, a Story beats heading). The level also sets the type size, from
+ * the one prose scale in `proseHeadingClassNames` (`./typography.ts`), so the
+ * options are that scale's keys and nothing else. Each block states its own
+ * condition and description.
+ */
+export const proseHeadingLevelField = ({
+  admin,
+  defaultValue = 'h2',
+}: {
+  admin: SelectField['admin']
+  defaultValue?: ProseHeadingLevel
+}): SelectField => ({
+  name: 'headingLevel',
+  type: 'select',
+  label: 'Heading level',
+  defaultValue,
+  options: [
+    { label: 'H2 (opens a section)', value: 'h2' },
+    { label: 'H3 (opens a subsection)', value: 'h3' },
+    { label: 'H4 (opens a passage)', value: 'h4' },
+  ] satisfies Array<{ label: string; value: ProseHeadingLevel }>,
+  admin,
+})
+
+/**
  * Fields of a rich-transition block: a short band of copy between story
  * sections, laid out one of four ways on a themed surface. Layout and theme
  * sit above the body so they stay reachable without scrolling past the editor.
@@ -136,26 +163,16 @@ export const transitionFields = (): Field[] => [
       },
     ],
   },
-  {
-    name: 'headingLevel',
-    type: 'select',
-    label: 'Heading level',
-    defaultValue: 'h2',
-    // Prose only: the other layouts are page furniture and always render an
-    // h2. Inside an article the opener has to say where it sits in the
-    // outline, and that choice also sets the type size (see `RichTransition`).
-    options: [
-      { label: 'H2 (opens a section)', value: 'h2' },
-      { label: 'H3 (opens a subsection)', value: 'h3' },
-      { label: 'H4 (opens a passage)', value: 'h4' },
-    ],
+  // Prose only: the other layouts are page furniture and always render an h2.
+  // Inside an article the opener has to say where it sits in the outline.
+  proseHeadingLevelField({
     admin: {
       condition: (_, siblingData) => siblingData?.layout === 'prose',
       description:
         'Outline level and type size for the Prose layout, set against the article body rather than the page headings.',
       width: '50%',
     },
-  },
+  }),
   { name: 'body', type: 'richText' },
 ]
 

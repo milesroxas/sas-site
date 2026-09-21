@@ -5,6 +5,11 @@ import RichText from '@/components/RichText'
 import type { RichTransitionBlock } from '@/payload-types'
 import { BlockGrid } from '../shared/grid'
 import { Section } from '../shared/section'
+import {
+  eyebrowClassName,
+  type ProseHeadingLevel,
+  proseHeadingClassNames,
+} from '../shared/typography'
 
 /**
  * Copy fields shared by the generic and case-study rich-transition blocks.
@@ -27,8 +32,6 @@ type Layout = NonNullable<RichTransitionFields['layout']>
  * Section block's stack, which owns the gap below it (see `Prose`).
  */
 type LayoutProps = RichTransitionFields & { stacked?: boolean }
-
-const eyebrowClassName = 'text-sm uppercase tracking-[0.2em]'
 
 const Body = ({ className, data }: { className?: string; data: DefaultTypedEditorState }) => (
   <div data-reveal>
@@ -150,36 +153,15 @@ const Statement = ({ body, eyebrow, heading }: RichTransitionFields) => (
   </Container>
 )
 
-type ProseHeadingLevel = NonNullable<RichTransitionFields['headingLevel']>
-
 /**
- * Prose type scale. The opener is measured against the copy it opens (Story
- * beats and Rich text render Tailwind Typography's `prose` base: 16px on a
- * 28px line), not against the page type scale: `text-heading-1` beside 16px
- * body is a page title standing inside an article, and the two read as
- * separate documents rather than one passage.
- *
- * So the levels are plain Tailwind sizes, a 1.25 ladder over that body:
- * 30 / 24 / 20px. Their default line heights (2.25rem, 2rem, 1.75rem) sit on
- * or just above the body's 28px line, so the passage keeps one rhythm, and
- * the two larger steps take `tracking-tight` because the text-box-trimmed
- * cluster otherwise reads loose at those sizes. At h4 the step over the body
- * is only 4px, so weight carries the hierarchy instead, the way the in-prose
- * headings do (`prose-h4:font-medium` in components/RichText).
+ * Prose heading sizes come from the shared prose scale
+ * (`proseHeadingClassNames`), the same one a Story beats heading uses, so an
+ * opener and the beats under it never drift apart.
  *
  * The deck steps with the heading: 18px under an h2 is a standfirst, body
  * size under the lower two, both on the body's 28px line so the deck and the
  * beats below it share a baseline.
- *
- * Levels are not restated in `em`: the gaps inside the cluster already are
- * (`text-stack`), so the whole ladder tracks whichever level the editor picks.
  */
-const proseHeadingClasses: Record<ProseHeadingLevel, string> = {
-  h2: 'text-3xl tracking-tight',
-  h3: 'text-2xl tracking-tight',
-  h4: 'text-xl font-medium',
-}
-
 const proseBodyClasses: Record<ProseHeadingLevel, string> = {
   h2: 'text-lg/7',
   h3: 'text-base/7',
@@ -230,7 +212,11 @@ const Prose = ({ body, eyebrow, heading, headingLevel, stacked }: LayoutProps) =
               {eyebrow}
             </p>
           ) : null}
-          <Heading className={proseHeadingClasses[level]} data-reveal data-reveal-group="heading">
+          <Heading
+            className={proseHeadingClassNames[level]}
+            data-reveal
+            data-reveal-group="heading"
+          >
             {heading}
           </Heading>
           {body ? <Body className={proseBodyClasses[level]} data={body} /> : null}

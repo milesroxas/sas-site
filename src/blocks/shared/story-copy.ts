@@ -103,8 +103,9 @@ const resolveCopy = (block: StoryCopyBlock, record: StoryRecord): StoryCopyBlock
       }
     case 'featureImageStatement':
       return { ...block, caption: storyBody(record, block, block.caption) }
-    // The reading column prints the beat's copy and nothing else: no heading,
-    // so a beat is never introduced by the bare name of its section.
+    // The reading column resolves the beat's copy and nothing else. Its
+    // heading is only ever the editor's own: a beat is never introduced by the
+    // bare name of its section, nor by the beat heading its Prose opener prints.
     case 'storyBeats':
       return { ...block, body: storyBody(record, block, block.body) }
     case 'featureTabs':

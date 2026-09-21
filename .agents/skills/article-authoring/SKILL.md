@@ -53,7 +53,7 @@ A Lab Page reads as an editorial article: every heading and every passage sits o
 
 ### The rules
 
-- **Narrative copy is always a `storyBeats` block.** It prints the Lab Project's canonical story on the reading column and has no layout of its own to vary. Leave `variant` and `theme` unset.
+- **Narrative copy is always a `storyBeats` block.** It prints the Lab Project's canonical story on the reading column and has no layout of its own to vary. Leave `variant` and `theme` unset. Its optional `heading` is a subheading inside a Section, not a replacement for the Prose heading (see [The beats](#the-beats)).
 - **Every Section opens with one Standard heading in the Prose layout**: `{ "blockType": "richTransition", "layout": "prose" }`. Prose puts the heading on the Story beats column. Exactly one per Section, always the first block.
 - **Never change a band.** Send every Section with `customize: false` and no `theme`, `spacing` or `stack`. Leave `theme` off every nested block. No alternating surfaces, no contrasted bands for emphasis. On a re-compose, a Section saved with `customize: true` goes back to `false`.
 - **Not on a Lab Page unless asked**: `featureHeadingOffset`, any other `richTransition` layout (`offset`, `left`, `centered`, `split`, `statement`), copy carried by a media block (`mediaContentSplit`, `splitContentNarrow`, `imagePair`, `splitImageOffset`, `fullMedia` with `showContent`), `featureStatementGrid`, `featureTabs`, `content`, and the legacy `labStorySection`. Each moves the copy off the column.
@@ -90,7 +90,12 @@ Never give the heading `storyScope: "beat"` or `"section"` with an empty body: i
 
 - One `storyBeats` block per beat (`storyScope: "beat"`, `storyBeatKey`) when a figure, a listing or media sits between beats. This is the usual case.
 - One `storyBeats` block with `storyScope: "section"` when a story part runs with nothing between its beats.
-- The block prints no heading. A beat that needs a visible heading gets its own Section with a Prose heading, not a bigger block.
+- **Beat headings.** A `storyBeats` block prints a heading only when you write one: it never takes the beat's `heading` from the record. Use it for a later beat in a Section that needs a signpost but does not warrant a new Section (for example the beat after a figure, when it turns to a new step of the same idea). Write the text yourself; the beat's `heading` on the record is a good source.
+  - Leave it unset on the first beat of a Section: the Prose heading above it already names that beat, and a second heading would repeat it.
+  - Leave it unset with `storyScope: "section"`: one heading over a whole story part is the Prose heading's job.
+  - A Section whose beats all need headings is really several ideas: split it into Sections, each with its own Prose heading.
+  - `headingLevel` is one step below the Section's Prose heading: leave it unset (default `h3`) under an `h2` opener, send `h4` under an `h3` opener. Never the same level as the opener or higher. The sizes come from the same scale as the Prose heading, so the step shows in the type.
+  - If the tool schema has no `heading` on `storyBeats`, the server predates it: leave the beat unheaded and tell the user.
 - Do not write `body` or `markdown` on a `storyBeats` block to change what the page says: that is a website-only override and the record stays wrong. Fix the beat on the Lab Project. `source: "custom"` with `markdown` is for a passage that is page-only by nature and needs nothing `richText` adds.
 
 ```json
@@ -104,7 +109,7 @@ Never give the heading `storyScope: "beat"` or `"section"` with an empty body: i
         { "blockType": "richTransition", "layout": "prose", "source": "custom", "eyebrow": "The field", "heading": "One field, three jobs" },
         { "blockType": "storyBeats", "source": "approach", "storyScope": "beat", "storyBeatKey": "one-field-three-jobs" },
         { "blockType": "bespokeFigure", "figure": "streak-curl-vs-gradient-v1", "title": "...", "textAlternative": "..." },
-        { "blockType": "storyBeats", "source": "approach", "storyScope": "beat", "storyBeatKey": "pointer-and-polarity" }
+        { "blockType": "storyBeats", "source": "approach", "storyScope": "beat", "storyBeatKey": "pointer-and-polarity", "heading": "Pointer and polarity" }
       ]
     },
     { "blockType": "labFacts" },
