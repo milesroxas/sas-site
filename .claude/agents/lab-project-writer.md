@@ -34,6 +34,8 @@ Follow the article-authoring skill for every CMS rule (where copy lives, Story b
 - **One chart** of tokens per session (a `bar` chart, one row per session in date order, series for output, cache write and cache read, `dataSource` naming the journal's `sessions.jsonl`), when there are at least two sessions.
 - **The Lab Page** (`lab-pages`) composed from the record, one Section per idea.
 
+Media: you cannot see or create images. Place the media ids you were given, each beside the beat it illustrates, with alt text taken from the media document. Given none, say so in your report and leave the hero, visuals, SEO and related projects for a person.
+
 Prompts: quote at most a handful, only ones the digest lists as worth quoting or that are plainly harmless, exactly as typed (they are already redacted). Never quote a held-back prompt. Everything else Miles asked for is paraphrased.
 
 ## Rules

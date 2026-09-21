@@ -27,7 +27,7 @@ import {
   sessionsPath,
   sessionWindow,
   totalUsage,
-  transcriptDir,
+  transcriptDirs,
   upsertSession,
   writeMeta,
 } from './lib'
@@ -38,7 +38,7 @@ import {
  *
  *   pnpm lab:journal start <slug> --title "<title>"
  *   pnpm lab:journal log --kind <kind> --title "<title>" < body.md
- *   pnpm lab:journal status | pause | resume [slug] | wrap | sync
+ *   pnpm lab:journal status | pause | resume [slug] | wrap | sync [session-id]
  *   pnpm lab:journal window [--from <iso>] [--to <iso>]
  *
  * `log` appends, so an entry costs the same on day five as on day one: the
@@ -62,8 +62,7 @@ function capture(slug: string, transcript: string | null, given?: SessionWindow)
   if (row) upsertSession(root, slug, row)
 }
 
-const captureCurrentSession = (slug: string) =>
-  capture(slug, currentTranscript(process.cwd(), root))
+const captureCurrentSession = (slug: string) => capture(slug, currentTranscript(process.cwd()))
 
 function requireActive(): JournalMeta {
   return (
@@ -105,7 +104,7 @@ function log(kind: string | undefined, title: string | undefined): void {
   const body = process.stdin.isTTY ? '' : readFileSync(0, 'utf8')
   if (!body.trim()) fail('The entry body is read from stdin and was empty.')
 
-  const transcript = currentTranscript(process.cwd(), root)
+  const transcript = currentTranscript(process.cwd())
   appendFileSync(
     join(journalDir(root, journal.slug), 'journal.md'),
     formatEntry({
@@ -153,11 +152,14 @@ function setStatus(slug: string | undefined, status: JournalMeta['status']): voi
  * Rereads every session whose transcript is still on this machine, and the
  * running one: token counts, and any prompt typed while the journal was paused.
  */
-function sync(): void {
+function sync(extra: string | undefined): void {
   const journal = requireActive()
-  const dirs = new Set([transcriptDir(process.cwd()), transcriptDir(root)])
-  for (const known of readJsonl<SessionRow>(sessionsPath(root, journal.slug))) {
-    for (const dir of dirs) capture(journal.slug, join(dir, `${known.session}.jsonl`))
+  const dirs = transcriptDirs(process.cwd())
+  const sessions = readJsonl<SessionRow>(sessionsPath(root, journal.slug)).map((row) => row.session)
+  // A session the hooks missed (the journal was paused, or not live on its branch) is named by id.
+  if (extra) sessions.push(extra)
+  for (const session of sessions) {
+    for (const dir of dirs) capture(journal.slug, join(dir, `${session}.jsonl`))
   }
   captureCurrentSession(journal.slug)
   status()
@@ -170,7 +172,7 @@ function sync(): void {
  */
 function setWindow(from: string | undefined, to: string | undefined): void {
   const journal = requireActive()
-  const transcript = currentTranscript(process.cwd(), root)
+  const transcript = currentTranscript(process.cwd())
   if (!transcript) fail('No transcript found for the running session.')
   for (const value of [from, to]) {
     if (value && Number.isNaN(Date.parse(value))) fail(`Not an ISO time: ${value}`)
@@ -242,7 +244,7 @@ switch (command) {
     setStatus(slug, 'wrapped')
     break
   case 'sync':
-    sync()
+    sync(slug)
     break
   case 'window':
     setWindow(values.from, values.to)

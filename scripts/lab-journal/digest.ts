@@ -17,7 +17,7 @@ import {
   repoRoot,
   type SessionRow,
   sessionsPath,
-  transcriptDir,
+  transcriptDirs,
 } from './lib'
 
 /**
@@ -205,7 +205,7 @@ async function main(): Promise<void> {
   const sessions = readJsonl<SessionRow>(sessionsPath(root, journal.slug))
   const messages = sessions
     .flatMap(({ session, window }) => {
-      const path = [transcriptDir(process.cwd()), transcriptDir(root)]
+      const path = transcriptDirs(process.cwd())
         .map((dir) => join(dir, `${session}.jsonl`))
         .find((candidate) => existsSync(candidate))
       return path ? assistantTexts(readFileSync(path, 'utf8'), window) : []

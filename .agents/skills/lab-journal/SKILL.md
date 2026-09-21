@@ -7,7 +7,7 @@ description: Keep the build record of a feature that will become a Lab Project e
 
 A feature that will be written up for the lab keeps a journal while it is built. You write the journal as the work happens; hooks capture the rest. At the end the `lab-project-writer` agent turns the record into a Lab Project draft in the CMS.
 
-Storage and commands live in `scripts/lab-journal/` (`lib.ts` says what is stored where). This skill is the contract for what you write.
+Storage and commands live in `scripts/lab-journal/` (`lib.ts` says what is stored where). This skill is the contract for what you write. The order of steps for people, start to published Lab Page: `docs/lab-journal/README.md`.
 
 ## Who records what
 
@@ -27,7 +27,7 @@ pnpm lab:journal start <slug> --title "<Title>"   # new journal, live on the cur
 pnpm lab:journal resume [slug]                    # live again, and on this branch too
 pnpm lab:journal status                           # entries, sessions, token totals
 pnpm lab:journal pause                            # stop capturing on this branch
-pnpm lab:journal sync                             # recount sessions from their transcripts
+pnpm lab:journal sync [session-id]                # recount sessions from their transcripts; an id adds one the hooks missed
 pnpm lab:journal window --from <iso> --to <iso>   # this journal's share of the running session
 pnpm lab:journal wrap                             # the feature is done
 pnpm lab:journal:digest [slug]                    # Jev reads the raw record into a brief

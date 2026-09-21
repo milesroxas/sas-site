@@ -358,13 +358,27 @@ export const transcriptDir = (cwd: string) =>
   join(homedir(), '.claude', 'projects', cwd.replace(/[^a-zA-Z0-9]/g, '-'))
 
 /**
+ * Where this repository's sessions may have been filed: under the directory
+ * the command runs in, and under every checkout of the repository (the main
+ * one and each worktree), since a feature's sessions move between them.
+ */
+export function transcriptDirs(cwd: string): string[] {
+  const listed = git(cwd, 'worktree', 'list', '--porcelain') ?? ''
+  const checkouts = listed.split('\n').flatMap((line) => {
+    const path = line.match(/^worktree (.+)$/)?.[1]
+    return path ? [path] : []
+  })
+  return [...new Set([cwd, repoRoot(cwd), ...checkouts].map(transcriptDir))]
+}
+
+/**
  * The transcript of the session running this command. Claude Code names the
  * session in the environment of every tool call. The newest file is only the
  * fallback (another agent, a shell): with two sessions open in one checkout
  * it is as likely to be the other one.
  */
-export function currentTranscript(...cwds: string[]): string | null {
-  const dirs = [...new Set(cwds.map(transcriptDir))].filter((dir) => existsSync(dir))
+export function currentTranscript(cwd: string): string | null {
+  const dirs = transcriptDirs(cwd).filter((dir) => existsSync(dir))
   const session = process.env.CLAUDE_CODE_SESSION_ID
   if (session) {
     const named = dirs.map((dir) => join(dir, `${session}.jsonl`)).find((path) => existsSync(path))
