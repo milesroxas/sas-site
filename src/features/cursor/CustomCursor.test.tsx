@@ -6,6 +6,7 @@ import {
   CURSOR_DEFAULTS,
   CURSOR_NATIVE_HIDDEN_ATTR,
   CURSOR_PROXIMITY_VAR,
+  cursorBoundary,
   cursorTarget,
   subscribeCursorProximity,
 } from './index'
@@ -360,6 +361,106 @@ describe('CustomCursorProvider', () => {
     pointerMove(150, 250)
     expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
     expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(false)
+  })
+
+  /** A target beside a plain control, with the pointer on the control. */
+  function renderBesideControl(variant: 'view' | 'emphasize') {
+    const view = render(
+      <CustomCursorProvider>
+        <a href="/lab/field" {...cursorTarget({ variant })}>
+          media
+        </a>
+        <button type="button">sort</button>
+      </CustomCursorProvider>,
+    )
+    const target = view.getByRole('link', { name: 'media' })
+    const control = view.getByRole('button', { name: 'sort' })
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(TARGET_RECT)
+    // The pointer itself is on the control; the target's own points still hit it.
+    document.elementFromPoint = (_x, y) => (y > TARGET_RECT.bottom ? control : target)
+    return { target }
+  }
+
+  it('never replaces the system cursor over a control outside the target', () => {
+    const { target } = renderBesideControl('view')
+    // 50px below the rect: inside the view variant's 180px radius.
+    pointerMove(150, 250)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(false)
+  })
+
+  it('keeps the approach tease over a control when the system cursor stays', () => {
+    const { target } = renderBesideControl('emphasize')
+    // 50px below the rect's bottom edge with a 100px radius -> t = 0.5.
+    pointerMove(150, 250)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('0.5')
+  })
+
+  it('leaves target against target to the best-proximity pick', () => {
+    const view = render(
+      <CustomCursorProvider>
+        <a href="/lab/one" {...cursorTarget({ variant: 'view' })}>
+          one
+        </a>
+        <a href="/lab/two" {...cursorTarget({ variant: 'view' })}>
+          two
+        </a>
+      </CustomCursorProvider>,
+    )
+    const one = view.getByRole('link', { name: 'one' })
+    const two = view.getByRole('link', { name: 'two' })
+    vi.spyOn(one, 'getBoundingClientRect').mockReturnValue(TARGET_RECT)
+    vi.spyOn(two, 'getBoundingClientRect').mockReturnValue({
+      ...TARGET_RECT,
+      top: 210,
+      bottom: 310,
+      y: 210,
+    })
+    document.elementFromPoint = (_x, y) => (y >= 210 ? two : one)
+    // On the second row, 50px under the first: the neighbour keeps its approach.
+    pointerMove(150, 250)
+    expect(two.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(true)
+    expect(one.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('0.722')
+  })
+
+  it('does not pull proximity across a cursor boundary', () => {
+    const view = render(
+      <CustomCursorProvider>
+        <a href="/lab/field" {...cursorTarget({ variant: 'view' })}>
+          media
+        </a>
+        <aside {...cursorBoundary()}>
+          <p>copy</p>
+        </aside>
+      </CustomCursorProvider>,
+    )
+    const target = view.getByRole('link', { name: 'media' })
+    // Not a control: only the boundary keeps the target off it.
+    const inside = view.getByText('copy')
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(TARGET_RECT)
+    document.elementFromPoint = () => inside
+    // 50px below the rect: inside the view variant's 180px radius.
+    pointerMove(150, 250)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('')
+    expect(document.documentElement.hasAttribute(CURSOR_NATIVE_HIDDEN_ATTR)).toBe(false)
+  })
+
+  it('still engages a target inside the boundary the pointer is on', () => {
+    const view = render(
+      <CustomCursorProvider>
+        <aside {...cursorBoundary()}>
+          <a href="/demo/immersive" {...cursorTarget({ variant: 'view' })}>
+            open
+          </a>
+        </aside>
+      </CustomCursorProvider>,
+    )
+    const target = view.getByRole('link', { name: 'open' })
+    vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(TARGET_RECT)
+    document.elementFromPoint = () => target
+    pointerMove(150, 150)
+    expect(target.style.getPropertyValue(CURSOR_PROXIMITY_VAR)).toBe('1')
+    expect(target.hasAttribute(CURSOR_ACTIVE_ATTR)).toBe(true)
   })
 
   it('fans proximity out to JS subscribers alongside the CSS var', () => {

@@ -16,6 +16,8 @@ import { readPressTuning } from './press-tuning'
 import { publishCursorProximity } from './proximity'
 import {
   CURSOR_ACTIVE_ATTR,
+  CURSOR_BOUNDARY_SELECTOR,
+  CURSOR_CLICKABLE_SELECTOR,
   CURSOR_DEFAULTS,
   CURSOR_LABEL_ATTR,
   CURSOR_NATIVE_HIDDEN_ATTR,
@@ -488,6 +490,11 @@ const CursorOverlay: React.FC = () => {
         return center !== null && (center === el || el.contains(center))
       }
 
+      // The pointer is on `surface` and the target has no part in it: neither
+      // holds the other, so the surface is not the target's own.
+      const isFencedOff = (el: HTMLElement, surface: Element | null | undefined) =>
+        surface != null && !el.contains(surface) && !surface.contains(el)
+
       // Live query + rect reads per move, like the targets' own hover CSS
       // would cost: target counts stay small (a handful per page).
       const scanTargets = () => {
@@ -513,12 +520,17 @@ const CursorOverlay: React.FC = () => {
         }
         // Hit-test the pointer itself (not the target's nearest edge): a
         // nearby media panel's 180px view radius must not steal the cursor
-        // or pre-activate its shader while the pointer is on a dropdown.
+        // or pre-activate its shader while the pointer is on something else
+        // (variants.ts, "Who owns the pointer").
         const pointerHit =
           typeof document.elementFromPoint === 'function'
             ? document.elementFromPoint(lastX, lastY)
             : null
-        const pointerOnDropdown = pointerHit?.closest('[data-slot^="dropdown-menu"]')
+        const pointerBoundary = pointerHit?.closest(CURSOR_BOUNDARY_SELECTOR)
+        // A control that belongs to a cursor target is that target's business:
+        // the best-proximity pick below already settles target against target.
+        const control = pointerHit?.closest(CURSOR_CLICKABLE_SELECTOR)
+        const pointerControl = control?.closest(CURSOR_TARGET_SELECTOR) ? null : control
         let bestT = 0
         let bestEl: HTMLElement | null = null
         let bestVariantName: string | undefined
@@ -531,16 +543,15 @@ const CursorOverlay: React.FC = () => {
             mark(el, 0)
             continue
           }
+          const variantName = resolveCursorTargetVariant(el)
+          const variant = resolveCursorVariant(variantName)
           if (
-            pointerOnDropdown &&
-            !el.contains(pointerOnDropdown) &&
-            !pointerOnDropdown.contains(el)
+            isFencedOff(el, pointerBoundary) ||
+            (variant.hideNativeCursor && isFencedOff(el, pointerControl))
           ) {
             mark(el, 0)
             continue
           }
-          const variantName = resolveCursorTargetVariant(el)
-          const variant = resolveCursorVariant(variantName)
           const rect = el.getBoundingClientRect()
           const dx = Math.max(rect.left - lastX, 0, lastX - rect.right)
           const dy = Math.max(rect.top - lastY, 0, lastY - rect.bottom)

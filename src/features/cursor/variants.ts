@@ -26,6 +26,17 @@
  * Imperative consumers (WebGL scenes on a demand frameloop) subscribe to the
  * same signal in JS via `subscribeCursorProximity` / `useCursorProximitySource`
  * (see proximity.ts); the IndustryWork media panel is the reference usage.
+ *
+ * ## Who owns the pointer
+ *
+ * A wide approach radius reaches over whatever sits beside the target, so two
+ * rules keep a target from claiming a pointer that is on something else:
+ *
+ * - A variant that replaces the system cursor (`hideNativeCursor`) never
+ *   engages while the pointer is on a control outside it: the control would
+ *   lose its own cursor. Automatic, nothing to mark.
+ * - A non-control surface with a pointer response of its own opts out of its
+ *   neighbours' reach with `cursorBoundary()`.
  */
 
 export type CursorVariantTuning = {
@@ -180,6 +191,8 @@ export const CURSOR_NATIVE_HIDDEN_ATTR = 'data-cursor-native-hidden'
 export const CURSOR_PROXIMITY_VAR = '--cursor-proximity'
 /** Attribute present on a target while it is truly hovered. */
 export const CURSOR_ACTIVE_ATTR = 'data-cursor-active'
+/** Marks a surface that owns the pointer while it is over it (see `cursorBoundary`). */
+const CURSOR_BOUNDARY_ATTR = 'data-cursor-boundary'
 
 export function resolveCursorVariant(name: string | undefined): CursorVariantDefinition {
   const overrides =
@@ -233,6 +246,12 @@ export const CURSOR_TARGET_SELECTOR = [
   ...automaticTargets.map(({ selector }) => selector),
 ].join(',')
 
+/**
+ * Surfaces that fence every target outside them off while the pointer is on
+ * them: explicit boundaries, plus the dropdown the provider knows to own it.
+ */
+export const CURSOR_BOUNDARY_SELECTOR = `[${CURSOR_BOUNDARY_ATTR}],[data-slot^="dropdown-menu"]`
+
 /** Explicit target variants win over automatic semantic matches. */
 export function resolveCursorTargetVariant(element: Element): string | undefined {
   return (
@@ -260,4 +279,14 @@ export function cursorTarget({
     [CURSOR_ATTR]: variant,
     ...(label ? { [CURSOR_LABEL_ATTR]: label } : {}),
   }
+}
+
+/**
+ * Props to spread on a surface with a pointer response of its own that sits
+ * inside a neighbour's approach radius (the index banner above a `view` row).
+ * No target outside it engages while the pointer is on it; targets inside it
+ * behave as usual. Server-safe, like `cursorTarget`.
+ */
+export function cursorBoundary(): Record<string, string> {
+  return { [CURSOR_BOUNDARY_ATTR]: '' }
 }

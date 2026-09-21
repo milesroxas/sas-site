@@ -9,5 +9,6 @@ export {
   type CursorTargetOptions,
   type CursorVariantName,
   type CursorVariantTuning,
+  cursorBoundary,
   cursorTarget,
 } from './variants'

@@ -9,6 +9,7 @@ import { useId, useRef, useState } from 'react'
 import { themeClasses } from '@/blocks/shared/section'
 import { Button } from '@/components/ui/button'
 import { Visual } from '@/components/Visual'
+import { cursorBoundary } from '@/features/cursor'
 import { VisualMotionToggle } from '@/features/immersive/visual'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
@@ -228,6 +229,9 @@ export const IndexBanner: React.FC<Props> = ({
         className,
       )}
       data-index-banner
+      // The slab answers hover itself (the sliders tune), and the listing's
+      // first row can sit within its view radius once the strip drops out.
+      {...cursorBoundary()}
       onPointerEnter={(event) => tune(event, true)}
       onPointerLeave={(event) => tune(event, false)}
       ref={rootRef}
