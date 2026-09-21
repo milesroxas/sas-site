@@ -86,9 +86,19 @@ Keys stay in your environment, never in `.cursor/mcp.json`. If you had any of th
 
 Personal Cursor setup (theme, keybindings, user-level skills and plugins) stays in your user settings.
 
+## Codex
+
+Codex (the CLI and the ChatGPT desktop app) reads `AGENTS.md` and `.agents/skills/` natively once you trust the folder, so every project skill above, including `article-authoring`, loads with no extra setup.
+
+The repo commits no Codex config, so MCP servers come from your `~/.codex/config.toml`. Register `sas-cms` there against **production** with the command in [mcp.md](mcp.md#connecting-a-client): `article-authoring` writes through it, and a server pointed at preview writes to a separate database.
+
+To see what Codex loads, run `codex debug prompt-input "hi"` from the repo root. Its skill list names each skill's root; project skills resolve to this repo's `.agents/skills`.
+
 ## Personal copies shadow project skills
 
 In Claude Code a personal skill (`~/.claude/skills/<name>`) beats a project skill with the same name. If you installed any of the skills above globally, the repo copy is hidden. That matters most for `payload`, whose repo copy carries this project's rules. Check with `/skills`; remove the personal copy (`pnpm dlx skills remove -g <name>`) if it wins.
+
+Codex does not shadow: it lists the personal copy (`~/.agents/skills/<name>` or `~/.codex/skills/<name>`) and the repo copy side by side under the same name, so the agent can load either. Remove the personal copy to leave only the repo one.
 
 ## Adding or updating a skill
 

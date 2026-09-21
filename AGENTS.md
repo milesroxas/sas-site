@@ -88,7 +88,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | Payload how-to (collections, fields, hooks, queries, …) | `.agents/skills/payload` — use the **payload** skill |
 | CMS content migration from another system | `.agents/skills/cms-migration` |
 | WebGL / shaders / R3F / TSL / motion physics | `.agents/skills/creative-webgl-shaders` — use the **creative-webgl-shaders** skill |
-| Shared agent skills + plugins (GSAP, R3F, pmndrs docs MCP, adding/updating skills), Cursor MCP/plugins/editor setup | [docs/agent-skills.md](docs/agent-skills.md) |
+| Shared agent skills + plugins (GSAP, R3F, pmndrs docs MCP, adding/updating skills), Cursor MCP/plugins/editor setup, Codex MCP setup | [docs/agent-skills.md](docs/agent-skills.md) |
 | Immersive effects — usage, defaults/presets contract | [docs/immersive-effects.md](docs/immersive-effects.md); Cursor rule `.cursor/rules/immersive-effects.mdc` |
 | Streak Field — controls, looks, CMS usage, posters, best practices | [docs/streak-field.md](docs/streak-field.md); plan and gates: [docs/streak-field-media-plan.md](docs/streak-field-media-plan.md) |
 | Studio effects: the authoring contract, light leak slot controls, adding an effect | [docs/studio-effects.md](docs/studio-effects.md) |
