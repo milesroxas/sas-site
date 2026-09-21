@@ -92,3 +92,14 @@ Fix: transcripts are now looked for under every checkout of the repository, from
 Also confirmed for this session: the journal was paused between tasks and this session started before the hooks existed, so nothing here was captured live. Every prompt was recovered from the transcript on each resume.
 
 <!-- session: b7777b4e-b883-4269-88eb-e1738d94a25f, branch: main -->
+
+## 2026-09-21 17:47 UTC | insight | What Conductor changes for the journal
+
+Miles asked whether the feature could be picked up in Conductor instead of a Claude worktree. Checked, not assumed:
+- A Conductor workspace is a worktree of Conductor's own clone, so `git worktree list` from it never names the main checkout. Transcripts are now found by session id in any Claude Code project folder (ids are unique), verified by resolving this session from the Conductor clone's path.
+- `.conductor/setup.sh` runs `pnpm install` and copies the root `.env`, which has TYPESAFE_API_KEY, so hooks and digest have what they need.
+- `claude mcp list` from the Conductor path shows no `sas-cms` server: it is registered for the main checkout's path only. The write-up step cannot run from a workspace until it is added at user scope. Claude did not read the key to do this; it is Miles's to add.
+- Conductor's own clone had a local `main` 36 commits behind origin. Whether a new workspace starts from origin/main was not verified.
+- Not verified and not verifiable from here: whether Conductor's agent loads the project's hooks. The SessionStart note in a new workspace chat is the test, and `sync <session-id>` is the fallback.
+
+<!-- session: b7777b4e-b883-4269-88eb-e1738d94a25f, branch: main -->

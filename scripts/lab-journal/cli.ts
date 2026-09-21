@@ -8,6 +8,7 @@ import {
   currentTranscript,
   ENTRY_KINDS,
   type EntryKind,
+  findTranscript,
   formatEntry,
   inWindow,
   JOURNAL_ROOT,
@@ -27,7 +28,6 @@ import {
   sessionsPath,
   sessionWindow,
   totalUsage,
-  transcriptDirs,
   upsertSession,
   writeMeta,
 } from './lib'
@@ -154,12 +154,11 @@ function setStatus(slug: string | undefined, status: JournalMeta['status']): voi
  */
 function sync(extra: string | undefined): void {
   const journal = requireActive()
-  const dirs = transcriptDirs(process.cwd())
   const sessions = readJsonl<SessionRow>(sessionsPath(root, journal.slug)).map((row) => row.session)
   // A session the hooks missed (the journal was paused, or not live on its branch) is named by id.
   if (extra) sessions.push(extra)
   for (const session of sessions) {
-    for (const dir of dirs) capture(journal.slug, join(dir, `${session}.jsonl`))
+    capture(journal.slug, findTranscript(session, process.cwd()))
   }
   captureCurrentSession(journal.slug)
   status()

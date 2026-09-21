@@ -7,6 +7,7 @@ import { redactFreeText } from '@/features/ask/redact'
 import {
   activeJournal,
   assistantTexts,
+  findTranscript,
   journalDir,
   type PromptRow,
   parseEntries,
@@ -17,7 +18,6 @@ import {
   repoRoot,
   type SessionRow,
   sessionsPath,
-  transcriptDirs,
 } from './lib'
 
 /**
@@ -205,9 +205,7 @@ async function main(): Promise<void> {
   const sessions = readJsonl<SessionRow>(sessionsPath(root, journal.slug))
   const messages = sessions
     .flatMap(({ session, window }) => {
-      const path = transcriptDirs(process.cwd())
-        .map((dir) => join(dir, `${session}.jsonl`))
-        .find((candidate) => existsSync(candidate))
+      const path = findTranscript(session, process.cwd())
       return path ? assistantTexts(readFileSync(path, 'utf8'), window) : []
     })
     .filter((message) => message.text.length >= MIN_MESSAGE_CHARS)

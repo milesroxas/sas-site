@@ -372,6 +372,24 @@ export function transcriptDirs(cwd: string): string[] {
 }
 
 /**
+ * A session's transcript, wherever it ran. The likely folders first, then
+ * every project folder: a session id is unique, and a feature's sessions may
+ * have run in another clone of the repository (a Conductor workspace, the
+ * main checkout) that `git worktree list` does not know from here.
+ */
+export function findTranscript(session: string, cwd: string): string | null {
+  const projects = join(homedir(), '.claude', 'projects')
+  const everywhere = existsSync(projects)
+    ? readdirSync(projects).map((name) => join(projects, name))
+    : []
+  return (
+    [...transcriptDirs(cwd), ...everywhere]
+      .map((dir) => join(dir, `${session}.jsonl`))
+      .find((path) => existsSync(path)) ?? null
+  )
+}
+
+/**
  * The transcript of the session running this command. Claude Code names the
  * session in the environment of every tool call. The newest file is only the
  * fallback (another agent, a shell): with two sessions open in one checkout
@@ -381,7 +399,7 @@ export function currentTranscript(cwd: string): string | null {
   const dirs = transcriptDirs(cwd).filter((dir) => existsSync(dir))
   const session = process.env.CLAUDE_CODE_SESSION_ID
   if (session) {
-    const named = dirs.map((dir) => join(dir, `${session}.jsonl`)).find((path) => existsSync(path))
+    const named = findTranscript(session, cwd)
     if (named) return named
   }
   const newest = dirs

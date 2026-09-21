@@ -64,6 +64,16 @@ pnpm lab:journal resume <slug>
 
 That makes the journal live on the new branch too. Prompts are shared across every checkout on the same machine, so nothing is lost between Conductor workspaces.
 
+#### In Conductor
+
+A Conductor workspace is a worktree of Conductor's own clone (`~/conductor/repos/sas-site`), not of your main checkout ([conductor.md](../conductor.md)). What that means here:
+
+- `setup.sh` already runs `pnpm install` and copies `.env` (with `TYPESAFE_API_KEY`) from the Conductor root, so the hooks and the digest have what they need. Check the workspace starts from current `main`: `git log -1` should show the latest commit on `origin/main`.
+- Run `pnpm lab:journal resume <slug>` in the workspace, then start a new chat there. If the "lab journal live" note does not open that chat, Conductor's agent is not loading the project's hooks: keep logging entries (the agent still can), and at the end run `pnpm lab:journal sync <session-id>` for each session so prompts and tokens are recovered from the transcripts.
+- Sessions that ran in your main checkout are found from the workspace by their id, and prompts are shared across the machine, so nothing from earlier sessions is lost.
+- The `sas-cms` MCP server is registered per project path in Claude Code. A workspace path does not have it until you add it at user scope (`claude mcp add --scope user sas-cms ...`, command in [mcp.md](../mcp.md#connecting-a-client)). Building does not need it; the write-up does, so either add it or run the finishing steps from the main checkout after merging.
+- `CMS_MCP_API_KEY` is blank in every `.env` by design. `pnpm cms:upload` needs it exported in the shell that runs it.
+
 ### 4. A session turns to a different feature
 
 Say so, and have the agent switch journals **before** it logs anything else. It closes this journal's share of the session at the prompt where the subject changed and opens the other journal from the same moment (`pnpm lab:journal window`, steps in the skill). Skipping this counts one session's tokens into two features, which is how the first journal here had to be split.
