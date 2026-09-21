@@ -33,6 +33,9 @@ const queryLabPageBySlug = createSlugQuery('lab-pages', {
       summaries: true,
       capabilities: true,
       technologies: true,
+      // `populatedAuthors` is filled by an `afterRead` hook that reads
+      // `authors` off the doc, so the byline needs both selected.
+      authors: true,
       populatedAuthors: true,
       ...STORY_SECTION_SELECT,
       coverAsset: true,

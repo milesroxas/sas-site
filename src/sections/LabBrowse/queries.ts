@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import { resolveVisual, type Visual, visualMedia } from '@/features/immersive/visual'
 import type { LabPage, Media } from '@/payload-types'
 import type { IndexFilterOption } from '@/sections/Browse'
+import { formatAuthors } from '@/utilities/formatAuthors'
 
 export type LabBrowseFilterOption = IndexFilterOption
 
@@ -14,6 +15,8 @@ export type LabBrowseItem = {
   kind: LabBrowseFilterOption | null
   /** Where the project sits in its lifecycle; read-only on the facts line. */
   status: string | null
+  /** The project's byline as one line, or null when no author is set. */
+  author: string | null
   capabilities: LabBrowseFilterOption[]
   /** Hero visual, falling back to the cover asset — same as the lab hero and menu. */
   visual: Visual | null
@@ -33,6 +36,12 @@ export type LabBrowseData = {
  * The query every lab index row consumer shares: published-only,
  * access-enforced, and two levels deep so labProject → capabilities arrives
  * populated for `toLabBrowseItem`. Consumers add `where`, `limit` and `sort`.
+ *
+ * The lab project arrives under an explicit `populate` rather than its
+ * `defaultPopulate`, which carries no byline. `authors` is listed beside
+ * `populatedAuthors` because the mirror is filled by an `afterRead` hook that
+ * reads `authors` off the doc: without it the hook has nothing to read and the
+ * byline comes back empty.
  */
 export const LAB_BROWSE_QUERY = {
   collection: 'lab-pages',
@@ -47,6 +56,16 @@ export const LAB_BROWSE_QUERY = {
     coverAsset: true,
     featured: true,
     publishedAt: true,
+  },
+  populate: {
+    'lab-projects': {
+      title: true,
+      kind: true,
+      status: true,
+      capabilities: true,
+      authors: true,
+      populatedAuthors: true,
+    },
   },
 } as const
 
@@ -72,6 +91,9 @@ export const toLabBrowseItem = (page: LabBrowsePage): LabBrowseItem | null => {
   )
 
   const visual = resolveVisual(page.hero, { fallbackMedia: page.coverAsset, seedKey: page.id })
+  // The same byline the lab hero prints, read from the shared `populatedAuthors`
+  // mirror (`@/fields/authors`) rather than the access-locked `users` relation.
+  const author = formatAuthors(project?.populatedAuthors ?? [])
 
   return {
     id: page.id,
@@ -79,6 +101,7 @@ export const toLabBrowseItem = (page: LabBrowsePage): LabBrowseItem | null => {
     title: project?.title || page.title,
     kind: project ? { slug: project.kind, label: termLabel(project.kind) } : null,
     status: project ? termLabel(project.status) : null,
+    author: author || null,
     capabilities,
     visual,
     media: visualMedia(visual),
