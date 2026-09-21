@@ -1,0 +1,90 @@
+---
+name: lab-journal
+description: Keep the build record of a feature that will become a Lab Project entry. Use when the user says to start, resume, pause or wrap a lab journal, or to document a feature's process for the lab; when a SessionStart note says a lab journal is live on this branch; and, while one is live, every time a decision is made, an approach fails, something surprising is found, a number is measured, or a piece of the feature lands. Also use to turn a finished journal into the Lab Project draft.
+---
+
+# Lab journal
+
+A feature that will be written up for the lab keeps a journal while it is built. You write the journal as the work happens; hooks capture the rest. At the end the `lab-project-writer` agent turns the record into a Lab Project draft in the CMS.
+
+Storage and commands live in `scripts/lab-journal/` (`lib.ts` says what is stored where). This skill is the contract for what you write.
+
+## Who records what
+
+| Record | Where | Written by |
+| --- | --- | --- |
+| Decisions, challenges, insights, measurements, milestones | `docs/lab-journal/<slug>/journal.md`, committed | **You**, with `pnpm lab:journal log` |
+| Tokens and model per session, subagents included | `docs/lab-journal/<slug>/sessions.jsonl`, committed | The Stop hook. Never by you |
+| Every prompt, verbatim and redacted | `~/.claude/lab-journals/sas-site/<slug>/prompts.jsonl`, outside the repository | The UserPromptSubmit hook. Never by you |
+| Jev usage | `docs/lab-journal/<slug>/jev.jsonl`, committed | The digest script |
+
+Never copy token counts or prompts into an entry by hand: the hooks have them exactly, and a hand copy goes stale.
+
+## Commands
+
+```sh
+pnpm lab:journal start <slug> --title "<Title>"   # new journal, live on the current branch
+pnpm lab:journal resume [slug]                    # live again, and on this branch too
+pnpm lab:journal status                           # entries, sessions, token totals
+pnpm lab:journal pause                            # stop capturing on this branch
+pnpm lab:journal sync                             # recount sessions from their transcripts
+pnpm lab:journal wrap                             # the feature is done
+pnpm lab:journal:digest [slug]                    # Jev reads the raw record into a brief
+```
+
+A journal is live only on the branches it was started or resumed on, so work on another branch is never captured by accident. On `main` it captures every session until paused: pause it when the session turns to something else.
+
+`start` keeps the prompts of the session that ran it, so the conversation that led to the feature is part of the record.
+
+## Logging an entry
+
+```sh
+pnpm lab:journal log --kind decision --title "Prompts stay outside the repository" <<'EOF'
+The repository is public, so a committed prompt file publishes everything typed.
+
+Chose: prompts in the home directory, journal and token counts in the repository.
+Rejected: one folder in the repository (simplest, and it travels with the branch, but it publishes raw prompts); a gitignored folder (a second workspace would not see it).
+Cost: the prompt history does not survive a new machine.
+EOF
+```
+
+It appends, stamps the time, the session and the branch. Do not open `journal.md` to add an entry, and never edit or delete an old one: a decision that was reversed gets a new entry that says so, because the reversal is part of the story.
+
+Log **when it happens**, in the same turn, before moving on. A journal rebuilt from memory on the last day loses the rejected options and the dead ends, and those are what a reader came for. Context compaction also forgets them; the journal does not.
+
+| Kind | Log it when | The body says |
+| --- | --- | --- |
+| `decision` | An approach, a tool, a data shape or a scope line is chosen, by you or by Miles | What was chosen, what was rejected and why, what it costs. Say whose call it was |
+| `challenge` | Something failed, a plan met a wall, a bug took more than a few minutes | What happened, how the cause was found, the fix, and how long it cost if known |
+| `insight` | Something was learned that outlives this feature | The finding and the evidence for it |
+| `measurement` | A number was measured | The number, the unit, how it was measured, and what it is compared against. Never an estimate without the word "estimate" |
+| `milestone` | A piece of the feature works, ships, or is abandoned | What now exists and how it was verified |
+| `note` | Context a reader will need and nothing above fits | Keep it short |
+
+Write for a reader who was not in the session: full sentences, names instead of "it", the file or command when it matters. Three to eight lines is the usual size. One entry per thing: two decisions are two entries.
+
+Not worth an entry: routine edits, lint fixes, a command that simply worked, anything git history already says.
+
+## What never goes in the journal
+
+The repository is public and `journal.md` is committed.
+
+- No secrets, keys, tokens, or connection strings, even partial.
+- No visitor or client personal details, and nothing a client told the studio in confidence. Name a client only if the site already does.
+- No verbatim prompt unless it is plainly harmless. Describe what Miles asked for instead; the writer quotes prompts from the private file, and Miles reviews the draft.
+
+## A session
+
+1. **Start of session.** If a SessionStart note says a journal is live, you are already in it: read the latest entries it lists and carry on. If the user asks to start one, pick a short slug with them and run `start`. If they ask to pick one up on a new branch, run `resume <slug>`.
+2. **During.** Log as things happen. When Miles makes a call, log it as his.
+3. **End of session**, when the user says they are stopping or the work reaches a resting point: log a `milestone` with where things stand and what comes next, so the next session starts from the journal rather than from a recap.
+
+Codex and Cursor have no hooks here. In those agents log entries the same way and add the model you are to the body of the session's first entry; token counts for those sessions are not captured, and the write-up has to say so.
+
+## Wrapping up and writing the entry
+
+1. Log the last `milestone`, then `pnpm lab:journal sync`.
+2. `pnpm lab:journal:digest`. Jev sorts entries into story sections, picks the prompts worth quoting, holds back sensitive ones, and lists agent messages that look like an unlogged decision, problem, measurement or lesson. It costs cents and saves the writer reading the raw transcripts. It sends redacted prompts, entries and agent prose to TypeSafe: if this feature's record holds something that must not leave the machine, skip it and tell the writer to read the raw record.
+3. Read the digest's "moments that may be missing" list and log the ones that are real and absent.
+4. Hand over to the `lab-project-writer` agent with the slug. It drafts; it never publishes.
+5. `pnpm lab:journal wrap` once the draft is in the CMS.

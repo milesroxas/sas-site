@@ -21,6 +21,6 @@ export default defineConfig({
     hookTimeout: 60_000,
     fileParallelism: false,
     setupFiles: ['./vitest.setup.ts'],
-    include: ['tests/int/**/*.int.spec.ts', 'src/**/*.test.{ts,tsx}'],
+    include: ['tests/int/**/*.int.spec.ts', 'src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
   },
 })

@@ -97,6 +97,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | Contact forms, the inquiries inbox, notification | [docs/inquiries.md](docs/inquiries.md) |
 | Analytics: PostHog events, consent gate, dashboards | `.agents/skills/posthog-analytics` (use the **posthog-analytics** skill) |
 | Figures: chart, diagram and bespoke figure blocks, spec schemas, save-time layout, Markdown input, `cms:upload` | [docs/figures.md](docs/figures.md); authoring over MCP: `.agents/skills/article-authoring` (use the **article-authoring** skill) |
+| Lab journal: documenting a feature as it is built (decisions, prompts, tokens per session) for a Lab Project entry | `.agents/skills/lab-journal` (use the **lab-journal** skill); storage and hooks: `scripts/lab-journal/`; write-up agent: `.claude/agents/lab-project-writer.md` |
 | CMS admin naming (tabs, groups, overrides, blocks) | [docs/cms-naming.md](docs/cms-naming.md) |
 | Blocks reorg + Sections (taxonomy, phases, Section contract) | [docs/blocks-reorg-roadmap.md](docs/blocks-reorg-roadmap.md) |
 | Block layout grid (8-col contract, per-block migration map) | [docs/block-grid-roadmap.md](docs/block-grid-roadmap.md) |
