@@ -175,7 +175,8 @@ export function mergeUsage(
 /**
  * What the person typed, as they typed it. A slash command arrives wrapped in
  * tags and reads back as `/name args`; harness text that rides in user rows
- * (command output, reminders, interruptions) is not a prompt.
+ * (command output, reminders, interruptions) is not a prompt, and neither is
+ * the instruction block Conductor adds to a chat's first prompt.
  */
 export function cleanPromptText(raw: string): string | null {
   const name = raw.match(/<command-name>([\s\S]*?)<\/command-name>/)?.[1]?.trim()
@@ -183,7 +184,7 @@ export function cleanPromptText(raw: string): string | null {
     const args = raw.match(/<command-args>([\s\S]*?)<\/command-args>/)?.[1]?.trim()
     return args ? `${name} ${args}` : name
   }
-  const text = raw.trim()
+  const text = raw.replace(/<system_instruction>[\s\S]*?<\/system_instruction>/g, '').trim()
   if (!text) return null
   if (/^<(local-command-|system-reminder|task-notification|bash-)/.test(text)) return null
   if (text.startsWith('[Request interrupted')) return null
@@ -224,10 +225,17 @@ export function assistantTexts(jsonl: string, window?: SessionWindow): Assistant
   return [...byMessage.values()]
 }
 
+/**
+ * Never journaled: every session anyone runs on it would be captured, whatever
+ * feature it was for. A journal lives on its feature's branch.
+ */
+export const MAIN_BRANCH = 'main'
+
 /** The journals live on `branch`. More than one: the newest, since a branch has one feature in hand. */
 export function resolveActive(metas: JournalMeta[], branch: string | null): JournalMeta | null {
+  if (branch === null || branch === MAIN_BRANCH) return null
   const live = metas
-    .filter((meta) => meta.status === 'active' && branch !== null && meta.branches.includes(branch))
+    .filter((meta) => meta.status === 'active' && meta.branches.includes(branch))
     .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
   return live[0] ?? null
 }

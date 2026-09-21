@@ -24,16 +24,17 @@ Never copy token counts or prompts into an entry by hand: the hooks have them ex
 
 ```sh
 pnpm lab:journal start <slug> --title "<Title>"   # new journal, live on the current branch
+pnpm lab:journal log --kind <kind> --title "<T>"  # append an entry, body on stdin (below)
 pnpm lab:journal resume [slug]                    # live again, and on this branch too
 pnpm lab:journal status                           # entries, sessions, token totals
-pnpm lab:journal pause                            # stop capturing on this branch
+pnpm lab:journal pause [slug]                     # stop capturing (the journal live on this branch by default)
 pnpm lab:journal sync [session-id]                # recount sessions from their transcripts; an id adds one the hooks missed
 pnpm lab:journal window --from <iso> --to <iso>   # this journal's share of the running session
-pnpm lab:journal wrap                             # the feature is done
+pnpm lab:journal wrap [slug]                      # the feature is done
 pnpm lab:journal:digest [slug]                    # Jev reads the raw record into a brief
 ```
 
-A journal is live only on the branches it was started or resumed on, so work on another branch is never captured by accident. On `main` it captures every session until paused: pause it when the session turns to something else.
+A journal is live only on the branches it was started or resumed on, so work on another branch is never captured by accident. It is never live on `main`: `start` and `resume` refuse there. If the user asks for a journal on `main`, have them branch first.
 
 `start` keeps the prompts of the session that ran it, so the conversation that led to the feature is part of the record.
 
@@ -91,7 +92,7 @@ The repository is public and `journal.md` is committed.
 
 ## A session
 
-1. **Start of session.** If a SessionStart note says a journal is live, you are already in it: read the latest entries it lists and carry on. If the user asks to start one, pick a short slug with them and run `start`. If they ask to pick one up on a new branch, run `resume <slug>`.
+1. **Start of session.** If a SessionStart note says a journal is live, you are already in it: read the latest entries it lists and carry on. Conductor chats do not show the note even when the journal is live and its hooks run: there, when the user mentions a journal, run `pnpm lab:journal status`. If the user asks to start one, pick a short slug with them and run `start`. If they ask to pick one up on a new branch, run `resume <slug>`.
 2. **During.** Log as things happen. When Miles makes a call, log it as his.
 3. **End of session**, when the user says they are stopping or the work reaches a resting point: log a `milestone` with where things stand and what comes next, so the next session starts from the journal rather than from a recap.
 
@@ -103,4 +104,4 @@ Codex and Cursor have no hooks here. In those agents log entries the same way an
 2. `pnpm lab:journal:digest`. Jev sorts entries into story sections, picks the prompts worth quoting, holds back sensitive ones, and lists agent messages that look like an unlogged decision, problem, measurement or lesson. It costs cents and saves the writer reading the raw transcripts. It sends redacted prompts, entries and agent prose to TypeSafe: if this feature's record holds something that must not leave the machine, skip it and tell the writer to read the raw record.
 3. Read the digest's "moments that may be missing" list and log the ones that are real and absent.
 4. Hand over to the `lab-project-writer` agent with the slug. It drafts; it never publishes.
-5. `pnpm lab:journal wrap` once the draft is in the CMS.
+5. `pnpm lab:journal wrap` once a person has reviewed and published the Lab Project and Lab Page: corrections to the drafts are still part of the feature's record.

@@ -14,6 +14,7 @@ import {
   JOURNAL_ROOT,
   type JournalMeta,
   journalDir,
+  MAIN_BRANCH,
   type PromptRow,
   parseEntries,
   promptsFromTranscript,
@@ -64,6 +65,12 @@ function capture(slug: string, transcript: string | null, given?: SessionWindow)
 
 const captureCurrentSession = (slug: string) => capture(slug, currentTranscript(process.cwd()))
 
+function refuseMain(branch: string | null): void {
+  if (branch === MAIN_BRANCH) {
+    fail(`A journal is never live on ${MAIN_BRANCH}: switch to the feature's branch first.`)
+  }
+}
+
 function requireActive(): JournalMeta {
   return (
     activeJournal(root) ??
@@ -74,6 +81,7 @@ function requireActive(): JournalMeta {
 function start(slug: string | undefined, title: string | undefined): void {
   if (!slug || !SLUG.test(slug)) fail('A slug is required: lowercase words joined by hyphens.')
   const name = slug
+  refuseMain(currentBranch(root))
   if (existsSync(journalDir(root, name)))
     fail(`${JOURNAL_ROOT}/${name} already exists. Use resume.`)
   const live = activeJournal(root)
@@ -120,6 +128,7 @@ function log(kind: string | undefined, title: string | undefined): void {
 }
 
 function setStatus(slug: string | undefined, status: JournalMeta['status']): void {
+  if (status === 'active') refuseMain(currentBranch(root))
   const metas = readMetas(root)
   const open = metas.filter((meta) => meta.status !== 'wrapped')
   const meta = slug

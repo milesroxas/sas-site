@@ -90,6 +90,12 @@ describe('cleanPromptText', () => {
     expect(cleanPromptText('[Request interrupted by user]')).toBeNull()
     expect(cleanPromptText('   ')).toBeNull()
   })
+
+  it('drops the instruction block Conductor adds to a prompt', () => {
+    const raw =
+      '<system_instruction>\nYou are working inside Conductor.\n</system_instruction>\n\nreview my docs'
+    expect(cleanPromptText(raw)).toBe('review my docs')
+  })
 })
 
 describe('promptsFromTranscript', () => {
@@ -141,21 +147,28 @@ describe('resolveActive', () => {
     slug,
     title: slug,
     status: 'active',
-    branches: ['main'],
+    branches: ['feature'],
     startedAt: '2026-09-01T00:00:00.000Z',
     ...extra,
   })
 
   it('is live only on its own branches, and only while active', () => {
-    const metas = [meta('a', { branches: ['feature'] }), meta('b', { status: 'paused' })]
-    expect(resolveActive(metas, 'main')).toBeNull()
+    const metas = [
+      meta('a', { branches: ['feature'] }),
+      meta('b', { status: 'paused', branches: ['other'] }),
+    ]
+    expect(resolveActive(metas, 'other')).toBeNull()
     expect(resolveActive(metas, 'feature')?.slug).toBe('a')
     expect(resolveActive(metas, null)).toBeNull()
   })
 
+  it('is never live on main, even when main is listed', () => {
+    expect(resolveActive([meta('a', { branches: ['main', 'feature'] })], 'main')).toBeNull()
+  })
+
   it('takes the newest when a branch has two', () => {
     const metas = [meta('old', {}), meta('new', { startedAt: '2026-09-20T00:00:00.000Z' })]
-    expect(resolveActive(metas, 'main')?.slug).toBe('new')
+    expect(resolveActive(metas, 'feature')?.slug).toBe('new')
   })
 })
 

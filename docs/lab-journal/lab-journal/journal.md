@@ -103,3 +103,21 @@ Miles asked whether the feature could be picked up in Conductor instead of a Cla
 - Not verified and not verifiable from here: whether Conductor's agent loads the project's hooks. The SessionStart note in a new workspace chat is the test, and `sync <session-id>` is the fallback.
 
 <!-- session: b7777b4e-b883-4269-88eb-e1738d94a25f, branch: main -->
+
+## 2026-09-21 18:13 UTC | insight | Conductor runs the prompt hook but shows no SessionStart note
+
+Tested in a Conductor workspace chat (dubai), started at 18:11 UTC, three minutes after `resume` made this journal live on lab-journal-workspace-setup. The UserPromptSubmit hook captured the first prompt; the transcript records SessionStart output from two plugins and none from scripts/lab-journal/hook.ts, which prints the note in 0.2 s when run by hand with the same cwd.
+So in Conductor a missing note does not mean the journal is not capturing. The guide and the skill now say to run `pnpm lab:journal status` instead of reading the missing note as a hook failure.
+Also found: Conductor appends its own `<system_instruction>` block to the prompt text, and cleanPromptText keeps it, so Conductor prompts in prompts.jsonl carry that block (2 so far). Not fixed yet.
+Also confirmed: a fresh workspace was level with origin/main (`rev-list --count` 0 0), and sas-cms is now registered at user scope, so the write-up can run from a workspace.
+
+<!-- session: 646a79b6-1542-4ee2-a1f6-cef566b57655, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 18:25 UTC | decision | Never journal main; strip Conductor's prompt block
+
+Miles's call, after the doc review found both.
+Main: a journal listed on `main` captured every session anyone ran there. Chose: resolveActive treats `main` as never live, and `start` and `resume` refuse on it; `main` was removed from both journals' meta.json. Rejected: only removing `main` from the metas, since the next `resume` on main would bring it back. Cost: a journal cannot follow work done directly on main; branch first.
+Conductor: cleanPromptText now strips the `<system_instruction>` block, and the 2 prompts already captured with it were cleaned in place. Both changes are a string compare and a regex, with no extra git calls or model requests, so the hooks cost what they did before (Miles asked that nothing here add token use or cost).
+Verified: 13 unit tests, tsc, biome.
+
+<!-- session: 646a79b6-1542-4ee2-a1f6-cef566b57655, branch: lab-journal-workspace-setup -->

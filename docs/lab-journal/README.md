@@ -20,6 +20,7 @@ Each folder beside this file is one feature's journal.
 | `<slug>/meta.json` | Title, status, the branches it is live on | Yes |
 | `~/.claude/lab-journals/sas-site/<slug>/prompts.jsonl` | Every prompt, redacted | **No.** This repository is public |
 | `~/.claude/lab-journals/sas-site/<slug>/digest.md` | Jev's brief, which quotes prompts | **No** |
+| `~/.claude/lab-journals/sas-site/<slug>/digest.json` | Jev's raw judgments, so a rerun only sends what is new | **No** |
 
 ## One-time setup, per person and per machine
 
@@ -46,7 +47,7 @@ pnpm lab:journal start <slug> --title "<Title>"
 
 Do this **before the real work begins**, in the session where the feature is first discussed: `start` keeps the prompts of the session that ran it, so the conversation that led to the feature is part of the record.
 
-Avoid starting a journal on `main`. A journal is live on the branches it was started or resumed on, and on `main` it would capture every session anyone runs there.
+A journal is never live on `main`: `start` and `resume` refuse there, and the hooks ignore `main` even in an old `meta.json` that lists it. On `main` it would capture every session anyone runs there. Branch first, then start.
 
 ### 2. Every working session
 
@@ -68,10 +69,10 @@ That makes the journal live on the new branch too. Prompts are shared across eve
 
 A Conductor workspace is a worktree of Conductor's own clone (`~/conductor/repos/sas-site`), not of your main checkout ([conductor.md](../conductor.md)). What that means here:
 
-- `setup.sh` already runs `pnpm install` and copies `.env` (with `TYPESAFE_API_KEY`) from the Conductor root, so the hooks and the digest have what they need. Check the workspace starts from current `main`: `git log -1` should show the latest commit on `origin/main`.
-- Run `pnpm lab:journal resume <slug>` in the workspace, then start a new chat there. If the "lab journal live" note does not open that chat, Conductor's agent is not loading the project's hooks: keep logging entries (the agent still can), and at the end run `pnpm lab:journal sync <session-id>` for each session so prompts and tokens are recovered from the transcripts.
+- `.conductor/setup.sh` fetches and fast-forwards the Conductor root's `main` before the workspace is used, runs `pnpm install`, and copies `.env` (with `TYPESAFE_API_KEY`) from the Conductor root, so the hooks and the digest have what they need. To confirm the workspace starts from current `main`: `git rev-list --left-right --count origin/main...HEAD` prints `0 0` on a fresh workspace.
+- Run `pnpm lab:journal resume <slug>` in the workspace, then start a new chat there. Conductor runs the project's prompt and token hooks, but the "lab journal live" note has not been seen to open a Conductor chat. Do not read a missing note as "not captured": run `pnpm lab:journal status` and tell the agent the journal is live, so it loads the skill and logs. If the prompt count does not grow either, the hooks are not running: keep logging entries, and at the end run `pnpm lab:journal sync <session-id>` for each session so prompts and tokens are recovered from the transcripts.
 - Sessions that ran in your main checkout are found from the workspace by their id, and prompts are shared across the machine, so nothing from earlier sessions is lost.
-- The `sas-cms` MCP server is registered per project path in Claude Code. A workspace path does not have it until you add it at user scope (`claude mcp add --scope user sas-cms ...`, command in [mcp.md](../mcp.md#connecting-a-client)). Building does not need it; the write-up does, so either add it or run the finishing steps from the main checkout after merging.
+- The write-up needs the `sas-cms` MCP server. Registered for one project path, a workspace does not have it; registered at user scope (`claude mcp add --scope user sas-cms ...`, command in [mcp.md](../mcp.md#connecting-a-client)), every workspace does. `claude mcp list` in the workspace tells you which. Building does not need it.
 - `CMS_MCP_API_KEY` is blank in every `.env` by design. `pnpm cms:upload` needs it exported in the shell that runs it.
 
 ### 4. A session turns to a different feature
@@ -144,11 +145,11 @@ Do these in order, in one session on the feature's branch, **on the machine that
 
 | Symptom | Check |
 | --- | --- |
-| No "lab journal live" note at session start | `pnpm lab:journal status`. Not live on this branch: `resume <slug>`. Live, but no note: `/hooks` should list the four hooks; start a new session after `pnpm install` |
+| No "lab journal live" note at session start | `pnpm lab:journal status`. Not live on this branch: `resume <slug>`. Live, but no note: `/hooks` should list the four hooks; start a new session after `pnpm install`. In Conductor the note is expected to be missing (see [In Conductor](#in-conductor)): tell the agent the journal is live |
 | Prompts count is not growing | Same as above. After fixing, `pnpm lab:journal sync` recovers the prompts and tokens of sessions already in `sessions.jsonl` |
 | Token totals look doubled | One session served two features. Set the window on each journal (step 4 above) |
 | A session is missing from `sessions.jsonl` | It ran while the journal was paused or on another branch. Transcripts are kept about 30 days: resume, then `pnpm lab:journal sync <session-id>` (the id is the transcript's file name under `~/.claude/projects/`). If only part of it belongs to this feature, set the window afterwards |
-| `start` refuses | Another journal is live on this branch. Pause or wrap it first: one feature per branch |
+| `start` or `resume` refuses | On `main`: switch to the feature's branch. Another journal is live on this branch: pause or wrap it first, one feature per branch. The slug already exists: `resume <slug>` instead of `start` |
 | The digest fails | `TYPESAFE_API_KEY` missing from `.env`. The digest is optional |
 
 ## Checklist

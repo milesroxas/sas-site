@@ -1,9 +1,9 @@
 {
   "slug": "lab-journal",
   "title": "Lab journal: documenting a feature as it is built",
-  "status": "paused",
+  "status": "active",
   "branches": [
-    "main"
+    "lab-journal-workspace-setup"
   ],
   "startedAt": "2026-09-21T16:33:08.762Z"
 }
