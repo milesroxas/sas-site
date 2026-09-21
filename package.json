@@ -19,6 +19,7 @@
     "cms:upload": "tsx --no-deprecation --env-file=.env scripts/cms-upload.ts",
     "lab:journal": "tsx --no-deprecation scripts/lab-journal/cli.ts",
     "lab:journal:digest": "tsx --no-deprecation --env-file=.env scripts/lab-journal/digest.ts",
+    "lab:journal:verify": "tsx --no-deprecation --env-file=.env scripts/lab-journal/verify.ts",
     "check:migrations:drift": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file=.env scripts/check-migration-drift.ts",
     "ii": "cross-env NODE_OPTIONS=--no-deprecation pnpm install",
     "lint": "biome check .",

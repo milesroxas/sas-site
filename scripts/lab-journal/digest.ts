@@ -29,7 +29,9 @@ import {
  *
  * - each prompt: what it was doing, how much of the story it tells, and
  *   whether it holds something that must not be published
- * - each journal entry: the Lab Project story section it belongs in
+ * - each journal entry: the Lab Project story section it belongs in, and
+ *   which figures it could carry (a screenshot, a diagram, a code listing, a
+ *   chart), so the writer starts from a figure plan instead of working one out
  * - each agent message: whether it states a decision, a problem, a
  *   measurement or a lesson, so a moment nobody logged can still be found
  *
@@ -54,10 +56,12 @@ const DIGEST_THRESHOLDS = {
   moment: 0.75,
   /** `section` confidence below which an entry is left for the writer to place. */
   section: 0.4,
+  /** A figure Noul at or above which an entry is listed under that figure. */
+  figure: 0.5,
 } as const
 
 /** Bump when a question below is reworded: answers cached under the old wording are asked again. */
-const QUESTIONS_VERSION = 1
+const QUESTIONS_VERSION = 4
 const MAX_CHARS = 6000
 const MIN_MESSAGE_CHARS = 280
 const MAX_CANDIDATES = 40
@@ -104,7 +108,39 @@ const ENTRY_QUESTIONS = {
       none: 'It belongs in none of these.',
     },
   ),
+  // The figure plan. Asked with `section` over the same state, so a figure costs no second request.
+  // Jev reads a question literally, and anything "could" be drawn: asked that way it said yes to a
+  // diagram for every entry. So each asks what the entry is mainly about, and its false side names
+  // the near miss.
+  screenshot: noul('Is `entry` mainly about something a person sees or does on a screen?', {
+    true: 'Its main subject is what appears on a named screen, such as an admin screen, a web page, a form, a dashboard, an app window or a terminal, or what a person does there.',
+    false:
+      'Its main subject is code, a decision, a number or an idea. A screen, an app or a tool may be named, but what it looks like is not the point.',
+  }),
+  diagram: noul('Is `entry` mainly an explanation of how a mechanism works?', {
+    true: 'Its main point is a mechanism: it names at least three components, steps or states and says what passes from one to the next, or the order they run in.',
+    false:
+      'Its main point is a choice and its reasons, a lesson, a number, or one thing that went wrong. Components or steps may be mentioned, but how they connect is not what the entry is for.',
+  }),
+  diagram_kind: choice('If `entry` were drawn as one diagram, which kind would show it best?', {
+    flow: 'Parts connected by arrows: data or control moves from one part to the next, possibly through a decision.',
+    sequence:
+      'Two to four actors, such as a person, a browser, a server and a database, exchanging messages in order over time.',
+    state: 'One thing moving between named states, such as draft, preparing, live, failed.',
+    timeline: 'Dated events in order across days or months.',
+    none: 'Nothing in it would be drawn as a diagram.',
+  }),
+  code: noul('Does following `entry` depend on a specific piece of code?', {
+    true: 'It describes the shape or logic of a particular piece of code, such as a data structure, a configuration, what a named function checks, or the exact form of a command, closely enough that a reader would need the listing to follow it.',
+    false:
+      'It names files, commands or tools only to say where something lives or what was run. The entry reads completely without seeing any code.',
+  }),
+  chart: noul(
+    'Does `entry` report two or more measured numbers that can be compared, such as a before and an after, or one measure across several categories?',
+  ),
 } satisfies Questions
+
+const FIGURE_KINDS = ['screenshot', 'diagram', 'code', 'chart'] as const
 
 const MESSAGE_QUESTIONS = {
   decision: noul('Does `message` state a choice between alternatives and give the reason for it?'),
@@ -120,7 +156,12 @@ const MESSAGE_QUESTIONS = {
 } satisfies Questions
 
 type PromptAnswers = { kind: string; kindConfidence: number; storyValue: number; sensitive: number }
-type EntryAnswers = { section: string; confidence: number }
+type EntryAnswers = {
+  section: string
+  confidence: number
+  figures: Record<(typeof FIGURE_KINDS)[number], number>
+  diagramKind: string
+}
 type MessageAnswers = { decision: number; problem: number; measurement: number; insight: number }
 
 type DigestCache = {
@@ -241,9 +282,17 @@ async function main(): Promise<void> {
       })
       inputTokens += result.usage.input_tokens
       requests += 1
+      const { section, screenshot, diagram, diagram_kind, code, chart } = result.answers
       return {
-        section: result.answers.section.choice,
-        confidence: result.answers.section.confidence,
+        section: section.choice,
+        confidence: section.confidence,
+        figures: {
+          screenshot: screenshot.noul,
+          diagram: diagram.noul,
+          code: code.noul,
+          chart: chart.noul,
+        },
+        diagramKind: diagram_kind.choice,
       }
     }),
     judgeEach(
@@ -288,6 +337,23 @@ async function main(): Promise<void> {
     ])
   }
 
+  const figurePlan = FIGURE_KINDS.map((kind) => {
+    const lines = entries
+      .flatMap((entry) => {
+        const answers = cache.entries[hashOf(entryText(entry))]
+        return answers && answers.figures[kind] >= DIGEST_THRESHOLDS.figure
+          ? [{ entry, answers }]
+          : []
+      })
+      .sort((a, b) => b.answers.figures[kind] - a.answers.figures[kind])
+      .map(({ entry, answers }) => {
+        const drawn =
+          kind === 'diagram' && answers.diagramKind !== 'none' ? ` | ${answers.diagramKind}` : ''
+        return `- ${answers.figures[kind].toFixed(2)}${drawn} | ${entry.at} | ${entry.title}`
+      })
+    return { kind, lines }
+  })
+
   const candidates = messages
     .flatMap((message) => {
       const answers = cache.messages[hashOf(message.text)]
@@ -323,6 +389,11 @@ async function main(): Promise<void> {
     '## Journal entries by story section',
     '',
     ...[...sections].flatMap(([section, lines]) => [`### ${section}`, '', ...lines, '']),
+    '## Figure plan',
+    '',
+    'Entries that could carry each kind of figure, strongest first, with the probability Jev gave. A suggestion to check against the entry, not an order: a chart still needs measured numbers, and a screenshot needs the screen to still exist.',
+    '',
+    ...figurePlan.flatMap(({ kind, lines }) => [`### ${kind} (${lines.length})`, '', ...lines, '']),
     `## Moments that may be missing from the journal (${candidates.length})`,
     '',
     'Agent messages that read as a decision, a problem, a measurement or a lesson. Check each against the entries above; log the ones that are missing.',
@@ -338,12 +409,12 @@ async function main(): Promise<void> {
   if (requests > 0) {
     appendFileSync(
       join(journalDir(root, journal.slug), 'jev.jsonl'),
-      `${JSON.stringify({ at: new Date().toISOString(), model: ASK_JUDGE_MODEL, requests, inputTokens })}\n`,
+      `${JSON.stringify({ at: new Date().toISOString(), model: ASK_JUDGE_MODEL, task: 'digest', requests, inputTokens })}\n`,
     )
   }
   console.log(`${join(out, 'digest.md')}`)
   console.log(
-    `Jev: ${requests} requests, ${inputTokens} input tokens. Quotable prompts ${quoted.length}, held back ${held.length}, candidate moments ${candidates.length}.`,
+    `Jev: ${requests} requests, ${inputTokens} input tokens. Quotable prompts ${quoted.length}, held back ${held.length}, figure candidates ${figurePlan.map(({ kind, lines }) => `${kind} ${lines.length}`).join(', ')}, candidate moments ${candidates.length}.`,
   )
 }
 

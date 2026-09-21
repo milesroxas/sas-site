@@ -129,10 +129,12 @@ Rules live in `globals.css` under "Figures".
 ## Media upload
 
 ```bash
-pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"]
+pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"] [--local]
 ```
 
-MCP cannot carry a binary, so this is the one way an agent adds media. It uses the MCP API key the agent already has (`CMS_MCP_API_KEY`, the same string the MCP client sends) and posts to `POST /api/agent/media`. Target site: `CMS_UPLOAD_SERVER`, else `NEXT_PUBLIC_SERVER_URL`. Prints the media id.
+MCP cannot carry a binary, so this is the one way an agent adds media. It posts to `POST /api/agent/media` with the MCP API key the agent already has, and prints the media id.
+
+The target has to be the site the agent's MCP server drafts on, because a media id only exists in one database. So [`scripts/cms-target.ts`](../scripts/cms-target.ts) reads the site and the key from the `sas-cms` server in Claude Code's config (`~/.claude.json`), and with Claude Code there is nothing to set. Env overrides it for CI and other agents: `CMS_MCP_API_KEY` (else `SAS_CMS_MCP_KEY`) and `CMS_UPLOAD_SERVER`. With a key in env and no site it falls back to `NEXT_PUBLIC_SERVER_URL`, a workspace's dev server, and refuses it unless `--local` is passed (right only when the MCP client points at that dev server too). How an agent takes the screenshot in the first place, through the person's own Chrome, is in the article-authoring skill.
 
 An MCP key fails every team-only REST rule by design, so plain `POST /api/media` stays closed to it. The endpoint is the narrow door instead of a wider rule. It acts as the team member the key is linked to, with access control on, and needs the key's own **Upload media** capability (System, API Keys), off by default like every other capability.
 
