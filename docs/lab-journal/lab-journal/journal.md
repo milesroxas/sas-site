@@ -121,3 +121,81 @@ Conductor: cleanPromptText now strips the `<system_instruction>` block, and the 
 Verified: 13 unit tests, tsc, biome.
 
 <!-- session: 646a79b6-1542-4ee2-a1f6-cef566b57655, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 18:33 UTC | insight | The writer drafts words only; the published pages are mostly figures and screenshots
+
+An audit of the lab-project-writer agent against the two published Lab Pages (From Webflow to Payload, Building a shader studio in Payload CMS) before extending it to media.
+
+The published pages carry 7 to 8 diagrams each, 10 code listings (Webflow page), 4 charts and 2 bespoke figures (shader page), and 14 admin screenshots (Webflow page, 768x392 WebP, client names blurred, files marked REDACTED). All of that was placed by hand in sessions that predate the journal.
+
+The writer's own brief asks for one chart (tokens per session) and says it cannot see or create images, so it only places media ids a person hands it. That line is out of date: the agent has every tool, Read shows it images, and Playwright with Chromium and WebKit is installed.
+
+A second gap: pnpm cms:upload sends to CMS_UPLOAD_SERVER, else NEXT_PUBLIC_SERVER_URL, which is localhost in this workspace, while the sas-cms MCP writes to production. An uploaded id would name a local media document the production draft cannot resolve. This workspace's .env also has no CMS_MCP_API_KEY.
+
+<!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 18:40 UTC | decision | Screenshots come from Miles's own Chrome, not a Playwright login
+
+Miles's call: the writer takes its screenshots through the Claude in Chrome extension, in the Chrome window he is already signed into. For Payload admin shots he logs in first and the agent navigates the admin; for a reference site it uses the same browser.
+
+Rejected: a Playwright capture script with its own admin login (a stored password or a saved login state per machine, and fixture data unless it pointed at production).
+Why it works: the extension shares the browser's login state and its screenshot tool can save the image to disk (Claude Code 2.1.211 or later), so the file can go straight to pnpm cms:upload.
+Cost: the writer run needs a Claude Code session started with --chrome (or /chrome) and a visible Chrome window. This Conductor session has no browser tools loaded, so that is still to be proven here.
+
+<!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 18:55 UTC | insight | Jev cannot see a screenshot, but it can plan the figures and check the draft
+
+Miles asked whether TypeSafe could make the writer's media work cheaper and better. Checked against TypeSafe's live docs (models page, citation check cookbook) and the existing digest script.
+
+Jev 1.13 takes text only, so it cannot look at a screenshot: the look-before-upload check stays with Claude. Input is priced at $0.042 per million tokens with output free, so any text judgment is close to free beside a Claude pass.
+
+Two places it fits. First, the digest already sends every journal entry to Jev for a story section; adding figure questions to that same request (does this entry describe something on screen, a mechanism with ordered parts, specific code, comparable numbers) gives the writer a figure plan before it starts, instead of spending Claude tokens deciding where figures go. Second, the citation check pattern: after drafting, each beat sentence is judged against the journal entries as supports, contradicts or says nothing, which enforces the writer's rule that anything the record does not say is not said. Numbers and em dashes are checked by plain code first, per the earlier decision to rank code above Jev.
+
+<!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 19:50 UTC | challenge | Asked what a diagram could show, Jev said yes to every entry
+
+The figure plan adds four questions to the digest's per-entry request: screenshot, diagram, code and chart. The first wording asked whether the entry "describes a mechanism" that "a diagram could show". Jev answered 0.84 to 0.97 for all 17 entries. Rewritten as a 0 to 3 Score, 15 of 17 entries scored 2.9 or higher. A plan that lists everything is not a plan.
+
+The cause is in TypeSafe's own limitations page for Jev 1.13: it reads the question literally, and literally anything could be drawn. The fix was to ask what the entry is mainly about, and to write the near miss into the false criterion ("components or steps may be mentioned, but how they connect is not what the entry is for"). With that wording the diagram answers spread from 0.16 to 0.88 and five entries pass 0.5; code spreads 0.10 to 0.78. The chart question was a plain factual condition from the start and never had the problem.
+
+Cost of finding it: three full reruns of the digest at about 55,000 input tokens each, a fraction of a cent apiece. The threshold (0.5) is an untuned default like the others.
+
+<!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 19:56 UTC | decision | An upload refuses a local site unless told the MCP is local too
+
+pnpm cms:upload chose its site from CMS_UPLOAD_SERVER, else NEXT_PUBLIC_SERVER_URL, which in a Conductor workspace is that workspace's dev server. The sas-cms MCP server drafts on production. A writer that uploaded a screenshot would get a media id from the workspace database and put it in a production draft, where it names nothing, or another image.
+
+Chose: scripts/cms-target.ts, one place that resolves the key and the site for every agent script. It refuses a localhost target unless --local is passed, and the upload prints the site it went to on stderr. The key is read from CMS_MCP_API_KEY, else SAS_CMS_MCP_KEY, the name the MCP client configs already use.
+Rejected: asking the MCP server which site it is (the script cannot see the client's config); defaulting to production (a contributor testing locally would publish by accident, since agent uploads land public-approved).
+Cost: one more flag for anyone running the MCP against their dev server. Miles confirmed production as the target.
+
+<!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 19:56 UTC | measurement | The draft check on a planted draft, and on a real project
+
+pnpm lab:journal:verify holds a Lab Project draft against the journal: code lists em dashes and numbers the record does not hold, then Jev judges each sentence against the three entries that share the most words with it (supports, contradicts, says nothing), following TypeSafe's citation check cookbook.
+
+Test one, a five sentence draft with three planted faults: an em dash in the title, an invented result ("cut review time by 83 percent across 412 sessions"), and a reversed decision ("chose to commit every prompt to the repository"). Code caught the dash and both numbers. Jev marked the reversed decision contradicts at confidence 1.00 and the three true sentences supports at 0.81 to 0.99. It cost 5 requests and 6,052 input tokens. The invented result came back says nothing at 1.00 but was hidden at first: the second question, whether the sentence states a checkable fact, scored it 0.47 against a gate of 0.5. The gate is now 0.25.
+
+Test two, reading a real draft the way the writer would: Lab Project 2 fetched from production over the MCP endpoint with a plain JSON-RPC POST, 122 sentences extracted, code checks only (its journal does not exist, so no Jev run). One planted test is not an accuracy figure; the thresholds stay untuned until a real write-up has been through it.
+
+<!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 19:56 UTC | milestone | The writer now plans figures, takes screenshots and checks its own draft
+
+What exists, uncommitted on lab-journal-workspace-setup:
+
+- The digest asks four figure questions with each entry's section question and writes a figure plan (screenshot, diagram with its kind, code, chart). On this journal: 1 screenshot, 5 diagram, 4 code and 4 chart candidates from 17 entries.
+- pnpm lab:journal:verify, the draft check. Verified on a planted draft and by reading a real Lab Project from production.
+- pnpm lab:journal shot files a screenshot in the journal's private media folder during the build. Verified by running it.
+- scripts/cms-target.ts and the upload guard. Verified: refuses with no key, refuses localhost, passes with --local.
+- The lab-project-writer brief rewritten: a setup check first, the figure bar of the two published pages, screenshots through Miles's Chrome, the verify run and a preview check before reporting. The capture steps live in the article-authoring skill so any article can use them. Team guide, lab-journal skill, docs/figures.md and docs/mcp.md updated. tsc and the journal's tests pass.
+
+Not verified: the Chrome capture itself. This Conductor session has no claude-in-chrome tools, so no screenshot has been taken through the extension yet, and whether a subagent inherits those tools is unknown. The brief covers both cases. Also restored four jev.jsonl rows by hand after a careless git checkout dropped them; the counts came from the command output and the times are approximate.
+
+Next: commit, then run the writer on this journal from a session started with claude --chrome, as the first real test.
+
+<!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->

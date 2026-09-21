@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { basename, extname } from 'node:path'
+import { cmsTarget } from './cms-target'
 
 /**
  * Uploads one image to the CMS media library, for an agent's screenshots and
@@ -11,15 +12,15 @@ import { basename, extname } from 'node:path'
  * file and needs the key's "Upload media" capability ticked (System, API
  * Keys). This script only reads the flags and the file.
  *
- *   pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"]
+ *   pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"] [--local]
  *
  * `--library` is the Asset Library the image is filed under (every media
  * document is filed). Find its id with the MCP `asset-libraries` find tool.
  *
- * Env: CMS_MCP_API_KEY (the same key the MCP client uses), and the site to
- * upload to: CMS_UPLOAD_SERVER, else NEXT_PUBLIC_SERVER_URL (the workspace dev
- * server). Prints the new media id on stdout and nothing else, so it can be
- * captured.
+ * Env and the site it uploads to: `cms-target.ts`. A local site needs
+ * `--local`, because a media id only means something in the database the MCP
+ * client is drafting in. Prints the new media id on stdout and nothing else,
+ * so it can be captured; the site it went to is on stderr.
  */
 
 /** Only to label the multipart part. The server decides the type from the bytes. */
@@ -45,20 +46,17 @@ const flag = (name: string): string | undefined => {
 const alt = flag('alt')?.trim()
 const caption = flag('caption')?.trim()
 const library = flag('library')
-const key = process.env.CMS_MCP_API_KEY
-const server = (process.env.CMS_UPLOAD_SERVER ?? process.env.NEXT_PUBLIC_SERVER_URL)?.replace(
-  /\/$/,
-  '',
-)
 
-if (!file) fail('usage: pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"]')
+if (!file || file.startsWith('--'))
+  fail('usage: pnpm cms:upload <file> --alt "<text>" --library <id> [--caption "<text>"] [--local]')
 if (!alt) fail('--alt is required: say what the image shows, for someone who cannot see it.')
 if (!library || !/^\d+$/.test(library))
   fail(
     '--library <id> is required: the Asset Library to file this under (asset-libraries find tool).',
   )
-if (!key) fail('set CMS_MCP_API_KEY to the MCP API key (the one the MCP client uses).')
-if (!server) fail('set CMS_UPLOAD_SERVER (or NEXT_PUBLIC_SERVER_URL) to the site to upload to.')
+const target = cmsTarget({ local: rest.includes('--local') })
+if (typeof target === 'string') fail(target)
+const { key, server } = target
 
 const type = TYPES[extname(file).toLowerCase()]
 if (!type) fail(`unsupported file type. Use one of: ${Object.keys(TYPES).join(', ')}`)
@@ -75,6 +73,7 @@ form.set(
   }),
 )
 
+console.error(`cms:upload: to ${server}`)
 const response = await fetch(`${server}/api/agent/media`, {
   body: form,
   headers: { Authorization: `Bearer ${key}` },

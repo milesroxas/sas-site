@@ -211,18 +211,36 @@ layout.0.blocks.2.spec (x.type: a scatter chart needs x.type number; rows[3].ms:
 
 ## Screenshots and images
 
+A page about software wants to show the software. The published Lab Pages carry a screenshot beside most beats that describe a screen, each with alt text that names what is on it and a one-line caption.
+
+### Taking them: the person's own Chrome
+
+You take screenshots through the Claude in Chrome extension, in the browser window the person is already signed into. That is the whole login story: you never ask for a password, never store one, and never sign in yourself.
+
+1. **Check you have a browser.** The tools come from the `claude-in-chrome` MCP server (`/mcp` lists them). If you have none, stop and ask the person to start Claude Code with `claude --chrome` (or run `/chrome` and reconnect), then open Chrome. A subagent that finds no browser tools says so in its report, and the session that called it takes the shots instead and hands it the media ids.
+2. **Ask the person to sign in first** to whatever sits behind a login: the CMS admin at the site's `/admin`, or any other account. If a page sends you to a login or a CAPTCHA, stop and ask. A public reference site needs nothing.
+3. **Agree a shot list before the first capture**: for each shot, the URL, what it frames, and the beat it goes beside. A shot shows one thing. Open the group, scroll the field into view, close the panels that are not the subject.
+4. **Keep one window size for the set** (resize once, about 1600 by 900), so the shots read as one series. Let the page settle: no spinner, no toast, no half-drawn preview.
+5. **Hide what must not be published, before the capture, not after.** Read the page's text first. A client name the site does not already publish, a person's email, a visitor's details, an API key, a draft of someone else's: blur the element with a style set from the page's JavaScript, for example `element.style.filter = 'blur(6px)'`, and end the file's name in `-REDACTED`. Better, pick a record that needs no hiding. Never capture Inquiries, form submissions, subscribers or Ask questions with their contact details showing.
+6. **Save the capture to disk** (the screenshot tool's save option), then move it out of the repository, numbered in reading order: `~/.claude/lab-journals/sas-site/<slug>/media/03-story-beats.png` for a lab journal, the workspace's `.context/` otherwise. An unreviewed screenshot never goes in a public repository.
+7. **Look at every file with Read before uploading it.** Check the blur covers what it should, nothing private sits at the edges (an avatar, a second tab's title, a bookmarks bar), and the subject is legible. The server cleans the file, not what it shows. Hold back anything you are unsure of and show it to the person.
+
+### Uploading
+
 ```bash
-pnpm cms:upload ./shots/inspector.png --library 12 \
-  --alt "The Studio inspector with the relief group open"
+pnpm cms:upload ~/.claude/lab-journals/sas-site/<slug>/media/03-story-beats.png --library 12 \
+  --alt "Vault's case study in the admin: the Approach overview, then the first Story Beat with its key, label and heading." \
+  --caption "Vault's Approach: an overview, then Story Beats with stable keys."
 ```
 
-It uses your MCP key (`CMS_MCP_API_KEY`) and prints the media id: reference it in a media block. Find the Asset Library for `--library` with the `asset-libraries` find tool (the piece's project usually has one). If the upload is refused, pass the error on to the user and do not look for another way in. What the server does with the file is `src/endpoints/agentMedia.ts`.
+It prints the media id: reference it in a `mediaBlock` directly after the beat the shot illustrates. The key and the site come from `scripts/cms-target.ts`: `CMS_MCP_API_KEY` (or `SAS_CMS_MCP_KEY`) and `CMS_UPLOAD_SERVER`. **The upload has to land on the site your MCP server drafts on**, or the id points at nothing: the script refuses a local site unless you pass `--local`, which is only right when your MCP client points at that dev server too. Find the Asset Library for `--library` with the `asset-libraries` find tool (the piece's project usually has one; ask before creating one). If the upload is refused, pass the error on to the person and do not look for another way in. What the server does with the file is `src/endpoints/agentMedia.ts`.
 
-Look at every image before uploading it: no email addresses, keys, tokens, visitor data or client names that are not public. The server cleans the file, not what it shows.
+- `--alt` says what is on the screen for someone who cannot see it: which screen, which record, the fields or rows that matter, and that something is blurred when it is.
+- `--caption` is one short sentence on why the reader is looking at it. No em dash in either.
 
 ## Checking your work
 
-Open the draft's preview URL and look at it at a desktop width and at two phone widths, 390 and 320. Use Safari or a WebKit browser when you can: it is what every iPhone runs, and it is stricter about SVG text than Chromium. For every figure:
+Open the draft's preview URL and look at it at a desktop width and at two phone widths, 390 and 320. With the Chrome tools above, resize the window and screenshot the page yourself; Chrome is not WebKit, which is what every iPhone runs and is stricter about SVG text than Chromium, so say in your report that the Safari check is still the person's. For every figure:
 
 - It drew. A figure that says its drawing is missing has a spec problem.
 - It does not scroll sideways on the phone. If it does, it has too many actors or fans out too wide: split it or turn a `TD` graph to `LR`.

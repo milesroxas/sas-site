@@ -1,5 +1,13 @@
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import {
+  appendFileSync,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs'
+import { dirname, extname, join } from 'node:path'
 import { parseArgs } from 'node:util'
 import {
   activeJournal,
@@ -17,6 +25,7 @@ import {
   MAIN_BRANCH,
   type PromptRow,
   parseEntries,
+  privateDir,
   promptsFromTranscript,
   promptsPath,
   readJsonl,
@@ -41,6 +50,7 @@ import {
  *   pnpm lab:journal log --kind <kind> --title "<title>" < body.md
  *   pnpm lab:journal status | pause | resume [slug] | wrap | sync [session-id]
  *   pnpm lab:journal window [--from <iso>] [--to <iso>]
+ *   pnpm lab:journal shot <file> --what "<what it shows>"
  *
  * `log` appends, so an entry costs the same on day five as on day one: the
  * agent never has to read the journal back to add to it.
@@ -196,6 +206,37 @@ function setWindow(from: string | undefined, to: string | undefined): void {
   status()
 }
 
+/**
+ * Files a screenshot with the journal while the screen still looks the way the
+ * entry beside it describes. It goes to the private folder, never the
+ * repository: nobody has looked at it yet, and the repository is public. The
+ * writer looks at each, uploads the ones that are fit to publish, and places
+ * them by what `shots.jsonl` says they show.
+ */
+function shot(file: string | undefined, what: string | undefined): void {
+  const journal = requireActive()
+  if (!file || !existsSync(file))
+    fail('Usage: pnpm lab:journal shot <file> --what "<what it shows>"')
+  if (!what?.trim())
+    fail('--what is required: what the screenshot shows, and the entry it goes with.')
+  const dir = join(privateDir(root, journal.slug), 'media')
+  mkdirSync(dir, { recursive: true })
+  const taken = readdirSync(dir).filter((name) => /^\d{2}-/.test(name)).length
+  const words =
+    what
+      .toLowerCase()
+      .match(/[a-z0-9]+/g)
+      ?.slice(0, 5)
+      .join('-') ?? 'shot'
+  const name = `${String(taken + 1).padStart(2, '0')}-${words}${extname(file).toLowerCase()}`
+  copyFileSync(file, join(dir, name))
+  appendFileSync(
+    join(dir, 'shots.jsonl'),
+    `${JSON.stringify({ at: new Date().toISOString(), file: name, what: what.trim() })}\n`,
+  )
+  console.log(join(dir, name))
+}
+
 function status(): void {
   const journal = activeJournal(root)
   if (!journal) {
@@ -217,6 +258,8 @@ function status(): void {
   console.log(
     `Prompts: ${readJsonl(promptsPath(root, journal.slug)).length}, in ${dirname(promptsPath(root, journal.slug))}`,
   )
+  const shots = readJsonl(join(privateDir(root, journal.slug), 'media', 'shots.jsonl')).length
+  if (shots > 0) console.log(`Screenshots: ${shots}, in the media folder beside the prompts`)
   for (const [model, counts] of Object.entries(totalUsage(sessions))) {
     console.log(
       `${model}: input ${counts.input}, output ${counts.output}, cache write ${counts.cacheWrite}, cache read ${counts.cacheRead} (${counts.messages} messages)`,
@@ -231,6 +274,7 @@ const { positionals, values } = parseArgs({
     title: { type: 'string' },
     from: { type: 'string' },
     to: { type: 'string' },
+    what: { type: 'string' },
   },
 })
 const [command, slug] = positionals
@@ -257,9 +301,12 @@ switch (command) {
   case 'window':
     setWindow(values.from, values.to)
     break
+  case 'shot':
+    shot(slug, values.what)
+    break
   case 'status':
     status()
     break
   default:
-    fail('Usage: pnpm lab:journal start|log|status|pause|resume|wrap|sync|window')
+    fail('Usage: pnpm lab:journal start|log|status|pause|resume|wrap|sync|window|shot')
 }

@@ -21,13 +21,24 @@ Each folder beside this file is one feature's journal.
 | `~/.claude/lab-journals/sas-site/<slug>/prompts.jsonl` | Every prompt, redacted | **No.** This repository is public |
 | `~/.claude/lab-journals/sas-site/<slug>/digest.md` | Jev's brief, which quotes prompts | **No** |
 | `~/.claude/lab-journals/sas-site/<slug>/digest.json` | Jev's raw judgments, so a rerun only sends what is new | **No** |
+| `~/.claude/lab-journals/sas-site/<slug>/media/` | Screenshots, until a person or the writer has looked at each and uploaded it | **No** |
+| `~/.claude/lab-journals/sas-site/<slug>/verify.md` | The draft check: what the Lab Project says that the record does not | **No** |
 
 ## One-time setup, per person and per machine
 
 1. `pnpm install` in the checkout or workspace. The hooks run `node_modules/.bin/tsx`.
 2. Start a **new** Claude Code session in the project. Hooks load when a session starts. If Claude Code asks whether to trust the project's hooks, accept; `/hooks` lists them (SessionStart, UserPromptSubmit, Stop, SessionEnd, all pointing at `scripts/lab-journal/hook.ts`).
 3. For the digest: `TYPESAFE_API_KEY` in `.env`. Without it everything still works and the writer reads the raw record instead.
-4. For the write-up: the `sas-cms` MCP server connected ([mcp.md](../mcp.md#connecting-a-client)), with a key that has find, create and update on `lab-projects` and `lab-pages`, and find on `media`. The server writes to **production**, as drafts.
+4. For the write-up: the `sas-cms` MCP server connected ([mcp.md](../mcp.md#connecting-a-client)), with a key that has find, create and update on `lab-projects` and `lab-pages`, find on `media` and `asset-libraries`, and **Upload media** ticked. The server writes to **production**, as drafts.
+5. For screenshots and the draft check, the same key and site in `.env`, so uploads land where the drafts are:
+
+   ```sh
+   CMS_MCP_API_KEY=<the MCP key>
+   CMS_UPLOAD_SERVER=https://www.suits-sandals.com
+   ```
+
+   `pnpm cms:upload` refuses a local site without `--local`: a media id from a workspace database does not exist on production.
+6. For screenshots: the [Claude in Chrome extension](https://code.claude.com/docs/en/chrome), and Claude Code started with `claude --chrome` (or `/chrome`, "Enabled by default"). The agent drives the Chrome you are signed into, so there is no password to give it.
 
 ## The order of things
 
@@ -56,6 +67,16 @@ A journal is never live on `main`: `start` and `resume` refuse there, and the ho
 3. Anything you want on the record, ask for it: "log that as a challenge", "log the numbers we just measured".
 4. Before you stop for the day, ask the agent for a closing milestone: where things stand and what comes next. The next session starts from that, not from your memory.
 5. Commit the journal folder with the rest of the work. `sessions.jsonl` changes every session; that is expected.
+
+### Screenshots as you go
+
+A screen changes while a feature is built, and the write-up wants the one the entry described. When a milestone or a challenge is about something on screen, have the agent take the shot then (through Chrome, as in the article-authoring skill) and file it:
+
+```sh
+pnpm lab:journal shot ~/Downloads/capture.png --what "The digest's figure plan in the terminal, for the milestone on Jev's figure questions"
+```
+
+It is copied, numbered, to `~/.claude/lab-journals/sas-site/<slug>/media/`, with what it shows in `shots.jsonl`. Nothing is uploaded and nothing enters the repository: the writer looks at each file at the end and uploads the ones fit to publish.
 
 ### 3. The feature moves to another branch or workspace
 
@@ -101,27 +122,39 @@ Do these in order, in one session on the feature's branch, **on the machine that
    pnpm lab:journal:digest
    ```
 
-   Jev sorts the entries into the Lab Project's story sections, picks the prompts worth quoting, holds back any that look sensitive, and lists agent messages that read like a decision, a problem, a measurement or a lesson nobody logged. It costs a fraction of a cent. It sends redacted prompts, entries and the agent's prose to TypeSafe: skip this step if the record holds something that must not leave the machine, and tell the writer to read the raw record instead.
+   Jev sorts the entries into the Lab Project's story sections, picks the prompts worth quoting, holds back any that look sensitive, drafts a figure plan (which entries could carry a screenshot, a diagram, a code listing or a chart), and lists agent messages that read like a decision, a problem, a measurement or a lesson nobody logged. It costs a fraction of a cent. It sends redacted prompts, entries and the agent's prose to TypeSafe: skip this step if the record holds something that must not leave the machine, and tell the writer to read the raw record instead.
 
 3. **Fill the gaps.** Open `~/.claude/lab-journals/sas-site/<slug>/digest.md`, read "Moments that may be missing", and have the agent log the ones that are real and absent. Read `journal.md` top to bottom yourself once. This is the last cheap moment to fix the story.
 
-4. **Gather the visuals.** Screenshots, recordings, diagrams of what was built. Upload images with `pnpm cms:upload` ([figures.md](../figures.md#media-upload)) and note the media ids. The writer cannot see or create images; it can place ones you give it.
+4. **Open Chrome and sign in.** Start the session with `claude --chrome`, open Chrome, and sign in to the CMS admin (and anything else the shots need). The writer takes its own screenshots there: it agrees a shot list with you first, blurs what must not be published before each capture, saves the files to the journal's private `media/` folder, looks at every one, and uploads them with `pnpm cms:upload` ([figures.md](../figures.md#media-upload)). Anything you want in that it cannot stage (an old screen, a recording, a photo) you upload yourself and hand over as media ids. Screenshots taken during the build are already in `media/`: see [Screenshots as you go](#screenshots-as-you-go).
 
 5. **Run the writer.** In Claude Code:
 
    > Use the lab-project-writer agent on `<slug>`. Media ids: ...
 
-   It reads the journal, the token rows and the digest (never the transcripts), then drafts over the `sas-cms` MCP:
+   It checks its setup first (MCP, upload target, browser) and says what is missing. Then it reads the journal, the token rows and the digest (never the transcripts), and drafts over the `sas-cms` MCP:
    - the **Lab Project** (`lab-projects`): the six story sections, each an overview and keyed story beats, including how the work was split between people and agents, with models and token counts from `sessions.jsonl`;
-   - the **Lab Page** (`lab-pages`), which requires that Lab Project and is composed from its beats, one Section per idea, with a tokens-per-session chart when there are two or more sessions.
+   - the **Lab Page** (`lab-pages`), which requires that Lab Project and is composed from its beats, one Section per idea, to the bar of the published pages: a diagram for each mechanism, code listings copied from the committed files, charts from measured numbers only (always tokens per session when there are two or more), and screenshots beside the beats that describe a screen.
 
-   Everything is saved as a draft. It reports the ids, every prompt it quoted, and every claim it left out because the record did not support it.
+   Before it reports, it checks its own draft:
+
+   ```sh
+   pnpm lab:journal:verify <slug> --project <lab project id>
+   ```
+
+   Code lists every em dash and every number the record does not hold. Jev then holds each sentence against the journal entries nearest to it: supported, contradicted, or not in the record. It costs a fraction of a cent and writes `verify.md` beside the digest. You can run it yourself after any edit.
+
+   Everything is saved as a draft. It reports the ids, the figure counts, every media id and what was blurred, every prompt it quoted, what the check still lists, and every claim it left out because the record did not support it.
+
+   If the writer runs where there is no browser (a subagent may not get the Chrome tools, and a Conductor chat has none unless Claude Code was started with them), it drafts everything else and says so. Take the shots from a session that has the browser, with the article-authoring skill, and hand it the ids.
 
 6. **Review, as a person.** In the admin, open the Lab Project, then the Lab Page in live preview.
    - Every number traces to the journal. An estimate says "estimate".
    - Every quoted prompt is one you are happy to publish, exactly as typed.
    - No client confidences, no personal details, no secrets.
-   - Hero, visuals, SEO and related projects are yours to set: the writer leaves them.
+   - Every screenshot: nothing private showing, the blur covers what it should. Agent uploads are public on arrival.
+   - Look at the page once in Safari or on a phone: the writer checks in Chrome only.
+   - Hero, SEO and related projects are yours to set: the writer leaves them.
    - Send corrections back to the agent, or edit in the admin. If the story is wrong, fix the beat on the Lab Project, not the page.
 
 7. **Publish**, in the admin: the Lab Project first, then the Lab Page. Agents never publish.
@@ -158,7 +191,9 @@ Do these in order, in one session on the feature's branch, **on the machine that
 Start      [ ] feature branch   [ ] pnpm lab:journal start <slug>   [ ] new session shows the note
 Each day   [ ] note appeared    [ ] decisions logged with why       [ ] closing milestone   [ ] committed
 Switching  [ ] new branch: resume   [ ] other feature: window + switch journals   [ ] break: pause
-Finish     [ ] final milestone  [ ] sync   [ ] digest   [ ] gaps logged   [ ] visuals uploaded
-Write-up   [ ] writer agent run [ ] numbers and quotes reviewed     [ ] Lab Project published, then Lab Page
+Each shot  [ ] pnpm lab:journal shot <file> --what "..."   (while the screen still looks like this)
+Finish     [ ] final milestone  [ ] sync   [ ] digest   [ ] gaps logged   [ ] claude --chrome, signed in
+Write-up   [ ] writer agent run [ ] verify.md read   [ ] screenshots, numbers and quotes reviewed
+           [ ] Safari check     [ ] Lab Project published, then Lab Page
 Close      [ ] wrap   [ ] journal committed   [ ] branch merged
 ```
