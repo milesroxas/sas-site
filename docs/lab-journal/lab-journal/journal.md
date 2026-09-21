@@ -211,3 +211,13 @@ Verified with no variables set: the upload passed target resolution, and verify 
 Cost: the script reads a file that holds a secret. It uses the key only for the server it was issued for and never prints it.
 
 <!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 20:23 UTC | milestone | Resting point: writer tooling pushed, first real run still to do
+
+Everything built in this session is on origin/lab-journal-workspace-setup (commits 4358659 and aa9d7d8). No pull request is open yet. Miles is stopping here and will pick the feature up later.
+
+Where things stand: the digest's figure plan, pnpm lab:journal:verify, pnpm lab:journal shot, scripts/cms-target.ts (site and key read from Claude Code's sas-cms config, nothing to set in .env), and the rewritten lab-project-writer brief with the screenshot steps in the article-authoring skill. All run and checked except one thing.
+
+Not yet done, and the place to start next time: the first real writer run. Start Claude Code with claude --chrome on this branch, sign in to the CMS admin in Chrome, and run the lab-project-writer agent on lab-journal. That run answers the open question of whether a subagent gets the claude-in-chrome tools; if it does not, the calling session takes the shots and hands over media ids. It is also the first real data for tuning the untuned thresholds in the digest's figure plan (0.5) and in verify (checkable 0.25, confidence 0.6).
+
+<!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
