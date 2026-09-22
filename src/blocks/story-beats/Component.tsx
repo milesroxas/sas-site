@@ -7,6 +7,7 @@ import RichText from '@/components/RichText'
 import type { LabStoryBeatsBlock, WorkStoryBeatsBlock } from '@/payload-types'
 import { hasRichTextContent } from '@/utilities/hasRichTextContent'
 import { cn } from '@/utilities/ui'
+import type { StoryPassage } from '../shared/story-headings'
 
 /**
  * Only the story surfaces offer this block, so the two generated interfaces
@@ -21,6 +22,12 @@ type StoryBeatsBlockProps = Pick<
   'blockType' | 'body' | 'heading' | 'headingLevel' | 'theme' | 'variant'
 > & {
   bare?: boolean
+  /**
+   * The resolved run (`shared/story-headings.ts`): each beat with the heading
+   * it prints under the Section's Prose opener. Without it, the block renders
+   * `body` under `heading` as a single passage (stories and tests).
+   */
+  passages?: StoryPassage[]
 }
 
 /**
@@ -65,25 +72,42 @@ export const StoryBeatsBlock: React.FC<StoryBeatsBlockProps> = ({
   body,
   heading,
   headingLevel,
+  passages,
   theme,
   variant,
 }) => {
-  if (!body || !hasRichTextContent(body)) return null
-  const Heading = headingLevel || 'h3'
+  const run = (
+    passages ?? [
+      { body, heading: heading || undefined, headingLevel: headingLevel || 'h3', key: 'body' },
+    ]
+  ).filter(
+    (passage): passage is StoryPassage & { body: NonNullable<StoryPassage['body']> } =>
+      Boolean(passage.body) && hasRichTextContent(passage.body),
+  )
+  if (run.length === 0) return null
   return (
     <Section bare={bare} theme={theme}>
       <Container>
         <BlockGrid>
-          <div className={cn('md:col-span-4 md:col-start-3', heading && 'text-stack')} data-reveal>
-            {heading ? (
-              <Heading className={proseHeadingClassNames[Heading]}>{heading}</Heading>
-            ) : null}
-            <RichText
-              className={variantClasses[variant || 'default']}
-              data={body}
-              enableGutter={false}
-            />
-          </div>
+          {run.map((passage) => {
+            const Heading = passage.headingLevel || 'h3'
+            return (
+              <div
+                className={cn('md:col-span-4 md:col-start-3', passage.heading && 'text-stack')}
+                data-reveal
+                key={passage.key}
+              >
+                {passage.heading ? (
+                  <Heading className={proseHeadingClassNames[Heading]}>{passage.heading}</Heading>
+                ) : null}
+                <RichText
+                  className={variantClasses[variant || 'default']}
+                  data={passage.body}
+                  enableGutter={false}
+                />
+              </div>
+            )
+          })}
         </BlockGrid>
       </Container>
     </Section>

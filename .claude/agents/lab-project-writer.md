@@ -43,7 +43,7 @@ Follow the article-authoring skill for every CMS rule (where copy lives, Story b
   - `outcomeSummary`: only measured results, with how they were measured. An estimate is labelled an estimate.
   - `learnings`: the insights, and what would be done differently.
 - **Working with AI is part of every entry.** A beat (in `approach` or `learnings`, wherever it reads best) on how the work was split between Miles and the agents: which models, how many sessions over how many days, what the hooks captured, what Jev judged. Numbers come from `sessions.jsonl` and `jev.jsonl` only. Sum them with a command, never in your head, and show the four token columns separately: cache reads are most of the total and are not comparable to output tokens. No dollar figures unless Miles gives you the prices.
-- **The Lab Page** (`lab-pages`) composed from the record, one Section per idea, every beat used once.
+- **The Lab Page** (`lab-pages`) composed from the record, one Section per idea, every beat used once. Beat headings print from the record under each Section's Prose heading (the skill's "Beat headings print from the record"): write the record headings well and leave the block's `heading` empty.
 
 Prompts: quote at most a handful, only ones the digest lists as worth quoting or that are plainly harmless, exactly as typed (they are already redacted). Never quote a held-back prompt. Everything else Miles asked for is paraphrased.
 

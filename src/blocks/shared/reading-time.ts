@@ -72,9 +72,14 @@ const resolveCopy = (block: LooseBlock, record: StoryRecord): object => {
     // Back under the key a body is counted by: the layout prints it as copy.
     return { body: content, heading }
   }
-  return isStoryCopyBlock(block)
-    ? resolveStoryBlockCopy(block as unknown as StoryCopyBlock, record)
-    : block
+  if (!isStoryCopyBlock(block)) return block
+  // A Story beats block resolves to its body and to the same copy again as
+  // `passages` (the run with its beat headings); the body is the count.
+  const { passages: _passages, ...resolved } = resolveStoryBlockCopy(
+    block as unknown as StoryCopyBlock,
+    record,
+  ) as { passages?: unknown }
+  return resolved
 }
 
 const walkEntries = (value: object, record: StoryRecord): ReadingCost =>

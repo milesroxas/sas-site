@@ -313,3 +313,45 @@ One gap the pass found in the gate: "unlocks" passed the first pattern, which st
 Miles reviews the drafts in the admin (Lab Projects 2 and 3, Lab Page 2) and publishes or reverts each: the Lab Project first, then the page.
 
 <!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal-workspace-setup -->
+
+## 2026-09-22 01:44 UTC | decision | Beat headings fall back to the record; the page field only overrides; Jev sets the level
+
+Miles's call, reversing both the agent's recommendation and the Story beats block's own design note: a Story beats block prints the beat's heading from the Lab Project record by default, and the page's heading field is an override, not the only source. The headings have to sit in a proper outline: the right level under the Section's Prose heading, never the same level or higher. He asked that the level be classified automatically with TypeSafe rather than set by hand on every block.
+
+Rejected (the agent's option 1): writing a page heading on each block that needs one, taken from the record by hand. It puts the same words in two places and leaves 64 blocks on the two Lab Pages to fill in by hand every time a page is composed.
+
+Cost: the rule "the Prose heading already prints the first beat's heading, so a second copy would repeat it" now has to be enforced by something other than leaving the field empty. That is the judgment Jev is for: whether a beat's heading only restates the heading above it, and whether the beat is a subsection or a short passage of the idea above.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal-workspace-setup -->
+
+## 2026-09-22 01:53 UTC | note | The workspace branch was renamed to lab-journal mid-session
+
+Between two commands the local branch changed from lab-journal-workspace-setup to lab-journal, still tracking origin/lab-journal-workspace-setup; the agent did not rename it. The journal was live on the old name only, so two entries were refused until pnpm lab:journal resume lab-journal made it live here too. Prompts and tokens for the minutes in between may be missing from the hooks' files; pnpm lab:journal sync at the end recounts from the transcript.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal -->
+
+## 2026-09-22 01:53 UTC | measurement | Beat headings on Lab Page 2 under the new rule, with Jev on the paraphrases
+
+The new rule and the save-time judgment run over Lab Page 2 (From Webflow to Payload) on 2026-09-22, against Lab Project 3: 24 Sections, 48 beats presented, each Section opened by its Prose Standard heading at h2 or h3.
+
+Outcome: 33 beat headings print, 15 are hidden. Thirteen were settled by code alone, all exact repeats of the Section's Prose heading, which is the first beat of a Section in every case. Jev was asked about the other 35 (one request each, opener heading, beat heading and the first 240 characters of the beat as state). It differed from the code rule on two, both paraphrases the code cannot see and both right: "Every case study in the same template" under "One template for every case study" (restates 0.78) and "A Content Hub and a website" under "Two layers: a Content Hub and a website" (0.65). Every other beat read 0.05 to 0.29, so the 0.6 threshold sits in a clear gap on this page.
+
+Levels: Jev called 22 beats a subsection (h3 under an h2 opener) and 13 a passage (h4). The passages are the short single-idea beats ("A function call, not a fetch", "The hub protects the pages"); the subsections are the multi-paragraph steps. No beat lands at the opener's level or above, by construction.
+
+One page is not an accuracy figure; the threshold and the level policy are to be read again after the first Work Page goes through the same hook.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal -->
+
+## 2026-09-22 01:53 UTC | milestone | Beat headings print from the record under the Prose opener; Jev judges paraphrase and level at save
+
+What now exists, on the branch tracking origin/lab-journal-workspace-setup, committed locally and not pushed:
+
+- src/blocks/shared/story-headings.ts: the render-time rule. sectionOpener finds a Section's first Prose Standard heading and its level; storyBeatPassages turns a Story beats block into the run it renders, each beat with its record heading one level under the opener, hidden when it repeats the opener exactly, replaced by the block's own heading when the page overrides it. Under section scope every beat prints its own heading after the overview. Stored Jev answers are honored only while their hash of the inputs still matches.
+- src/plugins/story-headings: a beforeChange hook on every collection that offers the block (Lab Pages, Work Pages). On a full save it fetches the page's story record, and for each presented beat either settles it by code (exact repeat) or asks Jev two questions: does the beat heading only restate the opener, and does the beat open a subsection or a passage. Answers are stored as headingAuto per beat with the hash, reused from the saved document when unchanged, ignored from the request, exempt on autosave, and a failure leaves the beat to the code rule. The judge is injectable, so the tests run offline.
+- The Story beats component renders passages; the block config gains the hidden headingAuto json field; both renderers (lab and case study) pass the Section's opener down; reading time ignores the duplicate copy. A Storybook story shows the headed run. The article-authoring skill and the writer brief now say headings come from the record and the block field is an override. 60 unit tests pass, tsc and biome are clean.
+
+Schema: one new json column on the Story beats block tables of Lab Pages and Work Pages (and their version tables). A migration is required before this can be pushed or merged; not generated, Miles's call.
+
+Next: Miles approves pnpm migrate:create story-beats-heading-auto, then push; then a full save of Lab Pages 1 and 2 in the admin (or over MCP) so the hook stores the judgments, and a look at both pages in preview.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal -->
