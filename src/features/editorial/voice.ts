@@ -14,7 +14,7 @@
 /** Built from its code point so this file holds none. */
 export const EM_DASH = String.fromCharCode(0x2014)
 
-/** "Language to avoid" in voice.md, in the doc's order. Matched whole, case-insensitive. */
+/** "Language to avoid" in voice.md, in the doc's order. Matched whole, case-insensitive; a single word in any inflection. */
 export const AVOID_PHRASES = [
   'elevate',
   'unlock',
@@ -108,11 +108,22 @@ const RANGE_DASH = new RegExp(`\\d\\s?${EM_DASH}\\s?\\d`)
 
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
+/** "unlock" also as unlocks, unlocked, unlocking; "elevate" also as elevates, elevated, elevating. */
+const inflected = (phrase: string): string => {
+  const literal = escapeRegExp(phrase).replace(/'/g, "['’]")
+  if (!/^[a-z]+$/.test(phrase)) return literal
+  return phrase.endsWith('e')
+    ? `${literal.slice(0, -1)}(?:e|es|ed|ing)`
+    : `${literal}(?:s|es|ed|ing)?`
+}
+
 const PHRASE_PATTERNS = AVOID_PHRASES.map((phrase) => ({
   phrase,
-  // Word-bounded, so "unlock" is found and "unlocked" is not: the doc bans the
-  // marketing verb, not every form a programmer might write.
-  pattern: new RegExp(`(?<![\\w-])${escapeRegExp(phrase).replace(/'/g, "['’]")}(?![\\w-])`, 'gi'),
+  // Word-bounded, and a single word is caught in every inflection: "unlocks
+  // composable content areas" is the marketing verb the doc bans, whatever its
+  // ending. Found in approved copy on 2026-09-22, past the first version of this
+  // pattern, which stopped at the bare word.
+  pattern: new RegExp(`(?<![\\w-])${inflected(phrase)}(?![\\w-])`, 'gi'),
 }))
 
 const FLATTENED_PATTERNS = FLATTENED_CLAIMS.map((claim) => ({

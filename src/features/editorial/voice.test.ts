@@ -50,9 +50,17 @@ describe('gateFindings', () => {
     expect(gateFindings(`A${EM_DASH}B`)).toEqual([{ rule: 'em-dash', match: EM_DASH, index: 1 }])
   })
 
-  it('finds a banned phrase whole, in any case, and not inside a longer word', () => {
+  it('finds a banned phrase whole, in any case, and a single word in every inflection', () => {
     expect(gateFindings('We Elevate the brand.').map((f) => f.match)).toEqual(['elevate'])
-    expect(gateFindings('The row was unlocked at noon.')).toEqual([])
+    expect(gateFindings('An app that unlocks composable areas.').map((f) => f.match)).toEqual([
+      'unlock',
+    ])
+    expect(gateFindings('Elevated, elevating, unlocking.').map((f) => f.match)).toEqual([
+      'elevate',
+      'elevate',
+      'unlock',
+    ])
+    expect(gateFindings('The padlock and the unlockable door.')).toEqual([])
     expect(gateFindings('A cutting-edge, best-in-class stack.').map((f) => f.match)).toEqual([
       'cutting-edge',
       'best-in-class',

@@ -50,7 +50,7 @@ Concrete. Direct. Relevant to the reader. Connected to a real problem. Easy to u
 
 ## Language to avoid
 
-Generic marketing and agency language. Each of these is refused on an agent's save and listed by the check:
+Generic marketing and agency language. Each of these is refused on an agent's save and listed by the check, a single word in any of its forms (unlocks, elevated):
 
 - elevate
 - unlock

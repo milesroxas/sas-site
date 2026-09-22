@@ -281,3 +281,35 @@ What now exists, on lab-journal-workspace-setup:
 Verified: 38 unit tests pass, tsc and biome are clean, and the check ran on Lab Projects 2 and 3, Lab Page 2 and a planted agency draft (numbers in the measurement entry). Not verified end to end: the save-time refusal against a running server, since the hook is covered by unit tests only and this workspace has no dev server of its own up. Next: the first real writer run from a session started with claude --chrome, which now also exercises the Voice section of verify.md.
 
 <!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal-workspace-setup -->
+
+## 2026-09-22 01:37 UTC | decision | The strict pass on the published Lab Projects: nine lines change, the abstract lines stay
+
+Miles asked for the strict voice pass on the current Lab Pages now that the check exists. The check's own lists were read in full, then every passage of Lab Projects 2 and 3 and Lab Pages 1 and 2 was read against docs/editorial/voice.md by hand, since Jev lists what the doc names and a pass has to read the rest.
+
+Kept, against Jev's generic list: every listed passage is an abstract line the studio means ("The website used to be the thing we owned. Now it is the first thing we do with what we own.", the thesis, "Access control is also just a function"). The doc asks for strong, simple assertions and the occasional memorable line; these are those.
+
+Changed, as drafts on the Lab Projects, never published:
+1. Lab Project 3, challenge, "Fixing the template was not enough": "unlocks composable content areas" is the banned verb inflected. The gate's pattern stopped at the bare word; it now catches a single banned word in any form, with a test. The line becomes "adds composable content areas".
+2. Lab Project 3, strategy, "Why Payload": "extremely developer friendly" is a ranking with no particular; it becomes what the particular is, the content model as TypeScript in our own repository.
+3. Lab Project 3, strategy, "Write it once, use it everywhere": "actually" dropped from the close.
+4. Lab Project 3, approach, "One object, everything generated": "All of it comes out of the box" is a stock phrase; it becomes "None of it needed configuring."
+5. Lab Project 3, approach, "Copy that does not know it is on a website": the rhetorical setup ("It sounds fussy. It is not, and here is the payoff:") goes; the paragraph opens on the fact.
+6. Lab Project 3, learnings, "Visitors write the content brief": "The quietly most useful thing" reads as a slip; it becomes "The most useful thing in the CMS, and the least visible,".
+7. and 8. Lab Project 2, the medium summary and the first challenge beat: "with performance at the forefront", twice, is a stock phrase; both become "cheap to run", which is the beat's own heading.
+9. Lab Page 2, the caption under "Where the story lives": its second clause restates a line the medium summary and the strategy beat already carry on the same page ("a fact fixed once is fixed everywhere"); the doc gives every idea one home, so the caption keeps its first sentence and the "one record" clause only.
+
+Rejected: rewriting the four outcome beats that open by repeating their heading ("The website. Each work page..."), because the page shows them as a run without headings and the openers are the labels; and touching the figures' text alternatives, which all open "The takeaway is", because that is the figures contract for alt text, not prose. Whose call: mine on the reads, Miles's on the pass; he reviews the drafts before anything publishes.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal-workspace-setup -->
+
+## 2026-09-22 01:39 UTC | milestone | The strict pass is applied as drafts on both Lab Projects and Lab Page 2
+
+The nine edits from the pass are saved as drafts, never published: six beats on Lab Project 3, one beat and the medium summary on Lab Project 2, and one caption on Lab Page 2. Each project update resent every beat row with its id and the changed beat as Markdown with replace: true; the page update resent the whole layout with every block id kept and diagram geometry stripped. A dump of every passage before and after shows exactly those lines changed and nothing else: 236 lines on Lab Project 3, 140 on Lab Project 2, 164 on the page, same counts before and after.
+
+The check rerun on the drafts: nothing refused, nothing listed by the doc, no inflated or formulaic passage on any of the three. Jev was asked only about the changed passages (6, 2 and 1 requests, 4,512, 1,541 and 725 input tokens), because the cache is keyed on the passage text. Lab Project 3 still lists the same abstract lines as generic, kept on purpose.
+
+One gap the pass found in the gate: "unlocks" passed the first pattern, which stopped at the bare word. A banned single word is now caught in any inflection, with a test, and the doc says so.
+
+Miles reviews the drafts in the admin (Lab Projects 2 and 3, Lab Page 2) and publishes or reverts each: the Lab Project first, then the page.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal-workspace-setup -->
