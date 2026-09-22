@@ -295,6 +295,12 @@ export const repoRoot = (cwd: string): string => git(cwd, 'rev-parse', '--show-t
 export const currentBranch = (cwd: string): string | null =>
   git(cwd, 'rev-parse', '--abbrev-ref', 'HEAD')
 
+/** The journal's branches still in this repository: a renamed or deleted one stays listed in `meta.json`. */
+export const existingBranches = (cwd: string, branches: string[]): string[] =>
+  branches.filter(
+    (branch) => git(cwd, 'rev-parse', '--verify', '--quiet', `refs/heads/${branch}`) !== null,
+  )
+
 /**
  * The repository's name from its origin, not the directory (a Conductor
  * workspace or a worktree has a name of its own) and not the package name

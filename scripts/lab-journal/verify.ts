@@ -10,6 +10,7 @@ import { passagesOf } from '../editorial/passages'
 import { judgeVoice, loadVoiceCache, saveVoiceCache, voiceReport } from '../editorial/voice'
 import {
   activeJournal,
+  existingBranches,
   type JournalEntry,
   journalDir,
   parseEntries,
@@ -228,10 +229,14 @@ async function main(): Promise<void> {
   const journalPath = join(journalDir(root, journal.slug), 'journal.md')
   const entries = existsSync(journalPath) ? parseEntries(readFileSync(journalPath, 'utf8')) : []
   const commits =
-    execFileSync('git', ['log', '--format=%s', '-n', '200', ...journal.branches.slice(0, 1)], {
-      cwd: root,
-      encoding: 'utf8',
-    }) || ''
+    execFileSync(
+      'git',
+      ['log', '--format=%s', '-n', '200', ...existingBranches(root, journal.branches), '--'],
+      {
+        cwd: root,
+        encoding: 'utf8',
+      },
+    ) || ''
   const record = [
     ...entries.map((entry) => `${entry.at} | ${entry.kind} | ${entry.title}\n\n${entry.body}`),
     usageFacts(root, journal.slug, entries),

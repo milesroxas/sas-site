@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   assistantTexts,
   cleanPromptText,
+  currentBranch,
+  existingBranches,
   formatEntry,
   type JournalMeta,
   mergeUsage,
@@ -169,6 +171,16 @@ describe('resolveActive', () => {
   it('takes the newest when a branch has two', () => {
     const metas = [meta('old', {}), meta('new', { startedAt: '2026-09-20T00:00:00.000Z' })]
     expect(resolveActive(metas, 'feature')?.slug).toBe('new')
+  })
+})
+
+describe('existingBranches', () => {
+  it('drops a branch that was renamed or deleted, keeps one with a slash', () => {
+    const branch = currentBranch(process.cwd())
+    if (!branch || branch === 'HEAD') return
+    expect(existingBranches(process.cwd(), ['no-such-branch/renamed-away', branch])).toEqual([
+      branch,
+    ])
   })
 })
 
