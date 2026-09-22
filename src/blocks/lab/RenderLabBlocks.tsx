@@ -11,6 +11,7 @@ import {
   resolveStoryBlockCopy,
   resolveStorySectionCopy,
 } from '@/blocks/shared/story-copy'
+import { type StoryOpener, sectionOpener } from '@/blocks/shared/story-headings'
 import { StoryBeatsBlock } from '@/blocks/story-beats/Component'
 import RichText from '@/components/RichText'
 import type {
@@ -118,13 +119,16 @@ type LabLayoutBlock = NonNullable<LabPage['layout']>[number] | LabSectionChildBl
  */
 const renderLabBlock = (
   block: LabLayoutBlock,
-  ctx: { bare?: boolean; page: LabPage; project: LabProject },
+  ctx: { bare?: boolean; opener?: StoryOpener | null; page: LabPage; project: LabProject },
 ): ReactNode => {
-  const { bare, page, project } = ctx
+  const { bare, opener = null, page, project } = ctx
   if (block.blockType === 'section') {
     // The Section owns the band; children render bare inside it with their
     // usual entrances. The band itself never animates: a second entrance on
-    // the shell would double every child's motion.
+    // the shell would double every child's motion. Its Prose heading is the
+    // opener every Story beats child sets its beat headings under.
+    const children = block.blocks ?? []
+    const childCtx = { ...ctx, bare: true, opener: sectionOpener(children, project) }
     return (
       <SectionBand
         customize={block.customize}
@@ -133,7 +137,7 @@ const renderLabBlock = (
         stack={block.stack}
         theme={block.theme}
       >
-        {(block.blocks ?? []).map((child) => renderLabBlock(child, { ...ctx, bare: true }))}
+        {children.map((child) => renderLabBlock(child, childCtx))}
       </SectionBand>
     )
   }
@@ -142,7 +146,7 @@ const renderLabBlock = (
   // take their copy from the Lab Project, the same way Work Pages resolve it.
   if (block.blockType && block.blockType in labContentComponents) {
     return renderContentBlock(
-      isStoryCopyBlock(block) ? resolveStoryBlockCopy(block, project) : block,
+      isStoryCopyBlock(block) ? resolveStoryBlockCopy(block, project, opener) : block,
       block.id ?? block.blockType,
       Boolean(bare),
       labContentComponents,

@@ -5,7 +5,9 @@ import { join } from 'node:path'
 import { choice, noul, type Questions, TypeSafeClient } from '@typesafe-ai/sdk'
 import { ASK_JUDGE_KEY_VAR, ASK_JUDGE_MODEL } from '@/features/ask/judge'
 import { redactFreeText } from '@/features/ask/redact'
-import { cmsTarget } from '../cms-target'
+import { fetchDocument } from '../cms-fetch'
+import { passagesOf } from '../editorial/passages'
+import { judgeVoice, loadVoiceCache, saveVoiceCache, voiceReport } from '../editorial/voice'
 import {
   activeJournal,
   type JournalEntry,
@@ -40,8 +42,13 @@ import {
  * says whether the sentence claims a fact at all, so a line of connective
  * prose is not reported as unsupported.
  *
+ * Then the voice check (`../editorial/voice.ts`): the house voice of
+ * docs/editorial/voice.md, code for the exact part and Jev for the
+ * judgments, so a draft that is true to the record but reads like an agency
+ * is listed too.
+ *
  * `--project` reads the draft over the MCP endpoint with the MCP key
- * (`../cms-target.ts`), the way the writer wrote it. What leaves the machine:
+ * (`../cms-fetch.ts`), the way the writer wrote it. What leaves the machine:
  * draft sentences and journal entries, redacted first, to TypeSafe. The report
  * is written beside the digest, outside the repository.
  */
@@ -64,8 +71,6 @@ const EVIDENCE = 3
 const MIN_SENTENCE_CHARS = 30
 const MAX_CHARS = 6000
 const CONCURRENCY = 8
-/** House style bans it in copy. Built from its code point so this file holds none. */
-const EM_DASH = String.fromCharCode(0x2014)
 const STORY_SECTIONS = [
   'context',
   'challenge',
@@ -129,16 +134,6 @@ const sentencesOf = (paragraph: string): string[] =>
     .map((sentence) => sentence.trim())
     .filter((sentence) => sentence.length >= MIN_SENTENCE_CHARS)
 
-/** Every string in the document, for the checks that are not about the story. */
-function strings(node: unknown, path = ''): { path: string; text: string }[] {
-  if (typeof node === 'string') return [{ path, text: node }]
-  if (Array.isArray(node)) return node.flatMap((item, index) => strings(item, `${path}[${index}]`))
-  if (!node || typeof node !== 'object') return []
-  return Object.entries(node).flatMap(([key, value]) =>
-    strings(value, path ? `${path}.${key}` : key),
-  )
-}
-
 const wordsOf = (text: string) => new Set(text.toLowerCase().match(/[a-z][a-z0-9_.-]{3,}/g) ?? [])
 
 /** The entries that share the most words with a sentence, rarer words counting for more. */
@@ -191,33 +186,6 @@ function usageFacts(root: string, slug: string, entries: JournalEntry[]): string
   ].join('\n')
 }
 
-async function fetchProject(id: string, local: boolean): Promise<unknown> {
-  const target = cmsTarget({ local })
-  if (typeof target === 'string') throw new Error(target)
-  const response = await fetch(`${target.server}/api/mcp`, {
-    body: JSON.stringify({
-      id: 1,
-      jsonrpc: '2.0',
-      method: 'tools/call',
-      params: { arguments: { draft: true, id: Number(id) }, name: 'findLabProjects' },
-    }),
-    headers: {
-      Accept: 'application/json, text/event-stream',
-      Authorization: `Bearer ${target.key}`,
-      'Content-Type': 'application/json',
-    },
-    method: 'POST',
-  })
-  if (!response.ok) throw new Error(`${target.server} answered ${response.status}.`)
-  const body = await response.text()
-  const data = body.startsWith('{') ? body : (body.match(/^data: (.*)$/m)?.[1] ?? '')
-  const text: string | undefined = JSON.parse(data).result?.content?.[0]?.text
-  const start = text?.indexOf('{') ?? -1
-  if (!text || start === -1) throw new Error(`No Lab Project ${id} on ${target.server}: ${text}`)
-  // The tool answers with a line of words, the document, then sometimes a fence.
-  return JSON.parse(text.slice(start).replace(/\n```\s*$/, ''))
-}
-
 async function main(): Promise<void> {
   const args = process.argv.slice(2)
   const option = (name: string) => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined)
@@ -233,7 +201,7 @@ async function main(): Promise<void> {
 
   const loaded: unknown = file
     ? JSON.parse(readFileSync(file, 'utf8'))
-    : await fetchProject(project as string, args.includes('--local'))
+    : await fetchDocument('findLabProjects', project as string, { local: args.includes('--local') })
   const document = ((loaded as { docs?: unknown[] }).docs?.[0] ?? loaded) as Record<
     string,
     StorySection | undefined
@@ -270,8 +238,8 @@ async function main(): Promise<void> {
   ]
   const evidence = record.map((text) => ({ text, words: wordsOf(text) }))
 
-  // Code first: exact, free, and nothing leaves the machine.
-  const dashes = strings(document).filter(({ text }) => text.includes(EM_DASH))
+  // Code first: exact, free, and nothing leaves the machine. Em dashes and
+  // banned phrases are the voice check's, below.
   const known = new Set(numbersIn(`${record.join('\n')}\n${commits}`))
   const strangers = sentences.flatMap((sentence) => {
     const missing = numbersIn(sentence.text).filter((number) => !known.has(number))
@@ -289,6 +257,9 @@ async function main(): Promise<void> {
 
   let inputTokens = 0
   let requests = 0
+  const passages = passagesOf(document)
+  const voiceCachePath = join(out, 'voice.json')
+  const voiceCache = loadVoiceCache(voiceCachePath)
   const stateOf = (sentence: Sentence) => ({
     claim: clip(sentence.text),
     record: evidenceFor(sentence.text, evidence).map(clip),
@@ -322,6 +293,10 @@ async function main(): Promise<void> {
       }),
     )
     writeFileSync(cachePath, `${JSON.stringify(cache, null, 2)}\n`)
+    const voiceUsage = await judgeVoice(passages, voiceCache, jev)
+    saveVoiceCache(voiceCachePath, voiceCache)
+    inputTokens += voiceUsage.inputTokens
+    requests += voiceUsage.requests
   } else {
     console.error(`${ASK_JUDGE_KEY_VAR} is not set: only the code checks ran.`)
   }
@@ -340,14 +315,11 @@ async function main(): Promise<void> {
   const line = ({ sentence, answer }: (typeof judged)[number]) =>
     `- ${sentence.where} | ${answer?.confidence.toFixed(2) ?? '-'} | ${sentence.text}`
 
+  const voice = voiceReport(passages, voiceCache)
   const report = [
     `# Draft check: ${journal.title}`,
     '',
     `${sentences.length} sentences from ${file ?? `Lab Project ${project}`}, against ${entries.length} journal entries and the usage files. Judged by ${ASK_JUDGE_MODEL}. A listed sentence is one to read against the journal, not a proven error: the record may say it in a session's prompts or in a commit this check does not read.`,
-    '',
-    `## Em dashes (${dashes.length})`,
-    '',
-    ...dashes.map(({ path, text }) => `- ${path} | ${text.slice(0, 120)}`),
     '',
     `## Numbers the record does not hold (${strangers.length})`,
     '',
@@ -370,6 +342,11 @@ async function main(): Promise<void> {
     ...unsure.map(line),
     ...(unjudged.length > 0 ? ['', `Unjudged sentences: ${unjudged.length}.`] : []),
     '',
+    '## Voice',
+    '',
+    `${passages.length} passages against docs/editorial/voice.md.`,
+    '',
+    ...voice.lines,
   ].join('\n')
 
   writeFileSync(join(out, 'verify.md'), report)
@@ -381,7 +358,7 @@ async function main(): Promise<void> {
   }
   console.log(join(out, 'verify.md'))
   console.log(
-    `${sentences.length} sentences. Em dashes ${dashes.length}, unknown numbers ${strangers.length}, contradicted ${contradicted.length}, not in the record ${unsupported.length}, unsure ${unsure.length}. Jev: ${requests} requests, ${inputTokens} input tokens.`,
+    `${sentences.length} sentences. Unknown numbers ${strangers.length}, contradicted ${contradicted.length}, not in the record ${unsupported.length}, unsure ${unsure.length}. Voice: refused ${voice.counts.refused}, listed ${voice.counts.listed}, generic ${voice.counts.generic}, inflated ${voice.counts.inflated}, formulaic ${voice.counts.formulaic}, punchlines ${voice.counts.punchlines} of ${voice.counts.paragraphs}. Jev: ${requests} requests, ${inputTokens} input tokens.`,
   )
 }
 

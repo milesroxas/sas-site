@@ -19,9 +19,12 @@ import { markdownInputFields } from '@/fields/markdownInput'
  * in order. `body` is the copy under `Source: Custom` and the website-only
  * override otherwise, exactly as on every other story-capable block.
  *
- * `heading` is the editor's own and never falls back to the story record: a
- * beat is usually opened by a Prose Standard heading that already prints the
- * beat's heading, and a second copy under it would repeat it.
+ * A beat's heading prints from the story record by default, one level under
+ * the Section's Prose Standard heading; `heading` here is the page's override.
+ * A record heading that only restates the Prose heading above it is not
+ * printed: code hides an exact repeat, and Jev decides paraphrases and the
+ * level at save time (`plugins/story-headings`), stored in `headingAuto`.
+ * The rules: `shared/story-headings.ts`.
  *
  * `variant` is the type size and nothing else: the measure, the column, and
  * the band rhythm are the same at every size.
@@ -48,7 +51,7 @@ export const StoryBeats: Block = {
           admin: {
             width: '50%',
             description:
-              'Optional heading above the copy. Never taken from the story record: a Prose heading opening the beat already prints it.',
+              "Override of the beat's own heading from the story record. Leave empty to print the record's heading one level under this Section's Prose heading (hidden when it only restates it).",
           },
         },
         // A beat sits under the Prose heading of its Section, hence h3.
@@ -57,11 +60,19 @@ export const StoryBeats: Block = {
           admin: {
             condition: (_, siblingData) => Boolean(siblingData?.heading),
             description:
-              'Outline level and type size, on the same scale as a Prose Standard heading.',
+              'Outline level and type size of the override, on the same scale as a Prose Standard heading.',
             width: '50%',
           },
         }),
       ],
+    },
+    // Written by `plugins/story-headings` on every save and never taken from
+    // the request: per beat key, whether its record heading prints and at what
+    // level, with a hash of what was judged (`shared/story-headings.ts`).
+    {
+      name: 'headingAuto',
+      type: 'json',
+      admin: { hidden: true },
     },
     ...markdownInputFields('body'),
     {

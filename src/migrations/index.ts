@@ -111,6 +111,7 @@ import * as migration_20260920_232046_index_light_leak from './20260920_232046_i
 import * as migration_20260920_235043_lab_index_banner from './20260920_235043_lab_index_banner';
 import * as migration_20260921_153357_ask_case_study_handoff from './20260921_153357_ask_case_study_handoff';
 import * as migration_20260921_225556_story_beats_heading from './20260921_225556_story_beats_heading';
+import * as migration_20260922_015446_story_beats_heading_auto from './20260922_015446_story_beats_heading_auto';
 
 export const migrations = [
   {
@@ -676,6 +677,11 @@ export const migrations = [
   {
     up: migration_20260921_225556_story_beats_heading.up,
     down: migration_20260921_225556_story_beats_heading.down,
-    name: '20260921_225556_story_beats_heading'
+    name: '20260921_225556_story_beats_heading',
+  },
+  {
+    up: migration_20260922_015446_story_beats_heading_auto.up,
+    down: migration_20260922_015446_story_beats_heading_auto.down,
+    name: '20260922_015446_story_beats_heading_auto'
   },
 ];

@@ -13,6 +13,7 @@ The sas-cms server's instructions are the ground rules. They arrive with every M
 
 - **Specs say what, never where.** No coordinates, colors, sizes or styling in a spec: those keys do not exist and are refused. If a figure needs something the spec cannot say, it is a bespoke figure (code), so ask.
 - **A `textAlternative` says what the figure shows and the takeaway**, in plain sentences, for someone who cannot see it. It is what search and Ask index.
+- **Every word of copy follows `docs/editorial/voice.md`**: titles, headings, beats, captions, alt text and labels alike. Read it before writing. The server refuses a save that holds an em dash or a phrase the doc bans, by path, the way it refuses a bad figure spec: fix those lines and resend. After drafting, `pnpm editorial:voice --collection <slug> --id <id>` (or `--project <id>` for a Lab Project) lists what code and Jev found against the doc: rewrite each listed passage or say why it stands.
 
 ## Where a piece goes
 
@@ -90,12 +91,11 @@ Never give the heading `storyScope: "beat"` or `"section"` with an empty body: i
 
 - One `storyBeats` block per beat (`storyScope: "beat"`, `storyBeatKey`) when a figure, a listing or media sits between beats. This is the usual case.
 - One `storyBeats` block with `storyScope: "section"` when a story part runs with nothing between its beats.
-- **Beat headings.** A `storyBeats` block prints a heading only when you write one: it never takes the beat's `heading` from the record. Use it for a later beat in a Section that needs a signpost but does not warrant a new Section (for example the beat after a figure, when it turns to a new step of the same idea). Write the text yourself; the beat's `heading` on the record is a good source.
-  - Leave it unset on the first beat of a Section: the Prose heading above it already names that beat, and a second heading would repeat it.
-  - Leave it unset with `storyScope: "section"`: one heading over a whole story part is the Prose heading's job.
-  - A Section whose beats all need headings is really several ideas: split it into Sections, each with its own Prose heading.
-  - `headingLevel` is one step below the Section's Prose heading: leave it unset (default `h3`) under an `h2` opener, send `h4` under an `h3` opener. Never the same level as the opener or higher. The sizes come from the same scale as the Prose heading, so the step shows in the type.
-  - If the tool schema has no `heading` on `storyBeats`, the server predates it: leave the beat unheaded and tell the user.
+- **Beat headings print from the record.** A `storyBeats` block prints each beat's `heading` from the Lab Project by itself, one level under the Section's Prose heading (`h3` under an `h2` opener, `h4` under an `h3`), and the Section's Prose Standard heading stays the opener above them. A beat heading that only restates the Prose heading is not printed: an exact repeat is hidden by code, a paraphrase and the level (subsection or short passage) are judged by Jev when the page is saved and stored on the block (`headingAuto`, never written by hand). So the first beat of a Section, whose heading the Prose heading was written from, prints no second heading, and the beats after it print theirs.
+  - Give every beat that opens a new step a `heading` on the record. A beat with no record heading prints none.
+  - The block's `heading` is an override, for the rare page that needs different words: it replaces the record heading under beat scope, and opens the run under section scope. `headingLevel` goes with it, one step below the opener, never the same level or higher. Leave both empty otherwise.
+  - Under `storyScope: "section"` every beat prints its own heading in the run, after the overview.
+  - If the tool schema has no `heading` on `storyBeats`, the server predates it: tell the user.
 - Do not write `body` or `markdown` on a `storyBeats` block to change what the page says: that is a website-only override and the record stays wrong. Fix the beat on the Lab Project. `source: "custom"` with `markdown` is for a passage that is page-only by nature and needs nothing `richText` adds.
 
 ```json

@@ -1,3 +1,4 @@
+import { VOICE_PROMPT_LINE } from '@/features/editorial/voice'
 import type { AskHandoffState } from './handoff'
 import type { AskJourneyContext } from './journeyPages'
 
@@ -14,7 +15,8 @@ import type { AskJourneyContext } from './journeyPages'
  * model was asked, and code appends the card. The model only writes.
  */
 
-const VOICE = 'Speak as the studio ("we") in a warm, direct, plain voice.'
+// The house voice (docs/editorial/voice.md), in the one line a system prompt has room for.
+const VOICE = `Speak as the studio ("we") in a warm, direct, plain voice. ${VOICE_PROMPT_LINE}`
 
 const REACHING_A_PERSON = `Reaching a person:
 - The handoff tool offers the visitor a way to send their question to the team: a line under your reply and a button that opens a name and email form, filed to our inbox, with our reply time on it. Use it only when a person is the best next step. Most answers need no offer.

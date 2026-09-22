@@ -17,6 +17,7 @@
     "migrate:status": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/migrate-status-prod.ts",
     "check:migrations": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/check-migration-enum-safety.ts",
     "cms:upload": "tsx --no-deprecation --env-file=.env scripts/cms-upload.ts",
+    "editorial:voice": "tsx --no-deprecation --env-file=.env scripts/editorial/voice-check.ts",
     "lab:journal": "tsx --no-deprecation scripts/lab-journal/cli.ts",
     "lab:journal:digest": "tsx --no-deprecation --env-file=.env scripts/lab-journal/digest.ts",
     "lab:journal:verify": "tsx --no-deprecation --env-file=.env scripts/lab-journal/verify.ts",

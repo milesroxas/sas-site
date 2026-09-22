@@ -22,7 +22,8 @@ Each folder beside this file is one feature's journal.
 | `~/.claude/lab-journals/sas-site/<slug>/digest.md` | Jev's brief, which quotes prompts | **No** |
 | `~/.claude/lab-journals/sas-site/<slug>/digest.json` | Jev's raw judgments, so a rerun only sends what is new | **No** |
 | `~/.claude/lab-journals/sas-site/<slug>/media/` | Screenshots, until a person or the writer has looked at each and uploaded it | **No** |
-| `~/.claude/lab-journals/sas-site/<slug>/verify.md` | The draft check: what the Lab Project says that the record does not | **No** |
+| `~/.claude/lab-journals/sas-site/<slug>/verify.md` | The draft check: what the Lab Project says that the record does not, and what reads off the house voice | **No** |
+| `~/.claude/lab-journals/sas-site/_editorial/` | The voice check's cache and reports for documents outside a journal | **No** |
 
 ## One-time setup, per person and per machine
 
@@ -135,7 +136,7 @@ Do these in order, in one session on the feature's branch, **on the machine that
    pnpm lab:journal:verify <slug> --project <lab project id>
    ```
 
-   Code lists every em dash and every number the record does not hold. Jev then holds each sentence against the journal entries nearest to it: supported, contradicted, or not in the record. It costs a fraction of a cent and writes `verify.md` beside the digest. You can run it yourself after any edit.
+   Code lists every number the record does not hold. Jev then holds each sentence against the journal entries nearest to it: supported, contradicted, or not in the record. The report ends with a Voice section: the draft against [the house voice](../editorial/voice.md), em dashes and banned phrases first (the server refuses those on an agent's save), then the passages Jev read as generic, inflated or formulaic. It costs about a cent for a long draft and writes `verify.md` beside the digest. You can run it yourself after any edit, and `pnpm editorial:voice --project <id>` runs the voice part alone on any Lab Project, or any other document with `--collection <slug> --id <id>`.
 
    Everything is saved as a draft. It reports the ids, the figure counts, every media id and what was blurred, every prompt it quoted, what the check still lists, and every claim it left out because the record did not support it.
 
@@ -143,6 +144,7 @@ Do these in order, in one session on the feature's branch, **on the machine that
 
 6. **Review, as a person.** In the admin, open the Lab Project, then the Lab Page in live preview.
    - Every number traces to the journal. An estimate says "estimate".
+   - The copy reads like us: [voice.md](../editorial/voice.md). The Voice section of `verify.md` says what the agent kept and why.
    - Every quoted prompt is one you are happy to publish, exactly as typed.
    - No client confidences, no personal details, no secrets.
    - Every screenshot: nothing private showing, the blur covers what it should. Agent uploads are public on arrival.

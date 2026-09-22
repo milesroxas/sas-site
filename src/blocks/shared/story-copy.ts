@@ -8,6 +8,7 @@ import {
   type StorySource,
 } from '@/collections/story/narrative'
 import { hasRichTextContent } from '@/utilities/hasRichTextContent'
+import { type StoryOpener, type StoryPassage, storyBeatPassages } from './story-headings'
 
 /**
  * How a story-capable block's copy resolves against the canonical story
@@ -56,7 +57,15 @@ export type StoryCopyBlock =
       statement?: StoryBody | null
     })
   | (StoryRef & { blockType: 'featureImageStatement'; caption?: StoryBody | null })
-  | (StoryRef & { blockType: 'storyBeats'; body?: StoryBody | null })
+  | (StoryRef & {
+      blockType: 'storyBeats'
+      body?: StoryBody | null
+      heading?: string | null
+      headingAuto?: unknown
+      headingLevel?: 'h2' | 'h3' | 'h4' | null
+      /** Filled by resolution: the run the component renders (`story-headings.ts`). */
+      passages?: StoryPassage[]
+    })
   | {
       blockType: 'featureTabs'
       tabs?: Array<StoryRef & { description?: StoryBody | null; heading?: string | null }> | null
@@ -85,7 +94,11 @@ const storyBody = (record: StoryRecord, ref: StoryRef, written: StoryBody | null
 const storyHeading = (record: StoryRecord, ref: StoryRef, written: string | null | undefined) =>
   written || resolveStoryHeading(record, ref.source, ref.storyBeatKey, ref.storyScope) || ''
 
-const resolveCopy = (block: StoryCopyBlock, record: StoryRecord): StoryCopyBlock => {
+const resolveCopy = (
+  block: StoryCopyBlock,
+  record: StoryRecord,
+  opener: StoryOpener | null,
+): StoryCopyBlock => {
   switch (block.blockType) {
     case 'caseStudyTransition':
     case 'featureHeadingOffset':
@@ -103,11 +116,17 @@ const resolveCopy = (block: StoryCopyBlock, record: StoryRecord): StoryCopyBlock
       }
     case 'featureImageStatement':
       return { ...block, caption: storyBody(record, block, block.caption) }
-    // The reading column resolves the beat's copy and nothing else. Its
-    // heading is only ever the editor's own: a beat is never introduced by the
-    // bare name of its section, nor by the beat heading its Prose opener prints.
+    // The reading column: the beat's copy, and the beat's own heading from the
+    // record under the Section's Prose opener, unless the page overrides it
+    // (`story-headings.ts`). Written body copy still wins over the story.
     case 'storyBeats':
-      return { ...block, body: storyBody(record, block, block.body) }
+      return {
+        ...block,
+        body: storyBody(record, block, block.body),
+        passages: hasRichTextContent(block.body)
+          ? storyBeatPassages({ ...block, source: 'custom' }, record, opener)
+          : storyBeatPassages(block, record, opener),
+      }
     case 'featureTabs':
       return {
         ...block,
@@ -150,7 +169,9 @@ export type ResolvedStoryCopy<T> = T extends {
 export const resolveStoryBlockCopy = <T extends StoryCopyBlock>(
   block: T,
   record: StoryRecord,
-): ResolvedStoryCopy<T> => resolveCopy(block, record) as ResolvedStoryCopy<T>
+  /** The Section's Prose opener, for a Story beats block's heading level (`sectionOpener`). */
+  opener: StoryOpener | null = null,
+): ResolvedStoryCopy<T> => resolveCopy(block, record, opener) as ResolvedStoryCopy<T>
 
 /** The legacy Narrative "Story section" block: custom copy, an override, or the story. */
 export const resolveStorySectionCopy = (

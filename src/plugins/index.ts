@@ -14,7 +14,9 @@ import { aeoPlugin } from '@/plugins/aeo'
 import { askIndexPlugin } from '@/plugins/ask-index'
 import { figuresPlugin } from '@/plugins/figures'
 import { formBuilder } from '@/plugins/form-builder'
+import { houseStylePlugin } from '@/plugins/house-style'
 import { mcp } from '@/plugins/mcp'
+import { storyHeadingsPlugin } from '@/plugins/story-headings'
 import { streakStudioPlugin } from '@/plugins/streak-studio'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { searchFields } from '@/search/fieldOverrides'
@@ -38,6 +40,8 @@ const generateURL: GenerateURL<SeoDoc> = ({ collectionConfig, doc }) => {
 export const plugins: Plugin[] = [
   streakStudioPlugin(),
   figuresPlugin(),
+  houseStylePlugin(),
+  storyHeadingsPlugin(),
   redirectsPlugin({
     collections: ['pages', 'posts', 'work-pages', 'lab-pages', 'expertise-pages', 'audience-pages'],
     overrides: {

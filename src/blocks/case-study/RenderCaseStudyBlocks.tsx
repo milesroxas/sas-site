@@ -21,6 +21,7 @@ import { renderContentBlock, sectionChildComponents } from '@/blocks/shared/cont
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { resolveStoryBlockCopy, resolveStorySectionCopy } from '@/blocks/shared/story-copy'
+import { type StoryOpener, sectionOpener } from '@/blocks/shared/story-headings'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
 import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
 import { StoryBeatsBlock } from '@/blocks/story-beats/Component'
@@ -399,14 +400,17 @@ type WorkLayoutBlock = NonNullable<WorkPage['layout']>[number] | WorkSectionChil
  */
 const renderWorkBlock = (
   block: WorkLayoutBlock,
-  ctx: { bare?: boolean; page: WorkPage; study: CaseStudy },
+  ctx: { bare?: boolean; opener?: StoryOpener | null; page: WorkPage; study: CaseStudy },
 ): ReactNode => {
-  const { bare, page, study } = ctx
+  const { bare, opener = null, page, study } = ctx
   switch (block.blockType) {
-    case 'section':
+    case 'section': {
       // The Section owns the band; children render bare inside it with their
       // usual entrances. The band itself never animates: a second entrance
-      // on the shell would double every child's motion.
+      // on the shell would double every child's motion. Its Prose heading is
+      // the opener every Story beats child sets its beat headings under.
+      const children = block.blocks ?? []
+      const childCtx = { ...ctx, bare: true, opener: sectionOpener(children, study) }
       return (
         <SectionBand
           customize={block.customize}
@@ -415,9 +419,10 @@ const renderWorkBlock = (
           stack={block.stack}
           theme={block.theme}
         >
-          {(block.blocks ?? []).map((child) => renderWorkBlock(child, { ...ctx, bare: true }))}
+          {children.map((child) => renderWorkBlock(child, childCtx))}
         </SectionBand>
       )
+    }
     case 'caseStudyStorySection':
       return <StorySection block={block} key={block.id} study={study} />
     case 'splitContentNarrow':
@@ -495,7 +500,7 @@ const renderWorkBlock = (
     // has on a lab page.
     case 'storyBeats':
       return renderContentBlock(
-        resolveStoryBlockCopy(block, study),
+        resolveStoryBlockCopy(block, study, opener),
         block.id ?? block.blockType,
         Boolean(bare),
         workContentComponents,

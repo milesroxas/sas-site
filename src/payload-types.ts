@@ -2406,13 +2406,22 @@ export interface WorkStoryBeatsBlock {
    */
   showOverrides?: boolean | null;
   /**
-   * Optional heading above the copy. Never taken from the story record: a Prose heading opening the beat already prints it.
+   * Override of the beat's own heading from the story record. Leave empty to print the record's heading one level under this Section's Prose heading (hidden when it only restates it).
    */
   heading?: string | null;
   /**
-   * Outline level and type size, on the same scale as a Prose Standard heading.
+   * Outline level and type size of the override, on the same scale as a Prose Standard heading.
    */
   headingLevel?: ('h2' | 'h3' | 'h4') | null;
+  headingAuto?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * Write-only. Markdown for `body`: converted to rich text on save and never stored. Syntax the field cannot hold is refused with what to use instead.
    */
@@ -8507,13 +8516,22 @@ export interface LabStoryBeatsBlock {
    */
   showOverrides?: boolean | null;
   /**
-   * Optional heading above the copy. Never taken from the story record: a Prose heading opening the beat already prints it.
+   * Override of the beat's own heading from the story record. Leave empty to print the record's heading one level under this Section's Prose heading (hidden when it only restates it).
    */
   heading?: string | null;
   /**
-   * Outline level and type size, on the same scale as a Prose Standard heading.
+   * Outline level and type size of the override, on the same scale as a Prose Standard heading.
    */
   headingLevel?: ('h2' | 'h3' | 'h4') | null;
+  headingAuto?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * Write-only. Markdown for `body`: converted to rich text on save and never stored. Syntax the field cannot hold is refused with what to use instead.
    */
@@ -11288,6 +11306,7 @@ export interface WorkStoryBeatsBlockSelect<T extends boolean = true> {
   showOverrides?: T;
   heading?: T;
   headingLevel?: T;
+  headingAuto?: T;
   markdown?: T;
   replace?: T;
   body?: T;
@@ -11831,6 +11850,7 @@ export interface LabStoryBeatsBlockSelect<T extends boolean = true> {
   showOverrides?: T;
   heading?: T;
   headingLevel?: T;
+  headingAuto?: T;
   markdown?: T;
   replace?: T;
   body?: T;

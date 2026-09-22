@@ -75,3 +75,35 @@ export const EntireSection: Story = {
 export const Dark: Story = {
   args: { theme: 'dark' },
 }
+
+/**
+ * A resolved run, as the renderer hands it over (`shared/story-headings.ts`):
+ * the overview under the page's override, then each beat with the heading it
+ * carries on the record, one step under the Section's Prose opener. The first
+ * beat's heading restates the opener and so prints nothing.
+ */
+export const RecordHeadings: Story = {
+  args: {
+    passages: [
+      {
+        body: section,
+        heading: 'Two layers: a Content Hub and a website',
+        headingLevel: 'h3',
+        key: 'overview',
+      },
+      { body: beat, headingLevel: 'h3', key: 'a-content-hub-and-a-website' },
+      {
+        body: beat,
+        heading: 'Write it once, use it everywhere',
+        headingLevel: 'h3',
+        key: 'write-once',
+      },
+      {
+        body: beat,
+        heading: 'Nothing leaves the record',
+        headingLevel: 'h4',
+        key: 'nothing-leaves',
+      },
+    ],
+  },
+}
