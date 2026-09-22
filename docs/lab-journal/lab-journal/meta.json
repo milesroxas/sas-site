@@ -3,8 +3,7 @@
   "title": "Lab journal: documenting a feature as it is built",
   "status": "active",
   "branches": [
-    "lab-journal-workspace-setup",
-    "lab-journal"
+    "docs/lab-journal-writeup"
   ],
   "startedAt": "2026-09-21T16:33:08.762Z"
 }
