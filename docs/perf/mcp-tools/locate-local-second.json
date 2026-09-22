@@ -1,0 +1,479 @@
+{
+  "label": "local-second",
+  "at": "2026-09-22T01:45:52.657Z",
+  "server": "http://localhost:55030",
+  "hits": 10,
+  "results": [
+    {
+      "id": "privacy-policy",
+      "task": "In the Privacy Policy, reword one paragraph of the policy body without changing its meaning.",
+      "expected": {
+        "path": "layout.0.blocks.0",
+        "id": "6aa55f84f54c660004411385",
+        "blockType": "richText"
+      },
+      "verdict": "found",
+      "hit": true,
+      "rank": 1,
+      "exists": 0.82,
+      "confidence": 0.97,
+      "candidates": [
+        {
+          "path": "layout.0.blocks.0",
+          "id": "6aa55f84f54c660004411385",
+          "blockType": "richText",
+          "text": "**Effective date: September 19, 2026. Last updated: September 19, 2026.** Suits & Sandals LLC (\"Suits & Sandals\", \"we\", \"us\", \"our\") operates suits-sandals.com. This policy explains what personal info",
+          "probability": 0.99
+        },
+        {
+          "path": "layout.0",
+          "id": "6aa55f84f54c660004411386",
+          "blockType": "section",
+          "blockName": "Privacy policy body",
+          "children": 1,
+          "probability": 0.01
+        }
+      ],
+      "inputTokens": 589,
+      "ms": 395,
+      "error": null
+    },
+    {
+      "id": "about-us",
+      "task": "On the About Us page, reword the content block.",
+      "expected": {
+        "path": "layout.0",
+        "id": "6a8e409cdfd2e982536f2fac",
+        "blockType": "content"
+      },
+      "verdict": "found",
+      "hit": true,
+      "rank": 1,
+      "exists": 0.58,
+      "confidence": 1,
+      "candidates": [
+        {
+          "path": "layout.0",
+          "id": "6a8e409cdfd2e982536f2fac",
+          "blockType": "content",
+          "text": "### Born in Brooklyn. Located Everywhere. Since 2011, Suits & Sandals has helped growth-stage businesses, startups, and mission-driven organizations clarify their positioning, expand their brand ident",
+          "probability": 1
+        }
+      ],
+      "inputTokens": 522,
+      "ms": 169,
+      "error": null
+    },
+    {
+      "id": "work-adacore",
+      "task": "On the AdaCore work page, reword the first feature image statement.",
+      "expected": {
+        "path": "layout.2",
+        "id": "6a9709b637c2a73dfeb6e063",
+        "blockType": "featureImageStatement"
+      },
+      "verdict": "found",
+      "hit": true,
+      "rank": 1,
+      "exists": 0.93,
+      "confidence": 0.98,
+      "candidates": [
+        {
+          "path": "layout.2",
+          "id": "6a9709b637c2a73dfeb6e063",
+          "blockType": "featureImageStatement",
+          "text": "The redesign provided an opportunity to refine how AdaCore tells its story. We developed a clearer narrative framework around their solutions, aligning the experience with their brand evolution and re",
+          "probability": 0.98
+        },
+        {
+          "path": "layout.5",
+          "id": "6a970ae337c2a73dfeb6e069",
+          "blockType": "featureImageStatement",
+          "text": "We partnered with AdaCore to rethink the website from a UX-first perspective, using information architecture and content strategy as the foundation for the redesign.",
+          "probability": 0.02
+        },
+        {
+          "path": "layout.0",
+          "id": "6a9706d41e11a8cfb20f5ae6",
+          "blockType": "fullMedia",
+          "probability": 0
+        },
+        {
+          "path": "layout.1",
+          "id": "6a97087b37c2a73dfeb6e061",
+          "blockType": "caseStudyStorySection",
+          "blockName": "Project Brief",
+          "text": "Project Brief AdaCore’s existing website no longer reflected the breadth of its platform or the evolution of its brand. The structure made it difficult for users to understand the relationship between",
+          "probability": 0
+        },
+        {
+          "path": "layout.3",
+          "id": "6a9709f437c2a73dfeb6e064",
+          "blockType": "fullMedia",
+          "text": "The new structure was crafted to support a diverse audience that includes highly technical engineers as well as non-technical decision makers, making it easier for users at every level of familiarity ",
+          "probability": 0
+        }
+      ],
+      "inputTokens": 796,
+      "ms": 171,
+      "error": null
+    },
+    {
+      "id": "lab-shader-studio",
+      "task": "On the shader studio lab page, add one sentence to the first rich text block.",
+      "expected": {
+        "path": "layout.2.blocks.2",
+        "id": "6aafe4f43d6b3000041a39bc",
+        "blockType": "richText"
+      },
+      "verdict": "found",
+      "hit": true,
+      "rank": 1,
+      "exists": 0.6,
+      "confidence": 0.9,
+      "candidates": [
+        {
+          "path": "layout.2.blocks.2",
+          "id": "6aafe4f43d6b3000041a39bc",
+          "blockType": "richText",
+          "text": "### Position is a pure function of time In the default drift motion there is no simulation state at all. A streak sits wherever the clock and its own hashes say it should sit.",
+          "probability": 0.91
+        },
+        {
+          "path": "layout.2",
+          "id": "6aafe4f43d6b3000041a39c0",
+          "blockType": "section",
+          "blockName": "One mesh, thousands of instances",
+          "children": 6,
+          "probability": 0.04
+        },
+        {
+          "path": "layout.2.blocks.4",
+          "id": "6aafe4f43d6b3000041a39be",
+          "blockType": "richText",
+          "text": "Three details hide in those two lines. The wrap span is one streak length wider than the frame on each side, so nothing ever pops at an edge. Each rebirth jumps the streak along its row by a golden ra",
+          "probability": 0.02
+        },
+        {
+          "path": "layout.7.blocks.0",
+          "id": "6aafe4f43d6b3000041a39d6",
+          "blockType": "richTransition",
+          "text": "The reframe A shader is just a media file",
+          "probability": 0.02
+        },
+        {
+          "path": "layout.3.blocks.2",
+          "id": "6aafe4f43d6b3000041a39c3",
+          "blockType": "richText",
+          "text": "Six noise formulas sit behind a single integer uniform: value, simplex, fbm, ridged, curl and gradient. It is a uniform branch and not a compile time switch, so every vertex in the draw takes the same",
+          "probability": 0.01
+        }
+      ],
+      "inputTokens": 2450,
+      "ms": 169,
+      "error": null
+    },
+    {
+      "id": "expertise-web",
+      "task": "On the Website Strategy expertise page, reword the first rich text block.",
+      "expected": {
+        "path": "layout.0.blocks.0",
+        "id": "6aa0341d39ac080004a0d094",
+        "blockType": "richText"
+      },
+      "verdict": "found",
+      "hit": true,
+      "rank": 1,
+      "exists": 0.88,
+      "confidence": 0.98,
+      "candidates": [
+        {
+          "path": "layout.0.blocks.0",
+          "id": "6aa0341d39ac080004a0d094",
+          "blockType": "richText",
+          "blockName": "What it is",
+          "text": "### What does a B2B web design agency do? We connect communication strategy, information architecture, UX, visual design, content systems, and development to create websites that explain the business ",
+          "probability": 0.98
+        },
+        {
+          "path": "layout.0.blocks.3",
+          "id": "6aa0341d39ac080004a0d0a1",
+          "blockType": "richText",
+          "blockName": "Five systems",
+          "text": "## The strongest websites connect five systems. A successful website is not a single design artifact. It is the point at which several systems need to work together. The brand system The website shoul",
+          "probability": 0.01
+        },
+        {
+          "path": "layout.0.blocks.4",
+          "id": "6aa0341d39ac080004a0d0a2",
+          "blockType": "richText",
+          "blockName": "Strategy first",
+          "text": "### Website strategy determines what the site needs to do. Before creating layouts, we establish the role the website should play within the organization. Questions we answer first - Which audiences n",
+          "probability": 0.01
+        },
+        {
+          "path": "layout.0",
+          "id": "6aa0341d39ac080004a0d0a3",
+          "blockType": "section",
+          "blockName": "Main",
+          "children": 5,
+          "probability": 0
+        },
+        {
+          "path": "layout.0.blocks.1",
+          "id": "6aa0341d39ac080004a0d095",
+          "blockType": "featureHeadingOffset",
+          "blockName": "Beyond appearance",
+          "text": "The problem A website redesign cannot begin and end with appearance. Many website problems first become visible through design. The site feels dated. Pages look inconsistent. Navigation has become cro",
+          "probability": 0
+        }
+      ],
+      "inputTokens": 1376,
+      "ms": 180,
+      "error": null
+    },
+    {
+      "id": "home",
+      "task": "On the homepage, reword the copy of one audience tab.",
+      "expected": {
+        "path": "layout.2",
+        "id": "6a7ce690b883890004cabe5d",
+        "blockType": "audienceTabs"
+      },
+      "verdict": "found",
+      "hit": true,
+      "rank": 1,
+      "exists": 0.92,
+      "confidence": 1,
+      "candidates": [
+        {
+          "path": "layout.2",
+          "id": "6a7ce690b883890004cabe5d",
+          "blockType": "audienceTabs",
+          "blockName": "Audience Tabs",
+          "text": "Creative support for complex brands and the teams behind them. Executives & Founders Build a brand for the business you’re becoming. For founders, CEOs, and leadership teams, brand problems are often ",
+          "probability": 1
+        },
+        {
+          "path": "layout.0",
+          "id": "6a7e0f8be36efb1ff15696a3",
+          "blockType": "industryWork",
+          "blockName": "Featured Work",
+          "text": "Our work in makes technical capability easier for customers, partners, and internal teams to understand. brings clarity and consistency to complex products, content, and experiences. gives products a ",
+          "probability": 0
+        },
+        {
+          "path": "layout.1",
+          "id": "6a74a11b8201f61434c18ddc",
+          "blockType": "testimonialsMarquee",
+          "text": "Trusted for the work. Valued for the partnership.",
+          "probability": 0
+        }
+      ],
+      "inputTokens": 620,
+      "ms": 165,
+      "error": null
+    },
+    {
+      "id": "work-adacore-none",
+      "task": "On the AdaCore work page, update the prices in the pricing table.",
+      "expected": "none",
+      "verdict": "none",
+      "hit": true,
+      "rank": 0,
+      "exists": 0.02,
+      "confidence": 0.26,
+      "candidates": [
+        {
+          "path": "layout.7",
+          "id": "6a970d1f37c2a73dfeb6e06f",
+          "blockType": "featuredWork",
+          "text": "Featured Work",
+          "probability": 0.33999999999999997
+        },
+        {
+          "path": "layout.0",
+          "id": "6a9706d41e11a8cfb20f5ae6",
+          "blockType": "fullMedia",
+          "probability": 0.26
+        },
+        {
+          "path": "layout.1",
+          "id": "6a97087b37c2a73dfeb6e061",
+          "blockType": "caseStudyStorySection",
+          "blockName": "Project Brief",
+          "text": "Project Brief AdaCore’s existing website no longer reflected the breadth of its platform or the evolution of its brand. The structure made it difficult for users to understand the relationship between",
+          "probability": 0.18
+        },
+        {
+          "path": "layout.4",
+          "id": "6a970b9137c2a73dfeb6e06b",
+          "blockType": "fullMedia",
+          "probability": 0.06
+        },
+        {
+          "path": "layout.6",
+          "id": "6a970bce37c2a73dfeb6e06c",
+          "blockType": "splitContentNarrow",
+          "text": "Visually, the new design blends industry-specific imagery across avionics, automotive, rail, defense, security, space, and medical with references to the programming languages and engineering workflow",
+          "probability": 0.06
+        }
+      ],
+      "inputTokens": 796,
+      "ms": 193,
+      "error": null
+    },
+    {
+      "id": "home-none",
+      "task": "On the homepage, fix the typo in the FAQ about refunds.",
+      "expected": "none",
+      "verdict": "none",
+      "hit": true,
+      "rank": 0,
+      "exists": 0.02,
+      "confidence": 0.58,
+      "candidates": [
+        {
+          "path": "layout.0",
+          "id": "6a7e0f8be36efb1ff15696a3",
+          "blockType": "industryWork",
+          "blockName": "Featured Work",
+          "text": "Our work in makes technical capability easier for customers, partners, and internal teams to understand. brings clarity and consistency to complex products, content, and experiences. gives products a ",
+          "probability": 0.72
+        },
+        {
+          "path": "layout.2",
+          "id": "6a7ce690b883890004cabe5d",
+          "blockType": "audienceTabs",
+          "blockName": "Audience Tabs",
+          "text": "Creative support for complex brands and the teams behind them. Executives & Founders Build a brand for the business you’re becoming. For founders, CEOs, and leadership teams, brand problems are often ",
+          "probability": 0.24
+        },
+        {
+          "path": "layout.1",
+          "id": "6a74a11b8201f61434c18ddc",
+          "blockType": "testimonialsMarquee",
+          "text": "Trusted for the work. Valued for the partnership.",
+          "probability": 0.04
+        }
+      ],
+      "inputTokens": 620,
+      "ms": 181,
+      "error": null
+    },
+    {
+      "id": "lab-shader-studio-second",
+      "task": "On the shader studio lab page, tighten the second rich text block.",
+      "expected": {
+        "path": "layout.2.blocks.4",
+        "id": "6aafe4f43d6b3000041a39be",
+        "blockType": "richText"
+      },
+      "verdict": "found",
+      "hit": true,
+      "rank": 1,
+      "exists": 0.77,
+      "confidence": 0.96,
+      "candidates": [
+        {
+          "path": "layout.2.blocks.4",
+          "id": "6aafe4f43d6b3000041a39be",
+          "blockType": "richText",
+          "text": "Three details hide in those two lines. The wrap span is one streak length wider than the frame on each side, so nothing ever pops at an edge. Each rebirth jumps the streak along its row by a golden ra",
+          "probability": 0.97
+        },
+        {
+          "path": "layout.3.blocks.2",
+          "id": "6aafe4f43d6b3000041a39c3",
+          "blockType": "richText",
+          "text": "Six noise formulas sit behind a single integer uniform: value, simplex, fbm, ridged, curl and gradient. It is a uniform branch and not a compile time switch, so every vertex in the draw takes the same",
+          "probability": 0.01
+        },
+        {
+          "path": "layout.5.blocks.1",
+          "id": "6aafe4f43d6b3000041a39ce",
+          "blockType": "richText",
+          "text": "The playground gained a Ship as look folder, and its Copy button emitted paste ready source instead of a bag of props. Two blocks of code registered a look: the tuning as deltas against the defaults, ",
+          "probability": 0.01
+        },
+        {
+          "path": "layout.5.blocks.3",
+          "id": "6aafe4f43d6b3000041a39d0",
+          "blockType": "richText",
+          "text": "Posters were a script: boot Storybook, point a browser at each look on a dark and a light ground, write the files, bump a revision so nothing served a stale still. Then stories, a pull request, a depl",
+          "probability": 0.01
+        },
+        {
+          "path": "layout.0",
+          "id": "6aafd427f2ad6ead8be1803d",
+          "blockType": "section",
+          "blockName": "Why a shader at all",
+          "children": 1,
+          "probability": 0
+        }
+      ],
+      "inputTokens": 2444,
+      "ms": 149,
+      "error": null
+    },
+    {
+      "id": "expertise-web-last",
+      "task": "On the Website Strategy expertise page, reword the third rich text block.",
+      "expected": {
+        "path": "layout.0.blocks.4",
+        "id": "6aa0341d39ac080004a0d0a2",
+        "blockType": "richText"
+      },
+      "verdict": "found",
+      "hit": true,
+      "rank": 1,
+      "exists": 0.64,
+      "confidence": 0.86,
+      "candidates": [
+        {
+          "path": "layout.0.blocks.4",
+          "id": "6aa0341d39ac080004a0d0a2",
+          "blockType": "richText",
+          "blockName": "Strategy first",
+          "text": "### Website strategy determines what the site needs to do. Before creating layouts, we establish the role the website should play within the organization. Questions we answer first - Which audiences n",
+          "probability": 0.88
+        },
+        {
+          "path": "layout.0.blocks.3",
+          "id": "6aa0341d39ac080004a0d0a1",
+          "blockType": "richText",
+          "blockName": "Five systems",
+          "text": "## The strongest websites connect five systems. A successful website is not a single design artifact. It is the point at which several systems need to work together. The brand system The website shoul",
+          "probability": 0.12
+        },
+        {
+          "path": "layout.0",
+          "id": "6aa0341d39ac080004a0d0a3",
+          "blockType": "section",
+          "blockName": "Main",
+          "children": 5,
+          "probability": 0
+        },
+        {
+          "path": "layout.0.blocks.0",
+          "id": "6aa0341d39ac080004a0d094",
+          "blockType": "richText",
+          "blockName": "What it is",
+          "text": "### What does a B2B web design agency do? We connect communication strategy, information architecture, UX, visual design, content systems, and development to create websites that explain the business ",
+          "probability": 0
+        },
+        {
+          "path": "layout.0.blocks.1",
+          "id": "6aa0341d39ac080004a0d095",
+          "blockType": "featureHeadingOffset",
+          "blockName": "Beyond appearance",
+          "text": "The problem A website redesign cannot begin and end with appearance. Many website problems first become visible through design. The site feels dated. Pages look inconsistent. Navigation has become cro",
+          "probability": 0
+        }
+      ],
+      "inputTokens": 1376,
+      "ms": 141,
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,182 @@
+{
+  "header": {
+    "label": "baseline",
+    "date": "2026-09-21T23:53:19.700Z",
+    "gitSha": "5406580",
+    "server": "https://www.suits-sandals.com",
+    "instructionsChars": 2022,
+    "blockTools": false
+  },
+  "tools": {
+    "count": 107,
+    "bytes": 1656424,
+    "byVerb": {
+      "update": 828832,
+      "create": 745039,
+      "find": 50992,
+      "delete": 31561
+    },
+    "largest": [
+      {
+        "name": "updateWorkPages",
+        "bytes": 131049
+      },
+      {
+        "name": "createWorkPages",
+        "bytes": 130828
+      },
+      {
+        "name": "updateLabPages",
+        "bytes": 121012
+      },
+      {
+        "name": "createLabPages",
+        "bytes": 120792
+      },
+      {
+        "name": "updatePages",
+        "bytes": 119768
+      },
+      {
+        "name": "createPages",
+        "bytes": 119551
+      },
+      {
+        "name": "updateExpertisePages",
+        "bytes": 108077
+      },
+      {
+        "name": "updateAudiencePages",
+        "bytes": 108061
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "privacy-policy",
+      "collection": "pages",
+      "docId": 8,
+      "title": "Privacy Policy",
+      "blocks": 2,
+      "target": {
+        "path": "layout.0.blocks.0",
+        "id": "6aa55f84f54c660004411385",
+        "blockType": "richText"
+      },
+      "bytes": {
+        "listResult": 58633,
+        "findResult": 31791,
+        "layout": 30396,
+        "block": 30219,
+        "outlineResult": null,
+        "getBlockResult": null
+      },
+      "error": null
+    },
+    {
+      "id": "about-us",
+      "collection": "pages",
+      "docId": 6,
+      "title": "About Us",
+      "blocks": 1,
+      "target": {
+        "path": "layout.0",
+        "id": "6a8e409cdfd2e982536f2fac",
+        "blockType": "content"
+      },
+      "bytes": {
+        "listResult": 58633,
+        "findResult": 3388,
+        "layout": 1844,
+        "block": 1842,
+        "outlineResult": null,
+        "getBlockResult": null
+      },
+      "error": null
+    },
+    {
+      "id": "work-adacore",
+      "collection": "work-pages",
+      "docId": 2,
+      "title": "AdaCore",
+      "blocks": 8,
+      "target": {
+        "path": "layout.2",
+        "id": "6a9709b637c2a73dfeb6e063",
+        "blockType": "featureImageStatement"
+      },
+      "bytes": {
+        "listResult": 27613,
+        "findResult": 9065,
+        "layout": 6602,
+        "block": 980,
+        "outlineResult": null,
+        "getBlockResult": null
+      },
+      "error": null
+    },
+    {
+      "id": "lab-shader-studio",
+      "collection": "lab-pages",
+      "docId": 1,
+      "title": "Building a shader studio in Payload CMS",
+      "blocks": 71,
+      "target": {
+        "path": "layout.2.blocks.3",
+        "id": "6aafe4f43d6b3000041a39bc",
+        "blockType": "richText"
+      },
+      "bytes": {
+        "listResult": 102655,
+        "findResult": 43700,
+        "layout": 42203,
+        "block": 741,
+        "outlineResult": null,
+        "getBlockResult": null
+      },
+      "error": null
+    },
+    {
+      "id": "expertise-web",
+      "collection": "expertise-pages",
+      "docId": 2,
+      "title": "Website Strategy, UX & Development",
+      "blocks": 18,
+      "target": {
+        "path": "layout.0.blocks.0",
+        "id": "6aa0341d39ac080004a0d094",
+        "blockType": "richText"
+      },
+      "bytes": {
+        "listResult": 257407,
+        "findResult": 42944,
+        "layout": 40062,
+        "block": 2665,
+        "outlineResult": null,
+        "getBlockResult": null
+      },
+      "error": null
+    },
+    {
+      "id": "home",
+      "collection": "home",
+      "docId": 1,
+      "title": "Home",
+      "blocks": 3,
+      "target": {
+        "path": "layout.2",
+        "id": "6a7ce690b883890004cabe5d",
+        "blockType": "audienceTabs"
+      },
+      "bytes": {
+        "listResult": null,
+        "findResult": 7559,
+        "layout": 5854,
+        "block": 4351,
+        "outlineResult": null,
+        "getBlockResult": null
+      },
+      "error": null
+    }
+  ]
+}

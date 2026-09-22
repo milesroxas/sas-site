@@ -1,0 +1,185 @@
+{
+  "header": {
+    "label": "local-block-tools",
+    "date": "2026-09-21T23:58:34.492Z",
+    "gitSha": "5406580",
+    "server": "http://localhost:55030",
+    "instructionsChars": 2022,
+    "blockTools": true
+  },
+  "tools": {
+    "count": 104,
+    "bytes": 1636744,
+    "byVerb": {
+      "update": 817051,
+      "create": 739074,
+      "find": 47990,
+      "delete": 29690,
+      "patch": 1278,
+      "get": 832,
+      "outline": 829
+    },
+    "largest": [
+      {
+        "name": "updateWorkPages",
+        "bytes": 131049
+      },
+      {
+        "name": "createWorkPages",
+        "bytes": 130828
+      },
+      {
+        "name": "updateLabPages",
+        "bytes": 121012
+      },
+      {
+        "name": "createLabPages",
+        "bytes": 120792
+      },
+      {
+        "name": "updatePages",
+        "bytes": 119768
+      },
+      {
+        "name": "createPages",
+        "bytes": 119551
+      },
+      {
+        "name": "updateExpertisePages",
+        "bytes": 108077
+      },
+      {
+        "name": "updateAudiencePages",
+        "bytes": 108061
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "privacy-policy",
+      "collection": "pages",
+      "docId": 8,
+      "title": "Privacy Policy",
+      "blocks": 2,
+      "target": {
+        "path": "layout.0.blocks.0",
+        "id": "6aa55f84f54c660004411385",
+        "blockType": "richText"
+      },
+      "bytes": {
+        "listResult": 58633,
+        "findResult": 31791,
+        "layout": 30396,
+        "block": 30219,
+        "outlineResult": 510,
+        "getBlockResult": 30256
+      },
+      "error": null
+    },
+    {
+      "id": "about-us",
+      "collection": "pages",
+      "docId": 6,
+      "title": "About Us",
+      "blocks": 1,
+      "target": {
+        "path": "layout.0",
+        "id": "6a8e409cdfd2e982536f2fac",
+        "blockType": "content"
+      },
+      "bytes": {
+        "listResult": 58633,
+        "findResult": 3388,
+        "layout": 1844,
+        "block": 1842,
+        "outlineResult": 365,
+        "getBlockResult": 1870
+      },
+      "error": null
+    },
+    {
+      "id": "work-adacore",
+      "collection": "work-pages",
+      "docId": 2,
+      "title": "Adacore",
+      "blocks": 8,
+      "target": {
+        "path": "layout.2",
+        "id": "6a9709b637c2a73dfeb6e063",
+        "blockType": "featureImageStatement"
+      },
+      "bytes": {
+        "listResult": 27619,
+        "findResult": 9071,
+        "layout": 6612,
+        "block": 980,
+        "outlineResult": 1805,
+        "getBlockResult": 1008
+      },
+      "error": null
+    },
+    {
+      "id": "lab-shader-studio",
+      "collection": "lab-pages",
+      "docId": 1,
+      "title": "Building a shader studio in Payload CMS",
+      "blocks": 49,
+      "target": {
+        "path": "layout.2.blocks.2",
+        "id": "6aafe4f43d6b3000041a39bc",
+        "blockType": "richText"
+      },
+      "bytes": {
+        "listResult": 38248,
+        "findResult": 38217,
+        "layout": 36732,
+        "block": 741,
+        "outlineResult": 8891,
+        "getBlockResult": 778
+      },
+      "error": null
+    },
+    {
+      "id": "expertise-web",
+      "collection": "expertise-pages",
+      "docId": 2,
+      "title": "Website Strategy, UX & Development",
+      "blocks": 18,
+      "target": {
+        "path": "layout.0.blocks.0",
+        "id": "6aa0341d39ac080004a0d094",
+        "blockType": "richText"
+      },
+      "bytes": {
+        "listResult": 257407,
+        "findResult": 42944,
+        "layout": 40062,
+        "block": 2665,
+        "outlineResult": 4668,
+        "getBlockResult": 2702
+      },
+      "error": null
+    },
+    {
+      "id": "home",
+      "collection": "home",
+      "docId": 1,
+      "title": "Home",
+      "blocks": 3,
+      "target": {
+        "path": "layout.2",
+        "id": "6a7ce690b883890004cabe5d",
+        "blockType": "audienceTabs"
+      },
+      "bytes": {
+        "listResult": null,
+        "findResult": 7372,
+        "layout": 5667,
+        "block": 4351,
+        "outlineResult": 857,
+        "getBlockResult": 4379
+      },
+      "error": null
+    }
+  ]
+}

@@ -98,7 +98,9 @@ answer, who is waiting on a reply), never for authoring. `inquiries`, `form-subm
 `subscribers` carry contact PII. `ask-questions` is redacted on write, carries no IP or visitor
 id, and is deleted after the Ask retention window. All four are off on every key until an admin
 grants them, and the server instructions forbid copying that PII into published content or
-sending it anywhere outside the workspace. That rule is an instruction, not an enforced check.
+sending it anywhere outside the workspace. The copying half is checked on the server for email
+addresses ([House rules enforced on MCP writes](#house-rules-enforced-on-mcp-writes)); the rest of
+the rule is an instruction, not an enforced check.
 
 The index globals (`insights-index`, `works-index`) carry hero and SEO only; the lists themselves
 are code-owned.
@@ -112,6 +114,78 @@ are code-owned.
   and a render row is a poster lease, not content.
 - Payload internals: `payload-jobs`, `payload-kv`, `payload-folders`,
   `payload-locked-documents`, `payload-preferences`, `payload-migrations`.
+
+## Block tools: one block instead of the page
+
+The generated tools move whole documents: `find*` answers with the whole page and `update*`
+resends the whole `layout`, as output tokens, the expensive side. Four custom tools in
+[`src/plugins/mcp-tools/`](../src/plugins/mcp-tools/index.ts) move one block instead:
+
+| Tool | Does | Needs on the key |
+| --- | --- | --- |
+| `outlineDocument` | One row per block, nested blocks included: `path`, `id`, `blockType`, `blockName`, a child count and the first 200 characters of its copy | the tool, plus `find` on the collection |
+| `locateBlock` | Which block an editing instruction (in the user's words) is about, judged on the server by Jev from the outline: a verdict (`found`, `unsure`, `none`) and the most likely blocks best first, each with its probability | the tool, plus `find`; `TYPESAFE_API_KEY` on the server |
+| `getBlock` | One block by id, exactly as stored, with its path | the tool, plus `find` |
+| `patchBlock` | Merges a partial block on the server and saves a draft (publishes only with `draft: false`); answers with the saved block, or the refused save's field errors | the tool, plus `update` |
+
+They take a `collection` slug (every collection with a `layout`, plus `newsletters` and the
+`home` global) and a document `id`. A patch replaces each named field whole, so changing one
+row of an array means sending the array with its row ids. Both reads return the latest draft.
+
+The four checkboxes sit in the key's **Tools** section and are **off** by default (the plugin
+ships custom tools on; `mcp.ts` flips them). The collection checks read the key document, which
+`overrideAuth` in `mcp.ts` puts on `req.context.mcpApiKey` for the tools' handlers; the plugin's
+own key lookup is unchanged.
+
+Measured with `scripts/mcp-bench.ts` on the fixed tasks in `scripts/mcp-cases.ts`
+([perf/mcp-tools/report.md](perf/mcp-tools/report.md)): on pages with more than a handful of
+blocks, the read to find a block drops 69 to 83 percent and the bytes sent to save it drop 85 to
+98 percent. On a page that is one block (the Privacy Policy, About Us) the tools save nothing,
+which is expected. The tool list itself, which a client that loads every schema pays per turn,
+is 1.6MB for a full-capability key; the block tools add four small entries to it.
+
+`locateBlock` is one request to TypeSafe's Jev (`jev-1.13.0`, the model and key the Ask judge
+uses) in the shape of TypeSafe's line-by-line search cookbook: code tags every block of the
+outline and joins it into one state, a Choice over the tags answers which block, and a Noul in
+the same request answers whether any block fits, because a Choice always crowns something. The
+verdict is code: `found` needs the Noul and the Choice's confidence both at or above the
+thresholds in [`locate.ts`](../src/plugins/mcp-tools/locate.ts). The client never sends the page
+to its own model; it sends the instruction and gets back about 1KB of candidates with the
+judgment's model, input tokens and milliseconds. Without a key on the server the tool answers
+with an error that points at `outlineDocument`. Accuracy is measured with
+`scripts/mcp-locate-eval.ts` on the bench cases plus negatives and ordinals
+(`docs/perf/mcp-tools/locate-<label>.json`): 10 of 10 on 2026-09-22, 124 to 411 ms and 522
+to 2,450 Jev input tokens a request. A small eval, written by the tool's author; real team
+instructions are the next test.
+
+## House rules enforced on MCP writes
+
+Two rules the server instructions state are also checked on the server, on every write that arrives
+over MCP, by a `beforeChange` hook in
+[`src/plugins/mcp-write-checks.ts`](../src/plugins/mcp-write-checks.ts) on every collection and
+global a key can write. It acts only when `req.payloadAPI === 'MCP'`: saves from the admin, REST and
+the Local API are untouched. The block tools are covered too, because `patchBlock` writes through the
+Local API with the MCP request.
+
+- **No em dash in copy**, rich text included. The house style's one exception, a numeric range
+  (`50—100K`), passes. Code fields, chart and diagram specs, identifiers and inline code are skipped.
+- **No visitor contact detail in copy.** An email address in the copy is looked up in `inquiries`,
+  `subscribers` and `form-submissions`; a match refuses the save. An exact lookup, so the studio's own
+  address passes and nothing is guessed. Phone numbers are not checked: a digit-run rule would refuse
+  the studio's own number.
+
+Only copy that differs from the stored document at the same path is checked, so an older em dash in
+an untouched block never blocks an edit. A refusal names each problem by path with the text quoted
+around it, so the agent fixes the copy without reading the document again:
+
+```
+Not saved: 1 problem in the copy of lab-pages. Fix each and resend.
+layout.0.blocks.0.blockName: em dash in "Why — a shader". House style: recast with a comma, a colon, parentheses or a period.
+```
+
+The same problems travel as `data.errors` (`{ path, message }`) for a client that reads structured
+errors. The rule matters most for Codex and Cursor: neither has the hooks or memory Claude Code has,
+so until this check the instructions were the only guardrail.
 
 ## Deleting
 
@@ -231,7 +305,8 @@ hunks no longer match) and retest `/api/mcp` initialize + tools/list.
   `payload-mcp-api-keys` table. Follow the normal migration workflow (ask before
   `pnpm migrate:create`, prescribe create/rename answers, commit `.ts`+`.json`, CI applies).
   The initial capability schema landed in `20260722_183757_mcp_authoring_capabilities`.
-  `uploadMedia` is one more column on the same table.
+  `uploadMedia` is one more column on the same table, and each custom tool in `mcp.tools` is
+  one more (`payload_mcp_tool_<name>`).
 - The key's admin screen is restyled by `withCapabilityControls` in `mcp.ts` (select-all per
   section, a toolbar with an enabled count). It matches the plugin's generated field shape, so
   after a Payload upgrade open a key and confirm the toolbar is still there: if the shape

@@ -5,6 +5,8 @@ import { AGENT_UPLOAD_STATUS } from '@/endpoints/agentMedia'
 import { ASK_QUESTION_RETENTION_DAYS } from '@/features/ask/retention'
 import { withMcpDeleteConfirmation } from '@/plugins/mcp-delete-confirmation'
 import { MCP_INSTRUCTIONS } from '@/plugins/mcp-instructions'
+import { mcpBlockTools } from '@/plugins/mcp-tools'
+import { withMcpWriteChecks } from '@/plugins/mcp-write-checks'
 import { CONTENT_SURFACES } from '@/shared/content/surfaces'
 
 /**
@@ -292,6 +294,47 @@ const uploadMediaCapability: Field = {
   },
 }
 
+/**
+ * The plugin registers a custom tool's checkbox with `defaultValue: true`, the
+ * opposite of every collection capability. Off, like the rest: a key gets a
+ * block tool when a team member ticks it.
+ */
+const withToolsOffByDefault = (fields: Field[]): Field[] =>
+  fields.map((field): Field => {
+    if (field.type !== 'collapsible' || field.label !== 'Tools') return field
+    return {
+      ...field,
+      fields: field.fields.map(
+        (group): Field =>
+          group.type === 'group' && 'name' in group && group.name === 'payload-mcp-tool'
+            ? {
+                ...group,
+                fields: group.fields.map(
+                  (f): Field => (f.type === 'checkbox' ? { ...f, defaultValue: false } : f),
+                ),
+              }
+            : group,
+      ),
+    }
+  })
+
+/** Every collection a key can be granted `create` or `update` on: the ones the copy checks guard. */
+const writable = new Set(
+  Object.entries(collections ?? {}).flatMap(([slug, entry]) =>
+    entry?.enabled &&
+    typeof entry.enabled === 'object' &&
+    (entry.enabled.create || entry.enabled.update)
+      ? [slug]
+      : [],
+  ),
+)
+
+const writableGlobals = new Set(
+  Object.entries(globals ?? {}).flatMap(([slug, entry]) =>
+    entry?.enabled && typeof entry.enabled === 'object' && entry.enabled.update ? [slug] : [],
+  ),
+)
+
 /** Every collection a key can be granted `delete` on: the ones the confirmation guards. */
 const deletable = new Set(
   Object.entries(collections ?? {}).flatMap(([slug, entry]) =>
@@ -307,6 +350,15 @@ const server: Plugin = mcpPlugin({
       serverInfo: { name: 'Suits & Sandals CMS', version: '1.0.0' },
       instructions: MCP_INSTRUCTIONS,
     },
+    tools: mcpBlockTools,
+  },
+  // The plugin's own key lookup, kept; the key document is put on the request
+  // so the block tools can check the collection capabilities it carries, the
+  // way the generated tools are gated at registration.
+  overrideAuth: async (req, getDefaultMcpAccessSettings) => {
+    const key = await getDefaultMcpAccessSettings()
+    req.context.mcpApiKey = key
+    return key
   },
   // The key collection is the capability control plane: only team members may
   // see or manage keys. Without this it falls back to Payload's default
@@ -322,8 +374,14 @@ const server: Plugin = mcpPlugin({
       update: authenticated,
     },
     admin: { ...collection.admin, group: 'System' },
-    fields: [...withCapabilityControls(collection.fields), uploadMediaCapability],
+    fields: [
+      ...withToolsOffByDefault(withCapabilityControls(collection.fields)),
+      uploadMediaCapability,
+    ],
   }),
 })
 
-export const mcp: Plugin = (config) => server(withMcpDeleteConfirmation(config, deletable))
+export const mcp: Plugin = (config) =>
+  server(
+    withMcpWriteChecks(withMcpDeleteConfirmation(config, deletable), writable, writableGlobals),
+  )
