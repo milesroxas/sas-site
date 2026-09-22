@@ -355,3 +355,15 @@ Schema: one new json column on the Story beats block tables of Lab Pages and Wor
 Next: Miles approves pnpm migrate:create story-beats-heading-auto, then push; then a full save of Lab Pages 1 and 2 in the admin (or over MCP) so the hook stores the judgments, and a look at both pages in preview.
 
 <!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal -->
+
+## 2026-09-22 01:56 UTC | milestone | Merged to main as PR 19: the voice layers, the strict pass, and record beat headings
+
+Miles asked to push to main. PR 19 merged into main with a merge commit (099a2a5), the way PR 18 was, so this branch and main keep shared history. The first attempt answered "Base branch was modified" and the second went through; nothing had actually landed on main in between.
+
+Before the merge, the migration: the schema check found the one additive column, heading_auto (jsonb) on the Story beats block tables of Lab Pages and Work Pages and their version tables. A migration file with exactly that change was already in the tree when pnpm migrate:create ran (created about thirty seconds earlier, not by this agent's command as far as its output shows); the command found no further change and added nothing. pnpm check:migrations and the drift check both passed against it, and the pre-push guard let the push through.
+
+On main now: docs/editorial/voice.md and its code, the house-style gate, pnpm editorial:voice, the Voice section of pnpm lab:journal:verify, the strict pass's drafts (still drafts on Lab Projects 2 and 3 and Lab Page 2, for Miles to publish or revert), and beat headings printed from the record under the Prose opener with Jev deciding paraphrase and level at save.
+
+Next, for a person: publish or revert the three drafts; save Lab Pages 1 and 2 once in the admin so the story-headings hook stores its judgments; look at both pages in preview; then the first real writer run from a session started with claude --chrome. The journal stays live on this branch; it is not wrapped.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal -->
