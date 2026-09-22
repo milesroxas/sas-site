@@ -1,9 +1,9 @@
 {
   "slug": "typesafe-mcp",
   "title": "TypeSafe tools for the sas-cms MCP",
-  "status": "active",
+  "status": "paused",
   "branches": [
-    "resume-typesafe-mcp-journal"
+    "feat/mcp-authoring-tools"
   ],
   "startedAt": "2026-09-21T16:44:58.273Z"
 }
