@@ -10,8 +10,6 @@ const meta = {
   component: WorkIntro,
   parameters: {
     layout: 'fullscreen',
-    // GSAP drives the entrance; snapshot the reduced-motion (final) state.
-    chromatic: { prefersReducedMotion: 'reduce' },
   },
   args: {
     eyebrow: 'Introduction',

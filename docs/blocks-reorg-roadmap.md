@@ -239,7 +239,7 @@ Sequenced so that every deploy leaves production rendering identically until the
 - [x] Updated `labels` on all nine (including adding `labels: Caption` to `mediaBlock`).
 - [x] Relabeled the position/layout selects (`label: 'Layout'` etc.) without touching names or values; new-row defaults now `left` where the spec says so (existing rows keep their stored values).
 - [x] Reordered the four block arrays; the Section-nestable run is one shared array per collection, spread into the drawer list so nested and top-level offerings cannot drift.
-- [x] Retitled Storybook stories (`Blocks/SectionHeading/Standard`, `Blocks/SectionHeading/Offset`, `Blocks/MediaAndContent/{Stacked,Split,SplitNarrow,Pair,PairOffset}`, `Blocks/Media/{Statement,Caption}`). Chromatic baseline reset expected.
+- [x] Retitled Storybook stories (`Blocks/SectionHeading/Standard`, `Blocks/SectionHeading/Offset`, `Blocks/MediaAndContent/{Stacked,Split,SplitNarrow,Pair,PairOffset}`, `Blocks/Media/{Statement,Caption}`). Visual baseline reset expected.
 - [x] `pnpm generate:types`, `tsc --noEmit`, `pnpm lint` all clean.
 
 ### Phase B: sections and new blocks (additive schema): DONE 2026-09-02 (a06a1ea)
@@ -280,7 +280,7 @@ The first legacy group to enter the run, and the first new block designed straig
 - [x] `disclosure-body` in `globals.css` is the renamed `form-step-body` (one rule, two consumers: form steps and FAQ answers); `docs/animations.md` and `docs/inquiries.md` follow.
 - [x] `sectionNestableBlocks` gains `// Interactive: Faq, Carousel`; `workSectionBlocks` gains both plain; the standalone `Carousel` entries left `pageLayoutBlocks`, `segmentPageBlocks`, `caseStudyBlocks`, `labBlocks`, and the legacy Interactive blocks now follow the run directly in each array.
 - [x] `CarouselBlock` takes `bare` (skips its loose band inside a Section); `sectionChildComponents` maps `carousel` and `faq`; `RenderBlocks` and `RenderLabBlocks` dropped their own carousel entries; `RenderCaseStudyBlocks` forwards `bare` to Carousel and renders FAQ through `RevealSection` with the shared `intro` variant; `blockRevealVariants.faq = 'intro'`.
-- [x] Storybook: Carousel retitled `Blocks/Interactive/Carousel` (Chromatic baseline reset for that story expected).
+- [x] Storybook: Carousel retitled `Blocks/Interactive/Carousel` (visual baseline reset for that story expected).
 - [x] `pnpm generate:types`, `pnpm generate:importmap` (no new imports), `tsc --noEmit`, `pnpm lint`, Carousel and form-steps vitest suites all clean.
 - [x] `pnpm check:migrations:drift` previews the pending migration: 48 `CREATE TYPE`, 32 `CREATE TABLE`, 34 FK constraints, 82 indexes, **all additive**, no drop, no rename-shaped statement, no `ADD VALUE`. Tables: `{pages,posts,work_pages,lab_pages,expertise_pages,audience_pages,home}_faq` + `_faq_items` and their `_v` twins, plus `posts_blocks_carousel` + `_slides` (+ `_v`), the only surface that had never offered Carousel. Every existing Carousel table keeps its name, confirming again that moving a block into the run does not re-home rows.
 - [x] `pnpm migrate:create interactive-in-sections` generated `src/migrations/20260904_012500_interactive_in_sections.{ts,json}` with no create/rename prompts; committed with the code (44d76c7). CI applies it.
@@ -306,7 +306,7 @@ The second legacy Interactive block to move (after Carousel in B3), and the firs
 - [x] `sectionNestableBlocks` gains `FeatureTabs` after Carousel; `workSectionBlocks` gains `WorkFeatureTabs` (the story-beat variant, since each tab row carries `source`); the standalone entries left `pageLayoutBlocks`, `segmentPageBlocks` and `caseStudyBlocks`. Home keeps it through the run (it was never in `homeExcludedBlocks`); Posts and Lab offer it for the first time.
 - [x] `sectionChildComponents` maps `featureTabs`; `RenderBlocks` dropped its own entry; `RenderCaseStudyBlocks` forwards `bare` into `FeatureTabsSection` like FAQ and Insight list. `blockRevealVariants.featureTabs` was already `intro`.
 - [x] `src/blocks/feature/Tabs/Component.tsx` rebuilt on the grid: from `lg` copy column cols 1-3 and media plate cols 4-8 at 16:9, both cells full-width and stacked at `md` with a 3:2 plate (was `lg:grid-cols-3` + `min-h-[390px]` fill); `Container` component; the strip and panels stack on `space-y-12 md:space-y-16`; the caption card's `max-w-[283px]` is now `max-w-72`.
-- [x] Storybook: retitled `Blocks/Interactive/Tabs` (Chromatic baseline reset for that story expected).
+- [x] Storybook: retitled `Blocks/Interactive/Tabs` (visual baseline reset for that story expected).
 - [x] `pnpm generate:types`, `pnpm generate:importmap` (no new imports), `tsc --noEmit`, `pnpm lint` clean.
 - [x] `pnpm check:migrations:drift` previews the pending migration: 8 `CREATE TYPE`, 12 `CREATE TABLE`, 16 FK constraints, 32 indexes, **all additive**, no drop, no rename-shaped statement, no `ADD VALUE`. Tables: `{posts,lab_pages}_blocks_feature_tabs` + `_tabs` + `_tabs_items` and their `_v` twins. Every existing `*_blocks_feature_tabs` table keeps its name.
 - [ ] `pnpm migrate:create tabs-in-sections` (ask first; answer sheet in Appendix A), then `pnpm check:migrations`, `pnpm check:migrations:drift`, commit code + migration together.

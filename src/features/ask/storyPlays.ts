@@ -55,6 +55,3 @@ export function stubInquiryIntake(reference = 'SS-7K2Q') {
     window.fetch = fetch
   }
 }
-
-/** Chromatic waits this long after a play so a swap in flight has settled before the snapshot. */
-export const askSwapSettled = { chromatic: { delay: 600 } }

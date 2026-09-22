@@ -12,6 +12,15 @@ import { homeStatic } from '@/Home/home-static'
 import { HomeStatement } from '@/Home/statement'
 import { generateMeta } from '@/utilities/generateMeta'
 
+/**
+ * Time-based fallback only. Saving the Home global calls `revalidatePath('/')`
+ * (src/Home/hooks/revalidateHome.ts), so a long window costs nothing in
+ * freshness. Without it the page regenerated on the framework's 300 s default
+ * for every uptime probe: about 1,440 function invocations a day for a page
+ * whose content changes a few times a month.
+ */
+export const revalidate = 3600
+
 export default async function HomePage() {
   const { isEnabled: draft } = await draftMode()
   const home = (await queryHome()) ?? homeStatic

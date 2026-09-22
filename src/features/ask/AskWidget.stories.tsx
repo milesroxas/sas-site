@@ -7,7 +7,7 @@ import {
   askSourcesFixture,
   createAskChat,
 } from './fixtures'
-import { askSwapSettled, openAskHandoff, sendAskHandoff, stubInquiryIntake } from './storyPlays'
+import { openAskHandoff, sendAskHandoff, stubInquiryIntake } from './storyPlays'
 
 /**
  * All stories drive the real `useChat` lifecycle through a scripted transport
@@ -151,7 +151,6 @@ export const RatedDown: Story = {
 /** The offer opened: the row becomes the form in place. Send stays off until both fields hold something. */
 export const HandoffForm: Story = {
   args: Handoff.args,
-  parameters: askSwapSettled,
   play: openAskHandoff,
 }
 
@@ -175,7 +174,6 @@ export const HandoffFromMessage: Story = {
 /** A malformed address is caught before anything is posted, in the endpoint's own words. */
 export const HandoffInvalidEmail: Story = {
   args: Handoff.args,
-  parameters: askSwapSettled,
   play: async (context) => {
     await openAskHandoff(context)
     await context.userEvent.type(context.canvas.getByLabelText('Name'), 'Jordan Lee')
@@ -190,7 +188,6 @@ export const HandoffInvalidEmail: Story = {
  */
 export const HandoffSent: Story = {
   args: Handoff.args,
-  parameters: askSwapSettled,
   beforeEach: () => stubInquiryIntake(),
   play: async (context) => {
     await openAskHandoff(context)

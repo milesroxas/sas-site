@@ -7,12 +7,7 @@ import {
   askSourcesFixture,
   createAskChat,
 } from '@/features/ask/fixtures'
-import {
-  askSwapSettled,
-  openAskHandoff,
-  sendAskHandoff,
-  stubInquiryIntake,
-} from '@/features/ask/storyPlays'
+import { openAskHandoff, sendAskHandoff, stubInquiryIntake } from '@/features/ask/storyPlays'
 import { ClosingAsk } from './ClosingAsk'
 
 const reply = createAskChat().assistant(
@@ -73,14 +68,12 @@ export const Handoff: Story = {
 /** The offer opened in the band's short panel: the form must fit the transcript viewport above the composer. */
 export const HandoffForm: Story = {
   args: Handoff.args,
-  parameters: askSwapSettled,
   play: openAskHandoff,
 }
 
 /** Sent from the band: the form becomes its receipt, the composer ready for the next question. */
 export const HandoffSent: Story = {
   args: Handoff.args,
-  parameters: askSwapSettled,
   beforeEach: () => stubInquiryIntake(),
   play: async (context) => {
     await openAskHandoff(context)
@@ -98,7 +91,6 @@ export const MobileSheet: Story = {
   parameters: {
     layout: 'padded',
     viewport: { options: INITIAL_VIEWPORTS },
-    chromatic: { viewports: [390] },
   },
 }
 
@@ -111,7 +103,7 @@ export const MobileSheet: Story = {
 export const MobileSheetHandoffForm: Story = {
   args: Handoff.args,
   globals: MobileSheet.globals,
-  parameters: { ...MobileSheet.parameters, ...askSwapSettled },
+  parameters: MobileSheet.parameters,
   play: ({ userEvent }) => openAskHandoff({ canvas: within(document.body), userEvent }),
 }
 

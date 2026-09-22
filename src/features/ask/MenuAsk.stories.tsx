@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 import { askHandoffChat, askHandoffTermsFixture, createAskChat } from './fixtures'
 import { MenuAsk } from './MenuAsk'
-import { askSwapSettled, openAskHandoff } from './storyPlays'
+import { openAskHandoff } from './storyPlays'
 
 /**
  * MenuAsk lives in the takeover menu's center column: the preview slot on top
@@ -91,7 +91,6 @@ export const Mobile: Story = {
   parameters: {
     layout: 'padded',
     viewport: { options: INITIAL_VIEWPORTS },
-    chromatic: { viewports: [390] },
   },
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole('textbox', { name: 'Ask a question' }))
@@ -117,7 +116,7 @@ export const MobileHandoff: Story = {
  */
 export const MobileHandoffForm: Story = {
   ...MobileHandoff,
-  parameters: { ...Mobile.parameters, ...askSwapSettled },
+  parameters: Mobile.parameters,
   play: async (context) => {
     await context.userEvent.click(context.canvas.getByRole('textbox', { name: 'Ask a question' }))
     await openAskHandoff(context)

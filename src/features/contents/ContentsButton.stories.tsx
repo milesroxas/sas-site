@@ -76,7 +76,6 @@ export const Default: Story = {}
 export const Phone: Story = {
   parameters: {
     viewport: { options: INITIAL_VIEWPORTS },
-    chromatic: { viewports: [390] },
   },
   globals: {
     viewport: { value: 'iphone12', isRotated: false },

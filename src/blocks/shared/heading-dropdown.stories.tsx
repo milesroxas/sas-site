@@ -62,6 +62,5 @@ export const MobileSheet: Story = {
   globals: { viewport: { value: 'iphone12', isRotated: false } },
   parameters: {
     viewport: { options: INITIAL_VIEWPORTS },
-    chromatic: { viewports: [390] },
   },
 }

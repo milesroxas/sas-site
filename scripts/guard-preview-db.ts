@@ -46,7 +46,7 @@ if (host.startsWith(`${productionEndpoint}.`) || host.startsWith(`${productionEn
   console.error(
     `guard-preview-db: VERCEL_ENV=${vercelEnv} is pointed at the production Neon endpoint (${productionEndpoint}). ` +
       'The Neon deployment action for preview did not run, so this build would migrate production. Aborting. ' +
-      'Deploy previews by pushing to the `preview` git branch and confirm the Neon action is enabled for Preview on the store connection.',
+      'Create preview deployments from the `preview` git branch (Vercel dashboard, Create Deployment) and confirm the Neon action is enabled for Preview on the store connection.',
   )
   process.exit(1)
 }

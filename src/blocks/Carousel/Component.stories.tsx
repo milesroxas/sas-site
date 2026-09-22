@@ -78,10 +78,6 @@ export const MobilePeek: Story = {
   globals: {
     viewport: { value: 'mobile1', isRotated: false },
   },
-  parameters: {
-    // Chromatic snapshots this one at phone width so the peek is regression-covered.
-    chromatic: { viewports: [390] },
-  },
 }
 
 export const WithoutCaptions: Story = {

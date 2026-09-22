@@ -10,8 +10,8 @@ import type { Theme } from '@/providers/Theme/types'
  * The attribute is the actual source of truth — `InitTheme` stamps it during
  * head parsing and `ThemeProvider` writes it on every toggle — so reading it
  * directly also works where the provider is absent: Storybook drives the same
- * attribute from its theme switcher, so stories and Chromatic snapshots get the
- * right palette without a provider decorator.
+ * attribute from its theme switcher, so stories and snapshots get the right
+ * palette without a provider decorator.
  *
  * For components that need to *change* the theme, use `useTheme()` from
  * `@/providers/Theme`; this hook only observes.

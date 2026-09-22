@@ -28,7 +28,7 @@ const meta = {
     media: heroImageFixture,
     featuredPost: postFixtures[0],
     featuredLabel: 'Insights',
-    // Deterministic for Chromatic: only ColdIntro plays the cold choreography.
+    // Deterministic for snapshots: only ColdIntro plays the cold choreography.
     intro: 'warm',
   },
 } satisfies Meta<typeof RenderHomeHero>

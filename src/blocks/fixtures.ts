@@ -183,8 +183,8 @@ export const videoFixture: Media = {
 
 /**
  * A single-color SVG mark as the Insight list renders it (a mask over the
- * text color), inlined as a data URL so the story needs no upload and Chromatic
- * no network. `updatedAt` is empty on purpose: `getMediaUrl` appends it as a
+ * text color), inlined as a data URL so the story needs no upload and no
+ * network. `updatedAt` is empty on purpose: `getMediaUrl` appends it as a
  * cache tag, and a query string after `</svg>` would break the data URL.
  */
 const svgMarkFixture = (id: number, alt: string, body: string): Media => ({

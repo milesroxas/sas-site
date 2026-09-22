@@ -323,10 +323,6 @@ export const Mobile: Story = {
   globals: {
     viewport: { value: 'mobile1', isRotated: false },
   },
-  parameters: {
-    // Chromatic snapshots at phone width so the drill-in rows are regression-covered.
-    chromatic: { viewports: [390] },
-  },
 }
 
 /**

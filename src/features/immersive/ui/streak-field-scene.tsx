@@ -126,7 +126,7 @@ function createSharedUniforms(): SharedUniforms {
 
 /**
  * mulberry32: a small, fast PRNG so a `seed` always lays out the same field.
- * `Math.random` would reshuffle every mount and every Chromatic snapshot.
+ * `Math.random` would reshuffle every mount and every snapshot.
  */
 function createRandom(seed: number) {
   let a = seed >>> 0

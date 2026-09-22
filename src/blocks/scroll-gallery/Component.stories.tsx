@@ -23,7 +23,7 @@ const entries: ScrollGalleryEntry[] = [
 /**
  * The gallery's pinned shell: scroll the frame to dolly through the planes.
  * The canvas gates on GPU + motion preference like production; in a headless
- * Chromatic capture it renders the DOM fallback.
+ * capture it renders the DOM fallback.
  */
 const meta = {
   title: 'Blocks/ScrollGallery',
