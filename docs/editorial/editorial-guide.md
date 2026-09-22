@@ -1,5 +1,7 @@
 # Suits & Sandals Website Content Rewrite System
 
+> **Status.** The voice, tone and style rules moved to [voice.md](voice.md) (2026-09-21); that file is the contract for all copy and is checked by code and Jev. The page structure, layout-aware writing rules, output format and master prompt below describe service, audience and industry pages built with the earlier block set (heroes, tabs, card grids, accordions). They predate Sections, Story beats and Lab Pages. For composing a Lab Page, a Work Page or an article over MCP, the `article-authoring` skill is the current composition contract; where this guide and the skill differ on composition, the skill is right.
+
 ## Purpose
 
 Use this system to turn long-form strategy, notes, drafts, or existing website copy into a focused, high-converting website page.
@@ -108,121 +110,7 @@ Not every page needs all eight stages as separate sections. Combine them where a
 
 # Voice and Tone
 
-
-
-## Desired qualities
-
-The writing should feel:
-
-- Clear
-- Confident
-- Editorial
-- Strategic
-- Product-literate
-- Specific
-- Composed
-- Human
-- Understated
-- Visually aware
-
-The voice should sound like experienced people who understand both the business problem and the creative work.
-
-## Voice and tone traits
-
-Use the following qualities as a directional reference:
-
-- Strong, simple assertions
-- Short, controlled paragraphs
-- Clear ideas expressed without unnecessary explanation
-- Strategic language that still feels conversational
-- Specificity over hype
-- Restraint over persuasion theater
-- Occasional memorable lines
-- Enough confidence to leave space around an idea
-
-Do not imitate slogans or wording from another company. Apply the underlying editorial qualities.
-
-## Sentence style
-
-Use a natural mix of:
-
-- Short declarative sentences
-- Medium-length explanatory sentences
-- Occasional fragments for emphasis
-- Parallel structures only where they improve scanning
-
-Do not make every sentence the same length.
-
-Do not make every heading follow the same grammatical formula.
-
-Do not make every paragraph end with a dramatic conclusion.
-
-## Punctuation
-
-- Do not use em dashes
-- Use periods more often than semicolons
-- Use colons sparingly
-- Avoid excessive parentheses
-- Avoid unnecessary quotation marks
-- Use hyphens only when grammatically needed
-
-
-
-## Language to favor
-
-Prefer language that is:
-
-- Concrete
-- Direct
-- Relevant to the buyer
-- Connected to a real business problem
-- Easy to understand without sounding simplified
-
-Examples:
-
-- Make the difference visible.
-- Give people somewhere to start.
-- The depth stays. The order changes.
-- Clear in the room. Unclear online.
-- Put the brand to work.
-- Build a system the company can keep using.
-
-
-
-## Language to avoid
-
-Avoid generic marketing and agency language such as:
-
-- Elevate
-- Unlock
-- Transform your vision
-- Seamlessly
-- Cutting-edge
-- Best-in-class
-- Holistic
-- World-class
-- Innovative solutions
-- Meaningful impact
-- At the intersection of
-- In today’s fast-paced world
-- Bring your vision to life
-- Take your brand to the next level
-- Tailored solutions
-- Unique needs
-- End-to-end solutions
-- Drive engagement
-- Future-proof
-
-Avoid repetitive constructions such as:
-
-- It is not just X. It is Y.
-- More than X. It is Y.
-- From X to Y.
-- Whether you are X or Y.
-- We do not just X. We Y.
-- Not only X, but also Y.
-
-These structures may be used occasionally when they are genuinely the clearest option. They should not become the voice of the page.
+The voice lives in [voice.md](voice.md): how the writing should feel, sentence and punctuation rules, the language to favor, the language and constructions to avoid, and what code and Jev check at save time. That file is the contract for every piece of copy, on any surface. Nothing in this guide overrides it.
 
 ---
 

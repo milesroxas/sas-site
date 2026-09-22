@@ -98,6 +98,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | Analytics: PostHog events, consent gate, dashboards | `.agents/skills/posthog-analytics` (use the **posthog-analytics** skill) |
 | Figures: chart, diagram and bespoke figure blocks, spec schemas, save-time layout, Markdown input, `cms:upload` | [docs/figures.md](docs/figures.md); authoring over MCP: `.agents/skills/article-authoring` (use the **article-authoring** skill) |
 | Lab journal: documenting a feature as it is built (decisions, prompts, tokens per session) for a Lab Project entry | Team guide, start to published Lab Page: [docs/lab-journal/README.md](docs/lab-journal/README.md); agent contract: `.agents/skills/lab-journal` (use the **lab-journal** skill); storage and hooks: `scripts/lab-journal/`; write-up agent: `.claude/agents/lab-project-writer.md` |
+| House voice for all copy (rules, what the save refuses, `pnpm editorial:voice`) | [docs/editorial/voice.md](docs/editorial/voice.md); code: `src/features/editorial/voice.ts`, gate: `src/plugins/house-style/` |
 | CMS admin naming (tabs, groups, overrides, blocks) | [docs/cms-naming.md](docs/cms-naming.md) |
 | Blocks reorg + Sections (taxonomy, phases, Section contract) | [docs/blocks-reorg-roadmap.md](docs/blocks-reorg-roadmap.md) |
 | Block layout grid (8-col contract, per-block migration map) | [docs/block-grid-roadmap.md](docs/block-grid-roadmap.md) |

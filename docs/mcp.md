@@ -158,6 +158,11 @@ keeps the first 2048 and drops the rest without a warning: until 2026-09-21 they
 the delete, media, visitor data and house style rules never reached Claude. Descriptions follow
 the house style too: they are copy an agent reads.
 
+The house style is also enforced, not only stated. `src/plugins/house-style/` refuses a save from
+an API key that holds an em dash or a phrase [voice.md](editorial/voice.md) bans, by path, the way
+the figures plugin refuses a bad spec; a team member in the admin is never refused. What the gate
+cannot read (generic, inflated or formulaic copy) `pnpm editorial:voice` lists with Jev.
+
 ## Known issue: an MCP edit does not refresh the rendered page
 
 Found 2026-09-19 publishing the Privacy Policy. An `update*` call that publishes a document runs the collection's revalidation hook, and the log says so ("Revalidated Page at /privacy-policy"), but the CDN keeps serving the old prerender (`x-vercel-cache: HIT`, the age still counting from before the edit). Same on preview and production. The likely cause: `mcp-handler` answers over a stream and returns its `Response` before the tool has run, so Next has already flushed the request's pending revalidations by the time the hook calls `revalidatePath`, and the late call is dropped without an error. Saves from the admin are ordinary requests and are not affected.

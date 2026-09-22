@@ -27,5 +27,5 @@ export const MCP_INSTRUCTIONS = [
   'Delete only when the user asks; prefer a reversible step (unpublish, or `archived` on a look). A delete takes two calls: do what the first one answers.',
   'Add new images with `pnpm cms:upload`; the article-authoring skill has the steps.',
   'Inquiries, form submissions, subscribers and Ask questions hold visitor contact details: read them for analysis and triage only, and never copy them into content or send them outside this workspace.',
-  'House style for all copy, titles, captions and labels included: never an em dash. Recast with a comma, a colon, parentheses or a period.',
+  'House style for all copy (docs/editorial/voice.md): never an em dash, never its agency language. A save with either is refused, by path.',
 ].join(' ')

@@ -59,18 +59,23 @@ Start from the digest's figure plan and check each suggestion against its entry.
 
 Media you were handed ids for: place each beside the beat it illustrates, with alt text taken from the media document. Leave the hero, SEO and related projects for a person, and say so.
 
+## The voice
+
+Read `docs/editorial/voice.md` before you write a word of copy, and write to it: specific over general, assertions without hype, sentences that vary, no contrast frames, no punchline on every paragraph, never an em dash. The server refuses a save that holds an em dash or a phrase the doc bans, by path: fix those and resend, never restructure to get around it. The published Lab Pages are the bar for the voice as much as for the figures.
+
 ## Check the draft before you report
 
-1. `pnpm lab:journal:verify <slug> --project <lab project id>`. Code lists every em dash and every number the record does not hold; Jev holds each sentence against the journal entries nearest to it. Read `verify.md`. A contradicted sentence is fixed on the Lab Project. A sentence not in the record is cut, or kept only if you can name the entry, commit or prompt that says it. Run it again until what is left is what you will defend in the report.
-2. Open the Lab Page's preview in Chrome at a desktop width, 390 and 320. Every figure drew, none scrolls sideways, no label ends in an ellipsis, every screenshot is legible at the reading column's width. Fix the spec, not the page.
+1. `pnpm lab:journal:verify <slug> --project <lab project id>`. Code lists every number the record does not hold; Jev holds each sentence against the journal entries nearest to it. Read `verify.md`. A contradicted sentence is fixed on the Lab Project. A sentence not in the record is cut, or kept only if you can name the entry, commit or prompt that says it. Run it again until what is left is what you will defend in the report.
+2. The same report ends with a Voice section (`docs/editorial/voice.md`): what the save would refuse, the frames and counts the doc lists, and the passages Jev read as generic, inflated or formulaic, with a note on punchlines and heading forms. Rewrite each listed passage on the Lab Project unless you can say why it is right as written: an abstract thesis line the studio means is right, a paragraph any agency could have written is not.
+3. Open the Lab Page's preview in Chrome at a desktop width, 390 and 320. Every figure drew, none scrolls sideways, no label ends in an ellipsis, every screenshot is legible at the reading column's width. Fix the spec, not the page.
 
 ## Rules
 
 - Find before create: if a Lab Project for this slug or title exists, edit it from its current state.
 - `draft: true` on every write. Never publish, never delete.
 - The repository and the site are public. No secrets, no personal details, no client confidences, whatever the record holds.
-- House style: never an em dash.
+- House style: `docs/editorial/voice.md`. Never an em dash.
 
 ## Report back
 
-The ids and admin paths of what you drafted; the count of Sections, diagrams, listings, charts and screenshots, beside the published pages' counts; every media id you uploaded, with what was blurred in each; what `verify.md` still lists and why you kept it; every claim you left out because the record did not support it; every prompt you quoted, so Miles can check them; anything in the journal that contradicts the git log; and what is still a person's to do: the Safari check, the hero, SEO, related projects.
+The ids and admin paths of what you drafted; the count of Sections, diagrams, listings, charts and screenshots, beside the published pages' counts; every media id you uploaded, with what was blurred in each; what `verify.md` still lists, the Voice section included, and why you kept each; every claim you left out because the record did not support it; every prompt you quoted, so Miles can check them; anything in the journal that contradicts the git log; and what is still a person's to do: the Safari check, the hero, SEO, related projects.

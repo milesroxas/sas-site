@@ -13,6 +13,7 @@ The sas-cms server's instructions are the ground rules. They arrive with every M
 
 - **Specs say what, never where.** No coordinates, colors, sizes or styling in a spec: those keys do not exist and are refused. If a figure needs something the spec cannot say, it is a bespoke figure (code), so ask.
 - **A `textAlternative` says what the figure shows and the takeaway**, in plain sentences, for someone who cannot see it. It is what search and Ask index.
+- **Every word of copy follows `docs/editorial/voice.md`**: titles, headings, beats, captions, alt text and labels alike. Read it before writing. The server refuses a save that holds an em dash or a phrase the doc bans, by path, the way it refuses a bad figure spec: fix those lines and resend. After drafting, `pnpm editorial:voice --collection <slug> --id <id>` (or `--project <id>` for a Lab Project) lists what code and Jev found against the doc: rewrite each listed passage or say why it stands.
 
 ## Where a piece goes
 

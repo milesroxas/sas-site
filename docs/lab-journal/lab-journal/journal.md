@@ -231,3 +231,53 @@ PR 18 was merged into main with a merge commit (2054ae1), not a squash, so this 
 The feature is not finished and the journal is not wrapped. It stays live on this branch only; on main it refuses to go live. To continue from another workspace: bring in main, run pnpm lab:journal resume lab-journal on that workspace's branch, and start a new chat so the hooks load. Next step is unchanged: the first real writer run from a session started with claude --chrome.
 
 <!-- session: c24fb9a3-feaf-4fc4-a2c6-1d4b946320f2, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 23:53 UTC | decision | On-brand copy is guaranteed in three layers, with the voice rules in one file
+
+Miles asked that every piece of text the writer produces follow the editorial guide's voice, tone and style, and that the feature use TypeSafe wherever a judgment fits. He noted the guide (docs/editorial/editorial-guide.md, last edited 2026-08-20) is current on voice but stale on composition: its page structure, layout rules and master prompt describe service pages built with an older block set, and the article-authoring skill is the accurate composition contract for Lab Pages.
+
+Chose three layers, each catching what the one before cannot:
+1. The rules, once. The voice, tone, sentence, punctuation and language rules move to docs/editorial/voice.md, which agents load before writing copy. The guide's voice section points there, and its composition sections are marked as the service-page rewrite system. A test keeps the code's phrase lists identical to the doc's, so the two cannot drift.
+2. A gate at save time. A Payload plugin walks every string an MCP API key writes and refuses, by path, an em dash or a phrase the guide bans, the way the figures plugin refuses a bad spec. Team members in the admin are not gated: a person may quote. This is the only layer that can promise anything; the other two report.
+3. A check with Jev. Code lints what is exact (banned phrases, contrast frames, semicolons, paragraph length, headings that all share one grammatical form, judged by Jev per heading). Jev scores each passage on the guide's dimensions: specific or generic, composed or inflated, human or formulaic, and whether the paragraph closes on a punchline. Thresholds live in code. pnpm lab:journal:verify gains a Voice section, and pnpm editorial:voice runs the same check on any Lab Project, page, post or file.
+
+Rejected: rewriting the guide (Miles's ask is copy that follows it, not a new guide); a Claude review pass on each draft (costs what the draft cost, and the writer already judges its own work with the same bias); gating humans in the admin (a quotation or a client's own words may hold a banned phrase).
+Cost: three places to keep in step, held together by the doc-to-code test and one shared module. Jev cannot read taste: the check finds the faults the guide names, not whether a line is good.
+
+Calibration set: the two published Lab Projects (ids 2 and 3), copy Miles has approved, against a planted off-brand draft.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal-workspace-setup -->
+
+## 2026-09-21 23:53 UTC | note | One feature or two: Miles framed the voice work as part of the lab journal
+
+The lab-journal skill says tooling that would be written up on its own is its own journal, and the first journal here had to be split for that reason. The voice check is the writer's quality gate, so it belongs to the pipeline this journal records, but the save-time plugin and the Ask prompt reach beyond the journal. Miles opened the session as a continuation of this feature; logged here on that basis. If it becomes its own Lab Project, pnpm lab:journal window can split this session at the prompt where it began.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal-workspace-setup -->
+
+## 2026-09-22 00:03 UTC | measurement | The voice check on the two published Lab Projects and a planted agency draft
+
+pnpm editorial:voice run on 2026-09-21 against copy Miles has approved (Lab Project 3, The new Suits & Sandals CMS, 70 paragraphs and 49 headings; Lab Project 2, Payload CMS Shader Plugin, 48 paragraphs and 23 headings) and a planted four paragraph agency draft written to break every rule in docs/editorial/voice.md.
+
+Code, exact: the approved copy held no em dash and no banned phrase in any copy field; the planted draft was refused at every paragraph (five passages, nineteen distinct phrases), and its flattened claims, two contrast frames in one passage and three semicolons were listed. One false listing: three semicolons in Lab Project 3's internalNotes, which is not copy; the field is now skipped by the check and the gate.
+
+Jev, per paragraph, at the first thresholds: generic (score at or below 0.8 of 2) listed 10 of 70 and 2 of 48 approved paragraphs against 4 of 4 planted; inflated (0.6) listed 1 and 3 approved against 4 planted; formulaic (0.6) listed 3 and 3 approved against 4 planted; punchline closes 4 percent of approved paragraphs against 100 percent planted. Heading forms: approved pages mix sentence, noun phrase and imperative headings, no run.
+
+The approved passages Jev read as inflated were confident assertions the doc asks for (0.60 to 0.78); the planted hype read 0.87 to 0.94. Approved formulaic reads topped at 0.68, planted started at 0.79. Thresholds moved into the gaps: inflated 0.8, formulaic 0.75, generic 0.5. After the move, from the cache with no new requests: Lab Project 3 lists 7 generic, 0 inflated, 0 formulaic; Lab Project 2 lists nothing; the planted draft still lists 3 of 4 generic and 4 of 4 on the other two. The 7 generic lines left are abstract thesis sentences ("The website used to be the thing we owned. Now it is the first thing we do with what we own.", 0.06): Jev cannot tell a studio's own idea stated plainly from agency copy, so that section is a list to read, not a list to cut.
+
+Cost: 119 requests and 76,854 input tokens for Lab Project 3, 71 and 47,517 for Lab Project 2, 8 and 4,987 for the planted draft. Two approved projects and one planted draft is a smoke test, not an accuracy figure.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal-workspace-setup -->
+
+## 2026-09-22 00:05 UTC | milestone | On-brand copy: the voice contract, the save-time gate and the Jev voice check are in
+
+What now exists, on lab-journal-workspace-setup:
+
+- docs/editorial/voice.md, the house voice in one file: how it feels, sentences, punctuation, the language to favor and to avoid, the contrast frames, the flattened claims, and a table of what is checked where. The editorial guide's voice section points at it, and a status note at the guide's top marks its composition sections as the service-page rewrite system that predates Sections, Story beats and Lab Pages.
+- src/features/editorial/voice.ts: the rules as code (banned phrases, frames, flattened claims, counts) with lintVoice and gateFindings. Its test reads voice.md and fails if the two lists differ. VOICE_PROMPT_LINE now sits in the Ask assistant's system prompt, so visitor-facing replies read the same rules.
+- src/plugins/house-style: a beforeChange hook on every collection that refuses a save from an API key holding an em dash or a banned phrase, by path, with autosave and team members exempt. Nine unit tests; the MCP server instructions say so in the budget the 2048 character limit leaves.
+- scripts/editorial: passagesOf (a document as the passages a reader meets, Lexical paragraphs and headings included), the Jev questions (specific, inflated, formulaic, punchline per paragraph; grammatical form per heading) with thresholds in code, the report, and pnpm editorial:voice for any Lab Project, any document by collection and id, a file or a string. pnpm lab:journal:verify ends with the same Voice section; both read the document over the MCP endpoint through the new scripts/cms-fetch.ts.
+- The writer brief, the article-authoring skill, the lab journal guide, docs/mcp.md and AGENTS.md point at the contract and the commands.
+
+Verified: 38 unit tests pass, tsc and biome are clean, and the check ran on Lab Projects 2 and 3, Lab Page 2 and a planted agency draft (numbers in the measurement entry). Not verified end to end: the save-time refusal against a running server, since the hook is covered by unit tests only and this workspace has no dev server of its own up. Next: the first real writer run from a session started with claude --chrome, which now also exercises the Voice section of verify.md.
+
+<!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal-workspace-setup -->
