@@ -9805,6 +9805,24 @@ export interface PayloadMcpApiKey {
     find?: boolean | null;
     update?: boolean | null;
   };
+  'payload-mcp-tool'?: {
+    /**
+     * One row per block of a document, nested blocks included: path, id, blockType, blockName, a child count, and the first 200 characters of its copy. Read this instead of the whole document to find the block an edit concerns, then getBlock or patchBlock it by id. Returns the latest draft.
+     */
+    outlineDocument?: boolean | null;
+    /**
+     * Which block of a document an editing instruction is about, judged on the server from the outline (one Jev request, no client tokens for the page). Answers with a verdict (`found`, `unsure`, `none`), the most likely blocks best first with a probability each (path, id, blockType, blockName, the start of the copy), and what the judgment cost. On `found`, getBlock or patchBlock the first candidate by id; on `unsure`, pick from the candidates or read outlineDocument; on `none`, the document has no such block. Send the instruction in the user's words.
+     */
+    locateBlock?: boolean | null;
+    /**
+     * One block of a document by its id (from outlineDocument), with its path. The block comes back exactly as stored, nested blocks included, so it can be edited and sent to patchBlock. Returns the latest draft.
+     */
+    getBlock?: boolean | null;
+    /**
+     * Change one block of a document by its id and save. `patch` holds only the fields to change; each replaces the stored field whole, so send a complete array (rows with their ids) when changing one row of it. `id` and `blockType` cannot change. Saves a draft unless `draft` is false, which publishes. Returns the saved block. A refused save names each problem by path: fix those and resend the same patch.
+     */
+    patchBlock?: boolean | null;
+  };
   /**
    * Allow `pnpm cms:upload` with this key. Its uploads land with Usage Status public-approved.
    */
@@ -13445,6 +13463,14 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
     | {
         find?: T;
         update?: T;
+      };
+  'payload-mcp-tool'?:
+    | T
+    | {
+        outlineDocument?: T;
+        locateBlock?: T;
+        getBlock?: T;
+        patchBlock?: T;
       };
   uploadMedia?: T;
   updatedAt?: T;
