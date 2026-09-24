@@ -49,6 +49,40 @@ describe('askSystemPrompt', () => {
     )
   })
 
+  it('never lets a turn without the tool claim to send anything to the team', () => {
+    for (const grounded of [true, false]) {
+      for (const handoff of ['none', 'offered', 'sent'] as const) {
+        const prompt = askSystemPrompt({ grounded, handoff, tool: false })
+        const label = `${grounded ? 'grounded' : 'chat'}/${handoff}`
+        expect(prompt, label).toContain(
+          'This chat cannot send, forward, or pass anything to the team',
+        )
+        expect(prompt, label).toContain('Never offer to send anything or ask whether to.')
+        if (handoff === 'sent') {
+          expect(prompt, label).not.toContain('Talk to the team')
+          expect(prompt.toLowerCase(), label).not.toContain('handoff')
+        } else {
+          expect(prompt, label).toContain('the "Talk to the team" button under this reply')
+        }
+      }
+    }
+    // A card follows: the rule stays, but the prompt never describes the offer.
+    const card = askSystemPrompt({
+      grounded: true,
+      handoff: 'none',
+      tool: false,
+      cardFollows: true,
+    })
+    expect(card).toContain('This chat cannot send')
+    expect(card).not.toContain('Talk to the team')
+    // With the tool, only the tool call reaches the team.
+    for (const grounded of [true, false]) {
+      expect(askSystemPrompt({ grounded, handoff: 'none' })).toContain(
+        'without the tool call, nothing reaches them',
+      )
+    }
+  })
+
   it('stops at the answer when code appends the card', () => {
     const prompt = askSystemPrompt({
       grounded: true,

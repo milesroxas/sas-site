@@ -24,7 +24,28 @@ const REACHING_A_PERSON = `Reaching a person:
 - Never call it for a question the sources answer: how we work, how projects start, our process, who we have worked with, what we offer, or how we price in general. A question the site answers never gets an offer, however likely the visitor is to become a client.
 - When the whole question is one only a person can settle (their own price, timing, or availability, a request for a person, or shared contact details), call the tool without writing anything: the offer opens with its own words.
 - Never describe the offer, its form, or our reply time; the offer says all of that.
-- Never repeat an email address, phone number, or name back. Only the offer passes anything to the team; this chat cannot.`
+- Never repeat an email address, phone number, or name back. Only the offer passes anything to the team; this chat cannot.
+- Never say or imply that you have sent, passed on, or will send anything to the team, and never ask whether to: without the tool call, nothing reaches them.`
+
+/**
+ * What this chat cannot do, for every turn without the tool. A routed turn
+ * (judge on) and a turn after the visitor has sent both reach the model with
+ * no way to contact anyone, and left unsaid the model offers to "send this to
+ * the team", then answers the visitor's "yes" with "Done, we've sent it":
+ * a promise nobody receives. So the prompt says it plainly, and says where
+ * the way to a person actually is.
+ */
+const cannotSend = (handoff: AskHandoffState, cardFollows: boolean): string => {
+  const rule =
+    'This chat cannot send, forward, or pass anything to the team, contact anyone, or ask the team for anything; nothing written here reaches them. Never say or imply that you have sent, passed on, or shared anything, or that you will, or that the team will follow up because of this chat. Never offer to send anything or ask whether to.'
+  // The card that follows has its own words; the prompt never describes it.
+  if (cardFollows) return rule
+  const where =
+    handoff === 'sent'
+      ? "If the visitor asks you to send something more, say this chat cannot pass messages on and they can add it when they reply to the team's email."
+      : 'If the visitor asks you to send something, or says yes to having it sent, say plainly that this chat cannot pass messages on and that the "Talk to the team" button under this reply sends their question to the team.'
+  return `${rule} ${where}`
+}
 
 /**
  * With no tool, and an offer that code appends after the reply: answer what
@@ -38,7 +59,7 @@ const CARD_FOLLOWS = `An offer to take this to the team follows your reply, adde
 - Do not invite the visitor to share details, a link, or more about their project, and do not offer to pass anything to the team: this chat cannot, and the offer does.
 - Never mention or describe the offer, its form, or our reply time.`
 
-function groundedPrompt(tool: boolean, cardFollows: boolean): string {
+function groundedPrompt(tool: boolean, cardFollows: boolean, handoff: AskHandoffState): string {
   const partial = tool
     ? "If the rest is the visitor's own price, timeline, or start date, call the handoff tool after your answer and leave the rest to it: do not also say what we don't publish or name a next step. Otherwise say"
     : 'Then say'
@@ -50,7 +71,7 @@ function groundedPrompt(tool: boolean, cardFollows: boolean): string {
     : 'If nothing relevant is in the sources, say so in one short sentence and invite a more specific question.'
   const reaching = tool
     ? `\n\n${REACHING_A_PERSON}`
-    : `\n\nNever repeat an email address, phone number, or name back.${cardFollows ? `\n\n${CARD_FOLLOWS}` : ''}`
+    : `\n\nNever repeat an email address, phone number, or name back. ${cannotSend(handoff, cardFollows)}${cardFollows ? `\n\n${CARD_FOLLOWS}` : ''}`
 
   return `You are the Ask assistant on the Suits & Sandals website. ${VOICE} You are talking with a prospective client or a curious visitor.
 
@@ -66,10 +87,10 @@ How to answer:
 - Under 120 words. Plain text only: no markdown, no headers, no bullet lists unless the visitor asks for steps. No em dashes: use a comma, colon, or period.${reaching}`
 }
 
-function chatOnlyPrompt(tool: boolean): string {
+function chatOnlyPrompt(tool: boolean, handoff: AskHandoffState): string {
   const reaching = tool
-    ? 'If the visitor asks for a person, says they have a project for us, asks what their own project would cost or when we could start, or shares an email address or phone number, call the handoff tool with the matching reason instead, without describing the offer it shows. Never repeat contact details back.'
-    : 'Never repeat contact details back.'
+    ? 'If the visitor asks for a person, says they have a project for us, asks what their own project would cost or when we could start, or shares an email address or phone number, call the handoff tool with the matching reason instead, without describing the offer it shows. Never repeat contact details back. Never say or imply that you have sent, passed on, or will send anything to the team: without the tool call, nothing reaches them.'
+    : `Never repeat contact details back. ${cannotSend(handoff, false)}`
 
   return `You are the Ask assistant on the Suits & Sandals website, mid-conversation. ${VOICE}
 
@@ -162,8 +183,8 @@ export function askSystemPrompt({
 }): string {
   const offersTool = tool && offersAskHandoff(handoff)
   const prompt = grounded
-    ? groundedPrompt(offersTool, !offersTool && cardFollows)
-    : chatOnlyPrompt(offersTool)
+    ? groundedPrompt(offersTool, !offersTool && cardFollows, handoff)
+    : chatOnlyPrompt(offersTool, handoff)
   const notes = [
     handoffStateNote(handoff, offersTool),
     ...(grounded && journey ? journeyNotes(journey) : []),
