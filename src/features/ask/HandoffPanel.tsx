@@ -87,8 +87,8 @@ type HandoffProps = {
  * 2. **Form.** The chip opens the same element in place: the surface takes
  *    the transcript's muted ground and grows to a promise, Name and Email in
  *    one inset block that AutoFill fills in a tap, and "Send to the team".
- *    A visitor who already typed an address lands here directly, with it
- *    filled. What is typed never reaches the model or the Ask log.
+ *    A kind the visitor asked for (`opens`: a person, or their details
+ *    shared) lands here directly, any address they typed already filled. What is typed never reaches the model or the Ask log.
  * 3. **Receipt.** Sent, the form becomes its receipt on the same swap: where
  *    the reply goes, the reference, and "Book a call" after the commitment.
  *
@@ -112,7 +112,7 @@ export function Handoff({
   const nameRef = useRef<HTMLInputElement>(null)
   const [suggestedEmail] = useState(() => askHandoffEmail(messages))
   const [panel, setPanel] = useState<Panel>(() =>
-    sentReceipt ? SENT : kind === 'contact_details' && suggestedEmail ? FORM : OFFER,
+    sentReceipt ? SENT : ASK_HANDOFFS[kind].opens ? FORM : OFFER,
   )
   const [receipt, setReceipt] = useState<AskHandoffReceipt | null>(sentReceipt)
   const reducedMotion = usePrefersReducedMotion()

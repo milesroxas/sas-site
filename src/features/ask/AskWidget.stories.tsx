@@ -4,6 +4,7 @@ import {
   askHandoffChat,
   askHandoffFixture,
   askHandoffTermsFixture,
+  askNextPageFixture,
   askSourcesFixture,
   createAskChat,
 } from './fixtures'
@@ -211,6 +212,51 @@ export const PartialAnswerHandoff: Story = {
   args: {
     transport: partialChat.transport(),
     initialMessages: partialChat.get(),
+  },
+}
+
+/**
+ * A grounded answer that closes with the page to open next as a card: the
+ * words never carry a path, so the way there is always something to tap.
+ */
+const nextPageChat = createAskChat()
+  .user('Do you work with startups?')
+  .assistant(({ writer }) => {
+    for (const source of askSourcesFixture) writer.sourceUrl(source)
+    writer
+      .text(
+        'Yes. We partner with early teams on platforms and digital products, from the first release through the rounds of iteration that follow.',
+      )
+      .data({ type: 'data-nextPage', data: askNextPageFixture })
+  })
+
+export const NextPage: Story = {
+  args: {
+    transport: nextPageChat.transport(),
+    initialMessages: nextPageChat.get(),
+  },
+}
+
+/**
+ * The visitor asked for their question to reach the team (or said yes to the
+ * offer on screen): the lead line, and the form already open under it.
+ */
+const sendToTeamChat = createAskChat()
+  .user('How do you approach slow Webflow sites?')
+  .assistant(({ writer }) => {
+    writer.text(
+      'We start with a performance audit: image weight, heavy scripts and third-party tools, then fix what slows the pages down.',
+    )
+  })
+  .user('Yes, please send this to the team')
+  .assistant(({ writer }) => {
+    writer.tool('handoff', { input: { reason: 'person' }, output: askHandoffFixture('person') })
+  })
+
+export const SendToTeam: Story = {
+  args: {
+    transport: sendToTeamChat.transport(),
+    initialMessages: sendToTeamChat.get(),
   },
 }
 

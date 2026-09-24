@@ -8,6 +8,7 @@
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --passages   # + passage checks
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --from-db    # replay stored questions
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --journey [--passages]   # the page a question is asked on
+ *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --send       # asks to reach the team, or a yes to the offer
  *
  * `--passages` and `--from-db` boot Payload, as scripts/backfill-ask-index.ts
  * does, and need an indexed corpus (or stored `ask-questions` rows) in the
@@ -27,8 +28,9 @@ import {
   routeCardReason,
   routePassage,
   routeTurn,
+  wantsTheTeam,
 } from '@/features/ask/judge'
-import { ASK_CASES, ASK_JOURNEY_CASES, type AskCase } from './ask-cases'
+import { ASK_CASES, ASK_JOURNEY_CASES, ASK_SEND_CASES, type AskCase } from './ask-cases'
 
 /** A tuning run must not be colored by the network, so it waits far longer than a visitor would. */
 const TIMEOUT_MS = 10_000
@@ -260,6 +262,36 @@ async function evalFromDb(payload: Payload): Promise<void> {
   }
 
   console.log(`\nJev's card matches the recorded one on ${agreed} of ${judged} comparable turns`)
+}
+
+/**
+ * The send signals: `asks_to_send` on every case, and the offer check on a
+ * follow-up, beside whether the form must open. Tune `asksToSend`,
+ * `acceptsOffer` and `answersReply` in ASK_JUDGE_THRESHOLDS from these.
+ */
+async function evalSend(): Promise<void> {
+  let agreed = 0
+  for (const testCase of ASK_SEND_CASES) {
+    const judgment = await judgeTurn({
+      question: testCase.question,
+      previousQuestion: testCase.offer ? 'How do you approach slow Webflow sites?' : null,
+      offerOnScreen:
+        testCase.offer && testCase.reply ? { offer: testCase.offer, reply: testCase.reply } : null,
+      timeoutMs: TIMEOUT_MS,
+    })
+    const sends = judgment ? wantsTheTeam(judgment) : false
+    const ok = sends === testCase.sends
+    if (ok) agreed += 1
+    console.log(
+      `${ok ? 'ok  ' : 'MISS'} ${testCase.id.padEnd(14)} asks ${pct(judgment?.asksToSend)}  accepts ${pct(judgment?.acceptsOffer)}  answers ${pct(judgment?.answersReply)}  expected ${testCase.sends ? 'form' : 'none'}  "${testCase.question}"`,
+    )
+  }
+  console.log(`\nthe send route agrees on ${agreed} of ${ASK_SEND_CASES.length} cases`)
+}
+
+if (args.includes('--send')) {
+  await evalSend()
+  process.exit(0)
 }
 
 if (args.includes('--journey')) {

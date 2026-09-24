@@ -1,6 +1,12 @@
-import type { UIDataTypes } from 'ai'
 import { createChat } from '@/shared/testing/shadcn-helpers/ai-sdk'
-import type { AskHandoff, AskHandoffReason, AskHandoffTerms, AskUITools } from './handoff'
+import type {
+  AskHandoff,
+  AskHandoffReason,
+  AskHandoffTerms,
+  AskNextPage,
+  AskUIData,
+  AskUITools,
+} from './handoff'
 
 /**
  * Story fixtures for every Ask surface (the menu, the closing band, and the
@@ -8,7 +14,7 @@ import type { AskHandoff, AskHandoffReason, AskHandoffTerms, AskUITools } from '
  */
 
 /** A scripted chat typed like the real transcript, so a story can play the `handoff` tool. */
-export const createAskChat = () => createChat<unknown, UIDataTypes, AskUITools>()
+export const createAskChat = () => createChat<unknown, AskUIData, AskUITools>()
 
 /** Site Info's promise as production has it: what every surface receives as `terms`. */
 export const askHandoffTermsFixture: AskHandoffTerms = {
@@ -38,3 +44,9 @@ export const askSourcesFixture = [
   },
   { sourceId: '/works/interchecks', title: 'Interchecks', url: '/works/interchecks' },
 ]
+
+/** The page card a grounded reply closes with: one of its own sources, never the page it was asked on. */
+export const askNextPageFixture: AskNextPage = {
+  url: '/who-we-help/platforms-digital-products',
+  title: 'Platforms & Digital Products',
+}

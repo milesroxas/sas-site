@@ -40,12 +40,15 @@ POST /api/ask
   ├─ in parallel:
   │    ├─ resolveJourney() the journey's paths → titles from the Ask index
   │    ├─ judgeTurn()      one Jev request: `request` Choice, the `own_project`,
-  │    │                   `general_question` and `names_work` Nouls,
+  │    │                   `general_question`, `names_work` and `asks_to_send` Nouls,
   │    │                   `depends_on_previous` on a follow-up, and
   │    │                   `open_reference` on a page about one thing
   │    └─ embedMany()      [question], + [previous + question] on a follow-up,
   │                        + ["About {page title}: question"] on such a page
+  │    │                   + beside it on a follow-up, one request over the offer
+  │    │                   on screen: `accepts_offer`, `answers_reply`
   ├─ routeTurn()           plain `if`s over ASK_JUDGE_THRESHOLDS
+  │    ├─ asks for the team, or a yes to the offer → `person` card, form open
   │    ├─ card             → the handoff card, no retrieval, no model
   │    ├─ conversation     → chat-only prompt, no retrieval, no tool
   │    ├─ evidence         → pgvector with the query form `depends_on_previous` picked,
@@ -54,8 +57,12 @@ POST /api/ask
   ├─ judgePassages()       one Jev request per candidate chunk, all in parallel:
   │                        `is_relevant`, `has_evidence` → keep or drop in code
   │    └─ nothing kept     → card (`no_answer`, or the turn's own reason), no model
+  ├─ judgeNextPage()       one Jev Choice over the reply's pages (titles only), while
+  │                        the model writes
   ├─ streamText()          kept chunks only, NO tools, prompt without the tool rules
-  └─ card after the text   written by code when the route carries a reason
+  └─ after the text        the page card (`data-nextPage`: Jev's pick, retrieval's top
+                           page without one), then the handoff card when the route
+                           carries a reason
 ```
 
 ## Files
@@ -356,3 +363,30 @@ the corpus is current the moment Ask comes back.
 - **An abandoned handoff form loses its draft.** The offer follows the latest reply, so a
   form opened and then left for a new question closes. A send already in flight still lands:
   `markSent` lives in the surface hook, so the receipt pins to the reply it was sent from.
+
+## Tap, never directions
+
+A reply's words never carry a path, a link, or "go to this page": on a phone
+that is a dead string. The way anywhere is something to tap.
+
+- **The page to open next** is a card under the answer (`AskNextPageCard` in
+  `Sources.tsx`), from a `data-nextPage` part the endpoint writes after the
+  words. The page is one of the reply's own sources, never the page the
+  visitor is on: Jev's pick (`judgeNextPage`, a Choice with a `none` option),
+  or retrieval's top page when the judge is off, failed, or unsure. A
+  confident `none` means no card. Every surface (menu, closing band, `/ask`)
+  renders it through the shared transcript.
+- **A person** is the form. When the visitor asks for their question to reach
+  the team, in words or with a yes to the offer on screen, the turn is the
+  `person` card with the form already open under its lead line
+  (`ASK_HANDOFFS[kind].opens`); `contact_details` opens the same way. Kinds the
+  visitor did not ask for (an estimate, a project, no answer) stay a quiet
+  offer row until picked.
+- The prompt says both, and says the chat itself sends nothing: a reply never
+  claims a handoff that did not happen, and never tells the visitor what the
+  chat can't do.
+
+The send thresholds and the page pick's confidence floor are not tuned yet:
+run `scripts/ask-judge-eval.ts --send` with `TYPESAFE_API_KEY` and set
+`asksToSend`, `acceptsOffer`, `answersReply` and `nextPage` in
+`ASK_JUDGE_THRESHOLDS` from its numbers.

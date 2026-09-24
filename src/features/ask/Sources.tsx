@@ -18,6 +18,7 @@ import type { CollectionSlug } from 'payload'
 import { useId, useState } from 'react'
 import { surfaceForPath } from '@/shared/content/surfaces'
 import { cn } from '@/utilities/ui'
+import type { AskNextPage } from './handoff'
 
 /**
  * A glyph per content surface, so a row says what kind of page it opens
@@ -92,6 +93,44 @@ export function AskSources({ sources }: { sources: SourceUrlUIPart[] }) {
         </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * The page a reply points to next, as one row on the Sources group's ground:
+ * the same glyph, title and section lanes, so it reads as that list's first
+ * row brought out where the answer ends. The reply's words never carry the
+ * path (prompts.ts); this is the way there.
+ */
+export function AskNextPageCard({ page }: { page: AskNextPage }) {
+  const surface = surfaceForPath(page.url)
+  const Glyph = (surface && SURFACE_GLYPHS[surface.collection]) || IconFileText
+
+  return (
+    <Link
+      className={cn(
+        'group/source pressable pressable-subtle flex min-h-14 items-center gap-2.5 rounded-xl bg-muted px-3 py-2',
+        ROW_HOVER,
+        ROW_FOCUS,
+      )}
+      href={page.url}
+    >
+      <span
+        aria-hidden
+        className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-background shadow-xs ring-1 ring-foreground/6"
+      >
+        <Glyph className="size-3.5 text-primary" />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-base/6 md:text-sm/5">{page.title}</span>
+        {surface ? (
+          <span className="truncate text-xs/4 text-muted-foreground">{surface.title}</span>
+        ) : null}
+      </span>
+      <span aria-hidden className="flex size-4 shrink-0 items-center justify-center">
+        <IconArrowRight className="size-3.5 text-muted-foreground motion-safe:transition-[translate,color] motion-safe:duration-150 motion-safe:ease-out group-hover/source:text-foreground pointer-fine:group-hover/source:translate-x-px" />
+      </span>
+    </Link>
   )
 }
 

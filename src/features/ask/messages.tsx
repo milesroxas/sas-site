@@ -13,12 +13,13 @@ import {
   type AskHandoffTerms,
   type AskUIMessage,
   handoffOf,
+  nextPageOf,
 } from './handoff'
 import { messageText } from './messageText'
 import { handoffAfterLead, transcriptItemEnter } from './motion'
 import { AskRating } from './Rating'
 import { ASK_NOTICE } from './retention'
-import { AskSources } from './Sources'
+import { AskNextPageCard, AskSources } from './Sources'
 
 /**
  * Shared transcript pieces for every Ask surface (the takeover-menu chat, the
@@ -279,6 +280,7 @@ export function AskMessage({
   streaming?: boolean
 }) {
   const isUser = message.role === 'user'
+  const nextPage = isUser || streaming ? null : nextPageOf(message)
   const sources =
     isUser || streaming
       ? []
@@ -295,6 +297,11 @@ export function AskMessage({
             <p className="whitespace-pre-wrap">{messageText(message)}</p>
           </BubbleContent>
         </Bubble>
+        {nextPage && (
+          <div className={transcriptItemEnter}>
+            <AskNextPageCard page={nextPage} />
+          </div>
+        )}
         {sources.length > 0 && (
           <div className={transcriptItemEnter}>
             <AskSources sources={sources} />

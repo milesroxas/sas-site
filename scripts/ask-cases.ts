@@ -219,3 +219,58 @@ export const ASK_JOURNEY_CASES: AskJourneyCase[] = [
     sources: ['/expertise/embedded-creative-digital-services'],
   },
 ]
+
+/**
+ * A turn that asks for the visitor's question to reach the team, in words or
+ * with a yes to the offer on screen (judge.ts, `wantsTheTeam`). `offer` is
+ * the offer under the reply the visitor answers, and `reply` that reply's
+ * words; a first turn has neither. `sends` is whether the turn must open the
+ * form. `scripts/ask-judge-eval.ts --send` reads these.
+ */
+export type AskSendCase = {
+  id: string
+  question: string
+  offer?: string
+  reply?: string
+  sends: boolean
+}
+
+const QUIET_OFFER = 'Want a person to reply?'
+const AUDIT_REPLY =
+  'We start with a performance audit: image weight, heavy scripts and third-party tools, then fix what slows the pages down.'
+
+export const ASK_SEND_CASES: AskSendCase[] = [
+  // Asked in words, on any turn.
+  { id: 'send-this', question: 'Can you send this to the team?', sends: true },
+  { id: 'pass-on', question: 'Please pass my question on to someone.', sends: true },
+  { id: 'get-back', question: 'Have someone get back to me about this.', sends: true },
+  // A yes to the offer on screen, the case that reached production as "Done, we've sent it".
+  { id: 'yes', question: 'yes', offer: QUIET_OFFER, reply: AUDIT_REPLY, sends: true },
+  { id: 'yes-please', question: 'Yes please', offer: QUIET_OFFER, reply: AUDIT_REPLY, sends: true },
+  {
+    id: 'yes-partner',
+    question: 'sure, go ahead',
+    offer: 'Want to talk it through with a partner?',
+    reply: AUDIT_REPLY,
+    sends: true,
+  },
+  // A yes that answers what the reply asked: a conversation, never the form.
+  {
+    id: 'yes-to-reply',
+    question: 'yes',
+    offer: QUIET_OFFER,
+    reply: `${AUDIT_REPLY} Want to hear how the audit works?`,
+    sends: false,
+  },
+  // Not a request to reach anyone.
+  { id: 'no-thanks', question: 'No thanks', offer: QUIET_OFFER, reply: AUDIT_REPLY, sends: false },
+  {
+    id: 'thanks',
+    question: 'Thanks, that helps!',
+    offer: QUIET_OFFER,
+    reply: AUDIT_REPLY,
+    sends: false,
+  },
+  { id: 'question', question: 'What is your process like?', sends: false },
+  { id: 'team-size', question: 'How big is your team?', sends: false },
+]

@@ -1,4 +1,4 @@
-import type { UIDataTypes, UIMessage } from 'ai'
+import type { UIMessage } from 'ai'
 import type { SiteInfo } from '@/payload-types'
 import {
   INQUIRY_RESPONSE_TIME_FALLBACK,
@@ -78,8 +78,27 @@ export type AskUITools = {
   handoff: { input: { reason: AskHandoffReason }; output: AskHandoff }
 }
 
-/** One message in an Ask transcript: text, source links, and the handoff. */
-export type AskUIMessage = UIMessage<unknown, UIDataTypes, AskUITools>
+/**
+ * The page a reply points to next, as a card under the answer: the reply's
+ * words never carry a path or a link (prompts.ts), so the way there is always
+ * something to tap. One of the reply's own sources, picked by code (judge.ts,
+ * `pickNextPage`).
+ */
+export type AskNextPage = { url: string; title: string }
+
+/** Data parts code writes into a reply beside the model's words (`data-nextPage`). */
+export type AskUIData = { nextPage: AskNextPage }
+
+/** One message in an Ask transcript: text, source links, the next page, and the handoff. */
+export type AskUIMessage = UIMessage<unknown, AskUIData, AskUITools>
+
+/** The page card a reply carries, or null. */
+export function nextPageOf(message: Pick<AskUIMessage, 'parts'>): AskNextPage | null {
+  for (const part of message.parts) {
+    if (part.type === 'data-nextPage') return part.data
+  }
+  return null
+}
 
 type AskHandoffCopy = {
   /** What the inquiry is filed as, which decides who in the studio is notified. */
@@ -92,6 +111,12 @@ type AskHandoffCopy = {
   lead: string | null
   /** The offer's line beside "Talk to the team". */
   offer: string
+  /**
+   * The visitor asked for this, so the form is already open under the lead:
+   * no chip to find first. The other kinds are an offer the visitor may not
+   * want, so they stay one quiet row until picked.
+   */
+  opens: boolean
 }
 
 /**
@@ -106,34 +131,40 @@ export const ASK_HANDOFFS: Record<AskHandoffKind, AskHandoffCopy> = {
     form: 'project',
     lead: 'Pricing and timing depend on the project, so that one is for a partner.',
     offer: 'Want a partner to price it?',
+    opens: false,
   },
   project: {
     form: 'project',
     lead: 'That sounds like a project worth a real conversation.',
     offer: 'Want to talk it through with a partner?',
+    opens: false,
   },
   person: {
     form: 'general',
-    lead: "That's one for a person, not the chat.",
+    lead: 'Happy to put you in touch. Add your name and email and the team will take it from here.',
     offer: 'Want a partner to reply?',
+    opens: true,
   },
   contact_details: {
     form: 'general',
-    lead: "Thanks. This chat can't pass details on, but the team can take it from here.",
+    lead: 'Thanks. Check your details below and the team will take it from here.',
     offer: 'Send your details to the team?',
+    opens: true,
   },
   no_answer: {
     form: 'general',
     lead: "The site doesn't cover that, but the team can.",
     offer: 'Want a person to answer?',
+    opens: false,
   },
   case_study: {
     form: 'general',
     lead: 'We have not published the full story of this project yet.',
     offer:
       'The full case study is still being written. A partner can walk you through it and similar work.',
+    opens: false,
   },
-  none: { form: 'general', lead: null, offer: 'Want a person to reply?' },
+  none: { form: 'general', lead: null, offer: 'Want a person to reply?', opens: false },
 }
 
 /** The form's promise: a person, by email, on Site Info's clock. */

@@ -88,6 +88,21 @@ export const ASK_JUDGE_THRESHOLDS = {
   relevant: 0.45,
   /** `has_evidence` above which a relevant passage is kept. */
   evidence: 0.55,
+  /**
+   * `asks_to_send` at or above which the turn is the person card with the form already open:
+   * the visitor asked for their question to reach the team. Not yet tuned against the fixture
+   * (`scripts/ask-judge-eval.ts --send`); set high so a wrong yes stays rare.
+   */
+  asksToSend: 0.7,
+  /** `accepts_offer` at or above which a follow-up is a yes to the offer on screen. Not yet tuned. */
+  acceptsOffer: 0.7,
+  /** `answers_reply` at or above which that yes answers the reply's own question instead. Not yet tuned. */
+  answersReply: 0.5,
+  /**
+   * `next_page` confidence below which Jev's pick is set aside for retrieval's top page.
+   * Not yet tuned: a wrong pick is still one of the reply's own sources.
+   */
+  nextPage: 0.35,
 } as const
 
 const REQUEST_CRITERIA = {
@@ -126,6 +141,16 @@ const TURN_QUESTIONS = {
         "It is only about the visitor's own project, a request for a person, or not about the studio at all.",
     },
   ),
+  // "Send this to the team" is not a question for the site, and the chat has
+  // no way to send anything: it is the form, open, with no model call.
+  asks_to_send: noul(
+    "Does `question` ask for the visitor's question, details, or project to be sent or passed on to the team, or ask the team to get in touch?",
+    {
+      true: 'It asks to send, pass on, forward, or share something with the team, or asks the team to reply, call, or email, such as "send this to the team", "can you pass this on?", or "have someone get back to me".',
+      false:
+        'It asks a question, says thanks, or says something else, without asking for anything to reach the team.',
+    },
+  ),
   names_work: noul('Does `question` name the kind of work the visitor wants done?', {
     true: 'It names a service, a platform, or a deliverable, such as a website, a rebrand, an app, or Webflow.',
     false:
@@ -159,6 +184,34 @@ const CONTEXT_QUESTIONS = {
 }
 
 const ALL_TURN_QUESTIONS = { ...TURN_QUESTIONS, ...CONTEXT_QUESTIONS }
+
+/**
+ * Asked in a request of their own, over the offer the visitor last saw: that
+ * state would cost the turn questions accuracy (jev-1.13 jaggedness: large
+ * irrelevant state). A bare "yes" reads the same whether it takes the offer
+ * or answers something the reply asked, so both are asked literally and code
+ * combines them (`wantsTheTeam`).
+ */
+const OFFER_QUESTIONS = {
+  accepts_offer: noul('Does `question` say yes to `offer_on_screen`?', {
+    true: 'It agrees or accepts, such as "yes", "sure", "please", "yes please send it", "ok", or "go ahead".',
+    false: 'It declines, asks something new, or says something that is not a yes.',
+  }),
+  answers_reply: noul(
+    'Does `previous_reply` end with a question to the visitor that `question` answers?',
+    {
+      true: '`previous_reply` asks the visitor something, such as "Want to hear more about our process?", and `question` replies to it.',
+      false:
+        '`previous_reply` asks the visitor nothing, or `question` does not reply to what it asks.',
+    },
+  ),
+}
+
+/** The offer the visitor last saw, for a follow-up: its line, and the reply it closed. */
+export type AskOfferOnScreen = { offer: string; reply: string }
+
+/** The reply's text as Jev reads it: its end, where a question to the visitor would be. */
+const MAX_REPLY_CHARS = 400
 type ContextQuestionId = keyof typeof CONTEXT_QUESTIONS
 
 const PASSAGE_QUESTIONS = {
@@ -177,6 +230,12 @@ export type AskTurnJudgment = {
   generalQuestion: number
   /** The turn names the kind of work wanted, which the site may have something to say about. */
   namesWork: number
+  /** The turn asks for something to reach the team. */
+  asksToSend: number
+  /** A yes to the offer on screen. Null without one, or when that check failed. */
+  acceptsOffer: number | null
+  /** The turn answers a question the last reply asked. Null alongside `acceptsOffer`. */
+  answersReply: number | null
   /** Null on a first turn, where there is no previous question to depend on. */
   dependsOnPrevious: number | null
   /** The turn points at something it does not name. Null when there is no known page for it to be. */
@@ -253,12 +312,15 @@ export async function judgeTurn({
   question,
   previousQuestion,
   onKnownPage = false,
+  offerOnScreen = null,
   ...call
 }: JudgeCall & {
   question: string
   previousQuestion: string | null
   /** The question was asked on a page the index knows, so an open reference has a page to mean. */
   onKnownPage?: boolean
+  /** The offer under the last reply, on a follow-up before the visitor has sent. */
+  offerOnScreen?: AskOfferOnScreen | null
 }): Promise<AskTurnJudgment | null> {
   const jev = judgeClient(call.logger)
   if (!jev) return null
@@ -274,16 +336,34 @@ export async function judgeTurn({
         ([id]) => !(id in asked) || asked[id as ContextQuestionId],
       ),
     ) as typeof ALL_TURN_QUESTIONS
+    const redacted = redactFreeText(question)
+    // Side by side: the offer check adds no wait, and its failure only loses its own answers.
+    const offer = offerOnScreen
+      ? jev
+          .systemOne(
+            {
+              state: {
+                question: redacted,
+                offer_on_screen: offerOnScreen.offer,
+                previous_reply: redactFreeText(offerOnScreen.reply).slice(-MAX_REPLY_CHARS),
+              },
+              questions: OFFER_QUESTIONS,
+            },
+            requestOptions(call),
+          )
+          .catch(() => null)
+      : null
     const result = await jev.systemOne(
       {
         state: {
-          question: redactFreeText(question),
+          question: redacted,
           ...(previousQuestion ? { previous_question: redactFreeText(previousQuestion) } : {}),
         },
         questions,
       },
       requestOptions(call),
     )
+    const offered = offer ? await offer : null
 
     // Only what was asked comes back, whatever the cast above says.
     const answers: Omit<typeof result.answers, ContextQuestionId> &
@@ -295,10 +375,13 @@ export async function judgeTurn({
       ownProject: answers.own_project.noul,
       generalQuestion: answers.general_question.noul,
       namesWork: answers.names_work.noul,
+      asksToSend: answers.asks_to_send.noul,
+      acceptsOffer: offered?.answers.accepts_offer.noul ?? null,
+      answersReply: offered?.answers.answers_reply.noul ?? null,
       dependsOnPrevious: answers.depends_on_previous?.noul ?? null,
       openReference: answers.open_reference?.noul ?? null,
       model: result.model,
-      inputTokens: result.usage.input_tokens,
+      inputTokens: result.usage.input_tokens + (offered?.usage.input_tokens ?? 0),
       ms: Math.round(performance.now() - startedAt),
     }
   } catch (err) {
@@ -374,11 +457,16 @@ export function routeTurn(
   judgment: AskTurnJudgment | null,
   { isFollowUp, handoffState }: { isFollowUp: boolean; handoffState: AskHandoffState },
 ): AskTurnRoute {
-  if (!judgment || judgment.confidence < ASK_JUDGE_THRESHOLDS.low) return { kind: 'fallback' }
+  if (!judgment) return { kind: 'fallback' }
 
   // Once the visitor has sent their details there is never a card, and a turn
   // that would have been one is today's path: the model, told not to offer.
   const mayOffer = handoffState !== 'sent'
+
+  // Asked for, so the person card opens straight into the form. Its own
+  // Nouls, so an unsure `request` does not hold it back.
+  if (mayOffer && wantsTheTeam(judgment)) return { kind: 'card', reason: 'person' }
+  if (judgment.confidence < ASK_JUDGE_THRESHOLDS.low) return { kind: 'fallback' }
 
   switch (judgment.request) {
     case 'person':
@@ -397,6 +485,19 @@ export function routeTurn(
     default:
       return { kind: 'evidence', reason: null }
   }
+}
+
+/**
+ * Whether the visitor asked for their question to reach the team: in words,
+ * or with a yes to the offer on screen that is not an answer to something
+ * the reply itself asked.
+ */
+export function wantsTheTeam(judgment: AskTurnJudgment): boolean {
+  if (judgment.asksToSend >= ASK_JUDGE_THRESHOLDS.asksToSend) return true
+  return (
+    (judgment.acceptsOffer ?? 0) >= ASK_JUDGE_THRESHOLDS.acceptsOffer &&
+    (judgment.answersReply ?? 0) < ASK_JUDGE_THRESHOLDS.answersReply
+  )
 }
 
 /**
@@ -444,4 +545,81 @@ export function routePassage(answers: AskPassageAnswers | null): 'keep' | 'drop'
  */
 export function routeCardReason(route: AskTurnRoute): AskHandoffReason | null {
   return route.kind === 'card' || route.kind === 'evidence' ? route.reason : null
+}
+
+/** A page a reply may point to next: one of its sources, with the section it sits in. */
+export type AskPageCandidate = { url: string; title: string; section: string | null }
+
+export type AskNextPageJudgment = {
+  /** Index into the candidates, or null when Jev says none of them would help. */
+  pick: number | null
+  confidence: number
+  inputTokens: number
+  ms: number
+}
+
+/**
+ * One Jev request: which of the reply's pages the visitor should open next,
+ * or none. A Choice, so the pages compete for the pick; titles and sections
+ * only, never the page text (jev-1.13 jaggedness: large irrelevant state).
+ * Null on any failure, and code falls back to retrieval's top page.
+ */
+export async function judgeNextPage({
+  question,
+  pages,
+  ...call
+}: JudgeCall & {
+  question: string
+  pages: AskPageCandidate[]
+}): Promise<AskNextPageJudgment | null> {
+  const jev = judgeClient(call.logger)
+  if (!jev || pages.length === 0) return null
+
+  const startedAt = performance.now()
+  try {
+    const criteria: Record<string, string> = Object.fromEntries(
+      pages.map((page, i) => [
+        `page_${i + 1}`,
+        `The page "${page.title}"${page.section ? ` (${page.section})` : ''}.`,
+      ]),
+    )
+    criteria.none = 'None of these pages would help the visitor with `question`.'
+    const { answers, usage } = await jev.systemOne(
+      {
+        state: { question: redactFreeText(question) },
+        questions: {
+          next_page: choice(
+            'Which page should the visitor open next to learn more about what `question` asks?',
+            criteria,
+          ),
+        },
+      },
+      requestOptions(call),
+    )
+    const label = answers.next_page.choice
+    const index = label === 'none' ? null : Number(label.replace('page_', '')) - 1
+    return {
+      pick: index !== null && index >= 0 && index < pages.length ? index : null,
+      confidence: answers.next_page.confidence,
+      inputTokens: usage.input_tokens,
+      ms: Math.round(performance.now() - startedAt),
+    }
+  } catch (err) {
+    if (!call.signal?.aborted) {
+      call.logger?.warn({ msg: 'ask judge: next page check failed', error: errorName(err) })
+    }
+    return null
+  }
+}
+
+/**
+ * The page card a reply closes with. Jev's confident pick; its confident
+ * "none" means no card; anything else (no judge, a failure, an unsure pick)
+ * is retrieval's top page, so a grounded reply always has somewhere to tap
+ * unless Jev said none would help.
+ */
+export function pickNextPage<T>(candidates: T[], judgment: AskNextPageJudgment | null): T | null {
+  if (candidates.length === 0) return null
+  if (!judgment || judgment.confidence < ASK_JUDGE_THRESHOLDS.nextPage) return candidates[0] ?? null
+  return judgment.pick === null ? null : (candidates[judgment.pick] ?? candidates[0] ?? null)
 }

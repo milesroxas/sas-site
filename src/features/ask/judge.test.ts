@@ -7,9 +7,11 @@ import {
   judgePassages,
   judgeTurn,
   leansOnPage,
+  pickNextPage,
   routeCardReason,
   routePassage,
   routeTurn,
+  wantsTheTeam,
 } from './judge'
 
 const T = ASK_JUDGE_THRESHOLDS
@@ -30,6 +32,9 @@ function judgment(overrides: Partial<AskTurnJudgment> = {}): AskTurnJudgment {
     ownProject: 0.05,
     generalQuestion: 0.9,
     namesWork: 0.05,
+    asksToSend: 0.02,
+    acceptsOffer: null,
+    answersReply: null,
     dependsOnPrevious: null,
     openReference: null,
     model: 'jev-test',
@@ -58,6 +63,33 @@ describe('askJudgeMode', () => {
 })
 
 describe('routeTurn', () => {
+  it('opens the person card when the visitor asks for their question to reach the team', () => {
+    const asks = judgment({ request: 'other', confidence: 0.2, asksToSend: T.asksToSend })
+    // An unsure `request` does not hold it back.
+    expect(routeTurn(asks, firstTurn)).toEqual({ kind: 'card', reason: 'person' })
+    // Once sent there is never a card.
+    expect(routeTurn(asks, { isFollowUp: true, handoffState: 'sent' })).toEqual({
+      kind: 'fallback',
+    })
+  })
+
+  it('takes a yes to the offer on screen, unless it answers what the reply asked', () => {
+    const yes = judgment({
+      request: 'conversation',
+      acceptsOffer: T.acceptsOffer,
+      answersReply: 0.1,
+    })
+    expect(routeTurn(yes, followUp)).toEqual({ kind: 'card', reason: 'person' })
+    expect(routeTurn(judgment({ ...yes, answersReply: T.answersReply }), followUp)).toEqual({
+      kind: 'conversation',
+    })
+    expect(routeTurn(judgment({ ...yes, acceptsOffer: T.acceptsOffer - 0.01 }), followUp)).toEqual({
+      kind: 'conversation',
+    })
+    // No offer check (none on screen, or it failed): the yes stays a conversation.
+    expect(wantsTheTeam(judgment({ request: 'conversation' }))).toBe(false)
+  })
+
   it("falls back to today's path without a judgment or below the confidence floor", () => {
     expect(routeTurn(null, firstTurn)).toEqual({ kind: 'fallback' })
     expect(routeTurn(judgment({ confidence: T.low - 0.01 }), firstTurn)).toEqual({
@@ -191,5 +223,27 @@ describe('without a key', () => {
     } finally {
       if (key !== undefined) process.env.TYPESAFE_API_KEY = key
     }
+  })
+})
+
+describe('pickNextPage', () => {
+  const pages = ['a', 'b', 'c']
+  const judged = (pick: number | null, confidence: number) => ({
+    pick,
+    confidence,
+    inputTokens: 80,
+    ms: 120,
+  })
+
+  it("takes Jev's confident pick, and no page when it confidently says none", () => {
+    expect(pickNextPage(pages, judged(2, T.nextPage))).toBe('c')
+    expect(pickNextPage(pages, judged(null, 0.9))).toBeNull()
+  })
+
+  it("falls back to retrieval's top page without a judgment or on an unsure one", () => {
+    expect(pickNextPage(pages, null)).toBe('a')
+    expect(pickNextPage(pages, judged(2, T.nextPage - 0.01))).toBe('a')
+    expect(pickNextPage(pages, judged(null, T.nextPage - 0.01))).toBe('a')
+    expect(pickNextPage([], null)).toBeNull()
   })
 })

@@ -35,7 +35,7 @@ export function askHandoffTool(siteInfo: SiteInfo) {
             type: 'string',
             enum: [...ASK_TOOL_HANDOFF_REASONS],
             description:
-              'estimate: what their own project would cost, how long it would take, or when we could start. project: they say they have a project, or ask us to do something for them (not a question about how we work or how projects start). person: they ask for a person by name or role, or to be called or emailed. contact_details: they shared an email address or phone number (a name alone is not a request). no_answer: nothing in the sources answers the question.',
+              'estimate: what their own project would cost, how long it would take, or when we could start. project: they say they have a project, or ask us to do something for them (not a question about how we work or how projects start). person: they ask for a person by name or role, to be called or emailed, or for their question to be sent to the team, or say yes to the offer to reach a person under your last reply. contact_details: they shared an email address or phone number (a name alone is not a request). no_answer: nothing in the sources answers the question.',
           },
         },
         required: ['reason'],

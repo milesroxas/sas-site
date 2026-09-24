@@ -12,25 +12,32 @@ import type { Endpoint, PayloadRequest } from 'payload'
 import { backfillAskIndex, isBackfillRunning, readLastIndexRebuild } from '@/features/ask/backfill'
 import {
   ASK_HANDOFF_STATES,
+  ASK_HANDOFFS,
   type AskHandoff,
   type AskHandoffReason,
   type AskHandoffState,
+  type AskNextPage,
   type AskUIMessage,
+  handoffOf,
 } from '@/features/ask/handoff'
 import { askHandoffTool, resolveAskHandoff } from '@/features/ask/handoffTool'
 import { askHistory } from '@/features/ask/history'
 import { journeyFrom } from '@/features/ask/journey'
 import { EMPTY_JOURNEY, resolveJourney } from '@/features/ask/journeyPages'
 import {
+  type AskNextPageJudgment,
+  type AskOfferOnScreen,
   type AskPassage,
   type AskPassageJudgment,
   type AskTurnJudgment,
   type AskTurnRoute,
   askJudgeMode,
   dependsOnPrevious,
+  judgeNextPage,
   judgePassages,
   judgeTurn,
   leansOnPage,
+  pickNextPage,
   routeCardReason,
   routePassage,
   routeTurn,
@@ -71,6 +78,7 @@ import {
   askOutcome,
 } from '@/features/ask/vocabulary'
 import { isOption } from '@/shared/content/options'
+import { surfaceForPath } from '@/shared/content/surfaces'
 import { afterResponse } from '@/utilities/afterResponse'
 import { findEmailAddress } from '@/utilities/emailAddress'
 import { captureServerEvent } from '@/utilities/posthog'
@@ -164,6 +172,28 @@ function previousUserQuestion(messages: UIMessage[]): string | null {
     .filter((message) => message.role === 'user')
     .at(-1)
   return previousUser ? messageText(previousUser).trim() || null : null
+}
+
+/**
+ * The offer under the reply the visitor is answering, so Jev can tell a "yes"
+ * to it (judge.ts, `accepts_offer`). Every settled reply closes with one until
+ * the visitor has sent: its reason's line, or the quiet one. Read from the
+ * transcript as sent, since `askHistory` keeps text parts only.
+ */
+function offerOnScreen(
+  messages: UIMessage[],
+  handoffState: AskHandoffState,
+): AskOfferOnScreen | null {
+  const reply = messages.at(-2)
+  if (handoffState === 'sent' || reply?.role !== 'assistant') return null
+  try {
+    const handoff = handoffOf(reply as AskUIMessage)
+    const copy = ASK_HANDOFFS[handoff?.reason ?? 'none']
+    return { offer: copy.offer, reply: messageText(reply).trim() || (copy.lead ?? '') }
+  } catch {
+    // A part the client sent malformed: no offer check, the turn routes as before.
+    return null
+  }
 }
 
 /** Escapes the attribute values interpolated into the source tags. */
@@ -309,6 +339,8 @@ const ask: Endpoint = {
       pageAttached: boolean
       /** The turn was answered from a thin case study's brief. */
       thinStory: boolean
+      /** Jev's page pick, for a grounded reply; null when it was not asked or failed. */
+      nextPage: Promise<AskNextPageJudgment | null> | null
     } = {
       turn: null,
       judgment: null,
@@ -319,6 +351,7 @@ const ask: Endpoint = {
       modelSkipped: false,
       pageAttached: false,
       thinStory: false,
+      nextPage: null,
     }
     const markFirstOutput = () => {
       judged.firstOutputMs ??= Date.now() - startedAt
@@ -359,6 +392,7 @@ const ask: Endpoint = {
         // Shadow mode never waits on Jev in the response path, so its answers
         // are collected here; each is bounded by the judge's own timeout.
         const judgment = judged.turn ? await judged.turn : judged.judgment
+        const nextPageJudgment = judged.nextPage ? await judged.nextPage : null
         const checks = (await Promise.all(judged.passages)).filter((check) => check !== null)
         const passages =
           checks.length > 0
@@ -401,6 +435,8 @@ const ask: Endpoint = {
           page_leaned: subjectPage ? leansOnPage(judgment) : null,
           page_attached: judged.pageAttached,
           story_thin: judged.thinStory,
+          next_page_ms: nextPageJudgment?.ms ?? null,
+          next_page_none: nextPageJudgment ? nextPageJudgment.pick === null : null,
           answer_model: judged.modelSkipped ? null : askModel.modelId,
         }
         req.payload.logger.info({
@@ -470,6 +506,7 @@ const ask: Endpoint = {
         question,
         previousQuestion,
         onKnownPage: subjectPage !== null,
+        offerOnScreen: offerOnScreen(rawMessages, handoffState),
         signal: req.signal,
         logger: req.payload.logger,
       })
@@ -595,6 +632,33 @@ const ask: Endpoint = {
       .filter(Boolean)
       .join('\n\n')
 
+    // The page card: one of the reply's sources, never the page the visitor
+    // is already on. Jev picks it while the model writes (`on`); without the
+    // judge it is retrieval's top page. A thin story's reply has none: its
+    // one page is the page they are on.
+    const pageCandidates =
+      grounded && !thinStory
+        ? sources
+            .filter((source) => source.url !== pagePath)
+            .map((source) => ({
+              url: source.url,
+              title: source.title,
+              section: surfaceForPath(source.url)?.title ?? null,
+            }))
+        : []
+    if (mode === 'on' && pageCandidates.length > 0) {
+      judged.nextPage = judgeNextPage({
+        question,
+        pages: pageCandidates,
+        signal: req.signal,
+        logger: req.payload.logger,
+      })
+    }
+    const nextPage = async (): Promise<AskNextPage | null> => {
+      const page = pickNextPage(pageCandidates, judged.nextPage ? await judged.nextPage : null)
+      return page ? { url: page.url, title: page.title } : null
+    }
+
     const tools = offersTool ? { handoff: askHandoffTool(siteInfo) } : undefined
     const result = streamText({
       model: askModel,
@@ -659,24 +723,15 @@ const ask: Endpoint = {
             title: source.title,
           })
         }
-        // The Ask UI renders text, sources, and the handoff card. Reasoning
-        // parts would carry the encrypted reasoning blob to the browser and
-        // back on every turn.
-        if (!closingCard) {
-          writer.merge(
-            toUIMessageStream<NonNullable<typeof tools>, AskUIMessage>({
-              stream: result.fullStream,
-              sendStart: false,
-              sendReasoning: false,
-            }),
-          )
-          return
-        }
-
-        // The card after the words: the model's stream is forwarded without
-        // its finish, then code writes the same part the tool call would
-        // have, so a partial answer reliably ends in its offer. A reply that
-        // was stopped or failed gets no card.
+        // The Ask UI renders text, sources, the page card, and the handoff
+        // card. Reasoning parts would carry the encrypted reasoning blob to
+        // the browser and back on every turn.
+        //
+        // The cards after the words: the model's stream is forwarded without
+        // its finish, then code writes the page card and, when the route
+        // carries one, the same handoff part the tool call would have, so a
+        // partial answer reliably ends in its offer. A reply that was stopped
+        // or failed gets neither.
         const reader = toUIMessageStream<NonNullable<typeof tools>, AskUIMessage>({
           stream: result.fullStream,
           sendStart: false,
@@ -690,7 +745,11 @@ const ask: Endpoint = {
           if (value.type === 'abort' || value.type === 'error') settled = false
           writer.write(value)
         }
-        if (settled) writeHandoff(writer, resolveAskHandoff(siteInfo, closingCard))
+        if (settled) {
+          const page = await nextPage()
+          if (page) writer.write({ type: 'data-nextPage', id: generateId(), data: page })
+          if (closingCard) writeHandoff(writer, resolveAskHandoff(siteInfo, closingCard))
+        }
         writer.write({ type: 'finish' })
       },
       onError: (err) => {

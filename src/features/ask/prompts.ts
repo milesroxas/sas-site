@@ -18,9 +18,18 @@ import type { AskJourneyContext } from './journeyPages'
 // The house voice (docs/editorial/voice.md), in the one line a system prompt has room for.
 const VOICE = `Speak as the studio ("we") in a warm, direct, plain voice. ${VOICE_PROMPT_LINE}`
 
+/**
+ * The way anywhere is something to tap, never directions in the words: the
+ * page to open next is a card under the reply (the endpoint's `data-nextPage`
+ * part) and the way to a person is the form. A path in the text ("see
+ * /expertise/webflow") is a dead string on a phone.
+ */
+const NO_DIRECTIONS =
+  'Never write a URL, a page path, or a link, and never tell the visitor to go to, visit, check, or browse a page or the site: the page to open next is shown as a card under your reply. Never say "browse the site".'
+
 const REACHING_A_PERSON = `Reaching a person:
 - The handoff tool offers the visitor a way to send their question to the team: a line under your reply and a button that opens a name and email form, filed to our inbox, with our reply time on it. Use it only when a person is the best next step. Most answers need no offer.
-- Call it when the visitor asks what their own project would cost, how long it would take, or when we could start ("estimate"); says they have a project or asks us to do something for them ("project"); asks for a person by name or role, or to be called or emailed ("person"); or shares an email address or phone number ("contact_details").
+- Call it when the visitor asks what their own project would cost, how long it would take, or when we could start ("estimate"); says they have a project or asks us to do something for them ("project"); asks for a person by name or role, to be called or emailed, or for their question to be sent to the team, or says yes to the offer under your last reply ("person"); or shares an email address or phone number ("contact_details").
 - Never call it for a question the sources answer: how we work, how projects start, our process, who we have worked with, what we offer, or how we price in general. A question the site answers never gets an offer, however likely the visitor is to become a client.
 - When the whole question is one only a person can settle (their own price, timing, or availability, a request for a person, or shared contact details), call the tool without writing anything: the offer opens with its own words.
 - Never describe the offer, its form, or our reply time; the offer says all of that.
@@ -73,7 +82,7 @@ function groundedPrompt(tool: boolean, cardFollows: boolean, handoff: AskHandoff
     : 'Then say'
   const partialAnswer = cardFollows
     ? 'If the sources answer only part of the question, answer that part confidently and leave the rest.'
-    : `If the sources answer only part of the question, answer that part confidently. ${partial} in one short sentence what we don't publish and name the page path from the matching source's url as the next step. Never say "browse the site".`
+    : `If the sources answer only part of the question, answer that part confidently. ${partial} in one short sentence what we don't publish.`
   const nothing = tool
     ? 'If nothing relevant is in the sources, call the handoff tool with reason "no_answer" and write nothing else.'
     : 'If nothing relevant is in the sources, say so in one short sentence and invite a more specific question.'
@@ -86,6 +95,7 @@ function groundedPrompt(tool: boolean, cardFollows: boolean, handoff: AskHandoff
 Grounding:
 - Use only the sources below. Never invent facts, numbers, names, dates, or prices.
 - Never mention "sources", "context", "documents", or that anything was "provided" to you. Do not cite titles inline; links are shown next to your answer.
+- ${NO_DIRECTIONS}
 
 How to answer:
 - Lead with the most useful thing the sources say, in one or two sentences.
@@ -102,7 +112,7 @@ function chatOnlyPrompt(tool: boolean, handoff: AskHandoffState): string {
 
   return `You are the Ask assistant on the Suits & Sandals website, mid-conversation. ${VOICE}
 
-No site content matched this turn, so do not state any new facts about the studio, its work, people, or prices. Respond conversationally: acknowledge, clarify, restate something already said in this conversation, or invite a more specific question. One or two sentences, plain text, no em dashes.
+No site content matched this turn, so do not state any new facts about the studio, its work, people, or prices. Respond conversationally: acknowledge, clarify, restate something already said in this conversation, or invite a more specific question. One or two sentences, plain text, no em dashes. ${NO_DIRECTIONS}
 
 ${reaching}`
 }
