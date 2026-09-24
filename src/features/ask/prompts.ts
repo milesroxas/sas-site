@@ -42,10 +42,18 @@ const cannotSend = (handoff: AskHandoffState, cardFollows: boolean): string => {
   if (cardFollows) return rule
   const where =
     handoff === 'sent'
-      ? "If the visitor asks you to send something more, say this chat cannot pass messages on and they can add it when they reply to the team's email."
-      : 'If the visitor asks you to send something, or says yes to having it sent, say plainly that this chat cannot pass messages on and that the "Talk to the team" button under this reply sends their question to the team.'
-  return `${rule} ${where}`
+      ? "If the visitor wants to add something for the team, warmly let them know they can include it when they reply to the team's email."
+      : 'If the visitor asks you to send something, or says yes to having it sent, warmly point them to the "Talk to the team" button under this reply, in one short, friendly sentence inviting them to add their name and email there so the team can pick it up.'
+  return `${rule} ${where} ${GUIDE_NOT_LIMIT}`
 }
+
+/**
+ * The visitor meets a way forward, never a missing feature: "this chat can't
+ * send that" reads as a broken product, while "add your name and email below
+ * and the team will take it from there" is the same fact as a next step.
+ */
+const GUIDE_NOT_LIMIT =
+  "Never tell the visitor what this chat can't do, and never apologize for it: guide them to the next step instead."
 
 /**
  * With no tool, and an offer that code appends after the reply: answer what

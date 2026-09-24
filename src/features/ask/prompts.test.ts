@@ -58,11 +58,14 @@ describe('askSystemPrompt', () => {
           'This chat cannot send, forward, or pass anything to the team',
         )
         expect(prompt, label).toContain('Never offer to send anything or ask whether to.')
+        // The visitor is guided to the form, never told about a limit.
+        expect(prompt, label).toContain("Never tell the visitor what this chat can't do")
+        expect(prompt, label).not.toContain('say plainly')
         if (handoff === 'sent') {
           expect(prompt, label).not.toContain('Talk to the team')
           expect(prompt.toLowerCase(), label).not.toContain('handoff')
         } else {
-          expect(prompt, label).toContain('the "Talk to the team" button under this reply')
+          expect(prompt, label).toContain('warmly point them to the "Talk to the team" button')
         }
       }
     }
