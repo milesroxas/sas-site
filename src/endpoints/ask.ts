@@ -27,6 +27,7 @@ import { EMPTY_JOURNEY, resolveJourney } from '@/features/ask/journeyPages'
 import {
   type AskNextPageJudgment,
   type AskOfferOnScreen,
+  type AskPageCandidate,
   type AskPassage,
   type AskPassageJudgment,
   type AskTurnJudgment,
@@ -41,6 +42,7 @@ import {
   routeCardReason,
   routePassage,
   routeTurn,
+  wantsTheTeam,
 } from '@/features/ask/judge'
 import { messageText } from '@/features/ask/messageText'
 import { ASK_MODEL_API_KEY_VAR, askModel } from '@/features/ask/model'
@@ -341,6 +343,8 @@ const ask: Endpoint = {
       thinStory: boolean
       /** Jev's page pick, for a grounded reply; null when it was not asked or failed. */
       nextPage: Promise<AskNextPageJudgment | null> | null
+      /** The pages the reply's page card could open; empty when it gets none. */
+      pageCandidates: AskPageCandidate[]
     } = {
       turn: null,
       judgment: null,
@@ -352,6 +356,7 @@ const ask: Endpoint = {
       pageAttached: false,
       thinStory: false,
       nextPage: null,
+      pageCandidates: [],
     }
     const markFirstOutput = () => {
       judged.firstOutputMs ??= Date.now() - startedAt
@@ -412,12 +417,16 @@ const ask: Endpoint = {
             ? passages.answers.filter((answers) => routePassage(answers) === 'keep').length
             : chunkCandidates)
         const settled = turn.outcome !== 'stopped' && turn.outcome !== 'error'
+        // The stream writes the card after this turn is recorded, so its
+        // choice is made again here, from the same candidates and judgment.
+        const pageShown = settled && pickNextPage(judged.pageCandidates, nextPageJudgment) !== null
         const facts = {
           judge_mode: mode,
           judge_ms: judgment?.ms ?? null,
           judge_failed: mode !== 'off' && judged.turn !== null && judgment === null,
           judge_request: judgment?.request ?? null,
           judge_confidence: judgment?.confidence ?? null,
+          judge_sends: judgment ? wantsTheTeam(judgment) : null,
           judge_agrees:
             mode === 'shadow' && settled && route && route.kind !== 'fallback'
               ? (hasContactDetails
@@ -436,7 +445,7 @@ const ask: Endpoint = {
           page_attached: judged.pageAttached,
           story_thin: judged.thinStory,
           next_page_ms: nextPageJudgment?.ms ?? null,
-          next_page_none: nextPageJudgment ? nextPageJudgment.pick === null : null,
+          next_page_shown: pageShown,
           answer_model: judged.modelSkipped ? null : askModel.modelId,
         }
         req.payload.logger.info({
@@ -646,6 +655,7 @@ const ask: Endpoint = {
               section: surfaceForPath(source.url)?.title ?? null,
             }))
         : []
+    judged.pageCandidates = pageCandidates
     if (mode === 'on' && pageCandidates.length > 0) {
       judged.nextPage = judgeNextPage({
         question,
