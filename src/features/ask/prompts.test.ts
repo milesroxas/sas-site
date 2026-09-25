@@ -68,10 +68,10 @@ describe('askSystemPrompt', () => {
           // Measured 2026-09-25: without a way forward to lead with, "send this
           // to the team" after sending drew "We can't send messages" 3 of 3.
           expect(prompt, label).toContain('lead with the way forward')
-          expect(prompt, label).not.toContain('Talk to the team')
+          expect(prompt, label).not.toContain('Email a partner')
           expect(prompt.toLowerCase(), label).not.toContain('handoff')
         } else {
-          expect(prompt, label).toContain('warmly point them to the "Talk to the team" button')
+          expect(prompt, label).toContain('warmly point them to the "Email a partner" button')
         }
       }
     }
@@ -83,7 +83,11 @@ describe('askSystemPrompt', () => {
       cardFollows: true,
     })
     expect(card).toContain('This chat cannot send')
-    expect(card).not.toContain('Talk to the team')
+    expect(card).not.toContain('Email a partner')
+    // Measured 2026-09-25: "Every sentence you write states..." came back as
+    // "Every sentence above matches what we publish." on 2 of 4 production replies.
+    expect(card).not.toContain('Every sentence')
+    expect(card).toContain('Never comment on your own reply')
     // With the tool, only the tool call reaches the team.
     for (const grounded of [true, false]) {
       expect(askSystemPrompt({ grounded, handoff: 'none' })).toContain(
@@ -99,7 +103,10 @@ describe('askSystemPrompt', () => {
       tool: false,
       cardFollows: true,
     })
-    expect(prompt).toContain('An offer to take this to the team follows your reply')
+    expect(prompt).toContain('How to end this reply')
+    // Told an offer follows, the model announced it ("The offer to take this to
+    // the team is shown on the page."), so the prompt never says one does.
+    expect(prompt).not.toContain('An offer')
     expect(prompt).toContain('Do not invite the visitor to share details')
     expect(prompt).not.toContain("what we don't publish and name the page path")
     // With the tool on offer the model words the partial answer itself, as before.

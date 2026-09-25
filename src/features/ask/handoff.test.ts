@@ -1,29 +1,58 @@
-import type { UIMessage } from 'ai'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { askHandoffFixture } from './fixtures'
 import {
+  ASK_HANDOFF_DRAFT_EMPTY,
   ASK_HANDOFF_REASONS,
   ASK_HANDOFFS,
+  type AskHandoffDraft,
+  type AskHandoffReason,
   type AskUIMessage,
   askHandoffEmail,
+  askHandoffForm,
   askHandoffMessage,
+  askHandoffOpen,
   askHandoffState,
   clearAskHandoff,
+  contactFromMessage,
   handoffOf,
   readAskHandoff,
   resolveAskHandoffTerms,
   saveAskHandoff,
 } from './handoff'
 
-const user = (id: string, text: string): UIMessage => ({
+const user = (id: string, text: string): AskUIMessage => ({
   id,
   role: 'user',
   parts: [{ type: 'text', text }],
 })
-const assistant = (id: string, text: string): UIMessage => ({
+const assistant = (id: string, text: string): AskUIMessage => ({
   id,
   role: 'assistant',
   parts: [{ type: 'text', text }],
+})
+/** A reply whose question Jev read as an aside (`data-turn`). */
+const afterAside = (id: string, text: string): AskUIMessage => ({
+  id,
+  role: 'assistant',
+  parts: [
+    { type: 'data-turn', id: `${id}-turn`, data: { aside: true } },
+    { type: 'text', text },
+  ],
+})
+/** A reply that is only the handoff card, or the card after `text`. */
+const carding = (id: string, reason: AskHandoffReason, text = ''): AskUIMessage => ({
+  id,
+  role: 'assistant',
+  parts: [
+    ...(text ? [{ type: 'text' as const, text }] : []),
+    {
+      type: 'tool-handoff',
+      toolCallId: `call-${id}`,
+      state: 'output-available',
+      input: { reason },
+      output: askHandoffFixture(reason),
+    },
+  ],
 })
 
 /** The ids every handoff is filed under; the tests read them back. */
@@ -161,6 +190,21 @@ describe('the card sends', () => {
     expect(askHandoffMessage([assistant('1', 'Hello')])).toBeNull()
   })
 
+  it('leaves out the asides Jev marked, unless they are all there is', () => {
+    const messages = [
+      user('1', 'My site is slow and hard to update'),
+      assistant('2', 'We run performance audits.'),
+      user('3', 'yes'),
+      afterAside('4', 'Happy to put you in touch.'),
+    ]
+    expect(askHandoffMessage(messages)).toBe(
+      'From my Ask conversation:\n- My site is slow and hard to update',
+    )
+    expect(
+      askHandoffMessage([user('1', 'Can I talk to someone?'), afterAside('2', 'Happy to.')]),
+    ).toBe('From my Ask conversation:\n- Can I talk to someone?')
+  })
+
   it('starts the email field with an address written in the chat, latest first', () => {
     expect(
       askHandoffEmail([
@@ -170,6 +214,71 @@ describe('the card sends', () => {
       ]),
     ).toBe('jordan@northwind.co')
     expect(askHandoffEmail([user('1', 'What does it cost?')])).toBeNull()
+  })
+})
+
+describe('askHandoffForm', () => {
+  it('files a project inquiry once any reply was about their own project', () => {
+    const asked = user('1', 'How much would a site cost?')
+    expect(
+      askHandoffForm([asked, carding('2', 'estimate'), user('3', 'ok'), carding('4', 'person')]),
+    ).toBe('project')
+    expect(askHandoffForm([asked, carding('2', 'person')])).toBe('general')
+    expect(askHandoffForm([asked, assistant('2', 'We start with a call.')])).toBe('general')
+  })
+})
+
+describe('askHandoffOpen', () => {
+  const draft = (overrides: Partial<AskHandoffDraft> = {}) => ({
+    ...ASK_HANDOFF_DRAFT_EMPTY,
+    ...overrides,
+  })
+
+  it('opens by itself when the visitor asked for a person or shared their details', () => {
+    expect(askHandoffOpen(carding('a', 'person'), draft())).toBe(true)
+    expect(askHandoffOpen(carding('a', 'contact_details', 'Thanks.'), draft())).toBe(true)
+  })
+
+  it('opens for a price or a project only when the card is the whole reply', () => {
+    expect(askHandoffOpen(carding('a', 'estimate'), draft())).toBe(true)
+    expect(askHandoffOpen(carding('a', 'project'), draft())).toBe(true)
+    expect(askHandoffOpen(carding('a', 'project', 'We build on Webflow.'), draft())).toBe(false)
+  })
+
+  it('stays an offer for a question the site does not cover, and closed where it was closed', () => {
+    expect(askHandoffOpen(carding('a', 'no_answer'), draft())).toBe(false)
+    expect(askHandoffOpen(assistant('a', 'We start with a call.'), draft())).toBe(false)
+    expect(askHandoffOpen(carding('a', 'person'), draft({ closedUnder: 'a' }))).toBe(false)
+  })
+
+  it('stays open under any reply once the visitor opened it or typed in it', () => {
+    expect(askHandoffOpen(assistant('b', 'We start with a call.'), draft({ open: true }))).toBe(
+      true,
+    )
+  })
+})
+
+describe('contactFromMessage', () => {
+  it('reads an address, and a name when the rest is one', () => {
+    expect(contactFromMessage('jo@northwind.co')).toEqual({ email: 'jo@northwind.co', name: null })
+    expect(contactFromMessage('Jo Park, jo@northwind.co')).toEqual({
+      email: 'jo@northwind.co',
+      name: 'Jo Park',
+    })
+    expect(contactFromMessage("sure, it's jo@northwind.co")).toEqual({
+      email: 'jo@northwind.co',
+      name: null,
+    })
+    expect(contactFromMessage('My name is Jo Park and my email is jo@northwind.co')).toEqual({
+      email: 'jo@northwind.co',
+      name: 'Jo Park',
+    })
+  })
+
+  it('leaves a message that also asks or says something to the chat', () => {
+    expect(contactFromMessage('jo@northwind.co, and what does a rebrand cost?')).toBeNull()
+    expect(contactFromMessage('Email jo@northwind.co about our slow Webflow site')).toBeNull()
+    expect(contactFromMessage('What does a rebrand cost?')).toBeNull()
   })
 })
 
@@ -201,8 +310,8 @@ describe('askHandoffState', () => {
       },
     ],
   }
-  const answered = assistant('b', 'With a call.') as AskUIMessage
-  const asked = user('q', 'How do we start?') as AskUIMessage
+  const answered = assistant('b', 'With a call.')
+  const asked = user('q', 'How do we start?')
 
   it('is none until a reply offers', () => {
     expect(askHandoffState([asked, answered], false)).toBe('none')

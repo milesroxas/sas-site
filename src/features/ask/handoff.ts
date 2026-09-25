@@ -86,11 +86,23 @@ export type AskUITools = {
  */
 export type AskNextPage = { url: string; title: string }
 
-/** Data parts code writes into a reply beside the model's words (`data-nextPage`). */
-export type AskUIData = { nextPage: AskNextPage }
+/**
+ * What Jev read in the question a reply answers (judge.ts, `isAside`), for
+ * the transcript: an aside ("yes", "thanks", "can you pass this on?") tells
+ * the team nothing, so the handoff form leaves it out of what it sends.
+ */
+export type AskTurnNote = { aside: boolean }
+
+/** Data parts code writes into a reply beside the model's words (`data-nextPage`, `data-turn`). */
+export type AskUIData = { nextPage: AskNextPage; turn: AskTurnNote }
 
 /** One message in an Ask transcript: text, source links, the next page, and the handoff. */
 export type AskUIMessage = UIMessage<unknown, AskUIData, AskUITools>
+
+/** Whether the question this reply answers was an aside (`data-turn`). */
+export function answersAnAside(message: Pick<AskUIMessage, 'parts'>): boolean {
+  return message.parts.some((part) => part.type === 'data-turn' && part.data.aside)
+}
 
 /** The page card a reply carries, or null. */
 export function nextPageOf(message: Pick<AskUIMessage, 'parts'>): AskNextPage | null {
@@ -99,6 +111,16 @@ export function nextPageOf(message: Pick<AskUIMessage, 'parts'>): AskNextPage | 
   }
   return null
 }
+
+/**
+ * When the handoff form opens without a tap:
+ * - `always`: the visitor asked for it (a person, or their own contact details).
+ * - `alone`: when the card is the whole reply (a price or a project the site
+ *   cannot speak to), since then the team is the only thing to offer; under an
+ *   answer it stays a quiet row, and the answer is read first.
+ * - `never`: an offer the visitor may not want, one row until picked.
+ */
+export type AskHandoffOpens = 'always' | 'alone' | 'never'
 
 type AskHandoffCopy = {
   /** What the inquiry is filed as, which decides who in the studio is notified. */
@@ -109,62 +131,60 @@ type AskHandoffCopy = {
    * promise. The quiet `none` offer follows an answer that already has words.
    */
   lead: string | null
-  /** The offer's line beside "Talk to the team". */
+  /** The offer's line beside the "Email a partner" chip: a statement, so it is never answered by typing "yes". */
   offer: string
-  /**
-   * The visitor asked for this, so the form is already open under the lead:
-   * no chip to find first. The other kinds are an offer the visitor may not
-   * want, so they stay one quiet row until picked.
-   */
-  opens: boolean
+  opens: AskHandoffOpens
 }
+
+/** The chip that opens the form, and the chat header's control that does the same: what it does, in two words. */
+export const ASK_HANDOFF_ACTION = 'Email a partner'
 
 /**
  * The copy per kind. Every kind opens the same form and the same receipt, so
  * a visitor who meets the offer twice finds it where it was; only the words
- * that introduce it, and where the inquiry is filed, follow the reason. An
- * estimate or a new project is filed as a project inquiry; everything else
- * as a general message.
+ * that introduce it, and whether it opens by itself, follow the reason. An
+ * estimate or a new project makes the conversation a project inquiry
+ * (`askHandoffForm`).
  */
 export const ASK_HANDOFFS: Record<AskHandoffKind, AskHandoffCopy> = {
   estimate: {
     form: 'project',
     lead: 'Pricing and timing depend on the project, so that one is for a partner.',
-    offer: 'Want a partner to price it?',
-    opens: false,
+    offer: 'A partner can price it with you.',
+    opens: 'alone',
   },
   project: {
     form: 'project',
     lead: 'That sounds like a project worth a real conversation.',
-    offer: 'Want to talk it through with a partner?',
-    opens: false,
+    offer: 'A partner can talk it through with you.',
+    opens: 'alone',
   },
   person: {
     form: 'general',
     lead: 'Happy to put you in touch. Add your name and email and the team will take it from here.',
-    offer: 'Want a partner to reply?',
-    opens: true,
+    offer: 'A partner can reply by email.',
+    opens: 'always',
   },
   contact_details: {
     form: 'general',
-    lead: 'Thanks. Check your details below and the team will take it from here.',
-    offer: 'Send your details to the team?',
-    opens: true,
+    lead: 'Thanks. Add your name and email below and the team will take it from here.',
+    offer: 'A partner can reply by email.',
+    opens: 'always',
   },
   no_answer: {
     form: 'general',
     lead: "The site doesn't cover that, but the team can.",
-    offer: 'Want a person to answer?',
-    opens: false,
+    offer: 'A partner can answer that by email.',
+    opens: 'never',
   },
   case_study: {
     form: 'general',
     lead: 'We have not published the full story of this project yet.',
     offer:
       'The full case study is still being written. A partner can walk you through it and similar work.',
-    opens: false,
+    opens: 'never',
   },
-  none: { form: 'general', lead: null, offer: 'Want a person to reply?', opens: false },
+  none: { form: 'general', lead: null, offer: 'A partner can reply by email.', opens: 'never' },
 }
 
 /** The form's promise: a person, by email, on Site Info's clock. */
@@ -216,13 +236,105 @@ const MAX_PREFILL_CHARS = 600
 
 const PREFILL_HEADING = 'From my Ask conversation:'
 
-/** What the visitor asked, oldest first, capped to the latest few. */
-export function userQuestions(messages: UIMessage[]): string[] {
-  return messages
-    .filter((message) => message.role === 'user')
-    .map((message) => messageText(message).trim())
-    .filter(Boolean)
-    .slice(-MAX_QUESTIONS)
+/**
+ * What the visitor asked, oldest first, capped to the latest few. Asides
+ * ("yes", "thanks", "can you pass this on?", as Jev read them: the reply after
+ * one carries `data-turn`) tell the team nothing and are left out, unless
+ * they are all there is.
+ */
+export function userQuestions(messages: AskUIMessage[]): string[] {
+  const asked = messages.flatMap((message, index) => {
+    if (message.role !== 'user') return []
+    const text = messageText(message).trim()
+    if (!text) return []
+    const reply = messages[index + 1]
+    return [{ text, aside: reply?.role === 'assistant' && answersAnAside(reply) }]
+  })
+  const kept = asked.some((question) => !question.aside)
+    ? asked.filter((question) => !question.aside)
+    : asked
+  return kept.map((question) => question.text).slice(-MAX_QUESTIONS)
+}
+
+/**
+ * What the inquiry is filed as: a project inquiry once any reply was about
+ * the visitor's own project (a price, timing, or work they want done),
+ * wherever in the conversation the form is opened; a general message
+ * otherwise.
+ */
+export function askHandoffForm(messages: AskUIMessage[]): InquiryType {
+  const project = messages.some((message) => {
+    const handoff = message.role === 'assistant' ? handoffOf(message) : null
+    return handoff !== null && ASK_HANDOFFS[handoff.reason].form === 'project'
+  })
+  return project ? 'project' : 'general'
+}
+
+/**
+ * The handoff form as the visitor left it. The conversation keeps it, not
+ * the form, so what was typed survives a new question (the form moves under
+ * the reply that ends the transcript), another Ask surface, and navigation.
+ */
+export type AskHandoffDraft = {
+  name: string
+  /** Null until the visitor edits it: an address they wrote in the chat fills it until then. */
+  email: string | null
+  /** The visitor opened the form or typed in it, so it stays open under whichever reply ends the transcript. */
+  open: boolean
+  /** The reply whose form the visitor closed with "Not now", which must not open itself again. */
+  closedUnder: string | null
+  /** Bumped to bring the handoff into view: the chat header's "Email a partner". */
+  reveal: number
+}
+
+export const ASK_HANDOFF_DRAFT_EMPTY: AskHandoffDraft = {
+  name: '',
+  email: null,
+  open: false,
+  closedUnder: null,
+  reveal: 0,
+}
+
+/**
+ * Whether the form under `reply` (the settled reply that ends the transcript)
+ * is open: the visitor opened it or typed in it, or the reply's kind opens it
+ * by itself (`AskHandoffOpens`) and they have not closed it there.
+ */
+export function askHandoffOpen(reply: AskUIMessage, draft: AskHandoffDraft): boolean {
+  if (draft.open) return true
+  if (draft.closedUnder === reply.id) return false
+  const handoff = handoffOf(reply)
+  if (!handoff) return false
+  const { opens } = ASK_HANDOFFS[handoff.reason]
+  return opens === 'always' || (opens === 'alone' && messageText(reply).trim() === '')
+}
+
+/** Words around an address that are not a name: "my name is", "here's my email", "sure". */
+const CONTACT_FILLER =
+  /\b(?:my|name|names|is|it's|its|i'm|im|i am|this is|here's|heres|here is|email|e-mail|address|and|at|sure|yes|ok|okay|thanks|thank you|please|hi|hello|hey|you can reach me|reach me)\b/gi
+
+/** A name as people type one: one to four words of letters, with hyphens, apostrophes and initials. */
+const NAME = /^[\p{L}][\p{L}'.-]*(?: [\p{L}][\p{L}'.-]*){0,3}$/u
+
+/**
+ * A chat message that is only contact details for the open form ("Jo Park,
+ * jo@northwind.co", "sure, it's jo@northwind.co"): the address, and the name
+ * when the rest reads as one. Null for anything that also says or asks
+ * something, which stays a question. Read in the browser, so contact details
+ * typed for the form never reach the model or the Ask log.
+ */
+export function contactFromMessage(text: string): { email: string; name: string | null } | null {
+  const email = findEmailAddress(text)
+  if (!email) return null
+  const rest = text
+    .replaceAll('\u2019', "'")
+    .replace(email, ' ')
+    .replace(CONTACT_FILLER, ' ')
+    .replace(/[,:;!?()"]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/^[\s.-]+|[\s.-]+$/g, '')
+  if (rest === '') return { email, name: null }
+  return NAME.test(rest) ? { email, name: rest } : null
 }
 
 /**
@@ -236,7 +348,7 @@ function questionsMessage(questions: string[]): string {
 }
 
 /** The message the handoff form sends, or null before anything was asked. */
-export function askHandoffMessage(messages: UIMessage[]): string | null {
+export function askHandoffMessage(messages: AskUIMessage[]): string | null {
   const questions = userQuestions(messages)
   return questions.length > 0 ? questionsMessage(questions) : null
 }
@@ -245,7 +357,7 @@ export function askHandoffMessage(messages: UIMessage[]): string | null {
  * An address the visitor already wrote in the chat, latest first, to start
  * the form's email field with. It never leaves the browser until they send.
  */
-export function askHandoffEmail(messages: UIMessage[]): string | null {
+export function askHandoffEmail(messages: AskUIMessage[]): string | null {
   for (const question of userQuestions(messages).reverse()) {
     const email = findEmailAddress(question)
     if (email) return email
@@ -269,7 +381,7 @@ export const askInquiryFields = (ids: AskHandoffIds | null) =>
  * them, and the contact page stays static because only the browser reads it.
  * Blocked storage just means the form opens empty.
  */
-export function saveAskHandoff(messages: UIMessage[], ids: AskHandoffIds): void {
+export function saveAskHandoff(messages: AskUIMessage[], ids: AskHandoffIds): void {
   const questions = userQuestions(messages)
   if (questions.length === 0) return
   try {

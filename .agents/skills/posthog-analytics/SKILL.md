@@ -88,6 +88,8 @@ Ask's judge (Jev, `src/features/ask/judge.ts`, mode from `ASK_JEV`) adds facts a
 | `judge_request` | string, null | The `request` Choice's pick: `information`, `estimate`, `project`, `person`, `conversation`, `other` |
 | `judge_confidence` | number, null | That Choice's confidence |
 | `judge_sends` | boolean, null | Jev read the turn as asking for it to reach the team, in words or with a yes to the offer on screen (`wantsTheTeam`). In mode `on`, before the visitor has sent, that turn is the `person` card with the form open. Null when Jev had no judgment |
+| `judge_aside` | boolean, null | Jev read the turn as an aside: it only agrees, thanks, or asks to be put in touch (`has_substance` low). The handoff form leaves it out of what it sends. Null when Jev had no judgment |
+| `off_topic` | boolean | Mode `on`: the turn was about something unrelated to the studio, nothing was retrieved, and code replied with what Ask covers (`ASK_SCOPE_REPLY`) instead of a team card |
 | `judge_agrees` | boolean, null | Shadow only: the card Jev would have shown equals the writing model's. Null when Jev had no decision |
 | `chunks_candidates`, `chunks_kept` | number | Retrieved chunks before and after the passage check (equal when no check ran) |
 | `passages_ms` | number, null | Wall time of the passage check |
@@ -111,7 +113,7 @@ Ask's judge (Jev, `src/features/ask/judge.ts`, mode from `ASK_JEV`) adds facts a
 
 ## Dashboards and insights
 
-Dashboards are tagged `sas-analytics`: Leads and acquisition, UX friction, Content engagement, Ask, Data health. Tiles filter `environment = production` and "filter out internal users". The Ask dashboard (2088105) holds the judge's nine tiles since 2026-09-21 (latency by `judge_mode`, Jev failure rate and time, passages kept, model skipped, fallback rate, first output by `answer_model`, thin case study turns by page). Since 2026-09-25 the model-skipped tile also plots `judge_sends` and the no-source tile also plots `next_page_shown`. Extend one of those before adding a tenth.
+Dashboards are tagged `sas-analytics`: Leads and acquisition, UX friction, Content engagement, Ask, Data health. Tiles filter `environment = production` and "filter out internal users". The Ask dashboard (2088105) holds the judge's nine tiles since 2026-09-21 (latency by `judge_mode`, Jev failure rate and time, passages kept, model skipped, fallback rate, first output by `answer_model`, thin case study turns by page). Since 2026-09-25 the model-skipped tile also plots `judge_sends` and the no-source tile also plots `next_page_shown` and `off_topic`. Extend one of those before adding a tenth.
 
 To check that a team browser is marked internal: a production turn stored in `ask-questions` (sas-cms MCP `findAskQuestions`) with no `ask_questioned` event at the same second came from a browser carrying `sas_internal`. Server capture has no consent gate, so an unmarked browser always yields the event.
 

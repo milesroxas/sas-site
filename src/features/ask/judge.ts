@@ -114,6 +114,20 @@ export const ASK_JUDGE_THRESHOLDS = {
    * one unsure `none` 0.17.
    */
   noNextPage: 0.6,
+  /**
+   * `about_studio` below which a turn with nothing retrieved is off topic: the reply says what
+   * Ask covers instead of offering the team a question the team cannot answer either. Measured
+   * 2026-09-25 (`--scope`): unrelated questions read 0.01 to 0.02; the lowest turn about the
+   * studio or its conversation read 0.05 ("thanks!"), and "yes" and "the url is ..." 0.21. Set
+   * low, and asides and follow-ups that lean on the turn before are never off topic.
+   */
+  aboutStudio: 0.1,
+  /**
+   * `has_substance` below which a turn is an aside ("yes", "thanks", "can you pass this on?")
+   * and is left out of what the handoff form sends the team. Measured 2026-09-25 (`--scope`,
+   * two runs): asides read 0.02 to 0.19, turns with a question or a detail 0.88 or more.
+   */
+  substance: 0.3,
 } as const
 
 const REQUEST_CRITERIA = {
@@ -150,6 +164,26 @@ const TURN_QUESTIONS = {
       true: 'At least part of it could be answered from what the studio publishes about itself.',
       false:
         "It is only about the visitor's own project, a request for a person, or not about the studio at all.",
+    },
+  ),
+  // Off topic is judged apart from `request`: "other" also holds real
+  // questions the criteria above do not name, and those still search.
+  about_studio: noul(
+    'Is `question` about the studio, its work, services, clients, team, prices, or process, or about getting help from the studio?',
+    {
+      true: 'It asks about the studio or its work, asks for help with a project, website, brand, product, or content, or asks to reach the team.',
+      false:
+        'It is about something unrelated to the studio, such as the weather, the news, sports, general knowledge, homework, a coding problem to solve for the visitor, or a joke.',
+    },
+  ),
+  // What the handoff form sends is the visitor's own messages. One that only
+  // agrees, thanks or asks to be put in touch tells the team nothing.
+  has_substance: noul(
+    'Does `question` ask something or give a detail about what the visitor needs, beyond agreeing, thanking, greeting, declining, or asking to be put in touch with the team?',
+    {
+      true: 'It asks a question or gives a detail the team could use, such as a problem, a site address, a budget, a timeline, or what they want done.',
+      false:
+        'It only agrees, thanks, greets, declines, or asks to be put in touch, such as "yes", "sure, send it", "ok", "thanks!", "no thanks", or "can you pass this on?".',
     },
   ),
   // "Send this to the team" is not a question for the site, and the chat has
@@ -243,6 +277,10 @@ export type AskTurnJudgment = {
   namesWork: number
   /** The turn asks for something to reach the team. */
   asksToSend: number
+  /** The turn is about the studio or getting its help, rather than something unrelated. */
+  aboutStudio: number
+  /** The turn asks or tells the team something, rather than only agreeing, thanking or asking to be put in touch. */
+  hasSubstance: number
   /** A yes to the offer on screen. Null without one, or when that check failed. */
   acceptsOffer: number | null
   /** The turn answers a question the last reply asked. Null alongside `acceptsOffer`. */
@@ -387,6 +425,8 @@ export async function judgeTurn({
       generalQuestion: answers.general_question.noul,
       namesWork: answers.names_work.noul,
       asksToSend: answers.asks_to_send.noul,
+      aboutStudio: answers.about_studio.noul,
+      hasSubstance: answers.has_substance.noul,
       acceptsOffer: offered?.answers.accepts_offer.noul ?? null,
       answersReply: offered?.answers.answers_reply.noul ?? null,
       dependsOnPrevious: answers.depends_on_previous?.noul ?? null,
@@ -496,6 +536,27 @@ export function routeTurn(
     default:
       return { kind: 'evidence', reason: null }
   }
+}
+
+/**
+ * Whether a turn is unrelated to the studio, so that with nothing retrieved
+ * the reply says what Ask covers instead of offering the team. A thanks or a
+ * greeting is conversation, never off topic.
+ */
+export function offTopic(judgment: AskTurnJudgment | null): boolean {
+  if (!judgment || judgment.request === 'conversation' || isAside(judgment)) return false
+  // "And in New York?" is about whatever the turn before it was.
+  if ((judgment.dependsOnPrevious ?? 0) >= ASK_JUDGE_THRESHOLDS.dependsOnPrevious) return false
+  return judgment.aboutStudio < ASK_JUDGE_THRESHOLDS.aboutStudio
+}
+
+/**
+ * Whether a turn is an aside the team has no use for ("yes", "thanks", "can
+ * you pass this on?"): the reply marks it, and the handoff form leaves it out
+ * of the messages it sends.
+ */
+export function isAside(judgment: AskTurnJudgment | null): boolean {
+  return judgment !== null && judgment.hasSubstance < ASK_JUDGE_THRESHOLDS.substance
 }
 
 /**

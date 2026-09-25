@@ -4,9 +4,11 @@ import {
   type AskTurnJudgment,
   askJudgeMode,
   dependsOnPrevious,
+  isAside,
   judgePassages,
   judgeTurn,
   leansOnPage,
+  offTopic,
   pickNextPage,
   routeCardReason,
   routePassage,
@@ -33,6 +35,8 @@ function judgment(overrides: Partial<AskTurnJudgment> = {}): AskTurnJudgment {
     generalQuestion: 0.9,
     namesWork: 0.05,
     asksToSend: 0.02,
+    aboutStudio: 0.95,
+    hasSubstance: 0.95,
     acceptsOffer: null,
     answersReply: null,
     dependsOnPrevious: null,
@@ -223,6 +227,35 @@ describe('without a key', () => {
     } finally {
       if (key !== undefined) process.env.TYPESAFE_API_KEY = key
     }
+  })
+})
+
+describe('offTopic', () => {
+  it('reads a turn unrelated to the studio as off topic', () => {
+    expect(offTopic(judgment({ request: 'other', aboutStudio: T.aboutStudio - 0.01 }))).toBe(true)
+    expect(offTopic(judgment({ request: 'other', aboutStudio: T.aboutStudio }))).toBe(false)
+  })
+
+  it('never calls a thanks, an aside, or a turn with no judgment off topic', () => {
+    expect(offTopic(judgment({ request: 'conversation', aboutStudio: 0.01 }))).toBe(false)
+    expect(offTopic(judgment({ request: 'other', aboutStudio: 0.01, hasSubstance: 0.02 }))).toBe(
+      false,
+    )
+    expect(offTopic(null)).toBe(false)
+  })
+
+  it('leaves a follow-up that leans on the turn before it to that turn', () => {
+    const leaning = { request: 'other', aboutStudio: 0.01 } as const
+    expect(offTopic(judgment({ ...leaning, dependsOnPrevious: T.dependsOnPrevious }))).toBe(false)
+    expect(offTopic(judgment({ ...leaning, dependsOnPrevious: 0.1 }))).toBe(true)
+  })
+})
+
+describe('isAside', () => {
+  it('marks a turn that only agrees, thanks or asks to be put in touch', () => {
+    expect(isAside(judgment({ hasSubstance: T.substance - 0.01 }))).toBe(true)
+    expect(isAside(judgment({ hasSubstance: T.substance }))).toBe(false)
+    expect(isAside(null)).toBe(false)
   })
 })
 

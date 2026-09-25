@@ -427,3 +427,64 @@ export const ASK_NEXT_PAGE_CASES: AskNextPageCase[] = [
     accept: [],
   },
 ]
+
+/**
+ * Two readings of any turn (judge.ts): whether it is about the studio at all
+ * (`offTopic`: with nothing retrieved, the reply says what Ask covers instead
+ * of offering the team), and whether it tells the team anything (`isAside`:
+ * the handoff form leaves an aside out of what it sends). A case names the
+ * readings it tests. `scripts/ask-judge-eval.ts --scope` reads these.
+ */
+export type AskScopeCase = {
+  id: string
+  question: string
+  /** The question before it, for a follow-up. */
+  previous?: string
+  offTopic?: boolean
+  aside?: boolean
+}
+
+export const ASK_SCOPE_CASES: AskScopeCase[] = [
+  // Nothing to do with the studio.
+  { id: 'weather', question: "What's the weather in Brooklyn today?", offTopic: true },
+  { id: 'sports', question: 'Who won the World Series last year?', offTopic: true },
+  { id: 'code', question: 'Write me a Python script that sorts a list.', offTopic: true },
+  { id: 'joke', question: 'Tell me a joke', offTopic: true },
+  { id: 'capital', question: 'What is the capital of France?', offTopic: true },
+  // About the studio, however far from the corpus.
+  { id: 'seo', question: 'Do you do SEO?', offTopic: false, aside: false },
+  { id: 'hiring', question: 'Are you hiring designers?', offTopic: false },
+  { id: 'office', question: 'Where is your office?', offTopic: false },
+  { id: 'rebrand-cost', question: 'How much would a rebrand cost?', offTopic: false, aside: false },
+  { id: 'person', question: 'Can I talk to someone?', offTopic: false },
+  { id: 'app', question: 'Can you build us an app?', offTopic: false, aside: false },
+  // Asides: nothing the team could use.
+  { id: 'yes', question: 'yes', aside: true, offTopic: false },
+  { id: 'sure-send', question: 'sure, send it', aside: true },
+  { id: 'ok', question: 'ok', aside: true },
+  { id: 'thanks', question: 'thanks!', aside: true, offTopic: false },
+  { id: 'no-thanks', question: 'No thanks', aside: true },
+  { id: 'pass-on', question: 'Can you pass this on?', aside: true, offTopic: false },
+  // Details the team needs, however short.
+  { id: 'slow', question: 'My site is slow and hard to update', aside: false },
+  { id: 'url', question: 'the url is northwind.co', aside: false, offTopic: false },
+  // A follow-up is about whatever the turn before it was.
+  {
+    id: 'follow-city',
+    question: 'And in New York?',
+    previous: 'Do you have a studio in Philadelphia?',
+    offTopic: false,
+  },
+  {
+    id: 'follow-joke',
+    question: 'Tell me a joke',
+    previous: 'What is your process?',
+    offTopic: true,
+  },
+  { id: 'budget', question: 'Our budget is around 40k', aside: false },
+  {
+    id: 'send-detail',
+    question: 'Send this to the team, we need a new site by March.',
+    aside: false,
+  },
+]

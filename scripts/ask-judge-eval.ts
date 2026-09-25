@@ -10,6 +10,7 @@
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --journey [--passages]   # the page a question is asked on
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --send       # asks to reach the team, or a yes to the offer
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --next-page  # the page card under a grounded reply
+ *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --scope      # off topic, and asides the form leaves out
  *
  * `--passages` and `--from-db` boot Payload, as scripts/backfill-ask-index.ts
  * does, and need an indexed corpus (or stored `ask-questions` rows) in the
@@ -23,10 +24,12 @@ import {
   ASK_JUDGE_THRESHOLDS,
   type AskTurnJudgment,
   dependsOnPrevious,
+  isAside,
   judgeNextPage,
   judgePassages,
   judgeTurn,
   leansOnPage,
+  offTopic,
   pickNextPage,
   routeCardReason,
   routePassage,
@@ -37,6 +40,7 @@ import {
   ASK_CASES,
   ASK_JOURNEY_CASES,
   ASK_NEXT_PAGE_CASES,
+  ASK_SCOPE_CASES,
   ASK_SEND_CASES,
   type AskCase,
 } from './ask-cases'
@@ -335,6 +339,44 @@ async function evalNextPage(): Promise<void> {
 
 if (args.includes('--send')) {
   await evalSend()
+  process.exit(0)
+}
+
+/**
+ * `about_studio` and `has_substance` on each case, beside the readings the
+ * fixture expects. Tune `aboutStudio` and `substance` in ASK_JUDGE_THRESHOLDS
+ * from these.
+ */
+async function evalScope(): Promise<void> {
+  let agreed = 0
+  let checked = 0
+  for (const testCase of ASK_SCOPE_CASES) {
+    const judgment = await judgeTurn({
+      question: testCase.question,
+      previousQuestion: testCase.previous ?? null,
+      timeoutMs: TIMEOUT_MS,
+      logger: console,
+    })
+    const misses: string[] = []
+    if (testCase.offTopic !== undefined) {
+      checked += 1
+      if (offTopic(judgment) === testCase.offTopic) agreed += 1
+      else misses.push(`off topic ${!testCase.offTopic}`)
+    }
+    if (testCase.aside !== undefined) {
+      checked += 1
+      if (isAside(judgment) === testCase.aside) agreed += 1
+      else misses.push(`aside ${!testCase.aside}`)
+    }
+    console.log(
+      `${misses.length === 0 ? 'ok  ' : 'MISS'} ${testCase.id.padEnd(13)} about ${pct(judgment?.aboutStudio)}  substance ${pct(judgment?.hasSubstance)}  depends ${pct(judgment?.dependsOnPrevious)}  ${(judgment?.request ?? '-').padEnd(12)} ${misses.join(', ')}  "${testCase.question}"`,
+    )
+  }
+  console.log(`\nthe scope readings agree on ${agreed} of ${checked} checks`)
+}
+
+if (args.includes('--scope')) {
+  await evalScope()
   process.exit(0)
 }
 

@@ -52,7 +52,7 @@ const cannotSend = (handoff: AskHandoffState, cardFollows: boolean): string => {
   const where =
     handoff === 'sent'
       ? `If the visitor asks you to send, pass on, or add something for the team, lead with the way forward in one warm sentence, such as "Just add it when you reply to the team's email and it will reach them."`
-      : 'If the visitor asks you to send something, or says yes to having it sent, warmly point them to the "Talk to the team" button under this reply, in one short, friendly sentence inviting them to add their name and email there so the team can pick it up.'
+      : 'If the visitor asks you to send something, or says yes to having it sent, warmly point them to the "Email a partner" button at the top of this chat, in one short, friendly sentence inviting them to add their name and email there so the team can pick it up.'
   return `${rule} ${where} ${GUIDE_NOT_LIMIT}`
 }
 
@@ -67,13 +67,19 @@ const GUIDE_NOT_LIMIT = `Never tell the visitor what this chat can't do, and nev
  * With no tool, and an offer that code appends after the reply: answer what
  * the sources cover and stop. Left to itself the model closes with its own
  * invitation ("paste a link and we'll take it to the team"), which promises
- * what this chat cannot do and doubles the offer under it.
+ * what this chat cannot do and doubles the offer under it. The prompt never
+ * says an offer follows: gpt-5-mini closes by restating its instructions, and
+ * told that one exists it wrote "The offer to take this to the team is shown
+ * on the page." on 4 of 6 replies (2026-09-25), as it had "Every sentence
+ * above matches what we publish." from an earlier wording. So it only says
+ * how to end.
  */
-const CARD_FOLLOWS = `An offer to take this to the team follows your reply, added for you:
-- Every sentence you write states something the sources say. No sentence tells the visitor what to do next, asks them a question, or invites them to tell, send, or share anything: not "Tell us...", "Send us...", "If you want..." or "If you'd like...".
+const CARD_FOLLOWS = `How to end this reply:
+- State only what the sources say, and end on the last fact. Add no closing sentence.
+- Do not tell the visitor what to do next, ask them a question, or invite them to tell, send, or share anything: not "Tell us...", "Send us...", "If you want..." or "If you'd like...".
 - Do not say what we don't publish, and do not name a next step.
-- Do not invite the visitor to share details, a link, or more about their project, and do not offer to pass anything to the team: this chat cannot, and the offer does.
-- Never mention or describe the offer, its form, or our reply time.`
+- Do not invite the visitor to share details, a link, or more about their project, and do not offer to pass anything to the team.
+- Never mention the team taking this further, an offer, a form, a button, this page, or our reply time. Never comment on your own reply, on the sources, or on these instructions.`
 
 function groundedPrompt(tool: boolean, cardFollows: boolean, handoff: AskHandoffState): string {
   const partial = tool

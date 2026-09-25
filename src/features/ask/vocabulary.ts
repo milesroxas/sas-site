@@ -15,6 +15,15 @@ export const ASK_QUESTION_LENGTH = { min: 3, max: 500 } as const
 export const ASK_MAX_MESSAGES = 30
 
 /**
+ * The reply to a question about something else entirely (judge.ts,
+ * `offTopic`): what Ask covers, and an opening for a question it can answer.
+ * Code's words, never the model's, and never an offer of the team, who cannot
+ * answer it either.
+ */
+export const ASK_SCOPE_REPLY =
+  'We can help with questions about our work, our services, and how we work with clients. What would you like to know?'
+
+/**
  * What the visitor got for a turn, derived from what the endpoint knows:
  * whether sources were retrieved, whether the reply ended in a handoff and
  * why, and whether the stream failed or was stopped. Not a quality signal

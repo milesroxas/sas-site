@@ -34,10 +34,12 @@ import {
   type AskTurnRoute,
   askJudgeMode,
   dependsOnPrevious,
+  isAside,
   judgeNextPage,
   judgePassages,
   judgeTurn,
   leansOnPage,
+  offTopic,
   pickNextPage,
   routeCardReason,
   routePassage,
@@ -75,6 +77,7 @@ import {
   ASK_QUESTION_LENGTH,
   ASK_RATING_REASONS,
   ASK_RATINGS,
+  ASK_SCOPE_REPLY,
   type AskOutcome,
   type AskRetrievalPath,
   askOutcome,
@@ -208,15 +211,37 @@ function attr(value: string): string {
  * `tool-handoff` part the model's own tool call produces, so the client has
  * one way to render it.
  */
-function handoffResponse(handoff: AskHandoff): Response {
+function handoffResponse(handoff: AskHandoff, aside: boolean): Response {
   const stream = createUIMessageStream<AskUIMessage>({
     execute: ({ writer }) => {
       writer.write({ type: 'start' })
+      writeTurnNote(writer, aside)
       writeHandoff(writer, handoff)
       writer.write({ type: 'finish' })
     },
   })
   return createUIMessageStreamResponse({ stream })
+}
+
+/** A reply that is code's own words and nothing else: no model call, no sources, no card. */
+function textResponse(text: string, aside: boolean): Response {
+  const stream = createUIMessageStream<AskUIMessage>({
+    execute: ({ writer }) => {
+      const id = generateId()
+      writer.write({ type: 'start' })
+      writeTurnNote(writer, aside)
+      writer.write({ type: 'text-start', id })
+      writer.write({ type: 'text-delta', id, delta: text })
+      writer.write({ type: 'text-end', id })
+      writer.write({ type: 'finish' })
+    },
+  })
+  return createUIMessageStreamResponse({ stream })
+}
+
+/** Marks the question a reply answers as an aside (`data-turn`), which the handoff form leaves out. */
+function writeTurnNote(writer: UIMessageStreamWriter<AskUIMessage>, aside: boolean): void {
+  if (aside) writer.write({ type: 'data-turn', id: generateId(), data: { aside: true } })
 }
 
 /** The `tool-handoff` part as the model's own tool call would stream it, written by code. */
@@ -345,6 +370,8 @@ const ask: Endpoint = {
       nextPage: Promise<AskNextPageJudgment | null> | null
       /** The pages the reply's page card could open; empty when it gets none. */
       pageCandidates: AskPageCandidate[]
+      /** The turn was about something else, and code said what Ask covers. */
+      offTopic: boolean
     } = {
       turn: null,
       judgment: null,
@@ -357,6 +384,7 @@ const ask: Endpoint = {
       thinStory: false,
       nextPage: null,
       pageCandidates: [],
+      offTopic: false,
     }
     const markFirstOutput = () => {
       judged.firstOutputMs ??= Date.now() - startedAt
@@ -427,6 +455,8 @@ const ask: Endpoint = {
           judge_request: judgment?.request ?? null,
           judge_confidence: judgment?.confidence ?? null,
           judge_sends: judgment ? wantsTheTeam(judgment) : null,
+          judge_aside: judgment ? isAside(judgment) : null,
+          off_topic: judged.offTopic,
           judge_agrees:
             mode === 'shadow' && settled && route && route.kind !== 'fallback'
               ? (hasContactDetails
@@ -489,7 +519,16 @@ const ask: Endpoint = {
         outcome: askOutcome({ grounded: false, handoffReason: reason }),
         handoffReason: reason,
       })
-      return handoffResponse(resolveAskHandoff(siteInfo, reason))
+      return handoffResponse(resolveAskHandoff(siteInfo, reason), isAside(judged.judgment))
+    }
+
+    /** What Ask covers, in code's words, for a question about something else. */
+    const scopeOnly = (): Response => {
+      judged.modelSkipped = true
+      judged.offTopic = true
+      markFirstOutput()
+      record({ answer: ASK_SCOPE_REPLY, outcome: 'no_sources', handoffReason: null })
+      return textResponse(ASK_SCOPE_REPLY, false)
     }
 
     // Contact details are a known rule, so code finds them (the same patterns
@@ -602,6 +641,11 @@ const ask: Endpoint = {
     // conversation can carry ("thanks", "can you say that more simply?").
     // A routed turn: the card on any turn, since Jev already told a thanks
     // from a question; it carries the turn's own reason when it has one.
+    // A question about something else entirely is not the team's either: the
+    // reply says what Ask covers (judge.ts, `offTopic`).
+    if (sources.length === 0 && route.kind === 'evidence' && offTopic(judged.judgment)) {
+      return scopeOnly()
+    }
     if (sources.length === 0 && offersAskHandoff(handoffState)) {
       if (route.kind === 'evidence') return cardOnly(route.reason ?? 'no_answer')
       if (route.kind === 'fallback' && !isFollowUp) return cardOnly('no_answer')
@@ -725,6 +769,7 @@ const ask: Endpoint = {
     const stream = createUIMessageStream<AskUIMessage>({
       execute: async ({ writer }) => {
         writer.write({ type: 'start' })
+        writeTurnNote(writer, isAside(judged.judgment))
         for (const source of sources) {
           writer.write({
             type: 'source-url',
