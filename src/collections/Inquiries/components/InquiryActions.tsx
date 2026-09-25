@@ -15,13 +15,23 @@ const QUICK_STATUSES: { label: string; value: InquiryStatus }[] = [
 const panelStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8 }
 const noteStyle: React.CSSProperties = { fontSize: 12, margin: 0 }
 
+/** The fields a quick action may change in one save. */
+type InquiryPatch = Partial<{ status: InquiryStatus; assignedTo: number | string }>
+
 /**
  * Sidebar panel that turns "read this request" into "answer it": open a reply
  * with the reference already in the subject, take ownership, or record what
  * happened — each one action instead of edit-then-save.
  *
- * Every button writes through form state and then saves, so the document, its
+ * Every button saves through the document form, so the document, its
  * timestamps (`repliedAt`), and the inbox counts all move together.
+ *
+ * The change rides in `submit({ overrides })` rather than through `setValue`
+ * alone: `setValue` dispatches to the form reducer, but `submit` reads the
+ * form's ref synchronously, so a value set in the same tick is not yet there
+ * and the request would carry the old status. `overrides` is how Payload's own
+ * Publish button sets `_status`, and is merged into the request body directly.
+ * The fields are still set locally so the sidebar reflects the click at once.
  */
 export function InquiryActions() {
   const { id } = useDocumentInfo()
@@ -37,31 +47,31 @@ export function InquiryActions() {
   const { value: name } = useField<string>({ path: 'name' })
   const { value: reference } = useField<string>({ path: 'reference' })
 
-  const save = useCallback(async () => {
-    try {
-      await submit()
-      // The nav badge is on this same screen — let it drop straight away
-      // rather than sitting a minute behind the thing just answered.
-      void refreshCounts()
-    } catch {
-      toast.error('Could not save — try the Save button.')
-    }
-  }, [refreshCounts, submit])
-
-  const applyStatus = useCallback(
-    async (next: InquiryStatus) => {
-      setStatus(next)
-      await save()
+  const save = useCallback(
+    async (patch: InquiryPatch) => {
+      if (patch.status !== undefined) setStatus(patch.status)
+      if (patch.assignedTo !== undefined) setAssignedTo(patch.assignedTo)
+      try {
+        await submit({ overrides: patch })
+        // The nav badge is on this same screen — let it drop straight away
+        // rather than sitting a minute behind the thing just answered.
+        void refreshCounts()
+      } catch {
+        toast.error('Could not save — try the Save button.')
+      }
     },
-    [save, setStatus],
+    [refreshCounts, setAssignedTo, setStatus, submit],
   )
+
+  const applyStatus = useCallback((next: InquiryStatus) => save({ status: next }), [save])
 
   const assignToMe = useCallback(async () => {
     if (!user?.id) return
-    setAssignedTo(user.id)
-    if (status === 'new') setStatus('in-progress')
-    await save()
-  }, [save, setAssignedTo, setStatus, status, user?.id])
+    await save({
+      assignedTo: user.id,
+      ...(status === 'new' ? { status: 'in-progress' } : {}),
+    })
+  }, [save, status, user?.id])
 
   if (!id) return null
 
