@@ -60,8 +60,14 @@ describe('askSystemPrompt', () => {
         expect(prompt, label).toContain('Never offer to send anything or ask whether to.')
         // The visitor is guided to the form, never told about a limit.
         expect(prompt, label).toContain("Never tell the visitor what this chat can't do")
+        expect(prompt, label).toContain(
+          'never write "can\'t", "cannot", or "unable" about this chat',
+        )
         expect(prompt, label).not.toContain('say plainly')
         if (handoff === 'sent') {
+          // Measured 2026-09-25: without a way forward to lead with, "send this
+          // to the team" after sending drew "We can't send messages" 3 of 3.
+          expect(prompt, label).toContain('lead with the way forward')
           expect(prompt, label).not.toContain('Talk to the team')
           expect(prompt.toLowerCase(), label).not.toContain('handoff')
         } else {
