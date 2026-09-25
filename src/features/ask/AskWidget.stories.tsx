@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { expect, waitFor } from 'storybook/test'
 import { AskWidget } from './AskWidget'
 import {
   askHandoffChat,
@@ -9,6 +10,7 @@ import {
   createAskChat,
 } from './fixtures'
 import { openAskHandoff, sendAskHandoff, stubInquiryIntake } from './storyPlays'
+import { ASK_SCOPE_REPLY } from './vocabulary'
 
 /**
  * All stories drive the real `useChat` lifecycle through a scripted transport
@@ -130,8 +132,8 @@ export const SourcesOpen: Story = {
 
 /**
  * A pricing question: nothing to publish, so the handoff is the whole reply.
- * The reason's lead line lands as the assistant's words, the offer a beat
- * after it.
+ * The reason's lead line lands as the assistant's words, and the form a beat
+ * after it, already open: the team is the only thing to offer.
  */
 export const Handoff: Story = {
   args: {
@@ -149,10 +151,65 @@ export const RatedDown: Story = {
   },
 }
 
-/** The offer opened: the row becomes the form in place. Send stays off until both fields hold something. */
+/**
+ * The offer under an answer opened: the row becomes the form in place. Send
+ * stays off until both fields hold something.
+ */
+const offerChat = createAskChat()
+  .user('How do we start, and what would it cost?')
+  .assistant(({ writer }) => {
+    writer
+      .text('Most projects start with a short call about goals, timeline, and budget.')
+      .tool('handoff', { input: { reason: 'estimate' }, output: askHandoffFixture('estimate') })
+  })
+
 export const HandoffForm: Story = {
-  args: Handoff.args,
+  args: {
+    transport: offerChat.transport(),
+    initialMessages: offerChat.get(),
+  },
   play: openAskHandoff,
+}
+
+/**
+ * "Email a partner" beside the send button: the manual way to a person,
+ * always in the same place. Under an answer with no offer of its own, it
+ * opens the form in the transcript.
+ */
+export const EmailAPartner: Story = {
+  args: Answered.args,
+  play: openAskHandoff,
+}
+
+/**
+ * With the form open, contact details typed into the chat fill it instead of
+ * becoming a question, and never leave the browser.
+ */
+export const FormFilledFromChat: Story = {
+  args: Handoff.args,
+  play: async ({ canvas, userEvent }) => {
+    await waitFor(() => expect(canvas.getByLabelText('Name')).toBeInTheDocument())
+    await userEvent.type(
+      canvas.getByPlaceholderText(/Ask something/),
+      'Jordan Lee, jordan@northwind.co{Enter}',
+    )
+    await waitFor(() => expect(canvas.getByLabelText('Email')).toHaveValue('jordan@northwind.co'))
+    await expect(canvas.getByLabelText('Name')).toHaveValue('Jordan Lee')
+  },
+}
+
+/** A question about something else entirely: what Ask covers, in code's words, and no team to offer. */
+const offTopicChat = createAskChat()
+  .user("What's the weather in Brooklyn today?")
+  .assistant(({ writer }) => {
+    writer.text(ASK_SCOPE_REPLY)
+  })
+
+export const OffTopic: Story = {
+  args: {
+    transport: offTopicChat.transport(),
+    initialMessages: offTopicChat.get(),
+  },
 }
 
 /** The visitor already wrote their address: the form lands open with it filled, marked "From your message". */

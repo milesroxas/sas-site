@@ -40,7 +40,8 @@ POST /api/ask
   ├─ in parallel:
   │    ├─ resolveJourney() the journey's paths → titles from the Ask index
   │    ├─ judgeTurn()      one Jev request: `request` Choice, the `own_project`,
-  │    │                   `general_question`, `names_work` and `asks_to_send` Nouls,
+  │    │                   `general_question`, `names_work`, `asks_to_send`,
+  │    │                   `about_studio` and `has_substance` Nouls,
   │    │                   `depends_on_previous` on a follow-up, and
   │    │                   `open_reference` on a page about one thing
   │    └─ embedMany()      [question], + [previous + question] on a follow-up,
@@ -56,7 +57,8 @@ POST /api/ask
   │    └─ fallback         → the flow above, tool and all (unsure or failed judgment)
   ├─ judgePassages()       one Jev request per candidate chunk, all in parallel:
   │                        `is_relevant`, `has_evidence` → keep or drop in code
-  │    └─ nothing kept     → card (`no_answer`, or the turn's own reason), no model
+  │    └─ nothing kept     → off topic: `ASK_SCOPE_REPLY`; else the card (`no_answer`,
+  │                          or the turn's own reason); no model either way
   ├─ judgeNextPage()       one Jev Choice over the reply's pages (title, section, path;
   │                        never the page text), while the model writes
   ├─ streamText()          kept chunks only, NO tools, prompt without the tool rules
@@ -92,7 +94,8 @@ POST /api/ask
 | [`motion.ts`](./motion.ts) | The transcript's entrance classes, shared by the transcript, the rating, and every surface's error line. |
 | [`messages.tsx`](./messages.tsx) | Transcript body shared by every surface. Holds the shimmer until there is something to read (an assistant message with only source parts stays unmounted), renders sources only once the answer has settled, renders a handoff-only reply's lead line as the assistant's words, and closes the last settled reply (even one that settled with nothing to read) with one handoff per conversation. |
 | [`Sources.tsx`](./Sources.tsx) | An answer's sources as a disclosure group: one "Sources" row with the count, a leading chevron that turns down, and inset rows (surface glyph, title, section from the surface registry, → arrow) on the shared `.disclosure-body` track. Collapsed by default. |
-| [`HandoffPanel.tsx`](./HandoffPanel.tsx) | The way to a person under a finished reply, in three states on one surface: the **offer** (a line per kind and a "Talk to the team" chip, the footprint of a quiet row), the **form** it opens into in place (Site Info's reply promise, Name and Email in an inset field group, "Send to the team" posting the visitor's questions to the inquiries intake), and the **receipt** it becomes ("Book a call" there when Site Info has a booking link). Every state change rides `useRevealSwap` with `morphHeight`. Built only from `components/ui` (`Card variant="inset"`, `FieldGroup variant="inset"`, `Input variant="bare"`, `Button size="chat"`). The file is not named `Handoff.tsx`: that collides with `handoff.ts` on a case-insensitive filesystem and TypeScript refuses both. |
+| [`HandoffPanel.tsx`](./HandoffPanel.tsx) | The way to a person under a finished reply, in three states on one surface: the **offer** (a statement per kind and an "Email a partner" chip, the footprint of a quiet row), the **form** it opens into in place (Site Info's reply promise, Name and Email in an inset field group bound to the conversation's draft, "Send to the team" posting the visitor's messages to the inquiries intake, "Not now" folding it back), and the **receipt** it becomes ("Book a call" there when Site Info has a booking link). Every state change rides `useRevealSwap` with `morphHeight`. Built only from `components/ui` (`Card variant="inset"`, `FieldGroup variant="inset"`, `Input variant="bare"`, `Button size="chat"`). The file is not named `Handoff.tsx`: that collides with `handoff.ts` on a case-insensitive filesystem and TypeScript refuses both. |
+| [`ContactButton.tsx`](./ContactButton.tsx) | `AskContactButton`: "Email a partner" in every surface's chrome (the menu's and the closing band's chat header, beside the `/ask` widget's send button). Opens the handoff form in the transcript, brings the receipt back once sent, and is the contact page before the first question. |
 | [`handoffTool.ts`](./handoffTool.ts) | Server side of the handoff: the `handoff` tool the model can call with a reason, and `resolveAskHandoff`, which pairs it with Site Info's terms (reply time, booking link). The tool's description and every reason's wording exclude questions the sources answer, so a visitor asking how projects start gets an answer rather than a form. Tested in `handoffTool.test.ts`. |
 | [`messageText.ts`](./messageText.ts) | The words of a transcript message (text parts only), one reading for the endpoint, the transcript, and the handoff. |
 | [`questions.ts`](./questions.ts) | `recordAskQuestion()`: stores each turn for the team after the response, redacted (question and answer), with its sources, outcome, tokens and latency, the page it was asked on, and the chat and message ids. No IP, no analytics id. `markAskTurn()`: the visitor's rating and handoff signal onto that row, first rating wins, a sent inquiry never steps back to a click. |
@@ -264,10 +267,12 @@ backfill script.
 
 The chat never holds contact details: its log is anonymous and expires. Leads belong in Inquiries, which is owned, notifies the team, and confirms by email. Every surface (the menu, the footer's closing band, and the `/ask` page) renders the way to a person in `TranscriptItems`, so no surface can miss it.
 
-**One handoff per conversation, three states.** The last settled reply closes with it; a newer reply takes it along. The words are code-owned throughout, so the model can offer a person but never word a promise:
+**One handoff per conversation, three states.** The last settled reply that carries a reason closes with it; a newer reply takes it along. A reply with no reason closes with nothing: the way to a person that is always there is "Email a partner" in the surface's chrome (`AskContactButton`), which opens the same form under the newest reply. The words are code-owned throughout, so the model can offer a person but never word a promise:
 
-- **The offer.** One line and a "Talk to the team" chip, the footprint of a plain row, so a finished answer is never followed by a form nobody asked for. When a person is the better next step the model calls the `handoff` tool with a reason: `estimate` (what their own project would cost, how long, when we could start), `project` (they say they have one, or ask us to do something for them), `person` (they asked for one by name or role, or to be called), `contact_details` (they typed an email address or phone number), `no_answer` (nothing on the site answers it; also the no-match first turn, with no model call). A sixth reason, `case_study`, is never the model's to name (`ASK_TOOL_HANDOFF_REASONS` leaves it out of the tool): code closes a reply with it when the question was about a case study whose story is still thin (see [A thin case study](#a-thin-case-study)). The model only decides *that* and *why*. Every reason's offer line, and the **lead line** shown as the assistant's words when the handoff is the whole reply, live in code (`ASK_HANDOFFS`; studio-voice drafts, not approved copy). Any other finished answer offers quietly, with no lead and the `none` kind. A reason this build has no copy for shows the quiet offer instead.
-- **The form**, opened by the chip, in place on the same surface. Site Info's reply promise (`askHandoffPromise`, from `AskHandoffTerms`), a name and an address in one inset block (AutoFill fills it in a tap; an address they already typed in the chat starts the field, marked "From your message", and `contact_details` lands on the form directly), and "Send to the team". That posts their own questions (the same `From my Ask conversation:` text the contact form opens with) to `/api/inquiries/submit` through `postInquiry`, the intake the contact forms use, filed as a project inquiry for `estimate` and `project` and a general message otherwise, with `fromAsk`. The address is checked with the intake's own rule and words first (`isValidEmailAddress`, `INQUIRY_EMAIL_INVALID`). What is typed here never reaches the model or the Ask log. The form scrolls to its own top as it opens, since on a short panel it is taller than the transcript and the promise must not land above the fold.
+- **The offer.** One line and a "Talk to the team" chip, the footprint of a plain row, so a finished answer is never followed by a form nobody asked for. When a person is the better next step the model calls the `handoff` tool with a reason: `estimate` (what their own project would cost, how long, when we could start), `project` (they say they have one, or ask us to do something for them), `person` (they asked for one by name or role, or to be called), `contact_details` (they typed an email address or phone number), `no_answer` (nothing on the site answers it; also the no-match first turn, with no model call). A sixth reason, `case_study`, is never the model's to name (`ASK_TOOL_HANDOFF_REASONS` leaves it out of the tool): code closes a reply with it when the question was about a case study whose story is still thin (see [A thin case study](#a-thin-case-study)). The model only decides *that* and *why*. Every reason's offer line (a statement, so the chat box is never asked something only the chip can answer), and the **lead line** shown as the assistant's words when the handoff is the whole reply, live in code (`ASK_HANDOFFS`). A reason this build has no copy for shows nothing, and the chrome's "Email a partner" still works.
+- **When the form opens by itself** (`ASK_HANDOFFS[kind].opens`, read by `askHandoffOpen`): `always` when the visitor asked for it (`person`, including a yes to the offer or "send this to the team", and `contact_details`); `alone` when the card is the whole reply (an own-project `estimate`, a `project` that names no work), since then the team is the only thing to offer; `never` otherwise (`no_answer`, `case_study`), and under an answer an `alone` kind stays one row, so the answer is read first. "Not now" folds a form back and keeps it closed under that reply. A form that arrives open is brought into view from the reply's lead line, so the words that introduce it are read first.
+- **The form**, in place on the same surface. Site Info's reply promise (`askHandoffPromise`, from `AskHandoffTerms`), a name and an address in one inset block (AutoFill fills it in a tap; an address they already typed in the chat starts the field, marked "From your message"), "Send to the team", and a line that says what it sends ("Sends your 3 messages to our inbox, never the chat log."). That posts their own messages (the same `From my Ask conversation:` text the contact form opens with) to `/api/inquiries/submit` through `postInquiry`, the intake the contact forms use, with `fromAsk`. Asides are left out: Jev's `has_substance` marks a turn that only agrees, thanks, or asks to be put in touch, the reply carries it as `data-turn`, and `userQuestions` skips it unless asides are all there is. The inquiry is a project inquiry once any reply in the conversation was an `estimate` or a `project` (`askHandoffForm`), a general message otherwise.
+- **The draft is the conversation's** (`AskHandoffDraft`, kept in `AskSession`), not the form's: what the visitor typed survives a new question (an open form follows the newest reply), another surface, and client-side navigation. While the form is open, a chat message that is only contact details ("Jo Park, jo@northwind.co") fills the form instead of becoming a question (`contactFromMessage`, in the browser, so it never reaches the model or the Ask log). The address is checked with the intake's own rule and words first (`isValidEmailAddress`, `INQUIRY_EMAIL_INVALID`). What is typed here never reaches the model or the Ask log. The form scrolls to its own top as it opens, since on a short panel it is taller than the transcript and the promise must not land above the fold.
 - **The receipt**, in place again: the email it will reply to, the reference, and "Book a call" when Site Info has a booking link, offered only after the commitment.
 
 Each state change rides the site's panel swap (`useRevealSwap` with `morphHeight`): the outgoing copy fades, the surface resizes, the incoming copy fades in staggered, and the card ground fades in on the same duration, so the offer reads as becoming the form rather than being replaced by it. Keyboard users land on the first field, then on the receipt; a finger is never handed a raised keyboard it did not ask for (`focusForKeyboard`, plus a fine-pointer check).
@@ -317,7 +322,7 @@ Production, preview and local dev run `on`, so this is live. In `off` and `shado
 Ask spent a full writing-model call on every turn, including turns whose only output is a decision. Jev (TypeSafe's System One model) cannot write, but it returns typed answers with calibrated probabilities in roughly 150 to 350 ms. With `ASK_JEV=on` the decisions move to Jev and code, and the writing model is left one job: write a grounded answer from passages that were already vetted. Turns that need no writing skip it entirely.
 
 - **Code owns the workflow.** Jev returns probabilities; every number lives in `ASK_JUDGE_THRESHOLDS` and every branch is a plain `if` in `routeTurn()` and `routePassage()`. Changing policy is a number edit, never a reworded question.
-- **The turn, one request, asked beside the embedding call** so it adds no wait: `request` (a Choice: information, estimate, project, person, conversation, other), three Nouls that tell whether only a person could settle it (`own_project`, `general_question`, `names_work`), and on a follow-up `depends_on_previous`.
+- **The turn, one request, asked beside the embedding call** so it adds no wait: `request` (a Choice: information, estimate, project, person, conversation, other), three Nouls that tell whether only a person could settle it (`own_project`, `general_question`, `names_work`), `asks_to_send`, `about_studio` (off topic), `has_substance` (an aside the handoff form leaves out), and on a follow-up `depends_on_previous`.
 - **The route.** `person` at confidence 0.6 or more is the card alone. An `estimate` is the card alone when it is plainly the visitor's own project (`own_project` at 0.6 or more) and no general question rides along (`general_question` under 0.5); a `project` when it names no kind of work ("I have a project"), where "can you fix my Webflow site?" names work the site may speak to. Every other estimate or project retrieves, answers from what is kept, and closes with its card, written by code after the text, so the partial answer the writing model could not do reliably (words and a tool call in one turn) now always lands. `conversation` on a follow-up is the chat-only prompt with no retrieval. Everything else retrieves and answers.
 - **The passages.** One Jev request per candidate chunk, all in parallel, each judged alone against the query (a large state full of unrelated text costs Jev accuracy): `is_relevant` below 0.45 drops it, `has_evidence` above 0.55 keeps it, otherwise dropped. Sources shown to the visitor are only documents with kept chunks. Nothing kept means the card (`no_answer`, or the turn's own reason) with no model call, on first turns and follow-ups alike.
 - **Fail open.** A missing key, a timeout, a 429, or a `request` confidence under 0.35 is the judge-off path for that turn, tool and all (`fell_back`); a passage whose check failed is kept. A visitor never sees a Jev error.
@@ -360,18 +365,22 @@ the corpus is current the moment Ask comes back.
   prepended to the query. Good enough for one-hop follow-ups; a model-written standalone
   question is the next step if evals show multi-hop misses.
 - **The judge reads literally.** Jev answers the question as written, not as meant: a universal ("is every part of it...") read low on plainly own-project questions, which is why that judgment is three literal Nouls combined in code. It does not count, compare dates, or reason over several hops, and it does not treat state as hostile; the passages it reads are the studio's own published content. Thresholds were tuned on a 19-case fixture and a 370-chunk corpus, not on production traffic. Production went `on` 2026-09-21 after two days of `shadow`, short of the week planned, so `judge_failed`, `fell_back` and `judge_confidence` on `ask_questioned` are where the thresholds meet real questions: read them before trusting a number tuned on the fixture.
-- **An abandoned handoff form loses its draft.** The offer follows the latest reply, so a
-  form opened and then left for a new question closes. A send already in flight still lands:
-  `markSent` lives in the surface hook, so the receipt pins to the reply it was sent from.
+- **A draft lives as long as the page.** The conversation keeps it across questions,
+  surfaces, and client-side navigation, but a full reload starts a new conversation and
+  an empty form. A send already in flight still lands: `markSent` lives in the surface
+  hook, so the receipt pins to the reply it was sent from.
+- **The writing model still slips, rarely.** On the closing band's Webflow chip, 2 of 24
+  replies (2026-09-25) mentioned "the sources" or invited the visitor to say more,
+  against every rule in `CARD_FOLLOWS`. Check new prompt lines by sampling that chip.
 
 ## Tap, never directions
 
 A reply's words never carry a path, a link, or "go to this page": on a phone
 that is a dead string. The way anywhere is something to tap.
 
-- **The page to open next** is a card under the answer (`AskNextPageCard` in
-  `Sources.tsx`), from a `data-nextPage` part the endpoint writes after the
-  words. The page is one of the reply's own sources, never the page the
+- **The page to open next** leads the answer's sources group (`AskSources`
+  in `Sources.tsx`, with the rest under "More sources", never listed twice),
+  from a `data-nextPage` part the endpoint writes after the words. The page is one of the reply's own sources, never the page the
   visitor is on: Jev's pick however sure (`judgeNextPage`, a Choice with a
   `none` option), or retrieval's top page when the judge is off, failed, or
   says `none` without conviction. A confident `none` means no card. Every
@@ -379,16 +388,18 @@ that is a dead string. The way anywhere is something to tap.
   transcript.
 - **A person** is the form. When the visitor asks for their question to reach
   the team, in words or with a yes to the offer on screen, the turn is the
-  `person` card with the form already open under its lead line
-  (`ASK_HANDOFFS[kind].opens`); `contact_details` opens the same way. Kinds the
-  visitor did not ask for (an estimate, a project, no answer) stay a quiet
-  offer row until picked.
+  `person` card with the form already open under its lead line (see
+  [Reaching a person](#reaching-a-person) for when each kind opens).
+- **A question about something else** ("what's the weather?") is neither a
+  search miss nor the team's: with nothing retrieved and Jev's `about_studio`
+  low (`offTopic`), the reply is code's `ASK_SCOPE_REPLY`, what Ask covers,
+  with no card and no model call.
 - The prompt says both, and says the chat itself sends nothing: a reply never
   claims a handoff that did not happen, and never tells the visitor what the
   chat can't do.
 
-The send thresholds (`asksToSend`, `acceptsOffer`, `answersReply`) and the
-page card's `noNextPage` are measured: the numbers sit beside each value in
-`ASK_JUDGE_THRESHOLDS`. After a change to their questions, re-run
-`scripts/ask-judge-eval.ts --send` and `--next-page` (fixtures in
-`scripts/ask-cases.ts`).
+The send thresholds (`asksToSend`, `acceptsOffer`, `answersReply`), the
+page card's `noNextPage`, and the scope readings (`aboutStudio`, `substance`)
+are measured: the numbers sit beside each value in `ASK_JUDGE_THRESHOLDS`.
+After a change to their questions, re-run `scripts/ask-judge-eval.ts` with
+`--send`, `--next-page` and `--scope` (fixtures in `scripts/ask-cases.ts`).

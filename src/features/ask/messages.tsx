@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChatStatus } from 'ai'
+import type { Dispatch, SetStateAction } from 'react'
 import { Bubble, BubbleContent } from '@/components/ui/bubble'
 import { Message, MessageContent } from '@/components/ui/message'
 import { MessageScrollerItem } from '@/components/ui/message-scroller'
@@ -10,8 +11,10 @@ import { type AskHandoffReceipt, type AskHandoffSent, Handoff } from './HandoffP
 import {
   ASK_HANDOFFS,
   type AskHandoff,
+  type AskHandoffDraft,
   type AskHandoffTerms,
   type AskUIMessage,
+  askHandoffOpen,
   handoffOf,
   nextPageOf,
 } from './handoff'
@@ -19,7 +22,7 @@ import { messageText } from './messageText'
 import { handoffAfterLead, transcriptItemEnter } from './motion'
 import { AskRating } from './Rating'
 import { ASK_NOTICE } from './retention'
-import { AskNextPageCard, AskSources } from './Sources'
+import { AskSources } from './Sources'
 
 /**
  * Shared transcript pieces for every Ask surface (the takeover-menu chat, the
@@ -58,12 +61,14 @@ const hasReply = (message: AskUIMessage, live: boolean) =>
  * with the reason's lead line as the reply settles.
  *
  * One handoff per conversation. The reply that ends the transcript, once
- * settled, closes with the offer (the model's reason, or the quiet `none`
- * one), rendered as its own item after the words and the sources; a reply
- * that settled with nothing to read gets the quiet offer alone. A newer
- * reply takes the offer with it; an earlier reply's lead line stays, since
- * it was the reply. Once the visitor has sent, the receipt stays pinned to
- * the reply it closed and no later reply offers again.
+ * settled, closes with its reason's offer or form, rendered as its own item
+ * after the words and the sources. A reply with no reason closes with
+ * nothing: the way to a person that is always there is the surface's
+ * header ("Email a partner"), which opens the same form here. A form the
+ * visitor opened or typed in follows the newest reply with what they typed
+ * (the conversation's `draft`); an earlier reply's lead line stays, since it
+ * was the reply. Once the visitor has sent, the receipt stays pinned to the
+ * reply it closed and no later reply offers again.
  *
  * Every settled reply can be rated. The rating and the handoff are filed
  * under the question's own message id (`feedback`), which the transcript
@@ -75,15 +80,20 @@ export function TranscriptItems({
   terms,
   sent,
   onSent,
+  draft,
+  onDraft,
   feedback,
 }: {
   messages: AskUIMessage[]
   status: ChatStatus
-  /** Site Info's promise, for the quiet offer that carries no resolved handoff of its own. */
+  /** Site Info's promise, for a form opened under a reply that carries no resolved handoff of its own. */
   terms: AskHandoffTerms
   /** The handoff the visitor has sent in this conversation, if any. */
   sent: AskHandoffSent | null
   onSent: (messageId: string, receipt: AskHandoffReceipt) => void
+  /** The handoff form as the visitor left it (`useAskChat`). */
+  draft: AskHandoffDraft
+  onDraft: Dispatch<SetStateAction<AskHandoffDraft>>
   feedback: AskFeedback
 }) {
   const last = messages.at(-1)
@@ -116,7 +126,9 @@ export function TranscriptItems({
           key={message.id}
           live={status === 'streaming' && index === visible.length - 1}
           message={message}
+          draft={draft}
           messages={messages}
+          onDraft={onDraft}
           onSent={onSent}
           previous={visible[index - 1]}
           sent={sent}
@@ -160,14 +172,17 @@ function TranscriptTurn({
   sent: AskHandoffSent | null
   terms: AskHandoffTerms
   onSent: (messageId: string, receipt: AskHandoffReceipt) => void
+  draft: AskHandoffDraft
+  onDraft: Dispatch<SetStateAction<AskHandoffDraft>>
 }) {
   const reply = message.role === 'assistant' && !live
   const text = messageText(message)
   const handoff = reply ? handoffOf(message) : null
   const lead = handoff && text === '' ? ASK_HANDOFFS[handoff.reason].lead : null
   const turn = reply && previous?.role === 'user' ? previous.id : null
-  const { sent } = handoffProps
+  const { sent, draft } = handoffProps
   const sentHere = sent?.messageId === message.id
+  const open = closes && reply && askHandoffOpen(message, draft)
 
   return (
     <>
@@ -188,13 +203,16 @@ function TranscriptTurn({
           </div>
         </MessageScrollerItem>
       )}
-      {(sentHere || (closes && reply)) && (
+      {(sentHere || (closes && reply && (handoff !== null || open))) && (
         <TurnHandoff
           afterLead={lead !== null}
+          draft={draft}
           handoff={handoff}
           messageId={message.id}
           messages={handoffProps.messages}
+          onDraft={handoffProps.onDraft}
           onSent={handoffProps.onSent}
+          open={open}
           receipt={sentHere && sent ? sent.receipt : null}
           terms={handoffProps.terms}
           turn={turn}
@@ -214,6 +232,9 @@ function TurnHandoff({
   receipt,
   terms,
   onSent,
+  open,
+  draft,
+  onDraft,
 }: {
   messageId: string
   handoff: AskHandoff | null
@@ -224,17 +245,25 @@ function TurnHandoff({
   receipt: AskHandoffReceipt | null
   terms: AskHandoffTerms
   onSent: (messageId: string, receipt: AskHandoffReceipt) => void
+  open: boolean
+  draft: AskHandoffDraft
+  onDraft: Dispatch<SetStateAction<AskHandoffDraft>>
 }) {
   const itemId = `${messageId}:handoff`
   return (
     <MessageScrollerItem messageId={itemId}>
       <div className={cn(transcriptItemEnter, afterLead && handoffAfterLead)}>
         <Handoff
+          arrivalId={afterLead ? `${messageId}:lead` : itemId}
+          draft={draft}
           itemId={itemId}
           kind={handoff?.reason ?? 'none'}
           messages={messages}
+          onDraft={onDraft}
           onSent={(sent) => onSent(messageId, sent)}
+          open={open}
           receipt={receipt}
+          replyId={messageId}
           terms={handoff ?? terms}
           turn={turn}
         />
@@ -297,14 +326,9 @@ export function AskMessage({
             <p className="whitespace-pre-wrap">{messageText(message)}</p>
           </BubbleContent>
         </Bubble>
-        {nextPage && (
+        {(nextPage || sources.length > 0) && (
           <div className={transcriptItemEnter}>
-            <AskNextPageCard page={nextPage} />
-          </div>
-        )}
-        {sources.length > 0 && (
-          <div className={transcriptItemEnter}>
-            <AskSources sources={sources} />
+            <AskSources next={nextPage} sources={sources} />
           </div>
         )}
       </MessageContent>

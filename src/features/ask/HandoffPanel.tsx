@@ -9,7 +9,15 @@ import {
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import type React from 'react'
-import { type Ref, useEffect, useId, useRef, useState } from 'react'
+import {
+  type Dispatch,
+  type Ref,
+  type SetStateAction,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react'
 import { postInquiry } from '@/blocks/shared/form/post-inquiry'
 import { Button } from '@/components/ui/button'
 import {
@@ -33,16 +41,20 @@ import { isValidEmailAddress, normalizeEmailAddress } from '@/utilities/emailAdd
 import { cn } from '@/utilities/ui'
 import { type AskFeedback, useAskFeedback } from './feedback'
 import {
+  ASK_HANDOFF_ACTION,
   ASK_HANDOFF_HREF,
   ASK_HANDOFFS,
+  type AskHandoffDraft,
   type AskHandoffKind,
   type AskHandoffTerms,
   type AskUIMessage,
   askHandoffEmail,
+  askHandoffForm,
   askHandoffMessage,
   askHandoffPromise,
   askInquiryFields,
   saveAskHandoff,
+  userQuestions,
 } from './handoff'
 
 /** What the inquiries intake answered: where the reply goes, and the reference if it issued one. */
@@ -70,25 +82,40 @@ type HandoffProps = {
   messages: AskUIMessage[]
   /** The transcript item this handoff sits in, so the form can be brought into view once it opens. */
   itemId: string
+  /**
+   * The item to align to when the form arrives open: the reply's lead line
+   * when the card is the whole reply, so the words that introduce the form
+   * are read first; otherwise the handoff itself.
+   */
+  arrivalId?: string
+  /** The reply this handoff closes, where "Not now" keeps a form that opened by itself closed. */
+  replyId: string
   /** The receipt, when this handoff was sent earlier in the conversation (a remount after later turns). */
   receipt?: AskHandoffReceipt | null
   onSent: (receipt: AskHandoffReceipt) => void
   /** The question this handoff closes (its user message id), or null for a reply with none. */
   turn: string | null
+  /** The form is open here (`askHandoffOpen`): asked for, opened, or typed in. */
+  open: boolean
+  /** The form as the visitor left it, kept by the conversation. */
+  draft: AskHandoffDraft
+  onDraft: Dispatch<SetStateAction<AskHandoffDraft>>
 }
 
 /**
  * The way to a person under a finished reply, in three states on one surface:
  *
- * 1. **Offer.** A line and a chip, at the weight of the quiet row every
- *    finished answer already closed with. The model's reason picks the line
+ * 1. **Offer.** A line and a chip, one quiet row. The reason picks the line
  *    (and, when the reply was only the handoff, the lead the transcript shows
- *    before it); a reply with no reason offers quietly.
+ *    before it).
  * 2. **Form.** The chip opens the same element in place: the surface takes
  *    the transcript's muted ground and grows to a promise, Name and Email in
  *    one inset block that AutoFill fills in a tap, and "Send to the team".
- *    A kind the visitor asked for (`opens`: a person, or their details
- *    shared) lands here directly, any address they typed already filled. What is typed never reaches the model or the Ask log.
+ *    It opens by itself when the visitor asked for a person or shared their
+ *    details, or when the card is the whole reply to a price or a project
+ *    (`ASK_HANDOFFS[kind].opens`); "Not now" folds it back. What is typed is
+ *    the conversation's draft, so it survives a new question and another
+ *    surface, and it never reaches the model or the Ask log.
  * 3. **Receipt.** Sent, the form becomes its receipt on the same swap: where
  *    the reply goes, the reference, and "Book a call" after the commitment.
  *
@@ -104,16 +131,18 @@ export function Handoff({
   terms,
   messages,
   itemId,
+  arrivalId = itemId,
+  replyId,
   receipt: sentReceipt = null,
   onSent,
   turn,
+  open,
+  draft,
+  onDraft,
 }: HandoffProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLInputElement>(null)
-  const [suggestedEmail] = useState(() => askHandoffEmail(messages))
-  const [panel, setPanel] = useState<Panel>(() =>
-    sentReceipt ? SENT : ASK_HANDOFFS[kind].opens ? FORM : OFFER,
-  )
+  const [panel, setPanel] = useState<Panel>(() => (sentReceipt ? SENT : open ? FORM : OFFER))
   const [receipt, setReceipt] = useState<AskHandoffReceipt | null>(sentReceipt)
   const reducedMotion = usePrefersReducedMotion()
   const { scrollToMessage } = useMessageScroller()
@@ -121,6 +150,10 @@ export function Handoff({
   const headingTo = useRef<Panel>(panel)
 
   useEffect(() => trackInputModality(), [])
+
+  /** Brought into view aligned to its top, so the promise line is read before the fields. */
+  const bringIntoView = (id = itemId) =>
+    scrollToMessage(id, { align: 'start', behavior: reducedMotion ? 'auto' : 'smooth' })
 
   /**
    * Once the incoming panel has settled (its nodes are visible, its height
@@ -136,7 +169,7 @@ export function Handoff({
         // is taller than the transcript, and the scroller's own pin to the end
         // would leave the promise line above the fold, which is the whole
         // reason the visitor is being asked for an address.
-        scrollToMessage(itemId, { align: 'start', behavior: reducedMotion ? 'auto' : 'smooth' })
+        bringIntoView()
       }
       if (headingTo.current === SENT) focusForKeyboard(rootRef.current, { preventScroll: true })
     })
@@ -157,6 +190,36 @@ export function Handoff({
     swapTo(next)
   }
 
+  // The draft decides: an offer the visitor opened (here, from the chat
+  // header, or by typing their address into the chat) becomes the form, and
+  // "Not now" folds it back. A sent handoff stays its receipt.
+  useEffect(() => {
+    if (headingTo.current === SENT) return
+    if (open && headingTo.current === OFFER) go(FORM)
+    if (!open && headingTo.current === FORM) go(OFFER)
+  })
+
+  // A form that arrives open (it opened by itself, or the visitor carried it
+  // here from another reply or surface) is brought into view once; later
+  // openings settle through the swap.
+  const arrivedOpen = useRef(panel === FORM)
+  useEffect(() => {
+    if (!arrivedOpen.current) return
+    arrivedOpen.current = false
+    // Not cancelled on cleanup: this effect has no dependency list, so a
+    // re-render in the same frame would cancel the only scroll it makes.
+    requestAnimationFrame(() => bringIntoView(arrivalId))
+  })
+
+  // The chat header's "Email a partner" asks for the handoff again: the form,
+  // or once sent, the receipt, comes back into view.
+  const revealed = useRef(draft.reveal)
+  useEffect(() => {
+    if (draft.reveal === revealed.current) return
+    revealed.current = draft.reveal
+    requestAnimationFrame(() => bringIntoView())
+  })
+
   return (
     <Card
       ref={rootRef}
@@ -176,18 +239,24 @@ export function Handoff({
       )}
       style={{ transitionDuration: `${SCROLL_REVEAL_SWAP.textDuration * 1000}ms` }}
     >
-      {panel === OFFER && <HandoffOffer kind={kind} onOpen={() => go(FORM)} />}
+      {panel === OFFER && (
+        <HandoffOffer
+          kind={kind}
+          onOpen={() => onDraft((current) => ({ ...current, open: true, closedUnder: null }))}
+        />
+      )}
       {panel === FORM && (
         <HandoffForm
-          kind={kind}
+          draft={draft}
           messages={messages}
           nameRef={nameRef}
+          onClose={() => onDraft((current) => ({ ...current, open: false, closedUnder: replyId }))}
+          onDraft={onDraft}
           onSent={(sent) => {
             setReceipt(sent)
             onSent(sent)
             go(SENT)
           }}
-          suggestedEmail={suggestedEmail}
           terms={terms}
           turn={turn}
         />
@@ -197,7 +266,11 @@ export function Handoff({
   )
 }
 
-/** The line and the chip; the chip is the suggestion chips' shape, so it reads as a next question to pick. */
+/**
+ * The line and the chip; the chip is the suggestion chips' shape, so it reads
+ * as a next step to pick. The line is a statement, never a question, so the
+ * chat box is never asked something only the chip can answer.
+ */
 function HandoffOffer({ kind, onOpen }: { kind: AskHandoffKind; onOpen: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2" data-swap="text">
@@ -205,39 +278,47 @@ function HandoffOffer({ kind, onOpen }: { kind: AskHandoffKind; onOpen: () => vo
         {ASK_HANDOFFS[kind].offer}
       </p>
       <Button className="font-normal" onClick={onOpen} size="chat" type="button" variant="outline">
-        Talk to the team
+        {ASK_HANDOFF_ACTION}
       </Button>
     </div>
   )
 }
 
+/** "your message" or "your 3 messages": what the form sends, counted. */
+const sendsLine = (count: number) =>
+  `Sends ${count === 1 ? 'your message' : `your ${count} messages`} to our inbox, never the chat log.`
+
 /**
  * An address the visitor already wrote in the chat starts the email field,
  * marked "From your message" until they change it. Send waits for both
  * fields; the address is checked with the intake's own rule and words before
- * anything is posted.
+ * anything is posted. The fields are the conversation's draft, so what is
+ * typed here is still here after a new question or on another surface.
  */
 function HandoffForm({
-  kind,
+  draft,
   messages,
   nameRef,
+  onClose,
+  onDraft,
   onSent,
-  suggestedEmail,
   terms,
   turn,
 }: {
-  kind: AskHandoffKind
+  draft: AskHandoffDraft
   messages: AskUIMessage[]
   nameRef: Ref<HTMLInputElement>
+  onClose: () => void
+  onDraft: Dispatch<SetStateAction<AskHandoffDraft>>
   onSent: (receipt: AskHandoffReceipt) => void
-  suggestedEmail: string | null
   terms: AskHandoffTerms
   turn: string | null
 }) {
   const statusId = useId()
   const feedback = useAskFeedback()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState(suggestedEmail ?? '')
+  const suggestedEmail = askHandoffEmail(messages)
+  const name = draft.name
+  const email = draft.email ?? suggestedEmail ?? ''
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
 
@@ -254,7 +335,7 @@ function HandoffForm({
         name: name.trim(),
         email: address,
         message,
-        type: ASK_HANDOFFS[kind].form,
+        type: askHandoffForm(messages),
         ...askInquiryFields({ conversation: feedback.conversation, turn }),
       })
       onSent({ email: address, reference })
@@ -284,10 +365,10 @@ function HandoffForm({
           name={name}
           nameRef={nameRef}
           onEmail={(value) => {
-            setEmail(value)
+            onDraft((current) => ({ ...current, email: value, open: true }))
             setError(null)
           }}
-          onName={setName}
+          onName={(value) => onDraft((current) => ({ ...current, name: value, open: true }))}
           statusId={statusId}
         />
       </CardContent>
@@ -296,6 +377,7 @@ function HandoffForm({
           disabled={!name.trim() || !email.trim()}
           error={error}
           sending={sending}
+          sends={sendsLine(userQuestions(messages).length)}
           statusId={statusId}
         />
       </CardContent>
@@ -306,6 +388,9 @@ function HandoffForm({
             Contact page
             <IconArrowRight data-icon="inline-end" />
           </HandoffLink>
+        </Button>
+        <Button className="ml-auto" onClick={onClose} size="clear" type="button" variant="link">
+          Not now
         </Button>
       </CardFooter>
     </form>
@@ -379,11 +464,14 @@ function SendRow({
   disabled,
   error,
   sending,
+  sends,
   statusId,
 }: {
   disabled: boolean
   error: string | null
   sending: boolean
+  /** What the form sends and where, so nothing leaves unseen. */
+  sends: string
   statusId: string
 }) {
   return (
@@ -400,7 +488,7 @@ function SendRow({
       ) : (
         <FieldDescription id={statusId}>
           <IconLock aria-hidden />
-          Goes to our inbox, never the chat log.
+          {sends}
         </FieldDescription>
       )}
     </Field>

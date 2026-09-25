@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/message-scroller'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { AskTextarea } from '@/features/ask/Composer'
+import { AskContactButton } from '@/features/ask/ContactButton'
 import {
   ASK_HANDOFF_TERMS_FALLBACK,
   type AskHandoffTerms,
@@ -81,8 +82,14 @@ export function ClosingAsk({
     stop,
     sent,
     markSent,
+    draft,
+    setDraft,
+    openHandoff,
     feedback,
   } = useAskChat({ transport, initialMessages, onSend: () => setOpen(true) })
+
+  /** The way to a person that never moves, in the conversation's header on both surfaces. */
+  const contact = <AskContactButton conversation={messages.length > 0} onOpen={openHandoff} />
 
   useEffect(() => trackInputModality(), [])
 
@@ -148,8 +155,10 @@ export function ClosingAsk({
               ending flush against the chrome. */}
           <MessageScrollerContent className="justify-end gap-4 p-6">
             <TranscriptItems
+              draft={draft}
               feedback={feedback}
               messages={messages}
+              onDraft={setDraft}
               onSent={markSent}
               sent={sent}
               status={status}
@@ -294,6 +303,7 @@ export function ClosingAsk({
 
         {mobile ? (
           <ClosingAskSheet
+            action={contact}
             onClose={close}
             open={open}
             typingIn={inputRef}
@@ -322,7 +332,7 @@ export function ClosingAsk({
               keyboard && 'transition-none',
             )}
           >
-            <ChatHeader onClose={close} />
+            <ChatHeader action={contact} onClose={close} />
             {transcript}
           </section>
         )}
@@ -339,6 +349,7 @@ export function ClosingAsk({
  * unasked. Closing hands focus to nobody: the card decides.
  */
 function ClosingAskSheet({
+  action,
   open,
   onClose,
   typingIn,
@@ -346,6 +357,8 @@ function ClosingAskSheet({
   onSubmit,
   children,
 }: {
+  /** The header's action beside the close button. */
+  action: React.ReactNode
   open: boolean
   onClose: () => void
   /** The card's own text box: focus there at open means the visitor is typing. */
@@ -373,6 +386,7 @@ function ClosingAskSheet({
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
         <ChatHeader
+          action={action}
           as={SheetTitle}
           className="pt-[max(1rem,env(safe-area-inset-top))]"
           onClose={onClose}
@@ -395,10 +409,13 @@ function ClosingAskSheet({
  * make the title its accessible name.
  */
 function ChatHeader({
+  action,
   as: Title = 'p',
   className,
   onClose,
 }: {
+  /** Beside the close button: the way to a person. */
+  action?: React.ReactNode
   as?: React.ElementType<{ className?: string; children?: React.ReactNode }>
   className?: string
   onClose: () => void
@@ -416,6 +433,7 @@ function ChatHeader({
         <Title className="text-sm/tight font-medium">Ask Suits &amp; Sandals</Title>
         <p className="text-xs text-muted-foreground">Online</p>
       </div>
+      {action}
       <Button
         type="button"
         variant="secondary"

@@ -1,5 +1,6 @@
 import type { StoryObj } from '@storybook/nextjs-vite'
 import { expect, waitFor } from 'storybook/test'
+import { ASK_HANDOFF_ACTION } from './handoff'
 
 /**
  * Play steps shared by every Ask surface's stories: opening the handoff from
@@ -21,11 +22,15 @@ type Canvas = Pick<PlayContext, 'canvas' | 'userEvent'>
 const present = (el: HTMLElement) => expect(el).toBeInTheDocument()
 
 /**
- * Opens the handoff form from its offer and waits for the swap to land: the
- * fields mount on the swap's entrance half and cannot be typed into before.
+ * Opens the handoff form and waits for the swap to land: the fields mount on
+ * the swap's entrance half and cannot be typed into before. The reply's chip
+ * and the surface's own "Email a partner" open the same form, so the first
+ * one found will do; a form that opened by itself needs no tap.
  */
 export async function openAskHandoff({ canvas, userEvent }: Canvas) {
-  await userEvent.click(canvas.getByRole('button', { name: 'Talk to the team' }))
+  if (!canvas.queryByLabelText('Name')) {
+    await userEvent.click(canvas.getAllByRole('button', { name: ASK_HANDOFF_ACTION })[0])
+  }
   await waitFor(() => present(canvas.getByLabelText('Name')))
 }
 

@@ -6,7 +6,14 @@ import { useCallback, useMemo, useState } from 'react'
 import { useAskSession } from './AskSession'
 import { type AskFeedback, type AskRated, postAskFeedback } from './feedback'
 import type { AskHandoffReceipt, AskHandoffSent } from './HandoffPanel'
-import { type AskUIMessage, askHandoffState } from './handoff'
+import {
+  ASK_HANDOFF_DRAFT_EMPTY,
+  type AskHandoffDraft,
+  type AskUIMessage,
+  askHandoffOpen,
+  askHandoffState,
+  contactFromMessage,
+} from './handoff'
 import { ASK_QUESTION_LENGTH, type AskHandoffSignal } from './vocabulary'
 
 type UseAskChatOptions = {
@@ -31,6 +38,12 @@ type UseAskChatOptions = {
  * surface's own. A scripted surface (a `transport` or a seeded transcript:
  * stories and tests) and anything outside the provider keeps a chat to itself.
  *
+ * The handoff form's draft is the conversation's too (`AskHandoffDraft`), so
+ * what the visitor typed into it outlives a new question and a surface
+ * switch. While the form is open, a message that is only contact details
+ * ("Jo Park, jo@northwind.co") fills it instead of becoming a question: read
+ * in the browser, so it never reaches the model or the Ask log.
+ *
  * Every request carries where the conversation stands with the team
  * (`handoff`: none, offered, sent) next to the page it was asked on, so the
  * endpoint can keep the model from offering twice and drop the offer
@@ -42,10 +55,13 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
   const [question, setQuestion] = useState('')
   const [ownSent, setOwnSent] = useState<AskHandoffSent | null>(null)
   const [ownRatings, setOwnRatings] = useState<AskFeedback['ratings']>({})
+  const [ownDraft, setOwnDraft] = useState<AskHandoffDraft>(ASK_HANDOFF_DRAFT_EMPTY)
   const sent = shared ? shared.sent : ownSent
   const setSent = shared ? shared.setSent : setOwnSent
   const ratings = shared ? shared.ratings : ownRatings
   const setRatings = shared ? shared.setRatings : setOwnRatings
+  const draft = shared ? shared.draft : ownDraft
+  const setDraft = shared ? shared.setDraft : setOwnDraft
   // The chat id files every turn of one conversation; a reset mints a new
   // one (which is also what empties the transcript) so two conversations
   // from one open box never share a thread in the log. The seed is spent
@@ -70,10 +86,28 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
 
   const busy = status === 'submitted' || status === 'streaming'
   const canSend = !busy && question.trim().length >= ASK_QUESTION_LENGTH.min
+  const last = messages.at(-1)
+  /** The form under the settled reply that ends the transcript is open, with nothing sent yet. */
+  const formOpen =
+    status === 'ready' && sent === null && last?.role === 'assistant' && askHandoffOpen(last, draft)
 
   function sendQuestion(text: string) {
     const trimmed = text.trim()
     if (trimmed.length < ASK_QUESTION_LENGTH.min || busy) return
+    // Contact details typed into the chat while the form is open are for the
+    // form: they fill it, and it comes into view with them in place.
+    const contact = formOpen ? contactFromMessage(trimmed) : null
+    if (contact) {
+      setDraft((current) => ({
+        ...current,
+        open: true,
+        email: contact.email,
+        name: contact.name ?? current.name,
+        reveal: current.reveal + 1,
+      }))
+      setQuestion('')
+      return
+    }
     // Where the conversation stands with the team as this question leaves,
     // merged into the transport's body beside `pagePath`.
     void sendMessage(
@@ -89,9 +123,23 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     sendQuestion(question)
   }
 
-  /** The visitor sent their details from the handoff under `messageId`. */
+  /** The visitor sent their details from the handoff under `messageId`; the draft is spent. */
   function markSent(messageId: string, receipt: AskHandoffReceipt) {
     setSent({ messageId, receipt })
+    setDraft((current) => ({ ...ASK_HANDOFF_DRAFT_EMPTY, reveal: current.reveal }))
+  }
+
+  /**
+   * The chat header's "Email a partner": the form, open under the reply that
+   * ends the transcript and brought into view; once sent, the receipt.
+   */
+  function openHandoff() {
+    setDraft((current) => ({
+      ...current,
+      open: sent === null,
+      closedUnder: null,
+      reveal: current.reveal + 1,
+    }))
   }
 
   /** A new conversation: the transcript, what it sent, and what it rated go together. */
@@ -101,6 +149,7 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     setSeed(undefined)
     setOwnSent(null)
     setOwnRatings({})
+    setOwnDraft(ASK_HANDOFF_DRAFT_EMPTY)
   }
 
   // Shown at once and posted behind it; the server keeps the first rating
@@ -136,6 +185,9 @@ export function useAskChat({ transport, initialMessages, onSend }: UseAskChatOpt
     stop,
     sent,
     markSent,
+    draft,
+    setDraft,
+    openHandoff,
     reset,
     feedback,
   }

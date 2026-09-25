@@ -116,7 +116,7 @@ export function ContactTemplate({
   const formMethods = useForm()
   const { getValues, setValue } = formMethods
 
-  // Arriving from Ask's "Talk to the team": the visitor's questions open the
+  // Arriving from the Ask form's "Contact page" link: the visitor's questions open the
   // message (still theirs to edit), and the inquiry carries the chat so sales
   // can read what was asked. Cleared once the inquiry is sent.
   const askRef = useRef<AskHandoffIds | null>(null)

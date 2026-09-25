@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { AskFeedback } from './feedback'
 import type { AskHandoffSent } from './HandoffPanel'
-import type { AskUIMessage } from './handoff'
+import { ASK_HANDOFF_DRAFT_EMPTY, type AskHandoffDraft, type AskUIMessage } from './handoff'
 import {
   type AskJourneyOpenVisit,
   type AskJourneyVisit,
@@ -33,7 +33,10 @@ type AskSession = {
   setSent: (sent: AskHandoffSent | null) => void
   ratings: AskFeedback['ratings']
   setRatings: React.Dispatch<React.SetStateAction<AskFeedback['ratings']>>
-  /** A new conversation: a new chat id, an empty transcript, nothing sent or rated. The journey stays. */
+  /** The handoff form as the visitor left it, whichever surface they typed it in. */
+  draft: AskHandoffDraft
+  setDraft: React.Dispatch<React.SetStateAction<AskHandoffDraft>>
+  /** A new conversation: a new chat id, an empty transcript, nothing sent, rated, or drafted. The journey stays. */
   reset: () => void
 }
 
@@ -121,16 +124,18 @@ export function AskSessionProvider({ children }: { children: React.ReactNode }) 
   const [chat, setChat] = useState(newChat)
   const [sent, setSent] = useState<AskHandoffSent | null>(null)
   const [ratings, setRatings] = useState<AskFeedback['ratings']>({})
+  const [draft, setDraft] = useState<AskHandoffDraft>(ASK_HANDOFF_DRAFT_EMPTY)
 
   const reset = useCallback(() => {
     setChat(newChat())
     setSent(null)
     setRatings({})
+    setDraft(ASK_HANDOFF_DRAFT_EMPTY)
   }, [newChat])
 
   const session = useMemo<AskSession>(
-    () => ({ chat, sent, setSent, ratings, setRatings, reset }),
-    [chat, sent, ratings, reset],
+    () => ({ chat, sent, setSent, ratings, setRatings, draft, setDraft, reset }),
+    [chat, sent, ratings, draft, reset],
   )
 
   return <AskSessionContext value={session}>{children}</AskSessionContext>

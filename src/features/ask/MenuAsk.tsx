@@ -25,6 +25,7 @@ import {
 import { MenuPreviewSlot } from '@/Header/Menu/PreviewSlot'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
+import { AskContactButton } from './ContactButton'
 import { ASK_HANDOFF_TERMS_FALLBACK, type AskHandoffTerms, type AskUIMessage } from './handoff'
 import { errorText, TranscriptItems } from './messages'
 import { transcriptItemEnter } from './motion'
@@ -191,6 +192,9 @@ export function MenuAsk({
     stop,
     sent,
     markSent,
+    draft,
+    setDraft,
+    openHandoff,
     reset,
     feedback,
   } = useAskChat({
@@ -296,6 +300,12 @@ export function MenuAsk({
               Answers about our work, services, and insights
             </CardDescription>
             <CardAction className={iconActions}>
+              {/* Compact from `md`, like the icon buttons beside it. */}
+              <AskContactButton
+                className="md:min-h-6 md:px-2 md:text-xs"
+                conversation={messages.length > 0}
+                onOpen={openHandoff}
+              />
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -328,8 +338,10 @@ export function MenuAsk({
               <MessageScrollerViewport className="overscroll-contain">
                 <MessageScrollerContent className="p-4">
                   <TranscriptItems
+                    draft={draft}
                     feedback={feedback}
                     messages={messages}
+                    onDraft={setDraft}
                     onSent={markSent}
                     sent={sent}
                     status={status}

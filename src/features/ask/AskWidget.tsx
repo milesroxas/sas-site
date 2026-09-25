@@ -15,6 +15,7 @@ import {
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import { cn } from '@/utilities/ui'
 import { AskTextarea } from './Composer'
+import { AskContactButton } from './ContactButton'
 import { ASK_HANDOFF_TERMS_FALLBACK, type AskHandoffTerms, type AskUIMessage } from './handoff'
 import { errorText, TranscriptItems } from './messages'
 import { transcriptItemEnter } from './motion'
@@ -56,6 +57,9 @@ export function AskWidget({
     stop,
     sent,
     markSent,
+    draft,
+    setDraft,
+    openHandoff,
     feedback,
   } = useAskChat({
     transport,
@@ -126,8 +130,10 @@ export function AskWidget({
                     <MessageScrollerViewport>
                       <MessageScrollerContent className="p-(--card-spacing)">
                         <TranscriptItems
+                          draft={draft}
                           feedback={feedback}
                           messages={messages}
+                          onDraft={setDraft}
                           onSent={markSent}
                           sent={sent}
                           status={status}
@@ -159,6 +165,9 @@ export function AskWidget({
             rows={2}
           />
           <InputGroupAddon align="block-end">
+            {/* The widget has no header: the way to a person sits where the
+                hands already are, opposite the send button. */}
+            <AskContactButton conversation={hasTranscript} onOpen={openHandoff} />
             <AskSubmitButton busy={busy} canSend={canSend} onStop={stop} className="ml-auto" />
           </InputGroupAddon>
         </InputGroup>
