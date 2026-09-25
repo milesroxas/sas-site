@@ -9,6 +9,7 @@
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --from-db    # replay stored questions
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --journey [--passages]   # the page a question is asked on
  *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --send       # asks to reach the team, or a yes to the offer
+ *   pnpm exec tsx --env-file=.env scripts/ask-judge-eval.ts --next-page  # the page card under a grounded reply
  *
  * `--passages` and `--from-db` boot Payload, as scripts/backfill-ask-index.ts
  * does, and need an indexed corpus (or stored `ask-questions` rows) in the
@@ -22,15 +23,23 @@ import {
   ASK_JUDGE_THRESHOLDS,
   type AskTurnJudgment,
   dependsOnPrevious,
+  judgeNextPage,
   judgePassages,
   judgeTurn,
   leansOnPage,
+  pickNextPage,
   routeCardReason,
   routePassage,
   routeTurn,
   wantsTheTeam,
 } from '@/features/ask/judge'
-import { ASK_CASES, ASK_JOURNEY_CASES, ASK_SEND_CASES, type AskCase } from './ask-cases'
+import {
+  ASK_CASES,
+  ASK_JOURNEY_CASES,
+  ASK_NEXT_PAGE_CASES,
+  ASK_SEND_CASES,
+  type AskCase,
+} from './ask-cases'
 
 /** A tuning run must not be colored by the network, so it waits far longer than a visitor would. */
 const TIMEOUT_MS = 10_000
@@ -289,8 +298,48 @@ async function evalSend(): Promise<void> {
   console.log(`\nthe send route agrees on ${agreed} of ${ASK_SEND_CASES.length} cases`)
 }
 
+/**
+ * The page card: Jev's pick and its confidence beside the page code shows
+ * (`pickNextPage`, which falls back to retrieval's first page on an unsure
+ * `none`). Tune `noNextPage` in ASK_JUDGE_THRESHOLDS from these.
+ */
+async function evalNextPage(): Promise<void> {
+  const { surfaceForPath } = await import('@/shared/content/surfaces')
+  console.log(`\nNext page (a none hides the card at ${ASK_JUDGE_THRESHOLDS.noNextPage})\n`)
+  let agreed = 0
+  for (const testCase of ASK_NEXT_PAGE_CASES) {
+    // Built as the endpoint builds them: title, and the section the path sits in.
+    const pages = testCase.pages.map((page) => ({
+      ...page,
+      section: surfaceForPath(page.url)?.title ?? null,
+    }))
+    const judgment = await judgeNextPage({
+      question: testCase.question,
+      pages,
+      timeoutMs: TIMEOUT_MS,
+      logger: console,
+    })
+    const shown = pickNextPage(pages, judgment)?.url ?? null
+    const ok = testCase.accept.length === 0 ? shown === null : testCase.accept.includes(shown ?? '')
+    if (ok) agreed += 1
+    const jev = judgment
+      ? `${judgment.pick === null ? 'none' : (pages[judgment.pick]?.url ?? '?')} ${pct(judgment.confidence)}`
+      : 'judge returned null'
+    console.log(`${ok ? 'ok  ' : 'MISS'} ${testCase.id.padEnd(15)} "${testCase.question}"`)
+    console.log(
+      `       jev ${jev}   shown ${shown ?? 'no card'}   expected ${testCase.accept.join(' or ') || 'no card'}`,
+    )
+  }
+  console.log(`\nthe page card agrees on ${agreed} of ${ASK_NEXT_PAGE_CASES.length} cases`)
+}
+
 if (args.includes('--send')) {
   await evalSend()
+  process.exit(0)
+}
+
+if (args.includes('--next-page')) {
+  await evalNextPage()
   process.exit(0)
 }
 

@@ -271,6 +271,159 @@ export const ASK_SEND_CASES: AskSendCase[] = [
     reply: AUDIT_REPLY,
     sends: false,
   },
+  { id: 'ok', question: 'ok', offer: QUIET_OFFER, reply: AUDIT_REPLY, sends: true },
+  { id: 'email-me', question: 'Can someone email me about this?', sends: true },
+  {
+    id: 'sure-more',
+    question: 'Sure, tell me more',
+    offer: QUIET_OFFER,
+    reply: `${AUDIT_REPLY} Want to hear how the audit works?`,
+    sends: false,
+  },
   { id: 'question', question: 'What is your process like?', sends: false },
   { id: 'team-size', question: 'How big is your team?', sends: false },
+  // About the team, not a request to reach it.
+  { id: 'reply-speed', question: 'How quickly does the team usually reply?', sends: false },
+  { id: 'who-works', question: 'Who on the team would I work with?', sends: false },
+]
+
+/**
+ * A grounded reply's page card (judge.ts, `judgeNextPage` then
+ * `pickNextPage`). `pages` are the reply's sources in retrieval's order, so a
+ * case whose best page is not first shows whether Jev beats retrieval.
+ * `accept` names every page a good card may open; empty means no card is
+ * right. `scripts/ask-judge-eval.ts --next-page` reads these.
+ */
+export type AskNextPageCase = {
+  id: string
+  question: string
+  pages: { url: string; title: string }[]
+  accept: string[]
+}
+
+const PAGE = {
+  about: { url: '/about-us', title: 'About Us' },
+  adacore: { url: '/works/adacore', title: 'AdaCore' },
+  arturo: { url: '/works/arturo', title: 'Arturo' },
+  battleCards: {
+    url: '/posts/sales-battle-cards-for-messaging-strategies',
+    title:
+      'Jumpstart Your Messaging Strategy with This Tool: Sales Battle Cards for Better Messaging Strategies',
+  },
+  clutch: {
+    url: '/posts/suits-sandals-gain-game-changer-rank-on-clutch',
+    title: 'Suits & Sandals Gain Game-Changer Rank on Clutch',
+  },
+  eclinical: { url: '/works/eclinical-solutions', title: 'eClinical Solutions' },
+  embedded: {
+    url: '/expertise/embedded-creative-digital-services',
+    title: 'Embedded Creative & Digital Services',
+  },
+  healthcarePost: {
+    url: '/posts/healthcare-website-design-trends-2024',
+    title: 'Designing Healthcare Websites That Convert',
+  },
+  healthtech: {
+    url: '/who-we-help/healthtech-life-sciences-branding',
+    title: HEALTHTECH,
+  },
+  holidayPost: {
+    url: '/posts/ecommerce-web-design-tips-holiday-season',
+    title: 'eCommerce UX Design Tips for the Holiday Season',
+  },
+  investor: {
+    url: '/expertise/sales-marketing-investor-communications',
+    title: 'Sales, Marketing & Investor Communications',
+  },
+  messaging: {
+    url: '/expertise/brand-positioning-messaging',
+    title: 'Clarifying Complex Stories',
+  },
+  personas: {
+    url: '/posts/how-to-create-audience-personas',
+    title: 'How to Create Audience Personas',
+  },
+  platforms: { url: '/who-we-help/saas-digital-products', title: 'Platforms & Digital Products' },
+  productUx: {
+    url: '/expertise/product-ux-ui-design-systems',
+    title: 'Product UX/UI & Design Systems',
+  },
+  remotePost: {
+    url: '/posts/we-went-remote-before-the-novel-coronavirus-heres-what-we-learned',
+    title: "We Went Remote Right Before COVID. Here's What We Learned.",
+  },
+  toolkit: {
+    url: '/posts/download-the-communication-strategy-toolkit',
+    title: 'Download the Communication Strategy Toolkit',
+  },
+  top30: {
+    url: '/posts/suits-sandals-named-in-list-of-top-30-ux-design-agencies',
+    title: 'Top 30 UX Design Agencies List Names Suits & Sandals',
+  },
+  webflowAudit: {
+    url: '/posts/unlocking-webflow-website-potential-a-comprehensive-audit-framework',
+    title: WEBFLOW_AUDIT,
+  },
+  webflowLab: { url: '/lab/from-webflow-to-payload', title: 'From Webflow to Payload' },
+  websites: { url: '/expertise/website-strategy-ux-development', title: WEBSITES },
+}
+
+export const ASK_NEXT_PAGE_CASES: AskNextPageCase[] = [
+  // The best page is retrieval's first.
+  {
+    id: 'arturo',
+    question: 'What did you do for Arturo?',
+    pages: [PAGE.arturo, PAGE.platforms],
+    accept: [PAGE.arturo.url],
+  },
+  {
+    id: 'founded',
+    question: 'When was the studio founded?',
+    pages: [PAGE.about, PAGE.remotePost],
+    accept: [PAGE.about.url],
+  },
+  // The best page is further down.
+  {
+    id: 'healthtech',
+    question: 'Do you work with healthtech companies?',
+    pages: [PAGE.healthcarePost, PAGE.eclinical, PAGE.healthtech],
+    accept: [PAGE.healthtech.url, PAGE.eclinical.url],
+  },
+  {
+    id: 'webflow',
+    question: 'Can you fix my Webflow site?',
+    pages: [PAGE.webflowLab, PAGE.webflowAudit, PAGE.websites],
+    accept: [PAGE.websites.url, PAGE.webflowAudit.url],
+  },
+  {
+    id: 'messaging',
+    question: 'How do you approach messaging?',
+    pages: [PAGE.battleCards, PAGE.personas, PAGE.messaging],
+    accept: [PAGE.messaging.url],
+  },
+  {
+    id: 'design-systems',
+    question: 'Do you build design systems?',
+    pages: [PAGE.adacore, PAGE.productUx],
+    accept: [PAGE.productUx.url],
+  },
+  {
+    id: 'investor',
+    question: 'Can you help with an investor deck?',
+    pages: [PAGE.embedded, PAGE.investor],
+    accept: [PAGE.investor.url],
+  },
+  // Nothing among the sources takes the visitor further: no card.
+  {
+    id: 'team-size',
+    question: 'How big is your team?',
+    pages: [PAGE.clutch, PAGE.top30],
+    accept: [],
+  },
+  {
+    id: 'newsletter',
+    question: 'Do you have a newsletter?',
+    pages: [PAGE.toolkit, PAGE.holidayPost],
+    accept: [],
+  },
 ]

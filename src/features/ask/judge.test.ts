@@ -235,15 +235,16 @@ describe('pickNextPage', () => {
     ms: 120,
   })
 
-  it("takes Jev's confident pick, and no page when it confidently says none", () => {
-    expect(pickNextPage(pages, judged(2, T.nextPage))).toBe('c')
-    expect(pickNextPage(pages, judged(null, 0.9))).toBeNull()
+  it("takes Jev's pick however sure, and no page when it confidently says none", () => {
+    expect(pickNextPage(pages, judged(2, 0.9))).toBe('c')
+    expect(pickNextPage(pages, judged(2, 0.1))).toBe('c')
+    expect(pickNextPage(pages, judged(null, T.noNextPage))).toBeNull()
   })
 
-  it("falls back to retrieval's top page without a judgment or on an unsure one", () => {
+  it("falls back to retrieval's top page without a judgment or on an unsure none", () => {
     expect(pickNextPage(pages, null)).toBe('a')
-    expect(pickNextPage(pages, judged(2, T.nextPage - 0.01))).toBe('a')
-    expect(pickNextPage(pages, judged(null, T.nextPage - 0.01))).toBe('a')
+    expect(pickNextPage(pages, judged(null, T.noNextPage - 0.01))).toBe('a')
+    expect(pickNextPage(pages, judged(7, 0.9))).toBe('a')
     expect(pickNextPage([], null)).toBeNull()
   })
 })

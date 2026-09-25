@@ -57,12 +57,12 @@ POST /api/ask
   ├─ judgePassages()       one Jev request per candidate chunk, all in parallel:
   │                        `is_relevant`, `has_evidence` → keep or drop in code
   │    └─ nothing kept     → card (`no_answer`, or the turn's own reason), no model
-  ├─ judgeNextPage()       one Jev Choice over the reply's pages (titles only), while
-  │                        the model writes
+  ├─ judgeNextPage()       one Jev Choice over the reply's pages (title, section, path;
+  │                        never the page text), while the model writes
   ├─ streamText()          kept chunks only, NO tools, prompt without the tool rules
   └─ after the text        the page card (`data-nextPage`: Jev's pick, retrieval's top
-                           page without one), then the handoff card when the route
-                           carries a reason
+                           page without one, none on a confident `none`), then the
+                           handoff card when the route carries a reason
 ```
 
 ## Files
@@ -372,10 +372,11 @@ that is a dead string. The way anywhere is something to tap.
 - **The page to open next** is a card under the answer (`AskNextPageCard` in
   `Sources.tsx`), from a `data-nextPage` part the endpoint writes after the
   words. The page is one of the reply's own sources, never the page the
-  visitor is on: Jev's pick (`judgeNextPage`, a Choice with a `none` option),
-  or retrieval's top page when the judge is off, failed, or unsure. A
-  confident `none` means no card. Every surface (menu, closing band, `/ask`)
-  renders it through the shared transcript.
+  visitor is on: Jev's pick however sure (`judgeNextPage`, a Choice with a
+  `none` option), or retrieval's top page when the judge is off, failed, or
+  says `none` without conviction. A confident `none` means no card. Every
+  surface (menu, closing band, `/ask`) renders it through the shared
+  transcript.
 - **A person** is the form. When the visitor asks for their question to reach
   the team, in words or with a yes to the offer on screen, the turn is the
   `person` card with the form already open under its lead line
@@ -386,7 +387,8 @@ that is a dead string. The way anywhere is something to tap.
   claims a handoff that did not happen, and never tells the visitor what the
   chat can't do.
 
-The send thresholds and the page pick's confidence floor are not tuned yet:
-run `scripts/ask-judge-eval.ts --send` with `TYPESAFE_API_KEY` and set
-`asksToSend`, `acceptsOffer`, `answersReply` and `nextPage` in
-`ASK_JUDGE_THRESHOLDS` from its numbers.
+The send thresholds (`asksToSend`, `acceptsOffer`, `answersReply`) and the
+page card's `noNextPage` are measured: the numbers sit beside each value in
+`ASK_JUDGE_THRESHOLDS`. After a change to their questions, re-run
+`scripts/ask-judge-eval.ts --send` and `--next-page` (fixtures in
+`scripts/ask-cases.ts`).

@@ -90,19 +90,30 @@ export const ASK_JUDGE_THRESHOLDS = {
   evidence: 0.55,
   /**
    * `asks_to_send` at or above which the turn is the person card with the form already open:
-   * the visitor asked for their question to reach the team. Not yet tuned against the fixture
-   * (`scripts/ask-judge-eval.ts --send`); set high so a wrong yes stays rare.
+   * the visitor asked for their question to reach the team. Measured 2026-09-25
+   * (`scripts/ask-judge-eval.ts --send`, two runs): requests read 0.89 to 0.98, everything
+   * else 0.06 or less. Kept high so a wrong yes, a form nobody asked for, stays rare.
    */
   asksToSend: 0.7,
-  /** `accepts_offer` at or above which a follow-up is a yes to the offer on screen. Not yet tuned. */
+  /**
+   * `accepts_offer` at or above which a follow-up is a yes to the offer on screen. Measured
+   * 2026-09-25: a yes reads 0.81 to 0.98, a no or a thanks 0.07 or less. A yes to the reply's
+   * own question reads high too; `answersReply` tells them apart.
+   */
   acceptsOffer: 0.7,
-  /** `answers_reply` at or above which that yes answers the reply's own question instead. Not yet tuned. */
+  /**
+   * `answers_reply` at or above which that yes answers the reply's own question instead.
+   * Measured 2026-09-25: 0.90 to 0.93 when the reply asked something, 0.06 or less otherwise.
+   */
   answersReply: 0.5,
   /**
-   * `next_page` confidence below which Jev's pick is set aside for retrieval's top page.
-   * Not yet tuned: a wrong pick is still one of the reply's own sources.
+   * `next_page` confidence at or above which Jev's `none` means no page card. A page pick is
+   * taken at any confidence: it is always one of the reply's own sources, and an unsure pick
+   * was still a good page in every measured case, where retrieval's top page often was not.
+   * Measured 2026-09-25 (`--next-page`, two runs): a confident `none` reads 0.95 to 0.99, the
+   * one unsure `none` 0.17.
    */
-  nextPage: 0.35,
+  noNextPage: 0.6,
 } as const
 
 const REQUEST_CRITERIA = {
@@ -580,7 +591,9 @@ export async function judgeNextPage({
     const criteria: Record<string, string> = Object.fromEntries(
       pages.map((page, i) => [
         `page_${i + 1}`,
-        `The page "${page.title}"${page.section ? ` (${page.section})` : ''}.`,
+        // The path too: a title like "Clarifying Complex Stories" hides that
+        // it is the messaging page, and this site's slugs say what a page is.
+        `The page "${page.title}"${page.section ? ` in ${page.section}` : ''}, at ${page.url}.`,
       ]),
     )
     criteria.none = 'None of these pages would help the visitor with `question`.'
@@ -589,7 +602,7 @@ export async function judgeNextPage({
         state: { question: redactFreeText(question) },
         questions: {
           next_page: choice(
-            'Which page should the visitor open next to learn more about what `question` asks?',
+            'Which page answers what `question` asks about most directly, for the visitor to open next?',
             criteria,
           ),
         },
@@ -613,13 +626,14 @@ export async function judgeNextPage({
 }
 
 /**
- * The page card a reply closes with. Jev's confident pick; its confident
- * "none" means no card; anything else (no judge, a failure, an unsure pick)
+ * The page card a reply closes with. Jev's pick, however sure; its confident
+ * "none" means no card; anything else (no judge, a failure, an unsure none)
  * is retrieval's top page, so a grounded reply always has somewhere to tap
  * unless Jev said none would help.
  */
 export function pickNextPage<T>(candidates: T[], judgment: AskNextPageJudgment | null): T | null {
   if (candidates.length === 0) return null
-  if (!judgment || judgment.confidence < ASK_JUDGE_THRESHOLDS.nextPage) return candidates[0] ?? null
-  return judgment.pick === null ? null : (candidates[judgment.pick] ?? candidates[0] ?? null)
+  if (judgment?.pick != null) return candidates[judgment.pick] ?? candidates[0] ?? null
+  if (judgment && judgment.confidence >= ASK_JUDGE_THRESHOLDS.noNextPage) return null
+  return candidates[0] ?? null
 }
