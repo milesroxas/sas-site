@@ -3,10 +3,14 @@ import { createHash } from 'node:crypto'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { choice, noul, type Questions, TypeSafeClient } from '@typesafe-ai/sdk'
+import { ARTICLE_READING_BUDGET, composedWords } from '@/blocks/shared/reading-time'
+import type { StoryRecord } from '@/collections/story/narrative'
 import { ASK_JUDGE_KEY_VAR, ASK_JUDGE_MODEL } from '@/features/ask/judge'
 import { redactFreeText } from '@/features/ask/redact'
+import { authorMentions } from '@/features/editorial/voice'
+import { readingMinutes } from '@/shared/content/reading-time'
 import { fetchDocument } from '../cms-fetch'
-import { passagesOf } from '../editorial/passages'
+import { type Passage, passagesOf } from '../editorial/passages'
 import { judgeVoice, loadVoiceCache, saveVoiceCache, voiceReport } from '../editorial/voice'
 import {
   activeJournal,
@@ -31,7 +35,7 @@ import {
  * the draft and the journal side by side, and a second Claude pass costs what
  * the first did. Code and Jev do it for a fraction of a cent.
  *
- *   pnpm lab:journal:verify [slug] --project <lab project id> [--local]
+ *   pnpm lab:journal:verify [slug] --project <lab project id> --page <lab page id> [--local]
  *   pnpm lab:journal:verify [slug] --file <lab project document>.json
  *
  * Code first, because code is exact: every em dash, and every number in the
@@ -42,6 +46,12 @@ import {
  * contradicts or says nothing. A second question asked over the same state
  * says whether the sentence claims a fact at all, so a line of connective
  * prose is not reported as unsupported.
+ *
+ * Before any of that, the page rules, which pass or fail: the Lab Page reads
+ * inside `ARTICLE_READING_BUDGET`, every Section carries a visual
+ * (`VISUAL_BLOCKS`), and neither document names the journal's author in the
+ * third person. A failure exits non-zero, so a writer cannot report a draft
+ * that breaks one.
  *
  * Then the voice check (`../editorial/voice.ts`): the house voice of
  * docs/editorial/voice.md, code for the exact part and Jev for the
@@ -80,6 +90,22 @@ const STORY_SECTIONS = [
   'outcomeSummary',
   'learnings',
 ] as const
+
+/**
+ * The blocks that give a Lab Page Section its visual: a figure or an image.
+ * Every Section carries one, so depth reaches the reader as something to look
+ * at rather than as more prose. A code listing sits beside a visual and never
+ * stands in for one: it is still text to read.
+ */
+const VISUAL_BLOCKS: ReadonlySet<string> = new Set([
+  'bespokeFigure',
+  'chart',
+  'diagram',
+  'fullMedia',
+  'labMediaShowcase',
+  'mediaBlock',
+  'youtube',
+])
 
 const QUESTIONS = {
   verdict: choice(
@@ -187,6 +213,30 @@ function usageFacts(root: string, slug: string, entries: JournalEntry[]): string
   ].join('\n')
 }
 
+type PageBlock = { blockType?: string; blockName?: string; heading?: string; blocks?: PageBlock[] }
+
+/** The Sections of a Lab Page with no visual in them, named the way an editor finds them. */
+function sectionsWithoutVisual(layout: unknown): string[] {
+  const blocks = Array.isArray(layout) ? (layout as PageBlock[]) : []
+  return blocks.flatMap((block, index) => {
+    if (block.blockType !== 'section') return []
+    const inner = block.blocks ?? []
+    if (inner.some((child) => VISUAL_BLOCKS.has(child.blockType ?? ''))) return []
+    const opener = inner.find((child) => child.blockType === 'richTransition')?.heading
+    return [`layout.${index} (${block.blockName ?? opener ?? 'unnamed Section'})`]
+  })
+}
+
+/** The byline itself holds the author's name, and is not copy. */
+const BYLINE = /^(?:populated)?[aA]uthors\b/
+
+/** Passages that name the author outside a quotation. */
+const thirdPerson = (passages: Passage[], author: string, prefix: string): string[] =>
+  passages
+    .filter((passage) => !BYLINE.test(passage.path))
+    .filter((passage) => authorMentions(passage.text, author).length > 0)
+    .map((passage) => `- ${prefix}${passage.path} | ${passage.text}`)
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2)
   const option = (name: string) => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined)
@@ -196,17 +246,58 @@ async function main(): Promise<void> {
   if (!journal) throw new Error('No journal: pass a slug, or resume one on this branch.')
   const file = option('--file')
   const project = option('--project')
+  const pageId = option('--page')
   if (!file && !project) {
-    throw new Error('usage: pnpm lab:journal:verify [slug] --project <id> | --file <document.json>')
+    throw new Error(
+      'usage: pnpm lab:journal:verify [slug] --project <id> --page <id> | --file <document.json>',
+    )
   }
+  const local = args.includes('--local')
 
   const loaded: unknown = file
     ? JSON.parse(readFileSync(file, 'utf8'))
-    : await fetchDocument('findLabProjects', project as string, { local: args.includes('--local') })
+    : await fetchDocument('findLabProjects', project as string, { local })
   const document = ((loaded as { docs?: unknown[] }).docs?.[0] ?? loaded) as Record<
     string,
     StorySection | undefined
   >
+
+  // The page rules: exact, free, and each one passes or fails.
+  const page = pageId ? await fetchDocument('findLabPages', pageId, { local }) : undefined
+  const pageRules: string[] = []
+  const failures: string[] = []
+  if (page) {
+    const words = composedWords([page.intro, page.layout], document as StoryRecord)
+    const minutes = readingMinutes(words)
+    const { maxMinutes, minMinutes } = ARTICLE_READING_BUDGET
+    const verdict =
+      minutes > maxMinutes ? 'FAILS' : minutes < minMinutes ? 'short, not a failure' : 'passes'
+    if (minutes > maxMinutes) failures.push(`reading time ${minutes} min`)
+    pageRules.push(
+      `- Reading time: ${minutes} min, ${words} words of prose (budget ${minMinutes} to ${maxMinutes} min, code listings not counted): ${verdict}.`,
+    )
+    const bare = sectionsWithoutVisual(page.layout)
+    if (bare.length > 0) failures.push(`${bare.length} Sections without a visual`)
+    pageRules.push(
+      `- Sections without a visual (${bare.length}): ${bare.length > 0 ? 'FAILS' : 'passes'}.`,
+      ...bare.map((where) => `  - ${where}`),
+    )
+  } else {
+    pageRules.push('- No `--page`: reading time and visuals were not checked.')
+  }
+  if (journal.author) {
+    const named = [
+      ...thirdPerson(passagesOf(document), journal.author, 'project '),
+      ...(page ? thirdPerson(passagesOf(page), journal.author, 'page ') : []),
+    ]
+    if (named.length > 0) failures.push(`${named.length} passages name ${journal.author}`)
+    pageRules.push(
+      `- ${journal.author} named in the third person (${named.length}): ${named.length > 0 ? 'FAILS' : 'passes'}.`,
+      ...named.map((line) => `  ${line}`),
+    )
+  } else {
+    pageRules.push('- The journal has no `author` in meta.json: point of view was not checked.')
+  }
 
   const sentences: Sentence[] = STORY_SECTIONS.flatMap((section) => {
     const story = document[section]
@@ -326,6 +417,10 @@ async function main(): Promise<void> {
     '',
     `${sentences.length} sentences from ${file ?? `Lab Project ${project}`}, against ${entries.length} journal entries and the usage files. Judged by ${ASK_JUDGE_MODEL}. A listed sentence is one to read against the journal, not a proven error: the record may say it in a session's prompts or in a commit this check does not read.`,
     '',
+    `## Page rules (${failures.length > 0 ? 'FAIL' : 'pass'})`,
+    '',
+    ...pageRules,
+    '',
     `## Numbers the record does not hold (${strangers.length})`,
     '',
     'A rounded number lands here too. Say "about" in the copy, or use the number the record has.',
@@ -363,8 +458,9 @@ async function main(): Promise<void> {
   }
   console.log(join(out, 'verify.md'))
   console.log(
-    `${sentences.length} sentences. Unknown numbers ${strangers.length}, contradicted ${contradicted.length}, not in the record ${unsupported.length}, unsure ${unsure.length}. Voice: refused ${voice.counts.refused}, listed ${voice.counts.listed}, generic ${voice.counts.generic}, inflated ${voice.counts.inflated}, formulaic ${voice.counts.formulaic}, punchlines ${voice.counts.punchlines} of ${voice.counts.paragraphs}. Jev: ${requests} requests, ${inputTokens} input tokens.`,
+    `Page rules: ${failures.length > 0 ? `FAIL (${failures.join('; ')})` : 'pass'}. ${sentences.length} sentences. Unknown numbers ${strangers.length}, contradicted ${contradicted.length}, not in the record ${unsupported.length}, unsure ${unsure.length}. Voice: refused ${voice.counts.refused}, listed ${voice.counts.listed}, generic ${voice.counts.generic}, inflated ${voice.counts.inflated}, formulaic ${voice.counts.formulaic}, punchlines ${voice.counts.punchlines} of ${voice.counts.paragraphs}. Jev: ${requests} requests, ${inputTokens} input tokens.`,
   )
+  if (failures.length > 0) process.exitCode = 1
 }
 
 main().catch((err: unknown) => {

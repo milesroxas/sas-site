@@ -48,6 +48,12 @@ export type JournalMeta = {
   branches: string[]
   startedAt: string
   wrappedAt?: string
+  /**
+   * The person the write-up speaks as, in the first person, and whose name
+   * the draft check refuses outside a quotation (docs/editorial/voice.md, "Who
+   * is speaking"). Recorded at start from git's user.name.
+   */
+  author?: string
 }
 
 export type TokenCounts = {
