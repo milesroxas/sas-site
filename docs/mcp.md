@@ -5,7 +5,7 @@ at **`/api/mcp`** so agents (Claude Code, Codex, Cursor, custom tooling) can aut
 CMS content through Payload's access-control layer instead of raw REST calls.
 
 Implementation: [`src/plugins/mcp.ts`](../src/plugins/mcp.ts), built on
-`@payloadcms/plugin-mcp` (pinned to the Payload release line, currently `3.88.0`).
+`@payloadcms/plugin-mcp` (pinned to the Payload release line, currently `3.90.2`).
 It is registered in [`src/plugins/index.ts`](../src/plugins/index.ts).
 
 ## Authentication and the capability model
@@ -272,32 +272,29 @@ check), never `Boolean(req.user)`. A read with a public subset uses `authenticat
 
 ## Versions and the vendored patch
 
-Checked 2026-09-20. The plugin is pinned to the Payload release line (`3.88.0`, with
-`@modelcontextprotocol/sdk` 1.30.0 and `mcp-handler` ^1.0.7 underneath); the newest release is
-`3.90.1`. It moves with the rest of `@payloadcms/*` in one Payload upgrade, never on its own.
+Checked 2026-09-28. The plugin is pinned to the Payload release line (`3.90.2`, with
+`@modelcontextprotocol/sdk` 1.30.0 and `mcp-handler` ^1.0.7 underneath). It moves with the rest of
+`@payloadcms/*` in one Payload upgrade, never on its own.
 
-`@payloadcms/plugin-mcp@3.88.0` still needs the vendored patch: `convertCollectionSchemaToZod` ran the generated
-Zod code through `ts.transpileModule` (CommonJS), whose `"use strict";` prologue made the
-`new Function` eval return the string `"use strict"` instead of a Zod schema, then
-`.partial()` on that string threw inside handler setup and **every POST to `/api/mcp` hung
-with no response**. See [payload#17125](https://github.com/payloadcms/payload/issues/17125):
-upstream closed it as not planned on 2026-07-10 and the fix PR
-([#17132](https://github.com/payloadcms/payload/pull/17132)) was closed unmerged, so expect to
-carry the patch across upgrades.
+Up to 3.88.0 the plugin's `convertCollectionSchemaToZod` ran the generated Zod code through
+`ts.transpileModule`, whose `"use strict";` prologue made the `new Function` eval return a string
+instead of a Zod schema, and **every POST to `/api/mcp` hung with no response**
+([payload#17125](https://github.com/payloadcms/payload/issues/17125)). 3.90.2 fixes it upstream
+([#17109](https://github.com/payloadcms/payload/issues/17109)): it strips the prologue and always
+returns a Zod object, so the patch no longer carries that fix or the `create`/`update` guards
+that went with it.
 
 `patches/@payloadcms__plugin-mcp.patch` (wired via `patchedDependencies` in
-`pnpm-workspace.yaml`) touches six files. Four are the fix: `convertCollectionSchemaToZod.js`
-evaluates the generated schema expression directly (no transpile) and throws when the result is
-not a Zod object; the `create` and `update` resource tools guard `.shape` and `.partial()` against
-the permissive fallback; and `createRequest.js` stops sending a body on GET/HEAD requests. Two are
-ours and would stay even if upstream fixed the rest: `schemas.js` adds the `confirm` input to the
-delete tool and `resource/delete.js` hands it to the host app on `req.context.mcpDeleteConfirm`,
-marks the tool `destructiveHint`, and describes it as a delete (it used to carry only the
-collection's description). If that part of the patch is ever lost, deletes fail closed: the hook
-still refuses, and no token can be sent. Edit the patch with `pnpm patch @payloadcms/plugin-mcp`
-and `pnpm patch-commit`, never by hand. On a
-Payload upgrade, re-apply the patch against the new version (pnpm fails the install when the
-hunks no longer match) and retest `/api/mcp` initialize + tools/list.
+`pnpm-workspace.yaml`) touches three files. `createRequest.js` stops sending a body on GET/HEAD
+requests (still unfixed upstream). The other two are ours and stay regardless: `schemas.js` adds
+the `confirm` input to the delete tool and `resource/delete.js` hands it to the host app on
+`req.context.mcpDeleteConfirm`, marks the tool `destructiveHint`, and describes it as a delete
+(it used to carry only the collection's description). If that part of the patch is ever lost,
+deletes fail closed: the hook still refuses, and no token can be sent. Edit the patch with
+`pnpm patch @payloadcms/plugin-mcp` and `pnpm patch-commit`, never by hand. On a Payload upgrade,
+re-apply the patch against the new version (pnpm fails the install when the hunks no longer
+match; `pnpm patch` needs the new version installed, so drop the `patchedDependencies` entry for
+that one install) and retest `/api/mcp` initialize + tools/list.
 
 ## Operational notes
 
