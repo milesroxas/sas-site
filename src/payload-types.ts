@@ -7699,6 +7699,9 @@ export interface LabPage {
    * Used on cards, indexes, and as the hero fallback.
    */
   coverAsset?: (number | null) | Media;
+  /**
+   * Shown in the featured list at the end of this page, in this order. Unpublished picks are skipped. Leave empty to show the four most recently published lab pages (excluding this one).
+   */
   relatedLabPages?: (number | LabPage)[] | null;
   editorialNotes?: string | null;
   closing?: PageClosing;

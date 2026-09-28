@@ -32,7 +32,8 @@ export type LabBrowseData = {
 /**
  * The query every lab index row consumer shares: published-only,
  * access-enforced, and two levels deep so labProject → capabilities arrives
- * populated for `toLabBrowseItem`. Consumers add `where`, `limit` and `sort`.
+ * populated for `toLabBrowseItem`. Consumers add `where`, `limit` and `sort`;
+ * the lab-page closer also swaps in the draft rules (`related.ts`).
  */
 export const LAB_BROWSE_QUERY = {
   collection: 'lab-pages',

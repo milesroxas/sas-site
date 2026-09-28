@@ -5,7 +5,6 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Link from 'next/link'
 import { useLayoutEffect, useRef, useState } from 'react'
-import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Container } from '@/components/Container'
 import { Visual } from '@/components/Visual'
 import { cursorTarget } from '@/features/cursor'
@@ -17,6 +16,7 @@ import {
   scrollRevealTrackStarts,
 } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
+import type { FeaturedEntry } from './entry'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(useGSAP, ScrollTrigger)
@@ -127,7 +127,9 @@ const restingTitleOpacity = (distance: number) => {
 
 type Props = {
   eyebrow?: string | null
-  entries: WorkEntry[]
+  entries: FeaturedEntry[]
+  /** Names what the media frame opens, for its accessible label. */
+  frameLabel?: string
 }
 
 const EyebrowRule: React.FC<{ label: string }> = ({ label }) => (
@@ -137,18 +139,15 @@ const EyebrowRule: React.FC<{ label: string }> = ({ label }) => (
   </div>
 )
 
-const MetaLine: React.FC<{ entry: WorkEntry; className?: string }> = ({ entry, className }) => {
-  const parts = [entry.client, entry.industry].filter(Boolean)
-  return (
-    // Height is reserved even when empty so activation never reflows the list.
-    <p
-      className={cn('mt-3 h-4 font-mono text-xs/none text-muted-foreground', className)}
-      data-work-meta
-    >
-      {parts.join(' · ')}
-    </p>
-  )
-}
+const MetaLine: React.FC<{ entry: FeaturedEntry; className?: string }> = ({ entry, className }) => (
+  // Height is reserved even when empty so activation never reflows the list.
+  <p
+    className={cn('mt-3 h-4 font-mono text-xs/none text-muted-foreground', className)}
+    data-work-meta
+  >
+    {entry.facts.join(' · ')}
+  </p>
+)
 
 /** Reduced motion collapses the interaction to its final state: a plain list. */
 const StaticList: React.FC<Props> = ({ eyebrow, entries }) => (
@@ -173,7 +172,11 @@ const StaticList: React.FC<Props> = ({ eyebrow, entries }) => (
   </Container>
 )
 
-export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
+export const FeaturedWorkList: React.FC<Props> = ({
+  eyebrow,
+  entries,
+  frameLabel = 'View case study',
+}) => {
   const rootRef = useRef<HTMLDivElement>(null)
   const activateRef = useRef<((index: number) => void) | null>(null)
   // Mirrors the roll's active item into React solely so the media frame's
@@ -560,7 +563,7 @@ export const FeaturedWorkList: React.FC<Props> = ({ eyebrow, entries }) => {
                       and the shell's entrance clip-path gates it (nothing is
                       hittable until the wipe has opened). */}
                   <Link
-                    aria-label={`View case study: ${activeEntry.title}`}
+                    aria-label={`${frameLabel}: ${activeEntry.title}`}
                     className="absolute inset-0 z-10 block"
                     href={activeEntry.href}
                     transitionTypes={[...forwardNavTransitionTypes]}

@@ -1,16 +1,18 @@
 import type React from 'react'
-import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Section, type SectionTheme } from '@/blocks/shared/section'
 import type { FeaturedWorkBlock as FeaturedWorkBlockProps } from '@/payload-types'
+import type { FeaturedEntry } from './entry'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
 import { resolveFeaturedWorkEntries } from './resolve-entries'
 
 export const FeaturedWorkSection: React.FC<{
   eyebrow?: string | null
-  entries: WorkEntry[]
+  entries: FeaturedEntry[]
+  /** Names what the media frame opens, for its accessible label. */
+  frameLabel?: string
   theme?: SectionTheme | null
   id?: string | null
-}> = ({ eyebrow, entries, theme, id }) => {
+}> = ({ eyebrow, entries, frameLabel, theme, id }) => {
   if (entries.length === 0) return null
 
   return (
@@ -18,7 +20,7 @@ export const FeaturedWorkSection: React.FC<{
     // the section band carries no vertical padding of its own.
     <Section spacing="none" theme={theme ?? 'light'}>
       <div id={id ? `block-${id}` : undefined}>
-        <FeaturedWorkList eyebrow={eyebrow} entries={entries} />
+        <FeaturedWorkList eyebrow={eyebrow} entries={entries} frameLabel={frameLabel} />
       </div>
     </Section>
   )

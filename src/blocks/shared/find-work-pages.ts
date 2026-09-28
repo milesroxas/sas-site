@@ -1,6 +1,7 @@
 import configPromise from '@payload-config'
 import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
+import { FEATURED_CLOSER_FALLBACK_LIMIT } from '@/blocks/featured-work/entry'
 import type { WorkPage } from '@/payload-types'
 
 /**
@@ -35,9 +36,6 @@ export async function findWorkPagesById(
   return new Map(docs.map((doc) => [doc.id, doc]))
 }
 
-/** Work-page closer fallback when the Related Work tab is empty. */
-export const RELATED_WORK_FALLBACK_LIMIT = 4
-
 /**
  * Most recently published work pages, excluding `excludeId`. Same draft /
  * access rules as `findWorkPagesById`, so a preview never leaks unpublished
@@ -45,7 +43,7 @@ export const RELATED_WORK_FALLBACK_LIMIT = 4
  */
 export async function findRecentWorkPages({
   excludeId,
-  limit = RELATED_WORK_FALLBACK_LIMIT,
+  limit = FEATURED_CLOSER_FALLBACK_LIMIT,
 }: {
   excludeId: number | string
   limit?: number

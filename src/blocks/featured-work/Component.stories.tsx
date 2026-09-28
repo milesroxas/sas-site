@@ -1,29 +1,28 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { mediaFixture, videoFixture } from '@/blocks/fixtures'
-import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { Section } from '@/blocks/shared/section'
+import type { Media } from '@/payload-types'
+import type { FeaturedEntry } from './entry'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
 
-const workEntry = (id: number, title: string, client: string, media = mediaFixture): WorkEntry => {
-  const slug = title.toLowerCase().replace(/\s+/g, '-')
-  return {
-    id,
-    slug,
-    href: `/works/${slug}`,
-    title,
-    client,
-    industry: 'fintech',
-    capabilities: ['Brand strategy', 'Web design'],
-    visual: { kind: 'media', media },
-    media,
-  }
-}
+const entry = (
+  id: number,
+  title: string,
+  facts: string[],
+  { base = 'works', media = mediaFixture }: { base?: string; media?: Media } = {},
+): FeaturedEntry => ({
+  id,
+  href: `/${base}/${title.toLowerCase().replace(/\s+/g, '-')}`,
+  title,
+  facts,
+  visual: { kind: 'media', media },
+})
 
-const entries: WorkEntry[] = [
-  workEntry(1, 'Clarity for a payments platform', 'Interchecks'),
-  workEntry(2, 'A calmer story for a care network', 'Blindcut', videoFixture),
-  workEntry(3, 'Repositioning a freight marketplace', 'Northbeam'),
-  workEntry(4, 'A sharper voice for expert counsel', 'Atrium'),
+const entries: FeaturedEntry[] = [
+  entry(1, 'Clarity for a payments platform', ['Interchecks', 'fintech']),
+  entry(2, 'A calmer story for a care network', ['Blindcut', 'fintech'], { media: videoFixture }),
+  entry(3, 'Repositioning a freight marketplace', ['Northbeam', 'fintech']),
+  entry(4, 'A sharper voice for expert counsel', ['Atrium', 'fintech']),
 ]
 
 const meta = {
@@ -62,4 +61,17 @@ export const WithoutEyebrow: Story = {
 
 export const SingleEntry: Story = {
   args: { entries: entries.slice(0, 1) },
+}
+
+/** The lab-page closer: other lab pages, kind and status on the meta line. */
+export const LabCloser: Story = {
+  args: {
+    eyebrow: 'More from the lab',
+    frameLabel: 'View lab project',
+    entries: [
+      entry(1, 'Refraction playground', ['Experiment', 'Active'], { base: 'lab' }),
+      entry(2, 'Streak Field studio', ['Tool', 'Active'], { base: 'lab', media: videoFixture }),
+      entry(3, 'Type scale under motion', ['Experiment', 'Completed'], { base: 'lab' }),
+    ],
+  },
 }

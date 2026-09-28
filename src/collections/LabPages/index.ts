@@ -134,7 +134,16 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
         },
         {
           label: 'Related Work',
-          fields: [relatedPagesField('relatedLabPages', 'lab-pages'), editorialNotesField()],
+          fields: [
+            {
+              ...relatedPagesField('relatedLabPages', 'lab-pages'),
+              admin: {
+                description:
+                  'Shown in the featured list at the end of this page, in this order. Unpublished picks are skipped. Leave empty to show the four most recently published lab pages (excluding this one).',
+              },
+            },
+            editorialNotesField(),
+          ],
         },
         closingTab(),
         seoMetaTab(),
