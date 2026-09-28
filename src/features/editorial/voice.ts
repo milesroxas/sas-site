@@ -208,6 +208,28 @@ export function lintVoice(text: string, limits = VOICE_LIMITS): VoiceFinding[] {
   return findings
 }
 
+/** A span inside straight or curly double quotation marks: a quotation, where a name may stand. */
+const QUOTATION = /"[^"]*"|\u201C[^\u201D]*\u201D/g
+
+/**
+ * "Who is speaking" in voice.md: a piece with a byline speaks as its author,
+ * in the first person, so the author's name appears in it only inside a
+ * quotation. The offsets of every other mention of any part of the name
+ * ("Miles asked", "Miles's call", "Roxas chose"), matched whole and
+ * case-sensitive so a common word that shares the spelling is left alone.
+ */
+export function authorMentions(text: string, author: string): number[] {
+  const parts = author
+    .split(/\s+/)
+    .filter((part) => part.length > 1)
+    .map(escapeRegExp)
+  if (parts.length === 0) return []
+  const unquoted = text.replace(QUOTATION, (quotation) => ' '.repeat(quotation.length))
+  return [...unquoted.matchAll(new RegExp(`(?<![\\w-])(?:${parts.join('|')})(?![\\w-])`, 'g'))].map(
+    (match) => match.index,
+  )
+}
+
 /**
  * The voice in one line, for a model that writes copy at run time (the Ask
  * assistant). The full contract is the doc; this is what fits a system prompt.

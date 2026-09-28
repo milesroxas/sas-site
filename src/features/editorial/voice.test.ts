@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
   AVOID_FRAMES,
   AVOID_PHRASES,
+  authorMentions,
   EM_DASH,
   emDashesIn,
   FLATTENED_CLAIMS,
@@ -114,6 +115,24 @@ describe('lintVoice', () => {
     expect(lintVoice('We help brands stand out, and more.').map((f) => f.rule)).toEqual([
       'flattened-claim',
     ])
+  })
+})
+
+describe('authorMentions', () => {
+  it('finds the author named in the third person, possessive included', () => {
+    const text = "Miles asked for a check. It was Miles's call, and Roxas agreed."
+    expect(authorMentions(text, 'Miles Roxas')).toEqual([0, 32, 50])
+  })
+
+  it('leaves the name alone inside a quotation, and a word that shares its spelling', () => {
+    expect(
+      authorMentions('The note said "ask Miles first". We drove 40 miles.', 'Miles Roxas'),
+    ).toEqual([])
+    expect(authorMentions('The prompt read \u201Cask Miles\u201D.', 'Miles')).toEqual([])
+  })
+
+  it('reads first-person copy as clean', () => {
+    expect(authorMentions('I asked Claude for a check, and I kept it.', 'Miles Roxas')).toEqual([])
   })
 })
 

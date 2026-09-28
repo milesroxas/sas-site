@@ -20,6 +20,15 @@ The voice sounds like experienced people who understand both the business proble
 
 Do not imitate slogans or wording from another company. Apply the qualities.
 
+## Who is speaking
+
+A piece with a byline speaks as the person in the byline, in the first person: I asked, I chose, I got this wrong. That holds when an agent drafts it. Lab Pages and Posts are bylined; a Lab Page's byline is its Lab Project's authors.
+
+- Name the agent where the agent did the work: "Claude wrote the hook and I reviewed it." How the work was split is part of the story, so it is told, never hidden.
+- "We" is the studio. In a bylined piece it never means the author and an agent together.
+- The author's own name appears only inside a quotation. A lab journal is written about its author in the third person; the write-up turns that into the first person.
+- Studio pages (home, services, audiences, industries, case studies) speak as the studio: we.
+
 ## Sentences
 
 Use a natural mix of short declarative sentences, medium explanatory sentences, and the occasional fragment for emphasis. Parallel structure only where it helps scanning.
@@ -124,5 +133,6 @@ Do not invent capabilities, outcomes, metrics, proof, client results or strategi
 | Human or formulaic | The check | Jev |
 | A punchline on every paragraph | The check | Jev per paragraph; code flags the pattern |
 | Claims the record does not hold | `pnpm lab:journal:verify` | Code and Jev, against the journal |
+| The author named in the third person | `pnpm lab:journal:verify` | Code, exact, against the journal's `author` |
 
 The save-time gate refuses only what an API key writes. A team member editing in the admin is never blocked: a quotation or a client's own words may hold a phrase this file bans. Everything else is reported for a person or an agent to fix, never applied automatically: Jev judges, it does not write.
