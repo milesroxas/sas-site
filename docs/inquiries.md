@@ -131,6 +131,36 @@ the last step, so the copy column stays short enough to stick beside the form.
   Handling (owner, status, notes) lives beside it and moves freely.
 - `repliedAt` follows the status rather than being typed.
 
+## Spam and the block list
+
+Spam is a status, not a delete, and it leaves the inbox.
+
+- **The list opens on the inbox**: everything but spam. `src/proxy.ts` sends
+  the bare list URL to the inbox filter (`inboxRedirect` in
+  `src/collections/Inquiries/inboxView.ts` holds the rule and why it is a URL
+  filter rather than `admin.baseFilter`: bulk "Select all" reads only the URL).
+  **All** in the filter row means the same thing. **Spam** is its own view.
+- **Delete all spam** (`EmptySpam`) sits on the Spam view: one confirmed press
+  deletes every inquiry marked spam through the REST bulk delete.
+- **Marking spam blocks the sender; "Not spam" lifts it.** Every path to the
+  status counts (sidebar button, select, bulk edit) because it is an
+  `afterChange` hook in the inquiry's transaction
+  (`src/collections/Inquiries/senderBlock.ts`). It only ever undoes a block it
+  made; blocks added by hand are the team's to remove.
+- **Blocked senders** (`blocked-senders`, admin group Inbox) is the list,
+  managed by hand as well: an address or a whole domain (subdomains included),
+  an optional **Blocked until**, a note, and a count of what each entry has
+  discarded. What an entry covers is decided in one pure module,
+  `src/collections/BlockedSenders/match.ts`: address variants (`+tag`, Gmail
+  dots) count as one sender, and shared providers (gmail.com, outlook.com, …)
+  can only be blocked address by address.
+- **A blocked sender is answered like anyone else.** The intake returns the
+  honeypot's success, files nothing, sends no email, and counts the discard on
+  the entry. Deleting spam never lifts a block.
+
+The block list covers the inquiries intake only. The generic form-submissions
+log and the newsletter (double opt-in, with its own suppression) do not read it.
+
 ## Spam protection
 
 Three layers, all scoped to the public form writes (`/api/inquiries/submit`,
@@ -182,8 +212,9 @@ nobody subscribed, `Site Info → contactEmail` catches it and the log says so.
 |-----------|-------|-----|
 | `InquiriesDashboard` | `beforeDashboard` | Open / unpicked / yours, and the top of the pile. Goes quiet when the inbox is clear |
 | `InboxNavBadge` | `beforeNavLinks` | Standing count of new requests on every admin screen. Renders nothing at zero |
-| `InboxFilters` | Inquiries list | New / Open / Assigned to me, one click instead of four |
-| `InquiryActions` | Inquiry sidebar | Reply by email with the reference in the subject, take ownership, record what happened — each writes and saves in one press |
+| `InboxFilters` | Inquiries list | All (not spam) / New / Open / Assigned to me / Spam, one click instead of four |
+| `InquiryActions` | Inquiry sidebar | Reply by email with the reference in the subject, take ownership, record what happened, each writing and saving in one press. On spam: Not spam, and whether the sender is blocked |
+| `EmptySpam` | Inquiries list, Spam view | Delete every inquiry marked spam in one confirmed press |
 
 Counts come from `limit=0` queries and poll every 60s, so a tab left open still
 tells the truth.

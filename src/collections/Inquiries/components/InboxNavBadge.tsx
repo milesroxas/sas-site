@@ -2,6 +2,7 @@
 
 import { useConfig } from '@payloadcms/ui'
 import Link from 'next/link'
+import { INQUIRY_QUERIES } from './queries'
 import { useInquiryCounts } from './useInquiryCounts'
 
 /**
@@ -21,7 +22,7 @@ export function InboxNavBadge() {
 
   return (
     <Link
-      href={`${admin}/collections/inquiries?where[status][equals]=new`}
+      href={`${admin}/collections/inquiries?${INQUIRY_QUERIES.new}`}
       style={{
         alignItems: 'center',
         background: 'var(--theme-success-500, var(--theme-elevation-800))',

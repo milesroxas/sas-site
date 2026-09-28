@@ -29,6 +29,7 @@ import { MediaGallery as MediaGallery_6f514b404e7f1589cac282e4c156f993 } from '@
 import { InquiryActions as InquiryActions_b2c2cebae1858c3ee8d4e6a6dd6abc0c } from '@/collections/Inquiries/components/InquiryActions'
 import { AskConversation as AskConversation_711e7dae6fdeebfbeb1dd42a073b87c5 } from '@/collections/AskQuestions/components/AskConversation'
 import { InboxFilters as InboxFilters_aaad21e601cb033ff32297ebb9c0eb64 } from '@/collections/Inquiries/components/InboxFilters'
+import { EmptySpam as EmptySpam_832c70c61ef64853677d45fffdae6b2b } from '@/collections/Inquiries/components/EmptySpam'
 import { AskFilters as AskFilters_5782205e6a7be63baf0396df427a8fb3 } from '@/collections/AskQuestions/components/AskFilters'
 import { SendPanel as SendPanel_31190afebae247357b767d1f03bd15c8 } from '@/collections/Newsletters/components/SendPanel'
 import { InviteUserButton as InviteUserButton_12d1a33bcb436082b29bbf2ed4cf60ef } from '@/collections/Users/components/InviteUserButton'
@@ -90,6 +91,7 @@ export const importMap = {
   "@/collections/Inquiries/components/InquiryActions#InquiryActions": InquiryActions_b2c2cebae1858c3ee8d4e6a6dd6abc0c,
   "@/collections/AskQuestions/components/AskConversation#AskConversation": AskConversation_711e7dae6fdeebfbeb1dd42a073b87c5,
   "@/collections/Inquiries/components/InboxFilters#InboxFilters": InboxFilters_aaad21e601cb033ff32297ebb9c0eb64,
+  "@/collections/Inquiries/components/EmptySpam#EmptySpam": EmptySpam_832c70c61ef64853677d45fffdae6b2b,
   "@/collections/AskQuestions/components/AskFilters#AskFilters": AskFilters_5782205e6a7be63baf0396df427a8fb3,
   "@/collections/Newsletters/components/SendPanel#SendPanel": SendPanel_31190afebae247357b767d1f03bd15c8,
   "@/collections/Users/components/InviteUserButton#InviteUserButton": InviteUserButton_12d1a33bcb436082b29bbf2ed4cf60ef,

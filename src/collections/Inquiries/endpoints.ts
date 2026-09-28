@@ -1,4 +1,5 @@
 import type { Endpoint, PayloadRequest } from 'payload'
+import { countDiscardedInquiry, findSenderBlock } from '@/collections/BlockedSenders/lookup'
 import { askIdFrom, markAskTurnAfterResponse } from '@/features/ask/questions'
 import type { Inquiry } from '@/payload-types'
 import {
@@ -32,6 +33,10 @@ import { deliverInquiryEmails } from './notify'
  * - Vercel BotID refuses automated clients that get past the honeypot. It
  *   answers with a real error, not a fake success: a misjudged human has to
  *   learn the brief did not land.
+ * - A sender on the block list (Inbox → Blocked senders) gets the honeypot's
+ *   fake success instead. That verdict was a person's, about this sender, so
+ *   there is no misjudged human to warn, and telling a spammer only sends them
+ *   to the next address.
  * - Free text is length-capped before it reaches the database, not after.
  */
 const MAX_NAME_LENGTH = 200
@@ -115,6 +120,15 @@ const submit: Endpoint = {
       const email = typeof body?.email === 'string' ? normalizeEmailAddress(body.email) : ''
       if (!isValidEmailAddress(email)) {
         return json({ error: INQUIRY_EMAIL_INVALID }, 400)
+      }
+
+      // Blocked sender: the team has already decided about them. Same answer
+      // as the honeypot, before any other field is judged, so nothing in the
+      // response tells them the block exists.
+      const block = await findSenderBlock(req, email)
+      if (block) {
+        countDiscardedInquiry(req, block)
+        return json({ reference: null, submittedAt: new Date().toISOString() })
       }
 
       const name = trimmed(body?.name, MAX_NAME_LENGTH)

@@ -11,6 +11,7 @@ import { AskQuestions } from './collections/AskQuestions'
 import { AssetLibraries } from './collections/AssetLibraries'
 import { AudiencePages } from './collections/AudiencePages'
 import { Audiences } from './collections/Audiences'
+import { BlockedSenders } from './collections/BlockedSenders'
 import { Capabilities } from './collections/Capabilities'
 import { CaseStudies } from './collections/CaseStudies'
 import { Categories } from './collections/Categories'
@@ -160,6 +161,7 @@ export default buildConfig({
     Categories,
     // Inbox
     Inquiries,
+    BlockedSenders,
     AskQuestions,
     // Newsletter
     Newsletters,

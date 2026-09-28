@@ -3,13 +3,14 @@
 import { Button, toast, useAuth, useDocumentInfo, useField, useForm } from '@payloadcms/ui'
 import { useCallback } from 'react'
 import type { InquiryStatus } from '@/shared/content/inquiry'
+import { SenderBlockStatus } from './SenderBlockStatus'
 import { useInquiryCounts } from './useInquiryCounts'
 
 /** Status jumps worth a single click. Anything else uses the select above. */
 const QUICK_STATUSES: { label: string; value: InquiryStatus }[] = [
   { label: 'Mark replied', value: 'replied' },
   { label: 'Close', value: 'closed' },
-  { label: 'Spam', value: 'spam' },
+  { label: 'Mark spam', value: 'spam' },
 ]
 
 const panelStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8 }
@@ -21,7 +22,10 @@ type InquiryPatch = Partial<{ status: InquiryStatus; assignedTo: number | string
 /**
  * Sidebar panel that turns "read this request" into "answer it": open a reply
  * with the reference already in the subject, take ownership, or record what
- * happened — each one action instead of edit-then-save.
+ * happened — each one action instead of edit-then-save. On spam the only
+ * action left is "Not spam", which sends it back to New for someone to read.
+ * Marking spam blocks the sender and "Not spam" lifts that block; both happen
+ * server-side on save (`../senderBlock.ts`), whichever way the status moved.
  *
  * Every button saves through the document form, so the document, its
  * timestamps (`repliedAt`), and the inbox counts all move together.
@@ -34,7 +38,7 @@ type InquiryPatch = Partial<{ status: InquiryStatus; assignedTo: number | string
  * The fields are still set locally so the sidebar reflects the click at once.
  */
 export function InquiryActions() {
-  const { id } = useDocumentInfo()
+  const { id, savedDocumentData } = useDocumentInfo()
   const { user } = useAuth()
   const { submit } = useForm()
   const { refresh: refreshCounts } = useInquiryCounts()
@@ -84,6 +88,23 @@ export function InquiryActions() {
 
   const isMine = Boolean(user?.id) && String(assignedTo ?? '') === String(user?.id)
 
+  // Keyed on the last save, so the block status is asked again once a spam
+  // mark (or its undo) has been written.
+  const blockStatus = email ? (
+    <SenderBlockStatus email={email} key={String(savedDocumentData?.updatedAt)} style={noteStyle} />
+  ) : null
+
+  if (status === 'spam') {
+    return (
+      <div className="field-type" style={panelStyle}>
+        <Button buttonStyle="secondary" onClick={() => void applyStatus('new')} size="medium">
+          Not spam
+        </Button>
+        {blockStatus}
+      </div>
+    )
+  }
+
   return (
     <div className="field-type" style={panelStyle}>
       {mailto ? (
@@ -109,8 +130,9 @@ export function InquiryActions() {
 
       <p style={noteStyle}>
         Replying opens your mail client with {reference ? `${reference} ` : ''}in the subject, so
-        their answer threads back to this request.
+        their answer threads back to this request. Marking spam also blocks the sender.
       </p>
+      {blockStatus}
     </div>
   )
 }

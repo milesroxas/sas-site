@@ -94,7 +94,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | Studio effects: the authoring contract, light leak slot controls, adding an effect | [docs/studio-effects.md](docs/studio-effects.md) |
 | Animations — reveals, route transitions, tuning workflow | [docs/animations.md](docs/animations.md) |
 | Performance — audit findings, before/after capture runbook | [docs/performance-audit-work-pages.md](docs/performance-audit-work-pages.md); [docs/performance-measurement.md](docs/performance-measurement.md) |
-| Contact forms, the inquiries inbox, notification | [docs/inquiries.md](docs/inquiries.md) |
+| Contact forms, the inquiries inbox, spam and the block list, notification | [docs/inquiries.md](docs/inquiries.md) |
 | Analytics: PostHog events, consent gate, dashboards | `.agents/skills/posthog-analytics` (use the **posthog-analytics** skill) |
 | Figures: chart, diagram and bespoke figure blocks, spec schemas, save-time layout, Markdown input, `cms:upload` | [docs/figures.md](docs/figures.md); authoring over MCP: `.agents/skills/article-authoring` (use the **article-authoring** skill) |
 | Lab journal: documenting a feature as it is built (decisions, prompts, tokens per session) for a Lab Project entry | Team guide, start to published Lab Page: [docs/lab-journal/README.md](docs/lab-journal/README.md); agent contract: `.agents/skills/lab-journal` (use the **lab-journal** skill); storage and hooks: `scripts/lab-journal/`; write-up agent: `.claude/agents/lab-project-writer.md` |

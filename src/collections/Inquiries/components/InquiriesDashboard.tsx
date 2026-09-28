@@ -4,8 +4,9 @@ import { useConfig } from '@payloadcms/ui'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { AdminCard, adminRowStyle } from '@/components/admin/AdminCard'
-import { listDocs, whereIn } from '@/components/admin/rest'
-import { INQUIRY_OPEN_STATUSES, INQUIRY_TYPES, inquiryOptionLabel } from '@/shared/content/inquiry'
+import { listDocs } from '@/components/admin/rest'
+import { INQUIRY_TYPES, inquiryOptionLabel } from '@/shared/content/inquiry'
+import { INQUIRY_QUERIES } from './queries'
 import { useInquiryCounts } from './useInquiryCounts'
 
 type InboxRow = {
@@ -20,8 +21,6 @@ type InboxRow = {
 
 /** How many requests the panel shows before sending you to the full list. */
 const PREVIEW_LIMIT = 5
-
-const OPEN_QUERY = whereIn('status', INQUIRY_OPEN_STATUSES)
 
 const relativeDay = (value?: string | null) => {
   if (!value) return ''
@@ -52,7 +51,7 @@ export function InquiriesDashboard() {
     listDocs<InboxRow>(
       api,
       'inquiries',
-      `limit=${PREVIEW_LIMIT}&sort=-submittedAt&${OPEN_QUERY}`,
+      `limit=${PREVIEW_LIMIT}&sort=-submittedAt&${INQUIRY_QUERIES.open}`,
       controller.signal,
     )
       .then(setRows)
@@ -64,7 +63,11 @@ export function InquiriesDashboard() {
   }, [api])
 
   return (
-    <AdminCard action="Open all inquiries" href={listUrl} title="Inbox">
+    <AdminCard
+      action="Open all inquiries"
+      href={`${listUrl}?${INQUIRY_QUERIES.inbox}`}
+      title="Inbox"
+    >
       <p style={{ fontSize: 14, margin: '8px 0 16px' }}>
         {counts.open === 0
           ? 'Nothing waiting. Every request has been answered or closed.'

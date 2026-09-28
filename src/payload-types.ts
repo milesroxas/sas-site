@@ -87,6 +87,7 @@ export interface Config {
     platforms: Platform;
     categories: Category;
     inquiries: Inquiry;
+    'blocked-senders': BlockedSender;
     'ask-questions': AskQuestion;
     newsletters: Newsletter;
     audiences: Audience;
@@ -142,6 +143,7 @@ export interface Config {
     platforms: PlatformsSelect<false> | PlatformsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
+    'blocked-senders': BlockedSendersSelect<false> | BlockedSendersSelect<true>;
     'ask-questions': AskQuestionsSelect<false> | AskQuestionsSelect<true>;
     newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
     audiences: AudiencesSelect<false> | AudiencesSelect<true>;
@@ -9153,7 +9155,7 @@ export interface Inquiry {
   reference?: string | null;
   type: 'project' | 'general';
   /**
-   * Where this request has got to. "New" means nobody has picked it up yet.
+   * Where this request has got to. "New" means nobody has picked it up yet. "Spam" leaves the inbox and blocks the sender.
    */
   status: 'new' | 'in-progress' | 'replied' | 'closed' | 'spam';
   /**
@@ -9193,6 +9195,41 @@ export interface Inquiry {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Inquiries from these senders are discarded: they see the usual thank-you, nothing is filed and nobody is emailed. Marking an inquiry spam adds its sender; marking it not spam takes them off.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blocked-senders".
+ */
+export interface BlockedSender {
+  id: number;
+  /**
+   * A full address (name@example.com) or a whole domain (example.com, which covers its subdomains too). Spellings of one mailbox count as the same sender: a +tag, or dots in a Gmail name.
+   */
+  value: string;
+  matchKey?: string | null;
+  /**
+   * Why this sender is blocked, for whoever reviews the list next.
+   */
+  note?: string | null;
+  /**
+   * Read from the value.
+   */
+  kind?: ('address' | 'domain') | null;
+  /**
+   * Leave empty to block until someone deletes this entry.
+   */
+  expiresAt?: string | null;
+  /**
+   * Marked spam there. Marking it not spam lifts this block.
+   */
+  inquiry?: (number | null) | Inquiry;
+  addedBy?: (number | null) | User;
+  hits?: number | null;
+  lastHitAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -10034,6 +10071,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'inquiries';
         value: number | Inquiry;
+      } | null)
+    | ({
+        relationTo: 'blocked-senders';
+        value: number | BlockedSender;
       } | null)
     | ({
         relationTo: 'ask-questions';
@@ -12735,6 +12776,23 @@ export interface InquiriesSelect<T extends boolean = true> {
         createdAt?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blocked-senders_select".
+ */
+export interface BlockedSendersSelect<T extends boolean = true> {
+  value?: T;
+  matchKey?: T;
+  note?: T;
+  kind?: T;
+  expiresAt?: T;
+  inquiry?: T;
+  addedBy?: T;
+  hits?: T;
+  lastHitAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

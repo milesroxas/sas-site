@@ -9,6 +9,7 @@ import {
 } from '@/shared/content/inquiry'
 import { inquiryEndpoints } from './endpoints'
 import { assignReference, stampHandlingDates } from './hooks'
+import { syncSenderBlock } from './senderBlock'
 
 /** Project-shaped questions only appear on a project inquiry. */
 const isProjectInquiry = (data: Partial<{ type?: string | null }> | undefined) =>
@@ -44,12 +45,16 @@ export const Inquiries: CollectionConfig<'inquiries'> = {
     description:
       'Requests from the site. New ones are unread until someone opens them — assign an owner so nothing sits.',
     components: {
-      beforeListTable: ['@/collections/Inquiries/components/InboxFilters#InboxFilters'],
+      beforeListTable: [
+        '@/collections/Inquiries/components/InboxFilters#InboxFilters',
+        '@/collections/Inquiries/components/EmptySpam#EmptySpam',
+      ],
     },
   },
   endpoints: inquiryEndpoints,
   hooks: {
     beforeChange: [assignReference, stampHandlingDates],
+    afterChange: [syncSenderBlock],
   },
   fields: [
     {
@@ -81,7 +86,8 @@ export const Inquiries: CollectionConfig<'inquiries'> = {
       options: [...INQUIRY_STATUSES],
       admin: {
         position: 'sidebar',
-        description: 'Where this request has got to. "New" means nobody has picked it up yet.',
+        description:
+          'Where this request has got to. "New" means nobody has picked it up yet. "Spam" leaves the inbox and blocks the sender.',
       },
     },
     {

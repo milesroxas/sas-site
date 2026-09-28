@@ -2,8 +2,8 @@
 
 import { useAuth, useConfig } from '@payloadcms/ui'
 import { useCallback, useEffect, useSyncExternalStore } from 'react'
-import { countDocs, whereIn } from '@/components/admin/rest'
-import { INQUIRY_OPEN_STATUSES } from '@/shared/content/inquiry'
+import { countDocs } from '@/components/admin/rest'
+import { assignedToQuery, INQUIRY_QUERIES } from './queries'
 
 export type InquiryCounts = {
   /** Nobody has picked these up yet. */
@@ -12,20 +12,20 @@ export type InquiryCounts = {
   open: number
   /** Open and assigned to the person looking at the screen. */
   mine: number
+  /** Marked spam and waiting to be deleted. */
+  spam: number
 }
 
-const EMPTY: InquiryCounts = { new: 0, open: 0, mine: 0 }
+const EMPTY: InquiryCounts = { new: 0, open: 0, mine: 0, spam: 0 }
 
 /** Refresh cadence while any admin screen is open. */
 const POLL_INTERVAL_MS = 60_000
-
-const OPEN_QUERY = whereIn('status', INQUIRY_OPEN_STATUSES)
 
 /**
  * One poller, however many readers.
  *
  * The dashboard renders the inbox panel and the nav badge side by side, and
- * both want the same three numbers — a hook that polled per component would
+ * both want the same numbers — a hook that polled per component would
  * fire six identical requests a minute and answer them at different moments,
  * so the badge and the panel could disagree on screen. The store below keeps a
  * single interval alive while at least one component is mounted, and hands
@@ -47,7 +47,12 @@ let pollArgs: { api: string; userId: number | string | undefined } | undefined
 const emit = (next: InquiryCounts) => {
   // Same numbers, same object: `useSyncExternalStore` compares by identity, so
   // a fresh object every minute would re-render every reader for nothing.
-  if (next.new === snapshot.new && next.open === snapshot.open && next.mine === snapshot.mine) {
+  if (
+    next.new === snapshot.new &&
+    next.open === snapshot.open &&
+    next.mine === snapshot.mine &&
+    next.spam === snapshot.spam
+  ) {
     return
   }
   snapshot = next
@@ -57,16 +62,17 @@ const emit = (next: InquiryCounts) => {
 async function fetchCounts(api: string, userId: number | string | undefined) {
   const count = (query: string) => countDocs(api, 'inquiries', query)
 
-  const [newCount, openCount, mineCount] = await Promise.all([
-    count('where[status][equals]=new'),
-    count(OPEN_QUERY),
-    userId ? count(`${OPEN_QUERY}&where[assignedTo][equals]=${userId}`) : Promise.resolve(0),
+  const [newCount, openCount, mineCount, spamCount] = await Promise.all([
+    count(INQUIRY_QUERIES.new),
+    count(INQUIRY_QUERIES.open),
+    userId ? count(assignedToQuery(userId)) : Promise.resolve(0),
+    count(INQUIRY_QUERIES.spam),
   ])
 
-  emit({ new: newCount, open: openCount, mine: mineCount })
+  emit({ new: newCount, open: openCount, mine: mineCount, spam: spamCount })
 }
 
-/** Concurrent callers share one round of requests rather than racing three each. */
+/** Concurrent callers share one round of requests rather than racing a round each. */
 function refreshCounts(api: string, userId: number | string | undefined) {
   inFlight ??= fetchCounts(api, userId)
     .catch(() => {
@@ -92,7 +98,7 @@ const subscribe = (listener: () => void) => {
 const getSnapshot = () => snapshot
 
 /**
- * The three numbers the inbox is judged by.
+ * The numbers the inbox is judged by.
  *
  * Returns `refresh` for the callers that have just changed something and
  * should not wait out the interval to see it.
