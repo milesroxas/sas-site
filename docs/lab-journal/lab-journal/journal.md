@@ -367,3 +367,183 @@ On main now: docs/editorial/voice.md and its code, the house-style gate, pnpm ed
 Next, for a person: publish or revert the three drafts; save Lab Pages 1 and 2 once in the admin so the story-headings hook stores its judgments; look at both pages in preview; then the first real writer run from a session started with claude --chrome. The journal stays live on this branch; it is not wrapped.
 
 <!-- session: 5583a82e-a83f-4ece-a7a5-9f28a14cc4c9, branch: lab-journal -->
+
+## 2026-09-27 17:07 UTC | decision | One Lab Project for the whole feature, the voice work included
+
+Miles's call on 2026-09-27, before the write-up: the journal tooling, the digest, the writer and its draft check, the house voice layers and the record beat headings become one Lab Project. This settles the open question in the 2026-09-21 23:53 note.
+
+Rejected: splitting the voice work into its own journal with pnpm lab:journal window at the prompt where it began. The case for keeping it, from that note: the voice check is the writer's quality gate, so it belongs to the pipeline this journal records.
+Cost: the save-time gate covers every collection and the voice line sits in the Ask prompt, so the write-up has to say that the voice work reaches past the lab pipeline.
+
+<!-- session: 1980b367-411e-44a5-b3d1-fb2fbef871d9, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 17:07 UTC | milestone | Build done and merged; the write-up is what remains
+
+State on 2026-09-27, checked over the sas-cms MCP and git. The build shipped in PR 18 and PR 19, and the journal record through PR 19 merged as PR 21. Miles published the strict pass: Lab Projects 2 and 3 and Lab Page 2 show published with no pending draft. The journal was resumed on docs/lab-journal-writeup for the write-up.
+
+Still open: Lab Page 1 (Building a shader studio in Payload CMS) was last saved on 2026-09-20, before the story-headings hook shipped. It has 15 Story beats blocks with no stored heading judgments, so only the exact-repeat rule applies there until it is saved once. No Lab Project or Lab Page exists for this journal yet, and the lab-project-writer has not had its first real run.
+
+Next: sync, a fresh digest (the last one predates 15 entries), log the gaps it lists, then the writer from a session started with claude --chrome.
+
+<!-- session: 1980b367-411e-44a5-b3d1-fb2fbef871d9, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:08 UTC | milestone | First real writer run: Lab Project 4 and Lab Page 3 are drafts on production
+
+The lab-project-writer agent ran on this journal for the first time on 2026-09-27, from a session with Chrome connected and Miles signed in to the admin. Checked afterwards over the sas-cms MCP: Lab Project 4 ("The lab journal") and Lab Page 3 ("Documenting a feature as it is built", slug lab-journal, labProject 4) exist as drafts; Lab Projects 2 and 3 and Lab Pages 1 and 2 are unchanged.
+
+The project has all six story sections filled, 41 beats in total. The page uses every beat once: 35 beat blocks and one section-scope block for learnings, with 7 diagrams, 12 code listings cut from the PR 19 merge commit, 5 charts and 4 screenshots (media 225 to 228, Asset Library 9).
+
+Left for a person: hero, SEO, authors, capabilities, related projects, a chart check in a visible window, a Safari check, review of the quoted prompts, then publishing the project before the page.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:08 UTC | insight | A subagent gets the Chrome tools, but a hidden window limits what it can check
+
+Open question from the 2026-09-21 19:56 milestone: would the lab-project-writer subagent inherit the claude-in-chrome tools? It did. The writer took and uploaded its own admin screenshots, so the parent session did not have to.
+
+The limit it hit: Chrome was minimized, so the page reported visibility hidden and a fixed 590px viewport, and resizing the window did nothing. The writer checked 1440, 390 and 320 widths in same-origin frames inside the draft preview instead. Charts render only once scrolled into view, which never happens in a hidden window, so no chart was seen drawn (the published shader page's charts did not draw there either). A chart check needs a visible window.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:08 UTC | measurement | The draft check on Lab Project 4 took four runs
+
+pnpm lab:journal:verify ran four times on Lab Project 4, costing 404, 58, 17 and 7 Jev requests (rows in jev.jsonl). The first run is the full read; later runs recheck a revised draft.
+
+Fourth run totals: 1 unknown number, 2 contradicted, 19 not in the record, 14 supported but unsure. The writer kept each flagged line and named its source: the unknown number is the digest cost from the jev.jsonl row; the two contradictions are a verbatim prompt the journal paraphrases and a line Jev scored at 0.34 confidence; the "not in the record" lines come from sessions.jsonl, git, or combine two entries.
+
+Voice section: 0 refused at save, 0 inflated, 0 formulaic, 1 generic passage (a verbatim prompt). Fixed across the runs: model version digits, a stale Jev total, a SessionStart claim the Conductor entry contradicts, and the generic and formulaic passages.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:08 UTC | challenge | Correction: Lab Page 2 has no stored heading judgments either
+
+The 2026-09-27 17:07 milestone said only Lab Page 1 lacks stored heading judgments and gave it 15 Story beats blocks. The writer found both claims wrong while comparing the journal with production.
+
+Lab Page 1 has 16 Story beats blocks. Lab Page 2 has 0 of 48 judged: it was last saved at 01:46 UTC on 2026-09-22, ten minutes before PR 19 merged at 01:56 and the story-headings hook went live. So the live Lab Page 2 prints two paraphrase headings Jev would hide ("Every case study in the same template" and "A Content Hub and a website").
+
+Fix: save Lab Pages 1 and 2 once in the admin so the hook stores its judgments. Lab Page 3 was saved after the hook shipped and has judgments on all 36 blocks.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:20 UTC | note | Testing the first write-up turned up changes to the feature
+
+After the first real writer run produced Lab Project 4 and Lab Page 3 as drafts, Miles chose to update parts of the feature before publishing them. The changes are recorded in this journal, not a new one: they fix and extend the same pipeline, and the drafts are the test that surfaced them. The journal stays live on docs/lab-journal-writeup and is not wrapped; the drafts stay unpublished until the changes land.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:30 UTC | decision | Lab Pages are told in the author's first person
+
+Miles's call on 2026-09-27, after reading the Lab Project 4 draft: agents author Lab Pages, but the story is told as the page's author tells it, first person, and here the author is Miles. The draft narrates him in the third person ("Miles asked", "Miles's call") 28 times across Lab Project 4, against 2 each in the published Lab Projects 2 and 3, which speak as the studio ("we").
+
+Cause: no rule anywhere names a point of view. docs/editorial/voice.md covers tone, sentences and banned phrases; the article-authoring skill covers composition; the writer agent tells the writer to "say whose call it was", and the journal it reads is itself written in the third person, so the writer copied the record's register.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:30 UTC | decision | A Lab Page reads in five to ten minutes
+
+Miles's call on 2026-09-27: a Lab Page should read like a normal article, five to ten minutes at most. Excess detail comes out, and the figures carry the depth, so the cognitive load drops.
+
+Cause: the writer agent sets the published Lab Pages as the bar ("about twenty Sections") and asks for every beat to be used once. With 41 journal entries, the writer made 41 beats and 24 Sections. No length budget exists anywhere in the writer, the skill or the verify step.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:30 UTC | measurement | Reading time of the three Lab Pages, by the site's own count
+
+Measured on 2026-09-27 with composedReadingMinutes (src/blocks/shared/reading-time.ts), the function the Lab Page hero uses: 200 words of prose a minute and 20 lines of code a minute, over each page's resolved blocks. Pages read from production over the MCP, drafts included.
+
+- Lab Page 3 (draft, this feature): 39 minutes. 24 Sections, 36 Story beats blocks, 12 code listings holding 214 lines (about 10.7 of the minutes), 7 diagrams, 5 charts, 4 screenshots.
+- Lab Page 2 (From Webflow to Payload, published): 22 minutes. 124 lines of code, about 6.2 minutes.
+- Lab Page 1 (Building a shader studio, published): 15 minutes. 20 lines of code, about 1 minute.
+
+Against the five to ten minute budget, the draft is four times over, and both published pages, which the writer treats as its bar, are over too.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:35 UTC | decision | Reading time counts prose only, not code listings
+
+Miles's call on 2026-09-27: code shown on a page does not count toward its reading time. Today src/shared/content/reading-time.ts charges code at 20 lines a minute (READING_CODE_LINES_PER_MINUTE), on the reasoning that a listing is read line by line. Miles's view is that a listing is a figure a reader can skip or study, like a diagram, so it adds depth without adding to the read.
+
+Prose-only reading time, measured the same way as the earlier entry with code blocks removed: Lab Page 3 draft 28 minutes (39 with code), Lab Page 2 15 (22), Lab Page 1 14 (15). The draft is still about three times over the ten-minute ceiling, so the cut has to come from prose.
+
+The same function feeds the reading time shown in the Lab Page hero (LabHero) and the Post hero (PostHero), so one definition changes both, and the length budget the writer is checked against uses the same count.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:46 UTC | decision | Every Lab Page Section carries a visual, and a code listing does not count as one
+
+Miles's call: a Lab Page never has a Section without a visual. Walls of text become figures that tell the story.
+
+Enforced in code, not only in the writer's brief: pnpm lab:journal:verify now takes --page and fails any Section whose blocks hold none of VISUAL_BLOCKS in scripts/lab-journal/verify.ts (chart, diagram, bespoke figure, media, video, full-width media, media showcase).
+
+Claude's call, flagged to Miles for review: a code listing does not satisfy the rule. It sits beside a visual and never stands in for one, because it is still text to read. Rejected: counting code as a visual, which would let a Section of prose plus a listing pass as depth without lowering the load.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:47 UTC | milestone | Page rules in the draft check: reading budget, visuals, point of view
+
+The draft check now opens with three rules that pass or fail, and a failure exits non-zero so a writer cannot report a draft that breaks one:
+
+- Reading time: the Lab Page's prose words through composedWords (src/blocks/shared/reading-time.ts), held to ARTICLE_READING_BUDGET, 5 to 10 minutes. Over the ceiling fails; under the floor is noted.
+- Every Section carries a visual (previous entry).
+- The author named in the third person: authorMentions in src/features/editorial/voice.ts finds any part of the name outside a quotation, over the Lab Project and the Lab Page. The name comes from a new author field in the journal's meta.json, recorded by start from git's user.name (or --author).
+
+Reading time itself now counts prose only: src/shared/content/reading-time.ts drops code listings and collapses to a word count, so the Lab Page and Post heroes show the same number the check holds the writer to. voice.md gained a "Who is speaking" section: a bylined piece speaks as its author in the first person, the agent is named where it did the work, "we" is the studio.
+
+Verified: 67 unit tests pass across reading time, voice and the lab journal scripts; tsc and biome are clean. A code-only run against the first draft (Lab Project 4, Lab Page 3) fails all three: 28 minutes and 5,684 words of prose, 11 of 24 Sections without a visual, 28 passages naming Miles.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 18:49 UTC | milestone | Writer brief rewritten around the budget, visuals and the author's voice
+
+The lab-project-writer brief (.claude/agents/lab-project-writer.md) no longer sets "about twenty Sections, like the published pages" as the bar. The bar is now an article a reader finishes, inside ARTICLE_READING_BUDGET: roughly five to eight Sections of one to three short beats. The journal is source material to choose from, not a checklist, and the record holds only the beats the page tells. Every Section carries a visual, and a figure replaces a passage rather than illustrating it. Code listings stay, a few and short, since they are not counted but still ask the reader to stop.
+
+The brief tells the writer to speak as the journal's author in the first person, name the agent where the agent did the work, and quote two or three prompts at most. It may not report until the page rules pass. The published pages remain the bar for figures and screenshots, not for length.
+
+The article-authoring skill gained a "Length, visuals and voice" section for any Lab Page. The lab-journal skill and docs/lab-journal/README.md now pass --page to the check.
+
+Next: the writer reruns on Lab Project 4 and Lab Page 3 in place, as a test of the new rules.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 19:15 UTC | measurement | The rewrite under the new rules: 7 minutes, 7 Sections, a visual in each
+
+The lab-project-writer reran on Lab Project 4 and Lab Page 3 in place on 2026-09-27 under the rewritten brief. The page rules in pnpm lab:journal:verify pass: 7 minutes and 1,487 words of prose (first draft 28 minutes and 5,684 words), 0 Sections without a visual (first draft 11 of 24), 0 passages naming the author in the third person (first draft 28). Claude reran the code checks independently after the writer reported and got the same pass.
+
+Shape, first draft to rewrite: Sections 24 to 7, beats 41 to 19, code listings 12 to 1, diagrams 7 to 8, charts 5 to 5, screenshots 4 to 3. New figures: a diagram of a journal's time window, a diagram of the three page rules, and a chart of the first draft's reading time with and without code against the 10-minute ceiling. Three prompt fragments quoted, down from five full prompts.
+
+Claim check on the rewrite: 0 unknown numbers, 0 contradicted, 7 sentences not in the record (the writer names a source for each), 4 supported but unsure. Voice: nothing refused, generic, inflated or formulaic, no punchline paragraphs out of 25.
+
+No Section wanted a code listing as its only visual. The writer drew the three rules as a diagram rather than list uncommitted code.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-27 19:15 UTC | challenge | The first draft went live before the rewrite
+
+When the writer reran, production already had Lab Project 4 published at 18:28 UTC and Lab Page 3 at 18:33 UTC on 2026-09-27, so /lab/lab-journal served the first draft (24 Sections, third person) publicly. Neither agent publishes, so the publish came from the admin. The rewrite is saved as a draft on top of the published version and is not live until someone publishes it.
+
+The hero of the rewrite's preview shows 8 minutes, not the 7 the check counts, because production still charges code at 20 lines a minute. The prose-only reading time is uncommitted on docs/lab-journal-writeup and reaches the hero only when it merges and deploys.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-28 13:41 UTC | challenge | Publishing a restructured record and page deadlocks on the beat guards
+
+Miles asked Claude to publish the rewrite on 2026-09-28. Both publishes were refused, each by a guard in src/collections/story/validate.ts:
+
+- Lab Project 4 first: "context Story Beat the-bar is used by a Lab Page". assertStoryBeatsKept checks the page's live version as well as its latest draft, and the live page was the first draft, which used beats the rewrite drops.
+- Lab Page 3 first: "challenge Story Beat too-long-to-read does not exist on the related Lab Project record". assertStoryBeatReferencesExist checks the page against the published record, which did not yet have the rewrite's new beats.
+
+Each guard is right on its own; together they block any publish that both adds and removes beats while the page is live. The way through, with no code change: unpublish the page (a draft-status save skips the page guard and moves the new layout into the page's main row), publish the record, publish the page. /lab/lab-journal was offline for about ten seconds, from 13:39:31 to 13:39:41 UTC.
+
+Verified after: both documents published, 7 Sections and 19 beats, and the live page served the rewrite within a minute (Vercel cache HIT with the new copy).
+
+Worth fixing: the record guard could allow a publish when the page's latest draft references only beats the record keeps, and the page publish in the same step. Not done yet.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
+
+## 2026-09-28 13:44 UTC | milestone | Rewrite published; journal paused before the merge
+
+Where things stand on 2026-09-28: the rewrite of Lab Project 4 and Lab Page 3 is published and live at /lab/lab-journal (7 Sections, 19 beats, 7 minutes by the check). The code behind the new rules (prose-only reading time, the reading budget, the author check, a visual in every Section, and the writer brief) is committed on docs/lab-journal-writeup and goes to main next. Miles asked that the journal be paused before that push, so sessions in other workspaces are not recorded into it after the merge, as happened once before.
+
+What comes next: the page hero shows 8 minutes until the prose-only count deploys; the byline, hero image, SEO, capabilities and related projects are empty; charts need a check in a visible window and Safari; Lab Pages 1 and 2 each need one save for their heading judgments; the beat-guard deadlock on publishing a restructured record and page is unfixed. Resume with `pnpm lab:journal resume lab-journal` on a feature branch.
+
+<!-- session: 3d783f04-2cfc-4d6b-bc60-13f9fe143901, branch: docs/lab-journal-writeup -->
