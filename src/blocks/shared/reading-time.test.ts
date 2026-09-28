@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { StoryBody, StoryRecord } from '@/collections/story/narrative'
-import { composedReadingMinutes } from './reading-time'
+import { composedReadingMinutes, composedWords } from './reading-time'
 
 const prose = (count: number) => Array.from({ length: count }, (_, i) => `word${i}`).join(' ')
 
@@ -60,14 +60,15 @@ describe('composedReadingMinutes', () => {
     expect(composedReadingMinutes([[figure]], record)).toBe(1)
   })
 
-  it('charges a composition Code block by its lines', () => {
+  it('never charges a composition Code block: a listing is a figure', () => {
     const code = {
       blockType: 'code',
       id: 'c',
       language: 'ts',
-      code: Array.from({ length: 40 }, (_, i) => `const a${i} = ${i}`).join('\n'),
+      code: Array.from({ length: 400 }, (_, i) => `const a${i} = ${i}`).join('\n'),
     }
-    expect(composedReadingMinutes([[code]], record)).toBe(2)
+    expect(composedWords([[code]], record)).toBe(0)
+    expect(composedReadingMinutes([[beatBlock, code]], record)).toBe(2)
   })
 
   it('counts a page intro alongside its layout', () => {

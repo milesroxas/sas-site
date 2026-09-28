@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import {
   appendFileSync,
   copyFileSync,
@@ -46,7 +47,7 @@ import {
  * The lab journal's commands, run by the agent (the lab-journal skill says
  * when) or by hand:
  *
- *   pnpm lab:journal start <slug> --title "<title>"
+ *   pnpm lab:journal start <slug> --title "<title>" [--author "<name>"]
  *   pnpm lab:journal log --kind <kind> --title "<title>" < body.md
  *   pnpm lab:journal status | pause | resume [slug] | wrap | sync [session-id]
  *   pnpm lab:journal window [--from <iso>] [--to <iso>]
@@ -88,7 +89,23 @@ function requireActive(): JournalMeta {
   )
 }
 
-function start(slug: string | undefined, title: string | undefined): void {
+/** The name git commits under here: who a journal started on this machine is about. */
+function gitUserName(): string | undefined {
+  try {
+    return (
+      execFileSync('git', ['config', 'user.name'], { cwd: root, encoding: 'utf8' }).trim() ||
+      undefined
+    )
+  } catch {
+    return undefined
+  }
+}
+
+function start(
+  slug: string | undefined,
+  title: string | undefined,
+  author: string | undefined,
+): void {
   if (!slug || !SLUG.test(slug)) fail('A slug is required: lowercase words joined by hyphens.')
   const name = slug
   refuseMain(currentBranch(root))
@@ -104,6 +121,7 @@ function start(slug: string | undefined, title: string | undefined): void {
     status: 'active',
     branches: branch ? [branch] : [],
     startedAt: new Date().toISOString(),
+    author: author?.trim() || gitUserName(),
   }
   writeMeta(root, meta)
   writeFileSync(
@@ -275,13 +293,14 @@ const { positionals, values } = parseArgs({
     from: { type: 'string' },
     to: { type: 'string' },
     what: { type: 'string' },
+    author: { type: 'string' },
   },
 })
 const [command, slug] = positionals
 
 switch (command) {
   case 'start':
-    start(slug, values.title)
+    start(slug, values.title, values.author)
     break
   case 'log':
     log(values.kind, values.title)

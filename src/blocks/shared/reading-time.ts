@@ -5,15 +5,7 @@ import {
   NON_RENDERED_TEXT_KEYS,
   normalizeKey,
 } from '@/shared/content/content-keys'
-import {
-  addReadingCost,
-  codeReadingCost,
-  markdownReadingCost,
-  NO_READING_COST,
-  type ReadingCost,
-  readingCost,
-  readingMinutes,
-} from '@/shared/content/reading-time'
+import { lexicalWords, markdownWords, readingMinutes } from '@/shared/content/reading-time'
 import {
   isStoryCopyBlock,
   resolveStoryBlockCopy,
@@ -35,9 +27,18 @@ import {
  * a different question than the one the figure asks.
  *
  * What the walk drops, because a reader never spends time on it: a figure's
- * text alternative, a chart or diagram spec, media, and link destinations
- * (`CONTENT_SKIP_KEYS`, `NON_RENDERED_TEXT_KEYS`).
+ * text alternative, a chart or diagram spec, media, link destinations
+ * (`CONTENT_SKIP_KEYS`, `NON_RENDERED_TEXT_KEYS`), and code listings, which
+ * are figures the reader studies or skips.
  */
+
+/**
+ * How long an article-length page should take to read, in the minutes the
+ * hero shows. The ceiling is the rule: a longer piece moves detail out of the
+ * prose and into figures, or leaves it out. `pnpm lab:journal:verify` holds a
+ * Lab Page draft to it.
+ */
+export const ARTICLE_READING_BUDGET = { maxMinutes: 10, minMinutes: 5 } as const
 
 /** A stored block. Structural, because the union of every block type is not knowable here. */
 type LooseBlock = { blockType: string } & Record<string, unknown>
@@ -47,9 +48,6 @@ const isBlock = (value: object): value is LooseBlock =>
 
 const isLexicalState = (value: object): boolean =>
   'root' in value && typeof (value as { root?: unknown }).root === 'object'
-
-const isCodeBlock = (block: LooseBlock): block is LooseBlock & { code: string } =>
-  block.blockType === 'code' && typeof block.code === 'string'
 
 /** The legacy Narrative block on each story surface: its own copy precedence. */
 const STORY_SECTION_BLOCKS: ReadonlySet<string> = new Set([
@@ -82,48 +80,44 @@ const resolveCopy = (block: LooseBlock, record: StoryRecord): object => {
   return resolved
 }
 
-const walkEntries = (value: object, record: StoryRecord): ReadingCost =>
-  Object.entries(value).reduce<ReadingCost>(
-    (cost, [key, child]) => addReadingCost(cost, walk(child, key, record)),
-    NO_READING_COST,
-  )
+const walkEntries = (value: object, record: StoryRecord): number =>
+  Object.entries(value).reduce((words, [key, child]) => words + walk(child, key, record), 0)
 
-function walk(value: unknown, key: string, record: StoryRecord): ReadingCost {
-  if (value === null || value === undefined) return NO_READING_COST
+function walk(value: unknown, key: string, record: StoryRecord): number {
+  if (value === null || value === undefined) return 0
 
   const normalized = normalizeKey(key)
-  if (CONTENT_SKIP_KEYS.has(normalized) || normalized.startsWith('internal')) {
-    return NO_READING_COST
-  }
+  if (CONTENT_SKIP_KEYS.has(normalized) || normalized.startsWith('internal')) return 0
 
   if (typeof value === 'string') {
     const text = value.trim()
     if (!text || !CONTENT_TEXT_KEYS.has(normalized) || NON_RENDERED_TEXT_KEYS.has(normalized)) {
-      return NO_READING_COST
+      return 0
     }
-    return markdownReadingCost(text)
+    return markdownWords(text)
   }
 
   if (Array.isArray(value)) {
-    return value.reduce<ReadingCost>(
-      (cost, item) => addReadingCost(cost, walk(item, key, record)),
-      NO_READING_COST,
-    )
+    return value.reduce((words: number, item) => words + walk(item, key, record), 0)
   }
 
-  if (typeof value !== 'object') return NO_READING_COST
-  if (isLexicalState(value)) return readingCost(value)
+  if (typeof value !== 'object') return 0
+  if (isLexicalState(value)) return lexicalWords(value)
   if (!isBlock(value)) return walkEntries(value, record)
+  // A code listing is a figure, and a figure's body is not read as prose.
+  if (value.blockType === 'code') return 0
 
-  return isCodeBlock(value)
-    ? codeReadingCost(value.code)
-    : walkEntries(resolveCopy(value, record), record)
+  return walkEntries(resolveCopy(value, record), record)
 }
 
 /**
- * Minutes to read the parts of a page a visitor scrolls through — its intro,
- * its layout — with every block's copy resolved against the canonical record
+ * Words of prose on the parts of a page a visitor scrolls through (its intro,
+ * its layout), with every block's copy resolved against the canonical record
  * the page presents. A surface with no story record passes an empty object.
  */
+export const composedWords = (parts: readonly unknown[], record: StoryRecord): number =>
+  walk(parts, '', record)
+
+/** Minutes to read those parts: what the page's hero shows. */
 export const composedReadingMinutes = (parts: readonly unknown[], record: StoryRecord): number =>
-  readingMinutes(walk(parts, '', record))
+  readingMinutes(composedWords(parts, record))
