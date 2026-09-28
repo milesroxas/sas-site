@@ -386,6 +386,10 @@ async function main(): Promise<void> {
       ? ['', `Unjudged prompts: ${unjudged.length}. Read those in prompts.jsonl.`]
       : []),
     '',
+    '## Before turning this digest into an article',
+    '',
+    'These are source buckets, not a page outline. Choose one reader question, the decisions that change its answer, and an ending supported by the record. Write a section-to-section progression before selecting figures. Keep causes and consequences in short prose; let visuals carry technical detail. Read docs/lab-journal/narrative.md.',
+    '',
     '## Journal entries by story section',
     '',
     ...[...sections].flatMap(([section, lines]) => [`### ${section}`, '', ...lines, '']),

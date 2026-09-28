@@ -109,6 +109,12 @@ Preserve what makes this studio's version of the idea specific.
 
 Do not invent capabilities, outcomes, metrics, proof, client results or strategic claims. A number is one the source holds, or it is not on the page. An estimate says "estimate". Build confidence with recognition, clarity and relevant proof, never with urgency, exaggerated pain or unsupported claims.
 
+## Narrative continuity
+
+For long-form bylined pieces, voice also depends on what the reader is asked to follow. Establish the reader's question before naming tools. Give each section a distinct job and connect it to the question the previous one leaves. End with an implication earned by the evidence, not a repeated slogan or an admin checklist.
+
+Keep paragraphs short and let visuals carry technical detail, while prose preserves the reasons and consequences. Sentence-level voice checks cannot assess the article's progression. Lab journal write-ups use [the narrative contract](../lab-journal/narrative.md) and a separate reading-order review.
+
 ## Before it ships
 
 - Does the writing feel confident without sounding inflated?

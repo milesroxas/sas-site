@@ -27,6 +27,7 @@ import {
   sessionsPath,
   totalUsage,
 } from './lib'
+import { narrativeProof, VISUAL_BLOCKS } from './narrative'
 
 /**
  * The check on the writer: every sentence of a Lab Project draft, held against
@@ -90,22 +91,6 @@ const STORY_SECTIONS = [
   'outcomeSummary',
   'learnings',
 ] as const
-
-/**
- * The blocks that give a Lab Page Section its visual: a figure or an image.
- * Every Section carries one, so depth reaches the reader as something to look
- * at rather than as more prose. A code listing sits beside a visual and never
- * stands in for one: it is still text to read.
- */
-const VISUAL_BLOCKS: ReadonlySet<string> = new Set([
-  'bespokeFigure',
-  'chart',
-  'diagram',
-  'fullMedia',
-  'labMediaShowcase',
-  'mediaBlock',
-  'youtube',
-])
 
 const QUESTIONS = {
   verdict: choice(
@@ -253,6 +238,7 @@ async function main(): Promise<void> {
     )
   }
   const local = args.includes('--local')
+  const codeOnly = args.includes('--code-only')
 
   const loaded: unknown = file
     ? JSON.parse(readFileSync(file, 'utf8'))
@@ -362,7 +348,7 @@ async function main(): Promise<void> {
   })
   const keyOf = (sentence: Sentence) => hashOf(JSON.stringify(stateOf(sentence)))
 
-  if (process.env[ASK_JUDGE_KEY_VAR]?.trim()) {
+  if (!codeOnly && process.env[ASK_JUDGE_KEY_VAR]?.trim()) {
     const jev = new TypeSafeClient({ defaultModel: ASK_JUDGE_MODEL, logLevel: 'error' })
     const pending = sentences.filter((sentence) => !(keyOf(sentence) in cache.claims))
     let next = 0
@@ -394,7 +380,11 @@ async function main(): Promise<void> {
     inputTokens += voiceUsage.inputTokens
     requests += voiceUsage.requests
   } else {
-    console.error(`${ASK_JUDGE_KEY_VAR} is not set: only the code checks ran.`)
+    console.error(
+      codeOnly
+        ? 'Code-only mode: no content sent to TypeSafe; cached judgments may be shown.'
+        : `${ASK_JUDGE_KEY_VAR} is not set: only the code checks ran.`,
+    )
   }
 
   const judged = sentences.map((sentence) => ({ sentence, answer: cache.claims[keyOf(sentence)] }))
@@ -412,13 +402,20 @@ async function main(): Promise<void> {
     `- ${sentence.where} | ${answer?.confidence.toFixed(2) ?? '-'} | ${sentence.text}`
 
   const voice = voiceReport(passages, voiceCache)
+  const narrative = page ? narrativeProof(page, document as StoryRecord) : undefined
+  if (narrative) writeFileSync(join(out, 'narrative.md'), narrative.markdown)
   const report = [
     `# Draft check: ${journal.title}`,
     '',
-    `${sentences.length} sentences from ${file ?? `Lab Project ${project}`}, against ${entries.length} journal entries and the usage files. Judged by ${ASK_JUDGE_MODEL}. A listed sentence is one to read against the journal, not a proven error: the record may say it in a session's prompts or in a commit this check does not read.`,
+    `${sentences.length} sentences from ${file ?? `Lab Project ${project}`}, against ${entries.length} journal entries and the usage files. Evidence model: ${ASK_JUDGE_MODEL}; ${unjudged.length} sentences remain unjudged. A listed sentence is one to read against the journal, not a proven error: the record may say it in a session's prompts or in a commit this check does not read.`,
     '',
     `## Page rules (${failures.length > 0 ? 'FAIL' : 'pass'})`,
     '',
+    ...(codeOnly
+      ? [
+          '- Code-only run: no new TypeSafe evidence or voice judgments. Any judgments below are from the local cache.',
+        ]
+      : []),
     ...pageRules,
     '',
     `## Numbers the record does not hold (${strangers.length})`,
@@ -442,6 +439,16 @@ async function main(): Promise<void> {
     ...unsure.map(line),
     ...(unjudged.length > 0 ? ['', `Unjudged sentences: ${unjudged.length}.`] : []),
     '',
+    '## Narrative review (required, not automated)',
+    '',
+    ...(narrative
+      ? [
+          'Read narrative.md in composed page order and record the editorial review in the writer report. A page-rule pass is not narrative approval.',
+          `Draft fingerprint: ${narrative.fingerprint}`,
+          ...narrative.longRuns,
+        ]
+      : ['Not checked: pass --page to produce the composed reading proof.']),
+    '',
     '## Voice',
     '',
     `${passages.length} passages against docs/editorial/voice.md.`,
@@ -457,8 +464,12 @@ async function main(): Promise<void> {
     )
   }
   console.log(join(out, 'verify.md'))
+  if (narrative)
+    console.log(
+      `${join(out, 'narrative.md')}: editorial review required; ${narrative.longRuns.length} visual pacing signals.`,
+    )
   console.log(
-    `Page rules: ${failures.length > 0 ? `FAIL (${failures.join('; ')})` : 'pass'}. ${sentences.length} sentences. Unknown numbers ${strangers.length}, contradicted ${contradicted.length}, not in the record ${unsupported.length}, unsure ${unsure.length}. Voice: refused ${voice.counts.refused}, listed ${voice.counts.listed}, generic ${voice.counts.generic}, inflated ${voice.counts.inflated}, formulaic ${voice.counts.formulaic}, punchlines ${voice.counts.punchlines} of ${voice.counts.paragraphs}. Jev: ${requests} requests, ${inputTokens} input tokens.`,
+    `Page rules: ${failures.length > 0 ? `FAIL (${failures.join('; ')})` : 'pass'}. ${sentences.length} sentences (${unjudged.length} unjudged). Unknown numbers ${strangers.length}, contradicted ${contradicted.length}, not in the record ${unsupported.length}, unsure ${unsure.length}. Voice: refused ${voice.counts.refused}, listed ${voice.counts.listed}, generic ${voice.counts.generic}, inflated ${voice.counts.inflated}, formulaic ${voice.counts.formulaic}, punchlines ${voice.counts.punchlines} of ${voice.counts.paragraphs}. Jev: ${requests} requests, ${inputTokens} input tokens.`,
   )
   if (failures.length > 0) process.exitCode = 1
 }

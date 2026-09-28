@@ -144,6 +144,8 @@ Do these in order, in one session on the feature's branch, **on the machine that
 
    If the writer runs where there is no browser (a subagent may not get the Chrome tools, and a Conductor chat has none unless Claude Code was started with them), it drafts everything else and says so. Take the shots from a session that has the browser, with the article-authoring skill, and hand it the ids.
 
+   The writer must also read the generated `narrative.md` in page order and complete [the narrative review](narrative.md). It marks visual breaks, lists section handoffs and flags long prose runs. Ask for the reader question, the ending's answer and each section's role, not just a passing count. Keep the article visual: figures carry technical detail, short prose explains the reasons and consequences.
+
 6. **Review, as a person.** In the admin, open the Lab Project, then the Lab Page in live preview.
    - Every number traces to the journal. An estimate says "estimate".
    - The copy reads like us: [voice.md](../editorial/voice.md). The Voice section of `verify.md` says what the agent kept and why.
