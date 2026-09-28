@@ -74,7 +74,11 @@ async function main(): Promise<void> {
   process.exit(1)
 }
 
-main().catch((err: unknown) => {
-  console.error(err)
-  process.exit(2)
-})
+// Exit explicitly: the booted Payload instance keeps handles open, so a pass
+// that only returns never ends the process and hangs the pre-push hook.
+main()
+  .then(() => process.exit(0))
+  .catch((err: unknown) => {
+    console.error(err)
+    process.exit(2)
+  })
