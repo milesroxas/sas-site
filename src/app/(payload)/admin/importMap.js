@@ -55,8 +55,8 @@ import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/component
 import { InboxNavBadge as InboxNavBadge_26f5323f2ed216f767c955478f81a680 } from '@/collections/Inquiries/components/InboxNavBadge'
 import { BlocksDrawerTabs as BlocksDrawerTabs_382fdb41e52232ddd723ecac128689ab } from '@/components/admin/BlocksDrawerTabs'
 import { AdminErrorBoundary as AdminErrorBoundary_e5a9e14bdbe97e70ba60697217fe7688 } from '@payloadcms/plugin-sentry/client'
-import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
+import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
@@ -117,6 +117,6 @@ export const importMap = {
   "@/collections/Inquiries/components/InboxNavBadge#InboxNavBadge": InboxNavBadge_26f5323f2ed216f767c955478f81a680,
   "@/components/admin/BlocksDrawerTabs#BlocksDrawerTabs": BlocksDrawerTabs_382fdb41e52232ddd723ecac128689ab,
   "@payloadcms/plugin-sentry/client#AdminErrorBoundary": AdminErrorBoundary_e5a9e14bdbe97e70ba60697217fe7688,
-  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
-  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
+  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
+  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24
 }

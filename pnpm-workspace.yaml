@@ -14,10 +14,12 @@ allowBuilds:
   # Downloads the platform ffmpeg binary used to extract video poster frames.
   ffmpeg-static: true
 
-# Single source of truth for the Sentry SDK version — referenced from
-# package.json and the override below via the catalog: protocol.
+# Single source of truth for versions that package.json and the overrides
+# below both need, referenced via the catalog: protocol.
 catalog:
   '@sentry/nextjs': ^10.65.0
+  # Exact pin: native libvips binary; follow the Payload template's pin.
+  sharp: 0.35.4
 
 overrides:
   # @payloadcms/plugin-sentry hard-depends on @sentry/nextjs@^9, which neither
@@ -25,6 +27,14 @@ overrides:
   # AdminErrorBoundary would capture into a second, uninitialized SDK. Force it
   # onto the app's v10 SDK (it only uses ErrorBoundary, which v10 exports).
   '@payloadcms/plugin-sentry>@sentry/nextjs': 'catalog:'
+  # One sharp for the whole tree, at the catalog pin. webreel still declares
+  # ^0.34, which carries the libvips and libheif advisories fixed in 0.35.4;
+  # it only uses png/resize/metadata/composite.
+  sharp: 'catalog:'
+  # drizzle-kit (a Payload db adapter dependency) loads configs through
+  # @esbuild-kit/core-utils, which pins esbuild 0.18 (GHSA-67mh-4wv8-2f99).
+  # It only calls the transform API; move it onto drizzle-kit's own esbuild line.
+  '@esbuild-kit/core-utils>esbuild': ^0.25.12
 
 patchedDependencies:
   '@payloadcms/drizzle': patches/@payloadcms__drizzle.patch

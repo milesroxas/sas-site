@@ -114,6 +114,7 @@ import * as migration_20260921_225556_story_beats_heading from './20260921_22555
 import * as migration_20260922_015446_story_beats_heading_auto from './20260922_015446_story_beats_heading_auto';
 import * as migration_20260922_020845_mcp_block_tools from './20260922_020845_mcp_block_tools';
 import * as migration_20260928_154117_inquiry_block_list from './20260928_154117_inquiry_block_list';
+import * as migration_20260928_170946_payload_3_90 from './20260928_170946_payload_3_90';
 
 export const migrations = [
   {
@@ -694,6 +695,11 @@ export const migrations = [
   {
     up: migration_20260928_154117_inquiry_block_list.up,
     down: migration_20260928_154117_inquiry_block_list.down,
-    name: '20260928_154117_inquiry_block_list'
+    name: '20260928_154117_inquiry_block_list',
+  },
+  {
+    up: migration_20260928_170946_payload_3_90.up,
+    down: migration_20260928_170946_payload_3_90.down,
+    name: '20260928_170946_payload_3_90'
   },
 ];

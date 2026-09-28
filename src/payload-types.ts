@@ -622,6 +622,7 @@ export interface Media {
    * Auto-generated from the first frame on video upload. Used before playback and as the admin thumbnail. Override anytime; required before a video can be public-approved.
    */
   poster?: (number | null) | Media;
+  _objectKey?: string | null;
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -1113,6 +1114,7 @@ export interface User {
   resetPasswordExpiration?: string | null;
   salt?: string | null;
   hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -9872,6 +9874,7 @@ export interface PayloadMcpApiKey {
   enableAPIKey?: boolean | null;
   apiKey?: string | null;
   apiKeyIndex?: string | null;
+  hasAPIKey?: boolean | null;
   collection: 'payload-mcp-api-keys';
 }
 /**
@@ -12581,6 +12584,7 @@ export interface MediaSelect<T extends boolean = true> {
   approvedChannels?: T;
   assetDate?: T;
   poster?: T;
+  _objectKey?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -12974,6 +12978,7 @@ export interface UsersSelect<T extends boolean = true> {
   resetPasswordExpiration?: T;
   salt?: T;
   hash?: T;
+  resetPasswordRequestedAt?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:
@@ -13539,6 +13544,7 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
   enableAPIKey?: T;
   apiKey?: T;
   apiKeyIndex?: T;
+  hasAPIKey?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -14987,7 +14993,15 @@ export interface TaskSchedulePublish {
           value: number | Testimonial;
         } | null);
     global?: ('home' | 'insights-index' | 'lab-index' | 'works-index') | null;
-    user?: (number | null) | User;
+    user?:
+      | ({
+          relationTo: 'users';
+          value: number | User;
+        } | null)
+      | ({
+          relationTo: 'payload-mcp-api-keys';
+          value: number | PayloadMcpApiKey;
+        } | null);
   };
   output?: unknown;
 }

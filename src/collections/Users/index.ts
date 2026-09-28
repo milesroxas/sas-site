@@ -11,6 +11,7 @@ export const Users: CollectionConfig = {
     create: authenticated,
     delete: authenticated,
     read: authenticated,
+    unlock: authenticated,
     update: authenticated,
   },
   admin: {
