@@ -56,9 +56,10 @@ A Lab Page reads as an editorial article: every heading and every passage sits o
 
 - **It reads inside `ARTICLE_READING_BUDGET`** (`src/blocks/shared/reading-time.ts`), counted the way the hero counts it: prose words, code listings left out. Over the ceiling, move detail into a figure or cut it. Do not split one piece into two to get under.
 - **Every Section carries a visual**: a chart, a diagram, a bespoke figure or media (`VISUAL_BLOCKS` in `scripts/lab-journal/verify.ts`). A code listing sits beside a visual and never stands in for one.
-- **A figure replaces prose.** A passage that walks through an order of events, a structure, a comparison or a set of numbers becomes a figure, and the beat keeps the line that says why it matters.
+- **A figure carries detail; prose carries the connections.** Use figures for sequences, structures and comparisons. Keep the reasons for a choice and its consequences in short paragraphs, so a reader skimming technical figures can still follow the argument. Do not narrate every arrow or reduce the bridge to a slogan.
 - **It speaks as its author**, in the first person ("Who is speaking" in `docs/editorial/voice.md`).
-- `pnpm lab:journal:verify` checks all four on a lab journal write-up and fails a draft that breaks one.
+- `pnpm lab:journal:verify` enforces the reading ceiling, a visual per Section and the author-name rule. It cannot prove that figures replace the right detail or that the story flows. For a journal write-up, follow `docs/lab-journal/narrative.md` and review the generated `narrative.md` in page order.
+- Plan the central question and section-to-section progression before picking blocks. CMS story sections classify copy; they are not a mandatory article outline. Keep every Section visual and the prose in short, connected passages.
 
 ### The rules
 

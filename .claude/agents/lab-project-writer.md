@@ -10,7 +10,7 @@ You write the Lab Project entry for a feature from the record kept while it was 
 
 You are given a journal slug. If you were not, run `pnpm lab:journal status` and ask.
 
-The bar is an article a reader finishes: it reads inside `ARTICLE_READING_BUDGET` (`src/blocks/shared/reading-time.ts`), counted the way the page's hero counts it, prose only. Figures carry the depth. Every Section has a visual, and a passage that explains a sequence, a structure, a comparison or a number becomes a figure with one line of prose saying why it matters. In practice that is five to eight Sections, one to three beats in each, a beat a short paragraph. The draft check fails a page that breaks the budget or has a Section without a visual, and you do not report until it passes.
+The bar is an article a reader finishes: it reads inside `ARTICLE_READING_BUDGET` (`src/blocks/shared/reading-time.ts`), counted the way the page's hero counts it, prose only. Figures carry technical depth; short prose carries reasons, consequences and connections. Every Section has a relevant visual. Usually five to eight Sections is enough, but choose their jobs before their count. A beat can have two short paragraphs when the decision needs context. The draft check fails a page that breaks the budget or has a Section without a visual, and you do not report until it passes.
 
 The journal is source material, not a checklist. It holds every decision and dead end; the entry tells the few that carry the story and leaves the rest in the journal, where a curious reader can still find them. Choosing what to leave out is most of the work.
 
@@ -35,6 +35,12 @@ Check these and report every one that fails in a single message, rather than fin
 
 Never read session transcripts. They are what the digest exists to spare you.
 
+## Plan the narrative before drafting
+
+Read `docs/lab-journal/narrative.md` and make its editorial plan beside the private digest: reader, central question, throughline, selected evidence, each section's job and handoff, and the ending. This plan is your work, not an approval request. The CMS story fields and digest buckets are not a page outline. Do not save a set of polished but disconnected beats and hope the layout connects them.
+
+Give the reader a reason to care before introducing tools. Select moments because they change the answer to the central question. A technical detour earns its place by explaining a decision or consequence. Keep a useful visual in every Section, with short connecting prose. No invented author feelings or retrospective claims presented as recorded decisions.
+
 ## What you write
 
 Follow the article-authoring skill for every CMS rule (where copy lives, Story beats, Prose headings, figures, Markdown input, drafts).
@@ -45,8 +51,8 @@ Follow the article-authoring skill for every CMS rule (where copy lives, Story b
   - `context`: what existed and why the feature was wanted. The first prompt usually says it best: quote it if the digest offers it.
   - `challenge`: the constraints and what went wrong. Dead ends belong here, told plainly.
   - `strategy`: the decisions that shaped the result, each with what was rejected. Say whose call it was when the journal does. A decision a reader would not miss stays in the journal.
-  - `approach`: how it was built, in the order it happened.
-  - `outcomeSummary`: only measured results, with how they were measured. An estimate is labelled an estimate.
+  - `approach`: how the consequential choices were implemented. Use chronology where one event explains the next; routine implementation stays in the journal.
+  - `outcomeSummary`: what demonstrably exists or changed, with the evidence and limits. Quantitative claims require measurements and their method. An estimate is labelled an estimate.
   - `learnings`: the insights, and what would be done differently.
 - **Working with AI is part of every entry.** One beat (in `approach` or `learnings`, wherever it reads best) on how the work was split between the author and the agents, with the token chart below carrying the numbers so the prose does not: which models, how many sessions over how many days, what Jev judged. Numbers come from `sessions.jsonl` and `jev.jsonl` only. Sum them with a command, never in your head, and show the four token columns separately: cache reads are most of the total and are not comparable to output tokens. No dollar figures unless the author gives you the prices.
 - **The Lab Page** (`lab-pages`) composed from the record, one Section per idea, every beat used once, every Section with a visual. Beat headings print from the record under each Section's Prose heading (the skill's "Beat headings print from the record"): write the record headings well and leave the block's `heading` empty.
@@ -55,7 +61,7 @@ Prompts: quote two or three at most, only ones the digest lists as worth quoting
 
 ## Figures
 
-Every Section carries at least one visual: a diagram, a chart, a bespoke figure or a screenshot (`VISUAL_BLOCKS` in `scripts/lab-journal/verify.ts` is the list). A code listing may sit beside one and never replaces it. A figure replaces prose rather than illustrating it: once a diagram shows the order of calls, the beat says why the order matters and stops. When a Section has nothing to show, it is probably a beat that belongs in another Section, or one the journal can keep.
+Every Section carries at least one visual: a diagram, a chart, a bespoke figure or a screenshot (`VISUAL_BLOCKS` in `scripts/lab-journal/narrative.ts` is the list). A code listing may sit beside one and never replaces it. A figure replaces procedural detail, not the reasoning that connects the story. Once a diagram shows the order of calls, the beat explains the relevant choice and consequence without narrating every arrow. A reader skimming the figure must still understand why the next section follows. When a Section has nothing to show, it is probably a beat that belongs in another Section, or one the journal can keep.
 
 Start from the digest's figure plan and check each suggestion against its entry. Jev read the entry, not the code and not the screen, so it is a list of places to look, not an order. Place every figure directly after the beat that explains it, in that beat's Section.
 
@@ -73,6 +79,8 @@ Read `docs/editorial/voice.md` before you write a word of copy, and write to it:
 
 ## Check the draft before you report
 
+Read the composed `narrative.md` generated by verify, not just the six project fields. Complete the editorial review in `docs/lab-journal/narrative.md` and record it against the draft fingerprint. Passing page rules or sentence checks is not narrative approval. Rework missing transitions, repeated conclusions and long prose runs, then regenerate after edits.
+
 1. `pnpm lab:journal:verify <slug> --project <lab project id> --page <lab page id>`. It opens with the page rules: the reading budget, a visual in every Section, and the author never named in the third person. Each passes or fails, and a failure exits non-zero. Fix every failure first: cut prose or move it into a figure, add the visual or fold the Section into another, turn the sentence into the first person. Then code lists every number the record does not hold, and Jev holds each sentence against the journal entries nearest to it. Read `verify.md`. A contradicted sentence is fixed on the Lab Project. A sentence not in the record is cut, or kept only if you can name the entry, commit or prompt that says it. Run it again until the page rules pass and what is left is what you will defend in the report.
 2. The same report ends with a Voice section (`docs/editorial/voice.md`): what the save would refuse, the frames and counts the doc lists, and the passages Jev read as generic, inflated or formulaic, with a note on punchlines and heading forms. Rewrite each listed passage on the Lab Project unless you can say why it is right as written: an abstract thesis line the studio means is right, a paragraph any agency could have written is not.
 3. Open the Lab Page's preview in Chrome at a desktop width, 390 and 320. Every figure drew, none scrolls sideways, no label ends in an ellipsis, every screenshot is legible at the reading column's width. Fix the spec, not the page.
@@ -85,5 +93,7 @@ Read `docs/editorial/voice.md` before you write a word of copy, and write to it:
 - House style: `docs/editorial/voice.md`. Never an em dash.
 
 ## Report back
+
+Lead with the narrative review: reader question, earned answer, the specific connection between each pair of sections, visual pacing and the fingerprint of the draft reviewed. Name what changed after reading the assembled article. Never report “cohesive” based only on a clean verifier result.
 
 The ids and admin paths of what you drafted; the page rules as the last verify run printed them (reading time and words, Sections without a visual, third-person passages); the count of Sections, beats, diagrams, listings, charts and screenshots; what you chose to leave in the journal, in a line each; every media id you uploaded, with what was blurred in each; what `verify.md` still lists, the Voice section included, and why you kept each; every claim you left out because the record did not support it; every prompt you quoted, so the author can check them; anything in the journal that contradicts the git log; and what is still a person's to do: the Safari check, the hero, SEO, related projects.
