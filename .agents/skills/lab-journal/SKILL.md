@@ -24,7 +24,7 @@ Never copy token counts or prompts into an entry by hand: the hooks have them ex
 ## Commands
 
 ```sh
-pnpm lab:journal start <slug> --title "<Title>"   # new journal, live on the current branch
+pnpm lab:journal start <slug> --title "<Title>"   # new journal, live on the current branch; --author "<Name>" if not git's user.name
 pnpm lab:journal log --kind <kind> --title "<T>"  # append an entry, body on stdin (below)
 pnpm lab:journal resume [slug]                    # live again, and on this branch too
 pnpm lab:journal status                           # entries, sessions, token totals
@@ -34,7 +34,7 @@ pnpm lab:journal window --from <iso> --to <iso>   # this journal's share of the 
 pnpm lab:journal shot <file> --what "<what>"      # file a screenshot with the journal, outside the repository
 pnpm lab:journal wrap [slug]                      # the feature is done
 pnpm lab:journal:digest [slug]                    # Jev reads the raw record into a brief and a figure plan
-pnpm lab:journal:verify [slug] --project <id>     # code and Jev hold the Lab Project draft against the record
+pnpm lab:journal:verify [slug] --project <id> --page <id>  # page rules, then code and Jev hold the draft against the record
 ```
 
 A journal is live only on the branches it was started or resumed on, so work on another branch is never captured by accident. It is never live on `main`: `start` and `resume` refuse there. If the user asks for a journal on `main`, have them branch first.

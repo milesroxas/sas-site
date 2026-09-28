@@ -52,6 +52,14 @@ Every figure block also takes `caption`, `dataSource` (`label`, `href`, https on
 
 A Lab Page reads as an editorial article: every heading and every passage sits on the same reading column (columns 3-6) from the first section to the last. The copy never steps sideways between blocks. These are the defaults; leave them only when the user names a different block, layout or surface in this conversation.
 
+### Length, visuals and voice
+
+- **It reads inside `ARTICLE_READING_BUDGET`** (`src/blocks/shared/reading-time.ts`), counted the way the hero counts it: prose words, code listings left out. Over the ceiling, move detail into a figure or cut it. Do not split one piece into two to get under.
+- **Every Section carries a visual**: a chart, a diagram, a bespoke figure or media (`VISUAL_BLOCKS` in `scripts/lab-journal/verify.ts`). A code listing sits beside a visual and never stands in for one.
+- **A figure replaces prose.** A passage that walks through an order of events, a structure, a comparison or a set of numbers becomes a figure, and the beat keeps the line that says why it matters.
+- **It speaks as its author**, in the first person ("Who is speaking" in `docs/editorial/voice.md`).
+- `pnpm lab:journal:verify` checks all four on a lab journal write-up and fails a draft that breaks one.
+
 ### The rules
 
 - **Narrative copy is always a `storyBeats` block.** It prints the Lab Project's canonical story on the reading column and has no layout of its own to vary. Leave `variant` and `theme` unset. Its optional `heading` is a subheading inside a Section, not a replacement for the Prose heading (see [The beats](#the-beats)).
@@ -70,7 +78,7 @@ Find the `lab-projects` record (the page's `labProject` id). Its six sections ar
 
 Separate the page into Sections a person can scan in the admin, in the order the story is read:
 
-- One Section per story part. A long part (usually `approach`) splits into several Sections, one per idea: its heading, its beats, and the figures and code that belong to those beats. A figure never sits in a different Section from the beat that explains it.
+- One Section per story part. A long part (usually `approach`) splits into several Sections, one per idea: its heading, its beats, and the figures and code that belong to those beats. A figure never sits in a different Section from the beat that explains it. A Section with no visual to carry is usually a beat that belongs in the Section beside it.
 - Give every Section a `blockName` that says what it holds ("Try two: pinned releases"). It is the label editors see on the collapsed row.
 - Inside a Section the order is always: Prose heading, then beats, each followed by its own figures or code.
 - Use every beat on the record exactly once, in an order that reads. If you leave a beat out, tell the user which one and why.

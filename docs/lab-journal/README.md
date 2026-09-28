@@ -128,15 +128,17 @@ Do these in order, in one session on the feature's branch, **on the machine that
 
    It checks its setup first (MCP, upload target, browser) and says what is missing. Then it reads the journal, the token rows and the digest (never the transcripts), and drafts over the `sas-cms` MCP:
    - the **Lab Project** (`lab-projects`): the six story sections, each an overview and keyed story beats, including how the work was split between people and agents, with models and token counts from `sessions.jsonl`;
-   - the **Lab Page** (`lab-pages`), which requires that Lab Project and is composed from its beats, one Section per idea, to the bar of the published pages: a diagram for each mechanism, code listings copied from the committed files, charts from measured numbers only (always tokens per session when there are two or more), and screenshots beside the beats that describe a screen.
+   - the **Lab Page** (`lab-pages`), which requires that Lab Project and is composed from its beats, one Section per idea: a diagram for each mechanism, code listings copied from the committed files, charts from measured numbers only (always tokens per session when there are two or more), and screenshots beside the beats that describe a screen.
+
+   Both are told in your first person, from the journal's `author` in `meta.json`. The page reads in five to ten minutes and every Section carries a visual: the journal is source material to choose from, and figures carry the depth the prose leaves out.
 
    Before it reports, it checks its own draft:
 
    ```sh
-   pnpm lab:journal:verify <slug> --project <lab project id>
+   pnpm lab:journal:verify <slug> --project <lab project id> --page <lab page id>
    ```
 
-   Code lists every number the record does not hold. Jev then holds each sentence against the journal entries nearest to it: supported, contradicted, or not in the record. The report ends with a Voice section: the draft against [the house voice](../editorial/voice.md), em dashes and banned phrases first (the server refuses those on an agent's save), then the passages Jev read as generic, inflated or formulaic. It costs about a cent for a long draft and writes `verify.md` beside the digest. You can run it yourself after any edit, and `pnpm editorial:voice --project <id>` runs the voice part alone on any Lab Project, or any other document with `--collection <slug> --id <id>`.
+   It opens with the page rules, which pass or fail: the reading budget (`ARTICLE_READING_BUDGET`, prose only), a visual in every Section, and the author never named in the third person. A failure exits non-zero, and the writer does not report until they pass. Then code lists every number the record does not hold. Jev then holds each sentence against the journal entries nearest to it: supported, contradicted, or not in the record. The report ends with a Voice section: the draft against [the house voice](../editorial/voice.md), em dashes and banned phrases first (the server refuses those on an agent's save), then the passages Jev read as generic, inflated or formulaic. It costs about a cent for a long draft and writes `verify.md` beside the digest. You can run it yourself after any edit, and `pnpm editorial:voice --project <id>` runs the voice part alone on any Lab Project, or any other document with `--collection <slug> --id <id>`.
 
    Everything is saved as a draft. It reports the ids, the figure counts, every media id and what was blurred, every prompt it quoted, what the check still lists, and every claim it left out because the record did not support it.
 
