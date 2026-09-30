@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
+import type { BandTheme } from '@/blocks/shared/band-theme'
 import { BlockGrid } from '@/blocks/shared/grid'
-import { Section, type SectionTheme } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { FigureFrame, type FigureFrameProps } from '@/features/figures/ui/figure-frame'
 
@@ -20,7 +21,7 @@ export const FigureShell = ({
 }: {
   bare?: boolean
   children: ReactNode
-  theme?: SectionTheme | null
+  theme?: BandTheme | null
 }) => (
   <Section bare={bare} theme={theme}>
     <Container>

@@ -114,7 +114,7 @@ export function ContentsButton() {
   const lenis = useLenis()
   const sheet = useIsMobile()
 
-  const { entries, current, visible, overDark } = useContentsTracking(anchorRef, ringRef)
+  const { entries, current, visible, ground } = useContentsTracking(anchorRef, ringRef)
   const [open, setOpen] = useState(false)
   const [Panel, warmPanel] = useContentsPanel()
   const [arrival, setArrival] = useState<'pending' | 'extended' | 'done'>('pending')
@@ -186,7 +186,7 @@ export function ContentsButton() {
       data-arrival={extended ? 'extended' : undefined}
       data-open={open}
       // The band under the button decides its surface, as it does the bars'.
-      data-theme={overDark ? 'dark' : undefined}
+      data-theme={ground}
       data-visible={shown}
       ref={anchorRef}
     >

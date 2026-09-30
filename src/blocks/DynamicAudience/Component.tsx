@@ -9,7 +9,7 @@ import type {
   Media as MediaDoc,
 } from '@/payload-types'
 import { useRevealSwap } from '@/shared/ui/scroll-reveal'
-import { Section, type SectionTheme } from '../shared/section'
+import { Section } from '../shared/section'
 
 export const DynamicAudienceBlock: React.FC<DynamicAudienceBlockProps> = ({
   heading,
@@ -27,7 +27,7 @@ export const DynamicAudienceBlock: React.FC<DynamicAudienceBlockProps> = ({
   const media = typeof current.media === 'object' ? (current.media as MediaDoc) : null
 
   return (
-    <Section theme={(theme as SectionTheme | null) ?? 'light'}>
+    <Section theme={theme}>
       <Container width="default" className="flex flex-col gap-8 md:gap-16 lg:gap-24" ref={rootRef}>
         <HeadingDropdown
           activeIndex={active}

@@ -6,9 +6,11 @@ import * as RechartsPrimitive from 'recharts'
 
 import { cn } from '@/utilities/ui'
 
-// Format: { THEME_NAME: CSS_SELECTOR }. The site themes on `html[data-theme]`
-// (styles/shadcn-theme.css), not shadcn's default `.dark` class.
-const THEMES = { light: '', dark: '[data-theme="dark"]' } as const
+// A per-theme color is one `light-dark()` pair rather than shadcn's stock
+// rule per theme selector: every palette scope declares its `color-scheme`
+// (globals.css), so the pair follows the ground the chart sits on, including
+// an inverted band, with no polarity selector restated here.
+type ChartTheme = 'light' | 'dark'
 
 const INITIAL_DIMENSION = { width: 320, height: 200 } as const
 type TooltipNameType = number | string
@@ -18,10 +20,7 @@ export type ChartConfig = Record<
   {
     label?: React.ReactNode
     icon?: React.ComponentType
-  } & (
-    | { color?: string; theme?: never }
-    | { color?: never; theme: Record<keyof typeof THEMES, string> }
-  )
+  } & ({ color?: string; theme?: never } | { color?: never; theme: Record<ChartTheme, string> })
 >
 
 type ChartContextProps = {
@@ -89,20 +88,18 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     <style
       // biome-ignore lint/security/noDangerouslySetInnerHtml: a scoped <style> is how shadcn themes a chart. `config` is code-owned: keys and colors are written by a component author, never read from CMS content (the figures feature maps authored series onto fixed slot keys for this reason).
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
+        __html: `
+[data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ?? itemConfig.color
+    const color = itemConfig.theme
+      ? `light-dark(${itemConfig.theme.light}, ${itemConfig.theme.dark})`
+      : itemConfig.color
     return color ? `  --color-${key}: ${color};` : null
   })
   .join('\n')}
 }
 `,
-          )
-          .join('\n'),
       }}
     />
   )

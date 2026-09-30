@@ -1,6 +1,6 @@
 import { act, cleanup, render } from '@testing-library/react'
 import { useRef } from 'react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useGroundSurface } from './hooks'
 
 const Probe = () => {
@@ -20,9 +20,30 @@ const setSiteTheme = async (theme: 'dark' | 'light') => {
   })
 }
 
+/**
+ * jsdom does not run the site stylesheet, so stand in for the scheme it
+ * resolves (globals.css palettes, the `dark` variant): the nearest pin
+ * decides, and an inverted band is the opposite of the document theme.
+ */
+const resolvedScheme = (element: Element) => {
+  const scope = element.closest('[data-theme], .band-inverted')
+  if (!scope) return 'light'
+  if (scope.classList.contains('band-inverted')) {
+    return document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+  }
+  return scope.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'
+}
+
 describe('useGroundSurface', () => {
+  beforeEach(() => {
+    vi.spyOn(window, 'getComputedStyle').mockImplementation(
+      (element) => ({ colorScheme: resolvedScheme(element) }) as CSSStyleDeclaration,
+    )
+  })
+
   afterEach(() => {
     cleanup()
+    vi.restoreAllMocks()
     document.documentElement.removeAttribute('data-theme')
   })
 
@@ -51,5 +72,17 @@ describe('useGroundSurface', () => {
     await setSiteTheme('dark')
     await setSiteTheme('light')
     expect(getByTestId('probe').textContent).toBe('dark')
+  })
+
+  it('flips an inverted band against the site theme', async () => {
+    await setSiteTheme('light')
+    const { getByTestId } = render(
+      <section className="band-inverted">
+        <Probe />
+      </section>,
+    )
+    expect(getByTestId('probe').textContent).toBe('dark')
+    await setSiteTheme('dark')
+    expect(getByTestId('probe').textContent).toBe('light')
   })
 })

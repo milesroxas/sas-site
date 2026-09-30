@@ -7,9 +7,58 @@
    the `--background`-style tokens from its own source (the site palette or
    Payload's `--theme-*` scale), and this map only points utilities at them. */
 
-/* Matches the themed root element itself as well as descendants
-   (Tailwind v4 data-attribute dark-mode form). */
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* Polarity: the one statement of which elements sit on a dark ground. The
+   `dark:` utilities, the site palette (globals.css `palette-dark`) and every
+   CSS rule that flips with the ground (`@variant dark { ... }`) read it, so
+   no other selector restates the model.
+
+   Two kinds of scope decide polarity:
+
+   - Absolute pins: `[data-theme="light" | "dark"]`. `<html>` carries the
+     visitor's preference (InitTheme / ThemeToggle); heroes, the fixed bars,
+     visual frames and demo windows pin their own subtree. The always-dark
+     panel `[data-band="dark"]` (code block, index banner) is a dark pin with
+     a deeper ground of its own (globals.css).
+   - The inverted band: `.band-inverted` (blocks/shared/section.tsx) is the
+     opposite of the document theme, so it is dark on a light visit and
+     light on a dark one. It is a page-level section, so it resolves against
+     `<html>`; an unstamped root reads as light, matching the palette.
+
+   An element is dark when its nearest scope is dark. CSS has no "nearest
+   ancestor", so the rule is spelled out to three levels, which covers every
+   nesting the site produces (a dark pin inside a light scope inside a dark
+   one, e.g. a visual frame pinned dark in an inverted band on a dark visit):
+
+     in a dark scope, and not in a light scope inside a dark scope, or
+     in a dark scope inside a light scope inside a dark scope.
+
+   Each step is a descendant chain (`D L *`), never a nested `:is(L *)`: a
+   compound inside `:is()` matches on its own, so `:is(L *)` would find any
+   light ancestor at all, including a light `<html>` above the band.
+
+   `:where()` keeps the variant at zero added specificity, as the stock
+   Tailwind form does. */
+@custom-variant dark (
+  &:where(
+    :is(
+      :is([data-theme="dark"], [data-band="dark"], :root:not([data-theme="dark"]) .band-inverted),
+      :is([data-theme="dark"], [data-band="dark"], :root:not([data-theme="dark"]) .band-inverted) *
+    ):not(
+      :is([data-theme="dark"], [data-band="dark"], :root:not([data-theme="dark"]) .band-inverted)
+        :is([data-theme="light"], :root[data-theme="dark"] .band-inverted),
+      :is([data-theme="dark"], [data-band="dark"], :root:not([data-theme="dark"]) .band-inverted)
+        :is([data-theme="light"], :root[data-theme="dark"] .band-inverted)
+        *
+    ),
+    :is([data-theme="dark"], [data-band="dark"], :root:not([data-theme="dark"]) .band-inverted)
+      :is([data-theme="light"], :root[data-theme="dark"] .band-inverted)
+      :is([data-theme="dark"], [data-band="dark"], :root:not([data-theme="dark"]) .band-inverted),
+    :is([data-theme="dark"], [data-band="dark"], :root:not([data-theme="dark"]) .band-inverted)
+      :is([data-theme="light"], :root[data-theme="dark"] .band-inverted)
+      :is([data-theme="dark"], [data-band="dark"], :root:not([data-theme="dark"]) .band-inverted)
+      *
+  )
+);
 
 /* Custom variants */
 @custom-variant data-open {
@@ -118,6 +167,20 @@
   --color-warning: var(--warning);
   --color-error: var(--error);
   --color-active: var(--active);
+  --color-scrim: var(--scrim);
+  --color-scrim-foreground: var(--scrim-foreground);
+}
+
+/* Scrim: the dark wash laid over the page or over imagery (modal overlays,
+   the gradient under text set on a photo, glass plates on hero media) and
+   the ink set on it. Polarity-independent on purpose: a wash over media stays
+   dark with light ink in both site themes and inside an inverted band, so it
+   is stated once here rather than in either palette, and both Tailwind
+   entries (site and admin) read the same pair. Use the opacity modifier for
+   strength (`bg-scrim/80`, `to-scrim/80`, `text-scrim-foreground/70`). */
+:root {
+  --scrim: oklch(0 0 0);
+  --scrim-foreground: oklch(1 0 0);
 }
 
 @theme {

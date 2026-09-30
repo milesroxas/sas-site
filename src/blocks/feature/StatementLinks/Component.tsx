@@ -1,5 +1,6 @@
 import type React from 'react'
-import { BAND_SPACING, sectionThemeClass } from '@/blocks/shared/section'
+import { sectionThemeClass } from '@/blocks/shared/band-theme'
+import { BAND_SPACING } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { CMSLink } from '@/components/Link'
 // Payload website-template pattern: RichText renders embedded blocks, blocks render rich text

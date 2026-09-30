@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { mediaFixture, paragraph, richText, text, videoFixture } from '@/blocks/fixtures'
-import { Section, type SectionTheme } from '@/blocks/shared/section'
+import type { BandTheme } from '@/blocks/shared/band-theme'
+import { Section } from '@/blocks/shared/section'
 import type { Media as MediaDoc } from '@/payload-types'
 import { MediaShowcaseGrid } from './media-showcase-grid'
 
@@ -41,13 +42,13 @@ const MediaShowcasePreview = ({
   media,
   showCaptions = true,
   showCredits = true,
-  theme = 'light',
+  theme = 'default',
 }: {
   layout?: string | null
   media: MediaDoc[]
   showCaptions?: boolean | null
   showCredits?: boolean | null
-  theme?: SectionTheme | null
+  theme?: BandTheme | null
 }) => (
   <Section spacing="loose" theme={theme}>
     <div className="container mx-auto">
@@ -79,7 +80,7 @@ const meta = {
     media,
     showCaptions: true,
     showCredits: true,
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof MediaShowcasePreview>
 
@@ -121,8 +122,8 @@ export const WithoutCredits: Story = {
   args: { showCredits: false },
 }
 
-export const Dark: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }
 
 export const Brand: Story = {

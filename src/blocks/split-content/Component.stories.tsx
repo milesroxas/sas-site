@@ -34,7 +34,7 @@ const meta = {
     media: mediaFixture,
     body,
     imagePosition: 'right',
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof SplitContentNarrowBlock>
 
@@ -56,8 +56,8 @@ export const WithHeading: Story = {
   args: { eyebrow: 'About', heading: 'A branding agency for complex offerings' },
 }
 
-export const Dark: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }
 
 /** Everything the content-column editor offers, in the narrow column: the Actions row wraps. */

@@ -58,7 +58,7 @@ const meta = {
     layout: 'side',
     markSize: 'medium',
     items,
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof InsightListBlock>
 
@@ -103,6 +103,6 @@ export const FiveInsights: Story = {
 }
 
 /** The mark takes the band's ink, so one upload works on every surface. */
-export const Dark: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }

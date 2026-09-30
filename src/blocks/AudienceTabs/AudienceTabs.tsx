@@ -8,8 +8,7 @@ import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import type { AudienceTabsBlock as AudienceTabsBlockData } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import type { RowWithVisual } from '../shared/row-visuals'
-import { Section, type SectionTheme } from '../shared/section'
-import { blockSurface } from '../shared/visual-surface'
+import { Section } from '../shared/section'
 import { useAudienceTabsMotion } from './use-audience-tabs-motion'
 
 /** A tab after the adapter resolved its visual slot. */
@@ -99,12 +98,9 @@ export const AudienceTabs: React.FC<AudienceTabsProps> = ({ heading, tabs, theme
 
   const current = panels[textIndex] ?? panels[0]
   const visual = panels[active]?.visual ?? null
-  // The block paints its own band, never bare: a dark band pins the ground.
-  const bandTheme = (theme as SectionTheme | null) ?? 'dark'
-  const surface = blockSurface(bandTheme, false)
 
   return (
-    <Section spacing="loose" theme={bandTheme}>
+    <Section spacing="loose" theme={theme}>
       <Container
         width="default"
         className="flex flex-col items-center gap-10 md:gap-16"
@@ -212,7 +208,6 @@ export const AudienceTabs: React.FC<AudienceTabsProps> = ({ heading, tabs, theme
                   imgClassName="object-cover"
                   placement="card"
                   size={MEDIA_SIZES}
-                  surface={surface}
                   visual={prevVisual}
                 />
               </div>
@@ -228,7 +223,6 @@ export const AudienceTabs: React.FC<AudienceTabsProps> = ({ heading, tabs, theme
                   key={panels[active]?.id ?? active}
                   placement="block"
                   size={MEDIA_SIZES}
-                  surface={surface}
                   visual={visual}
                 />
               ) : null}

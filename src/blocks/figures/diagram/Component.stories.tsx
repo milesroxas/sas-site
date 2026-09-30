@@ -60,9 +60,9 @@ export const Timeline: Story = { args: figure('studioTimeline') }
 /** At the reading column's width a left-to-right flow swaps to its top-down twin. */
 export const NarrowFrame: Story = { args: { width: 'text' } }
 
-export const OnDarkBand: Story = {
+export const OnInvertedBand: Story = {
   render: (args, { loaded }) => (
-    <FigureShell theme="dark">
+    <FigureShell theme="inverted">
       <DiagramFigure {...args} layout={loaded.layout} />
     </FigureShell>
   ),

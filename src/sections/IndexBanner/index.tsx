@@ -6,7 +6,6 @@ import gsap from 'gsap'
 import Link from 'next/link'
 import type React from 'react'
 import { useId, useRef, useState } from 'react'
-import { themeClasses } from '@/blocks/shared/section'
 import { Button } from '@/components/ui/button'
 import { Visual } from '@/components/Visual'
 import { cursorBoundary } from '@/features/cursor'
@@ -225,9 +224,12 @@ export const IndexBanner: React.FC<Props> = ({
       className={cn(
         'relative isolate overflow-clip rounded-xl',
         'flex flex-col gap-10 px-6 py-8 md:flex-row md:items-center md:justify-between md:gap-16 md:px-12 md:py-10',
-        themeClasses.dark,
+        'bg-background text-foreground',
         className,
       )}
+      // The always-dark panel (globals.css): dark in both site themes, on its
+      // own deeper ground.
+      data-band="dark"
       data-index-banner
       // The slab answers hover itself (the sliders tune), and the listing's
       // first row can sit within its view radius once the strip drops out.

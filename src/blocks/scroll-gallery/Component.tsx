@@ -1,5 +1,5 @@
 import type React from 'react'
-import { Section, type SectionTheme } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import type {
   Media as MediaDoc,
   ScrollGalleryBlock as ScrollGalleryBlockProps,
@@ -47,7 +47,7 @@ export const ScrollGalleryBlock: React.FC<ScrollGalleryBlockProps> = ({
   return (
     // The pinned client shell owns viewport sizing and its own containers, so
     // the section band carries no vertical padding of its own.
-    <Section spacing="none" theme={(theme as SectionTheme | null) ?? 'dark'}>
+    <Section spacing="none" theme={theme}>
       <div id={id ? `block-${id}` : undefined}>
         <ScrollGalleryClient entries={entries} eyebrow={eyebrow} heading={heading} />
       </div>

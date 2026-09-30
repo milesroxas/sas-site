@@ -11,7 +11,7 @@ const meta = {
   args: {
     heading: 'Work by industry',
     panels,
-    theme: 'dark',
+    theme: 'inverted',
   },
 } satisfies Meta<typeof IndustryWorkClient>
 
@@ -22,7 +22,7 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {}
 
 export const LightTheme: Story = {
-  args: { theme: 'light' },
+  args: { theme: 'default' },
 }
 
 export const SinglePanel: Story = {

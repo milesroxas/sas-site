@@ -31,7 +31,7 @@ const meta = {
       blockType: 'caseStudyStorySection',
       source: 'context',
       layout: 'text-only',
-      theme: 'light',
+      theme: 'default',
       width: 'standard',
     },
     content,
@@ -52,7 +52,7 @@ export const WithEyebrow: Story = {
       source: 'challenge',
       eyebrow: 'The problem',
       layout: 'text-only',
-      theme: 'light',
+      theme: 'default',
       width: 'narrow',
     },
     heading: 'Four companies wearing one name',
@@ -66,7 +66,7 @@ export const MediaRight: Story = {
       source: 'context',
       layout: 'text-left',
       media: mediaFixture,
-      theme: 'light',
+      theme: 'default',
       width: 'wide',
     },
   },
@@ -79,20 +79,20 @@ export const MediaLeft: Story = {
       source: 'context',
       layout: 'text-right',
       media: videoFixture,
-      theme: 'light',
+      theme: 'default',
       width: 'wide',
     },
   },
 }
 
-export const Dark: Story = {
+export const Inverted: Story = {
   args: {
     block: {
       blockType: 'caseStudyStorySection',
       source: 'context',
       layout: 'text-left',
       media: mediaFixture,
-      theme: 'dark',
+      theme: 'inverted',
       width: 'wide',
     },
   },

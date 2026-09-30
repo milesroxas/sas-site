@@ -79,6 +79,6 @@ export const IndustryWork: Block = {
         },
       ],
     },
-    { ...themeField(), defaultValue: 'dark' },
+    themeField({ defaultValue: 'inverted' }),
   ],
 }

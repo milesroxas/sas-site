@@ -58,8 +58,8 @@ export const FullBleedSixteenNine: Story = {
   parameters: { layout: 'fullscreen' },
 }
 
-export const Dark: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }
 
 export const Brand: Story = {

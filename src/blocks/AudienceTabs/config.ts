@@ -58,6 +58,6 @@ export const AudienceTabs: Block = {
         }),
       ],
     },
-    { ...themeField(), defaultValue: 'dark' },
+    themeField({ defaultValue: 'inverted' }),
   ],
 }

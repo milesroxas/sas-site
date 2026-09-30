@@ -3,7 +3,8 @@
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { type ReactNode, useRef } from 'react'
-import { fullViewportSectionClassName, themeClasses } from '@/blocks/shared/section'
+import { themeClasses } from '@/blocks/shared/band-theme'
+import { fullViewportSectionClassName } from '@/blocks/shared/section'
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 import {
   observeRevealGate,
@@ -125,7 +126,7 @@ export function WorkIntroSection({ children }: { children: ReactNode }) {
   )
 
   return (
-    <section className={cn(fullViewportSectionClassName, themeClasses.light)} ref={rootRef}>
+    <section className={cn(fullViewportSectionClassName, themeClasses.default)} ref={rootRef}>
       {children}
     </section>
   )

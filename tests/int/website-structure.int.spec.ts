@@ -269,7 +269,7 @@ describe.sequential('website IA surfaces', () => {
           {
             blockType: 'caseStudyTransition',
             heading: 'Website transition',
-            theme: 'light',
+            theme: 'default',
             layout: 'centered',
           },
         ],

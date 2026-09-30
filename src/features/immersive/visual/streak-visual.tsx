@@ -39,9 +39,10 @@ export type StreakVisualProps = {
   descriptor: StreakVisualDescriptor
   placement: VisualPlacement
   /**
-   * The ground the field sits on. `auto` follows the visitor's site theme
-   * (page-level surfaces); a Section band passes its own polarity. A face the
-   * editor pinned (`descriptor.surface`) wins over both.
+   * The ground the field sits on. `auto` (every block) reads the ground the
+   * slot lands on: the visitor's theme, or the pin or inverted band around
+   * it. A caller that knows a fixed ground passes it; a face the editor
+   * pinned (`descriptor.surface`) wins over both.
    */
   surface?: VisualSurface
   /** The visual is the page's first-paint media: preload its poster. */

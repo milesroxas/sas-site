@@ -4,14 +4,10 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import Link from 'next/link'
 import { type MouseEvent, useEffect, useRef, useState, ViewTransition } from 'react'
+import { type BandTheme, sectionThemeClass } from '@/blocks/shared/band-theme'
 import { HeadingDropdown } from '@/blocks/shared/heading-dropdown'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
-import {
-  BAND_SPACING,
-  fullViewportSectionClassName,
-  type SectionTheme,
-  themeClasses,
-} from '@/blocks/shared/section'
+import { BAND_SPACING, fullViewportSectionClassName } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import { Media } from '@/components/Media'
 import { Visual } from '@/components/Visual'
@@ -326,7 +322,7 @@ export const IndustryWorkClient = ({
 }: {
   heading: string
   panels: IndustryWorkPanel[]
-  theme?: string | null
+  theme?: BandTheme | null
 }) => {
   const { active, armCanvas, canvasHot, canvasMounted, onSelect, prevMedia, rootRef, textIndex } =
     useIndustrySwap(panels)
@@ -363,11 +359,7 @@ export const IndustryWorkClient = ({
       mediaOffset={INDUSTRY_WORK_MEDIA_OFFSET}
       variant="underMedia"
       onComplete={armCanvas}
-      className={cn(
-        fullViewportSectionClassName,
-        BAND_SPACING.loose,
-        themeClasses[(theme as SectionTheme | null) || 'dark'],
-      )}
+      className={cn(fullViewportSectionClassName, BAND_SPACING.loose, sectionThemeClass(theme))}
     >
       <Container width="default" className="flex flex-col gap-8 md:gap-16 lg:gap-32" ref={rootRef}>
         <HeadingDropdown

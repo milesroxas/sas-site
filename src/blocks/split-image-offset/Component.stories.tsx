@@ -22,7 +22,7 @@ const meta = {
     largeMedia: mediaFixture,
     smallMedia: mediaFixture,
     captionPosition: 'right',
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof SplitImageOffsetBlock>
 
@@ -36,6 +36,6 @@ export const CaptionLeft: Story = {
   args: { captionPosition: 'left' },
 }
 
-export const Dark: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }

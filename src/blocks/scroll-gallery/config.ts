@@ -80,6 +80,6 @@ export const ScrollGallery: Block = {
         },
       ],
     },
-    { ...themeField(), defaultValue: 'dark' },
+    themeField({ defaultValue: 'inverted' }),
   ],
 }

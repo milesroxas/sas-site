@@ -29,7 +29,7 @@ const meta = {
     body,
     width: 'full-width',
     contentPosition: 'left',
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof FullMediaBlock>
 
@@ -47,8 +47,8 @@ export const Video: Story = {
   args: { media: videoFixture },
 }
 
-export const Dark: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }
 
 export const Contained: Story = {
@@ -84,12 +84,12 @@ export const StreakField: Story = {
   },
 }
 
-/** The same field on a dark band: the slot reads the band's ground. */
-export const StreakFieldDark: Story = {
+/** The same field on an inverted band: the slot reads the band's ground. */
+export const StreakFieldInverted: Story = {
   args: {
     media: null,
     visualType: 'streakField',
     shader: { preset: 'signal-v1', seed: 5, pointerInteraction: true },
-    theme: 'dark',
+    theme: 'inverted',
   },
 }

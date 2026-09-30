@@ -115,6 +115,7 @@ import * as migration_20260922_015446_story_beats_heading_auto from './20260922_
 import * as migration_20260922_020845_mcp_block_tools from './20260922_020845_mcp_block_tools';
 import * as migration_20260928_154117_inquiry_block_list from './20260928_154117_inquiry_block_list';
 import * as migration_20260928_170946_payload_3_90 from './20260928_170946_payload_3_90';
+import * as migration_20260930_204036_band_theme_roles from './20260930_204036_band_theme_roles';
 
 export const migrations = [
   {
@@ -700,6 +701,11 @@ export const migrations = [
   {
     up: migration_20260928_170946_payload_3_90.up,
     down: migration_20260928_170946_payload_3_90.down,
-    name: '20260928_170946_payload_3_90'
+    name: '20260928_170946_payload_3_90',
+  },
+  {
+    up: migration_20260930_204036_band_theme_roles.up,
+    down: migration_20260930_204036_band_theme_roles.down,
+    name: '20260930_204036_band_theme_roles'
   },
 ];

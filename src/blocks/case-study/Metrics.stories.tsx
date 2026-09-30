@@ -19,7 +19,7 @@ const meta = {
       blockType: 'caseStudyMetrics',
       layout: 'grid',
       source: 'all-public',
-      theme: 'light',
+      theme: 'default',
     },
     metrics: publicMetrics,
   },
@@ -38,7 +38,7 @@ export const Row: Story = {
       blockType: 'caseStudyMetrics',
       layout: 'row',
       source: 'all-public',
-      theme: 'light',
+      theme: 'default',
     },
   },
 }
@@ -53,7 +53,7 @@ export const WithIntroduction: Story = {
       ),
       layout: 'grid',
       source: 'all-public',
-      theme: 'light',
+      theme: 'default',
     },
   },
 }
@@ -65,13 +65,13 @@ export const FeaturedOnly: Story = {
   },
 }
 
-export const Dark: Story = {
+export const Inverted: Story = {
   args: {
     block: {
       blockType: 'caseStudyMetrics',
       layout: 'grid',
       source: 'all-public',
-      theme: 'dark',
+      theme: 'inverted',
     },
   },
 }

@@ -3,6 +3,7 @@
 import { type RefObject, useEffect, useState, useSyncExternalStore } from 'react'
 import { useSiteTheme } from '@/hooks/use-site-theme'
 import type { Theme } from '@/providers/Theme/types'
+import { readGround } from '@/utilities/ground'
 import { NO_STREAK_CAPABILITY, probeStreakCapability, type StreakCapability } from './capability'
 import {
   getServerMotionPaused,
@@ -91,26 +92,20 @@ export function usePageCovered(enabled = true): boolean {
   return covered
 }
 
-const GROUND_SELECTOR = '[data-theme], .band-dark'
-
 /**
- * The polarity of the ground under an element: the nearest hero band or
- * Section that pins its own palette, else the site theme. Re-read when the
- * site theme flips, since an unpinned ground follows it. Server and
- * hydration render the site default (light), matching the poster CSS.
+ * The polarity of the ground under an element: the nearest scope that pins
+ * or flips the palette (a hero band, an inverted Section, a pinned visual),
+ * else the site theme, as the stylesheet resolved it (`readGround`). Re-read
+ * when the site theme flips, since an unpinned ground follows it and an
+ * inverted band flips with it. Server and hydration render the site default
+ * (light), matching the poster CSS.
  */
 export function useGroundSurface(ref: RefObject<HTMLElement | null>): Theme {
   const siteTheme = useSiteTheme()
   const [ground, setGround] = useState<Theme>('light')
   useEffect(() => {
-    const pinned = ref.current?.closest<HTMLElement>(GROUND_SELECTOR)
-    if (!pinned) {
-      setGround(siteTheme)
-      return
-    }
-    setGround(
-      pinned.classList.contains('band-dark') || pinned.dataset.theme === 'dark' ? 'dark' : 'light',
-    )
+    const element = ref.current
+    setGround(element ? readGround(element) : siteTheme)
   }, [ref, siteTheme])
   return ground
 }

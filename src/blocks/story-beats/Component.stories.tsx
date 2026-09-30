@@ -35,7 +35,7 @@ const meta = {
   args: {
     blockType: 'storyBeats',
     body: beat,
-    theme: 'light',
+    theme: 'default',
     variant: 'default',
   },
 } satisfies Meta<typeof StoryBeatsBlock>
@@ -72,8 +72,8 @@ export const EntireSection: Story = {
   args: { body: section },
 }
 
-export const Dark: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }
 
 /**

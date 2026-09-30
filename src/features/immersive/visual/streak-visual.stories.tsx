@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { mediaFixture } from '@/blocks/fixtures'
+import { themeClasses } from '@/blocks/shared/band-theme'
+import { cn } from '@/utilities/ui'
 import type { StreakVisualDescriptor } from './descriptor'
 import { VisualMotionToggle } from './motion-toggle'
 import { StreakVisual } from './streak-visual'
@@ -68,11 +70,13 @@ export const Topography: Story = {
   args: { descriptor: descriptor({ look: 'topography-v1', seed: 12 }) },
 }
 
-/** A dark band pins the ground regardless of the site theme. */
-export const OnDarkBand: Story = {
-  args: { surface: 'dark' },
+/**
+ * An inverted band flips the ground against the site theme: the slot reads it
+ * at runtime (`auto`), and the poster pair follows it before any script runs.
+ */
+export const OnInvertedBand: Story = {
   render: (args) => (
-    <div className="band-dark relative isolate min-h-svh bg-tertiary text-tertiary-foreground">
+    <div className={cn(themeClasses.inverted, 'relative isolate min-h-svh')}>
       <StreakVisual {...args} />
     </div>
   ),
@@ -80,12 +84,12 @@ export const OnDarkBand: Story = {
 
 /**
  * The editor pinned this use to its light face: it holds that face in either
- * site theme and paints its own ground, so it reads the same on a dark band.
+ * site theme and paints its own ground, so it reads the same on an inverted band.
  */
 export const PinnedLight: Story = {
   args: { descriptor: descriptor({ surface: 'light' }), fill: false, className: 'aspect-video' },
   render: (args) => (
-    <div className="band-dark min-h-svh bg-tertiary text-tertiary-foreground">
+    <div className={cn(themeClasses.inverted, 'min-h-svh')}>
       <div className="container py-16">
         <StreakVisual {...args} />
       </div>

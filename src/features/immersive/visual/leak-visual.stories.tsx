@@ -42,7 +42,7 @@ const meta = {
     className: 'aspect-16/9',
   },
   render: (args) => (
-    <Section theme="dark">
+    <Section theme="inverted">
       <div className="container grid items-center gap-10 md:grid-cols-2">
         <div className="flex flex-col gap-4">
           <h2 className="text-heading-2">Light, let in on purpose.</h2>
@@ -92,7 +92,7 @@ export const BleedFromBottomLeft: Story = {
 export const OnLightBand: Story = {
   args: { descriptor: descriptor({ bleed: true, look: 'amber-v1' }) },
   render: (args) => (
-    <Section theme="light">
+    <Section theme="default">
       <div className="container grid items-center gap-10 md:grid-cols-2">
         <h2 className="text-heading-2">A warm shadow across the sheet.</h2>
         <LeakVisual {...args} />
@@ -110,7 +110,7 @@ export const PinnedLight: Story = {
 export const PinnedDark: Story = {
   args: { descriptor: descriptor({ surface: 'dark' }) },
   render: (args) => (
-    <Section theme="light">
+    <Section theme="default">
       <div className="container grid items-center gap-10 md:grid-cols-2">
         <h2 className="text-heading-2">One face, whatever the theme.</h2>
         <LeakVisual {...args} />

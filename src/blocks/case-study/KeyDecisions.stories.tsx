@@ -13,7 +13,7 @@ const meta = {
       blockType: 'caseStudyKeyDecisions',
       layout: 'cards',
       source: 'all',
-      theme: 'light',
+      theme: 'default',
     },
     decisions: caseStudyKeyDecisionsFixture,
   },
@@ -32,7 +32,7 @@ export const List: Story = {
       blockType: 'caseStudyKeyDecisions',
       layout: 'list',
       source: 'all',
-      theme: 'light',
+      theme: 'default',
     },
   },
 }
@@ -51,7 +51,7 @@ export const WithIntroduction: Story = {
       ),
       layout: 'cards',
       source: 'all',
-      theme: 'light',
+      theme: 'default',
     },
   },
 }
@@ -63,13 +63,13 @@ export const FeaturedOnly: Story = {
   },
 }
 
-export const Dark: Story = {
+export const Inverted: Story = {
   args: {
     block: {
       blockType: 'caseStudyKeyDecisions',
       layout: 'cards',
       source: 'all',
-      theme: 'dark',
+      theme: 'inverted',
     },
   },
 }

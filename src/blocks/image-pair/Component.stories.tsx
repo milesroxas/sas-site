@@ -23,7 +23,7 @@ const meta = {
     landscapeMedia: mediaFixture,
     portraitPosition: 'left',
     textPosition: 'under-portrait',
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof ImagePairBlock>
 
@@ -45,6 +45,6 @@ export const PortraitRightTextUnderLandscape: Story = {
   args: { portraitPosition: 'right', textPosition: 'under-landscape' },
 }
 
-export const Dark: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }
