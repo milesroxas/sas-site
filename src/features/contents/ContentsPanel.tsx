@@ -149,7 +149,7 @@ function ContentsSheet({ id, open, entries, current, onClose, onJump }: Contents
           event.preventDefault()
           sheetRef.current?.focus({ preventScroll: true })
         }}
-        overlayClassName="bg-black/30 supports-backdrop-filter:backdrop-blur-none"
+        overlayClassName="bg-scrim/30 supports-backdrop-filter:backdrop-blur-none"
         ref={sheetRef}
         showCloseButton={false}
         side="bottom"

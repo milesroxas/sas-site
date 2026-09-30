@@ -119,7 +119,7 @@ export function ScramblePlayground() {
         />
       </p>
       {chroma && (
-        <div className="h-48 overflow-hidden rounded-md bg-zinc-950">
+        <div className="h-48 overflow-hidden rounded-md bg-background" data-theme="dark">
           <ChromaSplitText
             sourceRef={sourceRef}
             strength={strength / 1000}

@@ -225,7 +225,7 @@ export function ScrollGalleryPlayground() {
           ref={trackRef}
           style={{ height: `calc(70vh + ${(items.length - 1) * 70}vh)` }}
         >
-          <div className="sticky top-0 h-[70vh] overflow-hidden bg-zinc-950">
+          <div className="sticky top-0 h-[70vh] overflow-hidden bg-background" data-theme="dark">
             {/* force: the demo has to render the effect even for a visitor
                 whose device or motion preference would suppress it in production. */}
             <ScrollGallery

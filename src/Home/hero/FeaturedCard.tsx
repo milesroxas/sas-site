@@ -28,13 +28,13 @@ export const FeaturedCard: React.FC<FeaturedCardProps> = ({ label = 'Insights', 
       // 300ms (the one documented delta) and its base scale is the cursor
       // proximity calc — so it merges the tokens into its own transition list.
       // Duration/easing lists match the property order: scale, background-color.
-      className="grid w-max max-w-full grid-cols-[minmax(0,191px)_auto] items-stretch gap-3 rounded-md bg-[rgb(0_0_0/calc(35%_+_10%_*_var(--cursor-proximity,0)))] p-3 shadow-[inset_0_0_0_0.5px_rgb(255_255_255/calc(16%_+_8%_*_var(--cursor-proximity,0))),inset_0_1px_0_0_rgb(255_255_255/calc(10%_+_4%_*_var(--cursor-proximity,0)))] backdrop-blur-md transition-[scale,background-color] [transition-timing-function:var(--press-release-ease),var(--press-ease)] [transition-duration:var(--press-release-duration),300ms] active:[transition-timing-function:var(--press-ease)] active:[transition-duration:var(--press-duration),300ms] scale-[calc(1_+_0.02_*_var(--cursor-proximity,0))] active:scale-[var(--press-scale)] active:bg-[rgb(0_0_0/calc(50%_+_10%_*_var(--cursor-proximity,0)))] supports-[backdrop-filter]:bg-[rgb(255_255_255/calc(8%_+_4%_*_var(--cursor-proximity,0)))] supports-[backdrop-filter]:active:bg-[rgb(255_255_255/calc(16%_+_4%_*_var(--cursor-proximity,0)))]"
+      className="grid w-max max-w-full grid-cols-[minmax(0,191px)_auto] items-stretch gap-3 rounded-md bg-scrim/[calc(35%_+_10%_*_var(--cursor-proximity,0))] p-3 shadow-[inset_0_0_0_0.5px_color-mix(in_oklab,var(--scrim-foreground)_calc(16%_+_8%_*_var(--cursor-proximity,0)),transparent),inset_0_1px_0_0_color-mix(in_oklab,var(--scrim-foreground)_calc(10%_+_4%_*_var(--cursor-proximity,0)),transparent)] backdrop-blur-md transition-[scale,background-color] [transition-timing-function:var(--press-release-ease),var(--press-ease)] [transition-duration:var(--press-release-duration),300ms] active:[transition-timing-function:var(--press-ease)] active:[transition-duration:var(--press-duration),300ms] scale-[calc(1_+_0.02_*_var(--cursor-proximity,0))] active:scale-[var(--press-scale)] active:bg-scrim/[calc(50%_+_10%_*_var(--cursor-proximity,0))] supports-[backdrop-filter]:bg-scrim-foreground/[calc(8%_+_4%_*_var(--cursor-proximity,0))] supports-[backdrop-filter]:active:bg-scrim-foreground/[calc(16%_+_4%_*_var(--cursor-proximity,0))]"
       href={`/posts/${post.slug}`}
       {...cursorTarget({ variant: 'emphasize', label: 'Read post' })}
     >
       <div className="flex min-w-0 flex-col gap-3">
         <div className="flex items-center gap-2">
-          <span className="size-2 shrink-0 rounded-full bg-[oklch(82.7%_0.173_148)]" />
+          <span className="size-2 shrink-0 rounded-full bg-active" />
           <span className="font-mono text-xs leading-none text-foreground">{label}</span>
         </div>
         <p className="text-xs leading-relaxed text-foreground">{post.title}</p>

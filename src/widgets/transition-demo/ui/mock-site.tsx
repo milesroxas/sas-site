@@ -585,7 +585,7 @@ function MockBackdropCard({ post }: { post: MockPost }) {
     <div
       className={cn(
         POST_IMAGE_FRAME,
-        'pressable pressable-subtle relative isolate flex cursor-pointer flex-col justify-end overflow-hidden rounded-lg bg-muted text-white',
+        'pressable pressable-subtle relative isolate flex cursor-pointer flex-col justify-end overflow-hidden rounded-lg bg-muted text-scrim-foreground',
       )}
       onClick={() => navigate(detail, 'forward')}
     >
@@ -594,10 +594,10 @@ function MockBackdropCard({ post }: { post: MockPost }) {
       </ViewTransition>
       <div
         aria-hidden
-        className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-b from-transparent to-black/80"
+        className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-b from-transparent to-scrim/80"
       />
       <div className="relative flex flex-col gap-1 p-4">
-        <span className={cn(FURNITURE, 'text-white/70')}>{post.category}</span>
+        <span className={cn(FURNITURE, 'text-scrim-foreground/70')}>{post.category}</span>
         <button
           type="button"
           className="text-left text-sm font-medium hover:underline"

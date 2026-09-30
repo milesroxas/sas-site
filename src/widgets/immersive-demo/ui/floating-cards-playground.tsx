@@ -116,9 +116,13 @@ export function FloatingCardsPlayground() {
   }
 
   return (
-    // Below md the scene and list stack — the absolute overlay would leave the
-    // canvas a sliver and paint the list over it on narrow screens.
-    <div className="overflow-hidden rounded-md bg-zinc-950 md:relative md:h-105">
+    // Below md the scene and list stack: the absolute overlay would leave the
+    // canvas a sliver and paint the list over it on narrow screens. Pinned to
+    // the dark palette so the stage stays dark in either site theme.
+    <div
+      className="overflow-hidden rounded-md bg-background md:relative md:h-105"
+      data-theme="dark"
+    >
       <FloatingCards
         className="h-72 md:absolute md:inset-y-0 md:left-0 md:right-60 md:h-auto"
         cards={cards}
@@ -141,7 +145,7 @@ export function FloatingCardsPlayground() {
         className="space-y-2 p-4 pt-2 md:absolute md:right-6 md:top-1/2 md:w-56 md:-translate-y-1/2 md:p-0"
         onMouseLeave={() => setActive(null)}
       >
-        <p className="px-4 text-[10px] font-medium uppercase tracking-[0.3em] text-zinc-500">
+        <p className="px-4 text-[10px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
           Featured work
         </p>
         {/* Fixed-height rows; the active card expands as an overlay so the
@@ -159,8 +163,8 @@ export function FloatingCardsPlayground() {
                   className={cn(
                     'absolute inset-x-0 top-0 rounded-lg px-4 text-left transition-colors duration-200',
                     isActive
-                      ? 'z-10 bg-yellow-300 py-3 text-zinc-900 shadow-lg'
-                      : 'flex h-full items-center bg-white/5 text-zinc-300 hover:text-zinc-100',
+                      ? 'z-10 bg-brand py-3 text-brand-foreground shadow-lg'
+                      : 'flex h-full items-center bg-foreground/5 text-muted-foreground hover:text-foreground',
                   )}
                 >
                   <span className="block text-sm font-semibold">{project.name}</span>

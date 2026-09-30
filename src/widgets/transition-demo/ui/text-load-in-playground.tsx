@@ -81,15 +81,19 @@ export function TextLoadInPlayground() {
   useDemoSnippet(config)
 
   return (
-    <TextLoadInDemoStage className="bg-zinc-950">
-      <TextLoadIn
-        className="relative"
-        eyebrow={eyebrow}
-        heading={heading}
-        body={body}
-        replayKey={replayKey}
-        {...config}
-      />
-    </TextLoadInDemoStage>
+    // Pinned to the dark palette: the smear overlay paints near-white, so the
+    // stage stays dark in either site theme.
+    <div data-theme="dark">
+      <TextLoadInDemoStage className="bg-background">
+        <TextLoadIn
+          className="relative"
+          eyebrow={eyebrow}
+          heading={heading}
+          body={body}
+          replayKey={replayKey}
+          {...config}
+        />
+      </TextLoadInDemoStage>
+    </div>
   )
 }
