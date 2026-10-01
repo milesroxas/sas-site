@@ -1,4 +1,4 @@
-import { resolveServerSideURL } from '../../site-url.cjs'
+import { resolveServerSideURL } from '../../site-url.mjs'
 import canUseDOM from './canUseDOM'
 
 export const getServerSideURL = () =>

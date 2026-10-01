@@ -4,12 +4,13 @@
  * wins, then the per-deployment Vercel URL, then the project's production
  * URL. `fallback` covers a build with none of them set.
  *
- * CommonJS on purpose. `next-sitemap.config.cjs` runs in `postbuild`, outside
- * the Next/TypeScript graph, and has to require this at build time; the app
- * reaches it through `src/utilities/getURL.ts`. Keeping one implementation is
- * what stops the sitemap's origin from drifting from the site's own.
+ * Plain JavaScript at the repo root on purpose. `next-sitemap.config.mjs` runs
+ * in `postbuild`, outside the Next/TypeScript graph, and imports this at build
+ * time; the app reaches it through `src/utilities/getURL.ts`. Keeping one
+ * implementation is what stops the sitemap's origin from drifting from the
+ * site's own. ESM, not CommonJS, so Vite (Storybook) serves it without interop.
  */
-function resolveServerSideURL(fallback) {
+export function resolveServerSideURL(fallback) {
   if (process.env.NEXT_PUBLIC_SERVER_URL) {
     return process.env.NEXT_PUBLIC_SERVER_URL
   }
@@ -21,5 +22,3 @@ function resolveServerSideURL(fallback) {
   }
   return fallback
 }
-
-module.exports = { resolveServerSideURL }

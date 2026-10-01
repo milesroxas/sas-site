@@ -1,4 +1,4 @@
-const { resolveServerSideURL } = require('./site-url.cjs')
+import { resolveServerSideURL } from './site-url.mjs'
 
 // Same resolution the app uses; the last-resort fallback differs because a
 // sitemap has to emit absolute URLs even on a build with no origin configured.
@@ -29,7 +29,7 @@ const AI_CRAWLERS = [
 ]
 
 /** @type {import('next-sitemap').IConfig} */
-module.exports = {
+export default {
   siteUrl: SITE_URL,
   generateRobotsTxt: true,
   exclude: [

@@ -95,4 +95,4 @@ type, extend the walker.
    the sitemap. The **AI Performance** report there is the only first-party AI-citation
    analytics available anywhere.
 4. robots.txt policy (explicit allow for AI crawlers) lives in
-   [next-sitemap.config.cjs](../../../next-sitemap.config.cjs) and regenerates at postbuild.
+   [next-sitemap.config.mjs](../../../next-sitemap.config.mjs) and regenerates at postbuild.

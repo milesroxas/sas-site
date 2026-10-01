@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
-    "postbuild": "next-sitemap --config next-sitemap.config.cjs",
+    "postbuild": "next-sitemap --config next-sitemap.config.mjs",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --no-server-fast-refresh -p 3001",
     "dev:tui": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/dev-tui/index.tsx",
     "email": "cross-env NODE_OPTIONS=--no-deprecation email dev --dir src/shared/email/templates --port 3000",

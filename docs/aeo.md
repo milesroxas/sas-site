@@ -16,7 +16,7 @@ Ranked by evidence strength:
    fully gates Copilot and partially feeds ChatGPT (its Bing dependence declined through
    2025–26 in favor of OpenAI's own crawler and Google-derived data); Perplexity runs its own
    index; Claude search rides Brave's. Practical consequence: be indexed everywhere, allow the
-   AI search bots in robots.txt (we do — explicit allow-list in `next-sitemap.config.cjs`).
+   AI search bots in robots.txt (we do — explicit allow-list in `next-sitemap.config.mjs`).
 3. **Content structure measurably moves citation rates.** The only peer-reviewed causal study
    (Princeton GEO, KDD 2024): adding cited sources, statistics, and expert quotations lifted
    generative-engine visibility 30–115%. Fluency alone gained ~28%. Keyword stuffing did nothing.
@@ -91,7 +91,7 @@ Monitoring:
 
 ## Boundaries and gotchas
 
-- **robots.txt** is generated at postbuild by `next-sitemap` from `next-sitemap.config.cjs`;
+- **robots.txt** is generated at postbuild by `next-sitemap` from `next-sitemap.config.mjs`;
   don't hand-edit `public/robots.txt`. Policy: explicit allow for AI search, user-triggered, and
   training bots — training-bot access is a business decision that does not affect search-citation
   eligibility, revisit if content-licensing posture changes.
