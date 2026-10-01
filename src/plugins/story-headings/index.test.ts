@@ -1,6 +1,6 @@
 import type { CollectionBeforeChangeHook, Config, PayloadRequest } from 'payload'
 import { describe, expect, it, vi } from 'vitest'
-import { headingInputsHash } from '@/blocks/shared/story-headings'
+import { type HeadingAuto, headingInputsHash } from '@/blocks/shared/story-headings'
 import type { StoryBody } from '@/collections/story/narrative'
 import { type BeatJudge, storyHeadingsPlugin } from './index'
 
@@ -81,6 +81,9 @@ const opener = (heading: string) => ({
   heading,
   headingLevel: 'h2',
 })
+// What the hook writes onto a Story beats block, read back from the test data.
+type JudgedBlock = { headingAuto?: HeadingAuto }
+
 const beat = (id: string, key: string) => ({
   blockType: 'storyBeats',
   id,
@@ -120,11 +123,11 @@ describe('storyHeadingsPlugin', () => {
       ],
     }
     await save(hook, data)
-    const [first, second] = (data.layout[0] as { blocks: Record<string, any>[] }).blocks.slice(1)
-    const [third] = (data.layout[1] as { blocks: Record<string, any>[] }).blocks.slice(1)
-    expect(first?.headingAuto['one-object']).toMatchObject({ level: 'h3', show: false })
-    expect(second?.headingAuto.generated).toMatchObject({ level: 'h4', show: true })
-    expect(third?.headingAuto.hub).toMatchObject({ level: 'h3', show: false })
+    const [first, second] = (data.layout[0] as { blocks: JudgedBlock[] }).blocks.slice(1)
+    const [third] = (data.layout[1] as { blocks: JudgedBlock[] }).blocks.slice(1)
+    expect(first?.headingAuto?.['one-object']).toMatchObject({ level: 'h3', show: false })
+    expect(second?.headingAuto?.generated).toMatchObject({ level: 'h4', show: true })
+    expect(third?.headingAuto?.hub).toMatchObject({ level: 'h3', show: false })
     expect(judge).toHaveBeenCalledTimes(2)
     expect(judge.mock.calls[0]?.[0]).toEqual({
       section_heading: 'A collection is just a TypeScript object',
@@ -168,7 +171,7 @@ describe('storyHeadingsPlugin', () => {
         },
       },
     )
-    expect((layout[0]?.blocks[1] as Record<string, any>).headingAuto).toEqual(stored)
+    expect((layout[0]?.blocks[1] as JudgedBlock).headingAuto).toEqual(stored)
     expect(judge).not.toHaveBeenCalled()
   })
 
@@ -178,20 +181,20 @@ describe('storyHeadingsPlugin', () => {
       { blockType: 'section', blocks: [opener('Elsewhere'), beat('b2', 'generated')] },
     ]
     await save(hook, { labProject: 3, layout })
-    expect((layout[0]?.blocks[1] as Record<string, any>).headingAuto).toEqual({})
+    expect((layout[0]?.blocks[1] as JudgedBlock).headingAuto).toEqual({})
 
     const untouched = [
       { blockType: 'section', blocks: [opener('Elsewhere'), beat('b2', 'generated')] },
     ]
     await save(hook, { labProject: 3, layout: untouched }, { autosave: true })
-    expect((untouched[0]?.blocks[1] as Record<string, any>).headingAuto).toBeUndefined()
+    expect((untouched[0]?.blocks[1] as JudgedBlock).headingAuto).toBeUndefined()
   })
 
   it('a block outside any Section prints its heading at the top of the scale', async () => {
     const { hook } = build(null)
     const layout = [beat('b1', 'one-object')]
     await save(hook, { labProject: 3, layout })
-    expect((layout[0] as Record<string, any>).headingAuto).toEqual({
+    expect((layout[0] as JudgedBlock).headingAuto).toEqual({
       'one-object': { hash: expect.any(String), level: 'h2', show: true },
     })
   })
