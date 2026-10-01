@@ -8,6 +8,11 @@ import { featureHeaderFields, featureSourceField } from '../shared'
 export const FeatureStatementGrid: Block = {
   slug: 'featureStatementGrid',
   admin: { group: BLOCK_GROUPS.statements },
+  // Per-parent table name, short enough that the cards table's index and
+  // foreign key names stay inside Postgres' 63-character limit on the longest
+  // parents (_expertise_pages_v, _audience_pages_v). A static dbName would
+  // collapse every collection that uses this block into one table.
+  dbName: ({ tableName }) => `${tableName}_stmt_grid`,
   interfaceName: 'FeatureStatementGridBlock',
   labels: { singular: 'Feature: statement grid', plural: 'Feature: statement grids' },
   fields: [

@@ -74,6 +74,11 @@ const storySectionField = (
     {
       name: 'storyBeats',
       type: 'array',
+      // Short table name: the default `<section>_story_beats` puts the version
+      // table's index and foreign key names (_lab_projects_v_version_outcome_
+      // summary_story_beats_parent_id_idx) past Postgres' 63-character limit.
+      // Per-parent, since every section on both story collections shares it.
+      dbName: ({ tableName }) => `${tableName}_beats`,
       labels: { singular: 'Story beat', plural: 'Story beats' },
       admin: {
         className: 'story-section-beats',
