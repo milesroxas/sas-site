@@ -96,8 +96,10 @@ website blocks and future presentation collections.
 The story model is shared, not Case Study specific. Lab Projects carry the same six narrative
 sections (`NarrativeSection` interface), and Lab Pages resolve them the same way:
 
-- `src/collections/story/narrative.ts` — section vocabulary, the Narrative tab factory, and the
-  body/heading/scope resolvers.
+- `src/collections/story/sections.ts`: section vocabulary and the record types.
+- `src/collections/story/fields.ts`: the Narrative tab factory (Payload field config).
+- `src/collections/story/narrative.ts`: the body/heading/scope resolvers, free of Payload runtime
+  imports so renderers and their stories never bundle the CMS. Re-exports the vocabulary.
 - `src/collections/story/canonical.ts` — `CANONICAL_STORY_FIELDS`, which relationship on a page
   names its story record (work-pages → case-studies, lab-pages → lab-projects). The Story Beat
   picker, validation, and the RAG surface registry all read it.

@@ -6,9 +6,9 @@ import type { NarrativeSection } from '@/payload-types'
  *
  * Its own module, free of Payload field factories, so a renderer that only
  * needs the roles (a hero's read figure, the RAG walk) never pulls the Lexical
- * editor config into its bundle. `./narrative` builds the record fields from
- * the same list and re-exports it, so every existing import keeps working and
- * there is still one source for the roles.
+ * editor config into its bundle. `./fields` builds the record fields from the
+ * same list and `./narrative` re-exports it beside the resolvers, so there is
+ * still one source for the roles.
  */
 
 export const STORY_SECTIONS = [

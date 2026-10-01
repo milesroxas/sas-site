@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import type { StoryBody, StoryRecord } from '@/collections/story/narrative'
 import {
@@ -113,6 +114,20 @@ describe('beatHeading', () => {
     expect(beatHeading({ body: first, heading: '' }, opener, undefined)).toEqual({
       headingLevel: 'h3',
     })
+  })
+
+  it('keeps the digest stored judgments were written with (node:crypto SHA-1)', () => {
+    const inputs: Array<[string | undefined, string, string]> = [
+      [undefined, 'One object, everything generated', ''],
+      ['Opener with accents: é ü ✓', 'Beat “quoted”', 'Astral plane 𝄞 and CJK 漢字'],
+    ]
+    for (const [opener, heading, opening] of inputs) {
+      const stored = createHash('sha1')
+        .update(JSON.stringify([opener ?? '', heading, opening]))
+        .digest('hex')
+        .slice(0, 16)
+      expect(headingInputsHash(opener, heading, opening)).toBe(stored)
+    }
   })
 
   it('takes a stored judgment only while its hash matches what it read', () => {

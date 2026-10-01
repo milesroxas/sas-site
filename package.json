@@ -47,6 +47,7 @@
     "@ai-sdk/react": "^4.0.23",
     "@c15t/nextjs": "^2.2.1",
     "@gsap/react": "^2.1.2",
+    "@noble/hashes": "^2.4.0",
     "@payloadcms/admin-bar": "3.90.2",
     "@payloadcms/db-postgres": "3.90.2",
     "@payloadcms/db-vercel-postgres": "3.90.2",

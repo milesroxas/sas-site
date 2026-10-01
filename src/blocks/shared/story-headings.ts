@@ -1,4 +1,5 @@
-import { createHash } from 'node:crypto'
+import { sha1 } from '@noble/hashes/legacy.js'
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
 import {
   getStorySection,
   isStoryBeatKey,
@@ -88,16 +89,18 @@ const plainText = (body: StoryBody | null | undefined): string => {
 export const beatOpening = (body: StoryBody | null | undefined, chars = 240): string =>
   plainText(body).slice(0, chars)
 
-/** What a judgment read. Stored beside it, so a changed heading or opening is judged again. */
+/**
+ * What a judgment read. Stored beside it, so a changed heading or opening is
+ * judged again. A change fingerprint, not a security boundary. SHA-1 in plain
+ * JavaScript rather than `node:crypto`, so this render-time module also runs in
+ * a browser (Storybook); the digest is the same, so stored hashes stay valid.
+ */
 export const headingInputsHash = (
   opener: string | undefined,
   heading: string,
   opening: string,
 ): string =>
-  createHash('sha1')
-    .update(JSON.stringify([opener ?? '', heading, opening]))
-    .digest('hex')
-    .slice(0, 16)
+  bytesToHex(sha1(utf8ToBytes(JSON.stringify([opener ?? '', heading, opening])))).slice(0, 16)
 
 const isAuto = (value: unknown): value is BeatHeadingAuto =>
   Boolean(value) &&
