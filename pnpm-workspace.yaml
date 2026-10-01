@@ -39,6 +39,10 @@ overrides:
   # 7.29.1). It only uses undici's fetch and Agent for upload safeFetch; move
   # it onto the patch release, the same copy jsdom already resolves.
   'payload>undici': 7.29.1
+  # monaco-editor (Payload's code field editor) pins dompurify 3.4.15 exactly,
+  # inside the range of GHSA-p98j-92pf-mc4p (fixed in 3.4.16). Move it onto the
+  # patch release, the same copy posthog-js resolves.
+  'monaco-editor>dompurify': ^3.4.16
 
 patchedDependencies:
   '@payloadcms/drizzle': patches/@payloadcms__drizzle.patch
