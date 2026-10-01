@@ -35,6 +35,10 @@ overrides:
   # @esbuild-kit/core-utils, which pins esbuild 0.18 (GHSA-67mh-4wv8-2f99).
   # It only calls the transform API; move it onto drizzle-kit's own esbuild line.
   '@esbuild-kit/core-utils>esbuild': ^0.25.12
+  # Payload 3.90.2 pins undici 7.29.0 exactly (GHSA-3wwx-pv8p-q78v, fixed in
+  # 7.29.1). It only uses undici's fetch and Agent for upload safeFetch; move
+  # it onto the patch release, the same copy jsdom already resolves.
+  'payload>undici': 7.29.1
 
 patchedDependencies:
   '@payloadcms/drizzle': patches/@payloadcms__drizzle.patch
