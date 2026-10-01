@@ -53,20 +53,24 @@ export const homeHero: Field = {
       },
     ),
     {
-      name: 'featuredPost',
+      name: 'featuredPage',
       type: 'relationship',
-      relationTo: 'posts',
+      // Each collection here needs a resolver in ./featured.ts; the generated
+      // union makes a missing one a type error.
+      relationTo: ['posts', 'work-pages', 'lab-pages'],
+      label: 'Featured card',
       admin: {
-        description: 'Optional insight card anchored in the hero footer.',
+        description:
+          'Optional card anchored in the hero footer: an insight, a work page, or a lab page. Unpublished pages are not shown.',
       },
     },
     {
       name: 'featuredLabel',
       type: 'text',
-      defaultValue: 'Insights',
       admin: {
-        description: 'Small label on the featured card, e.g. Insights.',
-        condition: (_, siblingData) => Boolean(siblingData?.featuredPost),
+        description:
+          'Small label on the featured card. Leave empty to use the section name: Insights, Work, or Lab.',
+        condition: (_, siblingData) => Boolean(siblingData?.featuredPage),
       },
     },
   ],

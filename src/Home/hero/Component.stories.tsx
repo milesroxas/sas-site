@@ -1,5 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { heroImageFixture, postFixtures, videoFixture } from '@/blocks/fixtures'
+import {
+  heroImageFixture,
+  labPageFixtures,
+  postFixtures,
+  videoFixture,
+  workPageFixtures,
+} from '@/blocks/fixtures'
 // The page intro's cover wipe reads `--vt-duration-reveal` / `--vt-ease-reveal`
 // from this sheet. The app loads it through DirectionalTransition on every
 // page; the story has no route shell, so it loads the sheet itself.
@@ -26,8 +32,7 @@ const meta = {
     description:
       'Suits & Sandals is a B2B branding agency for technical companies and expert-led firms with complex offerings.',
     media: heroImageFixture,
-    featuredPost: postFixtures[0],
-    featuredLabel: 'Insights',
+    featuredPage: { relationTo: 'posts', value: postFixtures[0] },
     // Deterministic for snapshots: only ColdIntro plays the cold choreography.
     intro: 'warm',
   },
@@ -60,9 +65,24 @@ export const CenterVideo: Story = {
   },
 }
 
+/** A work page on the card: the case study's title, its cover, and the section name as the label. */
+export const FeaturedWork: Story = {
+  args: {
+    featuredPage: { relationTo: 'work-pages', value: workPageFixtures[0] },
+  },
+}
+
+/** A lab page on the card, with the editor's own label in place of the section name. */
+export const FeaturedLab: Story = {
+  args: {
+    featuredPage: { relationTo: 'lab-pages', value: labPageFixtures[0] },
+    featuredLabel: 'New in the lab',
+  },
+}
+
 export const WithoutFeatured: Story = {
   args: {
-    featuredPost: null,
+    featuredPage: null,
   },
 }
 

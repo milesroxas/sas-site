@@ -7,8 +7,9 @@ import { DATED_SORTS, newestFirst, type SortRegistry } from '@/sections/Browse/s
 import { IndexBanner, type Props as IndexBannerProps } from '@/sections/IndexBanner'
 import { FILTER_SWAP_MAX_STAGGER_STEPS, useFilterSwap } from '@/shared/ui/filter-swap'
 import { ScrollReveal } from '@/shared/ui/scroll-reveal'
+import type { LabBrowseItem } from './item'
 import { LabRow } from './LabRow'
-import type { LabBrowseData, LabBrowseItem } from './queries'
+import type { LabBrowseData } from './queries'
 
 /**
  * `listed` is a no-op: Array.sort is stable, so filtered rows keep the

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { mediaFixture, videoFixture } from '@/blocks/fixtures'
 import { Section } from '@/blocks/shared/section'
 import type { Media } from '@/payload-types'
-import type { FeaturedEntry } from './entry'
+import { FEATURED_ENTRY_ACTIONS, type FeaturedEntry } from './entry'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
 
 const entry = (
@@ -67,7 +67,7 @@ export const SingleEntry: Story = {
 export const LabCloser: Story = {
   args: {
     eyebrow: 'More from the lab',
-    frameLabel: 'View lab project',
+    frameLabel: FEATURED_ENTRY_ACTIONS['lab-pages'],
     entries: [
       entry(1, 'Refraction playground', ['Experiment', 'Active'], { base: 'lab' }),
       entry(2, 'Streak Field studio', ['Tool', 'Active'], { base: 'lab', media: videoFixture }),

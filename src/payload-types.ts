@@ -13656,11 +13656,23 @@ export interface Home {
     visualType?: ('media' | 'streakField') | null;
     shader?: StreakVisualConfig;
     /**
-     * Optional insight card anchored in the hero footer.
+     * Optional card anchored in the hero footer: an insight, a work page, or a lab page. Unpublished pages are not shown.
      */
-    featuredPost?: (number | null) | Post;
+    featuredPage?:
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'work-pages';
+          value: number | WorkPage;
+        } | null)
+      | ({
+          relationTo: 'lab-pages';
+          value: number | LabPage;
+        } | null);
     /**
-     * Small label on the featured card, e.g. Insights.
+     * Small label on the featured card. Leave empty to use the section name: Insights, Work, or Lab.
      */
     featuredLabel?: string | null;
   };
@@ -14487,7 +14499,7 @@ export interface HomeSelect<T extends boolean = true> {
         media?: T;
         visualType?: T;
         shader?: T | StreakVisualConfigSelect<T>;
-        featuredPost?: T;
+        featuredPage?: T;
         featuredLabel?: T;
       };
   statement?: T | HomeStatementSelect<T>;

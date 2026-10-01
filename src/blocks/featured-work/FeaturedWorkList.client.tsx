@@ -16,7 +16,7 @@ import {
   scrollRevealTrackStarts,
 } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
-import type { FeaturedEntry } from './entry'
+import { FEATURED_ENTRY_ACTIONS, type FeaturedEntry } from './entry'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(useGSAP, ScrollTrigger)
@@ -175,7 +175,7 @@ const StaticList: React.FC<Props> = ({ eyebrow, entries }) => (
 export const FeaturedWorkList: React.FC<Props> = ({
   eyebrow,
   entries,
-  frameLabel = 'View case study',
+  frameLabel = FEATURED_ENTRY_ACTIONS['work-pages'],
 }) => {
   const rootRef = useRef<HTMLDivElement>(null)
   const activateRef = useRef<((index: number) => void) | null>(null)

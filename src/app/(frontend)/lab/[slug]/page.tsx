@@ -1,5 +1,6 @@
 import { draftMode } from 'next/headers'
 import { FeaturedWorkSection } from '@/blocks/featured-work/Component'
+import { FEATURED_ENTRY_ACTIONS } from '@/blocks/featured-work/entry'
 import { RenderLabBlocks } from '@/blocks/lab/RenderLabBlocks'
 import { STORY_SECTION_SELECT } from '@/collections/story/narrative'
 import { JsonLd } from '@/components/JsonLd'
@@ -90,7 +91,7 @@ export default async function LabPageRoute({ params }: SlugRouteArgs) {
         <FeaturedWorkSection
           entries={relatedEntries}
           eyebrow="More from the lab"
-          frameLabel="View lab project"
+          frameLabel={FEATURED_ENTRY_ACTIONS['lab-pages']}
         />
         {page.showContents && <ContentsButton />}
       </article>

@@ -5,20 +5,12 @@ import { getPayload } from 'payload'
 import {
   FEATURED_CLOSER_FALLBACK_LIMIT,
   type FeaturedEntry,
-  presentFacts,
+  featuredLabEntry,
 } from '@/blocks/featured-work/entry'
 import type { LabPage } from '@/payload-types'
 import { relationshipIds } from '@/utilities/relationshipId'
-import { LAB_BROWSE_QUERY, type LabBrowseItem, toLabBrowseItems } from './queries'
-
-/** A lab index row as a featured roll entry: kind and status on the meta line, as on the row. */
-const featuredLabEntry = (item: LabBrowseItem): FeaturedEntry => ({
-  id: item.id,
-  href: `/lab/${item.slug}`,
-  title: item.title,
-  facts: presentFacts([item.kind?.label, item.status]),
-  visual: item.visual,
-})
+import { type LabBrowseItem, toLabBrowseItems } from './item'
+import { LAB_BROWSE_QUERY } from './queries'
 
 /**
  * Lab pages matching `where`, flattened into index rows. The index query with

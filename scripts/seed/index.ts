@@ -1591,8 +1591,7 @@ async function run() {
         description:
           'We bring clarity, character, and creative momentum to businesses with complex offerings, niche audiences, and more to say than their current brand can express.',
         media: previousHeroMedia,
-        featuredPost: postIds[0],
-        featuredLabel: 'Insights',
+        featuredPage: { relationTo: 'posts', value: postIds[0] },
       },
       statement: {
         body: richText(

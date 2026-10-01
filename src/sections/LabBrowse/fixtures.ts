@@ -1,5 +1,5 @@
 import { heroImageFixture } from '@/blocks/fixtures'
-import type { LabBrowseFilterOption, LabBrowseItem } from './queries'
+import type { LabBrowseFilterOption, LabBrowseItem } from './item'
 
 /** Story fixtures for the lab index rows. */
 export const labBrowseKinds: LabBrowseFilterOption[] = [

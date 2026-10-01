@@ -1,6 +1,6 @@
 import type React from 'react'
 import { IndexRow, type IndexRowFact } from '@/sections/Browse/IndexRow'
-import type { LabBrowseItem } from './queries'
+import type { LabBrowseItem } from './item'
 
 /**
  * A lab page as an index row: kind and lifecycle status on the facts line,

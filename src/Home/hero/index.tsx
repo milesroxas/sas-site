@@ -3,10 +3,10 @@ import type { CSSProperties } from 'react'
 import { Container } from '@/components/Container'
 import { resolveVisual, VisualMotionToggle, visualSurface } from '@/features/immersive/visual'
 import { HeroBand, type HeroIntroMode } from '@/heros/HeroBand'
-import type { Home, Post } from '@/payload-types'
-import { populatedDoc } from '@/utilities/relationshipId'
+import type { Home } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 import { FeaturedCard } from './FeaturedCard'
+import { type HeroFeature, resolveHeroFeature } from './featured'
 import { HeroBackground } from './HeroBackground'
 import { HeroStreakBackground } from './HeroStreakBackground'
 
@@ -44,24 +44,22 @@ const introSlot = (slot: number) => ({ '--intro-slot': slot }) as CSSProperties
 
 /**
  * The screen's bottom row. Only the centered layout keeps it without a
- * featured post — the left layout has nothing to put there, and the row's own
+ * featured card: the left layout has nothing to put there, and the row's own
  * width rules depend on whether the card is present, not just on the layout.
  */
 const HeroFooterRow = ({
   description,
-  featuredLabel,
-  post,
+  feature,
   slot,
   type,
 }: {
   description: HomeHeroData['description']
-  featuredLabel: HomeHeroData['featuredLabel']
-  post: Post | null
+  feature: HeroFeature | null
   slot: number
   type: HeroLayout
 }) => {
   const isCenter = type === 'center'
-  if (!isCenter && !post) return null
+  if (!isCenter && !feature) return null
 
   return (
     <div
@@ -70,14 +68,14 @@ const HeroFooterRow = ({
       className={cn(
         'flex w-full shrink-0 self-stretch',
         footerRowClassName[type],
-        isCenter && (post ? 'w-fit max-w-full items-stretch' : 'w-full items-start'),
+        isCenter && (feature ? 'w-fit max-w-full items-stretch' : 'w-full items-start'),
       )}
     >
       {isCenter && description && (
         <p
           className={cn(
             'text-left text-base leading-relaxed text-muted-foreground lg:text-lg',
-            post
+            feature
               ? // Fill the card width without expanding the stack.
                 'w-0 min-w-full md:w-auto md:min-w-0 md:max-w-[23.375rem]'
               : 'max-w-[23.375rem]',
@@ -87,7 +85,7 @@ const HeroFooterRow = ({
         </p>
       )}
 
-      {post && <FeaturedCard label={featuredLabel} post={post} />}
+      {feature && <FeaturedCard feature={feature} />}
     </div>
   )
 }
@@ -101,7 +99,7 @@ export const RenderHomeHero: React.FC<HomeHeroProps> = (props) => {
 const HomeHero: React.FC<HomeHeroProps> = ({
   description,
   featuredLabel,
-  featuredPost,
+  featuredPage,
   intro = 'auto',
   media,
   shader,
@@ -112,7 +110,7 @@ const HomeHero: React.FC<HomeHeroProps> = ({
   const isCenter = type === 'center'
   // Resolved once: an explicit Streak Field wins over a retained upload.
   const visual = resolveVisual({ media, shader, visualType }, { seedKey: 'home-hero' })
-  const post = populatedDoc<Post>(featuredPost)
+  const feature = resolveHeroFeature({ featuredLabel, featuredPage })
 
   return (
     <HeroBand
@@ -162,8 +160,7 @@ const HomeHero: React.FC<HomeHeroProps> = ({
 
           <HeroFooterRow
             description={description}
-            featuredLabel={featuredLabel}
-            post={post}
+            feature={feature}
             slot={isCenter ? 1 : 2}
             type={type}
           />
