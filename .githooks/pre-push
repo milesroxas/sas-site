@@ -40,8 +40,9 @@ SCHEMA_RES=(
   # Flat collection configs (e.g. Media.ts) and folder entrypoints.
   '^src/collections/[^/]+\.ts$'
   '^src/collections/[^/]+/index\.ts$'
-  # Nested schema modules co-located with a collection (e.g. Newsletters/blocks.ts).
-  '^src/collections/[^/]+/blocks\.ts$'
+  # Nested schema modules co-located with a collection (e.g. Newsletters/blocks.ts,
+  # story/fields.ts).
+  '^src/collections/[^/]+/(blocks|fields)\.ts$'
   # Block field configs only — not Component.tsx / stories / styles.
   '^src/blocks/.*/(config\.ts|fields\.ts)$'
   '^src/blocks/.*/fields/.*\.ts$'
