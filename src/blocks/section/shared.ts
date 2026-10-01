@@ -1,35 +1,23 @@
-import type { BandSpacing, SectionTheme } from '@/blocks/shared/section'
+import type { BandSpacing } from '@/blocks/shared/section'
+
+/**
+ * The Section's nested block list. Blocks read it to tell whether they sit
+ * inside a Section (where the Section paints the band) from the admin field
+ * path, so the name is stated here and nowhere else.
+ */
+export const SECTION_CHILDREN_FIELD = 'blocks'
+
+/** True when an admin field path runs through a Section's nested blocks. */
+export const isInsideSection = (path?: readonly (number | string)[]) =>
+  Boolean(path?.includes(SECTION_CHILDREN_FIELD))
 
 /**
  * Editor-facing Section options, stated once so the block config (selects) and
  * `SectionBand` (rendering) can never drift. Values are stored in the DB:
- * relabel freely, never re-value without a migration.
- *
- * The editor vocabulary is intentionally not the internal one: editors choose
- * a role (`inherit`, `secondary`, `accent`, `inverted`), and the map below
- * resolves it to the shared band surface in `@/blocks/shared/section`.
+ * relabel freely, never re-value without a migration. The Section's theme is
+ * the shared band theme (`@/blocks/shared/band-theme`), the same select every
+ * block offers, so a block moved into a Section keeps its value as-is.
  */
-export const SECTION_THEME_OPTIONS = [
-  { label: 'Inherit', value: 'inherit' },
-  { label: 'Secondary', value: 'secondary' },
-  { label: 'Accent', value: 'accent' },
-  { label: 'Inverted', value: 'inverted' },
-] as const
-
-export type SectionBlockTheme = (typeof SECTION_THEME_OPTIONS)[number]['value']
-
-/**
- * `inherit` resolves to the page surface (`light`), which is exactly what
- * every block painted before Sections existed, so adjacent inherit sections
- * blend with the page and with each other.
- */
-export const SECTION_THEME_TO_BAND: Record<SectionBlockTheme, SectionTheme> = {
-  inherit: 'light',
-  secondary: 'neutral',
-  accent: 'brand',
-  inverted: 'dark',
-}
-
 export const SECTION_SPACING_OPTIONS = [
   { label: 'Default', value: 'default' },
   { label: 'Tight', value: 'tight' },

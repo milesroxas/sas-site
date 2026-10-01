@@ -59,23 +59,26 @@ export function DispersionPlayground() {
   })
 
   return (
-    <DispersionMedia
-      src={src}
-      video={isVideo}
-      shape={shape as DispersionShape}
-      scale={scale}
-      speed={speed}
-      follow={follow}
-      refraction={refraction}
-      chromaticAberration={chroma}
-      saturation={saturation}
-      iorR={iorR}
-      iorY={iorY}
-      iorG={iorG}
-      iorC={iorC}
-      iorB={iorB}
-      iorP={iorP}
-      className="aspect-video overflow-hidden rounded-md bg-zinc-950"
-    />
+    // Pinned to the dark palette so the stage stays dark in either site theme.
+    <div data-theme="dark">
+      <DispersionMedia
+        src={src}
+        video={isVideo}
+        shape={shape as DispersionShape}
+        scale={scale}
+        speed={speed}
+        follow={follow}
+        refraction={refraction}
+        chromaticAberration={chroma}
+        saturation={saturation}
+        iorR={iorR}
+        iorY={iorY}
+        iorG={iorG}
+        iorC={iorC}
+        iorB={iorB}
+        iorP={iorP}
+        className="aspect-video overflow-hidden rounded-md bg-background"
+      />
+    </div>
   )
 }

@@ -37,7 +37,7 @@ const meta = {
     (Story) => (
       <div className="bg-background">
         <div className="h-[40svh]" />
-        <Section spacing="none" theme="dark">
+        <Section spacing="none" theme="inverted">
           <Story />
         </Section>
         <div className="h-svh" />

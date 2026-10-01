@@ -92,12 +92,12 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
 
-export const Secondary: Story = {
-  args: { customize: true, theme: 'secondary' },
+export const Neutral: Story = {
+  args: { customize: true, theme: 'neutral' },
 }
 
-export const Accent: Story = {
-  args: { customize: true, theme: 'accent' },
+export const Brand: Story = {
+  args: { customize: true, theme: 'brand' },
 }
 
 export const Inverted: Story = {

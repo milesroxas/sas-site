@@ -1,5 +1,6 @@
 import type React from 'react'
-import { fullViewportSectionClassName, themeClasses } from '@/blocks/shared/section'
+import { themeClasses } from '@/blocks/shared/band-theme'
+import { fullViewportSectionClassName } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import type { HomeStatement as HomeStatementData } from '@/payload-types'
@@ -11,7 +12,7 @@ export const HomeStatement: React.FC<HomeStatementData> = ({ body }) => {
 
   return (
     <ScrollReveal
-      className={cn(fullViewportSectionClassName, themeClasses.light, 'items-center')}
+      className={cn(fullViewportSectionClassName, themeClasses.default, 'items-center')}
       variant="intro"
     >
       <Container width="narrow">

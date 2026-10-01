@@ -19,7 +19,7 @@ const meta = {
       layout: 'editorial',
       showPortrait: false,
       testimonial: testimonial.id,
-      theme: 'light',
+      theme: 'default',
     },
     testimonial,
   },
@@ -38,20 +38,20 @@ export const WithPortrait: Story = {
       layout: 'editorial',
       showPortrait: true,
       testimonial: testimonial.id,
-      theme: 'light',
+      theme: 'default',
     },
     testimonial: { ...testimonial, portrait: mediaFixture },
   },
 }
 
-export const Dark: Story = {
+export const Inverted: Story = {
   args: {
     block: {
       blockType: 'caseStudyTestimonial',
       layout: 'editorial',
       showPortrait: false,
       testimonial: testimonial.id,
-      theme: 'dark',
+      theme: 'inverted',
     },
   },
 }

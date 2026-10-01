@@ -179,7 +179,7 @@ describe.sequential('content hub and website surfaces', () => {
           {
             blockType: 'caseStudyTransition',
             heading: 'Website transition',
-            theme: 'light',
+            theme: 'default',
             layout: 'centered',
           },
         ],

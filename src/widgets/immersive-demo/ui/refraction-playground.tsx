@@ -230,12 +230,15 @@ export function RefractionPlayground() {
   useDemoSnippet(effectProps)
 
   return (
-    <RefractionMedia
-      src={src}
-      video={isVideo}
-      {...effectProps}
-      // Clipping would swallow the bleed overhang — only round/clip without it.
-      className={cn('aspect-video bg-zinc-950', bleed === 0 && 'overflow-hidden rounded-md')}
-    />
+    // Pinned to the dark palette so the stage stays dark in either site theme.
+    <div data-theme="dark">
+      <RefractionMedia
+        src={src}
+        video={isVideo}
+        {...effectProps}
+        // Clipping would swallow the bleed overhang, so only round/clip without it.
+        className={cn('aspect-video bg-background', bleed === 0 && 'overflow-hidden rounded-md')}
+      />
+    </div>
   )
 }

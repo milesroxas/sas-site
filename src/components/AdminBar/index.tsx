@@ -59,21 +59,20 @@ export const AdminBar: React.FC<{
         baseClass,
         // Height must stay in lockstep with the footer offset and page-frame
         // padding in globals.css, so it comes from the shared token.
-        'fixed inset-x-0 bottom-0 z-60 flex h-(--admin-bar-height) items-center border-t border-white/15 bg-black text-white',
+        'fixed inset-x-0 bottom-0 z-60 flex h-(--admin-bar-height) items-center border-t border-border bg-background text-foreground',
         {
           block: show,
           hidden: !show,
         },
       )}
+      // Pinned to the dark palette: the bar stays a dark strip in either site theme.
+      data-theme="dark"
     >
       <div className="container">
         <PayloadAdminBar
           {...adminBarProps}
-          className="text-white"
           classNames={{
-            controls: 'font-medium text-white',
-            logo: 'text-white',
-            user: 'text-white',
+            controls: 'font-medium',
           }}
           cmsURL={getClientSideURL()}
           collectionSlug={collection}
@@ -89,8 +88,11 @@ export const AdminBar: React.FC<{
               router.refresh()
             })
           }}
+          // The package inlines `color: #fff` on its root (its links inherit
+          // it), which a class cannot beat, so hand the ink back to the strip.
           style={{
             backgroundColor: 'transparent',
+            color: 'inherit',
             padding: 0,
             position: 'relative',
             zIndex: 'unset',

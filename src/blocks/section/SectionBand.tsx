@@ -1,16 +1,12 @@
 import type { ReactNode } from 'react'
+import type { BandTheme } from '@/blocks/shared/band-theme'
 import { Section, STACK_SPACING } from '@/blocks/shared/section'
 import { cn } from '@/utilities/ui'
-import {
-  resolveSectionSpacing,
-  SECTION_THEME_TO_BAND,
-  type SectionBlockSpacing,
-  type SectionBlockTheme,
-} from './shared'
+import { resolveSectionSpacing, type SectionBlockSpacing } from './shared'
 
 /**
  * The band a Section block paints, shared by every renderer (Pages/Home,
- * work, lab) so the editor vocabulary resolves to surfaces and rhythm in one
+ * work, lab) so the editor's choices resolve to surfaces and rhythm in one
  * place. Children are the section's nested blocks, each rendered `bare` by
  * its renderer: the band and its internal stack live here and nowhere else.
  *
@@ -31,7 +27,7 @@ export const SectionBand = ({
   customize?: boolean | null
   spacing?: SectionBlockSpacing | null
   stack?: SectionBlockSpacing | null
-  theme?: SectionBlockTheme | null
+  theme?: BandTheme | null
 }) => {
   const stackStep = resolveSectionSpacing(customize, stack)
   return (
@@ -45,7 +41,7 @@ export const SectionBand = ({
         className,
       )}
       spacing={resolveSectionSpacing(customize, spacing)}
-      theme={SECTION_THEME_TO_BAND[(customize && theme) || 'inherit']}
+      theme={customize ? theme : null}
     >
       {children}
     </Section>

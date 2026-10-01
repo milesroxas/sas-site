@@ -37,7 +37,7 @@ const meta = {
         media: videoFixture,
       },
     ],
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof DynamicAudienceBlock>
 
@@ -47,6 +47,6 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
 
-export const DarkTheme: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }

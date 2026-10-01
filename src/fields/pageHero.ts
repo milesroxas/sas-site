@@ -1,4 +1,5 @@
 import type { CollapsibleField, Field, GroupField, SelectField } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 import { overridesVisible, showOverridesField } from './overrides'
 
 /**
@@ -35,18 +36,6 @@ export const heroContentCollapsible = (): CollapsibleField => ({
   ],
 })
 
-/** Section surface for a hero band. Independent of the visitor's light/dark choice. */
-export const heroThemeField = (): SelectField => ({
-  name: 'theme',
-  type: 'select',
-  defaultValue: 'light',
-  options: ['light', 'dark', 'neutral', 'brand'],
-  admin: {
-    description:
-      'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
-  },
-})
-
 /** How the hero media sits in its band. */
 export const heroMediaTreatmentField = (): SelectField => ({
   name: 'mediaTreatment',
@@ -56,7 +45,7 @@ export const heroMediaTreatmentField = (): SelectField => ({
 })
 
 /** The presentation pair that closes a hero's "Media & layout" collapsible. */
-export const heroPresentationFields = (): Field[] => [heroThemeField(), heroMediaTreatmentField()]
+export const heroPresentationFields = (): Field[] => [themeField(), heroMediaTreatmentField()]
 
 /**
  * Full-screen introduction band rendered right after the hero. Its body is the

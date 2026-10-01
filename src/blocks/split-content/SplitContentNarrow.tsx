@@ -1,5 +1,4 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
-import { blockSurface } from '@/blocks/shared/visual-surface'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import { Visual } from '@/components/Visual'
@@ -67,7 +66,6 @@ export const SplitContentNarrow = ({
             imgClassName="object-cover"
             placement="block"
             size="(max-width: 768px) 100vw, 72vw"
-            surface={blockSurface(block.theme, bare)}
             visual={visual}
           />
         </div>

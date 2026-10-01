@@ -39,4 +39,4 @@ export const CurlVersusGradient: Story = {
   },
 }
 
-export const OnDarkBand: Story = { args: { ...CurlVersusGradient.args, theme: 'dark' } }
+export const OnInvertedBand: Story = { args: { ...CurlVersusGradient.args, theme: 'inverted' } }

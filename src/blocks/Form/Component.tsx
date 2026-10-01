@@ -1,5 +1,6 @@
+import type { BandTheme } from '@/blocks/shared/band-theme'
 import { resolveFormFields } from '@/blocks/shared/form/resolve-form'
-import { Section, type SectionTheme } from '@/blocks/shared/section'
+import { Section } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import type { FormBlock as FormBlockProps, Form as FormDoc } from '@/payload-types'
@@ -14,7 +15,7 @@ export type { FormBlockProps }
  * chips name taxonomy terms — and those resolve here rather than shipping ids
  * to the browser and fetching again.
  */
-export const FormBlock: React.FC<FormBlockProps & { theme?: SectionTheme | null }> = async ({
+export const FormBlock: React.FC<FormBlockProps & { theme?: BandTheme | null }> = async ({
   enableIntro,
   form,
   introContent,

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
-import { Section, type SectionTheme } from '@/blocks/shared/section'
+import type { BandTheme } from '@/blocks/shared/band-theme'
+import { Section } from '@/blocks/shared/section'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { ContentsButton } from './ContentsButton'
 
@@ -27,13 +28,13 @@ const LONG_SECTIONS = Array.from(
 const Page = ({ sections }: { sections: string[] }) => (
   <div className="[--footer-height:3.5rem] [--header-height:4rem]">
     <article className={FOOTER_CLOSING_ARTICLE_CLASS}>
-      <Section className="flex min-h-svh items-end" theme="dark">
+      <Section className="flex min-h-svh items-end" theme="inverted">
         <div className="container">
           <h1 className="text-display">Payload CMS Shader Plugin</h1>
         </div>
       </Section>
       {sections.map((title, index) => {
-        const theme: SectionTheme = index === 2 ? 'dark' : 'light'
+        const theme: BandTheme = index === 2 ? 'inverted' : 'default'
         return (
           <Section key={title} theme={theme}>
             <div className="container flex min-h-[70svh] flex-col gap-6">

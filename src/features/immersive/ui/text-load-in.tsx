@@ -64,6 +64,10 @@ type TextLoadInTuning = Required<Pick<TextLoadInProps, keyof typeof TEXT_LOAD_IN
  * explicitly (`headingStart`, `bodyStart`). Plays when the block enters the
  * viewport; `replayKey` re-runs it on demand. Renders the final state
  * statically under prefers-reduced-motion.
+ *
+ * Ink comes from the ground's palette tokens, but the smear overlay paints a
+ * fixed near-white (ray-marched-heading.tsx), so give it a dark ground: a
+ * `data-theme="dark"` scope, as the playground stage does.
  */
 export function TextLoadIn({
   eyebrow,
@@ -140,7 +144,7 @@ export function TextLoadIn({
   return (
     <div ref={stage.rootRef} className={cn('space-y-5', className)}>
       <TextLoadInEyebrow
-        className="flex items-baseline gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-300"
+        className="flex items-baseline gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
         eyebrow={eyebrow}
         eyebrowRef={stage.eyebrowRef}
       />
@@ -154,9 +158,12 @@ export function TextLoadIn({
           angle={smearAngle}
           gooey={gooey}
           fade={fade}
-          className="max-w-[24ch] text-zinc-100"
+          className="max-w-[24ch] text-foreground"
         />
-        <p data-body className="max-w-[34ch] text-zinc-500 will-change-[opacity,transform,filter]">
+        <p
+          data-body
+          className="max-w-[34ch] text-muted-foreground will-change-[opacity,transform,filter]"
+        >
           {body}
         </p>
       </div>

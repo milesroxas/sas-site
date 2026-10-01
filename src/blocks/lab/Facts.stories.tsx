@@ -19,7 +19,7 @@ const meta = {
       showLinks: true,
       showStatus: true,
       showTechnologies: true,
-      theme: 'light',
+      theme: 'default',
     },
     links: labProjectLinksFixture,
     status: 'active',
@@ -48,12 +48,12 @@ export const WithoutHeading: Story = {
       showLinks: true,
       showStatus: true,
       showTechnologies: true,
-      theme: 'light',
+      theme: 'default',
     },
   },
 }
 
-export const Dark: Story = {
+export const Inverted: Story = {
   args: {
     block: {
       blockType: 'labFacts',
@@ -61,7 +61,7 @@ export const Dark: Story = {
       showLinks: true,
       showStatus: true,
       showTechnologies: true,
-      theme: 'dark',
+      theme: 'inverted',
     },
   },
 }

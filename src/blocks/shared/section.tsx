@@ -1,41 +1,7 @@
 import type { ReactNode } from 'react'
+import { type BandTheme, sectionThemeClass } from '@/blocks/shared/band-theme'
 import { VISUAL_HOST } from '@/features/immersive/visual'
 import { cn } from '@/utilities/ui'
-
-/**
- * Block surface themes. Values are semantic tokens that follow the visitor's
- * site theme (html[data-theme]) — they never force an absolute light/dark mode.
- *
- * - light: default page surface
- * - dark: contrasted band within the active theme (tertiary; always low-luminance)
- * - neutral: quiet stripe (`--neutral`; not `--secondary`, a control fill)
- * - brand: brand accent surface
- *
- * `dark` surfaces are low-luminance in both site themes, so rich text needs
- * `prose-invert` even when the site itself is in light mode (site-level
- * `dark:prose-invert` only applies under html[data-theme=dark]).
- *
- * `band-dark` (globals.css) carries the band's whole surface set — muted,
- * card, secondary, accent, border, input — not just background/foreground.
- * A dark band that only remapped those two left every other token on the site
- * theme, so on a light-theme visit a `bg-muted` media plate painted a
- * near-white sheet inside the band and its subpixel edge read as a white
- * hairline around the image. Add new surface tokens there, never inline here.
- *
- * `band-neutral` only remaps the canvas pair; nested chrome stays on the
- * site theme so the light stripe keeps its current plate contrast.
- */
-export const themeClasses = {
-  light: 'bg-background text-foreground',
-  dark: [
-    'band-dark bg-tertiary text-tertiary-foreground',
-    '[&_.payload-richtext]:prose-invert',
-  ].join(' '),
-  neutral: 'band-neutral bg-neutral text-neutral-foreground',
-  brand: 'bg-brand text-brand-foreground',
-} as const
-
-export type SectionTheme = keyof typeof themeClasses
 
 /**
  * One rhythm. `band` is the outer `py-*` of a composition shell; `stack` is
@@ -52,7 +18,7 @@ export type SectionTheme = keyof typeof themeClasses
  * The steps double: tight 2/3rem, normal 4/6rem, loose 8/12rem. `loose` used
  * to sit 1.5rem above normal, too small a step to read as a decision, and too
  * little inset for a painted band, whose edge is visible and so cannot borrow
- * the neighbouring block's padding the way an `inherit` band does.
+ * the neighbouring block's padding the way a `default` band does.
  *
  * A `stack` step is that sum, not the single band step: two blocks inside a
  * Section sit exactly as far apart as the same two blocks stacked at the top
@@ -105,13 +71,6 @@ export const fullViewportSectionClassName = cn(
 )
 
 /**
- * Surface classes for an editor-chosen theme, stated once so every shell —
- * `Section`, the work-page reveal shell, and blocks that own a bespoke shell —
- * resolves a null/absent theme the same way.
- */
-export const sectionThemeClass = (theme?: SectionTheme | null) => themeClasses[theme || 'light']
-
-/**
  * The composition band: the single shell every block renders as its root.
  * Owns the vertical rhythm and the surface, nothing else.
  *
@@ -124,13 +83,13 @@ export const Section = ({
   children,
   className,
   spacing = 'normal',
-  theme = 'light',
+  theme,
 }: {
   bare?: boolean
   children: ReactNode
   className?: string
   spacing?: BandSpacing
-  theme?: SectionTheme | null
+  theme?: BandTheme | null
 }) => {
   if (bare) return <>{children}</>
   return (

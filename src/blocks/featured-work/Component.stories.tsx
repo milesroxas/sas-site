@@ -36,7 +36,7 @@ const meta = {
   decorators: [
     (Story) => (
       <div className="bg-background">
-        <Section spacing="none" theme="light">
+        <Section spacing="none" theme="default">
           <Story />
         </Section>
         <div className="h-svh" />

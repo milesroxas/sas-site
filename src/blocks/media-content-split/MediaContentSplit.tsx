@@ -1,7 +1,6 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import { ASPECT_RATIO_CLASS } from '@/blocks/shared/aspect-ratio'
 import { eyebrowClassName } from '@/blocks/shared/typography'
-import { blockSurface } from '@/blocks/shared/visual-surface'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import { Visual } from '@/components/Visual'
@@ -59,7 +58,6 @@ export const MediaContentSplit = ({
             imgClassName="object-cover"
             placement="block"
             size="(max-width: 768px) 100vw, 50vw"
-            surface={blockSurface(block.theme, bare)}
             visual={visual}
           />
         </div>

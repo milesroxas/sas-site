@@ -13,8 +13,9 @@ type Face = {
   poster: PosterImage
   /**
    * Which ground this still is for. `any` always shows; `light` and `dark`
-   * twins are gated by globals.css ("Visual posters") on the nearest
-   * `[data-theme]` or `.band-dark` ancestor, so only one paints at a time.
+   * twins are gated by globals.css ("Visual posters") on the `dark` variant,
+   * which resolves the nearest pin or inverted band, so only one paints at a
+   * time.
    */
   ground: 'any' | Surface
   blend?: BlendMode

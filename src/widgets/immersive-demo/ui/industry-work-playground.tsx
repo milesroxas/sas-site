@@ -108,8 +108,8 @@ export function IndustryWorkPlayground() {
   return (
     // No overflow clipping on the stage: the whole point is the effect
     // escaping the media's bounding box, so give the bleed dark breathing
-    // room instead.
-    <div className="rounded-md bg-zinc-950 px-8 py-16 md:px-14 md:py-24">
+    // room instead (pinned to the dark palette in either site theme).
+    <div className="rounded-md bg-background px-8 py-16 md:px-14 md:py-24" data-theme="dark">
       <div className="relative mx-auto w-full max-w-3xl">
         {/* Same composition beat as the block: the title column overlaps the
             media's left edge, so the melt can be dialed against overlapping
@@ -143,7 +143,7 @@ export function IndustryWorkPlayground() {
           />
         </div>
         {title ? (
-          <h3 className="pointer-events-none absolute top-[10%] left-0 z-10 max-w-[52%] text-heading-3 font-light text-white">
+          <h3 className="pointer-events-none absolute top-[10%] left-0 z-10 max-w-[52%] text-heading-3 font-light text-foreground">
             {title}
           </h3>
         ) : null}

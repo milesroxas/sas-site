@@ -2,6 +2,9 @@
 
 import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { onChromeScroll, pageFrameFrozen } from '@/components/SiteChrome/chrome-scroll'
+import { useSiteTheme } from '@/hooks/use-site-theme'
+import type { Theme } from '@/providers/Theme/types'
+import { GROUND_SCOPE_SELECTOR, readGround } from '@/utilities/ground'
 import { type ContentsEntry, collectContentsEntries } from './headings'
 
 /**
@@ -11,19 +14,19 @@ import { type ContentsEntry, collectContentsEntries } from './headings'
  */
 const ACTIVATION_LINE = 0.35
 
-/** Bands that flip the button to its dark surface (`themeClasses.dark`, the heroes). */
-const DARK_BAND_SELECTOR = '.band-dark, [data-theme="dark"]'
-
 type Tracking = {
   /** Index of the section being read, `-1` above the first heading. */
   current: number
   /** False over the hero (no heading has passed the fold) and the closing band. */
   visible: boolean
-  /** True while the button floats over a dark band. */
-  overDark: boolean
+  /**
+   * The polarity of the band under the button (a hero, an inverted Section,
+   * the always-dark panel), or undefined over the page itself.
+   */
+  ground: Theme | undefined
 }
 
-const AT_REST: Tracking = { current: -1, visible: false, overDark: false }
+const AT_REST: Tracking = { current: -1, visible: false, ground: undefined }
 
 /**
  * Everything the Contents button derives from scroll, from cached geometry.
@@ -46,6 +49,7 @@ export function useContentsTracking(
   const [entries, setEntries] = useState<ContentsEntry[]>([])
   const [tracking, setTracking] = useState(AT_REST)
   const trackingRef = useRef(AT_REST)
+  const siteTheme = useSiteTheme()
 
   // Layout effect, so the ids exist before the route's hash scroll
   // (`LenisRouteReset`, an ancestor's layout effect) looks one up.
@@ -57,13 +61,14 @@ export function useContentsTracking(
     return collected.restore
   }, [anchorRef])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `siteTheme` is a re-measure cue. An inverted band's ground flips with it, and `readGround` reads that from the stylesheet, not from this value.
   useEffect(() => {
     const anchor = anchorRef.current
     const article = anchor?.closest('article')
     if (!anchor || !article || entries.length === 0) return
 
     let tops: number[] = []
-    let bands: [top: number, bottom: number][] = []
+    let bands: { top: number; bottom: number; ground: Theme }[] = []
     let articleBottom = 0
     let viewportHeight = 0
     let anchorCenter = 0
@@ -77,14 +82,20 @@ export function useContentsTracking(
       viewportHeight = window.innerHeight
       tops = entries.map((entry) => entry.element.getBoundingClientRect().top + scrollY)
       articleBottom = article.getBoundingClientRect().bottom + scrollY
-      bands = Array.from(article.querySelectorAll(DARK_BAND_SELECTOR))
-        // The anchor wears `data-theme="dark"` itself while it floats over a
-        // band, and it is fixed: measured then, it would count as a band of
-        // its own, pinned wherever the button sat at that scroll position.
+      // Document order puts a nested ground after the band holding it, so
+      // the last band under the button (`apply`) is the innermost one.
+      bands = Array.from(article.querySelectorAll(GROUND_SCOPE_SELECTOR))
+        // The anchor wears `data-theme` itself while it floats over a band,
+        // and it is fixed: measured then, it would count as a band of its
+        // own, pinned wherever the button sat at that scroll position.
         .filter((band) => !anchor.contains(band))
-        .map((band): [top: number, bottom: number] => {
+        .map((band) => {
           const rect = band.getBoundingClientRect()
-          return [rect.top + scrollY, rect.bottom + scrollY]
+          return {
+            top: rect.top + scrollY,
+            bottom: rect.bottom + scrollY,
+            ground: readGround(band),
+          }
         })
       const anchorRect = anchor.getBoundingClientRect()
       anchorCenter = anchorRect.top + anchorRect.height / 2
@@ -103,16 +114,18 @@ export function useContentsTracking(
       ringRef.current?.style.setProperty('stroke-dashoffset', String(1 - progress))
 
       const point = scrollY + anchorCenter
+      let ground: Theme | undefined
+      for (const band of bands) if (band.top <= point && band.bottom >= point) ground = band.ground
       const next: Tracking = {
         current,
         visible: tops[0] < fold && articleBottom > fold,
-        overDark: bands.some(([top, bottom]) => top <= point && bottom >= point),
+        ground,
       }
       const last = trackingRef.current
       if (
         next.current === last.current &&
         next.visible === last.visible &&
-        next.overDark === last.overDark
+        next.ground === last.ground
       )
         return
       trackingRef.current = next
@@ -148,7 +161,7 @@ export function useContentsTracking(
       window.removeEventListener('resize', invalidate)
       cancelAnimationFrame(frame)
     }
-  }, [anchorRef, ringRef, entries])
+  }, [anchorRef, ringRef, entries, siteTheme])
 
   return { entries, ...tracking }
 }

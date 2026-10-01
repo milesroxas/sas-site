@@ -29,7 +29,7 @@ const meta = {
       blockType: 'labStorySection',
       source: 'context',
       layout: 'text-only',
-      theme: 'light',
+      theme: 'default',
       width: 'standard',
     },
     content,
@@ -50,7 +50,7 @@ export const WithEyebrow: Story = {
       source: 'approach',
       eyebrow: 'How it works',
       layout: 'text-only',
-      theme: 'light',
+      theme: 'default',
       width: 'narrow',
     },
     heading: 'One scale, two surfaces',
@@ -64,7 +64,7 @@ export const MediaRight: Story = {
       source: 'context',
       layout: 'text-left',
       media: mediaFixture,
-      theme: 'light',
+      theme: 'default',
       width: 'wide',
     },
   },
@@ -77,20 +77,20 @@ export const MediaLeft: Story = {
       source: 'outcome-summary',
       layout: 'text-right',
       media: videoFixture,
-      theme: 'light',
+      theme: 'default',
       width: 'wide',
     },
   },
 }
 
-export const Dark: Story = {
+export const Inverted: Story = {
   args: {
     block: {
       blockType: 'labStorySection',
       source: 'learnings',
       layout: 'text-left',
       media: mediaFixture,
-      theme: 'dark',
+      theme: 'inverted',
       width: 'wide',
     },
   },

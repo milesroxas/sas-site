@@ -1,20 +1,34 @@
 import type { Condition, Field, SelectField } from 'payload'
+import { isInsideSection } from '@/blocks/section/shared'
+import { BAND_THEME_OPTIONS, type BandTheme } from '@/blocks/shared/band-theme'
 import type { ProseHeadingLevel } from '@/blocks/shared/typography'
 import { STORY_SECTIONS, STORY_SOURCE_OPTIONS } from '@/collections/story/narrative'
 import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 
 /**
- * Block surface select shared by every block family. Values map to
- * `themeClasses` in `./section.tsx` — keep the two in sync.
+ * The band theme select, shared by every block family, the Section block and
+ * the hero bands. Options and their meaning live in `./band-theme`.
+ *
+ * Inside a Section the block renders bare and the Section paints the band, so
+ * the block's own select is hidden there: the Section's theme is the one that
+ * applies.
  */
-export const themeField = (name = 'theme'): SelectField => ({
-  name,
+export const themeField = ({
+  admin,
+  defaultValue = 'default',
+}: {
+  admin?: SelectField['admin']
+  defaultValue?: BandTheme
+} = {}): SelectField => ({
+  name: 'theme',
   type: 'select',
-  defaultValue: 'light',
-  options: ['light', 'dark', 'neutral', 'brand'],
+  defaultValue,
+  options: [...BAND_THEME_OPTIONS],
   admin: {
+    condition: (_, __, { path }) => !isInsideSection(path),
     description:
-      'Section surface within the visitor\'s site theme. Does not force light/dark mode — "dark" is a contrasted band in whichever theme the visitor chose.',
+      'Flips this band against its neighbours. "Default" follows the visitor\'s light or dark preference; "Inverted" paints the opposite of it.',
+    ...admin,
   },
 })
 
@@ -154,13 +168,7 @@ export const transitionFields = (): Field[] => [
           description: 'How the copy sits on the band.',
         },
       },
-      {
-        ...themeField(),
-        admin: {
-          ...themeField().admin,
-          width: '50%',
-        },
-      },
+      themeField({ admin: { width: '50%' } }),
     ],
   },
   // Prose only: the other layouts are page furniture and always render an h2.

@@ -18,7 +18,7 @@ Conventions for naming tabs, groups, fields, blocks, and admin copy across the P
 | Composition | The tab holding the page's `layout` blocks field | — |
 | Opening | The tab holding the full-screen sections before the composition (hero, intro) | — |
 | Closing | The tab holding the full-screen band above the footer bar | — |
-| `theme` | Section surface select (`light`, `dark`, `neutral`, `brand`) within the visitor's site theme | Light/dark mode |
+| `theme` | Band select, one vocabulary for blocks, Sections and heroes (`default`, `inverted`, `neutral`, `brand`; `src/blocks/shared/band-theme.ts`). `default` follows the visitor's light/dark preference; `inverted` paints the opposite of it | The visitor's light/dark preference itself (never set by content) |
 | `source` | Which complete canonical section a block pulls from (`context`, `challenge`, …, `custom`) | A Story Beat (use `storyBeatKey`) or attribution/credit (use `credit`) |
 | `*Override` | Website-only value that wins over canonical content when set; never copies it | A default or fallback |
 | `internal*` | Team-only content, excluded from every public surface (RAG, llms.txt, API) | — |

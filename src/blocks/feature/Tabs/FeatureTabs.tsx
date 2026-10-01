@@ -5,11 +5,9 @@ import type React from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
 import type { RowWithVisual } from '@/blocks/shared/row-visuals'
 import { Section } from '@/blocks/shared/section'
-import { blockSurface } from '@/blocks/shared/visual-surface'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import { Visual } from '@/components/Visual'
-import type { StreakVisualSurface } from '@/features/immersive/visual'
 import type { FeatureTabsBlock as FeatureTabsBlockData } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 
@@ -65,10 +63,7 @@ const TAB_TRIGGER = {
  * the grid's gap, the plate at 3:2: three columns of a 768px page cannot hold
  * a heading, and a 16:9 plate there is shallower than its caption card.
  */
-const TabPanel: React.FC<{ tab: FeatureTab; surface: StreakVisualSurface }> = ({
-  tab,
-  surface,
-}) => (
+const TabPanel: React.FC<{ tab: FeatureTab }> = ({ tab }) => (
   <BlockGrid>
     <div className="flex flex-col justify-between gap-12 md:col-span-8 lg:col-span-3">
       <div className="text-stack">
@@ -107,7 +102,6 @@ const TabPanel: React.FC<{ tab: FeatureTab; surface: StreakVisualSurface }> = ({
           imgClassName="object-cover"
           placement="block"
           size={MEDIA_SIZES}
-          surface={surface}
           visual={tab.visual}
         />
       ) : null}
@@ -133,8 +127,6 @@ export const FeatureTabs: React.FC<FeatureTabsProps> = ({ bare, tabs, tabSize, t
   if (panels.length === 0) return null
 
   const size = tabSize === 'small' ? 'small' : 'default'
-  // Radix mounts only the active panel, so at most one tab's field is live.
-  const surface = blockSurface(theme, Boolean(bare))
   const valueFor = (index: number) => panels[index]?.id ?? String(index)
 
   return (
@@ -162,7 +154,7 @@ export const FeatureTabs: React.FC<FeatureTabsProps> = ({ bare, tabs, tabSize, t
           <div>
             {panels.map((tab, index) => (
               <TabsPrimitive.Content key={tab.id ?? index} value={valueFor(index)}>
-                <TabPanel surface={surface} tab={tab} />
+                <TabPanel tab={tab} />
               </TabsPrimitive.Content>
             ))}
           </div>

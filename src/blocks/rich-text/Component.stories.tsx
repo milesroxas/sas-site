@@ -91,7 +91,7 @@ const meta = {
   args: {
     blockType: 'richText',
     body,
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof RichTextBlock>
 
@@ -168,9 +168,9 @@ export const PillListWithInsights: Story = {
   },
 }
 
-export const Dark: Story = {
+export const Inverted: Story = {
   args: {
     body: richText(...body.root.children, pillList(), insights(3)),
-    theme: 'dark',
+    theme: 'inverted',
   },
 }

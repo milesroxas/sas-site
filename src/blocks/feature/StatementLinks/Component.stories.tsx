@@ -24,7 +24,7 @@ const meta = {
       { id: 'l2', link: { type: 'custom', url: '/expertise', label: 'Our expertise' } },
       { id: 'l3', link: { type: 'custom', url: '/contact', label: 'Start a project' } },
     ],
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof FeatureStatementLinksBlock>
 
@@ -34,8 +34,8 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
 
-export const DarkTheme: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }
 
 export const StatementOnly: Story = {

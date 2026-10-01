@@ -21,7 +21,7 @@ const meta = {
     heading: 'A Visual Language Rooted in the Real World',
     body,
     layout: 'offset',
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof RichTransition>
 
@@ -87,10 +87,10 @@ export const ProseHeadingFour: Story = {
   },
 }
 
-export const Dark: Story = {
+export const Inverted: Story = {
   args: {
     heading: 'From positioning to product story',
     layout: 'centered',
-    theme: 'dark',
+    theme: 'inverted',
   },
 }

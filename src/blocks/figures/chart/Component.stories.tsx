@@ -55,7 +55,7 @@ export const Scatter: Story = { args: figure('countVsFps') }
 export const DivergingBar: Story = { args: figure('deltaFromDefault') }
 
 /** The dark steps are selected for the dark ground, not flipped from the light ones. */
-export const OnDarkBand: Story = { args: { theme: 'dark' } }
+export const OnInvertedBand: Story = { args: { theme: 'inverted' } }
 
 export const OnNeutralBand: Story = { args: { ...figure('posterWeight'), theme: 'neutral' } }
 

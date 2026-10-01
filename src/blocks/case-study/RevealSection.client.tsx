@@ -1,12 +1,8 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import {
-  BAND_SPACING,
-  type BandSpacing,
-  type SectionTheme,
-  sectionThemeClass,
-} from '@/blocks/shared/section'
+import { type BandTheme, sectionThemeClass } from '@/blocks/shared/band-theme'
+import { BAND_SPACING, type BandSpacing } from '@/blocks/shared/section'
 import { ScrollReveal, type ScrollRevealVariant } from '@/shared/ui/scroll-reveal'
 import { cn } from '@/utilities/ui'
 
@@ -31,14 +27,14 @@ export function RevealSection({
   children,
   className,
   spacing = 'normal',
-  theme = 'light',
+  theme,
   variant,
 }: {
   bare?: boolean
   children: ReactNode
   className?: string
   spacing?: BandSpacing
-  theme?: SectionTheme | null
+  theme?: BandTheme | null
   variant?: ScrollRevealVariant
 }) {
   return (

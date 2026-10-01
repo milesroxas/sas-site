@@ -37,7 +37,7 @@ const meta = {
     media: mediaFixture,
     layout: 'left',
     aspectRatio: '16-9',
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof MediaContentSplitBlock>
 
@@ -59,8 +59,8 @@ export const ThreeTwo: Story = {
   args: { aspectRatio: '3-2' },
 }
 
-export const Dark: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }
 
 /** Everything the content-column editor offers: kicker, h4 over a ruled list, small note, Actions. */
@@ -68,8 +68,8 @@ export const Composed: Story = {
   args: { body: contentColumnFixture },
 }
 
-export const ComposedDark: Story = {
-  args: { body: contentColumnFixture, theme: 'dark' },
+export const ComposedInverted: Story = {
+  args: { body: contentColumnFixture, theme: 'inverted' },
 }
 
 /** A Streak Field in the media column. */

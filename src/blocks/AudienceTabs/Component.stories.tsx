@@ -108,7 +108,7 @@ const meta = {
         media: windowLandscapeVideo,
       },
     ],
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof AudienceTabsBlock>
 
@@ -118,18 +118,18 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
 
-export const DarkTheme: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }
 
 export const TwoTabs: Story = {
   args: { tabs: meta.args.tabs.slice(0, 2) },
 }
 
-/** A Streak Field in the first tab's slot on the default dark band; the swap wipes it like any media. */
+/** A Streak Field in the first tab's slot on the default inverted band; the swap wipes it like any media. */
 export const StreakField: Story = {
   args: {
-    theme: 'dark',
+    theme: 'inverted',
     tabs: meta.args.tabs.map((tab, index) =>
       index === 0
         ? {

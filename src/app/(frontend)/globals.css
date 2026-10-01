@@ -1021,23 +1021,27 @@
   --radius: 0.45rem;
 }
 
-/* Light palette, keyed to `[data-theme="light"]` as well as `:root` — the
-   mirror of the dark block below, so both polarities are addressable and
-   neither is only a fallback.
+/* Palettes. Each is stated once, as a utility of custom properties, and
+   painted onto every polarity scope by the rule after the dark palette:
+   `<html>` (the visitor's preference), any `[data-theme]` pin, and the
+   inverted band. Which of the two a scope takes is decided by the `dark`
+   variant (src/styles/shadcn-theme.css), the one statement of the polarity
+   model, so the palette, the `dark:` utilities and every rule that flips with
+   the ground can never disagree.
 
-   Light is the site default, so `:root` carries it and an unstamped document
-   paints light. But a *nested* light scope has to repaint too: a light hero
-   band pinning the fixed bars (`HeaderBar`/`FooterBar` stamp `data-theme`) and
-   the demo browser windows (src/shared/ui/demo-kit/demo-browser.tsx) both
-   place `data-theme="light"` inside a document that may be dark. With the
-   palette on `:root` alone those scopes matched no rule and inherited the dark
-   values — the attribute changed and nothing repainted.
+   `color-scheme` travels with each palette: native controls and scrollbars
+   follow the ground, and script reads a ground's polarity from the computed
+   `color-scheme` (`readGround`, src/utilities/ground.ts) rather than
+   restating selectors. A polarity-dependent token goes in both palettes, not
+   `light-dark()`: the build polyfills that function with variables resolved
+   where the token is declared, so on `:root` it would never flip.
 
-   Same specificity as the dark block, which is stated after this one, so a
-   dark document still resolves dark; only elements that match `light`
-   directly take these. */
-:root,
-[data-theme="light"] {
+   A token that points at another (`--sidebar-accent: var(--accent)`) belongs
+   in a palette, never on bare `:root`: a custom property resolves its `var()`
+   where it is declared, so a `:root` alias would freeze the document's value
+   and never follow an inverted band. */
+@utility palette-light {
+  color-scheme: light;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -1079,10 +1083,11 @@
   --error: oklch(75% 0.15 25deg);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
-  /* Section surfaces (block theme select). Stay inside the active site theme —
-     they contrast neighboring blocks without forcing light/dark mode.
-     --neutral is the quiet stripe (editor "neutral"); not --secondary, which
-     is a control fill. Light values match the previous secondary band. */
+  /* Surfaces that stay inside the active palette. --tertiary is the ground
+     of the always-dark panel (`data-band="dark"`, the code block); --neutral
+     is the quiet stripe (band theme "neutral"), not --secondary, which is a
+     control fill; --brand is the brand band. The "inverted" band needs no
+     token of its own: it paints the other palette. */
   --tertiary: oklch(0.22 0 0);
   --tertiary-foreground: oklch(0.985 0 0);
   --neutral: oklch(0.967 0.001 286.375);
@@ -1093,6 +1098,20 @@
      --background (WCAG 1.4.11 non-text contrast); light value also clears
      4.5:1 as text ink. Distinct from --success (teal, status surfaces). */
   --active: oklch(0.52 0.14 150);
+  /* Figure series (src/features/figures/ui, docs/figures.md): four
+     categorical slots, assigned by series order and never cycled, plus a
+     neutral for `reference` series. Light and dark are selected separately,
+     not flipped, and both sets pass the dataviz validator on every surface a
+     figure can sit on: lightness band, chroma floor, CVD separation,
+     normal-vision floor, and 3:1 against the ground (commands and results in
+     docs/figures.md). They live in the palettes so a figure follows its
+     ground, not the site theme: a chart in an inverted band on a light visit
+     takes the dark steps. Re-run the validator before changing a value. */
+  --figure-1: #2a78d6;
+  --figure-2: #d95926;
+  --figure-3: #15936a;
+  --figure-4: #b57a00;
+  --figure-reference: var(--muted-foreground);
 }
 
 /* The site header toggles this attribute past a small scroll threshold
@@ -1106,20 +1125,9 @@ html[data-scrolled] :is([data-site-header], [data-site-footer]) {
 }
 
 /* Dark palette from the shadcn preset (b1ZzraCdE), keyed to the site's
-   data-theme mechanism instead of the stock `.dark` class.
-
-   The second selector paints the same palette onto the fixed bars before
-   hydration while a hero band that sits under them at rest asks for it
-   (`pinsChromeAtLoad`, src/heros/HeroBand.tsx). The ChromeTheme store that
-   pins the bars cannot write until that band's effect runs, so the
-   server-rendered bars would otherwise carry the site theme's ink and plate
-   over the band for the whole pre-hydration window and then fade. This puts
-   them on the band's palette from the first frame; `data-chrome-live`
-   (HeaderBar / FooterBar, stamped once hydrated) hands them to the store
-   with nothing left to change. The plate half is the rule after the block. */
-[data-theme="dark"],
-:root:has([data-hero-band-pin="dark"])
-  :is([data-site-header], [data-site-footer]):not([data-chrome-live]) {
+   polarity model instead of the stock `.dark` class. */
+@utility palette-dark {
+  color-scheme: dark;
   --background: oklch(0.145 0 0);
   /* Soften near-white ink: light glyphs bloom on dark grounds and read heavier
      than the same weight in light mode. */
@@ -1159,7 +1167,7 @@ html[data-scrolled] :is([data-site-header], [data-site-footer]) {
   --success: oklch(28% 0.1 200deg);
   --warning: oklch(35% 0.08 70deg);
   --error: oklch(45% 0.1 25deg);
-  /* Deeper contrast band within the dark site theme (not a light inversion). */
+  /* The always-dark panel sits a step below the dark page ground. */
   --tertiary: oklch(0.08 0 0);
   --tertiary-foreground: oklch(0.9 0 0);
   /* Lift off --background (0.145) without the control-fill step of
@@ -1169,6 +1177,39 @@ html[data-scrolled] :is([data-site-header], [data-site-footer]) {
   --brand: oklch(0.5 0.12 75);
   --brand-foreground: oklch(0.94 0.01 95);
   --active: oklch(0.75 0.16 150);
+  --figure-1: #3987e5;
+  --figure-3: #199e70;
+  --figure-4: #c98500;
+}
+
+/* Every polarity scope repaints, so a nested pin never inherits the other
+   palette: a light hero band pinning the fixed bars (`HeaderBar`/`FooterBar`
+   stamp `data-theme`) and the demo browser windows
+   (src/shared/ui/demo-kit/demo-browser.tsx) both place `data-theme="light"`
+   inside a document that may be dark. Light is the site default, so an
+   unstamped document paints light. */
+:root,
+[data-theme],
+.band-inverted {
+  @apply palette-light;
+
+  @variant dark {
+    @apply palette-dark;
+  }
+}
+
+/* Pre-hydration chrome pin, palette half. A hero band that sits under the
+   fixed bars at rest (`pinsChromeAtLoad`, src/heros/HeroBand.tsx) asks for
+   its palette on them, but the ChromeTheme store that pins the bars cannot
+   write until that band's effect runs, so the server-rendered bars would
+   carry the site theme's ink and plate over the band for the whole
+   pre-hydration window and then fade. This puts them on the band's palette
+   from the first frame; `data-chrome-live` (HeaderBar / FooterBar, stamped
+   once hydrated) hands them to the store with nothing left to change. The
+   plate half is the rule after this one. */
+:root:has([data-hero-band-pin="dark"])
+  :is([data-site-header], [data-site-footer]):not([data-chrome-live]) {
+  @apply palette-dark;
 }
 
 /* Pre-hydration chrome pin, plate half: the store's pinned state is a
@@ -1182,26 +1223,28 @@ html[data-scrolled] :is([data-site-header], [data-site-footer]) {
   background-color: transparent;
 }
 
-/* Surface set for the `dark` composition band (blocks/shared/section.tsx
-   `themeClasses.dark`). The band is a low-luminance panel *inside* the active
-   site theme, so it has to restate every surface token — not just
-   background/foreground. Anything left behind keeps the site theme's value and
-   paints a light chip inside a dark band: on a light-theme visit `--muted` is
-   oklch(0.97), so every media plate (`bg-muted` behind an image) becomes a
-   near-white sheet whose subpixel edge reads as a white hairline around the
-   frame, and `--border` is oklch(0.922), a visible white line.
+/* Surface set for the always-dark panel (`data-band="dark"`: the code
+   surface in components/ui/code-block.tsx, the index banner in
+   src/sections/IndexBanner). It is a low-luminance panel on
+   whatever ground it lands on, deeper than the dark page itself, so it
+   restates every surface token rather than taking the dark palette whole.
+   Anything left behind keeps the ground's value and paints a light chip inside
+   the panel: on a light visit `--muted` is oklch(0.97), so a plate becomes a
+   near-white sheet whose subpixel edge reads as a white hairline, and
+   `--border` is oklch(0.922), a visible white line.
 
    Derived from --tertiary rather than hard-coded per theme: both are
    achromatic, so an oklab mix interpolates lightness only and one rule holds
-   the same lift-off-the-band in either site theme (light band 0.22 → muted
-   0.31; dark band 0.08 → muted 0.18 — the same step the site theme puts
-   between --background and --muted).
+   the same lift off the panel in either site theme (light ground 0.22, muted
+   0.31; dark ground 0.08, muted 0.18: the same step the palette puts between
+   --background and --muted).
 
    --popover and --ring stay on the site theme on purpose: Radix portals
-   popovers to <body>, outside the band, and a light focus ring is the correct
-   read on a dark surface. */
-[data-band="dark"],
-.band-dark {
+   popovers to <body>, outside the panel, and a light focus ring is the correct
+   read on a dark surface. `color-scheme` declares the polarity to native
+   scrollbars and to `readGround`. */
+[data-band="dark"] {
+  color-scheme: dark;
   --background: var(--tertiary);
   --foreground: var(--tertiary-foreground);
   --muted: color-mix(in oklab, var(--tertiary) 88%, var(--tertiary-foreground));
@@ -1737,17 +1780,19 @@ html[data-theme="light"] {
 
 /* Visual posters (src/features/immersive/visual/streak-visual.tsx): a Streak
    Field slot ships one still per ground polarity and the ground decides which
-   paints. Light is the site default; a dark site theme or a dark band flips
-   the pair. Keyed here rather than on a theme hook so the server HTML already
-   shows the right still and the takeover menu finds one visible image. */
+   paints. Light is the site default; a dark ground (the visitor's dark theme,
+   a dark pin, an inverted band on a light visit) flips the pair. Keyed on the
+   `dark` variant rather than on a theme hook so the server HTML already shows
+   the right still and the takeover menu finds one visible image. */
 [data-visual-poster="dark"] {
-  display: none;
+  @variant not-dark {
+    display: none;
+  }
 }
-:is([data-theme="dark"], .band-dark) [data-visual-poster="light"] {
-  display: none;
-}
-:is([data-theme="dark"], .band-dark) [data-visual-poster="dark"] {
-  display: block;
+[data-visual-poster="light"] {
+  @variant dark {
+    display: none;
+  }
 }
 
 /* Visual bleed (src/features/immersive/visual/leak-visual.tsx): a visual that
@@ -1768,30 +1813,6 @@ html[data-theme="light"] {
    rules above resolve `--background` on it: no color is restated here. */
 [data-menu-media-ground] {
   background-color: var(--background);
-}
-
-/* Figures (src/features/figures/ui, docs/figures.md).
-
-   Series colors: four categorical slots, assigned by series order and never
-   cycled, plus a neutral for `reference` series. Light and dark are selected
-   separately, not flipped, and both sets pass the dataviz validator on every
-   surface a figure can sit on: lightness band, chroma floor, CVD separation,
-   normal-vision floor, and 3:1 against the ground (the commands and results
-   are recorded in docs/figures.md). Dark follows the ground, not the site
-   theme, so a chart on a dark band in the light theme takes the dark steps.
-   Re-run the validator before changing a value. */
-:root {
-  --figure-1: #2a78d6;
-  --figure-2: #d95926;
-  --figure-3: #15936a;
-  --figure-4: #b57a00;
-  --figure-reference: var(--muted-foreground);
-}
-:is([data-theme="dark"], .band-dark) {
-  --figure-1: #3987e5;
-  --figure-2: #d95926;
-  --figure-3: #199e70;
-  --figure-4: #c98500;
 }
 
 /* Diagram entrance: explanatory, not decorative. Nodes surface in reading

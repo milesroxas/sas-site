@@ -3,15 +3,15 @@ import { useState } from 'react'
 import { INITIAL_VIEWPORTS } from 'storybook/viewport'
 import { cn } from '@/utilities/ui'
 import { industryWorkPanelsFixture as panels } from '../fixtures'
+import { type BandTheme, themeClasses } from './band-theme'
 import { HeadingDropdown } from './heading-dropdown'
-import { type SectionTheme, themeClasses } from './section'
 
 /**
  * The block's sentence on its own: the chip, the menu it opens (Paper:
  * "Industry work - C Spotlight ledger" menu), and the continuation scramble.
  * Stateful so picking a row swaps the sentence the way the block does.
  */
-const Sentence = ({ lowercase, theme }: { lowercase?: boolean; theme: SectionTheme }) => {
+const Sentence = ({ lowercase, theme }: { lowercase?: boolean; theme: BandTheme }) => {
   const [active, setActive] = useState(0)
   const panel = panels[active] ?? panels[0]
   if (!panel) return null
@@ -39,7 +39,7 @@ const meta = {
   },
   args: {
     lowercase: true,
-    theme: 'dark',
+    theme: 'inverted',
   },
 } satisfies Meta<typeof Sentence>
 
@@ -51,7 +51,7 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {}
 
 export const LightBand: Story = {
-  args: { theme: 'light' },
+  args: { theme: 'default' },
 }
 
 /**

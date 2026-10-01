@@ -64,7 +64,7 @@ const meta = {
     enableLink: true,
     prompt: 'Did not find your answer?',
     link: { type: 'custom', url: '/contact', label: 'Ask us directly' },
-    theme: 'light',
+    theme: 'default',
   },
 } satisfies Meta<typeof FaqBlock>
 
@@ -90,6 +90,6 @@ export const SingleQuestion: Story = {
   args: { items: items.slice(0, 1) },
 }
 
-export const Dark: Story = {
-  args: { theme: 'dark' },
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
 }

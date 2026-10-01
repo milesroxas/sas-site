@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
+import { themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { SECTION_SPACING_OPTIONS, SECTION_THEME_OPTIONS } from './shared'
+import { SECTION_CHILDREN_FIELD, SECTION_SPACING_OPTIONS } from './shared'
 
 /**
  * The Section block: the structural wrapper editors add first in the
@@ -41,18 +42,14 @@ export const sectionBlock = ({
     {
       type: 'row',
       fields: [
-        {
-          name: 'theme',
-          type: 'select',
-          defaultValue: 'inherit',
-          options: [...SECTION_THEME_OPTIONS],
+        themeField({
           admin: {
             width: '50%',
             condition: (_, siblingData) => Boolean(siblingData?.customize),
             description:
-              'Surface within the visitor\'s site theme. "Inherit" is the page surface; "Inverted" is a contrasted band, not a forced dark mode.',
+              'The band this section paints. "Default" follows the visitor\'s light or dark preference; "Inverted" paints the opposite of it, to flip this section against its neighbours.',
           },
-        },
+        }),
       ],
     },
     {
@@ -87,7 +84,7 @@ export const sectionBlock = ({
       ],
     },
     {
-      name: 'blocks',
+      name: SECTION_CHILDREN_FIELD,
       type: 'blocks',
       labels: { singular: 'Block', plural: 'Blocks' },
       blocks,

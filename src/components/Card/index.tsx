@@ -33,8 +33,11 @@ const variantClassNames: Record<CardVariant, string> = {
   open: 'rounded-none bg-transparent ring-0',
   // Split renders its own layout branch; no CardUi chrome to override.
   split: '',
-  overlay: 'relative min-h-80 justify-end bg-muted ring-0 text-white',
-  backdrop: cn(POST_IMAGE_FRAME, 'relative isolate justify-end bg-muted ring-0 text-white'),
+  overlay: 'relative min-h-80 justify-end bg-muted ring-0 text-scrim-foreground',
+  backdrop: cn(
+    POST_IMAGE_FRAME,
+    'relative isolate justify-end bg-muted ring-0 text-scrim-foreground',
+  ),
 }
 
 export const Card: React.FC<{
@@ -194,7 +197,7 @@ export const Card: React.FC<{
       {isOverlay && (
         <div
           aria-hidden
-          className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-b from-transparent to-black/80"
+          className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-b from-transparent to-scrim/80"
         />
       )}
       <CardHeader className={cn(isOpen && 'px-0', isMediaBackground && 'relative')}>
@@ -204,7 +207,7 @@ export const Card: React.FC<{
         )}
         {showCategories && hasCategories && (
           <CardDescription
-            className={cn('uppercase', isMediaBackground && 'relative text-white/70')}
+            className={cn('uppercase', isMediaBackground && 'relative text-scrim-foreground/70')}
           >
             {categories?.map((category, index) => {
               if (typeof category === 'object') {
@@ -243,7 +246,9 @@ export const Card: React.FC<{
       </CardHeader>
       {/* Backdrop keeps the surface title-only — the media is the content. */}
       {description && !isBackdrop && (
-        <CardContent className={cn(isOpen && 'px-0', isOverlay && 'relative text-white/80')}>
+        <CardContent
+          className={cn(isOpen && 'px-0', isOverlay && 'relative text-scrim-foreground/80')}
+        >
           <p>{sanitizedDescription}</p>
         </CardContent>
       )}

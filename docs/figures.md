@@ -47,15 +47,15 @@ The chart library is one lazy chunk, requested when the figure comes within a sc
 
 ### Palette record
 
-Four slots, light and dark selected separately (`--figure-1..4`, `globals.css`). Dark follows the ground, not the site theme, so a chart on a dark band in the light theme takes the dark steps. Validated with the dataviz validator on every surface a figure can sit on:
+Four slots, light and dark selected separately (`--figure-1..4`, `globals.css`). Both sets live in the two palettes, so a figure follows its ground, not the site theme: a chart in an inverted band on a light visit takes the dark steps, and on a dark visit the light ones. Validated with the dataviz validator on every surface a figure can sit on:
 
 ```bash
 V=<dataviz skill>/scripts/validate_palette.js
-node $V "#2a78d6,#d95926,#15936a,#b57a00" --mode light --surface "#ffffff"   # page
+node $V "#2a78d6,#d95926,#15936a,#b57a00" --mode light --surface "#ffffff"   # page (and an inverted band on a dark visit)
 node $V "#2a78d6,#d95926,#15936a,#b57a00" --mode light --surface "#f4f4f5"   # neutral band
-node $V "#3987e5,#d95926,#199e70,#c98500" --mode dark  --surface "#0a0a0a"   # dark theme
-node $V "#3987e5,#d95926,#199e70,#c98500" --mode dark  --surface "#1b1b1b"   # dark band, light theme
-node $V "#3987e5,#d95926,#199e70,#c98500" --mode dark  --surface "#020202"   # dark band, dark theme
+node $V "#3987e5,#d95926,#199e70,#c98500" --mode dark  --surface "#0a0a0a"   # dark theme (and an inverted band on a light visit)
+node $V "#3987e5,#d95926,#199e70,#c98500" --mode dark  --surface "#1b1b1b"   # always-dark panel, light visit
+node $V "#3987e5,#d95926,#199e70,#c98500" --mode dark  --surface "#020202"   # always-dark panel, dark visit
 ```
 
 2026-09-19: every check passes on all five. Worst adjacent CVD separation 8.4 (target 8), worst normal-vision separation 18.1 (floor 15), every mark at or above 3:1 against its ground. Re-run before changing a value. A `brand` band is not in the record: avoid charts on it until it is.

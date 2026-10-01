@@ -511,7 +511,7 @@ async function run() {
         heading: 'Where the friction lived',
         media: img(0),
         imagePosition: 'right',
-        theme: 'light',
+        theme: 'default',
       },
       {
         blockType: 'featureImageStatement',
@@ -525,7 +525,7 @@ async function run() {
         source: 'strategy',
         media: img(2),
         layout: 'text-right',
-        theme: 'light',
+        theme: 'default',
         width: 'wide',
       },
       {
@@ -533,13 +533,13 @@ async function run() {
         heading: 'Results',
         source: 'featured-public',
         layout: 'grid',
-        theme: 'dark',
+        theme: 'inverted',
       },
       {
         blockType: 'caseStudyTestimonial',
         testimonial: testimonialIds[0],
         layout: 'editorial',
-        theme: 'light',
+        theme: 'default',
       },
       {
         blockType: 'caseStudyRelatedWork',
@@ -555,7 +555,7 @@ async function run() {
         source: 'context',
         media: img(3),
         layout: 'sticky-media',
-        theme: 'light',
+        theme: 'default',
         width: 'standard',
       },
       {
@@ -567,7 +567,7 @@ async function run() {
         landscapeMedia: img(5),
         portraitPosition: 'left',
         textPosition: 'under-portrait',
-        theme: 'light',
+        theme: 'default',
       },
       {
         blockType: 'caseStudyKeyDecisions',
@@ -582,7 +582,7 @@ async function run() {
         heading: 'From story to system',
         body: para('With the narrative settled, the work moved into structure.'),
         layout: 'centered',
-        theme: 'dark',
+        theme: 'inverted',
       },
       {
         blockType: 'featureTabs',
@@ -619,7 +619,7 @@ async function run() {
         largeMedia: img(0),
         smallMedia: img(1),
         captionPosition: 'right',
-        theme: 'light',
+        theme: 'default',
       },
       {
         blockType: 'caseStudyMediaShowcase',
@@ -627,7 +627,7 @@ async function run() {
         introduction: para('A sample of the shipped experience.'),
         media: [img(2), img(3), img(4)],
         layout: 'grid',
-        theme: 'light',
+        theme: 'default',
         showCaptions: true,
       },
       {
@@ -669,7 +669,7 @@ async function run() {
         blockType: 'caseStudyStorySection',
         source: 'outcome-summary',
         layout: 'text-only',
-        theme: 'light',
+        theme: 'default',
         width: 'narrow',
       },
       {
@@ -677,7 +677,7 @@ async function run() {
         heading: 'By the numbers',
         source: 'all-public',
         layout: 'row',
-        theme: 'light',
+        theme: 'default',
       },
     ],
     [
@@ -694,7 +694,7 @@ async function run() {
           { link: { type: 'custom', url: '/works', label: 'All work' } },
           { link: { type: 'custom', url: '/expertise', label: 'Our expertise' } },
         ],
-        theme: 'light',
+        theme: 'default',
       },
       {
         blockType: 'splitContentNarrow',
@@ -710,7 +710,7 @@ async function run() {
         blockType: 'caseStudyMediaShowcase',
         media: [img(0), img(1), img(2), img(3)],
         layout: 'horizontal',
-        theme: 'dark',
+        theme: 'inverted',
       },
     ],
     [
@@ -719,7 +719,7 @@ async function run() {
         source: 'learnings',
         eyebrow: 'Learnings',
         layout: 'centered',
-        theme: 'light',
+        theme: 'default',
         width: 'standard',
       },
       {
@@ -734,7 +734,7 @@ async function run() {
         heading: 'Where it goes next',
         body: para('The system keeps growing — the placeholder review ends here.'),
         layout: 'statement',
-        theme: 'dark',
+        theme: 'inverted',
       },
     ],
   ]
@@ -1073,7 +1073,7 @@ async function run() {
         ? previousDynamicAudience.heading
         : 'How we help',
     audiences: existingAudiences ?? defaultAudiences,
-    theme: 'light' as const,
+    theme: 'default' as const,
   }
 
   const audienceTabsBlock = {
@@ -1120,7 +1120,7 @@ async function run() {
         media: img(2),
       },
     ],
-    theme: 'dark' as const,
+    theme: 'inverted' as const,
   }
 
   await upsert(
@@ -1242,7 +1242,7 @@ async function run() {
             { link: { type: 'custom', url: '/expertise', label: 'Our Expertise' } },
             { link: { type: 'custom', url: '/who-we-help', label: 'Who We Work With' } },
           ],
-          theme: 'light',
+          theme: 'default',
         },
         {
           blockType: 'featureHeadingOffset',
@@ -1386,7 +1386,7 @@ async function run() {
             eyebrow: 'Lab',
             media: img(i),
             layout: spec.heroLayout,
-            theme: 'dark',
+            theme: 'inverted',
             mediaTreatment: 'background',
           },
           coverAsset: img(i + 2),
@@ -1397,7 +1397,7 @@ async function run() {
               eyebrow: 'Context',
               layout: 'text-left',
               media: img(i + 3),
-              theme: 'light',
+              theme: 'default',
               width: 'standard',
             },
             {
@@ -1406,7 +1406,7 @@ async function run() {
               introduction: para('Selected frames from the experiment.'),
               media: [img(i), img(i + 1), img(i + 2)],
               layout: 'grid',
-              theme: 'light',
+              theme: 'default',
               showCaptions: true,
             },
             {
@@ -1425,7 +1425,7 @@ async function run() {
               body: para('Each iteration shipped to the demo route for the team to poke at.'),
               media: img(i + 4),
               imagePosition: 'left',
-              theme: 'light',
+              theme: 'default',
             },
             {
               blockType: 'labTransition',
@@ -1433,7 +1433,7 @@ async function run() {
               heading: 'Where this goes',
               body: para('The system moves into production work next quarter.'),
               layout: 'statement',
-              theme: 'dark',
+              theme: 'inverted',
             },
             {
               blockType: 'labRelatedProjects',
@@ -1488,7 +1488,7 @@ async function run() {
             body: para('A placeholder walkthrough of the engagement arc.'),
             media: img(i + 1),
             imagePosition: 'right',
-            theme: 'light',
+            theme: 'default',
           },
           {
             blockType: 'cta',
@@ -1616,7 +1616,7 @@ async function run() {
             { link: { type: 'custom', url: '/expertise', label: 'Our Expertise' } },
             { link: { type: 'custom', url: '/who-we-help', label: 'Who We Work With' } },
           ],
-          theme: 'light',
+          theme: 'default',
         },
         audienceTabsBlock,
       ],

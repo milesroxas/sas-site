@@ -92,20 +92,28 @@ Interactive is the first legacy group to enter the run. Tabs followed in B5 (it 
 | Layout (arrangement) | Side by side (`side`), Stacked (`stacked`), Ledger (`ledger`, 2026-09-06) | `side` | Insight list only, where the choice is heading beside vs above, or beside one ruled row per insight (D11) |
 | Mark size | Small (`small`), Medium (`medium`), Large (`large`) | `medium` | Insight list (`markSize`) |
 | Body size | Small (`small`), Medium (`medium`), Large (`large`) | `medium` | Section heading blocks |
-| Theme | Inherit (`inherit`), Secondary (`secondary`), Accent (`accent`), Inverted (`inverted`) | `inherit` | Section block only |
+| Theme | Default (`default`), Inverted (`inverted`), Neutral (`neutral`), Brand (`brand`) | `default` | every block's `theme` and the Section block: one select, `themeField()` over `src/blocks/shared/band-theme.ts` (2026-09-30, see Band themes below) |
 | Aspect ratio | 16:9 (`16-9`), 3:2 (`3-2`), 21:9 (`21-9`) | `16-9` | media blocks (matches existing values) |
 | Spacing | Default (`default`), Tight (`tight`), Loose (`loose`), None (`none`) | `default` | Section block only |
 
 Strategy for existing fields: **relabel, do not rename or re-value in the first pass.** A Payload select's `label` and per-option labels are free; the field `name` is a DB column and the option values are a PG enum. So `imagePosition` gets `label: 'Layout'` and keeps its name and values; `caseStudyTransition.layout` keeps value `centered` labeled "Center". Value normalization (`centered` to `center`, dropping `split`/`statement`/`responsive`) is deferred to Phase D where it gets the full enum-migration treatment.
 
-Theme value mapping (Section stores the new values natively; existing block `theme` fields are untouched until Phase D):
+### Band themes (2026-09-30)
 
-| Section value | Renders as |
+One vocabulary for every band: each block's `theme`, the Section's `theme`, and the hero's. Options, type and classes live in `src/blocks/shared/band-theme.ts`; the select is `themeField()` (`src/blocks/shared/fields.ts`). The earlier split (blocks `light | dark | neutral | brand`, Section `inherit | secondary | accent | inverted` translated by a map) is gone, and so is the map.
+
+| Value | Renders as |
 |---|---|
-| `inherit` | no band override (transparent, page surface) |
-| `secondary` | `themeClasses.neutral` |
-| `accent` | `themeClasses.brand` |
-| `inverted` | `themeClasses.dark` |
+| `default` | the page surface in the visitor's palette (was block `light`, Section `inherit`) |
+| `inverted` | the other palette: dark on a light visit, light on a dark visit (was block `dark`, a low-luminance band in both themes; Section `inverted`) |
+| `neutral` | the quiet stripe inside the visitor's palette (was Section `secondary`) |
+| `brand` | the brand surface (was Section `accent`) |
+
+How the inversion works: `.band-inverted` is a polarity scope. The `dark` variant in `src/styles/shadcn-theme.css` is the one statement of which elements sit on a dark ground (pins, the inverted band, nearest scope wins), and everything reads it: the palettes (`palette-light` / `palette-dark` in globals.css, applied to every scope), every `dark:` utility, prose, the Streak Field poster pair and the figure series. Script reads a ground from the computed `color-scheme` (`readGround`, `src/utilities/ground.ts`), never from selectors. The old always-dark band survives only as the `data-band="dark"` panel (code block, index banner), which is not a band theme.
+
+Inside a Section the nested block renders bare, so its own theme select is hidden there (`isInsideSection` on the admin path) and the Section's theme is the one that applies.
+
+Migration `20261001_183459_band_theme_roles` rewrites every stored value in place (all 370 theme enums, versions included): `light -> default`, `dark -> inverted`, `inherit -> default`, `secondary -> neutral`, `accent -> brand`. Its `down` maps them back.
 
 ### Per-block select mapping
 
@@ -218,7 +226,7 @@ Initial nested `blocks` lists contained **only the nine reorganized blocks** (pe
 - `BAND_SPACING` grows a `tight` tier and a `default` alias for `normal` at the type level; only the Section block reads `default`/`tight`. Suggested start: `tight: 'py-8 md:py-12'`, tune on the demo page.
 - Internal rhythm between multiple children in one section: recommend `space-y-16 md:space-y-24` on the section inner wrapper as a starting point (D3).
 - Renderer wiring: `RenderBlocks.tsx` gets a `section` branch that renders the shell then maps children through the existing component map with `bare`; `RenderCaseStudyBlocks.tsx` and `RenderLabBlocks.tsx` get a `case 'section'` that recurses into their own switch so story-beat copy resolution keeps working. Reveal behavior (`blockRevealVariants`) applies to children as today.
-- `inherit` theme renders no surface classes at all so adjacent sections blend with the page, matching how `light` behaves today as the resolve-to default.
+- `default` theme paints the page surface, so adjacent default sections blend with the page and with each other.
 
 ---
 
@@ -313,18 +321,18 @@ The second legacy Interactive block to move (after Carousel in B3), and the firs
 
 ### Phase C: content migration (18 instances, 2 docs) — MANUAL in admin (decided 2026-09-02)
 
-Miles wraps the existing prod content into Sections by hand. `scripts/wrap-sections.ts` (idempotent 1:1 wrap, `--dry-run`, snapshot + `--restore`) stays in the repo as fallback and as the reference for the mapping below; it was rehearsed successfully against a local prod copy but will not run against prod.
+Miles wraps the existing prod content into Sections by hand. `scripts/wrap-sections.ts` (idempotent 1:1 wrap, `--dry-run`, snapshot + `--restore`) stays in the repo as the reference for the mapping below and as the cutover path for whatever is still top-level at launch. Updated 2026-09-30 for band themes: the Section takes the block's theme as-is, the nested block is reset to `default`, eligibility is read from each collection's own Section config, Posts are included, a document whose latest version is a draft is saved as a draft (never published by the run), and legacy theme names are normalized so a pre-migration dry run and a `--restore` of an old snapshot both stay valid. Order at cutover: deploy (CI applies `20261001_183459_band_theme_roles`), then `--dry-run`, review, run.
 
 **Constraint that makes this re-authoring:** Payload admin cannot move a block between fields. Each wrap = Add Section, recreate the block inside it (re-pick media, copy rich text, re-set selects), delete the original, drag the Section into position. Work in draft, check live preview, publish once per page.
 
-**Mapping (theme: light -> Inherit, neutral -> Secondary):**
+**Mapping (the block's theme carries over as-is: Default, Neutral):**
 
 | Section settings | Applies to |
 |---|---|
-| Customize ON, Spacing Loose, Theme Inherit | light media blocks: Stacked, Split narrow, Pair offset (and Pair, Caption if ever used) |
-| Customize ON, Spacing Loose, Theme Secondary | the one neutral Stacked on vault |
+| Customize ON, Spacing Loose, Theme Default | light media blocks: Stacked, Split narrow, Pair offset (and Pair, Caption if ever used) |
+| Customize ON, Spacing Loose, Theme Neutral | the one neutral Stacked on vault |
 | Customize OFF (defaults) | contained Statement blocks; light Standard transitions |
-| Customize ON, Theme Secondary, Spacing Default | the neutral Standard transition on vault |
+| Customize ON, Theme Neutral, Spacing Default | the neutral Standard transition on vault |
 
 **Per-page inventory (prod audit 2026-09-02, drafts identical to published):**
 

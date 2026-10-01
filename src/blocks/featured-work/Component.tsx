@@ -1,5 +1,6 @@
 import type React from 'react'
-import { Section, type SectionTheme } from '@/blocks/shared/section'
+import type { BandTheme } from '@/blocks/shared/band-theme'
+import { Section } from '@/blocks/shared/section'
 import type { FeaturedWorkBlock as FeaturedWorkBlockProps } from '@/payload-types'
 import type { FeaturedEntry } from './entry'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
@@ -10,7 +11,7 @@ export const FeaturedWorkSection: React.FC<{
   entries: FeaturedEntry[]
   /** Names what the media frame opens, for its accessible label. */
   frameLabel?: string
-  theme?: SectionTheme | null
+  theme?: BandTheme | null
   id?: string | null
 }> = ({ eyebrow, entries, frameLabel, theme, id }) => {
   if (entries.length === 0) return null
@@ -18,7 +19,7 @@ export const FeaturedWorkSection: React.FC<{
   return (
     // The pinned client shell owns viewport sizing and its own containers, so
     // the section band carries no vertical padding of its own.
-    <Section spacing="none" theme={theme ?? 'light'}>
+    <Section spacing="none" theme={theme}>
       <div id={id ? `block-${id}` : undefined}>
         <FeaturedWorkList eyebrow={eyebrow} entries={entries} frameLabel={frameLabel} />
       </div>
@@ -33,12 +34,5 @@ export const FeaturedWorkBlock: React.FC<FeaturedWorkBlockProps> = async ({
   id,
 }) => {
   const resolved = await resolveFeaturedWorkEntries(entries ?? [])
-  return (
-    <FeaturedWorkSection
-      eyebrow={eyebrow}
-      entries={resolved}
-      id={id}
-      theme={theme as SectionTheme | null}
-    />
-  )
+  return <FeaturedWorkSection eyebrow={eyebrow} entries={resolved} id={id} theme={theme} />
 }
