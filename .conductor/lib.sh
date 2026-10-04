@@ -116,6 +116,40 @@ export POSTGRES_URL="postgresql://postgres@$DB_HOST/$DB_NAME"
 export NEXT_PUBLIC_SERVER_URL="http://localhost:$PORT"
 
 # ---------------------------------------------------------------------------
+# Ports
+#
+# Conductor reserves CONDUCTOR_PORT..+9 per workspace without checking the
+# port is free: an orphaned dev server from an earlier session (any repo) can
+# still hold it, and the Open button would reach that project. Refuse to start.
+# ---------------------------------------------------------------------------
+
+# "<pid> <cwd>" of whatever listens on TCP port $1; fails when the port is free.
+port_owner() {
+  local pid cwd
+  pid="$(lsof -nP -iTCP:"$1" -sTCP:LISTEN -t 2>/dev/null | head -n1 || true)"
+  [ -n "$pid" ] || return 1
+  cwd="$(lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p' | head -n1)"
+  printf '%s %s' "$pid" "${cwd:-unknown}"
+}
+
+assert_port_free() {
+  local port="$1" owner pid cwd
+  owner="$(port_owner "$port")" || return 0
+  pid="${owner%% *}" cwd="${owner#* }"
+  echo "conductor: port $port is already taken by pid $pid ($cwd)." >&2
+  case "$cwd" in
+  "$(cd "$WS_PATH" && pwd -P)"*)
+    echo "conductor: that is this workspace's own server; stop it first: kill $pid" >&2
+    ;;
+  *)
+    echo "conductor: it belongs to another checkout, so this workspace will not share it." >&2
+    echo "conductor: stop it if it is stale (kill $pid), then Run again." >&2
+    ;;
+  esac
+  exit 1
+}
+
+# ---------------------------------------------------------------------------
 # Postgres (one shared container, one DB per workspace)
 # ---------------------------------------------------------------------------
 
@@ -134,6 +168,22 @@ postgres_running() {
   [ -n "$(compose ps -q --status running postgres 2>/dev/null)" ]
 }
 
+# 54320 must be this repo's container (compose project `sas-site`), never
+# milesroxas-site's (54330) or anything else: the app connects by port, not by name.
+assert_db_port_ours() {
+  local port="${DB_HOST##*:}" project owner
+  project="$(docker ps --filter "publish=$port" --format '{{.Label "com.docker.compose.project"}}' | head -n1)"
+  if [ -n "$project" ]; then
+    [ "$project" = sas-site ] && return 0
+    echo "conductor: port $port is published by docker project '$project', not 'sas-site'." >&2
+    exit 1
+  fi
+  if owner="$(port_owner "$port")"; then
+    echo "conductor: port $port is held by pid ${owner%% *} (${owner#* }), not the sas-site postgres container." >&2
+    exit 1
+  fi
+}
+
 ensure_postgres() {
   if ! docker info >/dev/null 2>&1; then
     echo "conductor: Docker is not running — start Docker Desktop first." >&2
@@ -144,8 +194,10 @@ ensure_postgres() {
   # with (e.g. compose.yml changed on this branch), which drops every other
   # workspace's DB connections mid-request.
   if ! postgres_running; then
+    assert_db_port_ours
     compose up -d postgres
   fi
+  assert_db_port_ours
   local i=0
   until compose exec -T postgres pg_isready -U postgres >/dev/null 2>&1; do
     i=$((i + 1))

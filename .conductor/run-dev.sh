@@ -9,6 +9,7 @@ if [ ! -f .env ]; then
   exit 1
 fi
 
+assert_port_free "$PORT"
 ensure_postgres
 ensure_workspace_db
 echo "conductor: $WS_NAME → http://localhost:$PORT (db $DB_NAME)"
