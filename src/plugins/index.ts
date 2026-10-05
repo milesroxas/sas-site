@@ -16,6 +16,7 @@ import { figuresPlugin } from '@/plugins/figures'
 import { formBuilder } from '@/plugins/form-builder'
 import { houseStylePlugin } from '@/plugins/house-style'
 import { mcp } from '@/plugins/mcp'
+import { posthogInsightsPlugin } from '@/plugins/posthog-insights'
 import { storyHeadingsPlugin } from '@/plugins/story-headings'
 import { streakStudioPlugin } from '@/plugins/streak-studio'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
@@ -105,6 +106,9 @@ export const plugins: Plugin[] = [
     edit: true,
   }),
   aeoPlugin(),
+  // PostHog's headline numbers as a dashboard card. Off without
+  // POSTHOG_PERSONAL_API_KEY.
+  posthogInsightsPlugin(),
   askIndexPlugin(),
   // Internal-team MCP server at /api/mcp for agent-driven content authoring.
   // Full config (collections, globals, capability policy) lives in ./mcp.

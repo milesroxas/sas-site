@@ -51,6 +51,7 @@ import { AdminIcon as AdminIcon_c1363893506d7ed29a71d1a4da01ddb5 } from '@/compo
 import { AdminLogo as AdminLogo_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { InquiriesDashboard as InquiriesDashboard_ef92ef0a0367c0619848229c330ca202 } from '@/collections/Inquiries/components/InquiriesDashboard'
 import { AskDashboard as AskDashboard_bbb4351ba1def892208f41a65e0f7e7d } from '@/collections/AskQuestions/components/AskDashboard'
+import { InsightsDashboard as InsightsDashboard_25bfaffd9bf5a5112b3b17ca1765c1ee } from '@/plugins/posthog-insights/components/InsightsDashboard'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { InboxNavBadge as InboxNavBadge_26f5323f2ed216f767c955478f81a680 } from '@/collections/Inquiries/components/InboxNavBadge'
 import { BlocksDrawerTabs as BlocksDrawerTabs_382fdb41e52232ddd723ecac128689ab } from '@/components/admin/BlocksDrawerTabs'
@@ -113,6 +114,7 @@ export const importMap = {
   "@/components/AdminLogo#AdminLogo": AdminLogo_aa0a2d19d38a4839dbd373417e210b89,
   "@/collections/Inquiries/components/InquiriesDashboard#InquiriesDashboard": InquiriesDashboard_ef92ef0a0367c0619848229c330ca202,
   "@/collections/AskQuestions/components/AskDashboard#AskDashboard": AskDashboard_bbb4351ba1def892208f41a65e0f7e7d,
+  "@/plugins/posthog-insights/components/InsightsDashboard#InsightsDashboard": InsightsDashboard_25bfaffd9bf5a5112b3b17ca1765c1ee,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/collections/Inquiries/components/InboxNavBadge#InboxNavBadge": InboxNavBadge_26f5323f2ed216f767c955478f81a680,
   "@/components/admin/BlocksDrawerTabs#BlocksDrawerTabs": BlocksDrawerTabs_382fdb41e52232ddd723ecac128689ab,

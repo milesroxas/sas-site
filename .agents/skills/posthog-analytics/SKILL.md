@@ -16,6 +16,7 @@ PostHog is the only product analytics and session replay tool. Sentry owns error
 | Server capture | `src/utilities/posthog.ts` | `captureServerEvent`: the only way conversions are sent |
 | Proxy | `next.config.ts` rewrites | `/ingest/*` to PostHog (ad-blocker safe). Needs `skipTrailingSlashRedirect: true` |
 | Consent categories | `src/providers/Consent/index.tsx` | c15t `necessary` / `measurement` / `marketing` |
+| Admin dashboard card | `src/plugins/posthog-insights/` | Reads PostHog back into the CMS: HogQL over the query API with `POSTHOG_PERSONAL_API_KEY` (query read only), team-only endpoint, cached 15 minutes. Production traffic, internal users filtered |
 | Env | `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`, `NEXT_PUBLIC_POSTHOG_CAPTURE_DEV` | See README env table |
 
 Project: PostHog US cloud, project id `512227`.
