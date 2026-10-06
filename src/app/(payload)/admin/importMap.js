@@ -49,13 +49,13 @@ import { RebuildIndexPanel as RebuildIndexPanel_2fbb0093563e2d7bb244051223c34ed2
 import { UsagePanel as UsagePanel_8416b95f0a2679127501c530bbbd092d } from '@/features/ask/admin/UsagePanel'
 import { AdminIcon as AdminIcon_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
 import { AdminLogo as AdminLogo_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
-import { InquiriesDashboard as InquiriesDashboard_ef92ef0a0367c0619848229c330ca202 } from '@/collections/Inquiries/components/InquiriesDashboard'
-import { AskDashboard as AskDashboard_bbb4351ba1def892208f41a65e0f7e7d } from '@/collections/AskQuestions/components/AskDashboard'
-import { InsightsDashboard as InsightsDashboard_25bfaffd9bf5a5112b3b17ca1765c1ee } from '@/plugins/posthog-insights/components/InsightsDashboard'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { InboxNavBadge as InboxNavBadge_26f5323f2ed216f767c955478f81a680 } from '@/collections/Inquiries/components/InboxNavBadge'
 import { BlocksDrawerTabs as BlocksDrawerTabs_382fdb41e52232ddd723ecac128689ab } from '@/components/admin/BlocksDrawerTabs'
 import { AdminErrorBoundary as AdminErrorBoundary_e5a9e14bdbe97e70ba60697217fe7688 } from '@payloadcms/plugin-sentry/client'
+import { InquiriesDashboard as InquiriesDashboard_ef92ef0a0367c0619848229c330ca202 } from '@/collections/Inquiries/components/InquiriesDashboard'
+import { AskDashboard as AskDashboard_bbb4351ba1def892208f41a65e0f7e7d } from '@/collections/AskQuestions/components/AskDashboard'
+import { TrafficWidget as TrafficWidget_e72618c851449cbcae4f1b6846d942b0 } from '@/plugins/posthog-insights/components/TrafficWidget'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 
@@ -112,13 +112,13 @@ export const importMap = {
   "@/features/ask/admin/UsagePanel#UsagePanel": UsagePanel_8416b95f0a2679127501c530bbbd092d,
   "@/components/AdminIcon#AdminIcon": AdminIcon_c1363893506d7ed29a71d1a4da01ddb5,
   "@/components/AdminLogo#AdminLogo": AdminLogo_aa0a2d19d38a4839dbd373417e210b89,
-  "@/collections/Inquiries/components/InquiriesDashboard#InquiriesDashboard": InquiriesDashboard_ef92ef0a0367c0619848229c330ca202,
-  "@/collections/AskQuestions/components/AskDashboard#AskDashboard": AskDashboard_bbb4351ba1def892208f41a65e0f7e7d,
-  "@/plugins/posthog-insights/components/InsightsDashboard#InsightsDashboard": InsightsDashboard_25bfaffd9bf5a5112b3b17ca1765c1ee,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/collections/Inquiries/components/InboxNavBadge#InboxNavBadge": InboxNavBadge_26f5323f2ed216f767c955478f81a680,
   "@/components/admin/BlocksDrawerTabs#BlocksDrawerTabs": BlocksDrawerTabs_382fdb41e52232ddd723ecac128689ab,
   "@payloadcms/plugin-sentry/client#AdminErrorBoundary": AdminErrorBoundary_e5a9e14bdbe97e70ba60697217fe7688,
+  "@/collections/Inquiries/components/InquiriesDashboard#InquiriesDashboard": InquiriesDashboard_ef92ef0a0367c0619848229c330ca202,
+  "@/collections/AskQuestions/components/AskDashboard#AskDashboard": AskDashboard_bbb4351ba1def892208f41a65e0f7e7d,
+  "@/plugins/posthog-insights/components/TrafficWidget#TrafficWidget": TrafficWidget_e72618c851449cbcae4f1b6846d942b0,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24
 }

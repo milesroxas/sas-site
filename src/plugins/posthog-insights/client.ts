@@ -1,4 +1,12 @@
-import { pagesQuery, parseRanked, parseTotals, sourcesQuery, totalsQuery } from './queries'
+import {
+  dailyQuery,
+  pagesQuery,
+  parseDaily,
+  parseRanked,
+  parseTotals,
+  sourcesQuery,
+  totalsQuery,
+} from './queries'
 import type { InsightsSummary, WindowDays } from './summary'
 
 /**
@@ -10,7 +18,7 @@ import type { InsightsSummary, WindowDays } from './summary'
 const DEFAULT_PROJECT_ID = '512227'
 const DEFAULT_INGEST_HOST = 'https://us.i.posthog.com'
 
-/** PostHog answers a cold query in a second or two. Past this the card gives up. */
+/** PostHog answers a cold query in a second or two. Past this the widget gives up. */
 const TIMEOUT_MS = 8_000
 
 export type InsightsSettings = { key: string; projectId: string; appHost: string }
@@ -50,20 +58,22 @@ async function runQuery(
   return body.results
 }
 
-/** The card's numbers for one window. Throws when PostHog does, so a failure is never cached. */
+/** The widget's numbers for one window. Throws when PostHog does, so a failure is never cached. */
 export async function loadSummary(
   settings: InsightsSettings,
   days: WindowDays,
   fetcher: typeof fetch = fetch,
 ): Promise<InsightsSummary> {
-  const [totals, pages, sources] = await Promise.all([
+  const [totals, daily, pages, sources] = await Promise.all([
     runQuery(settings, totalsQuery(days), fetcher),
+    runQuery(settings, dailyQuery(days), fetcher),
     runQuery(settings, pagesQuery(days), fetcher),
     runQuery(settings, sourcesQuery(days), fetcher),
   ])
   return {
     days,
     ...parseTotals(totals),
+    trend: parseDaily(daily, days, new Date().toISOString().slice(0, 10)),
     pages: parseRanked(pages),
     sources: parseRanked(sources),
     url: `${settings.appHost}/project/${settings.projectId}/web`,

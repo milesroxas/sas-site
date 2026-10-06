@@ -1,0 +1,365 @@
+/*
+ * Dashboard cards (AdminCard.tsx). Payload admin tokens throughout, so the
+ * cards follow the admin's light and dark themes and sit in the same family
+ * as Payload's own collection cards, one tier up: a filled surface, a larger
+ * radius and room to breathe.
+ *
+ * One fixed scale on Payload's 13px body, so every card reads the same:
+ *   12px  labels, meta, row details
+ *   13px  body and row titles
+ *   16px  card titles
+ *   28px  the numbers
+ * Spacing steps on 4px: 4, 8, 12, 16, 20.
+ */
+
+.card {
+  /* Small text on the card's fill: clears 4.5:1 in both themes. */
+  --card-muted: var(--theme-elevation-600);
+  --card-hover: var(--theme-elevation-100);
+  --card-pad: 20px;
+
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-border-color);
+  border-radius: var(--style-radius-l);
+  box-sizing: border-box;
+  container: admin-card / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+  min-width: 0;
+  padding: var(--card-pad);
+}
+
+/* A phone, or a widget dragged narrow: the content keeps the width. */
+@media (max-width: 480px) {
+  .card {
+    --card-pad: 16px;
+  }
+}
+
+/* ---- Header ----------------------------------------------------------- */
+
+/* Tall enough for a segmented control, so a card with one lines up with a card without. */
+.header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  min-height: 28px;
+}
+
+.heading {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  margin-right: auto;
+  min-width: 0;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 24px;
+  margin: 0;
+}
+
+.meta {
+  color: var(--card-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The way into the full list. Quiet until pointed at; the padding widens the
+ * target without moving the text off the card's edge.
+ */
+.action {
+  border-radius: var(--style-radius-m);
+  color: var(--card-muted);
+  font-size: 12px;
+  font-weight: 500;
+  margin: -4px -6px;
+  padding: 4px 6px;
+  text-decoration: none;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+  white-space: nowrap;
+}
+
+.glyph {
+  display: inline-block;
+  margin-left: 4px;
+  transition: transform 150ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .action:hover {
+    background: var(--card-hover);
+    color: var(--theme-text);
+  }
+
+  .action:hover .glyph {
+    transform: translateX(2px);
+  }
+
+  .action[data-external]:hover .glyph {
+    transform: translate(1px, -1px);
+  }
+}
+
+.action:focus-visible,
+.stat:focus-visible,
+.row:focus-visible {
+  outline: var(--accessibility-outline);
+  outline-offset: 2px;
+}
+
+/*
+ * On a narrow card the controls take a line of their own under the title
+ * and the link, full width: a bigger target, and the link stays at the right.
+ */
+.controls {
+  display: flex;
+}
+
+@container admin-card (max-width: 480px) {
+  .controls {
+    flex-basis: 100%;
+    order: 1;
+  }
+
+  .controls > * {
+    flex: 1;
+  }
+}
+
+/* ---- Body ------------------------------------------------------------- */
+
+/* Takes the card's spare height, so a card can pin a footnote to its foot. */
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.body > * {
+  min-width: 0;
+}
+
+/* ---- Stats ------------------------------------------------------------ */
+
+/*
+ * One bordered strip, cells split by hairlines (the strip's ground showing
+ * through 1px gaps). The column count arrives from the component, so a row
+ * is always full and no empty cell shows the ground.
+ */
+.stats {
+  background: var(--theme-border-color);
+  border: 1px solid var(--theme-border-color);
+  border-radius: var(--style-radius-m);
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.stats > li {
+  display: grid;
+  min-width: 0;
+}
+
+@container admin-card (max-width: 400px) {
+  .stats {
+    grid-template-columns: repeat(var(--cols-narrow), minmax(0, 1fr));
+  }
+}
+
+/* Label up top, value at the foot: a label that wraps never drops its value below the row's. */
+.stat {
+  align-content: space-between;
+  background: var(--theme-elevation-50);
+  color: inherit;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+/* Inside the strip's clipped edge, so the ring is never cut off. */
+.stat:focus-visible {
+  outline-offset: -3px;
+}
+
+.statLabel {
+  align-items: center;
+  color: var(--card-muted);
+  display: flex;
+  font-size: 12px;
+  gap: 6px;
+  line-height: 16px;
+  transition: color 150ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.stat:hover {
+    background: var(--card-hover);
+  }
+
+  a.stat:hover .statLabel {
+    color: var(--theme-text);
+  }
+}
+
+/* A count that is waiting on someone: the one place a card uses color. */
+.statFlag {
+  background: var(--theme-warning-500);
+  border-radius: 50%;
+  flex-shrink: 0;
+  height: 6px;
+  width: 6px;
+}
+
+.statValue {
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 32px;
+  transform-origin: left center;
+  transition: transform 120ms ease-out;
+}
+
+/* Nothing to see: the zero steps back so the counts that matter lead. */
+.statValue[data-quiet="true"] {
+  color: var(--card-muted);
+  font-weight: 500;
+}
+
+a.stat:active .statValue {
+  transform: scale(0.97);
+}
+
+.statPending {
+  border-radius: var(--style-radius-s);
+  display: block;
+  height: 32px;
+  width: 48px;
+}
+
+/* ---- Lists ------------------------------------------------------------ */
+
+.list {
+  display: grid;
+  gap: 4px;
+}
+
+.listHead {
+  align-items: baseline;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin: 0;
+}
+
+.listHead h3 {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  margin: 0;
+}
+
+.listHead span {
+  color: var(--card-muted);
+  font-size: 12px;
+}
+
+.rows {
+  display: grid;
+  list-style: none;
+  margin: 0 -8px;
+  padding: 0;
+}
+
+/* A row is the document: the whole line is the target, lit on hover. */
+.row {
+  align-items: baseline;
+  border-radius: var(--style-radius-m);
+  color: inherit;
+  display: flex;
+  font-size: 13px;
+  gap: 12px;
+  line-height: 20px;
+  min-width: 0;
+  padding: 8px;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .row:hover {
+    background: var(--card-hover);
+  }
+}
+
+.rowLead {
+  color: var(--card-muted);
+  flex-shrink: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rowTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowDetail {
+  color: var(--card-muted);
+  flex-shrink: 0;
+  font-size: 12px;
+  max-width: 40%;
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Details that only earn their room on a wide card. */
+@container admin-card (max-width: 440px) {
+  .rowDetail[data-wide-only="true"] {
+    display: none;
+  }
+}
+
+.empty {
+  color: var(--card-muted);
+  font-size: 13px;
+  line-height: 20px;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph,
+  .statValue {
+    transition: none;
+  }
+
+  .action:hover .glyph,
+  a.stat:active .statValue {
+    transform: none;
+  }
+}

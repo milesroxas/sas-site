@@ -82,3 +82,28 @@ body:has(.drawer.doc-drawer.drawer--is-open) .media-gallery-lightbox {
     margin-bottom: calc(var(--base) * 0.5);
   }
 }
+
+/* Dashboard widgets (payload.config.ts `admin.dashboard`). Payload sizes a
+   widget as a share of the dashboard and only stacks them under a 768px
+   viewport, which leaves two half-width cards around 250px wide on a laptop
+   with the nav open. Measure the dashboard instead: below 900px every widget
+   takes the full row, so the inbox and Ask sit side by side only where an
+   inbox row fits. */
+
+.modular-dashboard {
+  container-type: inline-size;
+}
+
+@container (max-width: 899px) {
+  .modular-dashboard .widget:not([data-width="full"]) {
+    /* biome-ignore lint/complexity/noImportantStyles: Payload sets the width inline. */
+    width: 100% !important;
+  }
+}
+
+/* The overview cards and the collection groups are two tiers: room between
+   them, so "Website: Pages" reads as the start of the next one. */
+.modular-dashboard .widget[data-slug^="collections"] {
+  /* A margin: Payload sets the widget's padding inline. */
+  margin-top: calc(var(--base) * 1.2);
+}

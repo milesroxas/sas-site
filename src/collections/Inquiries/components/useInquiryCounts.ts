@@ -47,7 +47,9 @@ let pollArgs: { api: string; userId: number | string | undefined } | undefined
 const emit = (next: InquiryCounts) => {
   // Same numbers, same object: `useSyncExternalStore` compares by identity, so
   // a fresh object every minute would re-render every reader for nothing.
+  // The first answer always lands, so a reader can tell zero from not yet.
   if (
+    snapshot !== EMPTY &&
     next.new === snapshot.new &&
     next.open === snapshot.open &&
     next.mine === snapshot.mine &&
@@ -101,7 +103,9 @@ const getSnapshot = () => snapshot
  * The numbers the inbox is judged by.
  *
  * Returns `refresh` for the callers that have just changed something and
- * should not wait out the interval to see it.
+ * should not wait out the interval to see it, and `loaded`, false until the
+ * first answer, so a reader can hold a place rather than show a zero it has
+ * not counted.
  */
 export function useInquiryCounts() {
   const {
@@ -123,5 +127,5 @@ export function useInquiryCounts() {
     }, POLL_INTERVAL_MS)
   }, [api, userId])
 
-  return { counts, refresh }
+  return { counts, loaded: counts !== EMPTY, refresh }
 }

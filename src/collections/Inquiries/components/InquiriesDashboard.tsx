@@ -1,12 +1,11 @@
 'use client'
 
-import { useConfig } from '@payloadcms/ui'
-import Link from 'next/link'
+import { useAuth, useConfig } from '@payloadcms/ui'
 import { useEffect, useState } from 'react'
-import { AdminCard, adminRowStyle } from '@/components/admin/AdminCard'
+import { AdminCard, AdminList, AdminRow, AdminRows, AdminStats } from '@/components/admin/AdminCard'
 import { listDocs } from '@/components/admin/rest'
 import { INQUIRY_TYPES, inquiryOptionLabel } from '@/shared/content/inquiry'
-import { INQUIRY_QUERIES } from './queries'
+import { assignedToQuery, INQUIRY_QUERIES } from './queries'
 import { useInquiryCounts } from './useInquiryCounts'
 
 type InboxRow = {
@@ -22,18 +21,19 @@ type InboxRow = {
 /** How many requests the panel shows before sending you to the full list. */
 const PREVIEW_LIMIT = 5
 
-const relativeDay = (value?: string | null) => {
+const shortDay = (value?: string | null) => {
   if (!value) return ''
   return new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
 /**
- * The first thing on the dashboard: how much is waiting, and the few requests
- * at the top of the pile.
+ * The first widget on the dashboard, beside Ask: how much is waiting, and the
+ * few requests at the top of the pile.
  *
  * Its job is to make an unanswered inquiry impossible to miss on the way to
- * anything else in the admin — so it stays quiet (a single reassuring line)
- * when the inbox is clear.
+ * anything else in the admin. A request nobody has picked up is the one count
+ * that carries a flag; when the inbox is clear the counts step back and a
+ * single line says so.
  */
 export function InquiriesDashboard() {
   const {
@@ -41,8 +41,9 @@ export function InquiriesDashboard() {
       routes: { admin, api },
     },
   } = useConfig()
-  const { counts } = useInquiryCounts()
-  const [rows, setRows] = useState<InboxRow[]>([])
+  const { user } = useAuth()
+  const { counts, loaded } = useInquiryCounts()
+  const [rows, setRows] = useState<InboxRow[] | null>(null)
 
   const listUrl = `${admin}/collections/inquiries`
 
@@ -62,35 +63,54 @@ export function InquiriesDashboard() {
     return () => controller.abort()
   }, [api])
 
+  const value = (count: number) => (loaded ? count : null)
+
   return (
     <AdminCard
       action="Open all inquiries"
       href={`${listUrl}?${INQUIRY_QUERIES.inbox}`}
       title="Inbox"
     >
-      <p style={{ fontSize: 14, margin: '8px 0 16px' }}>
-        {counts.open === 0
-          ? 'Nothing waiting. Every request has been answered or closed.'
-          : `${counts.open} open · ${counts.new} not picked up · ${counts.mine} assigned to you`}
-      </p>
+      <AdminStats
+        items={[
+          { label: 'Open', value: value(counts.open), href: `${listUrl}?${INQUIRY_QUERIES.open}` },
+          {
+            label: 'Not picked up',
+            value: value(counts.new),
+            href: `${listUrl}?${INQUIRY_QUERIES.new}`,
+            flag: counts.new > 0,
+          },
+          {
+            label: 'Assigned to you',
+            value: value(counts.mine),
+            href: user ? `${listUrl}?${assignedToQuery(user.id)}` : undefined,
+          },
+        ]}
+        label="Inbox counts"
+      />
 
-      {rows.map((row) => (
-        <Link href={`${listUrl}/${row.id}`} key={row.id} style={adminRowStyle}>
-          <span style={{ fontVariantNumeric: 'tabular-nums', opacity: 0.6, width: 72 }}>
-            {row.reference}
-          </span>
-          <span style={{ flex: 1 }}>
-            {row.name}
-            {row.company ? ` · ${row.company}` : ''}
-          </span>
-          <span style={{ fontSize: 12, opacity: 0.6 }}>
-            {inquiryOptionLabel(INQUIRY_TYPES, row.type)}
-          </span>
-          <span style={{ fontSize: 12, opacity: 0.6, width: 56, textAlign: 'right' }}>
-            {relativeDay(row.submittedAt)}
-          </span>
-        </Link>
-      ))}
+      {rows && (
+        <AdminList
+          empty={rows.length === 0 && 'Nothing waiting. Every request has been answered or closed.'}
+          note={rows.length ? 'Newest first' : undefined}
+          title="Open requests"
+        >
+          <AdminRows>
+            {rows.map((row) => (
+              <AdminRow
+                details={[
+                  { text: inquiryOptionLabel(INQUIRY_TYPES, row.type) ?? row.type, wideOnly: true },
+                  { text: shortDay(row.submittedAt) },
+                ]}
+                href={`${listUrl}/${row.id}`}
+                key={row.id}
+                lead={row.reference}
+                title={row.company ? `${row.name} · ${row.company}` : row.name}
+              />
+            ))}
+          </AdminRows>
+        </AdminList>
+      )}
     </AdminCard>
   )
 }

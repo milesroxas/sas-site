@@ -51,12 +51,8 @@ const dirname = path.dirname(filename)
 export default buildConfig({
   admin: {
     components: {
-      // Unanswered requests, first thing on the dashboard and pinned above the
-      // nav so an inquiry cannot be missed on the way to anything else.
-      beforeDashboard: [
-        '@/collections/Inquiries/components/InquiriesDashboard#InquiriesDashboard',
-        '@/collections/AskQuestions/components/AskDashboard#AskDashboard',
-      ],
+      // The inbox count rides above the nav so an inquiry cannot be missed on
+      // the way to anything else; the inbox itself is the first widget below.
       beforeNavLinks: ['@/collections/Inquiries/components/InboxNavBadge#InboxNavBadge'],
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
@@ -66,6 +62,32 @@ export default buildConfig({
         Logo: '@/components/AdminLogo#AdminLogo',
       },
       providers: ['@/components/admin/BlocksDrawerTabs#BlocksDrawerTabs'],
+    },
+    // Payload's modular dashboard (https://payloadcms.com/docs/custom-components/dashboard).
+    // The inbox and Ask share a row from a 900px dashboard up (see custom.scss)
+    // and stack below it. A team member can rearrange or resize their own
+    // copy; the layout here is the first visit and every "Reset layout".
+    // Plugins append their widgets: posthog-insights adds site traffic.
+    dashboard: {
+      widgets: [
+        {
+          slug: 'inbox',
+          Component: '@/collections/Inquiries/components/InquiriesDashboard#InquiriesDashboard',
+          label: 'Inbox',
+          minWidth: 'medium',
+        },
+        {
+          slug: 'ask',
+          Component: '@/collections/AskQuestions/components/AskDashboard#AskDashboard',
+          label: 'Ask',
+          minWidth: 'medium',
+        },
+      ],
+      defaultLayout: [
+        { widgetSlug: 'inbox', width: 'medium' },
+        { widgetSlug: 'ask', width: 'medium' },
+        { widgetSlug: 'collections', width: 'full' },
+      ],
     },
     importMap: {
       baseDir: path.resolve(dirname),

@@ -190,6 +190,9 @@ export interface Config {
   };
   locale: null;
   widgets: {
+    inbox: InboxWidget;
+    ask: AskWidget;
+    'site-traffic': SiteTrafficWidget;
     collections: CollectionsWidget;
   };
   user: User | PayloadMcpApiKey;
@@ -14914,6 +14917,36 @@ export interface PayloadJobsStatsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inbox_widget".
+ */
+export interface InboxWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ask_widget".
+ */
+export interface AskWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-traffic_widget".
+ */
+export interface SiteTrafficWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

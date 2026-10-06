@@ -1,0 +1,580 @@
+/*
+ * Site traffic widget. Payload admin tokens throughout, so it follows the
+ * admin's light and dark themes. Two cards: the traffic itself, and the top
+ * pages and sources beside it. The pair is a size container: the widget can
+ * be dragged narrower, and the layout follows the widget, not the viewport.
+ */
+
+/*
+ * The tokens live on the pair, not a card, so the cards' headers (the window
+ * toggle) and both cards' bodies read the same values.
+ */
+.pair {
+  /* Payload's blue. Its palette names it "success", but here it is identity. */
+  --traffic-series: var(--color-success-500);
+  /* The comparison window: neutral, a step quieter than the series. */
+  --traffic-compare: var(--theme-elevation-400);
+  /* The ranked bars' wash. */
+  --traffic-bar: color-mix(in srgb, var(--traffic-series) 14%, transparent);
+  --traffic-grid: var(--theme-elevation-100);
+  /* Small text on the card's fill: clears 4.5:1 in both themes. */
+  --traffic-muted: var(--theme-elevation-600);
+  /* Payload has no green; this one clears 4.5:1 on a light card. */
+  --traffic-up: #18794e;
+  --traffic-down: var(--theme-error-600);
+  --traffic-ease: cubic-bezier(0.23, 1, 0.32, 1);
+
+  container-type: inline-size;
+  height: 100%;
+}
+
+/*
+ * Payload's dark theme. Not light-dark(): the CSS build lowers it inside a
+ * custom property into a value no browser parses.
+ */
+:global(html[data-theme="dark"]) .pair {
+  --traffic-up: #3dd68c;
+  /* A 14% tint goes muddy on the dark card. */
+  --traffic-bar: color-mix(in srgb, var(--traffic-series) 24%, transparent);
+}
+
+/*
+ * The gap Payload leaves between two widgets (6px padding on each), so the
+ * two cards line up under the inbox and Ask as if they were two widgets.
+ */
+.pairRow {
+  display: grid;
+  gap: 12px;
+  height: 100%;
+}
+
+/* Side by side once each half can hold a seven-day chart with a date under every bar. */
+@container (min-width: 880px) {
+  .pairRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Fills the card, so the caption sits at its foot beside a taller neighbor. */
+.panel {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 16px;
+  transition: opacity 150ms ease;
+}
+
+/*
+ * A grid item will not shrink below its content's width unless told to. The
+ * chart and the bar lists must follow the widget down when it narrows.
+ */
+.panel > * {
+  min-width: 0;
+}
+
+/* Refetch keeps the frame: the last answer stays, dimmed, until the new one lands. */
+.panel[data-busy="true"],
+.lists[data-busy="true"] {
+  opacity: 0.55;
+}
+
+.caption {
+  color: var(--traffic-muted);
+  font-size: 12px;
+  line-height: 16px;
+  margin: 0;
+  margin-top: auto;
+}
+
+/* ---- Window toggle ---------------------------------------------------- */
+
+.toggle {
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-border-color);
+  border-radius: var(--style-radius-m);
+  display: inline-grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  padding: 2px;
+  position: relative;
+}
+
+.toggleThumb {
+  background: var(--theme-elevation-0);
+  border-radius: calc(var(--style-radius-m) - 1px);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 0 0 1px var(--theme-elevation-150);
+  inset: 2px auto 2px 2px;
+  position: absolute;
+  transform: translateX(calc(var(--index) * 100%));
+  transition: transform 200ms var(--traffic-ease);
+  width: calc((100% - 4px) / var(--count));
+}
+
+.toggleButton {
+  background: none;
+  border: 0;
+  border-radius: calc(var(--style-radius-m) - 1px);
+  color: var(--traffic-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 22px;
+  padding: 0 10px;
+  position: relative;
+  transition: color 150ms ease;
+  white-space: nowrap;
+}
+
+.toggleButton[aria-pressed="true"] {
+  color: var(--theme-text);
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .toggleButton:hover {
+    color: var(--theme-text);
+  }
+}
+
+.toggleButton:focus-visible,
+.plotFrame:focus-visible {
+  outline: var(--accessibility-outline);
+  outline-offset: 2px;
+}
+
+/* Inside the strip's clipped edge, so the ring is never cut off. */
+.tile:focus-visible {
+  outline: var(--accessibility-outline);
+  outline-offset: -3px;
+}
+
+/* ---- Stat tiles: also the chart's tabs -------------------------------- */
+
+/*
+ * One bordered strip of three tabs, the same strip as the inbox and Ask
+ * counts, so a number reads the same on every card. The selected one is
+ * underlined in the bars' color and its label steps up: it names the chart
+ * below.
+ */
+.tiles {
+  /* Shows through the 1px gaps as the dividers between tabs. */
+  background: var(--theme-border-color);
+  border: 1px solid var(--theme-border-color);
+  border-radius: var(--style-radius-m);
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+}
+
+/* Three across down to a phone; under that the reading would wrap per digit. */
+@container (max-width: 279px) {
+  .tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.tile {
+  align-content: space-between;
+  background: var(--theme-elevation-50);
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+  position: relative;
+  text-align: left;
+  transition: background-color 150ms ease;
+}
+
+/* The selected tab's underline: the bars' color, so the tile names the chart. */
+.tile::after {
+  background: var(--traffic-series);
+  bottom: 0;
+  content: "";
+  height: 2px;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  transform: scaleX(0.6);
+  transition:
+    opacity 150ms ease,
+    transform 200ms var(--traffic-ease);
+}
+
+.tile[aria-selected="true"]::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tile[aria-selected="false"]:hover {
+    background: var(--theme-elevation-100);
+  }
+}
+
+.tileLabel {
+  color: var(--traffic-muted);
+  font-size: 12px;
+  line-height: 16px;
+  transition: color 150ms ease;
+}
+
+/*
+ * The value, its change and any note on one line, so a tab is two lines
+ * tall; a narrow tab lets the note drop to a third.
+ */
+.tileReading {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}
+
+.tile[aria-selected="true"] .tileLabel {
+  color: var(--theme-text);
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tile[aria-selected="false"]:hover .tileLabel {
+    color: var(--theme-text);
+  }
+}
+
+.tileValue {
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 32px;
+  transform-origin: left center;
+  transition: transform 160ms var(--traffic-ease);
+}
+
+.tile:active .tileValue {
+  transform: scale(0.97);
+}
+
+.tileNote {
+  color: var(--traffic-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.delta {
+  align-items: center;
+  color: var(--traffic-muted);
+  display: flex;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  gap: 2px;
+}
+
+.delta[data-direction="up"] {
+  color: var(--traffic-up);
+}
+
+.delta[data-direction="down"] {
+  color: var(--traffic-down);
+}
+
+.delta svg {
+  flex-shrink: 0;
+}
+
+/* ---- Trend chart ------------------------------------------------------ */
+
+.chart {
+  position: relative;
+}
+
+.legend {
+  align-items: center;
+  color: var(--traffic-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12px;
+  gap: 4px 16px;
+  margin-bottom: 8px;
+}
+
+.legendItem {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.legendBar {
+  background: var(--traffic-series);
+  border-radius: 2px 2px 0 0;
+  display: inline-block;
+  height: 10px;
+  width: 8px;
+}
+
+.legendAverage {
+  border-top: 1.5px dashed var(--traffic-compare);
+  display: inline-block;
+  width: 16px;
+}
+
+.plotFrame {
+  border-radius: var(--style-radius-s);
+  cursor: default;
+  outline: none;
+  touch-action: pan-y;
+}
+
+.plot {
+  display: block;
+  overflow: visible;
+}
+
+.plot text {
+  fill: var(--traffic-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  transition: fill 120ms ease;
+}
+
+.plot text.axisActive {
+  fill: var(--theme-text);
+}
+
+.gridLine {
+  stroke: var(--traffic-grid);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.baseline {
+  stroke: var(--theme-elevation-200);
+}
+
+/* The window before's daily average: a reference, not a series. */
+.averageLine {
+  pointer-events: none;
+  shape-rendering: crispEdges;
+  stroke: var(--traffic-compare);
+  stroke-dasharray: 4 3;
+  stroke-width: 1.5;
+}
+
+/* The hovered day's whole band, so the target is the day, not a thin bar. */
+.dayBand {
+  fill: var(--theme-elevation-50);
+}
+
+.bar {
+  fill: var(--traffic-series);
+  transition: opacity 120ms ease;
+  /*
+   * The one authored moment: when an answer lands, the bars rise from the
+   * baseline left to right, the way time reads. Keyed on the metric and
+   * window, so it plays per answer, not per hover.
+   */
+  animation: rise 420ms var(--traffic-ease) both;
+  animation-delay: calc(min(var(--index), 30) * 12ms);
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+
+@keyframes rise {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+/* While a day is read, the others step back. */
+.bars[data-reading="true"] .bar[data-active="false"] {
+  opacity: 0.45;
+}
+
+.hatchGround {
+  fill: color-mix(in srgb, var(--traffic-series) 30%, transparent);
+}
+
+.hatchLine {
+  stroke: var(--traffic-series);
+  stroke-width: 2.5;
+}
+
+.tooltip {
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-border-color);
+  border-radius: var(--style-radius-m);
+  box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.12);
+  display: grid;
+  font-size: 12px;
+  gap: 2px;
+  left: 0;
+  padding: 6px 10px;
+  pointer-events: none;
+  position: absolute;
+  top: 24px;
+  transition:
+    transform 120ms var(--traffic-ease),
+    opacity 120ms ease;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.tooltip[data-instant="true"] {
+  transition: opacity 120ms ease;
+}
+
+.tooltipDate {
+  color: var(--traffic-muted);
+}
+
+.tooltipValue {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.empty {
+  color: var(--traffic-muted);
+  font-size: 13px;
+  left: 50%;
+  margin: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+/* ---- Top pages and sources ------------------------------------------- */
+
+.lists {
+  display: grid;
+  gap: 20px;
+  transition: opacity 150ms ease;
+}
+
+.ranks {
+  display: grid;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rank {
+  align-items: center;
+  display: grid;
+  font-size: 13px;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  line-height: 20px;
+  min-height: 28px;
+  padding: 0 8px;
+  position: relative;
+}
+
+/*
+ * The bar is the row's wash, clipped to its share of the longest row. A
+ * clip, not a width, so the rounded end stays round and a new answer slides
+ * each bar from where it was to where it is.
+ */
+.rankFill {
+  background: var(--traffic-bar);
+  border-radius: var(--style-radius-m);
+  clip-path: inset(0 calc(100% - var(--share)) 0 0 round var(--style-radius-m));
+  inset: 0;
+  position: absolute;
+  transition: clip-path 420ms var(--traffic-ease);
+}
+
+@starting-style {
+  .rankFill {
+    clip-path: inset(0 100% 0 0 round var(--style-radius-m));
+  }
+}
+
+.rankLabel {
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rankValue {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  position: relative;
+}
+
+/* ---- States ----------------------------------------------------------- */
+
+.notice {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 12px;
+}
+
+.notice p {
+  margin: 0;
+}
+
+.srOnly {
+  border: 0;
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+/*
+ * Reduced motion: nothing travels. The lines and bars appear in place with
+ * a short fade, so a new answer still reads as new.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: fade 150ms ease both;
+  }
+
+  .rankFill,
+  .tile::after,
+  .toggleThumb,
+  .tooltip {
+    transition: opacity 150ms ease;
+  }
+
+  .tile:active .tileValue {
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @starting-style {
+    .rankFill {
+      clip-path: inset(0 calc(100% - var(--share)) 0 0 round var(--style-radius-m));
+      opacity: 0;
+    }
+  }
+}
