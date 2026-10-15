@@ -58,6 +58,12 @@ export const Tile: Story = {
   render: renderInColumn,
 }
 
+/** The related rail's tile: the post's first category over the title. */
+export const TileWithTopic: Story = {
+  args: { variant: 'tile', showCategories: true },
+  render: renderInColumn,
+}
+
 export const Split: Story = {
   args: { variant: 'split' },
   render: (args) => (

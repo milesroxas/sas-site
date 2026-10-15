@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import type React from 'react'
 import { Fragment, ViewTransition } from 'react'
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import { Media } from '@/components/Media'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -169,6 +170,9 @@ export const Card: React.FC<{
   }
 
   if (variant === 'tile') {
+    const tileTopic = showCategories
+      ? categories?.find((category) => typeof category === 'object')?.title
+      : undefined
     const tileMedia = metaImage && typeof metaImage !== 'string' && (
       <Media
         fill
@@ -199,19 +203,30 @@ export const Card: React.FC<{
               tileMedia
             ))}
         </div>
-        {titleToUse && (
-          // Under the picture, never over it: the frame is the art and stays clear.
-          <h3 className="max-w-[34ch] text-base/snug font-normal lg:text-lg/snug">
-            <Link
-              className="hover:underline"
-              href={href}
-              ref={link.ref}
-              transitionTypes={[...forwardNavTransitionTypes]}
-            >
-              {titleToUse}
-            </Link>
-          </h3>
-        )}
+        {/* Under the picture, never over it: the frame is the art and stays clear. */}
+        <div className="flex flex-col gap-2">
+          {tileTopic && (
+            // The post's first category, set as the site's mono furniture (the
+            // post hero's kicker, the rail's own label). Opt-in through
+            // `showCategories`: the related rail asks for it, the insights
+            // index, which has a topic filter above it, does not.
+            <p className={cn(eyebrowClassName, 'tracking-widest text-muted-foreground uppercase')}>
+              {tileTopic}
+            </p>
+          )}
+          {titleToUse && (
+            <h3 className="max-w-[34ch] text-base/snug font-normal lg:text-lg/snug">
+              <Link
+                className="hover:underline"
+                href={href}
+                ref={link.ref}
+                transitionTypes={[...forwardNavTransitionTypes]}
+              >
+                {titleToUse}
+              </Link>
+            </h3>
+          )}
+        </div>
       </div>
     )
   }

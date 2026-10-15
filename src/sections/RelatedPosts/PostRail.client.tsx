@@ -109,9 +109,13 @@ const TOUCH_RAIL =
 /** 20px line + 12px each side = 44px (HIG minimum). See the link below. */
 const LINK_TOUCH_TARGET = 'relative after:absolute after:inset-x-0 after:-inset-y-3 md:after:hidden'
 
-/** The insights index's own tile, so the closing row reads as a piece of it. */
+/**
+ * The insights index's own tile, so the closing row reads as a piece of it,
+ * plus the post's topic: at the end of a post the reader is choosing what to
+ * read next, and the index's topic filter is not there to say it.
+ */
 const RailCard: React.FC<{ post: CardPostData }> = ({ post }) => (
-  <Card doc={post} relationTo="posts" variant="tile" />
+  <Card doc={post} relationTo="posts" showCategories variant="tile" />
 )
 
 export const PostRail: React.FC<{
@@ -128,33 +132,40 @@ export const PostRail: React.FC<{
         index's eyebrow type, not a section heading, so the tiles stay the
         subject. `items-baseline` sits the link on the label's baseline.
       */}
-      <div className="container mb-8 flex items-baseline justify-between gap-4 border-t border-border pt-8">
-        <h2
-          className={`${eyebrowClassName} tracking-widest text-muted-foreground uppercase`}
-          data-reveal
-          data-reveal-group="rail-intro"
-        >
-          {heading}
-        </h2>
+      <div className="container mb-8">
         {/*
+          The rule sits on an inner row, not the container: the container's
+          own padding would carry it to the screen edges, and the rule belongs
+          on the page column with the tiles under it.
+        */}
+        <div className="flex items-baseline justify-between gap-4 border-t border-border pt-8">
+          <h2
+            className={`${eyebrowClassName} tracking-widest text-muted-foreground uppercase`}
+            data-reveal
+            data-reveal-group="rail-intro"
+          >
+            {heading}
+          </h2>
+          {/*
           Set at the label's size so the pair reads as one line of furniture.
           The `::after` pads the line out to a 44px press target without
           inflating how it looks, and `md:after:hidden` drops the pad once the
           pointer is fine.
         */}
-        <Link
-          className={`${LINK_TOUCH_TARGET} ${eyebrowClassName} group pressable flex shrink-0 items-center gap-1.5 tracking-widest uppercase`}
-          data-reveal
-          data-reveal-group="rail-intro"
-          href="/posts"
-          transitionTypes={[...forwardNavTransitionTypes]}
-        >
-          View All
-          <IconArrowUpRight
-            aria-hidden="true"
-            className="size-3.5 shrink-0 stroke-1 transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
-          />
-        </Link>
+          <Link
+            className={`${LINK_TOUCH_TARGET} ${eyebrowClassName} group pressable flex shrink-0 items-center gap-1.5 tracking-widest uppercase`}
+            data-reveal
+            data-reveal-group="rail-intro"
+            href="/posts"
+            transitionTypes={[...forwardNavTransitionTypes]}
+          >
+            View All
+            <IconArrowUpRight
+              aria-hidden="true"
+              className="size-3.5 shrink-0 stroke-1 transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
+            />
+          </Link>
+        </div>
       </div>
 
       {isCarousel ? (
