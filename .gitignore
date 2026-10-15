@@ -62,3 +62,4 @@ ds-bundle/
 
 # Content snapshots written by scripts/wrap-sections.ts (local recovery artifacts)
 scripts/snapshots/
+.env*

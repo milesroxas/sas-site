@@ -174,7 +174,10 @@ describe('patchBlock', () => {
       { collection: 'pages', id: 6, blockId: 'c1', patch: { heading: 'x' }, draft: false },
       req,
     )
-    expect(payload.update.mock.calls[0]?.[0]).toMatchObject({ draft: false })
+    expect(payload.update.mock.calls[0]?.[0]).toMatchObject({
+      draft: false,
+      data: { _status: 'published' },
+    })
   })
 
   it('updates a global through updateGlobal', async () => {

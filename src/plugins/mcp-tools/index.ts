@@ -190,7 +190,12 @@ const patchBlock: BlockTool = {
       if (!row) return text(`Error: no block with id "${blockId}" in ${collection} ${doc.id ?? ''}`)
       const next = { ...row.block, ...patch, id: row.id, blockType: row.blockType }
       const field = rootField(row.path)
-      const data = { [field]: withBlock(doc, row.path, next)[field] }
+      // Payload's `draft: false` alone keeps the stored status; publishing is
+      // `_status: 'published'` in the data.
+      const data = {
+        [field]: withBlock(doc, row.path, next)[field],
+        ...(draft ? {} : { _status: 'published' as const }),
+      }
       const shared = {
         data,
         depth: 0,
