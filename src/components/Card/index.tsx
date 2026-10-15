@@ -37,14 +37,19 @@ export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title' |
 type CardLayout = CardVariant | 'tile'
 
 /**
- * The tile's hover, keyed off the whole card (`group`) so the picture's zoom
- * and the title's underline start on the same frame, whether the pointer is
- * on the picture or the words, and on keyboard focus of the link as well.
- * The underline fades its color in rather than appearing, on the zoom's curve.
+ * The tile's hover, keyed off the whole card (`group`) so the picture zooms
+ * wherever the pointer lands, picture or words. The zoom is the only hover
+ * cue: on a picture-led tile it already says "open this", and an underline
+ * under a two- or three-line title striped the tile like a text link.
+ *
+ * Keyboard focus of the link gets the zoom plus the underline (faded in on
+ * the zoom's curve), so a visitor tabbing through the grid always sees which
+ * tile they are on, whatever the browser's own focus ring does over a dark
+ * picture.
  */
 const TILE_HOVER = {
   zoom: 'group-hover:scale-104 group-has-focus-visible:scale-104',
-  underline: 'group-hover:decoration-current group-has-focus-visible:decoration-current',
+  underline: 'group-has-focus-visible:decoration-current',
 } as const
 
 const variantClassNames: Record<CardVariant, string> = {
@@ -190,7 +195,7 @@ export const Card: React.FC<{
         // The frame clips, so the zoom rides the image. A long settle on the
         // site's curve (`ease-out-quint`): most of the travel lands at once,
         // then the picture eases in, so the move reads as a glide, not a jump.
-        // `TILE_HOVER` starts it with the title's underline.
+        // `TILE_HOVER` says when it runs.
         imgClassName={cn(
           'object-cover transition-transform duration-800 ease-out-quint motion-reduce:transition-none',
           TILE_HOVER.zoom,
