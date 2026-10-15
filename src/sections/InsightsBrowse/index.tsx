@@ -110,7 +110,7 @@ export const InsightsBrowse: React.FC<Props> = ({
       <RevealSection>
         <div className="filter-swap" data-exiting={exiting || undefined} key={renderedKey}>
           {count > 0 ? (
-            <ul className="grid gap-grid sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid gap-grid gap-y-11 sm:grid-cols-2 lg:grid-cols-3">
               {visiblePosts.map((post, index) => (
                 <li
                   className={hasFiltered ? 'filter-swap-item' : 'reveal-stagger-item'}
@@ -121,7 +121,7 @@ export const InsightsBrowse: React.FC<Props> = ({
                     } as CSSProperties
                   }
                 >
-                  <Card className="h-full" doc={post} relationTo="posts" variant="backdrop" />
+                  <Card className="h-full" doc={post} relationTo="posts" variant="tile" />
                 </li>
               ))}
             </ul>

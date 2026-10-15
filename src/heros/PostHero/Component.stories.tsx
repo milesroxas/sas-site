@@ -57,7 +57,7 @@ export const SeoImageFallback: Story = {
 }
 
 /**
- * A Streak Field in the portrait frame: the poster paints first and the
+ * A Streak Field in the square frame: the poster paints first and the
  * field goes live where the device allows. The retained SEO image is not
  * shown; the pause control sits inside the frame.
  */

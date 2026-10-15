@@ -86,12 +86,12 @@ export const Posts: CollectionConfig<'posts'> = {
                 type: 'upload',
                 relationTo: 'media',
                 admin: {
-                  description: 'Portrait crop (4:5) beside the title in the post hero.',
+                  description: 'Square crop beside the title in the post hero.',
                 },
               },
               {
                 visualTypeDescription:
-                  'Leave empty for the picture alone: the hero image, then the SEO image. An effect grounds the whole opening band behind the copy; the portrait crop still shows in its own frame.',
+                  'Leave empty for the picture alone: the hero image, then the SEO image. An effect grounds the whole opening band behind the copy; the square crop still shows in its own frame.',
               },
             ),
             {

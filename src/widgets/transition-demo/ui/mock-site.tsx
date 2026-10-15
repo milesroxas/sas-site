@@ -657,7 +657,7 @@ function MockPosts({ page }: { page: 1 | 2 }) {
 }
 
 /**
- * Mirrors `PostHero`: title and standfirst on the page column, the portrait
+ * Mirrors `PostHero`: title and standfirst on the page column, the square
  * crop beside them in the same `POST_IMAGE_FRAME` the card used, the
  * article's facts pinned to the foot of the copy.
  */

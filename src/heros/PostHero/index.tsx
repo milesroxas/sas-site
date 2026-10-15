@@ -18,7 +18,7 @@ const MetaRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 )
 
 /**
- * Post opening: title and standfirst on the page column, a portrait crop
+ * Post opening: title and standfirst on the page column, a square crop
  * beside them, and the article's own facts (who wrote it, how long it runs)
  * pinned to the foot of the copy so the two columns end on the same line.
  *
@@ -53,7 +53,7 @@ export const PostHero: React.FC<{
 
   /**
    * Header art: an effect grounds the band, and the crop is the post's own
-   * portrait image, else the SEO image, the asset the insights cards already
+   * square image, else the SEO image, the asset the insights cards already
    * show for this post, so a post that skips `heroImage` still opens on a
    * picture instead of an empty box. The takeover menu clones whatever lands
    * inside `data-hero-media` (an effect's poster included), so its docked

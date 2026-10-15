@@ -28,6 +28,13 @@ export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title' |
   url?: string
 }
 
+/**
+ * `tile` is the insights index card (square picture, title under it). It
+ * stays out of `CARD_VARIANTS` on purpose: that registry is the Archive
+ * block's editor option, and the index is not an editor choice.
+ */
+type CardLayout = CardVariant | 'tile'
+
 const variantClassNames: Record<CardVariant, string> = {
   contained: '',
   open: 'rounded-none bg-transparent ring-0',
@@ -47,7 +54,7 @@ export const Card: React.FC<{
   relationTo?: 'posts'
   showCategories?: boolean
   title?: string
-  variant?: CardVariant
+  variant?: CardLayout
 }> = (props) => {
   const { card, link } = useClickableCard<HTMLDivElement>({})
   const {
@@ -101,7 +108,7 @@ export const Card: React.FC<{
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
           <div className="flex flex-col gap-2">
             {titleToUse && (
-              // Clamped so a card's height stays near its 4:5 frame: this
+              // Clamped so a card's height stays near its square frame: this
               // variant is built for a rail and a grid, where one long title
               // otherwise sets the height of every card beside it.
               //
@@ -157,6 +164,50 @@ export const Card: React.FC<{
               ))}
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (variant === 'tile') {
+    const tileMedia = metaImage && typeof metaImage !== 'string' && (
+      <Media
+        fill
+        imgClassName="object-cover"
+        resource={metaImage}
+        // A cell of the insights index grid: three across from `lg`, two from `sm`.
+        size="(min-width: 64rem) 33vw, (min-width: 40rem) 50vw, 100vw"
+      />
+    )
+
+    return (
+      <div
+        className={cn('pressable pressable-subtle flex cursor-pointer flex-col gap-3.5', className)}
+        ref={card.ref}
+      >
+        <div className={cn(POST_IMAGE_FRAME, 'relative overflow-hidden rounded-md bg-muted')}>
+          {tileMedia &&
+            (slug ? (
+              // Shared element: morphs into the post hero image (see `PostHero`).
+              <ViewTransition default="none" name={postImageVtName(slug)} share={postImageShare}>
+                {tileMedia}
+              </ViewTransition>
+            ) : (
+              tileMedia
+            ))}
+        </div>
+        {titleToUse && (
+          // Under the picture, never over it: the frame is the art and stays clear.
+          <h3 className="max-w-[34ch] text-base/snug font-normal lg:text-lg/snug">
+            <Link
+              className="hover:underline"
+              href={href}
+              ref={link.ref}
+              transitionTypes={[...forwardNavTransitionTypes]}
+            >
+              {titleToUse}
+            </Link>
+          </h3>
+        )}
       </div>
     )
   }

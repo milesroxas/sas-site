@@ -42,9 +42,10 @@ export const postImageVtName = (slug: string) =>
 /**
  * The frame both ends of that pair paint into. The card and the post hero
  * crop to the same ratio so the morph never changes crop mid-flight; state a
- * post image frame anywhere else and the pair drifts.
+ * post image frame anywhere else and the pair drifts. Square: the insights
+ * thumbnails are one art-directed set rendered square.
  */
-export const POST_IMAGE_FRAME = 'aspect-4/5'
+export const POST_IMAGE_FRAME = 'aspect-square'
 
 /**
  * Shared-element name bridging a work entry's featured media (IndustryWork

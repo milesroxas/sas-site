@@ -17,7 +17,7 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: [...CARD_VARIANTS],
+      options: [...CARD_VARIANTS, 'tile'],
     },
   },
 } satisfies Meta<typeof Card>
@@ -49,6 +49,12 @@ export const Overlay: Story = {
 
 export const Backdrop: Story = {
   args: { variant: 'backdrop', showCategories: false },
+  render: renderInColumn,
+}
+
+/** The insights index card: square picture, title under it. */
+export const Tile: Story = {
+  args: { variant: 'tile', showCategories: false },
   render: renderInColumn,
 }
 

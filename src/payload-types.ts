@@ -410,11 +410,11 @@ export interface Post {
   id: number;
   title: string;
   /**
-   * Portrait crop (4:5) beside the title in the post hero.
+   * Square crop beside the title in the post hero.
    */
   heroImage?: (number | null) | Media;
   /**
-   * Leave empty for the picture alone: the hero image, then the SEO image. An effect grounds the whole opening band behind the copy; the portrait crop still shows in its own frame.
+   * Leave empty for the picture alone: the hero image, then the SEO image. An effect grounds the whole opening band behind the copy; the square crop still shows in its own frame.
    */
   visualType?: ('media' | 'streakField' | 'lightLeak') | null;
   shader?: PlacedVisualConfig;
