@@ -20,28 +20,26 @@ const CAROUSEL_MIN_COUNT = 4
  * card is the only thing on screen that says the list continues. Half a card
  * reads as an interrupted card; a sliver reads as a rendering seam.
  *
- * Two and a half from `md` up: cards scale with the window so the row always
- * fills, instead of packing a third-and-a-half that left each card narrower
- * than its own title once the split card took its share.
+ * Three and a half from `md` up: the cards are the insights index's square
+ * tiles, and at this step a tile comes out the size of one in the static
+ * row of three, so a long hand-picked list reads as the same row run on.
  *
  * A phone gets one card with a peek of the next, the same affordance the
  * carousel block uses. Five sixths rather than that block's five eighths
  * because these slides carry no scale-back pose eating their own width.
  */
-const SLIDE_BASIS = 'basis-5/6 md:basis-[calc(100%/2.5)]'
+const SLIDE_BASIS = 'basis-5/6 md:basis-[calc(100%/3.5)]'
 
 /**
  * Slide gap, the primitive's own way: each slide carries the whole gap as
  * start padding and the track's negative margin swallows the first one, so
  * the first card sits flush on the track's content edge and the last card ends
  * on its own edge with nothing trailing it. Both ends therefore land exactly
- * where `RAIL_INSET` puts the track. The static grid uses the insights
- * index's own gap (`gap-grid`), so the closing row reads as a piece of it.
- *
- * A phone halves the gap (`gap-8`). The slide basis is a fraction of a narrow
- * window and the gap comes out of that fraction, so the full-width pair cost
- * the card a fifth of its own width; the peeking neighbour already says the
- * row continues, the seam only has to separate.
+ * where `RAIL_INSET` puts the track. Rail and static grid both take the
+ * insights index's gap (`--spacing-grid`, 2rem) at every width, so tiles sit
+ * the same distance apart wherever they appear. The rail states it as `8`
+ * rather than the `grid` token: tailwind-merge does not know a custom
+ * spacing key, so `-ml-grid` would not displace the track's `-ml-4` (below).
  *
  * `-ml-*`, not the logical `-ms-*`, because the shadcn track hardcodes `-ml-4`
  * and `cn`'s tailwind-merge only drops a class it recognises as the same
@@ -49,8 +47,8 @@ const SLIDE_BASIS = 'basis-5/6 md:basis-[calc(100%/2.5)]'
  * cancels half the gap and pushes the first card off the column. `-ml-8`
  * replaces it outright. The primitive is left-to-right only here either way.
  */
-const SLIDE_GUTTER = 'pl-8 md:pl-16'
-const TRACK_GUTTER = '-ml-8 md:-ml-16'
+const SLIDE_GUTTER = 'pl-8'
+const TRACK_GUTTER = '-ml-8'
 const GRID_GAP = 'gap-grid'
 
 /**
