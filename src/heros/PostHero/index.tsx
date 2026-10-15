@@ -103,7 +103,9 @@ export const PostHero: React.FC<{
           <div
             className={cn(
               POST_IMAGE_FRAME,
-              'relative w-full select-none overflow-hidden bg-muted lg:w-5/12 lg:shrink-0',
+              // rounded-md: the tile's corner (Card `tile`), so the morph from
+              // the clicked tile keeps one shape all the way.
+              'relative w-full select-none overflow-hidden rounded-md bg-muted lg:w-5/12 lg:shrink-0',
             )}
             data-hero-media
           >

@@ -21,11 +21,11 @@ const RAIL_SELECT = {
 type RailPost = Pick<Post, 'id' | 'title' | 'slug' | 'categories' | 'meta' | 'standfirst'>
 
 /**
- * Rail length when the editor picked nothing. Wider than the work closer's
- * four because this rail shows two and a half at once — a list that ends at
- * the fold has nothing for the drag affordance to reveal.
+ * Rail length when the editor picked nothing: one row of three square tiles,
+ * the insights art direction's closing row. A longer hand-picked list still
+ * gets the drag rail (`PostRail`).
  */
-export const RELATED_POSTS_FALLBACK_LIMIT = 8
+export const RELATED_POSTS_FALLBACK_LIMIT = 3
 
 /** Drops the docs a depth-starved or unpublished query left without a slug. */
 const railCard = (post: RailPost): CardPostData | null => (post.slug ? post : null)

@@ -4,11 +4,11 @@ import type { CardPostData } from '@/components/Card'
 import { PostRail } from './PostRail.client'
 
 /**
- * Standing copy above the rail. One line for every post, so it lives here
- * rather than in the CMS — an editor choosing what the rail *lists* is the
- * Related Posts tab's job; this sentence is site voice.
+ * Standing label above the rail. One for every post, so it lives here rather
+ * than in the CMS: an editor choosing what the rail *lists* is the Related
+ * Posts tab's job; the label is site furniture.
  */
-export const RELATED_POSTS_HEADING = 'Insights from SAS thinking on brand, clarity, and craft.'
+export const RELATED_POSTS_HEADING = 'More insights'
 
 /**
  * The rail every post ends with: the Related Posts tab's picks, else the most

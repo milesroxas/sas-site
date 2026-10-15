@@ -172,7 +172,8 @@ export const Card: React.FC<{
     const tileMedia = metaImage && typeof metaImage !== 'string' && (
       <Media
         fill
-        imgClassName="object-cover"
+        // The frame clips, so the zoom rides the image (the split card's hover).
+        imgClassName="object-cover transition-transform duration-300 ease-out group-hover:scale-102 motion-reduce:transition-none"
         resource={metaImage}
         // A cell of the insights index grid: three across from `lg`, two from `sm`.
         size="(min-width: 64rem) 33vw, (min-width: 40rem) 50vw, 100vw"
@@ -181,7 +182,10 @@ export const Card: React.FC<{
 
     return (
       <div
-        className={cn('pressable pressable-subtle flex cursor-pointer flex-col gap-3.5', className)}
+        className={cn(
+          'group pressable pressable-subtle flex cursor-pointer flex-col gap-3.5',
+          className,
+        )}
         ref={card.ref}
       >
         <div className={cn(POST_IMAGE_FRAME, 'relative overflow-hidden rounded-md bg-muted')}>

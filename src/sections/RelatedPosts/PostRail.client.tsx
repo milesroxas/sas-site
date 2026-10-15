@@ -3,6 +3,7 @@
 import { IconArrowUpRight } from '@tabler/icons-react'
 import Link from 'next/link'
 import type React from 'react'
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import { Card, type CardPostData } from '@/components/Card'
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
@@ -34,8 +35,8 @@ const SLIDE_BASIS = 'basis-5/6 md:basis-[calc(100%/2.5)]'
  * start padding and the track's negative margin swallows the first one, so
  * the first card sits flush on the track's content edge and the last card ends
  * on its own edge with nothing trailing it. Both ends therefore land exactly
- * where `RAIL_INSET` puts the track. The grid uses the same `gap-16`, so both
- * layouts sit on one rhythm from `md`.
+ * where `RAIL_INSET` puts the track. The static grid uses the insights
+ * index's own gap (`gap-grid`), so the closing row reads as a piece of it.
  *
  * A phone halves the gap (`gap-8`). The slide basis is a fraction of a narrow
  * window and the gap comes out of that fraction, so the full-width pair cost
@@ -50,7 +51,7 @@ const SLIDE_BASIS = 'basis-5/6 md:basis-[calc(100%/2.5)]'
  */
 const SLIDE_GUTTER = 'pl-8 md:pl-16'
 const TRACK_GUTTER = '-ml-8 md:-ml-16'
-const GRID_GAP = 'gap-16'
+const GRID_GAP = 'gap-grid'
 
 /**
  * Content inset. The root bleeds (`container-bleed`, which publishes
@@ -110,11 +111,9 @@ const TOUCH_RAIL =
 /** 20px line + 12px each side = 44px (HIG minimum). See the link below. */
 const LINK_TOUCH_TARGET = 'relative after:absolute after:inset-x-0 after:-inset-y-3 md:after:hidden'
 
+/** The insights index's own tile, so the closing row reads as a piece of it. */
 const RailCard: React.FC<{ post: CardPostData }> = ({ post }) => (
-  // h-full: every card takes the tallest neighbour's height, so the category
-  // chips sit on one line across the row instead of wherever each card's copy
-  // happens to end.
-  <Card className="h-full" doc={post} relationTo="posts" showCategories variant="split" />
+  <Card doc={post} relationTo="posts" variant="tile" />
 )
 
 export const PostRail: React.FC<{
@@ -124,40 +123,29 @@ export const PostRail: React.FC<{
   const isCarousel = posts.length >= CAROUSEL_MIN_COUNT
 
   return (
-    // `underMedia`: the cards are copy paired with media, so each card's frame
-    // wipes open when the rail enters and its copy drops in on the same beat.
+    // `underMedia`: the label and its link drop in as the rail enters.
     <ScrollReveal as="div" variant="underMedia">
       {/*
-        One row at every width: `items-baseline` sits the link on the heading's
-        first baseline, not its cap line, so the pair reads as one line of
-        furniture even where the heading wraps and the two sizes differ. The
-        gap closes on a phone, where the link and its gap are a real share of
-        the column, so the heading keeps the width for a two-line sentence.
+        A label over a rule, the insights art direction's closing row: the
+        index's eyebrow type, not a section heading, so the tiles stay the
+        subject. `items-baseline` sits the link on the label's baseline.
       */}
-      <div className="container mb-16 flex items-baseline justify-between gap-4 md:gap-8">
-        {/*
-          A rail label, not a section heading: the lead size on a phone, with
-          heading-3's leading rather than lead's body leading (`/snug`), and
-          `text-balance` evens the break so it does not orphan a word.
-        */}
+      <div className="container mb-8 flex items-baseline justify-between gap-4 border-t border-border pt-8">
         <h2
-          className="max-w-lg text-balance text-lead/snug font-light md:text-heading-3"
+          className={`${eyebrowClassName} tracking-widest text-muted-foreground uppercase`}
           data-reveal
           data-reveal-group="rail-intro"
         >
           {heading}
         </h2>
         {/*
-          A secondary action, so a phone sets it at `sm` (14px, above the 11pt
-          floor iOS puts on legible text) with the arrow stepped down to match;
-          `lg` beside the lead-size heading read as a second heading. The
-          `::after` pads the 20px line out to a 44px press target without
-          inflating how it looks — the same trick the audience tabs and the
-          carousel arrows use — and `md:after:hidden` drops the pad once the
+          Set at the label's size so the pair reads as one line of furniture.
+          The `::after` pads the line out to a 44px press target without
+          inflating how it looks, and `md:after:hidden` drops the pad once the
           pointer is fine.
         */}
         <Link
-          className={`${LINK_TOUCH_TARGET} group pressable flex shrink-0 items-center gap-2 text-sm md:gap-3 md:text-lg`}
+          className={`${LINK_TOUCH_TARGET} ${eyebrowClassName} group pressable flex shrink-0 items-center gap-1.5 tracking-widest uppercase`}
           data-reveal
           data-reveal-group="rail-intro"
           href="/posts"
@@ -166,7 +154,7 @@ export const PostRail: React.FC<{
           View All
           <IconArrowUpRight
             aria-hidden="true"
-            className="size-5 shrink-0 stroke-1 transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none md:size-6"
+            className="size-3.5 shrink-0 stroke-1 transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
           />
         </Link>
       </div>
