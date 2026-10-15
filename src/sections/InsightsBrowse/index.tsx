@@ -1,5 +1,6 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import type React from 'react'
 import { type CSSProperties, useMemo } from 'react'
 import { Card, type CardPostData } from '@/components/Card'
@@ -12,6 +13,7 @@ import {
   type IndexFilterOption,
 } from '@/sections/Browse'
 import { DATED_SORTS, type SortRegistry } from '@/sections/Browse/sorts'
+import { replacePathShallow } from '@/shared/lib/view-transition/shallow-path'
 import { FILTER_SWAP_MAX_STAGGER_STEPS, useFilterSwap } from '@/shared/ui/filter-swap'
 import { RevealSection } from '@/shared/ui/reveal-section'
 
@@ -33,6 +35,17 @@ const hasTopic = (post: InsightsBrowsePost, slug: string) =>
   Boolean(
     post.categories?.some((category) => typeof category === 'object' && category.slug === slug),
   )
+
+/**
+ * The topic an `/insights/<topic>` address names, when the page did not pass
+ * one. The filter writes that address as a shallow sync, so browser back to it
+ * restores the tree Next cached for `/insights` (no `initialTopicSlug`); the
+ * address is then the only record of the filter.
+ */
+const topicFromPath = (pathname: string, topics: IndexFilterOption[]) => {
+  const slug = pathname.match(/^\/insights\/([^/]+)\/?$/)?.[1]
+  return slug && topics.some((topic) => topic.slug === slug) ? slug : undefined
+}
 
 export type Props = {
   /** Kicker above the index title: CMS hero copy. */
@@ -58,19 +71,17 @@ export const InsightsBrowse: React.FC<Props> = ({
   posts,
   topics,
 }) => {
+  const pathname = usePathname()
   const { selected, rendered, exiting, hasFiltered, apply } = useFilterSwap<InsightsQuery>({
     ...INITIAL_QUERY,
-    topic: initialTopicSlug ?? ALL,
+    topic: initialTopicSlug ?? topicFromPath(pathname, topics) ?? ALL,
   })
 
   const applyQuery = (next: InsightsQuery) => {
     if (typeof window !== 'undefined' && next.topic !== selected.topic) {
-      const href = next.topic === ALL ? '/insights' : `/insights/${next.topic}`
-      // Null state lets Next's patched replaceState wrap its own internals and
-      // sync the router's canonical URL. Reusing window.history.state carries
-      // Next's __NA flag, which skips that sync: the router then restores the
-      // stale tree on back/forward and snaps the address bar back.
-      window.history.replaceState(null, '', href)
+      // A sync, not a navigation: the page transition keeps this page mounted
+      // (see `replacePathShallow`), so the swap below is not thrown away.
+      replacePathShallow(next.topic === ALL ? '/insights' : `/insights/${next.topic}`)
     }
     apply(next)
   }

@@ -2,7 +2,8 @@
 
 import { usePathname } from 'next/navigation'
 import type React from 'react'
-import { ViewTransition } from 'react'
+import { useEffect, useState, ViewTransition } from 'react'
+import { clearShallowPath, isShallowPath } from '@/shared/lib/view-transition/shallow-path'
 
 import './view-transition.css'
 
@@ -18,7 +19,8 @@ import './view-transition.css'
  * instance mounted. So the boundary is keyed on the pathname instead: every
  * pathname change is a fresh `<ViewTransition>`. Search-param and hash changes
  * keep the pathname and animate nothing, by design (URL sync is not
- * navigation).
+ * navigation). A path written by `replacePathShallow` (the insights topic
+ * filter) is URL sync too: the key holds, so the page keeps its state.
  *
  * Each navigation tags itself with a transition type (see
  * `shared/lib/view-transition/constants.ts`); this maps the type to a CSS class.
@@ -27,9 +29,23 @@ import './view-transition.css'
  */
 export function DirectionalTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const shallow = isShallowPath(pathname)
+  // One key per real navigation. Derived during render (React's "adjust state
+  // on prop change" pattern), so the new boundary mounts in the same commit as
+  // the new page. A shallow path only moves `path`: leaving it again, even
+  // back to the path the boundary mounted on, is a real navigation and counts.
+  const [boundary, setBoundary] = useState({ path: pathname, count: 0 })
+  if (pathname !== boundary.path) {
+    setBoundary({ path: pathname, count: shallow ? boundary.count : boundary.count + 1 })
+  }
+
+  useEffect(() => {
+    if (!shallow) clearShallowPath()
+  }, [shallow])
+
   return (
     <ViewTransition
-      key={pathname}
+      key={boundary.count}
       // The default is a mask reveal (brand grammar — no page crossfades,
       // docs/route-transitions-roadmap.md §4): the old page holds static
       // (`reveal-hold`) while the new page's snapshot clips open over it.
