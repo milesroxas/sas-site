@@ -36,6 +36,17 @@ export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title' |
  */
 type CardLayout = CardVariant | 'tile'
 
+/**
+ * The tile's hover, keyed off the whole card (`group`) so the picture's zoom
+ * and the title's underline start on the same frame, whether the pointer is
+ * on the picture or the words, and on keyboard focus of the link as well.
+ * The underline fades its color in rather than appearing, on the zoom's curve.
+ */
+const TILE_HOVER = {
+  zoom: 'group-hover:scale-104 group-has-focus-visible:scale-104',
+  underline: 'group-hover:decoration-current group-has-focus-visible:decoration-current',
+} as const
+
 const variantClassNames: Record<CardVariant, string> = {
   contained: '',
   open: 'rounded-none bg-transparent ring-0',
@@ -176,8 +187,14 @@ export const Card: React.FC<{
     const tileMedia = metaImage && typeof metaImage !== 'string' && (
       <Media
         fill
-        // The frame clips, so the zoom rides the image (the split card's hover).
-        imgClassName="object-cover transition-transform duration-300 ease-out group-hover:scale-102 motion-reduce:transition-none"
+        // The frame clips, so the zoom rides the image. A long settle on the
+        // site's curve (`ease-out-quint`): most of the travel lands at once,
+        // then the picture eases in, so the move reads as a glide, not a jump.
+        // `TILE_HOVER` starts it with the title's underline.
+        imgClassName={cn(
+          'object-cover transition-transform duration-800 ease-out-quint motion-reduce:transition-none',
+          TILE_HOVER.zoom,
+        )}
         resource={metaImage}
         // A cell of the insights index grid: three across from `lg`, two from `sm`.
         size="(min-width: 64rem) 33vw, (min-width: 40rem) 50vw, 100vw"
@@ -217,7 +234,10 @@ export const Card: React.FC<{
           {titleToUse && (
             <h3 className="max-w-[34ch] text-base/snug font-normal lg:text-lg/snug">
               <Link
-                className="hover:underline"
+                className={cn(
+                  'underline decoration-transparent decoration-1 underline-offset-[0.2em] transition-[text-decoration-color] duration-300 ease-out-quint motion-reduce:transition-none',
+                  TILE_HOVER.underline,
+                )}
                 href={href}
                 ref={link.ref}
                 transitionTypes={[...forwardNavTransitionTypes]}
