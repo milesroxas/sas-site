@@ -3,11 +3,11 @@ import type React from 'react'
 import type { CSSProperties } from 'react'
 import { ArchiveRail } from '@/blocks/ArchiveBlock/ArchiveRail.client'
 import type { BandTheme } from '@/blocks/shared/band-theme'
+import type { PostCard } from '@/blocks/shared/find-posts'
 import { Section } from '@/blocks/shared/section'
 import { Card } from '@/components/Card'
 import type { CardVariant } from '@/components/Card/variants'
 import RichText from '@/components/RichText'
-import type { Post } from '@/payload-types'
 
 /**
  * Presentational layout for the Archive block: intro rich text above the
@@ -19,7 +19,7 @@ export const ArchiveLayout: React.FC<{
   cardVariant?: CardVariant | null
   id?: string
   introContent?: DefaultTypedEditorState | null
-  posts: Post[]
+  posts: PostCard[]
   theme?: BandTheme | null
 }> = ({ cardVariant, id, introContent, posts, theme }) => (
   <Section theme={theme}>
