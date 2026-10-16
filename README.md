@@ -244,11 +244,11 @@ This deletes local content. Production is untouched. The pgvector extension is c
 
 ## Deployment
 
-Production is [www.suits-sandals.com](https://www.suits-sandals.com), on Vercel, with Neon Postgres and Cloudflare R2. `vercel.json` sets the build to `pnpm ci` and a cron every 10 minutes against `/api/payload-jobs/run`.
+Production is [www.suits-sandals.com](https://www.suits-sandals.com), on Vercel, with Neon Postgres and Cloudflare R2. `vercel.json` sets the build to `pnpm ci` and an hourly cron against `/api/payload-jobs/run`.
 
 `ignoreCommand` points at `scripts/vercel-ignore-build.sh`. The build is canceled when every file changed since the last successful deployment on the branch is one the site never reads (docs, agent config, tests, stories, lint, Storybook). An unlisted path, a missing base commit, or a same-commit redeploy still builds. A skipped push shows as Canceled in Vercel. To force a build, redeploy from the dashboard with **Use project's Ignore Build Step** unchecked. New inert paths go in `INERT_RES` in that script.
 
-The job queue sends newsletters, runs scheduled publishing, and retains Ask questions. It drains when `/api/payload-jobs/run` is called. The Vercel cron is the scheduler. `.github/workflows/payload-jobs.yml` declares the same 10-minute cadence, but GitHub drops most scheduled runs, so that workflow is a backstop. It needs the `PAYLOAD_JOBS_URL` and `CRON_SECRET` repository secrets. `VERCEL_AUTOMATION_BYPASS_SECRET` matters only if production sits behind Vercel Deployment Protection.
+The job queue sends newsletters, runs scheduled publishing, and retains Ask questions. It drains when `/api/payload-jobs/run` is called. The Vercel cron is the only scheduler and runs at the top of every hour (`CRON_SECRET` authenticates it), so a scheduled publish or a crashed newsletter send lands within the hour. Immediate newsletter sends self-kick through `after()` and do not wait for it. That cron is the one request that reaches Neon around the clock, so its cadence sets how often the database wakes.
 
 Required Vercel env vars: `PAYLOAD_SECRET`, `CRON_SECRET`, `PREVIEW_SECRET`, the Resend keys, and the `R2_*` / `NEXT_PUBLIC_MEDIA_URL` media vars. The Neon integration sets `POSTGRES_URL`. `PRODUCTION_DB_ENDPOINT` (the production Neon endpoint id, `ep-...`) feeds `scripts/guard-preview-db.ts`, which `pnpm ci` runs before `payload migrate`. Preview deploys receive a Neon branch (`preview/<git-branch>`). The guard aborts a non-production build that still sees the production endpoint. Git pushes build `main` only (`vercel.json`). The catch-all key is `**`, not `*`: the match is a glob, `*` stops at `/`, and a branch such as `claude/...` or `docs/...` would still deploy.
 
