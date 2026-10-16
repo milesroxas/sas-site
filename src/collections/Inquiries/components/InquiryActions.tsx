@@ -57,8 +57,8 @@ export function InquiryActions() {
       if (patch.assignedTo !== undefined) setAssignedTo(patch.assignedTo)
       try {
         await submit({ overrides: patch })
-        // The nav badge is on this same screen — let it drop straight away
-        // rather than sitting a minute behind the thing just answered.
+        // The nav badge is on this same screen: nothing else recounts it, so
+        // drop it now rather than after the next press of Refresh.
         void refreshCounts()
       } catch {
         toast.error('Could not save — try the Save button.')

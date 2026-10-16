@@ -1,11 +1,12 @@
 'use client'
 
 import { useAuth, useConfig } from '@payloadcms/ui'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AdminCard, AdminList, AdminRow, AdminRows, AdminStats } from '@/components/admin/AdminCard'
 import { listDocs } from '@/components/admin/rest'
 import { INQUIRY_TYPES, inquiryOptionLabel } from '@/shared/content/inquiry'
 import { assignedToQuery, INQUIRY_QUERIES } from './queries'
+import { RefreshCounts } from './RefreshCounts'
 import { useInquiryCounts } from './useInquiryCounts'
 
 type InboxRow = {
@@ -33,7 +34,8 @@ const shortDay = (value?: string | null) => {
  * Its job is to make an unanswered inquiry impossible to miss on the way to
  * anything else in the admin. A request nobody has picked up is the one count
  * that carries a flag; when the inbox is clear the counts step back and a
- * single line says so.
+ * single line says so. The numbers are as of the page load, or the last press
+ * of Refresh.
  */
 export function InquiriesDashboard() {
   const {
@@ -47,27 +49,36 @@ export function InquiriesDashboard() {
 
   const listUrl = `${admin}/collections/inquiries`
 
+  // Once at mount, and again on each press of Refresh beside the counts.
+  const loadRows = useCallback(
+    (signal?: AbortSignal) =>
+      listDocs<InboxRow>(
+        api,
+        'inquiries',
+        `limit=${PREVIEW_LIMIT}&sort=-submittedAt&${INQUIRY_QUERIES.open}`,
+        signal,
+      )
+        .then(setRows)
+        .catch(() => {
+          // Aborted on unmount, or offline. Counts still render and the list
+          // stays as it was.
+        }),
+    [api],
+  )
+  const reload = useCallback(() => void loadRows(), [loadRows])
+
   useEffect(() => {
     const controller = new AbortController()
-    listDocs<InboxRow>(
-      api,
-      'inquiries',
-      `limit=${PREVIEW_LIMIT}&sort=-submittedAt&${INQUIRY_QUERIES.open}`,
-      controller.signal,
-    )
-      .then(setRows)
-      .catch(() => {
-        // Aborted on unmount, or offline. Counts still render and the list
-        // stays as it was.
-      })
+    void loadRows(controller.signal)
     return () => controller.abort()
-  }, [api])
+  }, [loadRows])
 
   const value = (count: number) => (loaded ? count : null)
 
   return (
     <AdminCard
       action="Open all inquiries"
+      controls={<RefreshCounts onRefresh={reload} />}
       href={`${listUrl}?${INQUIRY_QUERIES.inbox}`}
       title="Inbox"
     >

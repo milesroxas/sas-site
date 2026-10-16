@@ -215,9 +215,12 @@ nobody subscribed, `Site Info → contactEmail` catches it and the log says so.
 | `InboxFilters` | Inquiries list | All (not spam) / New / Open / Assigned to me / Spam, one click instead of four |
 | `InquiryActions` | Inquiry sidebar | Reply by email with the reference in the subject, take ownership, record what happened, each writing and saving in one press. On spam: Not spam, and whether the sender is blocked |
 | `EmptySpam` | Inquiries list, Spam view | Delete every inquiry marked spam in one confirmed press |
+| `RefreshCounts` | Dashboard card, Inquiries list | Recount on a press, with "as of" beside it |
 
-Counts come from `limit=0` queries and poll every 60s, so a tab left open still
-tells the truth.
+Counts come from the collection's `count` route, four requests a round. One
+round runs per admin page load; after that the numbers move only on Refresh
+or when an inquiry is saved from its sidebar. Nothing polls: a tab left open
+costs nothing, and its "as of" says how old the numbers are.
 
 ## Not built
 

@@ -8,7 +8,7 @@ import { assignedToQuery, INQUIRY_QUERIES } from './queries'
 export type InquiryCounts = {
   /** Nobody has picked these up yet. */
   new: number
-  /** New or in progress — everything still owed an answer. */
+  /** New or in progress: everything still owed an answer. */
   open: number
   /** Open and assigned to the person looking at the screen. */
   mine: number
@@ -18,48 +18,42 @@ export type InquiryCounts = {
 
 const EMPTY: InquiryCounts = { new: 0, open: 0, mine: 0, spam: 0 }
 
-/** Refresh cadence while any admin screen is open. */
-const POLL_INTERVAL_MS = 60_000
+type CountsState = {
+  counts: InquiryCounts
+  /** False until the first answer, so a reader can tell zero from not yet. */
+  loaded: boolean
+  /** A round of requests is in the air. */
+  refreshing: boolean
+  /** When the numbers on screen were counted. */
+  refreshedAt: Date | null
+}
+
+const INITIAL: CountsState = { counts: EMPTY, loaded: false, refreshing: false, refreshedAt: null }
 
 /**
- * One poller, however many readers.
+ * One store, however many readers, and no clock.
  *
  * The dashboard renders the inbox panel and the nav badge side by side, and
- * both want the same numbers — a hook that polled per component would
- * fire six identical requests a minute and answer them at different moments,
- * so the badge and the panel could disagree on screen. The store below keeps a
- * single interval alive while at least one component is mounted, and hands
- * every reader the same snapshot.
+ * both want the same numbers, so every reader shares one snapshot. The counts
+ * are taken once per page load (and again when a different user signs in);
+ * after that they move only when someone presses Refresh or changes an
+ * inquiry. A poller used to run every minute on every admin screen, which
+ * was four function invocations a minute per open tab for numbers nobody was
+ * watching.
  */
 const listeners = new Set<() => void>()
-let snapshot: InquiryCounts = EMPTY
-let timer: ReturnType<typeof setInterval> | undefined
+let state: CountsState = INITIAL
+/** `api` and user the current numbers were counted for. */
+let countedFor: string | undefined
 let inFlight: Promise<void> | undefined
-/**
- * What the shared interval should ask for. Held outside the closure because
- * the interval outlives any one component: whoever mounted first would
- * otherwise pin the poll to their `userId` for the rest of the session, and
- * "assigned to me" would keep counting the previous user's work after a
- * re-login.
- */
-let pollArgs: { api: string; userId: number | string | undefined } | undefined
 
-const emit = (next: InquiryCounts) => {
-  // Same numbers, same object: `useSyncExternalStore` compares by identity, so
-  // a fresh object every minute would re-render every reader for nothing.
-  // The first answer always lands, so a reader can tell zero from not yet.
-  if (
-    snapshot !== EMPTY &&
-    next.new === snapshot.new &&
-    next.open === snapshot.open &&
-    next.mine === snapshot.mine &&
-    next.spam === snapshot.spam
-  ) {
-    return
-  }
-  snapshot = next
+const setState = (next: CountsState) => {
+  state = next
   for (const listener of listeners) listener()
 }
+
+const sameCounts = (a: InquiryCounts, b: InquiryCounts) =>
+  a.new === b.new && a.open === b.open && a.mine === b.mine && a.spam === b.spam
 
 async function fetchCounts(api: string, userId: number | string | undefined) {
   const count = (query: string) => countDocs(api, 'inquiries', query)
@@ -71,14 +65,22 @@ async function fetchCounts(api: string, userId: number | string | undefined) {
     count(INQUIRY_QUERIES.spam),
   ])
 
-  emit({ new: newCount, open: openCount, mine: mineCount, spam: spamCount })
+  const next = { new: newCount, open: openCount, mine: mineCount, spam: spamCount }
+  // Same numbers, same object: `useSyncExternalStore` readers that only look
+  // at `counts` can compare by identity.
+  const counts = state.loaded && sameCounts(state.counts, next) ? state.counts : next
+  setState({ counts, loaded: true, refreshing: false, refreshedAt: new Date() })
 }
 
 /** Concurrent callers share one round of requests rather than racing a round each. */
 function refreshCounts(api: string, userId: number | string | undefined) {
-  inFlight ??= fetchCounts(api, userId)
+  if (inFlight) return inFlight
+  countedFor = `${api}\u0000${userId ?? ''}`
+  setState({ ...state, refreshing: true })
+  inFlight = fetchCounts(api, userId)
     .catch(() => {
-      // Leave the last known counts in place; the next tick retries.
+      // Leave the last known counts in place; the next press retries.
+      setState({ ...state, refreshing: false })
     })
     .finally(() => {
       inFlight = undefined
@@ -90,22 +92,19 @@ const subscribe = (listener: () => void) => {
   listeners.add(listener)
   return () => {
     listeners.delete(listener)
-    if (listeners.size === 0 && timer) {
-      clearInterval(timer)
-      timer = undefined
-    }
   }
 }
 
-const getSnapshot = () => snapshot
+const getSnapshot = () => state
 
 /**
  * The numbers the inbox is judged by.
  *
- * Returns `refresh` for the callers that have just changed something and
- * should not wait out the interval to see it, and `loaded`, false until the
- * first answer, so a reader can hold a place rather than show a zero it has
- * not counted.
+ * Returns `refresh` for the Refresh button and for the callers that have just
+ * changed something, `refreshing` while a round is in the air, `refreshedAt`
+ * for the "as of" beside the button, and `loaded`, false until the first
+ * answer, so a reader can hold a place rather than show a zero it has not
+ * counted.
  */
 export function useInquiryCounts() {
   const {
@@ -116,16 +115,19 @@ export function useInquiryCounts() {
   const { user } = useAuth()
   const userId = user?.id
 
-  const counts = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+  const { counts, loaded, refreshing, refreshedAt } = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getSnapshot,
+  )
   const refresh = useCallback(() => refreshCounts(api, userId), [api, userId])
 
+  // First reader on a page load counts once; a reader mounting later, or on
+  // the next admin screen, reads what is there. A different user signing in
+  // counts again, so "assigned to me" is theirs.
   useEffect(() => {
-    pollArgs = { api, userId }
-    void refreshCounts(api, userId)
-    timer ??= setInterval(() => {
-      if (pollArgs) void refreshCounts(pollArgs.api, pollArgs.userId)
-    }, POLL_INTERVAL_MS)
+    if (countedFor !== `${api}\u0000${userId ?? ''}`) void refreshCounts(api, userId)
   }, [api, userId])
 
-  return { counts, loaded: counts !== EMPTY, refresh }
+  return { counts, loaded, refresh, refreshing, refreshedAt }
 }

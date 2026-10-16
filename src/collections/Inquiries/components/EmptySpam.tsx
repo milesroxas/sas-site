@@ -55,7 +55,7 @@ export function EmptySpam() {
   }, [api, refresh, router])
 
   const confirm = useCallback(() => {
-    // The count in the prompt should be the count now, not the last poll's.
+    // The count in the prompt should be the count now, not the last one shown.
     void refresh()
     openModal(MODAL_SLUG)
   }, [openModal, refresh])
