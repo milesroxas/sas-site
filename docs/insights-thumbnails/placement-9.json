@@ -1,0 +1,87 @@
+{
+ "status": "2026-10-16, revised by the user: telephone lot on strategic communications, running moved to positioning and messaging, ferry rail now unused. Glass on the fire escape to be edited to remove the jacket. Stoop and city beach are drafts on their posts. Five new frames rendered at 2048px.",
+ "order": "live /insights page order, read 2026-10-16: these nine sit above the sixteen in placement-16.json",
+ "posts": [
+  {
+   "n": 1,
+   "post": "How Technical B2B Companies Can Build a Clearer Brand",
+   "url": "/posts/b2b-branding-technical-companies",
+   "frame": "ss-insights-22-blueprint-on-the-bridge",
+   "scene": "flora/scenes-batch-9.md, scene A",
+   "why": "Complex expertise laid out flat where people can see it.",
+   "file": "deliver/finals-2048/ss-insights-22-blueprint-on-the-bridge.png"
+  },
+  {
+   "n": 2,
+   "post": "How to Build a Strategic Communications System for Complex Audiences",
+   "url": "/posts/strategic-communications-complex-audiences",
+   "frame": "ss-insights-21-telephone-lot",
+   "why": "A line left open in the middle of the lot: communications set up where people are.",
+   "file": "deliver/finals-2048/ss-insights-21-telephone-lot.png"
+  },
+  {
+   "n": 3,
+   "post": "How SaaS Companies Can Align Brand and Product Experience",
+   "url": "/posts/saas-branding-product-experience",
+   "frame": "ss-insights-23-the-sign-painter",
+   "scene": "flora/scenes-batch-9.md, scene B",
+   "why": "The sign and the shop made to say the same thing.",
+   "file": "deliver/finals-2048/ss-insights-23-the-sign-painter.png"
+  },
+  {
+   "n": 4,
+   "post": "When an Embedded Creative Team Makes Sense",
+   "url": "/posts/when-to-use-an-embedded-creative-team",
+   "frame": "ss-insights-05-the-stoop",
+   "media": 266,
+   "why": "Jacket on the railing, bag on the step: moved in, part of the house."
+  },
+  {
+   "n": 5,
+   "post": "Website strategy, UX and development for complex organizations",
+   "url": "/posts/website-strategy-ux-development",
+   "frame": "ss-insights-24-the-directory-board",
+   "scene": "flora/scenes-batch-9.md, scene C",
+   "why": "Putting a complicated building's information in order.",
+   "file": "deliver/finals-2048/ss-insights-24-the-directory-board.png"
+  },
+  {
+   "n": 6,
+   "post": "How to Improve UX/UI for Complex SaaS Products",
+   "url": "/posts/saas-product-ux-ui-design-systems",
+   "frame": "ss-insights-25-card-catalogue",
+   "scene": "flora/scenes-batch-9.md, scene D",
+   "why": "A design system as a cabinet of parts you can find and reuse.",
+   "file": "deliver/finals-2048/ss-insights-25-card-catalogue.png"
+  },
+  {
+   "n": 7,
+   "post": "How Healthtech and Life Sciences Brands Build Clarity and Trust",
+   "url": "/posts/healthtech-life-sciences-branding",
+   "frame": "ss-insights-26-glass-on-the-fire-escape",
+   "scene": "flora/scenes-batch-9.md, scene E",
+   "why": "Careful, clear work out in the open, where it can be trusted.",
+   "file": "deliver/finals-2048/ss-insights-26-glass-on-the-fire-escape.png"
+  },
+  {
+   "n": 8,
+   "post": "How to Clarify Brand Positioning and Messaging for a Complex Business",
+   "url": "/posts/brand-positioning-messaging-complex-businesses",
+   "frame": "ss-insights-15-running",
+   "file": "deliver/finals-2048/ss-insights-15-running.png",
+   "why": "Running for the next stop: a business that has to say where it is going, fast.",
+   "media": 268
+  },
+  {
+   "n": 9,
+   "post": "How to Reposition a Growing Company Without Losing Brand Equity",
+   "url": "/posts/brand-repositioning-growing-company",
+   "frame": "ss-insights-31-four-pigeons",
+   "why": "A few birds turning together: change of direction, same flock. Relief frame.",
+   "file": "deliver/finals-2048/ss-insights-31-four-pigeons.png"
+  }
+ ],
+ "grid": "Row 1: blueprint, telephone lot, sign painter. Row 2: stoop, directory board, card catalogue. Row 3: glass on the fire escape, running, city beach.",
+ "technique_spares": "Telephone lot used (2048px from its unfinished frame, seed 263). Ferry rail made at 2048px and uploaded (media 269), now unused. Rooftop reading dropped. Kerb cab unplaced.",
+ "cost": "Five technique runs, 0.072 USD each: 0.360 USD. Spend now 4.870 of 5.00 USD."
+}

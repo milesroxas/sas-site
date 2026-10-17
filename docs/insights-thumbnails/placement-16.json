@@ -1,0 +1,164 @@
+{
+ "status": "proposal by the producer, 2026-10-13; agreed by the user for now, 2026-10-15. Revised 2026-10-16: relief frames on the Top 30 post (skyline) and the Why B2B websites post (taxi), proposed by the producer, asked for by the user.",
+ "order": "live /insights page order, read 2026-10-13",
+ "posts": [
+  {
+   "n": 1,
+   "post": "Top 30 UX Design Agencies List Names Suits & Sandals",
+   "url": "/posts/suits-sandals-named-in-list-of-top-30-ux-design-agencies",
+   "frame": "ss-insights-30-first-light-down-the-avenue",
+   "name": "First light down the avenue",
+   "file": "deliver/finals-2048/ss-insights-30-first-light-down-the-avenue.png",
+   "why": "The sun lined up with the street: the city at its best moment. Relief frame."
+  },
+  {
+   "n": 2,
+   "post": "Jumpstart Your Messaging Strategy with This Tool: Sales Battle Cards for Better Messaging Strategies",
+   "url": "/posts/sales-battle-cards-for-messaging-strategies",
+   "frame": "ss-insights-17-chalk-diagram",
+   "name": "Chalk diagram",
+   "file": "deliver/finals-2048/ss-insights-17-chalk-diagram.png",
+   "why": "Working the plan out on the ground before the pitch."
+  },
+  {
+   "n": 3,
+   "post": "eCommerce UX Design Tips for the Holiday Season",
+   "url": "/posts/ecommerce-web-design-tips-holiday-season",
+   "frame": "ss-insights-14-stairwell-glow",
+   "name": "Stairwell glow",
+   "file": "deliver/finals-2048/ss-insights-14-stairwell-glow.png",
+   "why": "The warm glow people are drawn down into; the one seasonal note in the set."
+  },
+  {
+   "n": 4,
+   "post": "We Went Remote Right Before COVID. Here's What We Learned.",
+   "url": "/posts/we-went-remote-before-the-novel-coronavirus-heres-what-we-learned",
+   "frame": "ss-insights-04-the-desk-on-the-pier",
+   "name": "The desk on the pier",
+   "file": "deliver/finals-2048/ss-insights-04-the-desk-on-the-pier.png",
+   "why": "The office moved outside. Agreed earlier."
+  },
+  {
+   "n": 5,
+   "post": "Download the Communication Strategy Toolkit",
+   "url": "/posts/download-the-communication-strategy-toolkit",
+   "frame": "ss-insights-08-under-the-tracks",
+   "name": "Under the tracks",
+   "file": "deliver/finals-2048/ss-insights-08-under-the-tracks.png",
+   "why": "The kit left on the bench, ready to pick up."
+  },
+  {
+   "n": 6,
+   "post": "Harnessing the Power of Narrative: The Importance of Storytelling in Tech Startup Branding",
+   "url": "/posts/the-importance-of-storytelling-in-tech-startup-branding",
+   "frame": "ss-insights-12-paper-sky",
+   "name": "Paper sky",
+   "file": "deliver/finals-2048/ss-insights-12-paper-sky.png",
+   "why": "Loose pages in the air: a story not yet in order."
+  },
+  {
+   "n": 7,
+   "post": "Positioning in a Crowded Marketplace: Strategies for Fintech and Insuretech Startups",
+   "url": "/posts/positioning-strategies-for-fintech-and-insuretech-startups",
+   "frame": "ss-insights-18-turning-the-aerial",
+   "name": "Turning the aerial",
+   "file": "deliver/finals-2048/ss-insights-18-turning-the-aerial.png",
+   "why": "Finding the signal among many rooftops."
+  },
+  {
+   "n": 8,
+   "post": "Unlocking Webflow Website Potential: A Comprehensive Audit Framework",
+   "url": "/posts/unlocking-webflow-website-potential-a-comprehensive-audit-framework",
+   "frame": "ss-insights-19-laying-out",
+   "name": "Laying out",
+   "file": "deliver/finals-2048/ss-insights-19-laying-out.png",
+   "why": "An audit: every sheet laid out to be looked at."
+  },
+  {
+   "n": 9,
+   "post": "Real Estate Web Design Trends for 2024",
+   "url": "/posts/real-estate-web-design-trends-for-2024",
+   "frame": "ss-insights-02-brick-wall",
+   "name": "Brick wall",
+   "file": "deliver/finals-2048/ss-insights-02-brick-wall.png",
+   "why": "A wall, and the shadow of the room that would be inside it."
+  },
+  {
+   "n": 10,
+   "post": "6 Common eCommerce UX Mistakes and How to Fix Them",
+   "url": "/posts/avoiding-common-ecommerce-ux-design-mistakes",
+   "frame": "ss-insights-07-train-as-light",
+   "name": "Train as light",
+   "file": "deliver/finals-2048/ss-insights-07-train-as-light.png",
+   "why": "The train going past the one who missed it."
+  },
+  {
+   "n": 11,
+   "post": "Designing Healthcare Websites That Convert",
+   "url": "/posts/healthcare-website-design-trends-2024",
+   "frame": "ss-insights-13-reeded-glass",
+   "name": "Reeded glass",
+   "file": "deliver/finals-2048/ss-insights-13-reeded-glass.png",
+   "why": "A person behind privacy glass."
+  },
+  {
+   "n": 12,
+   "post": "Why B2B Websites Need to Do More Than Inform",
+   "url": "/posts/why-b2b-web-design-should-fuel-dynamic-experiences",
+   "frame": "ss-insights-32-the-taxi-light",
+   "name": "The taxi light",
+   "file": "deliver/finals-2048/ss-insights-32-the-taxi-light.png",
+   "why": "Something passing close through the frame. Relief frame."
+  },
+  {
+   "n": 13,
+   "post": "How to Create Audience Personas",
+   "url": "/posts/how-to-create-audience-personas",
+   "frame": "ss-insights-10-chair-in-the-lot",
+   "name": "Chair in the lot",
+   "file": "deliver/finals-2048/ss-insights-10-chair-in-the-lot.png",
+   "why": "Someone described by what they left on the chair."
+  },
+  {
+   "n": 14,
+   "post": "Designing UX Strategies That Create Meaningful Connections",
+   "url": "/posts/designing-ux-strategies-that-create-meaningful-connections",
+   "frame": "ss-insights-11-train-interior",
+   "name": "Train interior",
+   "file": "deliver/finals-2048/ss-insights-11-train-interior.png",
+   "why": "Seats side by side; a jacket left by whoever sat there."
+  },
+  {
+   "n": 15,
+   "post": "Suits & Sandals Gain Game-Changer Rank on Clutch",
+   "url": "/posts/suits-sandals-gain-game-changer-rank-on-clutch",
+   "frame": "ss-insights-16-walking-under-the-tracks",
+   "name": "Walking under the tracks",
+   "file": "deliver/finals-2048/ss-insights-16-walking-under-the-tracks.png",
+   "why": "Striding on. Agreed earlier (the strategist's swap)."
+  },
+  {
+   "n": 16,
+   "post": "Building a Brand That Resonates: The Ultimate Guide for Tech Startups",
+   "url": "/posts/building-a-brand-that-resonates-the-ultimate-guide-for-tech-startups",
+   "frame": "ss-insights-09-reading-on-the-steps",
+   "name": "Reading on the steps",
+   "file": "deliver/finals-2048/ss-insights-09-reading-on-the-steps.png",
+   "why": "A guide: someone sitting down to read it."
+  }
+ ],
+ "spare": [
+  {
+   "frame": "ss-insights-05-the-stoop",
+   "name": "The stoop"
+  },
+  {
+   "frame": "ss-insights-06-city-beach",
+   "name": "City beach"
+  },
+  {
+   "frame": "ss-insights-15-running",
+   "name": "Running"
+  }
+ ]
+}
