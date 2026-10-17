@@ -78,3 +78,92 @@ describe('slugPageRevalidation afterChange', () => {
     expect(purgedPaths()).toEqual(expect.arrayContaining(['/posts/new', '/posts/old']))
   })
 })
+
+describe('slugPageRevalidation consumer paths', () => {
+  const hooks = slugPageRevalidation<Doc>({
+    basePath: '/posts',
+    consumerPaths: ['/posts/[slug]', '/[slug]', '/'],
+    label: 'Post',
+    revalidateIndex: true,
+    sitemapTag: 'posts-sitemap',
+  })
+
+  const req = {
+    context: {},
+    payload: { findByID: vi.fn(), logger: { info: vi.fn(), warn: vi.fn() } },
+  } as unknown as Parameters<typeof hooks.afterChange>[0]['req']
+
+  const runAfterChange = (doc: Doc, previousDoc?: Doc, request = req) =>
+    hooks.afterChange({
+      doc,
+      previousDoc: previousDoc as Doc,
+      req: request,
+      collection: { slug: 'posts' } as never,
+      context: request.context,
+      data: {},
+      operation: 'update',
+    })
+
+  beforeEach(() => {
+    revalidatePath.mockReset()
+    revalidateTag.mockReset()
+  })
+
+  it('purges the consumer routes alongside the document when it is unpublished', async () => {
+    await runAfterChange(
+      { id: 1, slug: 'hello', _status: 'draft' },
+      { id: 1, slug: 'hello', _status: 'published' },
+    )
+
+    expect(revalidatePath).toHaveBeenCalledWith('/posts/hello')
+    expect(revalidatePath).toHaveBeenCalledWith('/posts')
+    expect(revalidatePath).toHaveBeenCalledWith('/posts/[slug]', 'page')
+    expect(revalidatePath).toHaveBeenCalledWith('/[slug]', 'page')
+    expect(revalidatePath).toHaveBeenCalledWith('/')
+    expect(revalidateTag).toHaveBeenCalledWith('posts-sitemap', 'max')
+  })
+
+  it('purges the consumer routes when a document publishes', async () => {
+    await runAfterChange(
+      { id: 1, slug: 'hello', _status: 'published' },
+      { id: 1, slug: 'hello', _status: 'draft' },
+    )
+
+    expect(revalidatePath).toHaveBeenCalledWith('/posts/[slug]', 'page')
+    expect(revalidatePath).toHaveBeenCalledWith('/')
+  })
+
+  it('leaves the cache alone for a draft save on a never-published document', async () => {
+    await runAfterChange(
+      { id: 1, slug: 'hello', _status: 'draft' },
+      { id: 1, slug: 'hello', _status: 'draft' },
+    )
+
+    expect(revalidatePath).not.toHaveBeenCalled()
+    expect(revalidateTag).not.toHaveBeenCalled()
+  })
+
+  it('purges the consumer routes on delete', () => {
+    hooks.afterDelete({
+      doc: { id: 1, slug: 'hello', _status: 'published' },
+      req,
+      id: 1,
+      collection: {} as never,
+      context: {},
+    })
+
+    expect(revalidatePath).toHaveBeenCalledWith('/posts/hello')
+    expect(revalidatePath).toHaveBeenCalledWith('/[slug]', 'page')
+  })
+
+  it('skips every purge when revalidation is disabled for the request', async () => {
+    const quiet = { ...req, context: { disableRevalidate: true } } as typeof req
+    await runAfterChange(
+      { id: 1, slug: 'hello', _status: 'draft' },
+      { id: 1, slug: 'hello', _status: 'published' },
+      quiet,
+    )
+
+    expect(revalidatePath).not.toHaveBeenCalled()
+  })
+})
