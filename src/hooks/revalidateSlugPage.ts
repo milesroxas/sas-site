@@ -61,25 +61,57 @@ export function slugPageRevalidation<T extends SlugPageDoc>({
   /** Cache tag the sitemap route reads. */
   sitemapTag: string
 }) {
+  /**
+   * Purges a document's own page and everything that lists it. With no slug
+   * the page itself is skipped (it would purge `/posts/undefined` and leave
+   * the real page stale) but the index, consumers and tags still go.
+   */
   const purge = (slug: string | null | undefined) => {
-    revalidatePath(`${basePath}/${slug}`)
+    if (slug) revalidatePath(`${basePath}/${slug}`)
     if (revalidateIndex) revalidatePath(basePath)
     for (const path of consumerPaths) purgePath(path)
     if (revalidateMenu) revalidateTag(MENU_CONTENT_TAG, 'max')
     revalidateTag(sitemapTag, 'max')
   }
 
-  const afterChange: CollectionAfterChangeHook<T> = ({ doc, previousDoc, req }) => {
+  const afterChange: CollectionAfterChangeHook<T> = async ({
+    collection,
+    doc,
+    previousDoc,
+    req,
+  }) => {
     if (req.context.disableRevalidate) return doc
+    // A write returns only the fields its caller selected (an MCP update with
+    // `select`), and `previousDoc` comes back trimmed the same way, so the slug
+    // can be missing from both. Read it from the stored document then.
+    const slug =
+      doc.slug ??
+      previousDoc?.slug ??
+      (
+        (await req.payload.findByID({
+          collection: collection.slug,
+          depth: 0,
+          disableErrors: true,
+          id: doc.id,
+          req,
+          select: { slug: true },
+        })) as Pick<SlugPageDoc, 'slug'> | null
+      )?.slug
+    // A slug missing from `previousDoc` was trimmed, not changed.
+    const previousSlug = previousDoc?.slug ?? slug
     if (doc._status === 'published') {
-      purge(doc.slug)
-      req.payload.logger.info(`Revalidated ${label} at ${basePath}/${doc.slug}`)
+      purge(slug)
+      if (slug) {
+        req.payload.logger.info(`Revalidated ${label} at ${basePath}/${slug}`)
+      } else {
+        req.payload.logger.warn(`${label} ${doc.id} has no slug: revalidated its lists, not its page`)
+      }
     }
     if (
       previousDoc?._status === 'published' &&
-      (doc._status !== 'published' || previousDoc.slug !== doc.slug)
+      (doc._status !== 'published' || previousSlug !== slug)
     ) {
-      purge(previousDoc.slug)
+      purge(previousSlug)
     }
     return doc
   }
