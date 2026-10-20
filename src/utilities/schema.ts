@@ -2,12 +2,22 @@ import type {
   BlogPosting,
   BreadcrumbList,
   CreativeWork,
-  Organization,
+  FAQPage,
+  ProfessionalService,
   Service,
   WebSite,
   WithContext,
 } from 'schema-dts'
-import type { ExpertisePage, LabPage, Media, Post, SiteInfo, WorkPage } from '@/payload-types'
+import type {
+  ExpertisePage,
+  FaqBlock,
+  LabPage,
+  Media,
+  Post,
+  SiteInfo,
+  WorkPage,
+} from '@/payload-types'
+import { lexicalToPlainText } from '@/shared/content/lexicalToMarkdown'
 import { getServerSideURL } from './getURL'
 
 const ORG_ID = '#organization'
@@ -22,15 +32,21 @@ const mediaUrl = (media?: Media | number | null): string | undefined => {
  * Site-wide entity anchor. Rendered once in the root layout. The sameAs
  * profile links are what let AI engines reconcile the brand across the web —
  * keep them populated in the Site Info global.
+ *
+ * Typed as ProfessionalService, the schema.org subclass of Organization for an
+ * agency: engines that key on Organization still match it, and the type names
+ * what the company sells rather than only that it exists.
  */
-export const organizationSchema = (siteInfo: Partial<SiteInfo>): WithContext<Organization> => {
+export const organizationSchema = (
+  siteInfo: Partial<SiteInfo>,
+): WithContext<ProfessionalService> => {
   const siteUrl = getServerSideURL()
   const { address } = siteInfo
   const hasAddress = Boolean(address?.streetAddress && address?.city)
 
   return {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
+    '@type': 'ProfessionalService',
     '@id': `${siteUrl}/${ORG_ID}`,
     name: siteInfo.name || 'Suits & Sandals',
     ...(siteInfo.legalName ? { legalName: siteInfo.legalName } : {}),
@@ -157,4 +173,40 @@ export const breadcrumbSchema = (
       item: `${siteUrl}${item.path}`,
     })),
   }
+}
+
+/** The shape every layout block shares; a Section carries its children in `blocks`. */
+type LayoutLike = { blockType: string; blocks?: LayoutLike[] | null }
+
+/**
+ * Every FAQ item in a page's layout, including those nested in a Section,
+ * as one FAQPage. Null when the layout asks no questions, so a route can
+ * spread the result into its JSON-LD list without a guard of its own.
+ */
+export const faqPageSchema = (
+  blocks: LayoutLike[] | null | undefined,
+): WithContext<FAQPage> | null => {
+  const items = (blocks ?? []).flatMap((block) => {
+    if (block.blockType === 'section') return (block.blocks ?? []).flatMap(faqItems)
+    return faqItems(block)
+  })
+  if (items.length === 0) return null
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map(({ question, answer }) => ({
+      '@type': 'Question' as const,
+      name: question,
+      acceptedAnswer: { '@type': 'Answer' as const, text: answer },
+    })),
+  }
+}
+
+const faqItems = (block: LayoutLike): { question: string; answer: string }[] => {
+  if (block.blockType !== 'faq') return []
+  return ((block as FaqBlock).items ?? []).flatMap((item) => {
+    const answer = lexicalToPlainText(item.answer)
+    return item.question && answer ? [{ question: item.question, answer }] : []
+  })
 }

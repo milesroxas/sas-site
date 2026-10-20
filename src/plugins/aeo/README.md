@@ -38,8 +38,10 @@ Route handlers live in `src/app/(frontend)/(ai)/`.
 
 JSON-LD is a sibling concern wired per route, not by the plugin: builders in
 [src/utilities/schema.ts](../../utilities/schema.ts) (typed with `schema-dts`), rendered by
-[`<JsonLd>`](../../components/JsonLd/index.tsx). Organization + WebSite render site-wide from the
-root layout; BlogPosting / Service / CreativeWork / BreadcrumbList render in the detail routes.
+[`<JsonLd>`](../../components/JsonLd/index.tsx). ProfessionalService (the Organization subtype) + WebSite
+render site-wide from the root layout; BlogPosting / Service / CreativeWork / BreadcrumbList render
+in the detail routes, and `faqPageSchema(layout)` adds FAQPage to any route whose layout holds an
+FAQ block (expertise, audience, pages, home).
 
 ## Options
 

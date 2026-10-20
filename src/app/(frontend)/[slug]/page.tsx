@@ -4,12 +4,14 @@ import { draftMode } from 'next/headers'
 import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
 import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
+import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { faqPageSchema } from '@/utilities/schema'
 import { cn } from '@/utilities/ui'
 
 export async function generateStaticParams() {
@@ -53,6 +55,7 @@ export default async function Page({ params: paramsPromise }: Args) {
   }
 
   const { hero, layout } = page
+  const faqSchema = faqPageSchema(layout)
 
   return (
     // The high-impact hero pulls itself under the fixed header
@@ -68,6 +71,7 @@ export default async function Page({ params: paramsPromise }: Args) {
           hero?.type !== 'highImpact' && 'pt-16',
         )}
       >
+        {faqSchema ? <JsonLd data={faqSchema} /> : null}
         {/* Allows redirects for valid pages too */}
         <PayloadRedirects disableNotFound url={url} />
 

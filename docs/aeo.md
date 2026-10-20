@@ -42,8 +42,10 @@ lab-pages, expertise-pages, audience-pages, contact-pages):
 - Publish/unpublish/delete/slug-change triggers cache revalidation and an **IndexNow** ping
   (production only) so Bing/Copilot and friends re-crawl quickly.
 - Posts get **markdown alternates**: `/posts/[slug].md` and `Accept: text/markdown`.
-- Detail routes render **JSON-LD** (BlogPosting / Service / CreativeWork + BreadcrumbList) and a
-  **canonical URL**; the root layout renders Organization + WebSite from the **Site Info** global.
+- Detail routes render **JSON-LD** (BlogPosting with Person authors / Service / CreativeWork +
+  BreadcrumbList, and FAQPage wherever a layout holds an FAQ block) and a **canonical URL**; the
+  root layout renders ProfessionalService (the Organization subtype) + WebSite from the
+  **Site Info** global.
 
 Adding a new public collection: see the checklist in the
 [plugin README](../src/plugins/aeo/README.md#adding-a-new-public-collection).

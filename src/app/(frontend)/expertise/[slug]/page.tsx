@@ -12,7 +12,7 @@ import type { ExpertisePage } from '@/payload-types'
 import { RelatedWorkSection, relatedWorkTerms } from '@/sections/RelatedWork'
 import type { WorksBrowseItem } from '@/sections/WorksBrowse/queries'
 import { relationshipIds } from '@/utilities/relationshipId'
-import { breadcrumbSchema, serviceSchema } from '@/utilities/schema'
+import { breadcrumbSchema, faqPageSchema, serviceSchema } from '@/utilities/schema'
 import {
   createSlugQuery,
   type SlugRouteArgs,
@@ -33,6 +33,7 @@ export default async function ExpertisePageRoute({ params }: SlugRouteArgs) {
   const page = await queryExpertisePageBySlug(decodedSlug)
   if (!page) return <PayloadRedirects url={url} />
   const relatedWork = await resolveRelatedWork(page)
+  const faqSchema = faqPageSchema(page.layout)
   return (
     <>
       {/* No top inset: the hero band pulls under the fixed header and owns its own. */}
@@ -44,6 +45,7 @@ export default async function ExpertisePageRoute({ params }: SlugRouteArgs) {
               { name: 'Expertise', path: '/expertise' },
               { name: page.title, path: url },
             ]),
+            ...(faqSchema ? [faqSchema] : []),
           ]}
         />
         <PayloadRedirects disableNotFound url={url} />

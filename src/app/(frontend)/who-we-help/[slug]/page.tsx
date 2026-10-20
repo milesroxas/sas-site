@@ -12,7 +12,7 @@ import type { AudiencePage } from '@/payload-types'
 import { RelatedWorkSection, relatedWorkTerms } from '@/sections/RelatedWork'
 import type { WorksBrowseItem } from '@/sections/WorksBrowse/queries'
 import { relationshipIds } from '@/utilities/relationshipId'
-import { breadcrumbSchema } from '@/utilities/schema'
+import { breadcrumbSchema, faqPageSchema } from '@/utilities/schema'
 import {
   createSlugQuery,
   type SlugRouteArgs,
@@ -33,15 +33,19 @@ export default async function AudiencePageRoute({ params }: SlugRouteArgs) {
   const page = await queryAudiencePageBySlug(decodedSlug)
   if (!page) return <PayloadRedirects url={url} />
   const relatedWork = await resolveRelatedWork(page)
+  const faqSchema = faqPageSchema(page.layout)
   return (
     <>
       {/* No top inset: the hero band pulls under the fixed header and owns its own. */}
       <article className={`${FOOTER_CLOSING_ARTICLE_CLASS} pb-24`}>
         <JsonLd
-          data={breadcrumbSchema([
-            { name: 'Who We Help', path: '/who-we-help' },
-            { name: page.title, path: url },
-          ])}
+          data={[
+            breadcrumbSchema([
+              { name: 'Who We Help', path: '/who-we-help' },
+              { name: page.title, path: url },
+            ]),
+            ...(faqSchema ? [faqSchema] : []),
+          ]}
         />
         <PayloadRedirects disableNotFound url={url} />
         {draft && <LivePreviewListener />}

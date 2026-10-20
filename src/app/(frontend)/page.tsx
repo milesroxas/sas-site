@@ -4,6 +4,7 @@ import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
+import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
@@ -11,6 +12,7 @@ import { RenderHomeHero } from '@/Home/hero'
 import { homeStatic } from '@/Home/home-static'
 import { HomeStatement } from '@/Home/statement'
 import { generateMeta } from '@/utilities/generateMeta'
+import { faqPageSchema } from '@/utilities/schema'
 
 /**
  * Time-based fallback only. Saving the Home global calls `revalidatePath('/')`
@@ -26,12 +28,14 @@ export default async function HomePage() {
   const home = (await queryHome()) ?? homeStatic
 
   const { hero, layout, statement } = home
+  const faqSchema = faqPageSchema(layout)
 
   return (
     <>
       {/* Opaque and above the closing band: the band is a sticky curtain the
           page uncovers by scrolling this off it (src/Footer/Closing/curtain). */}
       <article className={`${FOOTER_CLOSING_ARTICLE_CLASS} pb-24`}>
+        {faqSchema ? <JsonLd data={faqSchema} /> : null}
         {draft && <LivePreviewListener />}
         <RenderHomeHero {...hero} />
         {statement && !statement.hidden ? <HomeStatement {...statement} /> : null}

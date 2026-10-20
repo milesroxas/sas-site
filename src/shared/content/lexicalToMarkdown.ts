@@ -209,3 +209,25 @@ export const lexicalToMarkdownString = (data: unknown): string => {
     .filter((block): block is string => Boolean(block?.trim()))
     .join('\n\n')
 }
+
+/**
+ * The same tree as plain text: every text node, block nodes separated by a
+ * single space. For places that take no markup at all, such as the answer
+ * text in FAQPage structured data.
+ */
+export const lexicalToPlainText = (data: unknown): string => {
+  const state = data as SerializedLexicalState | null | undefined
+  const children = state?.root?.children
+  if (!children?.length) return ''
+
+  const collect = (node: LexicalNode): string => {
+    if (typeof node.text === 'string') return node.text
+    const inner = (node.children ?? []).map(collect).join('')
+    return node.type === 'linebreak' ? ' ' : inner
+  }
+
+  return children
+    .map((node) => collect(node).replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join(' ')
+}
