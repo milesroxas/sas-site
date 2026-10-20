@@ -90,8 +90,14 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   )
 }
 
+/**
+ * A utility page, not a landing page: searchable by visitors, kept out of the
+ * index so a template title never competes with the pages it points at.
+ */
 export function generateMetadata(): Metadata {
   return {
-    title: `Payload Website Template Search`,
+    title: 'Search | Suits & Sandals',
+    description: 'Search the Suits & Sandals site: work, insights, expertise and who we help.',
+    robots: { index: false, follow: true },
   }
 }

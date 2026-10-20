@@ -6,5 +6,10 @@ export default function ExpertiseIndexPage() {
 }
 
 export function generateMetadata(): Metadata {
-  return { title: 'Expertise | Suits & Sandals' }
+  return {
+    title: 'Expertise | Suits & Sandals',
+    description:
+      'What Suits & Sandals does: brand positioning and messaging, website strategy and UX, product design systems, sales and investor communications, and embedded creative support.',
+    alternates: { canonical: '/expertise' },
+  }
 }

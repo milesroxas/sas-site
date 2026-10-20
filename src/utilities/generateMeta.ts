@@ -34,6 +34,21 @@ export const getFallbackOgImageURL = async () => {
   return getImageURL(siteInfo?.ogImage)
 }
 
+const TITLE_SUFFIX = 'Suits & Sandals'
+
+/**
+ * One site suffix, whatever the editor typed: the SEO tab's Auto-generate
+ * button writes the suffix into `meta.title` itself, which used to render as
+ * "X | Suits & Sandals | Suits & Sandals".
+ */
+export const titleWithSuffix = (metaTitle?: string | null): string => {
+  const base = (metaTitle ?? '')
+    .trim()
+    .replace(/\s*\|\s*Suits\s*&\s*Sandals\s*$/i, '')
+    .trim()
+  return base ? `${base} | ${TITLE_SUFFIX}` : TITLE_SUFFIX
+}
+
 export const generateMeta = async (args: {
   doc:
     | Partial<Page>
@@ -56,7 +71,7 @@ export const generateMeta = async (args: {
   const og = doc?.meta?.og
   const ogImage = getImageURL(og?.image || doc?.meta?.image) ?? (await getFallbackOgImageURL())
 
-  const title = doc?.meta?.title ? `${doc?.meta?.title} | Suits & Sandals` : 'Suits & Sandals'
+  const title = titleWithSuffix(doc?.meta?.title)
 
   return {
     description: doc?.meta?.description,

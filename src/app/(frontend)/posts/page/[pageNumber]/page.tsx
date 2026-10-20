@@ -9,5 +9,5 @@ type Args = {
 /** Old archive pages; the Insights Index singleton does not paginate. */
 export default async function Page({ params }: Args) {
   await params
-  permanentRedirect('/posts')
+  permanentRedirect('/insights')
 }
