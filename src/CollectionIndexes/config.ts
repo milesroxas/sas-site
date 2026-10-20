@@ -9,8 +9,15 @@ import { generateGlobalPreviewPath } from '@/utilities/generatePreviewPath'
 import { indexBannerTab } from './banner'
 import { revalidateCollectionIndex } from './hooks/revalidateCollectionIndex'
 
+export type CollectionIndexSlug =
+  | 'audience-index'
+  | 'expertise-index'
+  | 'insights-index'
+  | 'lab-index'
+  | 'works-index'
+
 type CollectionIndexArgs = {
-  slug: 'insights-index' | 'lab-index' | 'works-index'
+  slug: CollectionIndexSlug
   label: string
   /** Site-relative path the index publishes at, e.g. `/insights`. */
   path: string
@@ -23,7 +30,7 @@ type CollectionIndexArgs = {
 
 /**
  * Editor-configured singleton for a collection index page (`/insights`,
- * `/works`, `/lab`).
+ * `/works`, `/lab`, `/expertise`, `/who-we-help`).
  * Mirrors the Home global: hero + SEO, plus any tab of the index's own; the
  * listing itself stays code-owned.
  */
@@ -133,4 +140,20 @@ export const WorksIndex = collectionIndexGlobal({
   label: 'Works Index',
   path: '/works',
   description: 'The works index published at /works. Hero and SEO only — the list is automatic.',
+})
+
+export const ExpertiseIndex = collectionIndexGlobal({
+  slug: 'expertise-index',
+  label: 'Expertise Index',
+  path: '/expertise',
+  description:
+    'The expertise index published at /expertise. Hero and SEO only: the list of expertise pages is automatic.',
+})
+
+export const AudienceIndex = collectionIndexGlobal({
+  slug: 'audience-index',
+  label: 'Who We Help Index',
+  path: '/who-we-help',
+  description:
+    'The who-we-help index published at /who-we-help. Hero and SEO only: the list of audience pages is automatic.',
 })

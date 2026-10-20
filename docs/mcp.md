@@ -60,12 +60,12 @@ The source of truth is [`src/plugins/mcp.ts`](../src/plugins/mcp.ts); this table
 | Assets | `streak-looks` | Full authoring, **drafts only**: publishing a look happens in the Studio |
 | Assets | `media` | **Read-only** (find) |
 | Visitor records | `inquiries`, `form-submissions`, `subscribers`, `ask-questions` | **Read-only** (find) |
-| Globals | `home`, `header`, `footer`, `site-info`, `insights-index`, `lab-index`, `works-index` | Find + update |
+| Globals | `home`, `header`, `footer`, `site-info`, `insights-index`, `lab-index`, `works-index`, `expertise-index`, `audience-index` | Find + update |
 
 "Offered" means the checkbox exists on the key. Each key still gets only what an admin turns on,
 and every call still runs through the linked team member's own access rules.
 
-The index globals (`insights-index`, `lab-index`, `works-index`) carry hero and SEO only: the listings
+The index globals (`insights-index`, `lab-index`, `works-index`, `expertise-index`, `audience-index`) carry hero and SEO only: the listings
 themselves are code-owned, so an agent can edit the opening copy but not the set.
 
 Media is read-only by design: MCP tools cannot send binary uploads. Agents reference existing
@@ -102,7 +102,7 @@ sending it anywhere outside the workspace. The copying half is checked on the se
 addresses ([House rules enforced on MCP writes](#house-rules-enforced-on-mcp-writes)); the rest of
 the rule is an instruction, not an enforced check.
 
-The index globals (`insights-index`, `works-index`) carry hero and SEO only; the lists themselves
+The index globals (`insights-index`, `works-index`, `lab-index`, `expertise-index`, `audience-index`) carry hero and SEO only; the lists themselves
 are code-owned.
 
 **Deliberately excluded** (no MCP tools at all):

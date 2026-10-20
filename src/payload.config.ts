@@ -6,7 +6,13 @@ import { s3Storage } from '@payloadcms/storage-s3'
 import { buildConfig, type PayloadRequest } from 'payload'
 import sharp from 'sharp'
 import { defaultLexical } from '@/fields/defaultLexical'
-import { InsightsIndex, LabIndex, WorksIndex } from './CollectionIndexes/config'
+import {
+  AudienceIndex,
+  ExpertiseIndex,
+  InsightsIndex,
+  LabIndex,
+  WorksIndex,
+} from './CollectionIndexes/config'
 import { AskQuestions } from './collections/AskQuestions'
 import { AssetLibraries } from './collections/AssetLibraries'
 import { AudiencePages } from './collections/AudiencePages'
@@ -221,7 +227,16 @@ export default buildConfig({
       },
     }),
   ],
-  globals: [Home, InsightsIndex, LabIndex, WorksIndex, Header, Footer],
+  globals: [
+    Home,
+    InsightsIndex,
+    LabIndex,
+    WorksIndex,
+    ExpertiseIndex,
+    AudienceIndex,
+    Header,
+    Footer,
+  ],
   // Nothing reads GraphQL: the site uses the Local API and MCP uses REST.
   // Off, so there is no second public query surface to guard or pay for.
   graphQL: { disable: true },

@@ -173,6 +173,8 @@ export interface Config {
     'insights-index': InsightsIndex;
     'lab-index': LabIndex;
     'works-index': WorksIndex;
+    'expertise-index': ExpertiseIndex;
+    'audience-index': AudienceIndex;
     header: Header;
     footer: Footer;
     'site-info': SiteInfo;
@@ -183,6 +185,8 @@ export interface Config {
     'insights-index': InsightsIndexSelect<false> | InsightsIndexSelect<true>;
     'lab-index': LabIndexSelect<false> | LabIndexSelect<true>;
     'works-index': WorksIndexSelect<false> | WorksIndexSelect<true>;
+    'expertise-index': ExpertiseIndexSelect<false> | ExpertiseIndexSelect<true>;
+    'audience-index': AudienceIndexSelect<false> | AudienceIndexSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-info': SiteInfoSelect<false> | SiteInfoSelect<true>;
@@ -9834,6 +9838,14 @@ export interface PayloadMcpApiKey {
     find?: boolean | null;
     update?: boolean | null;
   };
+  audienceIndex?: {
+    find?: boolean | null;
+    update?: boolean | null;
+  };
+  expertiseIndex?: {
+    find?: boolean | null;
+    update?: boolean | null;
+  };
   insightsIndex?: {
     find?: boolean | null;
     update?: boolean | null;
@@ -13509,6 +13521,18 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         find?: T;
         update?: T;
       };
+  audienceIndex?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+      };
+  expertiseIndex?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+      };
   insightsIndex?:
     | T
     | {
@@ -14060,6 +14084,242 @@ export interface IndexBanner {
  * via the `definition` "works-index".
  */
 export interface WorksIndex {
+  id: number;
+  title: string;
+  hero: {
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    /**
+     * Small label above the title, e.g. an area of expertise.
+     */
+    eyebrow?: string | null;
+    title?: string | null;
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Short supporting paragraph anchored to the bottom of the hero.
+     */
+    description?: string | null;
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'site' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'contact-pages';
+                  value: number | ContactPage;
+                } | null);
+            /**
+             * Home (/), Works Index (/works), or Insights Index (/insights).
+             */
+            sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * An effect runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
+     */
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
+  };
+  meta?: {
+    /**
+     * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
+     */
+    title?: string | null;
+    /**
+     * Default image for search and social previews. Landscape, at least 1200×630px. Also used for share cards unless an Open Graph image is set below.
+     */
+    image?: (number | null) | Media;
+    /**
+     * The short summary under the title in Google results. Aim for 100–150 characters — front-load the most important message.
+     */
+    description?: string | null;
+    /**
+     * Controls how this page looks when shared on LinkedIn, Facebook, Slack, iMessage, etc. Every field is optional — anything left blank falls back to the SEO fields above.
+     */
+    og?: {
+      /**
+       * Headline on the share card. Can be punchier than the SEO title — no need to include "| Suits & Sandals". Blank = SEO title.
+       */
+      title?: string | null;
+      /**
+       * One or two sentences under the share-card headline. Keep it under ~200 characters; platforms truncate longer text. Blank = SEO description.
+       */
+      description?: string | null;
+      /**
+       * Share-card image. Landscape 1200×630px (1.91:1) — square or portrait images get cropped by most platforms. Blank = SEO image.
+       */
+      image?: (number | null) | Media;
+    };
+  };
+  /**
+   * Automatic follows this page’s own visual. Media upload and Streak Field set an independent, hover-only preview.
+   */
+  menuPreviewType?: ('automatic' | 'media' | 'streakField') | null;
+  /**
+   * Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the Header's menu fallback.
+   */
+  menuPreview?: (number | null) | Media;
+  menuPreviewShader?: StreakVisualConfig;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * The expertise index published at /expertise. Hero and SEO only: the list of expertise pages is automatic.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expertise-index".
+ */
+export interface ExpertiseIndex {
+  id: number;
+  title: string;
+  hero: {
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    /**
+     * Small label above the title, e.g. an area of expertise.
+     */
+    eyebrow?: string | null;
+    title?: string | null;
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Short supporting paragraph anchored to the bottom of the hero.
+     */
+    description?: string | null;
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'site' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'contact-pages';
+                  value: number | ContactPage;
+                } | null);
+            /**
+             * Home (/), Works Index (/works), or Insights Index (/insights).
+             */
+            sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * An effect runs behind the whole index page and previews in the menu. A media upload previews in the menu only; the page itself stays copy.
+     */
+    visualType?: ('media' | 'streakField' | 'lightLeak') | null;
+    shader?: PlacedVisualConfig;
+  };
+  meta?: {
+    /**
+     * Shown as the headline in Google results and the browser tab. Aim for 50–60 characters. Use "Auto-generate" to build one from the page title.
+     */
+    title?: string | null;
+    /**
+     * Default image for search and social previews. Landscape, at least 1200×630px. Also used for share cards unless an Open Graph image is set below.
+     */
+    image?: (number | null) | Media;
+    /**
+     * The short summary under the title in Google results. Aim for 100–150 characters — front-load the most important message.
+     */
+    description?: string | null;
+    /**
+     * Controls how this page looks when shared on LinkedIn, Facebook, Slack, iMessage, etc. Every field is optional — anything left blank falls back to the SEO fields above.
+     */
+    og?: {
+      /**
+       * Headline on the share card. Can be punchier than the SEO title — no need to include "| Suits & Sandals". Blank = SEO title.
+       */
+      title?: string | null;
+      /**
+       * One or two sentences under the share-card headline. Keep it under ~200 characters; platforms truncate longer text. Blank = SEO description.
+       */
+      description?: string | null;
+      /**
+       * Share-card image. Landscape 1200×630px (1.91:1) — square or portrait images get cropped by most platforms. Blank = SEO image.
+       */
+      image?: (number | null) | Media;
+    };
+  };
+  /**
+   * Automatic follows this page’s own visual. Media upload and Streak Field set an independent, hover-only preview.
+   */
+  menuPreviewType?: ('automatic' | 'media' | 'streakField') | null;
+  /**
+   * Shown in the site menu while this page's link is hovered. Leave empty to use the hero media, then the Header's menu fallback.
+   */
+  menuPreview?: (number | null) | Media;
+  menuPreviewShader?: StreakVisualConfig;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * The who-we-help index published at /who-we-help. Hero and SEO only: the list of audience pages is automatic.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audience-index".
+ */
+export interface AudienceIndex {
   id: number;
   title: string;
   hero: {
@@ -14755,6 +15015,118 @@ export interface WorksIndexSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expertise-index_select".
+ */
+export interface ExpertiseIndexSelect<T extends boolean = true> {
+  title?: T;
+  hero?:
+    | T
+    | {
+        type?: T;
+        eyebrow?: T;
+        title?: T;
+        richText?: T;
+        description?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    sitePage?: T;
+                    url?: T;
+                    label?: T;
+                    appearance?: T;
+                  };
+              id?: T;
+            };
+        media?: T;
+        visualType?: T;
+        shader?: T | PlacedVisualConfigSelect<T>;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+        og?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+      };
+  menuPreviewType?: T;
+  menuPreview?: T;
+  menuPreviewShader?: T | StreakVisualConfigSelect<T>;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audience-index_select".
+ */
+export interface AudienceIndexSelect<T extends boolean = true> {
+  title?: T;
+  hero?:
+    | T
+    | {
+        type?: T;
+        eyebrow?: T;
+        title?: T;
+        richText?: T;
+        description?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    sitePage?: T;
+                    url?: T;
+                    label?: T;
+                    appearance?: T;
+                  };
+              id?: T;
+            };
+        media?: T;
+        visualType?: T;
+        shader?: T | PlacedVisualConfigSelect<T>;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+        og?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+      };
+  menuPreviewType?: T;
+  menuPreview?: T;
+  menuPreviewShader?: T | StreakVisualConfigSelect<T>;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -15037,7 +15409,7 @@ export interface TaskSchedulePublish {
           relationTo: 'testimonials';
           value: number | Testimonial;
         } | null);
-    global?: ('home' | 'insights-index' | 'lab-index' | 'works-index') | null;
+    global?: ('home' | 'insights-index' | 'lab-index' | 'works-index' | 'expertise-index' | 'audience-index') | null;
     user?:
       | ({
           relationTo: 'users';

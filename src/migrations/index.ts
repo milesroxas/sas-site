@@ -118,6 +118,7 @@ import * as migration_20260928_170946_payload_3_90 from './20260928_170946_paylo
 import * as migration_20261001_162006_home_hero_featured_page from './20261001_162006_home_hero_featured_page';
 import * as migration_20261001_183459_band_theme_roles from './20261001_183459_band_theme_roles';
 import * as migration_20261001_211315_shorten_long_identifiers from './20261001_211315_shorten_long_identifiers';
+import * as migration_20261020_142403_expertise_audience_index from './20261020_142403_expertise_audience_index';
 
 export const migrations = [
   {
@@ -718,6 +719,11 @@ export const migrations = [
   {
     up: migration_20261001_211315_shorten_long_identifiers.up,
     down: migration_20261001_211315_shorten_long_identifiers.down,
-    name: '20261001_211315_shorten_long_identifiers'
+    name: '20261001_211315_shorten_long_identifiers',
+  },
+  {
+    up: migration_20261020_142403_expertise_audience_index.up,
+    down: migration_20261020_142403_expertise_audience_index.down,
+    name: '20261020_142403_expertise_audience_index'
   },
 ];

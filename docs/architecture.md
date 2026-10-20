@@ -74,7 +74,7 @@ Inbox                                 Newsletter
 | System | `users` | Admin auth |
 | System | `payload-mcp-api-keys` | Per-key capabilities for the `/api/mcp` agent server — see [mcp.md](mcp.md) |
 
-Globals: `home` (`/`), `insights-index` (`/insights`), `lab-index` (`/lab`), `works-index` (`/works`), `header`, `footer`, and `site-info` (added by the AEO plugin).
+Globals: `home` (`/`), `insights-index` (`/insights`), `lab-index` (`/lab`), `works-index` (`/works`), `expertise-index` (`/expertise`), `audience-index` (`/who-we-help`), `header`, `footer`, and `site-info` (added by the AEO plugin).
 
 ## How a Work Page resolves content
 
@@ -134,7 +134,7 @@ Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `ap
 ## Publishing pipeline
 
 - **Drafts & versions** — Website collections and Content Hub narrative collections use drafts with autosave, version history (max 50), and scheduled publishing. The jobs runner hits `/api/payload-jobs/run` once an hour from a Vercel cron (`vercel.json`), authenticated with `CRON_SECRET`; the hourly cadence keeps Neon asleep between ticks, so a scheduled publish lands within the hour.
-- **Preview** — `generatePreviewPath` maps collections to URL prefixes (`work-pages` → `/works`, `lab-pages` → `/lab`, `expertise-pages` → `/expertise`, `audience-pages` → `/who-we-help`, `posts` → `/posts`, `pages` → `/`). Globals use `generateGlobalPreviewPath` (`home` → `/`, `insights-index` → `/insights`, `lab-index` → `/lab`, `works-index` → `/works`). Draft preview and live preview (mobile/tablet/desktop breakpoints) use `/next/preview` guarded by `PREVIEW_SECRET`.
+- **Preview** — `generatePreviewPath` maps collections to URL prefixes (`work-pages` → `/works`, `lab-pages` → `/lab`, `expertise-pages` → `/expertise`, `audience-pages` → `/who-we-help`, `posts` → `/posts`, `pages` → `/`). Globals use `generateGlobalPreviewPath` (`home` → `/`, `insights-index` → `/insights`, `lab-index` → `/lab`, `works-index` → `/works`, `expertise-index` → `/expertise`, `audience-index` → `/who-we-help`). Draft preview and live preview (mobile/tablet/desktop breakpoints) use `/next/preview` guarded by `PREVIEW_SECRET`.
 - **Revalidation** — `afterChange`/`afterDelete` hooks revalidate the document's path, its index page, and its sitemap tag. Case Study edits revalidate every published Work Page that consumes them (`revalidateCaseStudyConsumers`).
 - **Sitemaps** — one route handler per listing surface (`pages`, `posts`, `works`, `lab`, `expertise`, `who-we-help`), stitched together by `next-sitemap` in `postbuild`, which also generates robots.txt. Contact pages are not a listing sitemap.
 - **SEO** — plugin generates titles (`{title} | Suits & Sandals`) and per-collection URLs from `CONTENT_SURFACES`.

@@ -168,6 +168,16 @@ const globals: MCPPluginConfig['globals'] = {
     description: 'Site homepage: hero, layout blocks, and SEO published at /',
     enabled: { find: true, update: true },
   },
+  'audience-index': {
+    description:
+      'Who We Help index page: hero and SEO for the listing published at /who-we-help. The list itself is code-owned',
+    enabled: { find: true, update: true },
+  },
+  'expertise-index': {
+    description:
+      'Expertise index page: hero and SEO for the listing published at /expertise. The list itself is code-owned',
+    enabled: { find: true, update: true },
+  },
   'insights-index': {
     description:
       'Insights index page: hero and SEO for the listing published at /insights (also /posts). The list itself is code-owned',

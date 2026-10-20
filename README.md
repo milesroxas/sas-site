@@ -135,7 +135,7 @@ src/
 ├── features/                # ask, immersive, figures, cursor, contents, editorial
 ├── plugins/                 # SEO, search, forms, AEO, MCP, Studio, figures, house style
 ├── Header/ Footer/ Home/    # Globals
-├── CollectionIndexes/       # insights-index, lab-index, works-index
+├── CollectionIndexes/       # insights-index, lab-index, works-index, expertise-index, audience-index
 ├── migrations/
 └── payload.config.ts
 scripts/                     # Dev TUI, seed, migration checks, cms upload
@@ -163,7 +163,7 @@ Detail is in [docs/architecture.md](docs/architecture.md). Surfaces and how to c
 
 Plugins add `redirects`, `forms`, `form-submissions`, `search`, `streak-looks`, `streak-releases`, `streak-renders`, and `payload-mcp-api-keys`.
 
-Globals: `home`, `insights-index`, `lab-index`, `works-index`, `header`, `footer`, and `site-info` (the AEO plugin). Each Work Page presents one Case Study. Each Lab Page presents one Lab Project. Both records share the same narrative sections, and the page blocks resolve a section or one story beat at render time.
+Globals: `home`, `insights-index`, `lab-index`, `works-index`, `expertise-index`, `audience-index`, `header`, `footer`, and `site-info` (the AEO plugin). Each Work Page presents one Case Study. Each Lab Page presents one Lab Project. Both records share the same narrative sections, and the page blocks resolve a section or one story beat at render time.
 
 Public URLs:
 

@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 
 import type {
+  AudienceIndex,
   AudiencePage,
   Config,
+  ExpertiseIndex,
   ExpertisePage,
   Home,
   InsightsIndex,
@@ -61,6 +63,8 @@ export const generateMeta = async (args: {
     | Partial<Home>
     | Partial<InsightsIndex>
     | Partial<WorksIndex>
+    | Partial<ExpertiseIndex>
+    | Partial<AudienceIndex>
     | null
   /** Site-relative path of the page, e.g. '/posts/my-post'. Drives the canonical URL. */
   pathname?: string
