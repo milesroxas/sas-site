@@ -3,6 +3,7 @@ import { BlockGrid } from '@/blocks/shared/grid'
 import { Section } from '@/blocks/shared/section'
 import { eyebrowClassName } from '@/blocks/shared/typography'
 import { Container } from '@/components/Container'
+import { CtaClick } from '@/components/CtaClick'
 import { CMSLink } from '@/components/Link'
 import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 import type { FaqBlock as FaqBlockData } from '@/payload-types'
@@ -90,9 +91,11 @@ export const FaqBlock: React.FC<FaqBlockProps> = ({
               data-reveal
             >
               {prompt ? <p className="text-base/relaxed text-muted-foreground">{prompt}</p> : null}
-              <CMSLink {...link} className="group inline-flex items-center gap-3 text-lg/normal">
-                <ArrowIcon />
-              </CMSLink>
+              <CtaClick href={contactHref} label={link.label ?? ''} location="faq">
+                <CMSLink {...link} className="group inline-flex items-center gap-3 text-lg/normal">
+                  <ArrowIcon />
+                </CMSLink>
+              </CtaClick>
             </div>
           ) : null}
         </BlockGrid>

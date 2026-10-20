@@ -60,7 +60,7 @@ captureServerEvent({
 
 ### Client-side events
 
-There are no client `capture` call sites today: pageviews, `$pageleave`, autocapture, and replay cover browsing. If something purely client-side must be counted (no request reaches the server), that is a new pattern: it has to reuse the provider's consent-gated instance without a static import. Propose the approach before building it.
+Pageviews, `$pageleave`, autocapture, and replay cover browsing. The two things that never reach the server (a 404 render, a CTA click) go through `src/utilities/analyticsClient.ts`: `captureClientEvent` queues until the provider attaches the loaded SDK (`attachClientCapture`, right after `posthog.init`), then sends straight through. Call sites never import `posthog-js`. No consent, an internal browser or no key means nothing attaches and the queue caps at 20. Use the named helpers (`captureCtaClick`, `capturePageNotFound`) or add one beside them; a new CTA slot is a new `CtaLocation`, not a free string. Server callers wrap a `CMSLink` in `<CtaClick>` (`src/components/CtaClick`); client callers call the helper from `onClick`.
 
 ## Event registry
 
@@ -74,8 +74,10 @@ There are no client `capture` call sites today: pageviews, `$pageleave`, autocap
 | `ask_questioned` | `is_follow_up`, `source_count`, `question_length`, `handoff_reason`, `outcome`, `retrieval`, `latency_ms`, `page_path`, plus the judge's facts about the turn (see below) | `src/endpoints/ask.ts` |
 | `ask_rated` | `rating`, `reason`, `outcome`, `source_count` | `src/endpoints/ask.ts` (`captureAskFeedback`) |
 | `ask_handoff_clicked` | `rating`, `reason`, `outcome`, `source_count` | `src/endpoints/ask.ts` (`captureAskFeedback`) |
+| `cta_clicked` | `location` (`header`, `closing`, `cta_block`, `faq`), `label`, `href`, `page_path` | client: `src/utilities/analyticsClient.ts` via `src/components/CtaClick` and the takeover menu |
+| `page_not_found` | `page_path`, `referrer` | client: `src/components/NotFoundBeacon` on the 404 page |
 
-Verify against code with `grep -rn "captureServerEvent(" src` before relying on this table.
+Verify against code with `grep -rn "captureServerEvent(\|captureClientEvent(" src` before relying on this table.
 
 ### `ask_questioned`: the judge's properties
 

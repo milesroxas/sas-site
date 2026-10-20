@@ -3,6 +3,7 @@
 import { useConsentManager } from '@c15t/nextjs'
 import type React from 'react'
 import { useEffect, useRef } from 'react'
+import { attachClientCapture } from '@/utilities/analyticsClient'
 import {
   analyticsCaptureEnabled,
   analyticsEnvironment,
@@ -139,6 +140,12 @@ export const PostHogProvider: React.FC<{ children: React.ReactNode }> = ({ child
             tracing_headers: [window.location.hostname],
           })
           posthog.register({ environment: analyticsEnvironment() })
+          // The few browser-side events (404s, CTA clicks) queue in
+          // analyticsClient until this point; a later opt-out makes the
+          // SDK's own capture a no-op, so nothing else needs to detach.
+          attachClientCapture((event, properties) => {
+            posthog.capture(event, properties)
+          })
           return
         }
 

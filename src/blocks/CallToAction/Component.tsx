@@ -1,6 +1,8 @@
 import type React from 'react'
 import { Section } from '@/blocks/shared/section'
+import { CtaClick } from '@/components/CtaClick'
 import { CMSLink } from '@/components/Link'
+import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 
 // Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
 // fallow-ignore-next-line circular-dependency
@@ -18,9 +20,16 @@ export const CallToActionBlock: React.FC<CTABlockProps> = ({ links, richText, th
               {richText && <RichText className="mb-0" data={richText} enableGutter={false} />}
             </div>
             <div className="flex flex-col gap-4">
-              {(links || []).map(({ link }, i) => {
-                return <CMSLink key={i} size="lg" {...link} />
-              })}
+              {(links || []).map(({ link }, i) => (
+                <CtaClick
+                  href={resolveCmsLinkHref(link) ?? ''}
+                  key={i}
+                  label={link.label ?? ''}
+                  location="cta_block"
+                >
+                  <CMSLink size="lg" {...link} />
+                </CtaClick>
+              ))}
             </div>
           </CardContent>
         </Card>

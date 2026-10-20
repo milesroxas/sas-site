@@ -1,7 +1,9 @@
 import type { ChatTransport } from 'ai'
 import { fullViewportSectionClassName } from '@/blocks/shared/section'
 import { Container } from '@/components/Container'
+import { CtaClick } from '@/components/CtaClick'
 import { CMSLink } from '@/components/Link'
+import { resolveCmsLinkHref } from '@/components/Link/resolve-href'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import type { AskHandoffTerms, AskUIMessage } from '@/features/ask/handoff'
 import { leakExcite } from '@/features/immersive'
@@ -73,7 +75,13 @@ const ClosingCopy = ({ closing }: { closing: Footer['closing'] }) => {
             // answers links and buttons in its band anyway; the marker
             // states it, and holds if the look is narrowed to marked only.
             <span className="contents" key={id} {...leakExcite()}>
-              <CMSLink {...link} size="lg" />
+              <CtaClick
+                href={resolveCmsLinkHref(link) ?? ''}
+                label={link.label ?? ''}
+                location="closing"
+              >
+                <CMSLink {...link} size="lg" />
+              </CtaClick>
             </span>
           ))}
         </div>

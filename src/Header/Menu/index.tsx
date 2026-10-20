@@ -19,6 +19,7 @@ import { MenuAsk } from '@/features/ask/MenuAsk'
 import { cursorTarget } from '@/features/cursor'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { suppressViewTransitions } from '@/shared/lib/view-transition/suppress'
+import { captureCtaClick } from '@/utilities/analyticsClient'
 import { cn } from '@/utilities/ui'
 import type { MenuContent, MenuLink, MenuMedia } from '../getMenuContent'
 import type { MenuHeader } from '../menuHeader'
@@ -2093,6 +2094,9 @@ export const TakeoverMenu: React.FC<TakeoverMenuProps> = ({
                   prefetch={menuLinkPrefetch}
                   {...currentProps(isCurrent(ctaHref))}
                   className={cn('aria-disabled:opacity-50', CURRENT_PAGE_OUT)}
+                  onClick={() => {
+                    captureCtaClick({ location: 'header', label: ctaLabel, href: ctaHref })
+                  }}
                   {...ctaLinkProps}
                   {...cursorTarget()}
                 >
