@@ -9547,7 +9547,7 @@ export interface StreakRender {
 export interface Redirect {
   id: number;
   /**
-   * The old path on this site, starting with a slash (e.g. /blog/old-post). Exact match only. Live on the site as soon as the save completes.
+   * The old path on this site, starting with a slash (e.g. /blog/old-post). Exact match only, with or without a trailing slash. Live on the site as soon as the save completes.
    */
   from: string;
   to?: {
