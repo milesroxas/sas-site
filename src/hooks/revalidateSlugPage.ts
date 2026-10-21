@@ -104,7 +104,9 @@ export function slugPageRevalidation<T extends SlugPageDoc>({
       if (slug) {
         req.payload.logger.info(`Revalidated ${label} at ${basePath}/${slug}`)
       } else {
-        req.payload.logger.warn(`${label} ${doc.id} has no slug: revalidated its lists, not its page`)
+        req.payload.logger.warn(
+          `${label} ${doc.id} has no slug: revalidated its lists, not its page`,
+        )
       }
     }
     if (
