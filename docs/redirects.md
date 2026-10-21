@@ -6,7 +6,7 @@ Legacy paths (the Webflow site's `/blog/*`, `/portfolio-work/*`, `/services` and
 
 The `redirects` collection (admin: System, Redirects; MCP: `findRedirects`, `createRedirects`, `updateRedirects`, `deleteRedirects`). Each rule has:
 
-- `from`: the old path on this site, starting with a slash. Exact match only: `/blog` catches `/blog` and nothing under it; an old article needs its own rule. Vercel ignores any query string in `from`.
+- `from`: the old path on this site, starting with a slash. Exact match only: `/blog` catches `/blog` and `/blog/` and nothing under it; an old article needs its own rule. Vercel ignores any query string in `from`.
 - `to`: a document (the path comes from `CONTENT_SURFACES`, so a work page resolves to `/works/<slug>`) or a custom URL (a site path or an absolute URL).
 
 ## How it reaches the site
@@ -14,7 +14,7 @@ The `redirects` collection (admin: System, Redirects; MCP: `findRedirects`, `cre
 `src/hooks/syncVercelRedirects.ts`, on every save and delete:
 
 1. Reads the whole collection through the saving request (so the row being saved is included).
-2. Maps it to Vercel's rule shape: `permanent: true` (308), `preserveQueryParams: true`. A rule it cannot serve is skipped with a warning in the logs (a `from` without a leading slash, a destination that does not resolve, a rule pointing at itself).
+2. Maps it to Vercel's rule shape: `permanent: true` (308), `preserveQueryParams: true`. Every rule gets a trailing-slash twin (`/blog` also serves `/blog/`), unless the team wrote that slashed path as its own rule. A rule it cannot serve is skipped with a warning in the logs (a `from` without a leading slash, a destination that does not resolve, a rule pointing at itself).
 3. Stages the list as a new Bulk Redirects version (`PUT /v1/bulk-redirects`, `overwrite: true`) and promotes it (`POST /v1/bulk-redirects/versions`, `action: promote`).
 
 The rule is live when the save returns. A failed push logs an error and keeps the save; re-save any redirect to push the full list again.
@@ -44,7 +44,7 @@ Vercel, Project, Settings, Redirects lists every version with its rule count; an
 
 ## Limits
 
-- Pro includes 1,000 rules per project; more is $0.002 a month per extra 25,000.
+- Pro includes 1,000 rules per project; more is $0.002 a month per extra 25,000. Twins count, so 500 CMS rules fill the included tier.
 - API rate limits: 30 stages and 20 promotes a minute. A bulk import over MCP at one rule a second stays under both.
 - No wildcard or header matching. A pattern rule belongs in `redirects.ts` (Next config), which still carries the Internet Explorer rule.
-- `skipTrailingSlashRedirect` is on in `next.config.ts`, so `/blog/` is not `/blog`. The old site published paths without trailing slashes.
+- `skipTrailingSlashRedirect` is on in `next.config.ts` (the PostHog `/ingest` proxy needs its slashes), so Next never normalises `/blog/` to `/blog`. The twins cover that at the CDN.

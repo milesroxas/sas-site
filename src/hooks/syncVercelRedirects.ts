@@ -51,7 +51,13 @@ export const redirectDestination = (doc: Redirect): string | null => {
   return surface && value.slug ? surfaceDocPath(surface, value.slug) : null
 }
 
-/** Maps the stored redirects to Vercel rules, dropping any that cannot be served. */
+/**
+ * Maps the stored redirects to Vercel rules, dropping any that cannot be
+ * served. Vercel matches the source exactly and `skipTrailingSlashRedirect`
+ * (next.config.ts) means `/blog/` is never normalised to `/blog`, so every
+ * rule gets a trailing-slash twin. A rule the team wrote with the slash wins
+ * over a twin.
+ */
 export const toBulkRedirects = (
   docs: Redirect[],
   warn: (message: string) => void,
@@ -73,6 +79,12 @@ export const toBulkRedirects = (
       seen.add(source)
       rules.push({ source, destination, permanent: true, preserveQueryParams: true })
     }
+  }
+  for (const rule of [...rules]) {
+    const twin = `${rule.source}/`
+    if (rule.source.endsWith('/') || seen.has(twin)) continue
+    seen.add(twin)
+    rules.push({ ...rule, source: twin })
   }
   return rules
 }
@@ -141,7 +153,9 @@ export const syncVercelRedirects = async (req: PayloadRequest): Promise<void> =>
   const rules = toBulkRedirects(docs, (message) => payload.logger.warn(message))
   try {
     const version = await pushBulkRedirects(rules)
-    payload.logger.info(`Redirects: ${rules.length} live on Vercel, version ${version.id}`)
+    payload.logger.info(
+      `Redirects: ${docs.length} rules (${rules.length} with trailing-slash twins) live on Vercel, version ${version.id}`,
+    )
   } catch (err) {
     // The save stands; the next save pushes the full list again.
     payload.logger.error({

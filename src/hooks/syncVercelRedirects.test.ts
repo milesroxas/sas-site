@@ -38,27 +38,17 @@ describe('toBulkRedirects', () => {
       ],
       warn,
     )
-    expect(rules).toEqual([
-      { source: '/blog', destination: '/insights', permanent: true, preserveQueryParams: true },
-      {
-        source: '/old',
-        destination: 'https://example.com/new',
-        permanent: true,
-        preserveQueryParams: true,
-      },
-      {
-        source: '/portfolio-work/adacore',
-        destination: '/works/adacore',
-        permanent: true,
-        preserveQueryParams: true,
-      },
-      {
-        source: '/nick-dank',
-        destination: '/about-us',
-        permanent: true,
-        preserveQueryParams: true,
-      },
-    ])
+    const expected = [
+      { source: '/blog', destination: '/insights' },
+      { source: '/old', destination: 'https://example.com/new' },
+      { source: '/portfolio-work/adacore', destination: '/works/adacore' },
+      { source: '/nick-dank', destination: '/about-us' },
+    ]
+    expect(rules).toEqual(
+      [...expected, ...expected.map((rule) => ({ ...rule, source: `${rule.source}/` }))].map(
+        (rule) => ({ ...rule, permanent: true, preserveQueryParams: true }),
+      ),
+    )
     expect(warn).not.toHaveBeenCalled()
   })
 
@@ -78,6 +68,7 @@ describe('toBulkRedirects', () => {
     )
     expect(rules).toEqual([
       { source: '/twice', destination: '/a', permanent: true, preserveQueryParams: true },
+      { source: '/twice/', destination: '/a', permanent: true, preserveQueryParams: true },
     ])
     expect(warn.mock.calls.map(([message]) => message)).toEqual([
       'Redirects: skipped "blog", the from path must start with /',
@@ -86,6 +77,18 @@ describe('toBulkRedirects', () => {
       'Redirects: skipped "/lab-old", its destination does not resolve',
       'Redirects: skipped "/loop", it points at itself',
       'Redirects: skipped a second rule for "/twice"',
+    ])
+  })
+
+  it('lets a rule written with the trailing slash win over the twin', () => {
+    const rules = toBulkRedirects(
+      [custom('/blog', '/insights'), custom('/blog/', '/insights/archive'), custom('/', '/home')],
+      vi.fn(),
+    )
+    expect(rules.map((rule) => [rule.source, rule.destination])).toEqual([
+      ['/blog', '/insights'],
+      ['/blog/', '/insights/archive'],
+      ['/', '/home'],
     ])
   })
 })
@@ -190,7 +193,9 @@ describe('syncVercelRedirects', () => {
       pagination: false,
       req,
     })
-    expect(logger.info).toHaveBeenCalledWith('Redirects: 1 live on Vercel, version ver_1')
+    expect(logger.info).toHaveBeenCalledWith(
+      'Redirects: 1 rules (2 with trailing-slash twins) live on Vercel, version ver_1',
+    )
     expect(logger.error).not.toHaveBeenCalled()
   })
 
