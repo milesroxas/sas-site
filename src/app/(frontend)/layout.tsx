@@ -1,4 +1,3 @@
-import { SpeedInsights } from '@vercel/speed-insights/next'
 import { GeistMono } from 'geist/font/mono'
 import { GeistSans } from 'geist/font/sans'
 import type { Metadata, Viewport } from 'next'
@@ -39,7 +38,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <JsonLd data={[organizationSchema(siteInfo), webSiteSchema(siteInfo)]} />
       </head>
       <body>
-        <SpeedInsights />
         <Providers>
           {/* Draft mode only (preview links, admin live preview): the bar's
               auth check is a function call, and the prerendered page must not

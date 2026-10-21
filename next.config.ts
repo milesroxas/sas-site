@@ -93,10 +93,6 @@ const nextConfig: NextConfig = {
     // ImageMedia defaults to 90; 75 is available for inline imagery.
     qualities: [75, 90],
     remotePatterns: [
-      {
-        hostname: 'raw.githubusercontent.com',
-        protocol: 'https',
-      },
       // Production media bucket — block fixtures (src/blocks/fixtures.ts) use
       // absolute URLs so the /demo playgrounds can render them via next/image.
       {

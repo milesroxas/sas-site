@@ -85,6 +85,8 @@ import {
 import { isOption } from '@/shared/content/options'
 import { surfaceForPath } from '@/shared/content/surfaces'
 import { afterResponse } from '@/utilities/afterResponse'
+import { BOT_BLOCKED_MESSAGE } from '@/utilities/botid/routes'
+import { isBlockedBot } from '@/utilities/botid/server'
 import { findEmailAddress } from '@/utilities/emailAddress'
 import { captureServerEvent } from '@/utilities/posthog'
 
@@ -298,6 +300,8 @@ const ask: Endpoint = {
     }
 
     if (isRateLimited(req, 'ask')) return json({ error: RATE_LIMITED }, 429)
+    // A script without the browser SDK's challenge headers spends no tokens.
+    if (await isBlockedBot(req)) return json({ error: BOT_BLOCKED_MESSAGE }, 403)
 
     // `id` is the AI SDK chat id and `pagePath` the page the composer sits on
     // (see useAskChat); both are kept only if well formed. `handoff` is where

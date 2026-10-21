@@ -104,6 +104,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | Block layout grid (8-col contract, per-block migration map) | [docs/block-grid-roadmap.md](docs/block-grid-roadmap.md) |
 | Cursor topic rules (security, fields, hooks, …) | `.cursor/rules/` |
 | Human DB docs | [README.md](README.md#database--migrations) |
+| Hosting cost: what wakes Neon, the rules that keep it asleep, how to measure, dashboard-only settings | [docs/hosting-cost.md](docs/hosting-cost.md) |
 | Conductor — parallel workspaces, per-workspace DBs, schema changes across branches | [docs/conductor.md](docs/conductor.md) |
 | Architecture | [docs/architecture.md](docs/architecture.md) |
 | MCP authoring | [docs/mcp.md](docs/mcp.md) |

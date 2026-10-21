@@ -8,7 +8,9 @@ import { WorksBrowse } from '@/sections/WorksBrowse'
 import { queryWorksBrowseData } from '@/sections/WorksBrowse/queries'
 import { generateMeta } from '@/utilities/generateMeta'
 
-export const revalidate = 600
+// Time fallback only: the collection hooks purge this page on publish, so a
+// short window only let crawlers regenerate it (and wake the database) all night.
+export const revalidate = 86400
 
 export default async function WorksPage() {
   const { isEnabled: draft } = await draftMode()

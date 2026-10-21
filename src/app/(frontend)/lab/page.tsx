@@ -9,7 +9,9 @@ import { LabBrowse } from '@/sections/LabBrowse'
 import { queryLabBrowseData } from '@/sections/LabBrowse/queries'
 import { generateMeta } from '@/utilities/generateMeta'
 
-export const revalidate = 600
+// Time fallback only: the collection hooks purge this page on publish, so a
+// short window only let crawlers regenerate it (and wake the database) all night.
+export const revalidate = 86400
 
 /** Stable identity a missing seed derives from: the global's slug. */
 const LAB_INDEX_SEED_KEY = 'lab-index'

@@ -15,6 +15,8 @@ export const BOT_PROTECTED_ROUTES = [
   { path: '/api/inquiries/submit', method: 'POST' },
   { path: '/api/form-submissions', method: 'POST' },
   { path: '/api/newsletter/subscribe', method: 'POST' },
+  // Not a write, but every call spends model tokens.
+  { path: '/api/ask', method: 'POST' },
 ]
 
 /** Shown when a submission is refused, so a misjudged human still has a way in. */

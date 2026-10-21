@@ -16,6 +16,7 @@ import { PostHero } from '@/heros/PostHero'
 import { RelatedPostsSection } from '@/sections/RelatedPosts'
 import { resolveRelatedPosts } from '@/sections/RelatedPosts/resolve-posts'
 import { generateMeta } from '@/utilities/generateMeta'
+import { isPublishedSlug } from '@/utilities/publishedSlugs'
 import { blogPostingSchema, breadcrumbSchema } from '@/utilities/schema'
 
 export async function generateStaticParams() {
@@ -117,6 +118,8 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
 const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
   const { isEnabled: draft } = await draftMode()
+  // A slug no published post owns never reaches Postgres (publishedSlugs).
+  if (!draft && !(await isPublishedSlug('posts', slug))) return null
 
   const payload = await getPayload({ config: configPromise })
 

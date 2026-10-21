@@ -131,7 +131,14 @@ export default buildConfig({
   editor: defaultLexical,
   db: vercelPostgresAdapter({
     pool: {
-      connectionString: process.env.POSTGRES_URL || '',
+      // Runtime goes through the Neon pooler (PgBouncer). `payload migrate`
+      // (CI) sets PAYLOAD_MIGRATING and takes the direct host instead: DDL
+      // and the migration ledger's locks are session-level, which transaction
+      // pooling does not carry.
+      connectionString:
+        (process.env.PAYLOAD_MIGRATING === 'true' && process.env.POSTGRES_URL_NON_POOLING) ||
+        process.env.POSTGRES_URL ||
+        '',
       // `next build` prerenders with several worker processes, each holding
       // its own pool (pg default: 10). Every backend on Neon caches the
       // relcache for the ~470 Payload tables it touches, so dozens of build
@@ -215,6 +222,9 @@ export default buildConfig({
     }),
   ],
   globals: [Home, InsightsIndex, LabIndex, WorksIndex, Header, Footer],
+  // Nothing reads GraphQL: the site uses the Local API and MCP uses REST.
+  // Off, so there is no second public query surface to guard or pay for.
+  graphQL: { disable: true },
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {

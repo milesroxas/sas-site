@@ -5,6 +5,7 @@ import type { CollectionSlug, DataFromCollectionSlug, Payload } from 'payload'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 import { generateMeta } from './generateMeta'
+import { isPublishedSlug, type SlugCollection } from './publishedSlugs'
 
 /**
  * Shared plumbing for the `[slug]` routes over slug-addressed collections
@@ -42,16 +43,20 @@ export function slugStaticParams(collection: CollectionSlug) {
 }
 
 /**
- * A draft-aware, request-cached lookup of one document by slug. Call it once
+ * A draft-aware, request-cached lookup of one document by slug. Outside draft
+ * mode an unknown slug is answered from the published-slug cache, so a probe
+ * for a path nobody owns does not wake the database. Call it once
  * per route at module scope: the page body and `generateMetadata` then share a
  * single query per request instead of hitting the database twice.
  */
-export function createSlugQuery<C extends CollectionSlug>(
+export function createSlugQuery<C extends SlugCollection>(
   collection: C,
   { depth, populate }: { depth: number; populate?: FindOptions['populate'] },
 ) {
   return cache(async (slug: string): Promise<DataFromCollectionSlug<C> | null> => {
     const { isEnabled: draft } = await draftMode()
+    // A slug no published document owns never reaches Postgres (publishedSlugs).
+    if (!draft && !(await isPublishedSlug(collection, slug))) return null
     const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
       collection,

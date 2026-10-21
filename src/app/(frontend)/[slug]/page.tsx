@@ -11,6 +11,7 @@ import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { isPublishedSlug } from '@/utilities/publishedSlugs'
 import { faqPageSchema } from '@/utilities/schema'
 import { cn } from '@/utilities/ui'
 
@@ -101,6 +102,8 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
 const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
   const { isEnabled: draft } = await draftMode()
+  // A slug no published page owns never reaches Postgres (publishedSlugs).
+  if (!draft && !(await isPublishedSlug('pages', slug))) return null
 
   const payload = await getPayload({ config: configPromise })
 
