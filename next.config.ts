@@ -120,6 +120,15 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: true,
   redirects,
+  // Keep the preview deployment (preview.suits-sandals.com) out of search.
+  // Vercel adds this header on its own *.vercel.app preview URLs, but not on
+  // a custom domain. VERCEL_ENV, not NODE_ENV: preview builds run as
+  // production. Preview's robots.txt also disallows everything
+  // (next-sitemap.config.mjs); this covers crawlers that ignore it.
+  headers: async () =>
+    process.env.VERCEL_ENV === 'preview'
+      ? [{ source: '/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] }]
+      : [],
   // Markdown alternates for agents: /posts/foo.md, and content negotiation
   // (Accept: text/markdown) on /posts/foo. Both resolve to the markdown route
   // handler at /md/posts/[slug].
