@@ -19,7 +19,7 @@ allowBuilds:
 catalog:
   '@sentry/nextjs': ^10.65.0
   # Exact pin: native libvips binary; follow the Payload template's pin.
-  sharp: 0.35.4
+  sharp: 0.35.5
 
 overrides:
   # @payloadcms/plugin-sentry hard-depends on @sentry/nextjs@^9, which neither
@@ -43,6 +43,15 @@ overrides:
   # inside the range of GHSA-p98j-92pf-mc4p (fixed in 3.4.16). Move it onto the
   # patch release, the same copy posthog-js resolves.
   'monaco-editor>dompurify': ^3.4.16
+  # @payloadcms/plugin-mcp pins @modelcontextprotocol/sdk 1.30.0 exactly, inside
+  # the ranges of GHSA alerts fixed in 1.32.0 (and hono / proxy-addr it pulls).
+  # The plugin only uses McpServer, the streamable HTTP transport and the tool
+  # helpers, all unchanged through 1.32.x; move it onto the patched line.
+  '@payloadcms/plugin-mcp>@modelcontextprotocol/sdk': ^1.32.1
+  # @tailwindcss/typography pins postcss-selector-parser 6.0.10 exactly
+  # (GHSA-rj75-hqrm-r3gf, fixed in 7.1.6). It only parses and walks selectors;
+  # v7's only break is safe insertion during iteration.
+  '@tailwindcss/typography>postcss-selector-parser': ^7.1.6
 
 patchedDependencies:
   '@payloadcms/drizzle': patches/@payloadcms__drizzle.patch
