@@ -73,12 +73,17 @@ export const lookEndpoints: Endpoint[] = [
           )
         // Payload merges an operation's context into the request and leaves it
         // there, so the pass is handed over for this one write and taken back.
+        // The draft came back at depth 0, so `folder` is already an id. Writing
+        // it as one keeps the update payload off FolderInterface's recursive
+        // shape, which tsc resolves differently from one machine to the next.
+        const { folder, ...draft } = look
         try {
           const doc = await req.payload.update({
             collection: LOOKS_SLUG,
             id: look.id,
             data: {
-              ...look,
+              ...draft,
+              folder: typeof folder === 'object' ? (folder?.id ?? null) : folder,
               snapshot: snapshotRecipe(effectOf(look.effect), look.recipe),
               posters: { dark: poster(stills.dark), light: poster(stills.light) },
               sourceHash: recipeHash(look.effect, look.recipe),
