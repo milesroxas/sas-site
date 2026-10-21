@@ -57,6 +57,14 @@ declare global {
       NEXT_PUBLIC_POSTHOG_CAPTURE_DEV?: string
       /** Reb2b account key. Optional — B2B identification disabled when unset. */
       NEXT_PUBLIC_REB2B_KEY?: string
+      /** Vercel system env var: 'production' | 'preview' | 'development'. Gates production-only side effects (IndexNow, the redirect sync). */
+      VERCEL_ENV?: 'production' | 'preview' | 'development'
+      /** Vercel system env var: the project id. Read by the redirect sync. */
+      VERCEL_PROJECT_ID?: string
+      /** Vercel access token for the Bulk Redirects API. Production only; the redirect sync is off when unset. */
+      VERCEL_TOKEN?: string
+      /** Vercel team id the project belongs to. Production only, with VERCEL_TOKEN. */
+      VERCEL_TEAM_ID?: string
     }
   }
 }

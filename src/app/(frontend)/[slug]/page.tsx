@@ -1,12 +1,12 @@
 import configPromise from '@payload-config'
 import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
+import { notFound } from 'next/navigation'
 import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
 import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { RenderHero } from '@/heros/RenderHero'
@@ -46,13 +46,12 @@ export default async function Page({ params: paramsPromise }: Args) {
   const { slug = '' } = await paramsPromise
   // Decode to support slugs with special characters
   const decodedSlug = decodeURIComponent(slug)
-  const url = `/${decodedSlug}`
   const page: RequiredDataFromCollectionSlug<'pages'> | null = await queryPageBySlug({
     slug: decodedSlug,
   })
 
   if (!page) {
-    return <PayloadRedirects url={url} />
+    notFound()
   }
 
   const { hero, layout } = page
@@ -73,8 +72,6 @@ export default async function Page({ params: paramsPromise }: Args) {
         )}
       >
         {faqSchema ? <JsonLd data={faqSchema} /> : null}
-        {/* Allows redirects for valid pages too */}
-        <PayloadRedirects disableNotFound url={url} />
 
         {draft && <LivePreviewListener />}
 

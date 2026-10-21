@@ -138,7 +138,7 @@ Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `ap
 - **Revalidation** — `afterChange`/`afterDelete` hooks revalidate the document's path, its index page, and its sitemap tag. Case Study edits revalidate every published Work Page that consumes them (`revalidateCaseStudyConsumers`).
 - **Sitemaps** — one route handler per listing surface (`pages`, `posts`, `works`, `lab`, `expertise`, `who-we-help`), stitched together by `next-sitemap` in `postbuild`, which also generates robots.txt. Contact pages are not a listing sitemap.
 - **SEO** — plugin generates titles (`{title} | Suits & Sandals`) and per-collection URLs from `CONTENT_SURFACES`.
-- **Redirects** — managed in admin (System group) for pages, posts, work/lab/expertise/audience pages. Contact pages are not in that plugin list.
+- **Redirects**: managed in admin (System group) for pages, posts, work/lab/expertise/audience pages; served by Vercel Bulk Redirects, pushed on every save (`src/hooks/syncVercelRedirects.ts`, [redirects.md](redirects.md)). Contact pages are not in that plugin list.
 - **Search** — plugin indexes every `CONTENT_SURFACES` collection (pages, posts, work/lab/expertise/audience/contact pages); served at `/search`.
 - **MCP** — internal agent authoring server at `/api/mcp`; Bearer API keys with per-key capabilities, all operations run through the access rules above (`overrideAccess: false`). Details in [mcp.md](mcp.md).
 
@@ -159,7 +159,7 @@ Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `ap
 | `/ask` | — | RAG widget over published content |
 | `/demo/immersive`, `/demo/transitions` | — | WebGL / route-transition demos (noindex) |
 
-All dynamic routes use `generateStaticParams`, React `cache()` on queries, draft-mode gating, and `PayloadRedirects` fallback.
+All dynamic routes use `generateStaticParams`, React `cache()` on queries, draft-mode gating, and `notFound()` for a slug nobody owns. Legacy paths are redirected at the CDN before a route runs (see Redirects above).
 
 ## Development conventions
 

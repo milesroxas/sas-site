@@ -1,9 +1,9 @@
 import { draftMode } from 'next/headers'
+import { notFound } from 'next/navigation'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { getRelatedWorkByIds, getRelatedWorkByIndustries } from '@/collections/WorkPages/queries'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { ContentsButton } from '@/features/contents'
@@ -31,7 +31,7 @@ export default async function AudiencePageRoute({ params }: SlugRouteArgs) {
   const decodedSlug = decodeURIComponent(slug)
   const url = `/who-we-help/${decodedSlug}`
   const page = await queryAudiencePageBySlug(decodedSlug)
-  if (!page) return <PayloadRedirects url={url} />
+  if (!page) notFound()
   const relatedWork = await resolveRelatedWork(page)
   const faqSchema = faqPageSchema(page.layout)
   return (
@@ -47,7 +47,6 @@ export default async function AudiencePageRoute({ params }: SlugRouteArgs) {
             ...(faqSchema ? [faqSchema] : []),
           ]}
         />
-        <PayloadRedirects disableNotFound url={url} />
         {draft && <LivePreviewListener />}
         <SegmentHero {...page.hero} />
         <RenderBlocks blocks={page.layout} />

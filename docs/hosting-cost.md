@@ -27,7 +27,7 @@ Measured over 24 hours before the fixes, function invocations by route:
 
 Compute starts on the production endpoint ran at about 85 a day, flat across every hour, which is the signature of machines, not people.
 
-Things that do not wake it: static pages served from the CDN, the sitemaps (`unstable_cache`, tag-purged), the PostHog proxy (`/ingest`), the Sentry tunnel (`/monitoring`), media (R2).
+Things that do not wake it: static pages served from the CDN, the sitemaps (`unstable_cache`, tag-purged), the PostHog proxy (`/ingest`), the Sentry tunnel (`/monitoring`), media (R2), legacy-path redirects (Vercel Bulk Redirects, answered at the CDN; [redirects.md](redirects.md)).
 
 ## The rules that keep it asleep
 

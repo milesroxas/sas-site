@@ -1,11 +1,11 @@
 import { draftMode } from 'next/headers'
+import { notFound } from 'next/navigation'
 import { RenderCaseStudyBlocks } from '@/blocks/case-study/RenderCaseStudyBlocks'
 import { FeaturedWorkSection } from '@/blocks/featured-work/Component'
 import { resolveRelatedWorkEntries } from '@/blocks/featured-work/resolve-entries'
 import { STORY_SECTION_SELECT } from '@/collections/story/narrative'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { ContentsButton } from '@/features/contents'
@@ -56,7 +56,7 @@ export default async function WorkPageRoute({ params }: SlugRouteArgs) {
   const url = `/works/${decodedSlug}`
   const page = await queryWorkPageBySlug(decodedSlug)
   const study = populatedDoc<CaseStudy>(page?.caseStudy)
-  if (!page || !study) return <PayloadRedirects url={url} />
+  if (!page || !study) notFound()
   const relatedEntries = await resolveRelatedWorkEntries(page)
   return (
     <>
@@ -70,7 +70,6 @@ export default async function WorkPageRoute({ params }: SlugRouteArgs) {
             ]),
           ]}
         />
-        <PayloadRedirects disableNotFound url={url} />
         {draft && <LivePreviewListener />}
         <CaseStudyHero page={page} study={study} />
         {page.intro?.title ? (

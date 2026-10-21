@@ -1,8 +1,8 @@
 import { draftMode } from 'next/headers'
+import { notFound } from 'next/navigation'
 import { CONTACT_INDEX_SLUG } from '@/collections/ContactPages/constants'
 import { ContactPageTemplate } from '@/collections/ContactPages/ui/ContactTemplate'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
 import { generateMeta } from '@/utilities/generateMeta'
 import { queryContactPageBySlug } from './[slug]/page'
@@ -20,11 +20,10 @@ export const generateMetadata = async () =>
 export default async function ContactIndexRoute() {
   const { isEnabled: draft } = await draftMode()
   const page = await queryContactPageBySlug(CONTACT_INDEX_SLUG)
-  if (!page) return <PayloadRedirects url="/contact" />
+  if (!page) notFound()
 
   return (
     <article className={`${FOOTER_CLOSING_ARTICLE_CLASS} pt-16 pb-24`}>
-      <PayloadRedirects disableNotFound url="/contact" />
       {draft && <LivePreviewListener />}
       <ContactPageTemplate page={page} />
     </article>

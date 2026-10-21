@@ -8,7 +8,7 @@ import * as Sentry from '@sentry/nextjs'
 import { mediaGalleryPlugin } from '@sitebytom/payload-media-gallery'
 import type { Plugin } from 'payload'
 import { authenticated } from '@/access/authenticated'
-import { revalidateRedirects } from '@/hooks/revalidateRedirects'
+import { syncRedirectsAfterChange, syncRedirectsAfterDelete } from '@/hooks/syncVercelRedirects'
 import type { AudiencePage, ExpertisePage, LabPage, Page, Post, WorkPage } from '@/payload-types'
 import { aeoPlugin } from '@/plugins/aeo'
 import { askIndexPlugin } from '@/plugins/ask-index'
@@ -61,15 +61,19 @@ export const plugins: Plugin[] = [
             return {
               ...field,
               admin: {
-                description: 'You will need to rebuild the website when changing this field.',
+                description:
+                  'The old path on this site, starting with a slash (e.g. /blog/old-post). Exact match only. Live on the site as soon as the save completes.',
               },
             }
           }
           return field
         })
       },
+      // Every save and delete pushes the whole list to Vercel Bulk Redirects
+      // (docs/redirects.md).
       hooks: {
-        afterChange: [revalidateRedirects],
+        afterChange: [syncRedirectsAfterChange],
+        afterDelete: [syncRedirectsAfterDelete],
       },
     },
   }),

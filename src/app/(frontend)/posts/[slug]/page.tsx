@@ -1,12 +1,12 @@
 import configPromise from '@payload-config'
 import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
-import { PayloadRedirects } from '@/components/PayloadRedirects'
 import RichText from '@/components/RichText'
 import { FooterClosingSection } from '@/Footer/Closing/Component'
 import { FOOTER_CLOSING_ARTICLE_CLASS } from '@/Footer/Closing/curtain'
@@ -53,7 +53,7 @@ export default async function Post({ params: paramsPromise }: Args) {
   const url = `/posts/${decodedSlug}`
   const post = await queryPostBySlug({ slug: decodedSlug })
 
-  if (!post) return <PayloadRedirects url={url} />
+  if (!post) notFound()
 
   const relatedPosts = await resolveRelatedPosts(post)
 
@@ -69,9 +69,6 @@ export default async function Post({ params: paramsPromise }: Args) {
             ]),
           ]}
         />
-
-        {/* Allows redirects for valid pages too */}
-        <PayloadRedirects disableNotFound url={url} />
 
         {draft && <LivePreviewListener />}
 
