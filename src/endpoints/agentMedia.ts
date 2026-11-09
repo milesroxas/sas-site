@@ -1,23 +1,16 @@
-import crypto from 'node:crypto'
 import { parse } from 'node:path'
-import { APIError, addDataAndFileToRequest, type Endpoint, type PayloadRequest } from 'payload'
+import { APIError, addDataAndFileToRequest, type Endpoint } from 'payload'
 import sharp from 'sharp'
-import type { Media, User } from '@/payload-types'
+import { AGENT_UPLOAD_STATUS, agentText, agentUploaderFor } from './agentUpload'
 
 /**
  * POST /api/agent/media: the one way an agent adds media, and the one place
  * that decides what an agent upload becomes. The docs, the skill and the MCP
  * descriptions point here instead of restating it (docs/figures.md).
  *
- * MCP tools cannot carry a binary, and an MCP key fails every team-only REST
- * rule by design (`access/authenticated.ts`), so plain `POST /api/media` is
- * closed to it. This endpoint is the narrow door instead of a wider rule.
- *
  * It authenticates the way `/api/mcp` does: `Authorization: Bearer <key>`,
- * looked up by its HMAC index, then acts as the team member the key is linked
- * to with access control on. It also needs its own capability on the key,
- * `uploadMedia`, off by default like every other capability: a key that can
- * read media cannot add it until a team member says so.
+ * then acts as the team member the key is linked to with access control on,
+ * and needs the key's `uploadMedia` capability (`agentUpload.ts`).
  *
  * Everything that matters is decided here, not in the client: alt text and
  * an Asset Library to file it under are required, the bytes must decode as an
@@ -26,19 +19,10 @@ import type { Media, User } from '@/payload-types'
  * and it lands as `AGENT_UPLOAD_STATUS`.
  */
 
-/** The key collection the MCP plugin creates (`plugins/mcp.ts`). */
-const API_KEYS = 'payload-mcp-api-keys'
-
 /** Screenshots and figures. Anything heavier is a video or a mistake, and belongs in the admin. */
 const MAX_BYTES = 8 * 1024 * 1024
 const MAX_ALT = 300
 const MAX_CAPTION = 300
-
-/**
- * What every agent upload lands as. Public on arrival, like any approved
- * asset: the agent's look at the pixels before uploading is the only check.
- */
-export const AGENT_UPLOAD_STATUS = 'public-approved' satisfies Media['usageStatus']
 
 /** What the bytes may decode as. Every one is stored as WebP. */
 const ACCEPTED = ['jpeg', 'png', 'webp'] as const
@@ -49,42 +33,6 @@ const ACCEPTED = ['jpeg', 'png', 'webp'] as const
  * `smartSubsample` keeps coloured text and hairlines sharp.
  */
 const WEBP = { quality: 85, smartSubsample: true } as const
-
-/**
- * The team member a key acts as, if the key exists and may upload. Same lookup
- * as the MCP plugin's own (`resolveAccessSettings`): the key is never stored
- * in the clear, only its HMAC under the Payload secret.
- */
-async function uploaderFor(req: PayloadRequest): Promise<User> {
-  const header = req.headers.get('Authorization')
-  const key = header?.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : ''
-  if (!key) throw new APIError('Send the MCP API key as "Authorization: Bearer <key>".', 401)
-
-  const apiKeyIndex = crypto.createHmac('sha256', req.payload.secret).update(key).digest('hex')
-  const { docs } = await req.payload.find({
-    collection: API_KEYS,
-    depth: 1,
-    limit: 1,
-    pagination: false,
-    where: { apiKeyIndex: { equals: apiKeyIndex } },
-  })
-  const [apiKey] = docs
-  const user = apiKey?.user
-  if (!apiKey || !user || typeof user !== 'object') throw new APIError('Unknown API key.', 401)
-  if (apiKey.uploadMedia !== true)
-    throw new APIError(
-      'This key may not upload media. A team member can allow it on the key: System, API Keys, "Upload media".',
-      403,
-    )
-  return { ...user, collection: 'users' }
-}
-
-/** A short plain-text input, trimmed; empty when absent or not a string. */
-const text = (value: unknown, max: number, name: string): string => {
-  const trimmed = typeof value === 'string' ? value.trim() : ''
-  if (trimmed.length > max) throw new APIError(`${name} is limited to ${max} characters.`, 400)
-  return trimmed
-}
 
 /** Media captions are rich text; an uploaded caption is one plain paragraph of it. */
 const paragraph = (value: string) => ({
@@ -143,17 +91,17 @@ export const agentMediaEndpoint: Endpoint = {
   path: '/agent/media',
   method: 'post',
   handler: async (req) => {
-    const uploader = await uploaderFor(req)
+    const uploader = await agentUploaderFor(req, 'uploadMedia')
     await addDataAndFileToRequest(req)
 
     const { alt, assetLibrary, caption } = (req.data ?? {}) as Record<string, unknown>
-    const altText = text(alt, MAX_ALT, 'alt')
+    const altText = agentText(alt, MAX_ALT, 'alt')
     if (!altText)
       throw new APIError(
         'alt is required: say what the image shows, for someone who cannot see it.',
         400,
       )
-    const captionText = text(caption, MAX_CAPTION, 'caption')
+    const captionText = agentText(caption, MAX_CAPTION, 'caption')
     // Every media document is filed (`hooks/assetLibraryFolders.ts`). Asked for
     // here, by name, rather than left to fail later as a folder error.
     if (!Number.isInteger(assetLibrary) || Number(assetLibrary) <= 0)

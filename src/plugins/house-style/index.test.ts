@@ -13,7 +13,8 @@ const config = houseStylePlugin()({
 const hooksOf = (slug: string) =>
   config.collections?.find((collection) => collection.slug === slug)?.hooks?.beforeChange ?? []
 
-type Who = 'key' | 'person' | 'nobody'
+/** `upload`: an agent upload endpoint, acting as the key's team member (`endpoints/agentUpload.ts`). */
+type Who = 'key' | 'person' | 'nobody' | 'upload'
 
 const save = (data: Record<string, unknown>, who: Who = 'key', autosave = false) => {
   const hooks = hooksOf('lab-projects') as CollectionBeforeChangeHook[]
@@ -22,13 +23,17 @@ const save = (data: Record<string, unknown>, who: Who = 'key', autosave = false)
   const user =
     who === 'key'
       ? { id: 1, collection: 'mcp-keys' }
-      : who === 'person'
+      : who === 'person' || who === 'upload'
         ? { id: 1, collection: 'users' }
         : null
   return hook({
     collection: { slug: 'lab-projects' },
     data,
-    req: { user, query: autosave ? { autosave: 'true' } : {} } as unknown as PayloadRequest,
+    req: {
+      context: who === 'upload' ? { agentWrite: true } : {},
+      query: autosave ? { autosave: 'true' } : {},
+      user,
+    } as unknown as PayloadRequest,
   } as unknown as Parameters<CollectionBeforeChangeHook>[0])
 }
 
@@ -54,6 +59,11 @@ const lexical = (text: string) => ({
 })
 
 describe('houseStylePlugin', () => {
+  it('checks an agent upload, though it acts as a team member', () => {
+    const { data } = refusal(() => save({ title: `Guide${EM_DASH}draft` }, 'upload'))
+    expect(data.errors.map((error) => error.path)).toEqual(['title'])
+  })
+
   it('hooks every collection, after the hooks it already had', () => {
     expect(hooksOf('lab-projects')).toHaveLength(2)
     expect(hooksOf('plain')).toHaveLength(1)

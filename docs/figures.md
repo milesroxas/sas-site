@@ -138,6 +138,8 @@ The target has to be the site the agent's MCP server drafts on, because a media 
 
 An MCP key fails every team-only REST rule by design, so plain `POST /api/media` stays closed to it. The endpoint is the narrow door instead of a wider rule. It acts as the team member the key is linked to, with access control on, and needs the key's own **Upload media** capability (System, API Keys), off by default like every other capability.
 
+The same script sends any file to Resources with `--resource --title "<text>" [--description "<text>"]`, through `POST /api/agent/resources` and the key's **Upload resources** capability ([mcp.md](mcp.md)).
+
 [`src/endpoints/agentMedia.ts`](../src/endpoints/agentMedia.ts) decides everything about the stored file: what is required, which images it accepts, how it encodes them and the usage status they land with. Read it there; this page does not restate it. The request carries only `alt`, `caption` and `assetLibrary`, so a client cannot choose any of the rest.
 
 ## The MCP key for article authoring

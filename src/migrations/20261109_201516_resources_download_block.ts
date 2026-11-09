@@ -55,6 +55,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "_posts_v" ADD COLUMN "version_primary_resource_description" varchar;
   ALTER TABLE "_posts_v" ADD COLUMN "version_primary_resource_button_label" varchar;
   ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "resources_find" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "resources_update" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "resources_delete" boolean DEFAULT false;
+  ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "upload_resources" boolean DEFAULT false;
   ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "resources_id" integer;
   ALTER TABLE "lab_pages_download" ADD CONSTRAINT "lab_pages_download_resource_id_resources_id_fk" FOREIGN KEY ("resource_id") REFERENCES "public"."resources"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "lab_pages_download" ADD CONSTRAINT "lab_pages_download_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."lab_pages"("id") ON DELETE cascade ON UPDATE no action;
@@ -105,6 +108,9 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   ALTER TABLE "_posts_v" DROP COLUMN "version_primary_resource_description";
   ALTER TABLE "_posts_v" DROP COLUMN "version_primary_resource_button_label";
   ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "resources_find";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "resources_update";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "resources_delete";
+  ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "upload_resources";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "resources_id";
   DROP TYPE "public"."enum_resources_usage_status";`)
 }

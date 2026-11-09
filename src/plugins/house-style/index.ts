@@ -100,13 +100,18 @@ const describe = (findings: VoiceFinding[]): string => {
   return parts.join('; ')
 }
 
-const isApiKeyUser = (req: PayloadRequest): boolean =>
-  Boolean(req.user) && req.user?.collection !== 'users'
+/**
+ * An agent's write: an MCP key as the principal, or an agent upload endpoint
+ * (`endpoints/agentUpload.ts`), which acts as the key's team member and marks
+ * the request instead.
+ */
+const isAgentWrite = (req: PayloadRequest): boolean =>
+  (Boolean(req.user) && req.user?.collection !== 'users') || req.context.agentWrite === true
 
 const isAutosave = (req: PayloadRequest): boolean => req.query?.autosave === 'true'
 
 export const refuseOffVoiceCopy: CollectionBeforeChangeHook = ({ collection, data, req }) => {
-  if (!isApiKeyUser(req) || isAutosave(req)) return data
+  if (!isAgentWrite(req) || isAutosave(req)) return data
   const errors: FieldError[] = copyStrings(data).flatMap(({ path, text }) => {
     const findings = gateFindings(text)
     return findings.length ? [{ message: describe(findings), path }] : []

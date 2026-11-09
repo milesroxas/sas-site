@@ -1,7 +1,7 @@
 import { type MCPPluginConfig, mcpPlugin } from '@payloadcms/plugin-mcp'
 import type { CollectionSlug, Field, GroupField, Plugin } from 'payload'
 import { authenticated } from '@/access/authenticated'
-import { AGENT_UPLOAD_STATUS } from '@/endpoints/agentMedia'
+import { AGENT_UPLOAD_CAPABILITIES, AGENT_UPLOAD_STATUS } from '@/endpoints/agentUpload'
 import { ASK_QUESTION_RETENTION_DAYS } from '@/features/ask/retention'
 import { withMcpDeleteConfirmation } from '@/plugins/mcp-delete-confirmation'
 import { MCP_INSTRUCTIONS } from '@/plugins/mcp-instructions'
@@ -139,7 +139,7 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
     AUTHORING,
   ),
   // Media stays read-only: MCP tools cannot send binary uploads. Images come in
-  // through `pnpm cms:upload` (`uploadMediaCapability` below).
+  // through `pnpm cms:upload` (`uploadCapabilities` below).
   ...entries(
     {
       media:
@@ -147,14 +147,16 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
     },
     READ_ONLY,
   ),
-  // Same reason: a resource is a binary upload. Agents pick one by id for a
-  // Download block; the file itself is uploaded in the admin.
+  // A resource is a binary too, so no create tool (it could never receive the
+  // file): new files come in through `pnpm cms:upload --resource`. Its title,
+  // description and status are plain fields, so those are edited here, and a
+  // retired file is deleted here (two calls, like every delete).
   ...entries(
     {
       resources:
-        'Downloadable files (any type) that a Download block (`resourceDownload`) offers by id. Read-only over MCP: only `public-approved` items render publicly. New files are uploaded in the admin',
+        'Downloadable files (any type), offered by id in a Download block (`resourceDownload`) or a post\'s `primaryResource`. Edit title, description and `usageStatus` here; only `public-approved` items render publicly, and the file itself stays public to anyone with its URL. Add a file with `pnpm cms:upload <file> --resource --title "<text>"`. Before deleting one, check no post or page still offers it',
     },
-    READ_ONLY,
+    { delete: true, find: true, update: true },
   ),
   ...entries(
     {
@@ -294,24 +296,26 @@ const withCapabilityControls = (fields: Field[]): Field[] => {
 }
 
 /**
- * The one capability that is not an MCP tool. MCP cannot carry a binary, so
- * media is added through `POST /api/agent/media` (`endpoints/agentMedia.ts`)
- * with the same key, and that endpoint reads this checkbox. It is its own
- * field rather than `create` on the media entry above because that would
- * register a create tool that can never receive a file. Off by default, like
- * every capability: a key that can read media cannot add it until a team
- * member says so.
+ * The capabilities that are not MCP tools. MCP cannot carry a binary, so media
+ * and resources are added through the agent upload endpoints
+ * (`endpoints/agentUpload.ts`) with the same key, and each endpoint reads its
+ * own checkbox here. They are fields of their own rather than `create` on the
+ * entries above because that would register a create tool that can never
+ * receive a file. Off by default, like every capability: a key that can read
+ * a collection cannot add files to it until a team member says so.
  */
-const uploadMediaCapability: Field = {
-  name: 'uploadMedia',
-  type: 'checkbox',
-  label: 'Upload media',
-  defaultValue: false,
-  admin: {
-    position: 'sidebar',
-    description: `Allow \`pnpm cms:upload\` with this key. Its uploads land with Usage Status ${AGENT_UPLOAD_STATUS}.`,
-  },
-}
+const uploadCapabilities: Field[] = Object.entries(AGENT_UPLOAD_CAPABILITIES).map(
+  ([name, { command, label }]): Field => ({
+    name,
+    type: 'checkbox',
+    label,
+    defaultValue: false,
+    admin: {
+      position: 'sidebar',
+      description: `Allow \`${command}\` with this key. Its uploads land with Usage Status ${AGENT_UPLOAD_STATUS}.`,
+    },
+  }),
+)
 
 /**
  * The plugin registers a custom tool's checkbox with `defaultValue: true`, the
@@ -395,7 +399,7 @@ const server: Plugin = mcpPlugin({
     admin: { ...collection.admin, group: 'System' },
     fields: [
       ...withToolsOffByDefault(withCapabilityControls(collection.fields)),
-      uploadMediaCapability,
+      ...uploadCapabilities,
     ],
   }),
 })

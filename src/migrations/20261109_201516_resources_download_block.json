@@ -22803,6 +22803,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "standfirst": {
+          "name": "standfirst",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "hero_image_id": {
           "name": "hero_image_id",
           "type": "integer",
@@ -22908,18 +22914,18 @@
           "primaryKey": false,
           "notNull": false
         },
-        "standfirst": {
-          "name": "standfirst",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
         "show_contents": {
           "name": "show_contents",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "content": {
+          "name": "content",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "primary_resource_resource_id": {
           "name": "primary_resource_resource_id",
@@ -22942,12 +22948,6 @@
         "primary_resource_button_label": {
           "name": "primary_resource_button_label",
           "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "content": {
-          "name": "content",
-          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -28911,6 +28911,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "version_standfirst": {
+          "name": "version_standfirst",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "version_hero_image_id": {
           "name": "version_hero_image_id",
           "type": "integer",
@@ -29016,18 +29022,18 @@
           "primaryKey": false,
           "notNull": false
         },
-        "version_standfirst": {
-          "name": "version_standfirst",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
         "version_show_contents": {
           "name": "version_show_contents",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
           "default": false
+        },
+        "version_content": {
+          "name": "version_content",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "version_primary_resource_resource_id": {
           "name": "version_primary_resource_resource_id",
@@ -29050,12 +29056,6 @@
         "version_primary_resource_button_label": {
           "name": "version_primary_resource_button_label",
           "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "version_content": {
-          "name": "version_content",
-          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -115908,6 +115908,20 @@
           "notNull": false,
           "default": false
         },
+        "resources_update": {
+          "name": "resources_update",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "resources_delete": {
+          "name": "resources_delete",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
         "ask_questions_find": {
           "name": "ask_questions_find",
           "type": "boolean",
@@ -116071,6 +116085,13 @@
         },
         "upload_media": {
           "name": "upload_media",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "upload_resources": {
+          "name": "upload_resources",
           "type": "boolean",
           "primaryKey": false,
           "notNull": false,
@@ -158870,6 +158891,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "f7dea402-cd85-4afd-9857-134265ca0a46",
+  "id": "d348d617-782a-4a64-8711-91c7b4ea73e3",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }
