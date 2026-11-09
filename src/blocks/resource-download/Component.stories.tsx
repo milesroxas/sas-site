@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { resourceFixture } from '@/blocks/fixtures'
-import { ResourceDownload, ResourceDownloadRail } from './Component'
+import { ResourceDownload, ResourceDownloadTitleBlock } from './Component'
 import { ResourceDownloadSection } from './Section'
 
 const meta = {
@@ -81,7 +81,7 @@ export const InTheRail: Story = {
   render: (args) => (
     <aside className="w-70 border-t border-foreground py-3">
       <p className="font-mono text-xs leading-normal">Designing in layers: the token stack</p>
-      <ResourceDownloadRail className="mt-12" {...args} />
+      <ResourceDownloadTitleBlock className="mt-12" location="download_rail" {...args} />
     </aside>
   ),
 }
@@ -100,4 +100,36 @@ export const InTheRailNoDescription: Story = {
       url: 'https://media.suits-sandals.com/resources/carbon-signal-tokens.zip',
     },
   },
+}
+
+/** An editor's own button label: it truncates before the type and size do. */
+export const InTheRailCustomLabel: Story = {
+  ...InTheRail,
+  args: {
+    buttonLabel: 'Get the printable workbook and worksheets',
+  },
+}
+
+/**
+ * Below `lg` the post page has no rail: the same title block closes the
+ * article (`posts/[slug]/page.tsx`), full width on a phone, a block's width
+ * from `sm`, and the description unclamped.
+ */
+export const EndOfArticle: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: (args) => (
+    <div className="px-4 py-12">
+      <div className="border-t border-foreground py-3">
+        <p className="text-base/relaxed">
+          The last paragraph of the article sits here, and the post&apos;s primary resource follows
+          it.
+        </p>
+        <ResourceDownloadTitleBlock
+          className="mt-12 sm:max-w-sm lg:hidden"
+          location="download"
+          {...args}
+        />
+      </div>
+    </div>
+  ),
 }

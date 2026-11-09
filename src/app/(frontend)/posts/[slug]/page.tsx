@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
-import { ResourceDownload, ResourceDownloadRail } from '@/blocks/resource-download/Component'
+import { ResourceDownloadTitleBlock } from '@/blocks/resource-download/Component'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import RichText from '@/components/RichText'
@@ -85,15 +85,25 @@ export default async function Post({ params: paramsPromise }: Args) {
                 <div className="sticky top-(--header-height) border-t border-foreground py-3">
                   <p className="font-mono text-xs leading-normal">{post.title}</p>
                   {post.primaryResource ? (
-                    <ResourceDownloadRail className="mt-12" {...post.primaryResource} />
+                    <ResourceDownloadTitleBlock
+                      className="mt-12"
+                      location="download_rail"
+                      {...post.primaryResource}
+                    />
                   ) : null}
                 </div>
               </aside>
               <div className="max-w-(--max-width-content-narrow) border-t border-foreground py-3">
                 <RichText className="mx-0" data={post.content} enableGutter={false} />
-                {/* Below lg there is no rail: the primary resource closes the article. */}
+                {/* Below lg there is no rail: the same title block closes the article,
+                    full width on a phone and held to a block's width from sm, where
+                    a full-measure frame would read as a banner. */}
                 {post.primaryResource ? (
-                  <ResourceDownload className="mt-12 lg:hidden" {...post.primaryResource} />
+                  <ResourceDownloadTitleBlock
+                    className="mt-12 sm:max-w-sm lg:hidden"
+                    location="download"
+                    {...post.primaryResource}
+                  />
                 ) : null}
               </div>
             </div>
