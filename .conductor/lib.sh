@@ -1,35 +1,64 @@
 #!/usr/bin/env bash
-# Shared helpers for the Conductor setup / run / archive / prune scripts.
+# Shared helpers for the workspace setup / run / archive / prune scripts.
 # Sourced, not executed. Requires: Docker Desktop, pnpm.
 #
-# Conductor runs every script from the workspace directory and exposes
-# CONDUCTOR_WORKSPACE_PATH / CONDUCTOR_ROOT_PATH / CONDUCTOR_PORT / CONDUCTOR_WORKSPACE_NAME
-# (https://www.conductor.build/docs/reference/scripts). Human docs: docs/conductor.md.
+# Two hosts run these scripts from the workspace directory, and a plain
+# terminal inside a worktree works too (docs/conductor.md):
+#
+#   Conductor  CONDUCTOR_ROOT_PATH / CONDUCTOR_WORKSPACE_PATH / CONDUCTOR_PORT
+#              (https://www.conductor.build/docs/reference/scripts)
+#   T3 Code    T3CODE_PROJECT_ROOT (the main checkout) / T3CODE_WORKTREE_PATH;
+#              T3 hands out no port, so `allocate_port` picks one and setup
+#              stores it in the worktree's .env as DEV_PORT.
+#   Terminal   neither set: the worktree is $PWD and the root is the git
+#              main worktree.
 
 set -euo pipefail
 
-# Repository root — Conductor's own clone (~/conductor/repos/<repo>), NOT your
-# main checkout. Only its untracked files matter here: .env (copied into each
+if [ -n "${CONDUCTOR_ROOT_PATH:-}" ]; then
+  WORKSPACE_HOST="conductor"
+  # Conductor's own clone (~/conductor/repos/<repo>), NOT your main checkout.
+  ROOT="$CONDUCTOR_ROOT_PATH"
+  WS_PATH="${CONDUCTOR_WORKSPACE_PATH:-$PWD}"
+elif [ -n "${T3CODE_PROJECT_ROOT:-}" ]; then
+  WORKSPACE_HOST="t3"
+  ROOT="$T3CODE_PROJECT_ROOT"
+  WS_PATH="${T3CODE_WORKTREE_PATH:-$PWD}"
+else
+  WORKSPACE_HOST="terminal"
+  WS_PATH="$PWD"
+  # The main worktree owns the shared git dir: its parent is the main checkout.
+  ROOT="$(dirname "$(git -C "$WS_PATH" rev-parse --path-format=absolute --git-common-dir)")"
+fi
+# Only the root's untracked files matter here: .env (copied into each
 # workspace) and, optionally, .env.production.pulled.
-ROOT="${CONDUCTOR_ROOT_PATH:-}"
-WS_PATH="${CONDUCTOR_WORKSPACE_PATH:-$PWD}"
 WS_NAME="${CONDUCTOR_WORKSPACE_NAME:-$(basename "$WS_PATH")}"
-PORT="${CONDUCTOR_PORT:-3001}"
 
 MAIN_DB="payload"
 DB_HOST="127.0.0.1:54320"
 # Same image as docker-compose.yml / scripts/dev-tui/constants.ts — dumping
 # production with the container's own pg_dump avoids client/server mismatch.
 POSTGRES_IMAGE="pgvector/pgvector:pg18"
-# Vercel-pulled production env in the Conductor root (same file/convention as
-# the dev TUI). Optional: only needed for `setup.sh --from production`.
+# Vercel-pulled production env in the root (same file/convention as the dev
+# TUI). Optional: only needed for `setup.sh --from production`.
 PROD_ENV_FILE="$ROOT/.env.production.pulled"
 
+# The main checkout is not a workspace: it keeps its own .env, the shared
+# 'payload' DB and port 3001. T3 Code runs project scripts there too (a thread
+# in local mode), so every script checks this before touching anything.
+is_main_checkout() {
+  [ "$(cd "$WS_PATH" && pwd -P)" = "$(cd "$ROOT" && pwd -P)" ]
+}
+
 require_root() {
-  [ -n "$ROOT" ] || {
-    echo "conductor: CONDUCTOR_ROOT_PATH not set — run this from Conductor (or a Conductor terminal)." >&2
+  [ -d "$ROOT" ] || {
+    echo "workspace: root checkout '$ROOT' not found." >&2
     exit 1
   }
+  if is_main_checkout; then
+    echo "workspace: this is the main checkout, not a worktree; it keeps its own .env and DB. Nothing to set up." >&2
+    exit 1
+  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -95,9 +124,9 @@ assert_no_db_override() {
       case "$url" in
       *"$DB_HOST/$DB_NAME"|*"$DB_HOST/$DB_NAME?"*) ;;
       *)
-        printf 'conductor: %s sets %s to a database other than %s (%s).\n' \
+        printf 'workspace: %s sets %s to a database other than %s (%s).\n' \
           "$f" "$key" "$DB_NAME" "$(printf '%s' "$url" | sed -E 's#://[^@]*@#://***@#')" >&2
-        printf 'conductor: Next.js reads that file over .env. Remove it: mv %s %s.neon-bak\n' "$f" "$f" >&2
+        printf 'workspace: Next.js reads that file over .env. Remove it: mv %s %s.neon-bak\n' "$f" "$f" >&2
         exit 1
         ;;
       esac
@@ -105,15 +134,9 @@ assert_no_db_override() {
   done
 }
 # archive.sh sources lib.sh only to drop the DB; a stale .env.local must not block archiving.
-[ "${CONDUCTOR_ARCHIVING:-0}" = 1 ] || assert_no_db_override
+# The main checkout is not a workspace and owns its override files.
+[ "${CONDUCTOR_ARCHIVING:-0}" = 1 ] || is_main_checkout || assert_no_db_override
 
-# The launcher (Conductor's Run button) can hand the script a process env that
-# already contains POSTGRES_URL from the root clone's .env, and Next.js lets the
-# process env win over the workspace .env — the dev server then silently uses
-# the shared 'payload' DB while the banner claims payload_<city>. Pin both the
-# DB URL and the public URL in the process env so .env and reality agree.
-export POSTGRES_URL="postgresql://postgres@$DB_HOST/$DB_NAME"
-export NEXT_PUBLIC_SERVER_URL="http://localhost:$PORT"
 
 # ---------------------------------------------------------------------------
 # Ports
@@ -136,18 +159,74 @@ assert_port_free() {
   local port="$1" owner pid cwd
   owner="$(port_owner "$port")" || return 0
   pid="${owner%% *}" cwd="${owner#* }"
-  echo "conductor: port $port is already taken by pid $pid ($cwd)." >&2
+  echo "workspace: port $port is already taken by pid $pid ($cwd)." >&2
   case "$cwd" in
   "$(cd "$WS_PATH" && pwd -P)"*)
-    echo "conductor: that is this workspace's own server; stop it first: kill $pid" >&2
+    echo "workspace: that is this workspace's own server; stop it first: kill $pid" >&2
     ;;
   *)
-    echo "conductor: it belongs to another checkout, so this workspace will not share it." >&2
-    echo "conductor: stop it if it is stale (kill $pid), then Run again." >&2
+    echo "workspace: it belongs to another checkout, so this workspace will not share it." >&2
+    echo "workspace: stop it if it is stale (kill $pid), then Run again." >&2
     ;;
   esac
   exit 1
 }
+
+# T3 Code hands out no port. Each worktree takes the first even port in
+# WORKTREE_PORT_FIRST..LAST (Next on it, Storybook on +1) that no other
+# worktree's .env claims as DEV_PORT and nothing listens on, and setup stores
+# it, so a worktree keeps its port across restarts. The range is this repo's
+# in the machine registry (conductor-workspace-setup skill, registry.md).
+WORKTREE_PORT_FIRST=3200
+WORKTREE_PORT_LAST=3298
+
+# DEV_PORT values every other worktree of this repo has claimed.
+claimed_worktree_ports() {
+  local wt real_ws
+  real_ws="$(cd "$WS_PATH" && pwd -P)"
+  git -C "$WS_PATH" worktree list --porcelain 2>/dev/null | sed -n 's/^worktree //p' |
+    while IFS= read -r wt; do
+      [ -d "$wt" ] || continue
+      [ "$(cd "$wt" && pwd -P)" = "$real_ws" ] && continue
+      read_env_key "$wt/.env" DEV_PORT 2>/dev/null || true
+      echo
+    done
+}
+
+allocate_port() {
+  local claimed port
+  claimed=" $(claimed_worktree_ports | tr '\n' ' ') "
+  for ((port = WORKTREE_PORT_FIRST; port <= WORKTREE_PORT_LAST; port += 2)); do
+    case "$claimed" in *" $port "*) continue ;; esac
+    port_owner "$port" >/dev/null && continue
+    port_owner "$((port + 1))" >/dev/null && continue
+    printf '%s' "$port"
+    return 0
+  done
+  echo "workspace: no free port pair in $WORKTREE_PORT_FIRST-$WORKTREE_PORT_LAST" >&2
+  return 1
+}
+
+# This workspace's port: Conductor's, the main checkout's 3001, the one setup
+# stored for a T3 worktree, else the next free pair (setup stores it).
+if [ -n "${CONDUCTOR_PORT:-}" ]; then
+  PORT="$CONDUCTOR_PORT"
+elif is_main_checkout; then
+  PORT=3001
+else
+  PORT="$(read_env_key "$WS_PATH/.env" DEV_PORT 2>/dev/null || true)"
+  [ -n "$PORT" ] || PORT="$(allocate_port)"
+fi
+
+# The launcher (Conductor's Run button) can hand the script a process env that
+# already contains POSTGRES_URL from the root clone's .env, and Next.js lets the
+# process env win over the workspace .env — the dev server then silently uses
+# the shared 'payload' DB while the banner claims payload_<city>. Pin both the
+# DB URL and the public URL in the process env so .env and reality agree.
+if ! is_main_checkout; then
+  export POSTGRES_URL="postgresql://postgres@$DB_HOST/$DB_NAME"
+  export NEXT_PUBLIC_SERVER_URL="http://localhost:$PORT"
+fi
 
 # ---------------------------------------------------------------------------
 # Postgres (one shared container, one DB per workspace)
@@ -175,18 +254,18 @@ assert_db_port_ours() {
   project="$(docker ps --filter "publish=$port" --format '{{.Label "com.docker.compose.project"}}' | head -n1)"
   if [ -n "$project" ]; then
     [ "$project" = sas-site ] && return 0
-    echo "conductor: port $port is published by docker project '$project', not 'sas-site'." >&2
+    echo "workspace: port $port is published by docker project '$project', not 'sas-site'." >&2
     exit 1
   fi
   if owner="$(port_owner "$port")"; then
-    echo "conductor: port $port is held by pid ${owner%% *} (${owner#* }), not the sas-site postgres container." >&2
+    echo "workspace: port $port is held by pid ${owner%% *} (${owner#* }), not the sas-site postgres container." >&2
     exit 1
   fi
 }
 
 ensure_postgres() {
   if ! docker info >/dev/null 2>&1; then
-    echo "conductor: Docker is not running — start Docker Desktop first." >&2
+    echo "workspace: Docker is not running — start Docker Desktop first." >&2
     exit 1
   fi
   # `up` only when nothing is running: `docker compose up` re-creates a running
@@ -202,7 +281,7 @@ ensure_postgres() {
   until compose exec -T postgres pg_isready -U postgres >/dev/null 2>&1; do
     i=$((i + 1))
     if [ "$i" -gt 60 ]; then
-      echo "conductor: postgres did not become healthy within 60s" >&2
+      echo "workspace: postgres did not become healthy within 60s" >&2
       exit 1
     fi
     sleep 1
@@ -219,7 +298,7 @@ assert_workspace_db_name() {
   case "$1" in
   payload_?*) ;;
   *)
-    echo "conductor: refusing to touch database '$1' (not a workspace DB)" >&2
+    echo "workspace: refusing to touch database '$1' (not a workspace DB)" >&2
     return 1
     ;;
   esac
@@ -252,10 +331,10 @@ ensure_production_env() {
     return 0
   fi
   if ! command -v vercel >/dev/null 2>&1; then
-    echo "conductor: vercel CLI not found (npm i -g vercel) — cannot pull production env" >&2
+    echo "workspace: vercel CLI not found (npm i -g vercel) — cannot pull production env" >&2
     return 1
   fi
-  echo "conductor: pulling Vercel production env → $PROD_ENV_FILE"
+  echo "workspace: pulling Vercel production env → $PROD_ENV_FILE"
   (cd "$ROOT" && vercel env pull .env.production.pulled --environment=production --yes)
 }
 
@@ -267,10 +346,10 @@ seed_db_from_production() {
   dump_url="$(read_env_key "$PROD_ENV_FILE" POSTGRES_URL_NON_POOLING || true)"
   [ -n "$dump_url" ] || dump_url="$(read_env_key "$PROD_ENV_FILE" POSTGRES_URL || true)"
   if [ -z "$dump_url" ]; then
-    echo "conductor: no POSTGRES_URL in $PROD_ENV_FILE — re-pull production env" >&2
+    echo "workspace: no POSTGRES_URL in $PROD_ENV_FILE — re-pull production env" >&2
     return 1
   fi
-  echo "conductor: dumping production content into $DB_NAME (this can take a minute)"
+  echo "workspace: dumping production content into $DB_NAME (this can take a minute)"
   psql_c -c "CREATE DATABASE \"$DB_NAME\""
   docker run --rm "$POSTGRES_IMAGE" pg_dump "$dump_url" --no-owner --no-acl |
     sed '/^[[:space:]]*SET transaction_timeout/d' |
@@ -289,15 +368,15 @@ ensure_workspace_db() {
     return 0
   fi
   assert_workspace_db_name "$DB_NAME"
-  echo "conductor: creating database $DB_NAME"
+  echo "workspace: creating database $DB_NAME"
 
   if [ "$from" = "production" ]; then
     if ensure_production_env && seed_db_from_production; then
       WORKSPACE_DB_SOURCE="production"
-      echo "conductor: $DB_NAME seeded from production"
+      echo "workspace: $DB_NAME seeded from production"
       return 0
     fi
-    echo "conductor: production seed unavailable — falling back to a clone of '$MAIN_DB'" >&2
+    echo "workspace: production seed unavailable — falling back to a clone of '$MAIN_DB'" >&2
     # A failed restore may be partial; start over clean.
     drop_workspace_db "$DB_NAME"
   fi
@@ -305,11 +384,11 @@ ensure_workspace_db() {
   if db_exists "$MAIN_DB"; then
     if clone_local_db; then
       WORKSPACE_DB_SOURCE="local"
-      echo "conductor: $DB_NAME cloned from '$MAIN_DB'"
+      echo "workspace: $DB_NAME cloned from '$MAIN_DB'"
       return 0
     fi
     drop_workspace_db "$DB_NAME"
-    echo "conductor: clone of '$MAIN_DB' into $DB_NAME failed" >&2
+    echo "workspace: clone of '$MAIN_DB' into $DB_NAME failed" >&2
     exit 1
   fi
 
@@ -317,7 +396,7 @@ ensure_workspace_db() {
   psql_c -c "CREATE DATABASE \"$DB_NAME\""
   psql_c -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS vector"
   WORKSPACE_DB_SOURCE="empty"
-  echo "conductor: $DB_NAME created empty ('$MAIN_DB' does not exist yet)"
+  echo "workspace: $DB_NAME created empty ('$MAIN_DB' does not exist yet)"
 }
 
 # Upsert KEY=VALUE in the workspace .env (BSD sed — macOS). Delete-then-append
