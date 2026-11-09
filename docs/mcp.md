@@ -59,6 +59,7 @@ The source of truth is [`src/plugins/mcp.ts`](../src/plugins/mcp.ts); this table
 | Assets | `asset-libraries` | Full authoring |
 | Assets | `streak-looks` | Full authoring, **drafts only**: publishing a look happens in the Studio |
 | Assets | `media` | **Read-only** (find) |
+| Assets | `resources` | Find, update, delete. **No create**: files come in through `pnpm cms:upload --resource` |
 | Visitor records | `inquiries`, `form-submissions`, `subscribers`, `ask-questions` | **Read-only** (find) |
 | Globals | `home`, `header`, `footer`, `site-info`, `insights-index`, `lab-index`, `works-index`, `expertise-index`, `audience-index` | Find + update |
 
@@ -70,6 +71,9 @@ themselves are code-owned, so an agent can edit the opening copy but not the set
 
 Media is read-only by design: MCP tools cannot send binary uploads. Agents reference existing
 media documents by id and add images with `pnpm cms:upload` ([figures.md](figures.md#media-upload)).
+Resources are binaries too, so they have no create tool either: an agent adds a file with
+`pnpm cms:upload <file> --resource --title "<text>"`, then edits its title, description and
+`usageStatus` over MCP like any document, and deletes it there (two calls, like every delete).
 Asset libraries are metadata (name, organization, project, status); creating one also creates its
 root folder via the collection hook.
 
@@ -263,8 +267,10 @@ from gaining team-level REST access:
    Asset Libraries used a hand-rolled `req.user ? true : …` until 2026-09-21, which let keys
    read internal media and unapproved quotes over REST.
 
-The one REST route built for keys is `POST /api/agent/media`, behind its own capability
-([figures.md](figures.md#media-upload)).
+The REST routes built for keys are the agent upload endpoints, `POST /api/agent/media` and
+`POST /api/agent/resources`, each behind its own capability. What they share (the key lookup, the
+capabilities, the status uploads land with) is [`src/endpoints/agentUpload.ts`](../src/endpoints/agentUpload.ts);
+each endpoint decides the rest about its own files ([figures.md](figures.md#media-upload)).
 
 **Rule for new code:** any new collection, global, or plugin override whose access uses
 "any logged-in user" semantics must use the `authenticated` helper (or an equally strict
@@ -302,7 +308,7 @@ that one install) and retest `/api/mcp` initialize + tools/list.
   `payload-mcp-api-keys` table. Follow the normal migration workflow (ask before
   `pnpm migrate:create`, prescribe create/rename answers, commit `.ts`+`.json`, CI applies).
   The initial capability schema landed in `20260722_183757_mcp_authoring_capabilities`.
-  `uploadMedia` is one more column on the same table, and each custom tool in `mcp.tools` is
+  `uploadMedia` and `uploadResources` are two more columns on the same table, and each custom tool in `mcp.tools` is
   one more (`payload_mcp_tool_<name>`).
 - The key's admin screen is restyled by `withCapabilityControls` in `mcp.ts` (select-all per
   section, a toolbar with an enabled count). It matches the plugin's generated field shape, so

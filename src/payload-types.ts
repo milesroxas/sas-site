@@ -81,6 +81,7 @@ export interface Config {
     'lab-projects': LabProject;
     testimonials: Testimonial;
     media: Media;
+    resources: Resource;
     'asset-libraries': AssetLibrary;
     capabilities: Capability;
     industries: Industry;
@@ -137,6 +138,7 @@ export interface Config {
     'lab-projects': LabProjectsSelect<false> | LabProjectsSelect<true>;
     testimonials: TestimonialsSelect<false> | TestimonialsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    resources: ResourcesSelect<false> | ResourcesSelect<true>;
     'asset-libraries': AssetLibrariesSelect<false> | AssetLibrariesSelect<true>;
     capabilities: CapabilitiesSelect<false> | CapabilitiesSelect<true>;
     industries: IndustriesSelect<false> | IndustriesSelect<true>;
@@ -414,6 +416,10 @@ export interface Post {
   id: number;
   title: string;
   /**
+   * Editorial sentence under the title in the hero. Distinct from the SEO description: this one is written to be read.
+   */
+  standfirst?: string | null;
+  /**
    * Square crop beside the title in the post hero.
    */
   heroImage?: (number | null) | Media;
@@ -422,10 +428,6 @@ export interface Post {
    */
   visualType?: ('media' | 'streakField' | 'lightLeak') | null;
   shader?: PlacedVisualConfig;
-  /**
-   * Editorial sentence under the title in the hero. Distinct from the SEO description — this one is written to be read.
-   */
-  standfirst?: string | null;
   /**
    * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
    */
@@ -446,7 +448,7 @@ export interface Post {
     [k: string]: unknown;
   };
   /**
-   * Optional full-width sections rendered after the article body. The article itself stays in the Content tab.
+   * Optional full-width sections rendered after the article body. The article itself stays in the Article tab.
    */
   layout?:
     | (
@@ -473,6 +475,7 @@ export interface Post {
         | FeaturedWorkBlock
       )[]
     | null;
+  primaryResource?: PrimaryResource;
   /**
    * Shown in the rail at the end of this post, in this order. Unpublished picks are skipped. Leave empty to show the most recently published posts (excluding this one).
    */
@@ -7215,6 +7218,62 @@ export interface FeatureTabsBlock {
   blockType: 'featureTabs';
 }
 /**
+ * The one file this insight offers. Pinned in the side rail on wide screens; at the end of the article on phones and tablets. For more files, add Download blocks in the article.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PrimaryResource".
+ */
+export interface PrimaryResource {
+  /**
+   * The file to download. Only public-approved resources are listed.
+   */
+  resource?: (number | null) | Resource;
+  /**
+   * Leave empty to use the resource's title.
+   */
+  heading?: string | null;
+  /**
+   * Leave empty to use the resource's description.
+   */
+  description?: string | null;
+  /**
+   * Leave empty for "Download" and the file type, e.g. "Download PDF".
+   */
+  buttonLabel?: string | null;
+}
+/**
+ * Downloadable files of any type, offered on insights and lab pages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resources".
+ */
+export interface Resource {
+  id: number;
+  /**
+   * What the reader gets, e.g. "Layered design workbook". The download block shows it unless the block sets its own heading.
+   */
+  title: string;
+  /**
+   * One or two sentences on what is inside. The download block shows it unless the block sets its own.
+   */
+  description?: string | null;
+  /**
+   * Visitors only see public-approved resources.
+   */
+  usageStatus: 'internal' | 'client-review' | 'public-approved';
+  prefix?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
@@ -7696,6 +7755,7 @@ export interface LabPage {
         | LabFeatureTabsBlock
         | InsightListBlock
         | LabStoryBeatsBlock
+        | ResourceDownloadBlock
         | LabMediaShowcaseBlock
         | ScrollGalleryBlock
         | LabStorySectionBlock
@@ -7922,6 +7982,7 @@ export interface LabSectionBlock {
         | LabFeatureTabsBlock
         | InsightListBlock
         | LabStoryBeatsBlock
+        | ResourceDownloadBlock
         | ContentBlock
       )[]
     | null;
@@ -8583,6 +8644,31 @@ export interface LabStoryBeatsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'storyBeats';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ResourceDownloadBlock".
+ */
+export interface ResourceDownloadBlock {
+  /**
+   * The file to download. Only public-approved resources are listed.
+   */
+  resource: number | Resource;
+  /**
+   * Leave empty to use the resource's title.
+   */
+  heading?: string | null;
+  /**
+   * Leave empty to use the resource's description.
+   */
+  description?: string | null;
+  /**
+   * Leave empty for "Download" and the file type, e.g. "Download PDF".
+   */
+  buttonLabel?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'resourceDownload';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -9823,6 +9909,11 @@ export interface PayloadMcpApiKey {
   media?: {
     find?: boolean | null;
   };
+  resources?: {
+    find?: boolean | null;
+    update?: boolean | null;
+    delete?: boolean | null;
+  };
   askQuestions?: {
     find?: boolean | null;
   };
@@ -9881,9 +9972,13 @@ export interface PayloadMcpApiKey {
     patchBlock?: boolean | null;
   };
   /**
-   * Allow `pnpm cms:upload` with this key. Its uploads land with Usage Status public-approved.
+   * Allow `pnpm cms:upload <image>` with this key. Its uploads land with Usage Status public-approved.
    */
   uploadMedia?: boolean | null;
+  /**
+   * Allow `pnpm cms:upload <file> --resource` with this key. Its uploads land with Usage Status public-approved.
+   */
+  uploadResources?: boolean | null;
   updatedAt: string;
   createdAt: string;
   enableAPIKey?: boolean | null;
@@ -10068,6 +10163,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'resources';
+        value: number | Resource;
       } | null)
     | ({
         relationTo: 'asset-libraries';
@@ -11001,10 +11100,10 @@ export interface PageClosingSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
+  standfirst?: T;
   heroImage?: T;
   visualType?: T;
   shader?: T | PlacedVisualConfigSelect<T>;
-  standfirst?: T;
   showContents?: T;
   content?: T;
   layout?:
@@ -11032,6 +11131,7 @@ export interface PostsSelect<T extends boolean = true> {
         insightList?: T | InsightListBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
+  primaryResource?: T | PrimaryResourceSelect<T>;
   relatedPosts?: T;
   hideRelatedPosts?: T;
   editorialNotes?: T;
@@ -11064,6 +11164,16 @@ export interface PostsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PrimaryResource_select".
+ */
+export interface PrimaryResourceSelect<T extends boolean = true> {
+  resource?: T;
+  heading?: T;
+  description?: T;
+  buttonLabel?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -11661,6 +11771,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         featureTabs?: T | LabFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         storyBeats?: T | LabStoryBeatsBlockSelect<T>;
+        resourceDownload?: T | ResourceDownloadBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
         scrollGallery?: T | ScrollGalleryBlockSelect<T>;
         labStorySection?: T | LabStorySectionBlockSelect<T>;
@@ -11726,6 +11837,7 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         featureTabs?: T | LabFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         storyBeats?: T | LabStoryBeatsBlockSelect<T>;
+        resourceDownload?: T | ResourceDownloadBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -11936,6 +12048,18 @@ export interface LabStoryBeatsBlockSelect<T extends boolean = true> {
   body?: T;
   variant?: T;
   theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ResourceDownloadBlock_select".
+ */
+export interface ResourceDownloadBlockSelect<T extends boolean = true> {
+  resource?: T;
+  heading?: T;
+  description?: T;
+  buttonLabel?: T;
   id?: T;
   blockName?: T;
 }
@@ -12686,6 +12810,26 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resources_select".
+ */
+export interface ResourcesSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  usageStatus?: T;
+  prefix?: T;
+  _objectKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -13498,6 +13642,13 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
     | {
         find?: T;
       };
+  resources?:
+    | T
+    | {
+        find?: T;
+        update?: T;
+        delete?: T;
+      };
   askQuestions?:
     | T
     | {
@@ -13566,6 +13717,7 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         patchBlock?: T;
       };
   uploadMedia?: T;
+  uploadResources?: T;
   updatedAt?: T;
   createdAt?: T;
   enableAPIKey?: T;

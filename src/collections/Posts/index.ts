@@ -25,6 +25,7 @@ import { Carousel } from '../../blocks/Carousel/config'
 import { Code } from '../../blocks/Code/config'
 import { FeatureStatementLinks } from '../../blocks/feature/StatementLinks/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { primaryResourceField, ResourceDownload } from '../../blocks/resource-download/config'
 import { YouTube } from '../../blocks/youtube/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
@@ -79,29 +80,48 @@ export const Posts: CollectionConfig<'posts'> = {
       type: 'tabs',
       tabs: [
         {
+          label: 'Opening',
+          description: 'The post hero: the standfirst under the title, and the media beside them.',
           fields: [
-            ...heroVisualSlotFields(
-              {
-                name: 'heroImage',
-                type: 'upload',
-                relationTo: 'media',
-                admin: {
-                  description: 'Square crop beside the title in the post hero.',
-                },
-              },
-              {
-                visualTypeDescription:
-                  'Leave empty for the picture alone: the hero image, then the SEO image. An effect grounds the whole opening band behind the copy; the square crop still shows in its own frame.',
-              },
-            ),
             {
-              name: 'standfirst',
-              type: 'textarea',
-              admin: {
-                description:
-                  'Editorial sentence under the title in the hero. Distinct from the SEO description — this one is written to be read.',
-              },
+              type: 'collapsible',
+              label: 'Content',
+              fields: [
+                {
+                  name: 'standfirst',
+                  type: 'textarea',
+                  admin: {
+                    description:
+                      'Editorial sentence under the title in the hero. Distinct from the SEO description: this one is written to be read.',
+                  },
+                },
+              ],
             },
+            {
+              type: 'collapsible',
+              label: 'Media',
+              fields: [
+                ...heroVisualSlotFields(
+                  {
+                    name: 'heroImage',
+                    type: 'upload',
+                    relationTo: 'media',
+                    admin: {
+                      description: 'Square crop beside the title in the post hero.',
+                    },
+                  },
+                  {
+                    visualTypeDescription:
+                      'Leave empty for the picture alone: the hero image, then the SEO image. An effect grounds the whole opening band behind the copy; the square crop still shows in its own frame.',
+                  },
+                ),
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Article',
+          fields: [
             contentsButtonField(),
             {
               name: 'content',
@@ -114,7 +134,15 @@ export const Posts: CollectionConfig<'posts'> = {
                     UnorderedListFeature(),
                     OrderedListFeature(),
                     BlocksFeature({
-                      blocks: [Banner, Carousel, Code, FeatureStatementLinks, MediaBlock, YouTube],
+                      blocks: [
+                        Banner,
+                        Carousel,
+                        Code,
+                        FeatureStatementLinks,
+                        MediaBlock,
+                        ResourceDownload,
+                        YouTube,
+                      ],
                     }),
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),
@@ -126,9 +154,9 @@ export const Posts: CollectionConfig<'posts'> = {
               required: true,
             },
           ],
-          label: 'Content',
         },
         {
+          label: 'Composition',
           fields: [
             {
               name: 'layout',
@@ -139,11 +167,14 @@ export const Posts: CollectionConfig<'posts'> = {
               admin: {
                 initCollapsed: true,
                 description:
-                  'Optional full-width sections rendered after the article body. The article itself stays in the Content tab.',
+                  'Optional full-width sections rendered after the article body. The article itself stays in the Article tab.',
               },
             },
           ],
-          label: 'Composition',
+        },
+        {
+          label: 'Assets',
+          fields: [primaryResourceField],
         },
         {
           label: 'Related Posts',

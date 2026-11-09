@@ -34,11 +34,14 @@ import { Pages } from './collections/Pages'
 import { Platforms } from './collections/Platforms'
 import { Posts } from './collections/Posts'
 import { Projects } from './collections/Projects'
+import { Resources } from './collections/Resources'
+import { resourceDownloadHeaders } from './collections/Resources/hooks/attachmentDisposition'
 import { Subscribers } from './collections/Subscribers'
 import { Testimonials } from './collections/Testimonials'
 import { Users } from './collections/Users'
 import { WorkPages } from './collections/WorkPages'
 import { agentMediaEndpoint } from './endpoints/agentMedia'
+import { agentResourcesEndpoint } from './endpoints/agentResources'
 import { askEndpoints } from './endpoints/ask'
 import { geoEndpoint } from './endpoints/geo'
 import { newsletterPublicEndpoints } from './endpoints/newsletter'
@@ -50,6 +53,7 @@ import { askQuestionRetentionTask } from './jobs/askQuestionRetention'
 import { newsletterSendTask } from './jobs/newsletterSend'
 import { plugins } from './plugins'
 import { getServerSideURL } from './utilities/getURL'
+import { R2_BUCKET, r2ClientConfig } from './utilities/r2'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -188,6 +192,7 @@ export default buildConfig({
     Testimonials,
     // Assets
     Media,
+    Resources,
     AssetLibraries,
     // Taxonomy
     Capabilities,
@@ -206,7 +211,13 @@ export default buildConfig({
     Users,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  endpoints: [...newsletterPublicEndpoints, ...askEndpoints, geoEndpoint, agentMediaEndpoint],
+  endpoints: [
+    ...newsletterPublicEndpoints,
+    ...askEndpoints,
+    geoEndpoint,
+    agentMediaEndpoint,
+    agentResourcesEndpoint,
+  ],
   plugins: [
     ...plugins,
     s3Storage({
@@ -215,17 +226,15 @@ export default buildConfig({
         // zero egress). Frontend builds that URL via NEXT_PUBLIC_MEDIA_URL;
         // the CMS `usageStatus` gate still controls API visibility of the doc.
         media: true,
+        // Same bucket and public domain as Media, under its own prefix so a
+        // resource can never overwrite an image that shares its filename.
+        resources: { prefix: 'resources' },
       },
-      bucket: process.env.R2_BUCKET || '',
-      config: {
-        endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-        region: 'auto',
-        credentials: {
-          accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-        },
-      },
+      bucket: R2_BUCKET,
+      config: r2ClientConfig,
     }),
+    // After s3Storage on purpose: it needs the uploaded object to exist.
+    resourceDownloadHeaders,
   ],
   globals: [
     Home,

@@ -18,6 +18,7 @@ import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { CodeBlock, type CodeBlockProps } from '@/blocks/Code/Component'
 import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
+import { ResourceDownload } from '@/blocks/resource-download/Component'
 import { RichTextActions } from '@/blocks/rich-text/actions/Component'
 import { RichTextInsights } from '@/blocks/rich-text/insights/Component'
 import { RichTextPillList } from '@/blocks/rich-text/pill-list/Component'
@@ -28,6 +29,7 @@ import type {
   CallToActionBlock as CTABlockProps,
   FeatureStatementLinksBlock as FeatureStatementLinksBlockProps,
   MediaBlock as MediaBlockProps,
+  ResourceDownloadBlock as ResourceDownloadBlockProps,
   RichTextActionsBlock as RichTextActionsBlockProps,
   RichTextInsightsBlock as RichTextInsightsBlockProps,
   RichTextPillListBlock as RichTextPillListBlockProps,
@@ -42,6 +44,7 @@ type NodeTypes =
   | SerializedBlockNode<
       | CTABlockProps
       | MediaBlockProps
+      | ResourceDownloadBlockProps
       | BannerBlockProps
       | CarouselBlockProps
       | CodeBlockProps
@@ -150,6 +153,9 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
       />
     ),
     code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
+    // A figure-weight object in the article flow: the room above and below
+    // that prose gives an image, so it never reads as another paragraph.
+    resourceDownload: ({ node }) => <ResourceDownload className="my-8" {...node.fields} />,
     cta: ({ node }) => <CallToActionBlock {...node.fields} />,
     featureStatementLinks: ({ node }) => <FeatureStatementLinksBlock {...node.fields} />,
     // The Rich text block splits its own blocks out onto its grid before

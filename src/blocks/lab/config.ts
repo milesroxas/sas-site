@@ -2,6 +2,7 @@ import type { Block } from 'payload'
 import { Content } from '@/blocks/Content/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { featureSourceField } from '@/blocks/feature/shared'
+import { ResourceDownload } from '@/blocks/resource-download/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
 import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import { sectionBlock } from '@/blocks/section/config'
@@ -117,8 +118,11 @@ const labBlock = (shared: Block): Block => {
  * block with no copy of its own, so only the two surfaces that present a story
  * record (Lab and Work Pages) have anything for it to resolve. The drawer
  * groups by `admin.group`, so it lands under Text wherever it sits here.
+ *
+ * Download joins here too, under Forms & CTAs: Lab and the post body are the
+ * two surfaces that hand readers a file, so it stays out of the shared run.
  */
-const labSectionBlocks = [...sectionNestableBlocks, StoryBeats].map(labBlock)
+const labSectionBlocks = [...sectionNestableBlocks, StoryBeats, ResourceDownload].map(labBlock)
 
 export const LabSection = sectionBlock({
   // Content carries no story copy; it closes the nested list under Custom

@@ -74,7 +74,7 @@ Pageviews, `$pageleave`, autocapture, and replay cover browsing. The two things 
 | `ask_questioned` | `is_follow_up`, `source_count`, `question_length`, `handoff_reason`, `outcome`, `retrieval`, `latency_ms`, `page_path`, plus the judge's facts about the turn (see below) | `src/endpoints/ask.ts` |
 | `ask_rated` | `rating`, `reason`, `outcome`, `source_count` | `src/endpoints/ask.ts` (`captureAskFeedback`) |
 | `ask_handoff_clicked` | `rating`, `reason`, `outcome`, `source_count` | `src/endpoints/ask.ts` (`captureAskFeedback`) |
-| `cta_clicked` | `location` (`header`, `closing`, `cta_block`, `faq`), `label`, `href`, `page_path` | client: `src/utilities/analyticsClient.ts` via `src/components/CtaClick` and the takeover menu |
+| `cta_clicked` | `location` (`header`, `closing`, `cta_block`, `faq`, `download`, `download_rail`), `label`, `href`, `page_path` | client: `src/utilities/analyticsClient.ts` via `src/components/CtaClick` and the takeover menu |
 | `page_not_found` | `page_path`, `referrer` | client: `src/components/NotFoundBeacon` on the 404 page |
 
 Verify against code with `grep -rn "captureServerEvent(\|captureClientEvent(" src` before relying on this table.
