@@ -432,6 +432,7 @@ export interface Post {
    * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
    */
   showContents?: boolean | null;
+  primaryResource?: PrimaryResource;
   content: {
     root: {
       type: string;
@@ -6571,6 +6572,62 @@ export interface PageClosing {
   mediaOverride?: (number | null) | Media;
 }
 /**
+ * The one file this insight offers. Pinned in the side rail on wide screens; at the end of the article on phones and tablets. For more files, add Download blocks in the article.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PrimaryResource".
+ */
+export interface PrimaryResource {
+  /**
+   * The file to download. Only public-approved resources are listed.
+   */
+  resource?: (number | null) | Resource;
+  /**
+   * Leave empty to use the resource's title.
+   */
+  heading?: string | null;
+  /**
+   * Leave empty to use the resource's description.
+   */
+  description?: string | null;
+  /**
+   * Leave empty for "Download" and the file type, e.g. "Download PDF".
+   */
+  buttonLabel?: string | null;
+}
+/**
+ * Downloadable files of any type, offered on insights and lab pages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resources".
+ */
+export interface Resource {
+  id: number;
+  /**
+   * What the reader gets, e.g. "Layered design workbook". The download block shows it unless the block sets its own heading.
+   */
+  title: string;
+  /**
+   * One or two sentences on what is inside. The download block shows it unless the block sets its own.
+   */
+  description?: string | null;
+  /**
+   * Visitors only see public-approved resources.
+   */
+  usageStatus: 'internal' | 'client-review' | 'public-approved';
+  prefix?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "PageSectionBlock".
  */
@@ -8612,38 +8669,6 @@ export interface ResourceDownloadBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'resourceDownload';
-}
-/**
- * Downloadable files of any type, offered on insights and lab pages.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "resources".
- */
-export interface Resource {
-  id: number;
-  /**
-   * What the reader gets, e.g. "Layered design workbook". The download block shows it unless the block sets its own heading.
-   */
-  title: string;
-  /**
-   * One or two sentences on what is inside. The download block shows it unless the block sets its own.
-   */
-  description?: string | null;
-  /**
-   * Visitors only see public-approved resources.
-   */
-  usageStatus: 'internal' | 'client-review' | 'public-approved';
-  prefix?: string | null;
-  _objectKey?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -11074,6 +11099,7 @@ export interface PostsSelect<T extends boolean = true> {
   shader?: T | PlacedVisualConfigSelect<T>;
   standfirst?: T;
   showContents?: T;
+  primaryResource?: T | PrimaryResourceSelect<T>;
   content?: T;
   layout?:
     | T
@@ -11132,6 +11158,16 @@ export interface PostsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PrimaryResource_select".
+ */
+export interface PrimaryResourceSelect<T extends boolean = true> {
+  resource?: T;
+  heading?: T;
+  description?: T;
+  buttonLabel?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -46,6 +46,14 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"height" numeric
   );
   
+  ALTER TABLE "posts" ADD COLUMN "primary_resource_resource_id" integer;
+  ALTER TABLE "posts" ADD COLUMN "primary_resource_heading" varchar;
+  ALTER TABLE "posts" ADD COLUMN "primary_resource_description" varchar;
+  ALTER TABLE "posts" ADD COLUMN "primary_resource_button_label" varchar;
+  ALTER TABLE "_posts_v" ADD COLUMN "version_primary_resource_resource_id" integer;
+  ALTER TABLE "_posts_v" ADD COLUMN "version_primary_resource_heading" varchar;
+  ALTER TABLE "_posts_v" ADD COLUMN "version_primary_resource_description" varchar;
+  ALTER TABLE "_posts_v" ADD COLUMN "version_primary_resource_button_label" varchar;
   ALTER TABLE "payload_mcp_api_keys" ADD COLUMN "resources_find" boolean DEFAULT false;
   ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "resources_id" integer;
   ALTER TABLE "lab_pages_download" ADD CONSTRAINT "lab_pages_download_resource_id_resources_id_fk" FOREIGN KEY ("resource_id") REFERENCES "public"."resources"("id") ON DELETE set null ON UPDATE no action;
@@ -63,7 +71,11 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "resources_updated_at_idx" ON "resources" USING btree ("updated_at");
   CREATE INDEX "resources_created_at_idx" ON "resources" USING btree ("created_at");
   CREATE UNIQUE INDEX "resources_filename_idx" ON "resources" USING btree ("filename");
+  ALTER TABLE "posts" ADD CONSTRAINT "posts_primary_resource_resource_id_resources_id_fk" FOREIGN KEY ("primary_resource_resource_id") REFERENCES "public"."resources"("id") ON DELETE set null ON UPDATE no action;
+  ALTER TABLE "_posts_v" ADD CONSTRAINT "_posts_v_version_primary_resource_resource_id_resources_id_fk" FOREIGN KEY ("version_primary_resource_resource_id") REFERENCES "public"."resources"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_resources_fk" FOREIGN KEY ("resources_id") REFERENCES "public"."resources"("id") ON DELETE cascade ON UPDATE no action;
+  CREATE INDEX "posts_primary_resource_primary_resource_resource_idx" ON "posts" USING btree ("primary_resource_resource_id");
+  CREATE INDEX "_posts_v_version_primary_resource_version_primary_resour_idx" ON "_posts_v" USING btree ("version_primary_resource_resource_id");
   CREATE INDEX "payload_locked_documents_rels_resources_id_idx" ON "payload_locked_documents_rels" USING btree ("resources_id");`)
 }
 
@@ -75,9 +87,23 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TABLE "lab_pages_download" CASCADE;
   DROP TABLE "__lab_pages_v_download_v" CASCADE;
   DROP TABLE "resources" CASCADE;
+  ALTER TABLE "posts" DROP CONSTRAINT "posts_primary_resource_resource_id_resources_id_fk";
+  
+  ALTER TABLE "_posts_v" DROP CONSTRAINT "_posts_v_version_primary_resource_resource_id_resources_id_fk";
+  
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_resources_fk";
   
+  DROP INDEX "posts_primary_resource_primary_resource_resource_idx";
+  DROP INDEX "_posts_v_version_primary_resource_version_primary_resour_idx";
   DROP INDEX "payload_locked_documents_rels_resources_id_idx";
+  ALTER TABLE "posts" DROP COLUMN "primary_resource_resource_id";
+  ALTER TABLE "posts" DROP COLUMN "primary_resource_heading";
+  ALTER TABLE "posts" DROP COLUMN "primary_resource_description";
+  ALTER TABLE "posts" DROP COLUMN "primary_resource_button_label";
+  ALTER TABLE "_posts_v" DROP COLUMN "version_primary_resource_resource_id";
+  ALTER TABLE "_posts_v" DROP COLUMN "version_primary_resource_heading";
+  ALTER TABLE "_posts_v" DROP COLUMN "version_primary_resource_description";
+  ALTER TABLE "_posts_v" DROP COLUMN "version_primary_resource_button_label";
   ALTER TABLE "payload_mcp_api_keys" DROP COLUMN "resources_find";
   ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "resources_id";
   DROP TYPE "public"."enum_resources_usage_status";`)

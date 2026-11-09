@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { cache } from 'react'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
+import { ResourceDownload, ResourceDownloadRail } from '@/blocks/resource-download/Component'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import RichText from '@/components/RichText'
@@ -83,10 +84,17 @@ export default async function Post({ params: paramsPromise }: Args) {
               <aside className="hidden lg:block">
                 <div className="sticky top-(--header-height) border-t border-foreground py-3">
                   <p className="font-mono text-xs leading-normal">{post.title}</p>
+                  {post.primaryResource ? (
+                    <ResourceDownloadRail className="mt-12" {...post.primaryResource} />
+                  ) : null}
                 </div>
               </aside>
               <div className="max-w-(--max-width-content-narrow) border-t border-foreground py-3">
                 <RichText className="mx-0" data={post.content} enableGutter={false} />
+                {/* Below lg there is no rail: the primary resource closes the article. */}
+                {post.primaryResource ? (
+                  <ResourceDownload className="mt-12 lg:hidden" {...post.primaryResource} />
+                ) : null}
               </div>
             </div>
           </div>

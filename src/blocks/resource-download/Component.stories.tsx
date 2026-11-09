@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { resourceFixture } from '@/blocks/fixtures'
-import { ResourceDownload } from './Component'
+import { ResourceDownload, ResourceDownloadRail } from './Component'
 import { ResourceDownloadSection } from './Section'
 
 const meta = {
@@ -70,4 +70,34 @@ export const NoDescription: Story = {
 export const OnTheGrid: Story = {
   parameters: { layout: 'fullscreen' },
   render: (args) => <ResourceDownloadSection {...args} />,
+}
+
+/**
+ * The post's side rail as the page sets it (`posts/[slug]/page.tsx`): the
+ * post title under its full-ink rule, then the post's Primary resource a step
+ * below. The rail column is about 280px at a 1280px viewport.
+ */
+export const InTheRail: Story = {
+  render: (args) => (
+    <aside className="w-70 border-t border-foreground py-3">
+      <p className="font-mono text-xs leading-normal">Designing in layers: the token stack</p>
+      <ResourceDownloadRail className="mt-12" {...args} />
+    </aside>
+  ),
+}
+
+/** A primary resource with no description: the rail closes on the title. */
+export const InTheRailNoDescription: Story = {
+  ...InTheRail,
+  args: {
+    resource: {
+      ...resourceFixture,
+      description: null,
+      filename: 'carbon-signal-tokens.zip',
+      filesize: 38_400_000,
+      mimeType: 'application/zip',
+      title: 'Carbon Signal token files',
+      url: 'https://media.suits-sandals.com/resources/carbon-signal-tokens.zip',
+    },
+  },
 }

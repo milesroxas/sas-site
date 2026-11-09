@@ -25,7 +25,7 @@ import { Carousel } from '../../blocks/Carousel/config'
 import { Code } from '../../blocks/Code/config'
 import { FeatureStatementLinks } from '../../blocks/feature/StatementLinks/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
-import { ResourceDownload } from '../../blocks/resource-download/config'
+import { primaryResourceField, ResourceDownload } from '../../blocks/resource-download/config'
 import { YouTube } from '../../blocks/youtube/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
@@ -104,6 +104,7 @@ export const Posts: CollectionConfig<'posts'> = {
               },
             },
             contentsButtonField(),
+            primaryResourceField,
             {
               name: 'content',
               type: 'richText',

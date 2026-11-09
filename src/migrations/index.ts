@@ -119,7 +119,7 @@ import * as migration_20261001_162006_home_hero_featured_page from './20261001_1
 import * as migration_20261001_183459_band_theme_roles from './20261001_183459_band_theme_roles';
 import * as migration_20261001_211315_shorten_long_identifiers from './20261001_211315_shorten_long_identifiers';
 import * as migration_20261020_142403_expertise_audience_index from './20261020_142403_expertise_audience_index';
-import * as migration_20261109_175018_resources_download_block from './20261109_175018_resources_download_block';
+import * as migration_20261109_183134_resources_download_block from './20261109_183134_resources_download_block';
 
 export const migrations = [
   {
@@ -728,8 +728,8 @@ export const migrations = [
     name: '20261020_142403_expertise_audience_index',
   },
   {
-    up: migration_20261109_175018_resources_download_block.up,
-    down: migration_20261109_175018_resources_download_block.down,
-    name: '20261109_175018_resources_download_block'
+    up: migration_20261109_183134_resources_download_block.up,
+    down: migration_20261109_183134_resources_download_block.down,
+    name: '20261109_183134_resources_download_block'
   },
 ];
