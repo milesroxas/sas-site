@@ -81,7 +81,10 @@ check_range() {
 
   local changed added
   changed="$(git diff --name-only "$base" "$local_sha" 2>/dev/null || true)"
-  added="$(git diff --diff-filter=A --name-only "$base" "$local_sha" 2>/dev/null || true)"
+  # --no-renames: a migration regenerated under a new timestamp (delete the old
+  # .ts + .json, migrate:create again) is close enough to the old one that git
+  # pairs them as a rename, and a rename is not an add. It is a new migration.
+  added="$(git diff --no-renames --diff-filter=A --name-only "$base" "$local_sha" 2>/dev/null || true)"
 
   [[ -z "$changed" ]] && return 0
 
