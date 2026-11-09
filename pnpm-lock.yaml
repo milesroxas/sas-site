@@ -35,6 +35,9 @@ importers:
       '@ai-sdk/react':
         specifier: ^4.0.23
         version: 4.0.23(react@19.2.7)(zod@4.6.5)
+      '@aws-sdk/client-s3':
+        specifier: 3.1091.0
+        version: 3.1091.0
       '@c15t/nextjs':
         specifier: ^2.2.1
         version: 2.2.1(@types/react@19.2.17)(immer@11.1.18)(next@16.3.8(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.0.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sass@1.77.4))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3)(use-sync-external-store@1.6.0(react@19.2.7))

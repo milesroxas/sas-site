@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
+import { ResourceDownloadSection } from '@/blocks/resource-download/Section'
 import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
 import { SectionBand } from '@/blocks/section/SectionBand'
 import { renderContentBlock, sectionChildComponents } from '@/blocks/shared/content-block-renderer'
@@ -31,13 +32,14 @@ import { StorySection as StorySectionLayout } from './StorySection'
 
 /**
  * The shared run's components plus Statement grid, the one story-capable
- * block Lab offers outside the run, and Story beats, the Text block only a
- * story surface offers at all. Every entry renders exactly as it does on
+ * block Lab offers outside the run, Story beats, the Text block only a
+ * story surface offers at all, and Download. Every entry renders exactly as it does on
  * Pages once its copy is resolved against the Lab Project.
  */
 const labContentComponents = {
   ...sectionChildComponents,
   featureStatementGrid: FeatureStatementGridBlock,
+  resourceDownload: ResourceDownloadSection,
   storyBeats: StoryBeatsBlock,
 }
 

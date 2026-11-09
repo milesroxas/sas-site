@@ -13,6 +13,7 @@ import type {
   LabProject,
   Media,
   Post,
+  Resource,
   RichTextActionsBlock,
   Testimonial,
   WorkPage,
@@ -235,6 +236,25 @@ export const insightMarkFixtures = {
     '<path d="M3.5 11.5V3.5H11.5" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M24.5 16.5V24.5H16.5" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M8 20L20 8" stroke="currentColor" stroke-width="1.25"/><path d="M14 8H20V14" fill="none" stroke="currentColor" stroke-width="1.25"/>',
   ),
 } as const satisfies Record<string, Media>
+
+/**
+ * A downloadable resource for the Download block. The URL is a stand-in under
+ * the real `resources/` prefix; stories render the card, they never fetch it.
+ */
+export const resourceFixture: Resource = {
+  id: 1,
+  title: 'Layered design workbook',
+  description:
+    'Twenty-four pages of exercises for building a token system in layers, with the worksheets we use in client workshops.',
+  usageStatus: 'public-approved',
+  prefix: 'resources',
+  url: 'https://media.suits-sandals.com/resources/layered-design-workbook.pdf',
+  filename: 'layered-design-workbook.pdf',
+  mimeType: 'application/pdf',
+  filesize: 2_418_000,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+}
 
 /** Hero image backgrounds — same placeholder still as `mediaFixture`, no caption. */
 export const heroImageFixture: Media = {

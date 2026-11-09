@@ -147,6 +147,15 @@ const collections: MCPPluginConfig['collections'] = Object.fromEntries([
     },
     READ_ONLY,
   ),
+  // Same reason: a resource is a binary upload. Agents pick one by id for a
+  // Download block; the file itself is uploaded in the admin.
+  ...entries(
+    {
+      resources:
+        'Downloadable files (any type) that a Download block (`resourceDownload`) offers by id. Read-only over MCP: only `public-approved` items render publicly. New files are uploaded in the admin',
+    },
+    READ_ONLY,
+  ),
   ...entries(
     {
       'ask-questions': `Every turn in the site Ask box (redacted question and answer, sources with similarity, outcome, rating, handoff; no visitor ids; deleted after ${ASK_QUESTION_RETENTION_DAYS} days). \`outcome: no_sources\` marks questions the site had no content for. Read-only`,

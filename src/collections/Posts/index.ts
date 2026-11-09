@@ -25,6 +25,7 @@ import { Carousel } from '../../blocks/Carousel/config'
 import { Code } from '../../blocks/Code/config'
 import { FeatureStatementLinks } from '../../blocks/feature/StatementLinks/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { ResourceDownload } from '../../blocks/resource-download/config'
 import { YouTube } from '../../blocks/youtube/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
@@ -114,7 +115,15 @@ export const Posts: CollectionConfig<'posts'> = {
                     UnorderedListFeature(),
                     OrderedListFeature(),
                     BlocksFeature({
-                      blocks: [Banner, Carousel, Code, FeatureStatementLinks, MediaBlock, YouTube],
+                      blocks: [
+                        Banner,
+                        Carousel,
+                        Code,
+                        FeatureStatementLinks,
+                        MediaBlock,
+                        ResourceDownload,
+                        YouTube,
+                      ],
                     }),
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),
