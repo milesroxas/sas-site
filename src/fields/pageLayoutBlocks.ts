@@ -61,7 +61,7 @@ export const pageLayoutBlocks: Block[] = [
 /**
  * Posts compose optional full-width sections after the article body, so they
  * get the same Section-nestable run as Pages plus the curated work list. The
- * article itself stays in the Content tab.
+ * article itself stays in the Article tab.
  */
 export const postLayoutBlocks: Block[] = [
   // Structure

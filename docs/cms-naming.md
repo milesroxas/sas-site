@@ -35,6 +35,7 @@ Standard tab set for website page collections (in order; omit tabs a collection 
 - **Composition** — the `layout` blocks field. Website composition only; canonical narrative stays in the hub.
 - **Closing** — the full-screen band above the footer bar. Inherits the Footer global; the page may hide it or override fields. Never copy Footer content onto the page.
 - Content Hub collections name tabs by content role instead. Case Studies use `Overview`, `Narrative`, `Objectives & Decisions`, `Evidence`, and `Asset Libraries`; don't force the website tab set onto hub collections.
+- Posts carry their article as a rich text body, so `Article` sits between Opening and Composition: `Opening` → `Article` → `Composition` → `Assets` → `Related Posts` → `Closing` → `SEO`.
 - Contact Pages are a fixed template, not a composition: `Intro` → `Form` → `After sending` → `SEO`. Do not force Opening / Composition onto them.
 - Tabs are label-only unless they have a `name` — keep them unnamed so labels can change freely without schema impact.
 
@@ -84,7 +85,7 @@ Applied across the CMS:
 - [x] `WorkPages` — Opening / Composition tabs; hero collapsibles + overrides toggle; `label: 'Composition'` on the `layout` field.
 - [x] `LabPages` — `Presentation` split into Opening / Composition / Assets; hero collapsibles + overrides toggle.
 - [x] `Pages`, `Home`, `ExpertisePages`, `AudiencePages` — `Hero` → `Opening`, `Content` → `Composition` (+ field label). `Positioning` kept (content-role name).
-- [x] `Posts` — `Meta` tab relabeled `Related & Categories` (collided with the SEO tab's `meta` name). `Content` tab kept — it holds the actual post body, not a composition.
+- [x] `Posts` (2026-11-09): Opening (standfirst and hero media in `Content` / `Media` collapsibles, like the Lab and Work hero) → Article (the post body, with the Contents button beside the headings it lists) → Composition → Assets (Primary resource) → Related Posts → Closing → SEO. The body tab is `Article`, not `Content`, so it never shares a word with the Opening collapsible. Posts keep their top-level fields (no `hero` group), so the regroup moved no data.
 - [x] Content Hub collections (`CaseStudies`, `LabProjects`) — tabs are organized by editorial role; Case Study narrative and structured records are separated.
 
 Still open (schema decisions, not label drift — decide before removing):

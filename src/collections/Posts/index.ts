@@ -80,31 +80,49 @@ export const Posts: CollectionConfig<'posts'> = {
       type: 'tabs',
       tabs: [
         {
+          label: 'Opening',
+          description: 'The post hero: the standfirst under the title, and the media beside them.',
           fields: [
-            ...heroVisualSlotFields(
-              {
-                name: 'heroImage',
-                type: 'upload',
-                relationTo: 'media',
-                admin: {
-                  description: 'Square crop beside the title in the post hero.',
-                },
-              },
-              {
-                visualTypeDescription:
-                  'Leave empty for the picture alone: the hero image, then the SEO image. An effect grounds the whole opening band behind the copy; the square crop still shows in its own frame.',
-              },
-            ),
             {
-              name: 'standfirst',
-              type: 'textarea',
-              admin: {
-                description:
-                  'Editorial sentence under the title in the hero. Distinct from the SEO description — this one is written to be read.',
-              },
+              type: 'collapsible',
+              label: 'Content',
+              fields: [
+                {
+                  name: 'standfirst',
+                  type: 'textarea',
+                  admin: {
+                    description:
+                      'Editorial sentence under the title in the hero. Distinct from the SEO description: this one is written to be read.',
+                  },
+                },
+              ],
             },
+            {
+              type: 'collapsible',
+              label: 'Media',
+              fields: [
+                ...heroVisualSlotFields(
+                  {
+                    name: 'heroImage',
+                    type: 'upload',
+                    relationTo: 'media',
+                    admin: {
+                      description: 'Square crop beside the title in the post hero.',
+                    },
+                  },
+                  {
+                    visualTypeDescription:
+                      'Leave empty for the picture alone: the hero image, then the SEO image. An effect grounds the whole opening band behind the copy; the square crop still shows in its own frame.',
+                  },
+                ),
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Article',
+          fields: [
             contentsButtonField(),
-            primaryResourceField,
             {
               name: 'content',
               type: 'richText',
@@ -136,9 +154,9 @@ export const Posts: CollectionConfig<'posts'> = {
               required: true,
             },
           ],
-          label: 'Content',
         },
         {
+          label: 'Composition',
           fields: [
             {
               name: 'layout',
@@ -149,11 +167,14 @@ export const Posts: CollectionConfig<'posts'> = {
               admin: {
                 initCollapsed: true,
                 description:
-                  'Optional full-width sections rendered after the article body. The article itself stays in the Content tab.',
+                  'Optional full-width sections rendered after the article body. The article itself stays in the Article tab.',
               },
             },
           ],
-          label: 'Composition',
+        },
+        {
+          label: 'Assets',
+          fields: [primaryResourceField],
         },
         {
           label: 'Related Posts',

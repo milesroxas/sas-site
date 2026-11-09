@@ -59,7 +59,7 @@ export const relatedPagesField = (
 
 /**
  * Opt-in for the floating Contents button on a long-form page. It sits in the
- * tab that holds the headings it indexes (Composition, or a post's Content),
+ * tab that holds the headings it indexes (Composition, or a post's Article),
  * so the switch is next to what it lists. Off by default: the button is for
  * pages long enough to need it, and the editor is the judge of that.
  */
