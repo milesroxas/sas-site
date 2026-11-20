@@ -1,6 +1,5 @@
 import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
-import { layoutListsWork } from '@/blocks/poster-list/lists-work'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { getRelatedWorkByCapabilities, getRelatedWorkByIds } from '@/collections/WorkPages/queries'
 import { JsonLd } from '@/components/JsonLd'
@@ -33,8 +32,7 @@ export default async function ExpertisePageRoute({ params }: SlugRouteArgs) {
   const url = `/expertise/${decodedSlug}`
   const page = await queryExpertisePageBySlug(decodedSlug)
   if (!page) notFound()
-  // A Poster list in the layout that lists work replaces the automatic grid.
-  const relatedWork = layoutListsWork(page.layout) ? [] : await resolveRelatedWork(page)
+  const relatedWork = await resolveRelatedWork(page)
   const faqSchema = faqPageSchema(page.layout)
   return (
     <>
