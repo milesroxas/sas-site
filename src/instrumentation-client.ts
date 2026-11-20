@@ -28,6 +28,17 @@ Sentry.init({
   ],
 
   enableLogs: true,
+
+  ignoreErrors: [
+    // A view transition skipped because the tab went to the background. React
+    // treats this as no error and commits the update without animating, but it
+    // drops only Chrome's bare "Transition was aborted because of invalid state"
+    // by exact match. Chrome 157 appends the reason, so React hands the error to
+    // Next's onRecoverableError, which reports it. Matched by substring, the
+    // filter keeps other abort reasons (a duplicate view-transition-name, say)
+    // reaching Sentry.
+    'Transition was aborted because of invalid state. Document hidden',
+  ],
 })
 
 // Vercel BotID: signs the public form writes so their handlers can tell a
