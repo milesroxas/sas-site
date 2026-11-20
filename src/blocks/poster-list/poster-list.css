@@ -1,0 +1,317 @@
+/*
+ * Poster list: the poster's layered surface and its reveal states. Layout,
+ * spacing and type live in the component's Tailwind; this file holds what
+ * utilities state badly: the stacked frost and veil, the `--poster-on` reveal
+ * switch every layer reads, and the rail-wide dimming.
+ */
+
+.poster {
+  /* Read the raw palette variables, not the `--color-*` aliases: those are
+     frozen at the root, while a band (`band-inverted`, `data-band`) repaints
+     the raw set. Edge and shadow flip with the band's own `color-scheme`. */
+  /* Image edge: pure black or white at 10%, never a tinted neutral. */
+  --poster-edge: light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1));
+  /* Light: a ring plus two soft layers. Dark: the ring alone (shadows vanish
+     on a dark ground). */
+  --poster-shadow:
+    0 0 0 1px light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.09)),
+    0 2px 6px light-dark(rgb(0 0 0 / 0.06), transparent),
+    0 18px 36px -14px light-dark(rgb(0 0 0 / 0.22), transparent);
+  /* Returning to rest (the pointer has left the rail): slow and soft, the
+     whole row easing back up together. A transition plays the timing of the
+     state being entered, so each state below names its own. */
+  transition: opacity 700ms ease-in-out;
+}
+
+/* What reveals a poster: a fine pointer's hover, keyboard focus, or on touch
+   the first poster fully in view. `--poster-on` is 0 or 1. */
+.poster[data-active],
+.poster:has(.poster-hit:focus-visible) {
+  --poster-on: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  /* The slide (the poster plus the gap before it) is the hover target, the
+     same box the tilt listens on, so moving from one poster to the next never
+     crosses a dead zone that would un-dim the whole rail. */
+  [data-slot="carousel-item"]:hover > .poster {
+    --poster-on: 1;
+    /* Coming forward: quick, so the poster under the pointer answers at once. */
+    transition: opacity 220ms ease;
+  }
+  /* While one poster is in hand, the rest step back. */
+  .poster-rail:has([data-slot="carousel-item"]:hover) [data-slot="carousel-item"]:not(:hover)
+    > .poster {
+    opacity: 0.4;
+    /* Stepping back: slower and gentler, after a short wait so a pointer
+       that only passes across the rail does not blink the whole list. */
+    transition: opacity 450ms ease 90ms;
+  }
+}
+.poster-rail:has(.poster-hit:focus-visible) .poster:not(:has(.poster-hit:focus-visible)) {
+  opacity: 0.4;
+  transition: opacity 450ms ease 90ms;
+}
+
+.poster-hit {
+  display: block;
+  color: inherit;
+  outline: none;
+  -webkit-user-drag: none;
+}
+.poster-hit:focus-visible .poster-frame {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.poster-tilt {
+  position: relative;
+  will-change: transform;
+  transition: scale 360ms var(--ease-out-quint);
+}
+.poster-rail[data-grabbing] .poster-tilt {
+  scale: 0.97;
+}
+
+.poster-frame {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--muted);
+  box-shadow: var(--poster-shadow);
+  isolation: isolate;
+}
+/* The 1px image edge sits on the frame, not the picture, so it stays on the
+   rounded corners while the picture drifts underneath. */
+.poster-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--poster-edge);
+  pointer-events: none;
+}
+.poster-media {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+/* A poster without a picture: its title stands in, inset past the
+   parallax headroom (the media layer is overscaled and shifts sideways), so
+   no letter is ever cropped. */
+.poster-fallback {
+  padding: 18% 20%;
+}
+.poster-media img {
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.poster-frost {
+  position: absolute;
+  inset: 0;
+  opacity: var(--poster-on, 0);
+  /* Leaving: as quick as the veil's own exit. */
+  transition: opacity 200ms var(--ease-out-quint);
+}
+
+.poster-veil {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 62%;
+  pointer-events: none;
+  color: oklch(1 0 0);
+  opacity: var(--poster-on, 0);
+  translate: 0 calc((1 - var(--poster-on, 0)) * 22%);
+  transition:
+    opacity 200ms var(--ease-out-quint),
+    translate 220ms var(--ease-out-quint);
+}
+/* Entering waits a moment of dwell, so a pointer passing across the rail
+   does not fire every reveal on the way; then it springs up and lingers.
+   Leaving is immediate (the base rules carry no delay). */
+:is(
+    [data-slot="carousel-item"]:hover > .poster,
+    .poster[data-active],
+    .poster:has(.poster-hit:focus-visible)
+  )
+  .poster-veil {
+  transition:
+    opacity 260ms var(--ease-out-quint) 120ms,
+    translate 500ms var(--ease-spring) 120ms;
+}
+:is(
+    [data-slot="carousel-item"]:hover > .poster,
+    .poster[data-active],
+    .poster:has(.poster-hit:focus-visible)
+  )
+  .poster-frost {
+  transition: opacity 260ms var(--ease-out-quint) 120ms;
+}
+.poster-scrim {
+  position: absolute;
+  inset: 0;
+}
+.poster-veil-text {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+.poster-desc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: oklch(1 0 0 / 0.92);
+  text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.poster-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--poster-sheen-x, 50%) var(--poster-sheen-y, 50%),
+    rgb(255 255 255 / 0.28),
+    transparent 55%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-slot="carousel-item"]:hover .poster-sheen {
+    opacity: 1;
+  }
+}
+
+/* ── Single row: the rail runs under a shelf that holds the copy ──
+   From `md` the row is three layers in one grid cell: the rail at the bottom
+   across the full width, the shelf over the rail's start, the copy on top.
+   The shelf (PosterShelf.tsx) is the page colour under the copy, then a
+   progressive blur that clears exactly where a resting poster starts
+   (`--poster-rail-start`). Posters that slide left go soft by degrees and
+   dissolve into the page (and recede a little, see `.poster-depth`) instead
+   of being cut against the copy.
+   Geometry is the block grid's own: the copy spans 3 of 8 columns at `md`,
+   2 from `lg`; `cqw` reads the `container-bleed` box. */
+.poster-row {
+  --poster-col: calc((100cqw - 2 * var(--container-inset) - 7 * var(--spacing-grid)) / 8);
+  --poster-copy: calc(3 * var(--poster-col) + 2 * var(--spacing-grid));
+  --poster-rail-start: calc(var(--container-inset) + var(--poster-copy) + var(--spacing-grid));
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+.poster-shelf {
+  display: none;
+}
+@media (min-width: 48rem) {
+  .poster-row {
+    position: relative;
+    display: grid;
+    gap: 0;
+  }
+  .poster-row-copy,
+  .poster-row-rail {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .poster-row-rail {
+    z-index: 0;
+  }
+  .poster-row-copy {
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .poster-copy {
+    pointer-events: auto;
+    /* Keeps the copy clear of the shelf's fade (`POSTER_SHELF.fade` is this
+       margin plus the grid gap). */
+    padding-right: 4rem;
+  }
+  .poster-shelf {
+    display: block;
+    position: absolute;
+    /* Past the rail's own room, so a tilted poster's shadow goes under too. */
+    inset-block: -3rem;
+    left: 0;
+    z-index: 1;
+    width: var(--poster-rail-start);
+    /* What is under the shelf is out of play. */
+    pointer-events: auto;
+  }
+  /* Blur layers and the tint, each filling the shelf (PosterShelf.tsx). */
+  .poster-shelf > i {
+    position: absolute;
+    inset: 0;
+  }
+}
+@media (min-width: 64rem) {
+  .poster-row {
+    --poster-copy: calc(2 * var(--poster-col) + var(--spacing-grid));
+  }
+}
+
+/* A poster passing under the shelf (or off the rail's start edge) hinges
+   away on its trailing edge and darkens; the loop writes `--poster-depth`
+   (0 to 1) and the transform. */
+.poster-depth {
+  transform-origin: right center;
+  will-change: transform;
+}
+.poster-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: rgb(0 0 0);
+  opacity: calc(var(--poster-depth, 0) * 0.25);
+  pointer-events: none;
+}
+.poster-caption {
+  opacity: calc(1 - var(--poster-depth, 0));
+}
+
+/* Title under the poster: plain text in the band's ink. */
+.poster-caption {
+  margin-top: 0.875rem;
+  text-wrap: balance;
+}
+.poster-label {
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+/* Client, then industry, on one line under the title. */
+.poster-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin-top: 0.625rem;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.poster-facts-sep {
+  margin-inline: 0.5em;
+}
+
+/* Reduced motion: reveals fade, nothing travels or presses. */
+@media (prefers-reduced-motion: reduce) {
+  .poster-veil {
+    translate: none;
+  }
+  .poster-rail[data-grabbing] .poster-tilt {
+    scale: none;
+  }
+}

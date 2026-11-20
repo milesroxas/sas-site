@@ -81,8 +81,19 @@ New `BLOCK_GROUPS` entries: `sectionHeading: 'Section heading'`, `mediaContent: 
 | `carousel` | Interactive / Carousel | 2026-09-03 (B3) | Moved from the legacy top-level lists into the run; keeps its bespoke embla layout and its existing tables (`*_blocks_carousel`), only Posts gains it as new |
 | NEW `insightList` | Lists / Insight list | 2026-09-04 (B4) | Numbered run of SVG-marked statements beside or above a heading, from the Paper frames "featureStatementGrid v2 proposal"; per-parent `*_insight_list` + `*_insight_list_items` tables |
 | `featureTabs` | Interactive / Tabs | 2026-09-04 (B5) | Moved from the legacy top-level Interactive list (label was "Feature: tabs"); keeps its default per-parent `*_blocks_feature_tabs` tables (+ `_tabs`, `_tabs_items`), only Posts and Lab gain it as new. Work nests the story-beat variant (`WorkFeatureTabsBlock`) since each tab pulls story copy |
+| NEW `posterList` | Lists / Poster list | 2026-11-20 | Heading cluster plus a draggable rail of 4:5 posters, title under it, description frosted in on hover; per-parent `*_poster_list` + `*_poster_list_items` tables (+ `work_pages` in `_rels`). Decision below |
 
 Interactive is the first legacy group to enter the run. Tabs followed in B5 (it only needed `bare` and the grid). The remaining Interactive blocks (audience and industry shells, marquee) stay top-level-only because they own pinned or full-viewport shells (D4). Lists followed in B4 with Insight list; the legacy Lists blocks (Archive, Featured work, the case-study and lab lists) stay top-level-only for now and share the group tab, which Payload assembles by label regardless of array position.
+
+#### Poster list: decided 2026-11-20
+
+Chosen from three directions prototyped on a throwaway `/demo/list-block` route (deleted once this shipped):
+
+- **Direction: Drift.** Posters behave like objects on a rail: each picture shifts inside its frame as it crosses the rail (7% travel, 1.18 overscale so the picture never uncovers the rounded corners), the row leans into a throw (5° per px/ms, capped at 9°), the poster under a mouse tilts toward it (7°) with a soft sheen, grabbing presses the posters to 0.97. Tilt and lean follow on a damped loop (110 / 140 ms). Values live once in `POSTER_DRIFT` (`poster-list/PosterList.client.tsx`).
+- **Hover:** the other posters dim to 0.4 and desaturate; the hovered poster's bottom frosts and darkens under its description. The frost is blurred copies of the picture masked in progressively, not `backdrop-filter`: Chromium drops the masks on backdrop filters under the poster's 3D tilt and shows a hard edge.
+- **Rail:** the PostRail pattern (Embla free drag for a mouse, native scroller on touch, `data-lenis-prevent-horizontal`). The rail keeps 3rem of room inside its clip so a tilted poster and its shadow are never cut.
+- **Entrance:** the shared under-media reveal; the wipe target is the rail's own wrapper. A tilted poster inside the single-row layout's size container is reported as not intersecting by Chromium, so a poster can never be a reveal gate.
+- **Rejected:** *Gallery* (matted prints, a veil that wipes up): calm, but the least memorable for a section meant to show off work. *Spotlight* (one poster always the subject, snapping rail with arrows and a counter): the most chrome, and its permanent dimming hid the rest of the list. An earlier pinned conveyor (items lifting out of a fixed slot as the page scrolled) was dropped for the poster rail.
 
 ### Standard select vocabulary
 

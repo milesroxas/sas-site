@@ -25,6 +25,9 @@ export const blockRevealVariants = {
   imagePair: 'underMedia',
   insightList: 'intro',
   mediaContentSplit: 'underMedia',
+  // Copy drops in, the rail wipes open. The wipe target is the rail's own
+  // wrapper, never a poster: posters carry 3D transforms.
+  posterList: 'underMedia',
   richText: 'intro',
   richTransition: 'intro',
   splitImageOffset: 'underMedia',

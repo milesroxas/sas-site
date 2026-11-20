@@ -14,6 +14,7 @@ import { ImagePairBlock } from '@/blocks/image-pair/Component'
 import { InsightListBlock } from '@/blocks/insight-list/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { MediaContentSplitBlock } from '@/blocks/media-content-split/Component'
+import { PosterListBlock } from '@/blocks/poster-list/Component'
 import { RichTextBlock } from '@/blocks/rich-text/Component'
 import { RichTransitionBlock } from '@/blocks/rich-transition/Component'
 import { SplitContentNarrowBlock } from '@/blocks/split-content/Component'
@@ -48,6 +49,7 @@ export const sectionChildComponents = {
   insightList: InsightListBlock,
   mediaBlock: MediaBlock,
   mediaContentSplit: MediaContentSplitBlock,
+  posterList: PosterListBlock,
   richText: RichTextBlock,
   richTransition: RichTransitionBlock,
   splitContentNarrow: SplitContentNarrowBlock,
