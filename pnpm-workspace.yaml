@@ -17,7 +17,7 @@ allowBuilds:
 # Single source of truth for versions that package.json and the overrides
 # below both need, referenced via the catalog: protocol.
 catalog:
-  '@sentry/nextjs': ^10.65.0
+  '@sentry/nextjs': ^10.78.0
   # Exact pin: native libvips binary; follow the Payload template's pin.
   sharp: 0.35.5
 
