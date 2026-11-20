@@ -37,7 +37,8 @@ export async function findWorkPagesById(
 }
 
 /**
- * Most recently published work pages, excluding `excludeId`. Same draft /
+ * Most recently published work pages, excluding `excludeId` when given (a
+ * work page's own closer leaves itself out). Same draft /
  * access rules as `findWorkPagesById`, so a preview never leaks unpublished
  * work onto a public closer, and a draft preview can still show drafts.
  */
@@ -45,7 +46,7 @@ export async function findRecentWorkPages({
   excludeId,
   limit = FEATURED_CLOSER_FALLBACK_LIMIT,
 }: {
-  excludeId: number | string
+  excludeId?: number | string
   limit?: number
 }): Promise<WorkPage[]> {
   const { isEnabled: draft } = await draftMode()
@@ -60,7 +61,7 @@ export async function findRecentWorkPages({
     sort: '-publishedAt',
     where: {
       and: [
-        { id: { not_equals: excludeId } },
+        ...(excludeId === undefined ? [] : [{ id: { not_equals: excludeId } }]),
         ...(draft ? [] : [{ _status: { equals: 'published' as const } }]),
       ],
     },

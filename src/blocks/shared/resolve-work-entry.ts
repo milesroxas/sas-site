@@ -11,6 +11,11 @@ export type WorkEntry = {
   industry: string | null
   capabilities: string[]
   /**
+   * The card summary: the page's website-only hero override, else the case
+   * study's canonical summaries, card-sized first. Null when none is written.
+   */
+  summary: string | null
+  /**
    * The featured visual: the cover asset, else the hero's visual (an upload
    * or a Streak Field, which repeated entries show as a poster).
    */
@@ -28,8 +33,8 @@ export const termNames = (terms?: (number | { name: string })[] | null): string[
 /**
  * Presentation-ready summary of a work page for blocks that feature work
  * entries: canonical title, client, first industry, capabilities (featured
- * ones win over the project's), and the featured visual (cover, else the
- * hero's visual).
+ * ones win over the project's), the card summary, and the featured visual
+ * (cover, else the hero's visual).
  */
 export function resolveWorkEntry(page: WorkPage): WorkEntry | null {
   if (!page.slug) return null
@@ -55,6 +60,12 @@ export function resolveWorkEntry(page: WorkPage): WorkEntry | null {
     client: organization?.name || organization?.shortName || null,
     industry: industries[0] ?? null,
     capabilities,
+    summary:
+      page.hero?.summaryOverride?.trim() ||
+      study?.summaries?.short?.trim() ||
+      study?.summaries?.oneLine?.trim() ||
+      study?.summaries?.medium?.trim() ||
+      null,
     visual,
     media: visualMedia(visual),
   }
