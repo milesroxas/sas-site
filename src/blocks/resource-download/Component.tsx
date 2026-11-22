@@ -122,7 +122,7 @@ export const ResourceDownload: React.FC<ResourceDownloadProps> = ({ className, .
           ) : null}
           <h3 className="text-lead font-medium text-balance">{download.title}</h3>
           {download.body ? (
-            <p className="max-w-prose text-base/relaxed text-pretty text-muted-foreground">
+            <p className="max-w-prose text-body text-pretty text-muted-foreground">
               {download.body}
             </p>
           ) : null}

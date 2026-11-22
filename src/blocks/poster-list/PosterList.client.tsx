@@ -338,7 +338,7 @@ function PosterPicture({ item }: { item: PosterItem }) {
   if (!item.visual) {
     return (
       <div className="poster-fallback absolute inset-0 grid place-items-end justify-start bg-muted">
-        <span className="text-heading-3 text-muted-foreground">{item.title}</span>
+        <span className="text-subheading text-muted-foreground">{item.title}</span>
       </div>
     )
   }
@@ -487,23 +487,13 @@ function Copy({
           {eyebrow}
         </p>
       )}
-      <h2
-        className={cn(stacked ? 'text-heading-2' : 'text-heading-3', 'text-balance')}
-        data-reveal
-        data-reveal-group="poster-head"
-      >
+      <h2 className="text-subheading text-balance" data-reveal data-reveal-group="poster-head">
         {heading}
       </h2>
     </div>
   )
   const summary = paragraphs.length > 0 && (
-    <div
-      className={cn(
-        'space-y-3 text-pretty text-muted-foreground',
-        stacked ? 'text-base' : 'text-sm',
-      )}
-      data-reveal
-    >
+    <div className="space-y-3 text-body text-pretty text-muted-foreground" data-reveal>
       {paragraphs.map((paragraph) => (
         <p key={paragraph}>{paragraph}</p>
       ))}
