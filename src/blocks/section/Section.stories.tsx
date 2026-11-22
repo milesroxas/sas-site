@@ -61,7 +61,7 @@ const opensWithProseHeading = (
       heading="One band, many blocks"
       layout="prose"
     />
-    <StoryBeatsBlock bare blockType="storyBeats" body={body} variant="default" />
+    <StoryBeatsBlock bare blockType="storyBeats" body={body} />
     <SplitContentNarrowBlock
       bare
       blockType="splitContentNarrow"

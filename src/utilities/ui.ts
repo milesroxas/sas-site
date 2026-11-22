@@ -31,9 +31,9 @@ const twMerge = extendTailwindMerge<AnimateGroupIds>({
     classGroups: {
       /* Register the fluid type-scale tokens (globals.css @theme) as
          font-size classes. Without this, tailwind-merge reads
-         `text-heading-2` as a text color, so a base class like `text-sm`
+         `text-subheading` as a text color, so a base class like `text-sm`
          survives the merge and the token is silently dropped. */
-      'font-size': [{ text: ['display', 'heading-1', 'heading-2', 'heading-3', 'lead'] }],
+      'font-size': [{ text: ['display', 'heading', 'subheading', 'lead', 'body'] }],
       /* tw-animate-css enter/exit utilities, so a consumer can retune a
          primitive's `data-open:zoom-in-95` with `data-open:zoom-in-98`.
          Unregistered, both classes ship and the primitive's wins on source

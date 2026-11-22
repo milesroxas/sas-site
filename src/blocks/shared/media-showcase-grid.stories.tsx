@@ -52,7 +52,7 @@ const MediaShowcasePreview = ({
 }) => (
   <Section spacing="loose" theme={theme}>
     <div className="container mx-auto">
-      <h2 className="mb-6 text-heading-2">Selected frames</h2>
+      <h2 className="mb-6 text-heading">Selected frames</h2>
       <MediaShowcaseGrid
         layout={layout}
         media={media}

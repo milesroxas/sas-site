@@ -2,33 +2,18 @@
 const config = {
   theme: {
     extend: {
+      // Prose headings take the fluid type tokens through `prose-h*:` modifiers
+      // in components/RichText. Here prose only gives up its own ink and h1
+      // weight, so copy follows the surrounding text color and the 380 base.
       typography: () => ({
         DEFAULT: {
           css: [
             {
-              '--tw-prose-body': 'var(--text)',
-              '--tw-prose-headings': 'var(--text)',
+              '--tw-prose-body': 'currentColor',
+              '--tw-prose-headings': 'currentColor',
               h1: {
-                fontWeight: 'var(--heading-weight)',
+                fontWeight: 'inherit',
                 marginBottom: '0.25em',
-              },
-            },
-          ],
-        },
-        // Rich-text headings ride the same fluid scale as the rest of the
-        // site (tokens in globals.css @theme) — no breakpoint variants needed.
-        base: {
-          css: [
-            {
-              h1: {
-                fontSize: 'var(--text-heading-2)',
-                lineHeight: 'var(--text-heading-2--line-height)',
-                letterSpacing: 'var(--text-heading-2--letter-spacing)',
-              },
-              h2: {
-                fontSize: 'var(--text-heading-3)',
-                lineHeight: 'var(--text-heading-3--line-height)',
-                fontWeight: 'var(--heading-weight)',
               },
             },
           ],

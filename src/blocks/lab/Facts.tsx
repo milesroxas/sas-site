@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { Section } from '@/blocks/shared/section'
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import type { LabFactsBlock, LabProject } from '@/payload-types'
+import { cn } from '@/utilities/ui'
 
 const statusLabels: Record<NonNullable<LabProject['status']>, string> = {
   planned: 'Planned',
@@ -23,7 +25,7 @@ const FactColumn = ({
   label: string
 }) => (
   <div>
-    <dt className="text-sm uppercase tracking-[0.2em] opacity-70">{label}</dt>
+    <dt className={cn(eyebrowClassName, 'opacity-70')}>{label}</dt>
     <dd className={bodyClassName}>{children}</dd>
   </div>
 )
@@ -48,7 +50,7 @@ export const Facts = ({
   return (
     <Section theme={block.theme}>
       <div className="container mx-auto max-w-5xl">
-        {block.heading && <h2 className="mb-8 text-heading-2">{block.heading}</h2>}
+        {block.heading && <h2 className="mb-8 text-heading">{block.heading}</h2>}
         <dl className="grid gap-8 md:grid-cols-3">
           {status && (
             <FactColumn bodyClassName="mt-3 text-lg" label="Status">

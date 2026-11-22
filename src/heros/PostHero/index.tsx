@@ -86,7 +86,7 @@ export const PostHero: React.FC<{
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-12">
           <div className="flex flex-col gap-6">
             {kicker && <p className={`${HERO_FURNITURE} text-muted-foreground`}>{kicker}</p>}
-            <h1 className="text-heading-2">{title}</h1>
+            <h1 className="text-heading">{title}</h1>
             {standfirst && <p className="max-w-xl text-lead text-muted-foreground">{standfirst}</p>}
           </div>
 

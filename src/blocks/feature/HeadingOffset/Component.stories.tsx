@@ -30,14 +30,6 @@ export const WithoutEyebrow: Story = {
   },
 }
 
-export const BodySmall: Story = {
-  args: { bodySize: 'small' },
-}
-
-export const BodyLarge: Story = {
-  args: { bodySize: 'large' },
-}
-
 export const Inverted: Story = {
   args: { theme: 'inverted' },
 }

@@ -8,7 +8,7 @@ type Hero = NonNullable<Page['hero']>
 
 export const HeroTitle: React.FC<{ title: Hero['title'] }> = ({ title }) => {
   if (!title) return null
-  return <h1 className="max-w-xl text-heading-1 text-foreground">{title}</h1>
+  return <h1 className="max-w-xl text-heading text-foreground">{title}</h1>
 }
 
 /** Hairline-and-label kicker above an index or hero title. */

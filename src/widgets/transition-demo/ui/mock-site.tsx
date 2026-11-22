@@ -442,7 +442,7 @@ function MockHome() {
     <div>
       <section className="relative overflow-hidden bg-linear-to-br from-chart-5/80 via-chart-3/40 to-background px-5 py-14">
         <p className={cn(FURNITURE, 'text-muted-foreground')}>Suits &amp; Sandals</p>
-        <h3 className="mt-2 text-balance text-heading-3">Make it make sense</h3>
+        <h3 className="mt-2 text-balance text-subheading">Make it make sense</h3>
         <p className="mt-3 max-w-sm text-pretty text-sm/relaxed text-muted-foreground">
           Leave this page and it holds perfectly still while the next one wipes open over it: the
           hero is part of the page, so the whole surface travels as one.
@@ -671,7 +671,7 @@ function MockPostDetail({ post }: { post: MockPost }) {
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-6">
           <div className="flex flex-col gap-3">
             <p className={cn(FURNITURE, 'text-muted-foreground')}>{post.category}</p>
-            <h3 className="text-heading-3">{post.title}</h3>
+            <h3 className="text-subheading">{post.title}</h3>
             <p className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">
               {post.body}
             </p>
@@ -798,7 +798,7 @@ function MockCaseStudy({ work, layout }: { work: MockWork; layout: MockHeroLayou
         // the landing closes vertically only.
         <header className="flex flex-col gap-8 pt-6">
           <div className="flex flex-col gap-6 px-5">
-            <h3 className="max-w-md text-balance text-heading-3">{work.title}</h3>
+            <h3 className="max-w-md text-balance text-subheading">{work.title}</h3>
             {facts}
           </div>
           <WorkImageTransition slug={work.slug}>
@@ -812,7 +812,7 @@ function MockCaseStudy({ work, layout }: { work: MockWork; layout: MockHeroLayou
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex flex-col gap-3">
               <p className={cn(FURNITURE, 'text-foreground')}>{work.client}</p>
-              <h3 className="max-w-md text-balance text-heading-3">{work.title}</h3>
+              <h3 className="max-w-md text-balance text-subheading">{work.title}</h3>
             </div>
             <div className="flex flex-col gap-1 sm:items-end sm:text-right">
               <span className={cn(FURNITURE, 'font-medium text-foreground')}>Industry</span>

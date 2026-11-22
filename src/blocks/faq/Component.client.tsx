@@ -25,7 +25,7 @@ const splitColumns = (items: FaqItem[]): [FaqItem[], FaqItem[]] => {
  * 12px glyph, nothing else moves in the trigger.
  */
 const PlusMinus = () => (
-  <span aria-hidden="true" className="flex w-5 shrink-0 justify-center pt-2">
+  <span aria-hidden="true" className="flex h-lh w-5 shrink-0 items-center justify-center">
     <svg
       aria-hidden="true"
       className="size-3"
@@ -62,13 +62,14 @@ const FaqRow: React.FC<{ index: number; item: FaqItem; open: boolean }> = ({
   open,
 }) => (
   <AccordionPrimitive.Item className="border-b border-border" value={item.id}>
-    <AccordionPrimitive.Header className="text-lg/relaxed">
+    <AccordionPrimitive.Header className="text-lead">
       <AccordionPrimitive.Trigger className="group pressable pressable-subtle flex w-full items-start gap-6 py-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
-        <span
-          aria-hidden="true"
-          className="w-8 shrink-0 pt-2 font-mono text-xs/none text-muted-foreground transition-colors group-hover:text-foreground"
-        >
-          {ordinalLabel(index)}
+        {/* One question line tall (`h-lh` reads the question's leading), so the
+            ordinal and the plus center on the first line at any size. */}
+        <span aria-hidden="true" className="flex h-lh w-8 shrink-0 items-center">
+          <span className="font-mono text-xs/none text-muted-foreground transition-colors group-hover:text-foreground">
+            {ordinalLabel(index)}
+          </span>
         </span>
         <span className="min-w-0 grow">{item.question}</span>
         <PlusMinus />
@@ -83,7 +84,7 @@ const FaqRow: React.FC<{ index: number; item: FaqItem; open: boolean }> = ({
       <div>
         <div className="ps-14 pe-11 pt-3 pb-7">
           <RichText
-            className="text-base/relaxed text-muted-foreground"
+            className="text-body text-muted-foreground"
             data={item.answer}
             enableGutter={false}
             enableProse={false}

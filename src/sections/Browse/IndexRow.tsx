@@ -98,7 +98,7 @@ export const IndexRow: React.FC<{
         </p>
       )}
       <TitleTag
-        className="text-heading-3 text-foreground group-hover:underline"
+        className="text-subheading text-foreground group-hover:underline"
         data-reveal
         data-reveal-group="row-identity"
       >

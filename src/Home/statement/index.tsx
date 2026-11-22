@@ -18,7 +18,7 @@ export const HomeStatement: React.FC<HomeStatementData> = ({ body }) => {
       <Container width="narrow">
         <div data-reveal>
           <RichText
-            className="text-center text-heading-3 leading-snug [&_p+p]:mt-4"
+            className="text-center text-subheading leading-snug [&_p+p]:mt-4"
             data={body}
             enableGutter={false}
             enableProse={false}

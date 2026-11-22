@@ -110,7 +110,7 @@ export const AudienceTabs: React.FC<AudienceTabsProps> = ({ heading, tabs, theme
           // `self-stretch` below md so the left edge is the page gutter: the
           // column centres its children, and a short heading would otherwise
           // shrink to fit and sit centred whatever the text-align says.
-          className="max-w-4xl text-heading-2 leading-normal font-light text-foreground/80 max-md:self-stretch md:text-center"
+          className="max-w-4xl text-heading leading-normal font-light text-foreground/80 max-md:self-stretch md:text-center"
           data-entrance="heading"
         >
           {heading}

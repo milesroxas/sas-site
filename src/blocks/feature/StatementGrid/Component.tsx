@@ -1,5 +1,6 @@
 import type React from 'react'
 import { Section } from '@/blocks/shared/section'
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { FeatureStatementGridBlock as FeatureStatementGridBlockData } from '@/payload-types'
@@ -26,8 +27,8 @@ export const FeatureStatementGridBlock: React.FC<FeatureStatementGridBlockProps>
     <Section bare={bare} theme={theme}>
       <div className="container">
         <header className="text-stack mx-auto mb-12 max-w-2xl text-center md:mb-16" data-reveal>
-          {eyebrow ? <p className="text-sm tracking-widest uppercase">{eyebrow}</p> : null}
-          <h2 className="text-heading-3">{heading}</h2>
+          {eyebrow ? <p className={eyebrowClassName}>{eyebrow}</p> : null}
+          <h2 className="text-subheading">{heading}</h2>
         </header>
         <div className="grid gap-12 lg:grid-cols-3 lg:gap-8">
           <div className="flex flex-col justify-between gap-8">

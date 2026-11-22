@@ -122,7 +122,7 @@ const GalleryCopy = ({ eyebrow, heading }: { eyebrow?: string | null; heading?: 
       {eyebrow ? (
         <p className="font-mono text-xs/none font-medium text-muted-foreground">{eyebrow}</p>
       ) : null}
-      {heading ? <h2 className="text-heading-2 font-light text-foreground">{heading}</h2> : null}
+      {heading ? <h2 className="text-heading font-light text-foreground">{heading}</h2> : null}
     </div>
   ) : (
     <div />

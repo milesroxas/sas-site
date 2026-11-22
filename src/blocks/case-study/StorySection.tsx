@@ -1,3 +1,4 @@
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import type { StoryBody } from '@/collections/story/narrative'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
@@ -40,11 +41,11 @@ export const StorySection = ({
       >
         <div className={cn('text-stack', block.layout === 'text-right' && 'md:order-2')}>
           {block.eyebrow && (
-            <p className="text-sm uppercase tracking-[0.2em]" data-reveal>
+            <p className={eyebrowClassName} data-reveal>
               {block.eyebrow}
             </p>
           )}
-          <h2 className="text-heading-2" data-reveal>
+          <h2 className="text-heading" data-reveal>
             {heading}
           </h2>
           <div data-reveal>

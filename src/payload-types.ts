@@ -1931,9 +1931,6 @@ export interface WorkFeatureHeadingOffsetBlock {
     };
     [k: string]: unknown;
   } | null;
-  /**
-   * Type size of the supporting copy.
-   */
   bodySize?: ('small' | 'medium' | 'large') | null;
   /**
    * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
@@ -2340,9 +2337,6 @@ export interface WorkFeatureImageStatementBlock {
    * Which edge the statement aligns to beneath the image.
    */
   textPosition?: ('left' | 'right') | null;
-  /**
-   * Small steps the statement down one type size.
-   */
   textSize?: ('default' | 'small') | null;
   /**
    * Contained keeps the image in the site container; full bleeds edge to edge.
@@ -2464,9 +2458,6 @@ export interface WorkStoryBeatsBlock {
     };
     [k: string]: unknown;
   } | null;
-  /**
-   * Default is article body copy, the size a post renders its main text at. Small steps below it for an aside or a footnote; Lead is the larger standfirst size.
-   */
   variant?: ('default' | 'small' | 'lead') | null;
   /**
    * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
@@ -6693,9 +6684,6 @@ export interface FeatureHeadingOffsetBlock {
     };
     [k: string]: unknown;
   } | null;
-  /**
-   * Type size of the supporting copy.
-   */
   bodySize?: ('small' | 'medium' | 'large') | null;
   /**
    * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
@@ -7006,9 +6994,6 @@ export interface FeatureImageStatementBlock {
    * Which edge the statement aligns to beneath the image.
    */
   textPosition?: ('left' | 'right') | null;
-  /**
-   * Small steps the statement down one type size.
-   */
   textSize?: ('default' | 'small') | null;
   /**
    * Contained keeps the image in the site container; full bleeds edge to edge.
@@ -8164,9 +8149,6 @@ export interface LabFeatureHeadingOffsetBlock {
     };
     [k: string]: unknown;
   } | null;
-  /**
-   * Type size of the supporting copy.
-   */
   bodySize?: ('small' | 'medium' | 'large') | null;
   /**
    * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
@@ -8549,9 +8531,6 @@ export interface LabFeatureImageStatementBlock {
    * Which edge the statement aligns to beneath the image.
    */
   textPosition?: ('left' | 'right') | null;
-  /**
-   * Small steps the statement down one type size.
-   */
   textSize?: ('default' | 'small') | null;
   /**
    * Contained keeps the image in the site container; full bleeds edge to edge.
@@ -8709,9 +8688,6 @@ export interface LabStoryBeatsBlock {
     };
     [k: string]: unknown;
   } | null;
-  /**
-   * Default is article body copy, the size a post renders its main text at. Small steps below it for an aside or a footnote; Lead is the larger standfirst size.
-   */
   variant?: ('default' | 'small' | 'lead') | null;
   /**
    * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.

@@ -19,21 +19,13 @@ import { cn } from '@/utilities/ui'
  */
 type FeatureImageStatementBlockProps = Pick<
   FeatureImageStatementBlockData,
-  | 'aspectRatio'
-  | 'blockType'
-  | 'caption'
-  | 'imageWidth'
-  | 'media'
-  | 'textPosition'
-  | 'textSize'
-  | 'theme'
+  'aspectRatio' | 'blockType' | 'caption' | 'imageWidth' | 'media' | 'textPosition' | 'theme'
 > & { bare?: boolean }
 
 export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProps> = ({
   media,
   caption,
   textPosition,
-  textSize,
   imageWidth,
   aspectRatio,
   bare,
@@ -54,12 +46,7 @@ export const FeatureImageStatementBlock: React.FC<FeatureImageStatementBlockProp
       className={cn('md:col-span-4', textPosition === 'left' ? undefined : 'md:col-start-5')}
       data-reveal
     >
-      <RichText
-        className={textSize === 'small' ? 'text-lead/relaxed' : 'text-heading-3/relaxed'}
-        data={caption}
-        enableGutter={false}
-        enableProse={false}
-      />
+      <RichText className="text-lead" data={caption} enableGutter={false} enableProse={false} />
     </div>
   ) : null
   return (

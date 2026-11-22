@@ -1,4 +1,5 @@
 import { Section } from '@/blocks/shared/section'
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import type { StoryBody } from '@/collections/story/narrative'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
@@ -39,8 +40,8 @@ export const StorySection = ({
         )}
       >
         <div className={cn('text-stack', block.layout === 'text-right' && 'md:order-2')}>
-          {block.eyebrow && <p className="text-sm uppercase tracking-[0.2em]">{block.eyebrow}</p>}
-          <h2 className="text-heading-2">{heading}</h2>
+          {block.eyebrow && <p className={eyebrowClassName}>{block.eyebrow}</p>}
+          <h2 className="text-heading">{heading}</h2>
           <RichText data={content} enableGutter={false} />
         </div>
         {media && <Media resource={media} imgClassName="h-auto w-full" />}

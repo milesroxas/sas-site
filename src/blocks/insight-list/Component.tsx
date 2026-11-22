@@ -67,20 +67,16 @@ export const InsightListBlock: React.FC<InsightListBlockProps> = ({
         <BlockGrid className="md:items-start">
           <div className={cn('text-stack', arrangement.heading)}>
             {eyebrow ? (
-              <p
-                className={cn(eyebrowClassName, 'tracking-widest uppercase')}
-                data-reveal
-                data-reveal-group="heading"
-              >
+              <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
                 {eyebrow}
               </p>
             ) : null}
-            <h2 className="text-heading-3" data-reveal data-reveal-group="heading">
+            <h2 className="text-subheading" data-reveal data-reveal-group="heading">
               {heading}
             </h2>
             {summary ? (
               <p
-                className="text-base text-muted-foreground"
+                className="text-body text-muted-foreground"
                 data-reveal
                 data-reveal-group="heading"
               >

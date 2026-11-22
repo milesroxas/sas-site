@@ -28,7 +28,7 @@ const statementStackClassName: Record<HeroLayout, string> = {
 
 const titleClassName: Record<HeroLayout, string> = {
   // Center stays a short statement: fluid size, balanced wrap, never wider than the band.
-  center: 'max-w-[18ch] text-center text-balance text-heading-1 sm:max-w-[22ch] md:max-w-146',
+  center: 'max-w-[18ch] text-center text-balance text-heading sm:max-w-[22ch] md:max-w-146',
   // Left: em width tracks type so "Make it" / "make sense" stays two lines.
   left: 'max-w-[5.35em] text-display',
 }

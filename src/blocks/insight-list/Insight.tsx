@@ -1,6 +1,7 @@
 import type React from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
 import { ordinalLabel } from '@/blocks/shared/numbering'
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import type { InsightListBlock as InsightListBlockData } from '@/payload-types'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { cn } from '@/utilities/ui'
@@ -72,9 +73,11 @@ const Mark: React.FC<{ media: InsightItem['media']; size: InsightMarkSize }> = (
   )
 }
 
-const ordinalClassName = 'font-mono text-xs/none tracking-widest text-muted-foreground'
-const titleClassName = 'text-xl/7 font-medium'
-const descriptionClassName = 'text-base text-muted-foreground'
+/* Roles from shared/typography.ts: the ordinal is a kicker, the title an
+   item title, the description running copy. */
+const ordinalClassName = cn(eyebrowClassName, 'text-muted-foreground')
+const titleClassName = 'text-lead font-medium'
+const descriptionClassName = 'text-body text-muted-foreground'
 
 type InsightProps = {
   className?: string

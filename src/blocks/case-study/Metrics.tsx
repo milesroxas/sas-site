@@ -21,7 +21,7 @@ export const Metrics = ({
   return (
     <RevealSection theme={block.theme} variant="intro">
       <div className="container mx-auto">
-        <h2 className="mb-8 text-heading-2" data-reveal>
+        <h2 className="mb-8 text-heading" data-reveal>
           {block.heading || 'Results'}
         </h2>
         {block.introduction && (
@@ -32,7 +32,7 @@ export const Metrics = ({
         <dl className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
           {metrics.map((metric) => (
             <div data-reveal key={metric.key}>
-              <dd className="text-heading-1">
+              <dd className="text-heading">
                 {metric.value}
                 {metric.unit}
               </dd>

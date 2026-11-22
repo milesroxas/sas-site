@@ -36,7 +36,7 @@ function MockPage() {
   return (
     <div className="space-y-4 bg-background p-8 text-foreground">
       <Badge variant="secondary">Mock content</Badge>
-      <h2 className="text-heading-3">Signal, seen from the side.</h2>
+      <h2 className="text-subheading">Signal, seen from the side.</h2>
       <p className="max-w-prose text-sm/relaxed text-muted-foreground">
         Chrome, border, address bar and this page all resolve from the frame&rsquo;s{' '}
         <code className="font-mono">data-theme</code>, so the window can preview a polarity the

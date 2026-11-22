@@ -1,40 +1,44 @@
 /**
- * The kicker above a heading: the media and split block family (full-media,
- * split-content) and the Section heading (Standard) block. Stated once so the
- * same CMS `eyebrow` field never renders in two different treatments.
+ * The site's text roles, stated once. Every block takes its type from its
+ * role here; no block chooses a size, and editors get no type-size controls.
+ * The tokens (size, leading, tracking, weight) live in `globals.css` `@theme`.
  *
- * Style only: the gap to the heading belongs to the `text-stack` utility (see
- * `globals.css`), so a call site sets this class and no margin of its own.
+ * | Role                                   | Class            | Mobile → desktop |
+ * | -------------------------------------- | ---------------- | ---------------- |
+ * | Hero, Statement layout                 | `text-display`    | 48 → 96px        |
+ * | Page title, a Section's opener         | `text-heading`    | 32 → 48px        |
+ * | A block's own heading, prose h2        | `text-subheading` | 24 → 28px        |
+ * | Deck, statement, item title, prose h3  | `text-lead`       | 20 → 24px        |
+ * | All running copy, prose h4 (medium)    | `text-body`       | 16 → 18px        |
+ * | Captions, meta, list items             | `text-sm`         | 14px             |
+ * | Kicker above a heading                 | `eyebrowClassName`| 12px mono        |
  *
- * The legacy Story section blocks (lab, case-study) and Lab facts use a
- * second, larger uppercase-tracked kicker. That is a deliberate second voice,
- * not drift: keep the two apart rather than folding them together here.
+ * The one rule a block needs: inside a Section, the opener (Standard heading,
+ * Heading offset) is `text-heading`; every other block's heading is
+ * `text-subheading`.
+ */
+
+/**
+ * The kicker above a heading, in every block. Style only: the gap to the
+ * heading belongs to the `text-stack` utility (see `globals.css`), so a call
+ * site sets this class and no margin of its own. Copy keeps the case the
+ * editor typed.
  */
 export const eyebrowClassName = 'font-mono text-xs/none font-medium'
 
+/** Image and figure captions. */
+export const captionClassName = 'text-sm text-muted-foreground'
+
 /**
- * Prose type scale: a heading inside the reading column, measured against the
- * copy it opens (Story beats and Rich text render Tailwind Typography's
- * `prose` base: 16px on a 28px line), not against the page type scale:
- * `text-heading-1` beside 16px body is a page title standing inside an
- * article, and the two read as separate documents rather than one passage.
- *
- * So the levels are plain Tailwind sizes, a 1.25 ladder over that body:
- * 30 / 24 / 20px. Their default line heights (2.25rem, 2rem, 1.75rem) sit on
- * or just above the body's 28px line, so the passage keeps one rhythm, and
- * the two larger steps take `tracking-tight` because the text-box-trimmed
- * cluster otherwise reads loose at those sizes. At h4 the step over the body
- * is only 4px, so weight carries the hierarchy instead, the way the in-prose
- * headings do (`prose-h4:font-medium` in components/RichText).
- *
- * Levels are not restated in `em`: the gaps around the heading already are
- * (`text-stack`), so the whole cluster tracks whichever level the editor
- * picks. The level select is `proseHeadingLevelField` (`./fields.ts`).
+ * Headings inside a reading column (Story beats, a Prose Standard heading),
+ * the same ladder Rich text's prose headings use (`components/RichText`), so
+ * an opener, its beats and an authored passage read as one outline. The level
+ * select is `proseHeadingLevelField` (`./fields.ts`).
  */
 export const proseHeadingClassNames = {
-  h2: 'text-3xl tracking-tight',
-  h3: 'text-2xl tracking-tight',
-  h4: 'text-xl font-medium',
+  h2: 'text-subheading',
+  h3: 'text-lead font-medium',
+  h4: 'text-body font-medium',
 } as const
 
 export type ProseHeadingLevel = keyof typeof proseHeadingClassNames

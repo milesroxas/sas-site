@@ -228,7 +228,7 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
     <RevealSection spacing="loose" theme={block.theme} variant="underMedia">
       <div className="container mx-auto">
         {block.heading && (
-          <h2 className="mb-6 text-heading-2" data-reveal>
+          <h2 className="mb-6 text-heading" data-reveal>
             {block.heading}
           </h2>
         )}

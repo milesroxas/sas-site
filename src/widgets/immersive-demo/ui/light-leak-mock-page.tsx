@@ -103,7 +103,7 @@ export function LightLeakMockPage() {
         <Badge variant="secondary" className="w-fit font-mono text-[0.625rem] tracking-widest">
           ROLL 12 — LIGHT STRUCK
         </Badge>
-        <h2 className="max-w-2xl text-balance text-heading-2">
+        <h2 className="max-w-2xl text-balance text-heading">
           Every leak is the camera failing beautifully.
         </h2>
         <p className="max-w-prose text-pretty text-sm/relaxed text-muted-foreground">
@@ -168,7 +168,7 @@ export function LightLeakMockPage() {
         {...leakExcite()}
         className="flex min-h-[70vh] items-center justify-center border-y border-border bg-linear-to-b from-muted via-background to-secondary px-8 py-24 transition-colors duration-700 hover:from-accent"
       >
-        <blockquote className="max-w-xl text-balance text-center text-heading-3 font-normal text-foreground/80">
+        <blockquote className="max-w-xl text-balance text-center text-subheading font-normal text-foreground/80">
           “The last frame on the roll always catches the leak.”
         </blockquote>
       </section>

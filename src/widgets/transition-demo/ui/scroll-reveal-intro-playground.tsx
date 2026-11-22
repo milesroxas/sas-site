@@ -65,7 +65,7 @@ export function ScrollRevealIntroPlayground() {
           >
             {eyebrow}
           </p>
-          <h3 className="text-balance text-heading-2" data-reveal>
+          <h3 className="text-balance text-heading" data-reveal>
             {heading}
           </h3>
           <p

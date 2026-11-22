@@ -770,29 +770,35 @@
   --max-width-content-narrow: 40rem; /* ~640px — single-column reading */
   --max-width-content-default: 96rem; /* ~1536px — page column */
 
-  /* Fluid type scale — clamps interpolate 375px → 1440px viewports (rem-based,
-     so browser zoom still scales). Tokens own size, line-height, tracking and
-     default weight; call sites own layout (max-w, alignment, spacing, color)
-     and may override weight/leading for art direction. Weight companions read
-     the base ink weight (--font-weight-normal above), so headings and body
-     share the same 380 default. */
-  --text-display: clamp(3rem, 1.95rem + 4.51vw, 6rem); /* route/hero statements */
+  /* Fluid type scale: the site's whole set of text roles. Clamps interpolate
+     375px → 1440px viewports (rem-based, so browser zoom still scales). Tokens
+     own size, line-height, tracking and default weight; call sites own layout
+     (alignment, spacing, color). Weight companions read the base ink weight
+     (--font-weight-normal above), so headings and body share the same 380.
+
+     Which role each element takes is stated once, in
+     src/blocks/shared/typography.ts. Captions and meta use Tailwind's
+     `text-sm`; eyebrows use `eyebrowClassName` there.
+
+     Mobile → desktop: 48→96, 32→48, 24→28, 20→24, 16→18px. Desktop ratios
+     1.33, 1.17, 1.71, 2: the subheading sits one short step above the lead,
+     the heading a clear jump above both. Tracking tightens with size. */
+  --text-display: clamp(3rem, 1.95rem + 4.51vw, 6rem); /* hero, statement */
   --text-display--line-height: 1.05;
-  --text-display--letter-spacing: -0.025em;
+  --text-display--letter-spacing: -0.03em;
   --text-display--font-weight: var(--font-weight-normal);
-  --text-heading-1: clamp(2.25rem, 1.72rem + 2.25vw, 3.75rem); /* page/hero h1 */
-  --text-heading-1--line-height: 1.1;
-  --text-heading-1--letter-spacing: -0.025em;
-  --text-heading-1--font-weight: var(--font-weight-normal);
-  --text-heading-2: clamp(1.875rem, 1.48rem + 1.69vw, 3rem); /* section h2 */
-  --text-heading-2--line-height: 1.15;
-  --text-heading-2--letter-spacing: -0.025em;
-  --text-heading-2--font-weight: var(--font-weight-normal);
-  --text-heading-3: clamp(1.5rem, 1.37rem + 0.56vw, 1.875rem); /* subsection/card */
-  --text-heading-3--line-height: 1.3;
-  --text-heading-3--font-weight: var(--font-weight-normal);
-  --text-lead: clamp(1.25rem, 1.16rem + 0.38vw, 1.5rem); /* intro/standfirst body */
-  --text-lead--line-height: 1.5;
+  --text-heading: clamp(2rem, 1.648rem + 1.502vw, 3rem); /* page title, section opener */
+  --text-heading--line-height: 1.1;
+  --text-heading--letter-spacing: -0.025em;
+  --text-heading--font-weight: var(--font-weight-normal);
+  --text-subheading: clamp(1.5rem, 1.412rem + 0.376vw, 1.75rem); /* a block's own heading */
+  --text-subheading--line-height: 1.25;
+  --text-subheading--letter-spacing: -0.01em;
+  --text-subheading--font-weight: var(--font-weight-normal);
+  --text-lead: clamp(1.25rem, 1.16rem + 0.38vw, 1.5rem); /* deck, statement, item title */
+  --text-lead--line-height: 1.4;
+  --text-body: clamp(1rem, 0.956rem + 0.188vw, 1.125rem); /* all running copy */
+  --text-body--line-height: 1.6;
   /* Code surface type (components/ui/code-block.tsx): 13px on a 24px line.
      Fixed, not fluid: a code listing's measure is its characters, so it must
      not restate itself between breakpoints. It sits between `text-xs` and
@@ -953,7 +959,7 @@
 
    Children are text-box trimmed (see `text-trim`) because the margins are only
    honest if they are. Untrimmed, the eyebrow gap is dominated by the *heading's*
-   0.295em ascender slack — 7px at heading-3, 29px at display — which is why the
+   0.295em ascender slack — 7px at subheading, 29px at display — which is why the
    same design needed a different hand-set number in every block. */
 @utility text-stack {
   > * {

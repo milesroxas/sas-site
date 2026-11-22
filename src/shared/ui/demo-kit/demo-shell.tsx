@@ -464,7 +464,7 @@ function SectionStage({ section }: { section: DemoShellSection }) {
           <header className="space-y-2">
             {/* The section's icon lives here, not on its sidebar row: nested
                 rows stay text-only so the tree's two levels read apart. */}
-            <h1 className="flex items-center gap-2.5 text-balance text-heading-3">
+            <h1 className="flex items-center gap-2.5 text-balance text-subheading">
               <Icon aria-hidden className="size-5 shrink-0 text-muted-foreground" />
               {section.title}
             </h1>

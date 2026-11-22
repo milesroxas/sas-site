@@ -400,7 +400,7 @@ export function StreakFieldPlayground() {
             device or motion preference would suppress it in production. */}
         <StreakField force {...props} />
         <div className="pointer-events-none relative flex h-full items-end p-10">
-          <h2 className="max-w-xl text-balance text-heading-2">Signal, seen from the side.</h2>
+          <h2 className="max-w-xl text-balance text-heading">Signal, seen from the side.</h2>
         </div>
       </div>
     </DemoBrowserFrame>

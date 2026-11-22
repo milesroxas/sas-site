@@ -45,3 +45,18 @@ export const BlockGrid = ({
     {...props}
   />
 )
+
+/**
+ * The reading column: where running copy sits on the grid (Rich text, Story
+ * beats, a Prose Standard heading, and what Rich text nests). Stated once so a
+ * beat, a passage and its opener never step sideways between blocks.
+ *
+ * Columns 3-6, narrowing to 3-5 from `xl` for measure: Geist sets about
+ * 0.42em per character, so four columns of a wide page ran past 90
+ * characters a line even at 18px. Three keep `text-body` near 55 to 70. The
+ * left edge never moves, so Code, figures and Rich text's insights (which
+ * keep four: a listing's measure is its characters) still share it.
+ */
+// `col-span-*` writes the `grid-column` shorthand, which resets the start, so
+// the start is restated at `xl` beside the narrower span.
+export const readingColumnClassName = 'md:col-span-4 md:col-start-3 xl:col-span-3 xl:col-start-3'

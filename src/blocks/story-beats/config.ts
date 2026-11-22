@@ -93,10 +93,11 @@ export const StoryBeats: Block = {
         { label: 'Small', value: 'small' },
         { label: 'Lead', value: 'lead' },
       ],
-      admin: {
-        description:
-          'Default is article body copy, the size a post renders its main text at. Small steps below it for an aside or a footnote; Lead is the larger standfirst size.',
-      },
+      /* Retired 2026-11-20: type size comes from the block's role
+       (src/blocks/shared/typography.ts), never an editor control. Hidden and
+       ignored by the renderer; the column stays until the next migration
+       drops it. */
+      admin: { hidden: true },
     },
     themeField(),
   ],

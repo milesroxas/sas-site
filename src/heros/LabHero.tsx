@@ -92,7 +92,7 @@ export const LabHero = ({ page, project }: { page: LabPage; project: LabProject 
           <p className={`${HERO_FURNITURE} text-muted-foreground`}>
             {page.hero?.eyebrow || `Lab / ${kindLabels[project.kind]}`}
           </p>
-          <h1 className="max-w-3xl text-heading-1 text-foreground">
+          <h1 className="max-w-3xl text-heading text-foreground">
             {page.hero?.titleOverride || project.title}
           </h1>
           <p className="max-w-xl pt-2 text-lead text-muted-foreground">

@@ -41,7 +41,7 @@ const meta = {
     <div className="relative isolate min-h-svh bg-background text-foreground">
       <StreakVisual {...args} />
       <div className="relative flex min-h-svh items-end justify-between p-10">
-        <h2 className="max-w-xl text-balance text-heading-2">Signal, seen from the side.</h2>
+        <h2 className="max-w-xl text-balance text-heading">Signal, seen from the side.</h2>
         <VisualMotionToggle />
       </div>
     </div>

@@ -36,7 +36,6 @@ const meta = {
     blockType: 'storyBeats',
     body: beat,
     theme: 'default',
-    variant: 'default',
   },
 } satisfies Meta<typeof StoryBeatsBlock>
 
@@ -44,18 +43,8 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-/** Article body copy: the size a post renders its main text at. */
+/** Running copy at `text-body`, the same size as the Rich text block. */
 export const Default: Story = {}
-
-/** One step down, for an aside or a footnote beside the main run. */
-export const Small: Story = {
-  args: { variant: 'small' },
-}
-
-/** The standfirst size, for a beat that opens a section. */
-export const Lead: Story = {
-  args: { variant: 'lead' },
-}
 
 /** An editor heading at the default level, on the Prose Standard heading scale. */
 export const WithHeading: Story = {

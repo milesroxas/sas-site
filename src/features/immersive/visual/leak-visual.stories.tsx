@@ -45,7 +45,7 @@ const meta = {
     <Section theme="inverted">
       <div className="container grid items-center gap-10 md:grid-cols-2">
         <div className="flex flex-col gap-4">
-          <h2 className="text-heading-2">Light, let in on purpose.</h2>
+          <h2 className="text-heading">Light, let in on purpose.</h2>
           <p className="text-lead text-muted-foreground">
             Copy sits beside the frame, and under the leak when it bleeds.
           </p>
@@ -94,7 +94,7 @@ export const OnLightBand: Story = {
   render: (args) => (
     <Section theme="default">
       <div className="container grid items-center gap-10 md:grid-cols-2">
-        <h2 className="text-heading-2">A warm shadow across the sheet.</h2>
+        <h2 className="text-heading">A warm shadow across the sheet.</h2>
         <LeakVisual {...args} />
       </div>
     </Section>
@@ -112,7 +112,7 @@ export const PinnedDark: Story = {
   render: (args) => (
     <Section theme="default">
       <div className="container grid items-center gap-10 md:grid-cols-2">
-        <h2 className="text-heading-2">One face, whatever the theme.</h2>
+        <h2 className="text-heading">One face, whatever the theme.</h2>
         <LeakVisual {...args} />
       </div>
     </Section>

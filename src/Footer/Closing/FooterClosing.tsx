@@ -62,7 +62,7 @@ const ClosingCopy = ({ closing }: { closing: Footer['closing'] }) => {
     >
       {closing?.eyebrow ? <p className="text-sm text-foreground/80">{closing.eyebrow}</p> : null}
       {closing?.heading ? (
-        <h2 className="max-w-3xl text-balance text-heading-2">{closing.heading}</h2>
+        <h2 className="max-w-3xl text-balance text-heading">{closing.heading}</h2>
       ) : null}
       {links.length > 0 ? (
         <div className="mt-4 flex flex-wrap gap-3">

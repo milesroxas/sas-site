@@ -148,7 +148,7 @@ export function TextLoadIn({
         eyebrow={eyebrow}
         eyebrowRef={stage.eyebrowRef}
       />
-      <div className="space-y-1 text-heading-2">
+      <div className="space-y-1 text-heading">
         <RayMarchedHeading
           text={heading}
           progressRef={stage.glProgress}

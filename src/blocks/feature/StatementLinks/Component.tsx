@@ -28,7 +28,7 @@ export const FeatureStatementLinksBlock: React.FC<FeatureStatementLinksBlockProp
           {statement ? (
             <div className="min-w-0 max-w-3xl flex-1" data-reveal>
               <RichText
-                className="text-heading-2 leading-snug"
+                className="text-heading leading-snug"
                 data={statement}
                 enableGutter={false}
                 enableProse={false}

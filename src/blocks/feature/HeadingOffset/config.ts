@@ -29,7 +29,11 @@ export const FeatureHeadingOffset: Block = {
         { label: 'Medium', value: 'medium' },
         { label: 'Large', value: 'large' },
       ],
-      admin: { description: 'Type size of the supporting copy.' },
+      /* Retired 2026-11-20: type size comes from the block's role
+       (src/blocks/shared/typography.ts), never an editor control. Hidden and
+       ignored by the renderer; the column stays until the next migration
+       drops it. */
+      admin: { hidden: true },
     },
     themeField(),
   ],

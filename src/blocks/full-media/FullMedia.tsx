@@ -81,19 +81,14 @@ export const FullMedia = ({
         data-reveal
       >
         {block.eyebrow && <p className={eyebrowClassName}>{block.eyebrow}</p>}
-        {block.heading && <h2 className="text-heading-3 text-balance">{block.heading}</h2>}
+        {block.heading && <h2 className="text-subheading text-balance">{block.heading}</h2>}
       </div>
       {content && (
         <div
           className={cn('md:col-span-3', contentRight ? 'md:col-start-6' : 'md:col-start-4')}
           data-reveal
         >
-          <RichText
-            className="text-base/6 lg:text-lg/7"
-            data={content}
-            enableGutter={false}
-            enableProse={false}
-          />
+          <RichText className="text-body" data={content} enableGutter={false} enableProse={false} />
         </div>
       )}
     </>

@@ -42,7 +42,7 @@ const CARDS = ['Half-open blinds', 'Stained glass, nave', 'Prism on the desk', '
 function Page() {
   return (
     <div className="space-y-8 px-10 py-16">
-      <h2 className="max-w-xl text-balance text-heading-2">
+      <h2 className="max-w-xl text-balance text-heading">
         Every leak is the camera failing beautifully.
       </h2>
       {/* No marker: a link in the leak's own band is a target by default. */}

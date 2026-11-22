@@ -35,7 +35,7 @@ const meta = {
         <section className="relative isolate flex h-screen items-end bg-background py-16 md:py-24">
           <Story />
           <Container>
-            <h2 className="max-w-3xl text-balance text-heading-2">Let’s make it make sense.</h2>
+            <h2 className="max-w-3xl text-balance text-heading">Let’s make it make sense.</h2>
           </Container>
         </section>
         <div className="h-screen" />

@@ -54,7 +54,7 @@ export const AsABackdrop: Story = {
     <div data-theme="dark" className="relative isolate min-h-svh bg-black text-foreground">
       <StreakField {...args} />
       <div className="relative flex min-h-svh items-end p-10">
-        <h2 className="max-w-xl text-balance text-heading-2">Signal, seen from the side.</h2>
+        <h2 className="max-w-xl text-balance text-heading">Signal, seen from the side.</h2>
       </div>
     </div>
   ),
@@ -113,7 +113,7 @@ export const OnPaper: Story = {
     <div data-theme="light" className="relative isolate min-h-svh bg-background text-foreground">
       <StreakField {...args} />
       <div className="relative flex min-h-svh items-end p-10">
-        <h2 className="max-w-xl text-balance text-heading-2">Signal, seen from the side.</h2>
+        <h2 className="max-w-xl text-balance text-heading">Signal, seen from the side.</h2>
       </div>
     </div>
   ),

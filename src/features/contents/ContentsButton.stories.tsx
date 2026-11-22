@@ -38,7 +38,7 @@ const Page = ({ sections }: { sections: string[] }) => (
         return (
           <Section key={title} theme={theme}>
             <div className="container flex min-h-[70svh] flex-col gap-6">
-              <h2 className="max-w-xl text-heading-2 text-balance">{title}</h2>
+              <h2 className="max-w-xl text-heading text-balance">{title}</h2>
               <p className="max-w-xl text-lead text-muted-foreground">
                 Our content-rich pages needed more life than a wall of text, so we built the Streak
                 Field, a GPU particle shader designed with performance at the forefront.
@@ -50,7 +50,7 @@ const Page = ({ sections }: { sections: string[] }) => (
       <ContentsButton />
     </article>
     <div className="flex min-h-svh items-center justify-center bg-tertiary text-tertiary-foreground">
-      <p className="text-heading-3">Closing band</p>
+      <p className="text-subheading">Closing band</p>
     </div>
   </div>
 )

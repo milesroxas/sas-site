@@ -65,7 +65,7 @@ export const CaseStudyHeroLandscape = ({ page, study }: { page: WorkPage; study:
     >
       <HeroGround ground={ground} handoff={!media} />
       <div className="container flex flex-col gap-10 md:gap-32 lg:gap-8 lg:pb-4">
-        <h1 className="max-w-xl text-heading-1 text-foreground">
+        <h1 className="max-w-xl text-heading text-foreground">
           {page.hero?.titleOverride || study.title}
         </h1>
         <HeroDetails capabilities={capabilities} client={client} industries={industries} />

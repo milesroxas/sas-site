@@ -32,10 +32,6 @@ export const TextLeft: Story = {
   args: { textPosition: 'left' },
 }
 
-export const SmallText: Story = {
-  args: { textSize: 'small' },
-}
-
 export const FullBleed: Story = {
   args: { imageWidth: 'full' },
   parameters: { layout: 'fullscreen' },

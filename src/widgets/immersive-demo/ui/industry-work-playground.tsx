@@ -143,7 +143,7 @@ export function IndustryWorkPlayground() {
           />
         </div>
         {title ? (
-          <h3 className="pointer-events-none absolute top-[10%] left-0 z-10 max-w-[52%] text-heading-3 font-light text-foreground">
+          <h3 className="pointer-events-none absolute top-[10%] left-0 z-10 max-w-[52%] text-subheading font-light text-foreground">
             {title}
           </h3>
         ) : null}

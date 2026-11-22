@@ -5,6 +5,7 @@ import type React from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
 import type { RowWithVisual } from '@/blocks/shared/row-visuals'
 import { Section } from '@/blocks/shared/section'
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import { Visual } from '@/components/Visual'
@@ -28,11 +29,13 @@ type FeatureTabsProps = {
 const MEDIA_SIZES = '(max-width: 1024px) 100vw, 62vw'
 
 /**
- * Default strip: heading-sized triggers that wrap onto a second row once the
- * labels outgrow the container (fine up to four tabs).
+ * Default strip: `text-subheading` triggers that wrap onto a second row once
+ * the labels outgrow the container (fine up to four tabs). They are the
+ * block's heading, so each panel's statement sits one step below at
+ * `text-lead`.
  *
- * Small strip: one type step down (`text-lead`, the same step Image statement
- * takes) and never wraps. Past the container it pans instead, the same rail
+ * Small strip: one type step down (`text-lead`, the panel statement's step)
+ * and never wraps. Past the container it pans instead, the same rail
  * AudienceTabs uses below `md`: the strip bleeds to the page gutter so a
  * half-cut tab, not a scrollbar, is the affordance, and `scroll-fade-x` dims
  * only the edge with tabs still behind it. `justify-center-safe` keeps the
@@ -50,7 +53,7 @@ const TAB_STRIP = {
 } as const
 
 const TAB_TRIGGER = {
-  default: 'text-heading-3',
+  default: 'text-subheading',
   small: 'shrink-0 text-lead whitespace-nowrap',
 } as const
 
@@ -67,10 +70,10 @@ const TabPanel: React.FC<{ tab: FeatureTab }> = ({ tab }) => (
   <BlockGrid>
     <div className="flex flex-col justify-between gap-12 md:col-span-8 lg:col-span-3">
       <div className="text-stack">
-        <h3 className="text-heading-3">{tab.heading}</h3>
+        <h3 className="text-lead">{tab.heading}</h3>
         {tab.description ? (
           <RichText
-            className="text-sm md:text-base"
+            className="text-body"
             data={tab.description}
             enableGutter={false}
             enableProse={false}
@@ -80,9 +83,7 @@ const TabPanel: React.FC<{ tab: FeatureTab }> = ({ tab }) => (
       {tab.items?.length ? (
         <div className="flex flex-col gap-3">
           {tab.subheading ? (
-            <h4 className="font-mono text-sm font-normal text-muted-foreground">
-              {tab.subheading}
-            </h4>
+            <h4 className={cn(eyebrowClassName, 'text-muted-foreground')}>{tab.subheading}</h4>
           ) : null}
           <ul className="flex flex-col divide-y divide-border text-sm">
             {tab.items.map((item, itemIndex) => (

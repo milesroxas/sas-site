@@ -15,7 +15,7 @@ const RelatedWorkCard = ({ page }: { page: WorkPage }) => {
   return (
     <a className="group pressable pressable-subtle block" data-reveal href={`/works/${page.slug}`}>
       {cover && <Media resource={cover} imgClassName="h-auto w-full" />}
-      <h3 className="mt-4 text-heading-3 group-hover:underline">
+      <h3 className="mt-4 text-subheading group-hover:underline">
         {caseStudy ? caseStudy.title : page.title}
       </h3>
     </a>
@@ -38,7 +38,7 @@ export const RelatedWorkList = ({
   return (
     <RevealSection variant="intro">
       <div className="container mx-auto">
-        <h2 className="mb-8 text-heading-2" data-reveal>
+        <h2 className="mb-8 text-heading" data-reveal>
           {block.heading || 'Related work'}
         </h2>
         <div className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>

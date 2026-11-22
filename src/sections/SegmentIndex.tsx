@@ -50,7 +50,7 @@ export async function SegmentIndex({
             key={page.id}
             transitionTypes={[...forwardNavTransitionTypes]}
           >
-            <h2 className="text-heading-3 group-hover:underline">{page.title}</h2>
+            <h2 className="text-subheading group-hover:underline">{page.title}</h2>
             {page.meta?.description && <p className="mt-2 opacity-75">{page.meta.description}</p>}
           </Link>
         ))}

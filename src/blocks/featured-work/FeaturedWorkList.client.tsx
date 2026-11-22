@@ -162,7 +162,7 @@ const StaticList: React.FC<Props> = ({ eyebrow, entries }) => (
               href={entry.href}
               transitionTypes={[...forwardNavTransitionTypes]}
             >
-              <h3 className="text-heading-3 font-light text-foreground">{entry.title}</h3>
+              <h3 className="text-subheading font-light text-foreground">{entry.title}</h3>
               <MetaLine entry={entry} />
             </Link>
           </li>
@@ -511,7 +511,7 @@ export const FeaturedWorkList: React.FC<Props> = ({
                     >
                       <h3
                         className={cn(
-                          'text-heading-3 font-light text-foreground',
+                          'text-subheading font-light text-foreground',
                           index > 0 && 'blur-xs',
                         )}
                         data-work-title

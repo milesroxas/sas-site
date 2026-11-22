@@ -1,6 +1,7 @@
 import type { StaticImageData } from 'next/image'
 import type React from 'react'
 import { Section } from '@/blocks/shared/section'
+import { captionClassName as captionText } from '@/blocks/shared/typography'
 // Payload website-template pattern: RichText renders embedded blocks, blocks render rich text
 // fallow-ignore-next-line circular-dependency
 import RichText from '@/components/RichText'
@@ -94,7 +95,7 @@ export const MediaBlock: React.FC<Props> = (props) => {
                 captionClassName,
               )}
             >
-              <RichText data={caption} enableGutter={false} />
+              <RichText className={captionText} data={caption} enableGutter={false} />
             </div>
           )}
         </div>

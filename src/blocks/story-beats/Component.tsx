@@ -1,5 +1,5 @@
 import type React from 'react'
-import { BlockGrid } from '@/blocks/shared/grid'
+import { BlockGrid, readingColumnClassName } from '@/blocks/shared/grid'
 import { Section } from '@/blocks/shared/section'
 import { proseHeadingClassNames } from '@/blocks/shared/typography'
 import { Container } from '@/components/Container'
@@ -19,7 +19,7 @@ import type { StoryPassage } from '../shared/story-headings'
  */
 type StoryBeatsBlockProps = Pick<
   LabStoryBeatsBlock | WorkStoryBeatsBlock,
-  'blockType' | 'body' | 'heading' | 'headingLevel' | 'theme' | 'variant'
+  'blockType' | 'body' | 'heading' | 'headingLevel' | 'theme'
 > & {
   bare?: boolean
   /**
@@ -31,27 +31,9 @@ type StoryBeatsBlockProps = Pick<
 }
 
 /**
- * Type size only. Prose sizes its children in `em`, so setting the size on the
- * wrapper scales the whole passage and keeps the flow rhythm proportional.
- *
- * - `default`: the prose base, the size a post renders its main text at. It
- *   deliberately does not step up at `xl` the way the Rich text block does:
- *   this block is the story in the same voice as an article body.
- * - `small`: one step down. The leading is restated because `text-sm` carries
- *   a 1.25rem line, tighter than prose's flow at any size.
- * - `lead`: the standfirst token from the type scale (globals.css), for a beat
- *   that opens a section.
- */
-const variantClasses = {
-  default: '',
-  small: 'text-sm/relaxed',
-  lead: 'text-lead',
-} as const
-
-/**
- * One reading column on the composition grid, starting two columns in and
- * spanning four (columns 3-6) — the same measure and placement as the Rich
- * text block, so a story beat and an authored passage sit on the same line.
+ * The reading column on the composition grid (`readingColumnClassName`), the
+ * same measure, placement and `text-body` size as the Rich text block, so a
+ * story beat and an authored passage sit on the same line.
  *
  * The copy arrives already resolved against the page's story record
  * (`shared/story-copy.ts`), so this component only ever renders a body: one
@@ -74,7 +56,6 @@ export const StoryBeatsBlock: React.FC<StoryBeatsBlockProps> = ({
   headingLevel,
   passages,
   theme,
-  variant,
 }) => {
   const run = (
     passages ?? [
@@ -93,18 +74,14 @@ export const StoryBeatsBlock: React.FC<StoryBeatsBlockProps> = ({
             const Heading = passage.headingLevel || 'h3'
             return (
               <div
-                className={cn('md:col-span-4 md:col-start-3', passage.heading && 'text-stack')}
+                className={cn(readingColumnClassName, passage.heading && 'text-stack')}
                 data-reveal
                 key={passage.key}
               >
                 {passage.heading ? (
                   <Heading className={proseHeadingClassNames[Heading]}>{passage.heading}</Heading>
                 ) : null}
-                <RichText
-                  className={variantClasses[variant || 'default']}
-                  data={passage.body}
-                  enableGutter={false}
-                />
+                <RichText className="text-body" data={passage.body} enableGutter={false} />
               </div>
             )
           })}

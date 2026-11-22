@@ -205,11 +205,11 @@ export default function RichText(props: Props) {
           container: enableGutter,
           'max-w-none': !enableGutter,
           /* Article scale: bridge Tailwind Typography to the fluid type
-             tokens. h1/h2 step down one visual level inside a reading column
-             (380 via the token weight companions, matching body); h3/h4 take
-             medium — at near-body sizes weight, not size, carries hierarchy. */
+             tokens, the same prose ladder as `proseHeadingClassNames`
+             (blocks/shared/typography.ts). h3/h4 take medium: at near-body
+             sizes weight, not size, carries hierarchy. */
           'mx-auto prose dark:prose-invert': enableProse,
-          'prose-h1:text-heading-2 prose-h2:text-heading-3 prose-h3:text-lead prose-h3:leading-snug prose-h3:font-medium prose-h4:font-medium':
+          'prose-h1:text-heading prose-h2:text-subheading prose-h3:text-lead prose-h3:font-medium prose-h4:text-body prose-h4:font-medium':
             enableProse,
         },
         variantClasses[variant],

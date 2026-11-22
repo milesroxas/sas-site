@@ -15,7 +15,7 @@ const RelatedProjectCard = ({ item }: { item: LabPage }) => {
   return (
     <a className="group pressable pressable-subtle block" href={`/lab/${item.slug}`}>
       {coverAsset && <Media resource={coverAsset} imgClassName="h-auto w-full" />}
-      <h3 className="mt-4 text-heading-3 group-hover:underline">
+      <h3 className="mt-4 text-subheading group-hover:underline">
         {labProject ? labProject.title : item.title}
       </h3>
     </a>
@@ -38,7 +38,7 @@ export const RelatedProjectsList = ({
   return (
     <Section>
       <div className="container mx-auto">
-        <h2 className="mb-8 text-heading-2">{block.heading || 'More from the lab'}</h2>
+        <h2 className="mb-8 text-heading">{block.heading || 'More from the lab'}</h2>
         <div className={cn('grid gap-8', block.layout === 'grid' && 'md:grid-cols-3')}>
           {pages.map((item) => (
             <RelatedProjectCard item={item} key={item.id} />

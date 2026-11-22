@@ -110,7 +110,7 @@ export const RelatedWorkBrowse: React.FC<{
           <HeroEyebrow eyebrow={copy.eyebrow} />
         </div>
         <h2
-          className="text-heading-2 text-foreground md:col-span-4 md:col-start-1"
+          className="text-heading text-foreground md:col-span-4 md:col-start-1"
           data-reveal
           data-reveal-group="related-intro"
         >

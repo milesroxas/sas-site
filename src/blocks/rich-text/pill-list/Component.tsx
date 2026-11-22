@@ -1,4 +1,5 @@
 import type React from 'react'
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import type { RichTextPillListBlock as RichTextPillListBlockData } from '@/payload-types'
 import { cn } from '@/utilities/ui'
 
@@ -24,15 +25,11 @@ export const RichTextPillList: React.FC<RichTextPillListProps> = ({
 
   return (
     <div className={cn('not-prose flex flex-col gap-6', className)} data-reveal>
-      {eyebrow ? (
-        <p className="font-mono text-xs/4 tracking-widest text-muted-foreground uppercase">
-          {eyebrow}
-        </p>
-      ) : null}
+      {eyebrow ? <p className={cn(eyebrowClassName, 'text-muted-foreground')}>{eyebrow}</p> : null}
       <ul className="flex flex-wrap gap-2">
         {pills.map((pill, index) => (
           <li
-            className="rounded-full border border-border px-3.5 py-2 font-mono text-xs/4 tracking-wide text-foreground"
+            className="rounded-full border border-border px-3.5 py-2 font-mono text-xs/4 text-foreground"
             key={pill.id ?? index}
           >
             {pill.label}

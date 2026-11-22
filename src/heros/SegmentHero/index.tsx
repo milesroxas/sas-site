@@ -81,7 +81,7 @@ export const SegmentHero: React.FC<SegmentHeroData> = (hero) => {
                 </p>
               )}
               <h1
-                className="text-heading-2 text-foreground"
+                className="text-heading text-foreground"
                 data-reveal
                 data-reveal-group="hero-title"
               >

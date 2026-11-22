@@ -53,7 +53,7 @@ const MediaShowcase = ({ block }: { block: LabMediaShowcaseBlock }) => {
   return (
     <Section theme={block.theme}>
       <div className="text-stack container mx-auto">
-        {block.heading && <h2 className="text-heading-2">{block.heading}</h2>}
+        {block.heading && <h2 className="text-heading">{block.heading}</h2>}
         {block.introduction && (
           <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
         )}

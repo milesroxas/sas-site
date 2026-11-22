@@ -79,8 +79,8 @@ export const ImagePair = ({
           )}
           data-reveal
         >
-          {block.heading && <h2 className="text-heading-3 text-balance">{block.heading}</h2>}
-          <RichText className="text-lg/7" data={content} enableGutter={false} enableProse={false} />
+          {block.heading && <h2 className="text-subheading text-balance">{block.heading}</h2>}
+          <RichText className="text-body" data={content} enableGutter={false} enableProse={false} />
         </div>
       </BlockGrid>
     </Container>

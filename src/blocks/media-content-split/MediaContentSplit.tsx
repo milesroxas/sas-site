@@ -73,14 +73,14 @@ export const MediaContentSplit = ({
             </p>
           )}
           {block.heading && (
-            <h2 className="text-heading-3 text-balance" data-reveal>
+            <h2 className="text-subheading text-balance" data-reveal>
               {block.heading}
             </h2>
           )}
           {content && (
             <div data-reveal>
               <RichText
-                className="text-base/6 lg:text-lg/7"
+                className="text-body"
                 data={content}
                 enableGutter={false}
                 enableProse={false}

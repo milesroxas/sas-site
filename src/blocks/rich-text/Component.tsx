@@ -1,6 +1,6 @@
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 import type React from 'react'
-import { BlockGrid } from '@/blocks/shared/grid'
+import { BlockGrid, readingColumnClassName } from '@/blocks/shared/grid'
 import { Section } from '@/blocks/shared/section'
 import { YouTubeBlock } from '@/blocks/youtube/Component'
 import { Container } from '@/components/Container'
@@ -89,7 +89,7 @@ const renderBlock = (fields: BodyBlock, index: number) => {
     case 'pillList':
       return (
         <RichTextPillList
-          className="md:col-span-4 md:col-start-3"
+          className={readingColumnClassName}
           eyebrow={fields.eyebrow}
           items={fields.items}
           key={key}
@@ -100,7 +100,7 @@ const renderBlock = (fields: BodyBlock, index: number) => {
         <YouTubeBlock
           {...fields}
           bare
-          className="md:col-span-4 md:col-start-3"
+          className={readingColumnClassName}
           enableGutter={false}
           key={key}
         />
@@ -109,14 +109,12 @@ const renderBlock = (fields: BodyBlock, index: number) => {
 }
 
 /**
- * A reading column on the composition grid: the body starts two columns in and
- * spans four (columns 3-6), a wider measure than the Standard heading body
- * (columns 2-4) so long-form copy gets room to breathe.
+ * The reading column on the composition grid (`readingColumnClassName`), the
+ * same one Story beats and a Prose heading take.
  *
  * Prose mode so inline headings, lists, and links take the article treatment
- * `RichText` bridges to the type tokens. Copy sits at the base size on a
- * normal desktop and steps up to `text-lg` from `xl`, where the four-column
- * measure is wide enough to carry it (the Paper frame is set at 1440).
+ * `RichText` bridges to the type tokens. Copy is `text-body`, which grows
+ * 16 to 18px with the viewport.
  *
  * Blocks the editor adds from the toolbar interrupt the column as their own
  * cells. Insights: one fills the column, two share it, three or more open
@@ -134,9 +132,9 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = ({ bare, body, theme 
         {body
           ? segmentBody(body.root.children).map((segment, index) =>
               segment.kind === 'prose' ? (
-                <div className="md:col-span-4 md:col-start-3" data-reveal key={`prose-${index}`}>
+                <div className={readingColumnClassName} data-reveal key={`prose-${index}`}>
                   <RichText
-                    className="text-base xl:text-lg"
+                    className="text-body"
                     data={proseState(body, segment.nodes)}
                     enableGutter={false}
                   />

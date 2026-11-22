@@ -256,7 +256,7 @@ export const IndexBanner: React.FC<Props> = ({
       {/* Stacked, the pause control shares the head of the slab with the copy. */}
       <div className={cn('flex max-w-xl flex-col items-start gap-5', pausable && 'max-md:pr-8')}>
         <h2
-          className="max-w-md text-heading-3 leading-tight tracking-tight text-balance text-foreground"
+          className="max-w-md text-subheading leading-tight tracking-tight text-balance text-foreground"
           data-banner-copy
           id={headingId}
         >

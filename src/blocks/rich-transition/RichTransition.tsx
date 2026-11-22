@@ -3,13 +3,10 @@ import type { ReactNode } from 'react'
 import { Container } from '@/components/Container'
 import RichText from '@/components/RichText'
 import type { RichTransitionBlock } from '@/payload-types'
-import { BlockGrid } from '../shared/grid'
+import { cn } from '@/utilities/ui'
+import { BlockGrid, readingColumnClassName } from '../shared/grid'
 import { Section } from '../shared/section'
-import {
-  eyebrowClassName,
-  type ProseHeadingLevel,
-  proseHeadingClassNames,
-} from '../shared/typography'
+import { eyebrowClassName, proseHeadingClassNames } from '../shared/typography'
 
 /**
  * Copy fields shared by the generic and case-study rich-transition blocks.
@@ -33,9 +30,15 @@ type Layout = NonNullable<RichTransitionFields['layout']>
  */
 type LayoutProps = RichTransitionFields & { stacked?: boolean }
 
+/** The deck under every layout's heading: running copy, so `text-body`. */
 const Body = ({ className, data }: { className?: string; data: DefaultTypedEditorState }) => (
   <div data-reveal>
-    <RichText className={className} data={data} enableGutter={false} enableProse={false} />
+    <RichText
+      className={cn('text-body', className)}
+      data={data}
+      enableGutter={false}
+      enableProse={false}
+    />
   </div>
 )
 
@@ -53,13 +56,13 @@ const Offset = ({ body, eyebrow, heading }: RichTransitionFields) => (
             {eyebrow}
           </p>
         ) : null}
-        <h2 className="text-heading-1" data-reveal data-reveal-group="heading">
+        <h2 className="text-heading" data-reveal data-reveal-group="heading">
           {heading}
         </h2>
       </div>
       {body ? (
         <div className="md:col-span-3 md:col-start-2">
-          <Body className="text-lg" data={body} />
+          <Body data={body} />
         </div>
       ) : null}
     </BlockGrid>
@@ -79,13 +82,13 @@ const Left = ({ body, eyebrow, heading }: RichTransitionFields) => (
             {eyebrow}
           </p>
         ) : null}
-        <h2 className="text-heading-1" data-reveal data-reveal-group="heading">
+        <h2 className="text-heading" data-reveal data-reveal-group="heading">
           {heading}
         </h2>
       </div>
       {body ? (
         <div className="md:col-span-3">
-          <Body className="text-lg" data={body} />
+          <Body data={body} />
         </div>
       ) : null}
     </BlockGrid>
@@ -105,10 +108,10 @@ const Centered = ({ body, eyebrow, heading }: RichTransitionFields) => (
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="text-heading-1 mx-auto max-w-3xl" data-reveal data-reveal-group="heading">
+      <h2 className="text-heading mx-auto max-w-3xl" data-reveal data-reveal-group="heading">
         {heading}
       </h2>
-      {body ? <Body className="mx-auto max-w-160 text-base/7" data={body} /> : null}
+      {body ? <Body className="mx-auto max-w-160" data={body} /> : null}
     </div>
   </Container>
 )
@@ -123,13 +126,13 @@ const Split = ({ body, eyebrow, heading }: RichTransitionFields) => (
             {eyebrow}
           </p>
         ) : null}
-        <h2 className="text-heading-1" data-reveal data-reveal-group="heading">
+        <h2 className="text-heading" data-reveal data-reveal-group="heading">
           {heading}
         </h2>
       </div>
       {body ? (
         <div className="md:col-span-3 md:col-start-6">
-          <Body className="text-lg" data={body} />
+          <Body data={body} />
         </div>
       ) : null}
     </BlockGrid>
@@ -148,25 +151,10 @@ const Statement = ({ body, eyebrow, heading }: RichTransitionFields) => (
       <h2 className="text-display" data-reveal data-reveal-group="heading">
         {heading}
       </h2>
-      {body ? <Body className="mx-auto max-w-xl text-lg" data={body} /> : null}
+      {body ? <Body className="mx-auto max-w-xl" data={body} /> : null}
     </div>
   </Container>
 )
-
-/**
- * Prose heading sizes come from the shared prose scale
- * (`proseHeadingClassNames`), the same one a Story beats heading uses, so an
- * opener and the beats under it never drift apart.
- *
- * The deck steps with the heading: 18px under an h2 is a standfirst, body
- * size under the lower two, both on the body's 28px line so the deck and the
- * beats below it share a baseline.
- */
-const proseBodyClasses: Record<ProseHeadingLevel, string> = {
-  h2: 'text-lg/7',
-  h3: 'text-base/7',
-  h4: 'text-base/7',
-}
 
 /**
  * A prose opener binds to the passage it opens, so the gap below it is two
@@ -191,9 +179,11 @@ const proseBodyClasses: Record<ProseHeadingLevel, string> = {
 const proseBandBottomClassName = 'pb-10 -mb-16 md:pb-14 md:-mb-24'
 
 /**
- * Prose: the whole cluster (eyebrow, heading, deck) on the Story beats
- * reading column (columns 3-6), so a Standard heading can open a passage of
- * beats without the copy stepping sideways between blocks.
+ * Prose: the whole cluster (eyebrow, heading, deck) on the reading column
+ * (`readingColumnClassName`), so a Standard heading can open a passage of
+ * beats without the copy stepping sideways between blocks. The heading takes
+ * the shared prose ladder (`proseHeadingClassNames`), the same one a Story
+ * beats heading uses.
  *
  * One cell, not two: `text-stack` owns eyebrow to heading to deck in the
  * heading's own em, which keeps the cluster proportional at every level. The
@@ -206,7 +196,7 @@ const Prose = ({ body, eyebrow, heading, headingLevel, stacked }: LayoutProps) =
   return (
     <Container className={stacked ? undefined : proseBandBottomClassName}>
       <BlockGrid data-prose-opener>
-        <div className="text-stack md:col-span-4 md:col-start-3">
+        <div className={cn('text-stack', readingColumnClassName)}>
           {eyebrow ? (
             <p className={eyebrowClassName} data-reveal data-reveal-group="heading">
               {eyebrow}
@@ -219,7 +209,7 @@ const Prose = ({ body, eyebrow, heading, headingLevel, stacked }: LayoutProps) =
           >
             {heading}
           </Heading>
-          {body ? <Body className={proseBodyClasses[level]} data={body} /> : null}
+          {body ? <Body data={body} /> : null}
         </div>
       </BlockGrid>
     </Container>

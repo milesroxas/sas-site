@@ -2,10 +2,12 @@
 
 import { type FormEvent, useId, useState } from 'react'
 import { Section } from '@/blocks/shared/section'
+import { eyebrowClassName } from '@/blocks/shared/typography'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import type { NewsletterSignupBlock as NewsletterSignupBlockProps } from '@/payload-types'
+import { cn } from '@/utilities/ui'
 
 type Status =
   | { state: 'idle' | 'loading' }
@@ -64,9 +66,9 @@ export const NewsletterSignupBlock: React.FC<NewsletterSignupBlockProps> = ({
           <CardContent className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
             <div className="text-stack max-w-xl">
               {eyebrow ? (
-                <p className="text-xs tracking-widest text-muted-foreground uppercase">{eyebrow}</p>
+                <p className={cn(eyebrowClassName, 'text-muted-foreground')}>{eyebrow}</p>
               ) : null}
-              <h2 className="text-heading-3">{heading}</h2>
+              <h2 className="text-subheading">{heading}</h2>
               {body ? <p className="text-sm text-muted-foreground">{body}</p> : null}
             </div>
 

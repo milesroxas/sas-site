@@ -1,5 +1,6 @@
 import { IconChevronRight, IconLink } from '@tabler/icons-react'
 import type { ReactNode } from 'react'
+import { captionClassName } from '@/blocks/shared/typography'
 import { cn } from '@/utilities/ui'
 
 export type FigureWidth = 'full' | 'text' | 'wide'
@@ -53,7 +54,7 @@ type Ids = ReturnType<typeof figureIds>
 /** The title with its anchor: a plain hash link, so copying a figure's address needs no script. */
 const Title = ({ className, ids, title }: { className?: string; ids: Ids; title: string }) => (
   <div className={cn('group/title mb-6 flex items-baseline gap-2', className)}>
-    <h3 className="text-heading-3" id={ids.title}>
+    <h3 className="text-subheading" id={ids.title}>
       {title}
     </h3>
     {/* Hidden until the title is hovered; always there on focus, and on touch, where nothing hovers. */}
@@ -140,7 +141,7 @@ export const FigureFrame = ({
           kind hands its legend, axis labels and drawing over as siblings. */}
       <div className={cn('min-w-0', place.visual)}>{children}</div>
       {caption || source?.label ? (
-        <figcaption className={cn('mt-4 text-sm text-muted-foreground', place.text)}>
+        <figcaption className={cn('mt-4', captionClassName, place.text)}>
           {caption}
           {source?.label ? <Source href={source.href} label={source.label} /> : null}
         </figcaption>

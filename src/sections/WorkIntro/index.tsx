@@ -37,7 +37,7 @@ type Props = {
 export const WorkIntro: React.FC<Props> = ({ eyebrow, title, body, summary }) => (
   <WorkIntroSection>
     <Container width="default" className="grid gap-8 md:grid-cols-2 lg:grid-cols-12">
-      <h2 className="max-w-xl text-heading-2 text-balance lg:col-span-5" data-intro-title>
+      <h2 className="max-w-xl text-heading text-balance lg:col-span-5" data-intro-title>
         {title}
       </h2>
       <div className="flex flex-col gap-8 pt-20 md:pt-32 lg:col-span-5 lg:col-start-8 lg:pt-20">

@@ -21,7 +21,7 @@ export const KeyDecisions = ({
   return (
     <RevealSection theme={block.theme} variant="intro">
       <div className="container mx-auto">
-        <h2 className="mb-8 text-heading-2" data-reveal>
+        <h2 className="mb-8 text-heading" data-reveal>
           {block.heading || 'Key decisions'}
         </h2>
         {block.introduction && (
@@ -32,7 +32,7 @@ export const KeyDecisions = ({
         <div className={cn('grid gap-6', block.layout === 'cards' && 'md:grid-cols-2')}>
           {decisions.map((decision) => (
             <article className="border-current/20 border p-6" data-reveal key={decision.key}>
-              <h3 className="mb-4 text-heading-3">{decision.title}</h3>
+              <h3 className="mb-4 text-subheading">{decision.title}</h3>
               {decision.decision && <p>{decision.decision}</p>}
               {decision.impact && <p className="mt-4 opacity-75">{decision.impact}</p>}
             </article>

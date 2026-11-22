@@ -3,6 +3,7 @@
 import type React from 'react'
 import { type CSSProperties, useId, useRef, useState } from 'react'
 import { Section } from '@/blocks/shared/section'
+import { captionClassName } from '@/blocks/shared/typography'
 import { Media } from '@/components/Media'
 import {
   Carousel,
@@ -174,7 +175,7 @@ const CarouselSlide: React.FC<{
           // per-frame writer as the pose (see ./use-carousel-effects), and this
           // rest-state opacity is that writer's frame 0.
           <p
-            className="mt-4 text-sm text-muted-foreground"
+            className={cn('mt-4', captionClassName)}
             data-carousel-caption
             style={{ opacity: captionOpacity(restSigned) }}
           >

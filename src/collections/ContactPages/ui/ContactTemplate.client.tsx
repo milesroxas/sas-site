@@ -261,7 +261,7 @@ function FormIntro({
     <>
       <div className="flex flex-col items-start gap-6" data-swap="text">
         {content.eyebrow ? <Eyebrow marker="rule">{content.eyebrow}</Eyebrow> : null}
-        <h1 className="text-heading-1">{content.heading}</h1>
+        <h1 className="text-heading">{content.heading}</h1>
         {content.lead ? (
           <p className="max-w-110 text-lead text-muted-foreground">{content.lead}</p>
         ) : null}
@@ -345,7 +345,7 @@ function SentIntro({
     <>
       <div className="flex flex-col items-start gap-6" data-swap="text">
         {content.sentEyebrow ? <Eyebrow marker="dot">{content.sentEyebrow}</Eyebrow> : null}
-        <h1 className="text-heading-1">{content.sentHeading}</h1>
+        <h1 className="text-heading">{content.sentHeading}</h1>
         {body ? <p className="max-w-110 text-lead text-muted-foreground">{body}</p> : null}
       </div>
 
