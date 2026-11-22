@@ -121,6 +121,7 @@ import * as migration_20261001_211315_shorten_long_identifiers from './20261001_
 import * as migration_20261020_142403_expertise_audience_index from './20261020_142403_expertise_audience_index';
 import * as migration_20261109_201516_resources_download_block from './20261109_201516_resources_download_block';
 import * as migration_20261120_231544_poster_list from './20261120_231544_poster_list';
+import * as migration_20261122_185525_cta_band from './20261122_185525_cta_band';
 
 export const migrations = [
   {
@@ -736,6 +737,11 @@ export const migrations = [
   {
     up: migration_20261120_231544_poster_list.up,
     down: migration_20261120_231544_poster_list.down,
-    name: '20261120_231544_poster_list'
+    name: '20261120_231544_poster_list',
+  },
+  {
+    up: migration_20261122_185525_cta_band.up,
+    down: migration_20261122_185525_cta_band.down,
+    name: '20261122_185525_cta_band'
   },
 ];
