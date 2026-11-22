@@ -83,6 +83,8 @@ New `BLOCK_GROUPS` entries: `sectionHeading: 'Section heading'`, `mediaContent: 
 | `featureTabs` | Interactive / Tabs | 2026-09-04 (B5) | Moved from the legacy top-level Interactive list (label was "Feature: tabs"); keeps its default per-parent `*_blocks_feature_tabs` tables (+ `_tabs`, `_tabs_items`), only Posts and Lab gain it as new. Work nests the story-beat variant (`WorkFeatureTabsBlock`) since each tab pulls story copy |
 | NEW `posterList` | Lists / Poster list | 2026-11-20 | Heading cluster plus a draggable rail of 4:5 posters, title under it, description frosted in on hover; per-parent `*_poster_list` + `*_poster_list_items` tables (+ `work_pages` in `_rels`). Decision below |
 
+| NEW `ctaBand` | Forms & CTAs / CTA band | 2026-11-22 | Call to action on the always-dark panel (`Section dark`) with the amber light leak behind it; actions flare the leak. Full or Compact `layout`; nested in a Section it renders as a rounded panel inside the band. Per-parent `*_cta_band` + `*_cta_band_links` tables. First Forms & CTAs block in the run, also offered plain in Work Sections. Decision below |
+
 Interactive is the first legacy group to enter the run. Tabs followed in B5 (it only needed `bare` and the grid). The remaining Interactive blocks (audience and industry shells, marquee) stay top-level-only because they own pinned or full-viewport shells (D4). Lists followed in B4 with Insight list; the legacy Lists blocks (Archive, Featured work, the case-study and lab lists) stay top-level-only for now and share the group tab, which Payload assembles by label regardless of array position.
 
 #### Poster list: decided 2026-11-20
@@ -94,6 +96,15 @@ Chosen from three directions prototyped on a throwaway `/demo/list-block` route 
 - **Rail:** the PostRail pattern (Embla free drag for a mouse, native scroller on touch, `data-lenis-prevent-horizontal`). The rail keeps 3rem of room inside its clip so a tilted poster and its shadow are never cut.
 - **Entrance:** the shared under-media reveal; the wipe target is the rail's own wrapper. A tilted poster inside the single-row layout's size container is reported as not intersecting by Chromium, so a poster can never be a reveal gate.
 - **Rejected:** *Gallery* (matted prints, a veil that wipes up): calm, but the least memorable for a section meant to show off work. *Spotlight* (one poster always the subject, snapping rail with arrows and a counter): the most chrome, and its permanent dimming hid the rest of the list. An earlier pinned conveyor (items lifting out of a fixed slot as the page scrolled) was dropped for the poster rail.
+
+#### CTA band: decided 2026-11-22
+
+Chosen from three directions prototyped on a throwaway `/proto/cta-band` route (live expertise page context, deleted once this shipped):
+
+- **Direction: Darkroom.** The always-dark panel (`data-band="dark"`) with the studio's own light leak running on it, `LIGHT_LEAK_AMBER` unchanged (gain 0.29, hover bloom 0.36, gain on hover 0.1, no section-crossing glow). Hovering an action flares the leak, so the motion maps to the pointer. With no GPU or under reduced motion the leak renders nothing and the dark ground is the poster.
+- **Sizes:** Full (kicker, `text-heading`, body, two `xl` actions, optional mono corner note; `loose` band) and Compact (`text-lead` heading beside the actions in one row; `tight` band) for a quieter prompt mid page.
+- **Nesting:** at the top level a full-bleed band; inside a Section a `rounded-xl` panel in the page column, laid out with flex rather than a grid because the slab's padding would put a grid off the page columns. The panel carries its own leak scope so it never answers the Section's other links.
+- **Rejected:** *Ledger* (ruled lines on the grid, the heading itself the link with a drawn underline): native to the editorial voice, but the closest to every other block. *Press* (the whole band one link, a fill wiping in from the pointer's edge and inverting the type at its edge): the most tactile, but one action only, and the copy has to render twice.
 
 ### Standard select vocabulary
 

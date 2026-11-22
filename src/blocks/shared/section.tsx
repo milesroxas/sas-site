@@ -77,24 +77,36 @@ export const fullViewportSectionClassName = cn(
  * `bare` is for a block whose renderer already supplied the band — the
  * work-page reveal shell wraps the same components — so the band is never
  * painted twice.
+ *
+ * `dark` paints the always-dark panel (`data-band="dark"`, globals.css)
+ * instead of a band theme: dark in both site themes, on its own deeper ground.
+ * For a block whose design is that surface (the CTA band), never an editor's
+ * theme choice, so it ignores `theme`.
  */
 export const Section = ({
   bare = false,
   children,
   className,
+  dark = false,
   spacing = 'normal',
   theme,
 }: {
   bare?: boolean
   children: ReactNode
   className?: string
+  dark?: boolean
   spacing?: BandSpacing
   theme?: BandTheme | null
 }) => {
   if (bare) return <>{children}</>
   return (
     <section
-      className={cn(BAND_SPACING[spacing], sectionThemeClass(theme), className)}
+      className={cn(
+        BAND_SPACING[spacing],
+        dark ? 'bg-background text-foreground' : sectionThemeClass(theme),
+        className,
+      )}
+      data-band={dark ? 'dark' : undefined}
       {...VISUAL_HOST}
     >
       {children}

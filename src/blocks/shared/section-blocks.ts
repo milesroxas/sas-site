@@ -3,6 +3,7 @@ import type { Block } from 'payload'
 import { Carousel } from '@/blocks/Carousel/config'
 import { Code } from '@/blocks/Code/config'
 import { Content } from '@/blocks/Content/config'
+import { CtaBand } from '@/blocks/cta-band/config'
 import { Faq } from '@/blocks/faq/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
@@ -69,6 +70,8 @@ export const sectionNestableBlocks: Block[] = [
   // Lists
   InsightList,
   PosterList,
+  // Forms & CTAs
+  CtaBand,
 ]
 
 /**

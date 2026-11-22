@@ -2,6 +2,7 @@ import type React from 'react'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { CodeSectionBlock } from '@/blocks/Code/Section'
 import { ContentBlock } from '@/blocks/Content/Component'
+import { CtaBandBlock } from '@/blocks/cta-band/Component'
 import { FaqBlock } from '@/blocks/faq/Component'
 import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Component'
 import { FeatureImageStatementBlock } from '@/blocks/feature/ImageStatement/Component'
@@ -39,6 +40,7 @@ export const sectionChildComponents = {
   chart: ChartBlock,
   code: CodeSectionBlock,
   content: ContentBlock,
+  ctaBand: CtaBandBlock,
   diagram: DiagramBlock,
   faq: FaqBlock,
   featureHeadingOffset: FeatureHeadingOffsetBlock,

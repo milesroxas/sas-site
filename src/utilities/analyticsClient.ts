@@ -44,7 +44,14 @@ export function resetClientCapture(): void {
 }
 
 /** Where a call to action sits on the page. Extend here, not at a call site. */
-export type CtaLocation = 'header' | 'closing' | 'cta_block' | 'faq' | 'download' | 'download_rail'
+export type CtaLocation =
+  | 'header'
+  | 'closing'
+  | 'cta_block'
+  | 'cta_band'
+  | 'faq'
+  | 'download'
+  | 'download_rail'
 
 /**
  * One event for every primary call to action, keyed by slot rather than by

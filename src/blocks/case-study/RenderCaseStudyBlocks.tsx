@@ -481,14 +481,16 @@ const renderWorkBlock = (
           <ContentBlock {...block} bare={bare} />
         </CssRevealSection>
       )
-    // Code and the figures carry no story copy and no media, so nothing
-    // resolves against the study: they go through the shared renderer and get
-    // the band and CSS entrance they have on every other surface, bare inside
-    // a Section. A diagram's own draw-in keys off that entrance (globals.css).
+    // Code, the figures and the CTA band carry no story copy and no media, so
+    // nothing resolves against the study: they go through the shared renderer
+    // and get the band and entrance they have on every other surface, bare
+    // inside a Section. A diagram's own draw-in keys off that entrance
+    // (globals.css).
     case 'code':
     case 'chart':
     case 'diagram':
     case 'bespokeFigure':
+    case 'ctaBand':
       return renderContentBlock(
         block,
         block.id ?? block.blockType,

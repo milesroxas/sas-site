@@ -14,6 +14,8 @@ export const blockRevealVariants = {
   // tab buttons → list items → media wipe last — plus the scramble tab swap;
   // shared values imported from the reveals and scramble defaults.
   audienceTabs: 'self',
+  // Copy and actions drop in; the leak and the dark ground are already there.
+  ctaBand: 'intro',
   dynamicAudience: 'underMedia',
   faq: 'intro',
   featureHeadingOffset: 'intro',

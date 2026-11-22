@@ -3,6 +3,7 @@ import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { Carousel } from '@/blocks/Carousel/config'
 import { Code } from '@/blocks/Code/config'
 import { Content } from '@/blocks/Content/config'
+import { CtaBand } from '@/blocks/cta-band/config'
 import { Faq } from '@/blocks/faq/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
@@ -248,6 +249,8 @@ const workSectionBlocks: Block[] = [
   WorkFeatureTabs,
   // Lists: insight copy is the block's own too.
   InsightList,
+  // Forms & CTAs: the band's copy and actions are its own, so it is offered plain.
+  CtaBand,
 ]
 
 export const WorkSection = sectionBlock({

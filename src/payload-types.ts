@@ -345,6 +345,7 @@ export interface Page {
     | FeatureTabsBlock
     | InsightListBlock
     | PosterListBlock
+    | CtaBandBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
     | IndustryWorkBlock
@@ -474,6 +475,7 @@ export interface Post {
         | FeatureTabsBlock
         | InsightListBlock
         | PosterListBlock
+        | CtaBandBlock
         | FeaturedWorkBlock
       )[]
     | null;
@@ -1582,6 +1584,7 @@ export interface WorkPage {
         | WorkCarouselBlock
         | WorkFeatureTabsBlock
         | InsightListBlock
+        | CtaBandBlock
         | WorkAudienceTabsBlock
         | IndustryWorkBlock
         | CaseStudyMediaShowcaseBlock
@@ -1826,6 +1829,7 @@ export interface WorkSectionBlock {
         | WorkCarouselBlock
         | WorkFeatureTabsBlock
         | InsightListBlock
+        | CtaBandBlock
         | ContentBlock
       )[]
     | null;
@@ -5949,6 +5953,63 @@ export interface InsightListBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CtaBandBlock".
+ */
+export interface CtaBandBlock {
+  /**
+   * Full: kicker, heading, body and actions on a tall band. Compact: one row, the heading beside the actions, for a quieter prompt mid page.
+   */
+  layout?: ('full' | 'compact') | null;
+  /**
+   * Short kicker above the heading, e.g. "Start a project". Full only.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * A sentence or two under the heading. Full only.
+   */
+  body?: string | null;
+  /**
+   * The first action is the solid button, the second the frosted one beside it.
+   */
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'site' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
+              } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
+          url?: string | null;
+          label: string;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional small mono line in the band's lower corner, e.g. "Light leak, rendering live". Full only.
+   */
+  caption?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'ctaBand';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ContentBlock".
  */
 export interface ContentBlock {
@@ -6607,6 +6668,7 @@ export interface PageSectionBlock {
         | FeatureTabsBlock
         | InsightListBlock
         | PosterListBlock
+        | CtaBandBlock
         | ContentBlock
       )[]
     | null;
@@ -7814,6 +7876,7 @@ export interface LabPage {
         | LabFeatureTabsBlock
         | InsightListBlock
         | PosterListBlock
+        | CtaBandBlock
         | LabStoryBeatsBlock
         | ResourceDownloadBlock
         | LabMediaShowcaseBlock
@@ -8042,6 +8105,7 @@ export interface LabSectionBlock {
         | LabFeatureTabsBlock
         | InsightListBlock
         | PosterListBlock
+        | CtaBandBlock
         | LabStoryBeatsBlock
         | ResourceDownloadBlock
         | ContentBlock
@@ -8999,6 +9063,7 @@ export interface ExpertisePage {
     | FeatureTabsBlock
     | InsightListBlock
     | PosterListBlock
+    | CtaBandBlock
     | AudienceTabsBlock
     | FeatureStatementGridBlock
     | ArchiveBlock
@@ -9170,6 +9235,7 @@ export interface SegmentSectionBlock {
         | FeatureTabsBlock
         | InsightListBlock
         | PosterListBlock
+        | CtaBandBlock
         | ContentBlock
       )[]
     | null;
@@ -9225,6 +9291,7 @@ export interface AudiencePage {
     | FeatureTabsBlock
     | InsightListBlock
     | PosterListBlock
+    | CtaBandBlock
     | AudienceTabsBlock
     | FeatureStatementGridBlock
     | ArchiveBlock
@@ -10417,6 +10484,7 @@ export interface PagesSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
@@ -10507,6 +10575,7 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -10886,6 +10955,34 @@ export interface PosterListBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CtaBandBlock_select".
+ */
+export interface CtaBandBlockSelect<T extends boolean = true> {
+  layout?: T;
+  eyebrow?: T;
+  heading?: T;
+  body?: T;
+  links?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              sitePage?: T;
+              url?: T;
+              label?: T;
+            };
+        id?: T;
+      };
+  caption?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ContentBlock_select".
  */
 export interface ContentBlockSelect<T extends boolean = true> {
@@ -11220,6 +11317,7 @@ export interface PostsSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
   primaryResource?: T | PrimaryResourceSelect<T>;
@@ -11313,6 +11411,7 @@ export interface WorkPagesSelect<T extends boolean = true> {
         carousel?: T | WorkCarouselBlockSelect<T>;
         featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         audienceTabs?: T | WorkAudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
@@ -11397,6 +11496,7 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         carousel?: T | WorkCarouselBlockSelect<T>;
         featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -11862,6 +11962,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         featureTabs?: T | LabFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         storyBeats?: T | LabStoryBeatsBlockSelect<T>;
         resourceDownload?: T | ResourceDownloadBlockSelect<T>;
         labMediaShowcase?: T | LabMediaShowcaseBlockSelect<T>;
@@ -11929,6 +12030,7 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         featureTabs?: T | LabFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         storyBeats?: T | LabStoryBeatsBlockSelect<T>;
         resourceDownload?: T | ResourceDownloadBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
@@ -12298,6 +12400,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
@@ -12395,6 +12498,7 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   id?: T;
@@ -12442,6 +12546,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
@@ -13966,6 +14071,7 @@ export interface Home {
     | FeatureTabsBlock
     | InsightListBlock
     | PosterListBlock
+    | CtaBandBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
     | IndustryWorkBlock
@@ -15031,6 +15137,7 @@ export interface HomeSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        ctaBand?: T | CtaBandBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
