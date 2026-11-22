@@ -78,7 +78,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Copy above the rail. Hover a poster: the rest dim and its description frosts in. */
+/** Copy above the rail. Hover a poster: its description frosts in. */
 export const TwoRows: Story = {}
 
 /** Copy in the narrow column, the rail beside it bleeding off the right edge. */

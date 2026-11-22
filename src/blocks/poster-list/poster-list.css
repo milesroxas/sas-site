@@ -1,8 +1,9 @@
 /*
  * Poster list: the poster's layered surface and its reveal states. Layout,
  * spacing and type live in the component's Tailwind; this file holds what
- * utilities state badly: the stacked frost and veil, the `--poster-on` reveal
- * switch every layer reads, and the rail-wide dimming.
+ * utilities state badly: the stacked frost and veil, and the `--poster-on`
+ * reveal switch every layer reads. Posters that are not revealed stay at full
+ * strength: nothing dims the rest of the rail.
  */
 
 .poster {
@@ -17,10 +18,6 @@
     0 0 0 1px light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.09)),
     0 2px 6px light-dark(rgb(0 0 0 / 0.06), transparent),
     0 18px 36px -14px light-dark(rgb(0 0 0 / 0.22), transparent);
-  /* Returning to rest (the pointer has left the rail): slow and soft, the
-     whole row easing back up together. A transition plays the timing of the
-     state being entered, so each state below names its own. */
-  transition: opacity 700ms ease-in-out;
 }
 
 /* What reveals a poster: a fine pointer's hover, keyboard focus, or on touch
@@ -31,25 +28,10 @@
 }
 @media (hover: hover) and (pointer: fine) {
   /* The slide (the poster plus the gap before it) is the hover target, the
-     same box the tilt listens on, so moving from one poster to the next never
-     crosses a dead zone that would un-dim the whole rail. */
+     same box the tilt listens on. */
   [data-slot="carousel-item"]:hover > .poster {
     --poster-on: 1;
-    /* Coming forward: quick, so the poster under the pointer answers at once. */
-    transition: opacity 220ms ease;
   }
-  /* While one poster is in hand, the rest step back. */
-  .poster-rail:has([data-slot="carousel-item"]:hover) [data-slot="carousel-item"]:not(:hover)
-    > .poster {
-    opacity: 0.4;
-    /* Stepping back: slower and gentler, after a short wait so a pointer
-       that only passes across the rail does not blink the whole list. */
-    transition: opacity 450ms ease 90ms;
-  }
-}
-.poster-rail:has(.poster-hit:focus-visible) .poster:not(:has(.poster-hit:focus-visible)) {
-  opacity: 0.4;
-  transition: opacity 450ms ease 90ms;
 }
 
 .poster-hit {
