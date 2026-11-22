@@ -63,6 +63,13 @@ const blockTypesIn = (value: unknown): string[] =>
  * reads block rows through the field config, so removing a block that still
  * has rows would hide them from every read.
  */
+/**
+ * `req.context` flag that lets one save restore a layout exactly as it was,
+ * top-level blocks included: the snapshot restore in `scripts/wrap-sections.ts`
+ * sets it. Never set it for an editor's save.
+ */
+export const RESTORE_LAYOUT_CONTEXT = 'restoreLayoutSnapshot'
+
 export const topLevelBlocks = (
   surface: CompositionSurface,
 ): { filterOptions: BlocksFilterOptions; validate: BlocksFieldValidation } => ({
@@ -80,6 +87,7 @@ export const topLevelBlocks = (
     // admin's per-change form state does not carry the saved rows, so it is
     // not checked here.
     if (base !== true || options.event !== 'submit') return base
+    if (options.req.context?.[RESTORE_LAYOUT_CONTEXT] === true) return true
     const allowed = new Set([
       ...topLevelBlockSlugs(surface),
       ...blockTypesIn(options.previousValue),
