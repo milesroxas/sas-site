@@ -90,7 +90,7 @@ The same scripts run under [T3 Code](https://github.com/pingdotgg/t3code). The s
 
 | Project script | Command | When |
 |---|---|---|
-| Setup worktree | `bash .conductor/setup.sh` | Automatically on worktree create |
+| Setup worktree | `bash "${T3CODE_PROJECT_ROOT:-.}/.conductor/setup.sh"` | Automatically on worktree create. Runs the main checkout's copy, so a worktree on an older base still gets the current script |
 | Dev | `bash .conductor/run-dev.sh` | Play button |
 | Storybook | `bash .conductor/run-storybook.sh` | Manual |
 | Prune worktree DBs (dry run) | `bash .conductor/prune-dbs.sh` | Manual; add `--yes` in a terminal to drop |
@@ -101,6 +101,7 @@ What differs from Conductor, all handled in `lib.sh`:
 |---|---|---|
 | Root (`.env` source) | `$CONDUCTOR_ROOT_PATH`, Conductor's own clone, pulled on setup | `$T3CODE_PROJECT_ROOT`, your main checkout `~/SITES/sas-site`, never pulled |
 | Worktree | `$CONDUCTOR_WORKSPACE_PATH` | `$T3CODE_WORKTREE_PATH` (`~/.t3/worktrees/sas-site/t3-…`) |
+| Base | The branch you pick in Conductor | `origin/dev`: setup fast-forwards a fresh worktree onto it, whatever local branch T3 started from (rules in `start_from_origin_dev`, `.conductor/setup.sh`) |
 | Port | `$CONDUCTOR_PORT` | T3 hands out none: setup takes the first even port in 3200–3298 (Storybook on +1) that no other worktree's `.env` claims and nothing listens on, and stores it as `DEV_PORT` in `.env` |
 | Database | `payload_<city>` | `payload_<worktree dir>`, e.g. `payload_t3_d284362d_6946da94525334cf` |
 | Cleanup | `archive.sh` drops the DB | No archive hook: run the prune script now and then |

@@ -44,6 +44,35 @@ if [ "$WORKSPACE_HOST" = conductor ]; then
     git -C "$ROOT" pull --ff-only --quiet 2>/dev/null || true
 fi
 
+# 0b. New T3 Code worktrees start from origin/dev. T3 branches off the main
+#     checkout's local branch, which can lag origin or sit on another branch.
+#     Only a fresh worktree moves: a clean tree, no commits of its own, and a
+#     base that origin/dev contains, so the move is a fast-forward and never
+#     drops work. Long-lived branches and re-runs with commits stay put.
+#     WORKTREE_KEEP_BASE=1 skips it.
+start_from_origin_dev() {
+  local branch
+  branch="$(git symbolic-ref --short -q HEAD || true)"
+  case "$branch" in "" | dev | main | preview) return 0 ;; esac
+  [ "${WORKTREE_KEEP_BASE:-0}" = 1 ] && return 0
+  [ -z "$(git status --porcelain)" ] || return 0
+  [ -z "$(git rev-list -n1 HEAD --not --exclude="$branch" --branches --remotes)" ] || return 0
+  git fetch --quiet origin dev || {
+    echo "workspace: could not fetch origin/dev; keeping the base T3 chose" >&2
+    return 0
+  }
+  [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/dev)" ] && return 0
+  if git merge-base --is-ancestor HEAD origin/dev; then
+    git merge --ff-only --quiet origin/dev
+    echo "workspace: $branch fast-forwarded to origin/dev ($(git rev-parse --short HEAD))"
+  else
+    echo "workspace: $branch is based on a commit origin/dev does not contain; keeping it" >&2
+  fi
+}
+if [ "$WORKSPACE_HOST" = t3 ]; then
+  start_from_origin_dev
+fi
+
 # 1. Environment — copy the real .env from the root checkout, then point this
 #    workspace at its own port and database. Re-runs pick up rotated secrets
 #    but keep the DB this workspace already owns (DB_NAME came from .env).
