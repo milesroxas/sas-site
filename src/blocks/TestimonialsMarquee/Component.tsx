@@ -1,4 +1,5 @@
 import type React from 'react'
+import { isPublicTestimonial } from '@/blocks/shared/public-testimonial'
 import { Section } from '@/blocks/shared/section'
 import { CMSLink } from '@/components/Link'
 import RichText from '@/components/RichText'
@@ -47,13 +48,7 @@ export const TestimonialsMarqueeBlock: React.FC<TestimonialsMarqueeBlockProps> =
   testimonials,
   theme,
 }) => {
-  // Same public gate as the Work Pages testimonial block.
-  const approved = (testimonials || []).filter(
-    (item): item is Testimonial =>
-      typeof item === 'object' &&
-      item._status === 'published' &&
-      item.approvalStatus === 'approved-public',
-  )
+  const approved = (testimonials || []).filter(isPublicTestimonial)
   if (!approved.length) return null
 
   const laneCount = approved.length > 1 ? 2 : 1

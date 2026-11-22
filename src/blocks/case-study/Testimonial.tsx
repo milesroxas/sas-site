@@ -1,17 +1,9 @@
+import { isPublicTestimonial } from '@/blocks/shared/public-testimonial'
 import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 import type { CaseStudyTestimonialBlock, Media as MediaDoc, Testimonial } from '@/payload-types'
 import { populatedDoc } from '@/utilities/relationshipId'
 import { RevealSection } from './RevealSection.client'
-
-/**
- * A quote may only appear once it is published and the speaker has approved it
- * for public use — a draft or an internal-only testimonial never reaches the
- * site. The check lives here, not in the renderer, so no caller can mount the
- * block around an unapproved quote.
- */
-const isPublicTestimonial = (testimonial: Testimonial | null): testimonial is Testimonial =>
-  testimonial?._status === 'published' && testimonial.approvalStatus === 'approved-public'
 
 export const TestimonialBlock = ({
   block,
