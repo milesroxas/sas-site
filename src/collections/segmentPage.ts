@@ -6,6 +6,7 @@ import type {
 } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
+import { topLevelBlocks } from '@/blocks/shared/top-level-blocks'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
 import { menuPreviewFields } from '@/fields/menuPreview'
@@ -92,6 +93,7 @@ export const segmentPageCollection = <S extends SegmentPageSlug>({
               // first and nest content blocks inside it.
               labels: { singular: 'Section', plural: 'Sections' },
               blocks: segmentPageBlocks,
+              ...topLevelBlocks('segment'),
               required: true,
               admin: { initCollapsed: true },
             },

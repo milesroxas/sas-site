@@ -9,6 +9,7 @@ import {
   UnorderedListFeature,
 } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
+import { topLevelBlocks } from '@/blocks/shared/top-level-blocks'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { authorFields } from '@/fields/authors'
 import { closingTab } from '@/fields/closing'
@@ -164,6 +165,7 @@ export const Posts: CollectionConfig<'posts'> = {
               label: 'Composition',
               labels: { singular: 'Section', plural: 'Sections' },
               blocks: postLayoutBlocks,
+              ...topLevelBlocks('posts'),
               admin: {
                 initCollapsed: true,
                 description:

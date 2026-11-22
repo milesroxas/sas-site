@@ -34,7 +34,7 @@ const shellSample = `pnpm cms:upload ./shots/studio-inspector.png \\
   --alt "The Studio inspector with the relief group open"`
 
 const meta = {
-  title: 'Blocks/Code',
+  title: 'Blocks/Text/Code',
   component: CodeBlock,
   parameters: {
     layout: 'padded',

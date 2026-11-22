@@ -21,7 +21,7 @@ const content = richText(
 )
 
 const meta = {
-  title: 'Blocks/CaseStudy/StorySection',
+  title: 'Blocks/Narrative/StorySection',
   component: StorySection,
   parameters: {
     layout: 'fullscreen',

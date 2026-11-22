@@ -549,6 +549,10 @@ const renderWorkBlock = (
         </RevealSection>
       )
     default:
+      // Every block Work Pages offer has a case above: a block added to the
+      // Work run without one fails type-checking here instead of rendering
+      // nothing.
+      block satisfies never
       return null
   }
 }

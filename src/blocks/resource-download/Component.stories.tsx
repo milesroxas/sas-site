@@ -4,7 +4,7 @@ import { ResourceDownload, ResourceDownloadTitleBlock } from './Component'
 import { ResourceDownloadSection } from './Section'
 
 const meta = {
-  title: 'Blocks/Download',
+  title: 'Blocks/FormsAndCTAs/Download',
   component: ResourceDownload,
   parameters: {
     layout: 'padded',

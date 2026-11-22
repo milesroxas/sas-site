@@ -32,7 +32,7 @@ const blockComponents = {
   industryWork: IndustryWorkBlock,
   newsletterSignup: NewsletterSignupBlock,
   testimonialsMarquee: TestimonialsMarqueeBlock,
-}
+} satisfies Record<ContentLayoutBlock['blockType'], unknown>
 
 type LayoutBlock =
   | NonNullable<Page['layout']>[number]

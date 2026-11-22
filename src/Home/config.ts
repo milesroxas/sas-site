@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
+import { topLevelBlocks } from '@/blocks/shared/top-level-blocks'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
 import { homeLayoutBlocks } from '@/fields/pageLayoutBlocks'
@@ -48,6 +49,7 @@ export const Home: GlobalConfig = {
               type: 'blocks',
               label: 'Composition',
               blocks: homeLayoutBlocks,
+              ...topLevelBlocks('home'),
               required: true,
               admin: {
                 initCollapsed: true,

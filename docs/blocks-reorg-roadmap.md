@@ -1,8 +1,46 @@
 # Blocks reorg and Sections roadmap
 
-Status: Phases A and B shipped to main (a06a1ea, 2026-09-02; CI applies migration `20260902_191423`). Phase B2 (collection coverage: the same run offered by all six composition surfaces, plus drawer group order) shipped 2026-09-02 (a472523, migration `20260902_201235_block_coverage`). The run then grew on 2026-09-03: the generic Standard (`richTransition`, replacing `labTransition`), Rich text (Text), Content nested in every Section, and Phase B3 (Interactive: the new FAQ block plus Carousel moved into the run; migration `20260904_012500_interactive_in_sections` committed with the code). Phase B4 (2026-09-04) opened the Lists group in the run with the new Insight list block (migration `20260904_031350_insight_list` committed with the code); the group label is now `Lists` (was `Lists & grids`). Phase B5 (2026-09-04) moved Tabs (`featureTabs`, was "Feature: tabs") into the run's Interactive group and onto the grid (code done, migration pending, see Phase B5 below). Phase C is being done MANUALLY in admin (cheat sheet below; the script remains as fallback). Phase D remains future work. Agents: read this doc before any block naming/organizing task instead of re-exploring the block system.
+Status (2026-11-22): Phases A through B5 shipped (B5 with `20260904_132731_tabs_in_sections`); the run has since grown (Code, figures, YouTube, Poster list). Phase C was never finished by hand: Work Pages are still mostly flat. The cleanup below (section 0) replaces the open ends of Phases C to E. Agents: read section 0 first, then the rest of this doc for history, before any block naming or organizing task.
 
 Scope: Pages, Posts, WorkPages, LabPages, ExpertisePages, AudiencePages (Posts added in B2, 2026-09-02). Blocks not named below stay as they are for now. Home global is half in scope: it does not adopt Sections and never takes the case-study grammar it has never offered (Pair, Pair offset, the generic Standard), but it consumes the Pages list otherwise, so every other block that joins the run (Split, Rich text, FAQ) reaches Home too.
+
+---
+
+## 0. Cleanup: one composition model (2026-11-22)
+
+**The rule.** The top level of every surface holds Sections plus that surface's shell blocks; every other block lives inside a Section. A block's admin label (and group) is its name everywhere: Storybook title, docs, and in time folder, component and `interfaceName`. The slug is the frozen storage key and never changes.
+
+**Where the rule lives.** `src/blocks/shared/top-level-blocks.ts`: `SHELL_BLOCKS` (the shells per surface) and `topLevelBlocks(surface)`, spread into each surface's `layout` field. Its `filterOptions` limits the drawer; its `validate` refuses a published save (admin, REST, Local API, MCP) that adds a block type the top level does not take. Block types the saved document already holds stay allowed, so flat pages keep saving. Draft saves skip validation in Payload, so the refusal lands at publish. Home has no Section yet: its top level takes the run plus its shells.
+
+| Surface | Shell blocks (top level for good) |
+|---|---|
+| Home | Industry work, Testimonials marquee, Audience tabs |
+| Lab | Project facts, Related lab projects |
+| Work | Media showcase, Featured work, Story section |
+| Pages, Expertise, Audience | Call to Action, Archive, Content |
+| Posts | none |
+
+Everything else a surface offers at the top level is legacy: hidden from the drawer, still rendered where a page holds it.
+
+**Drift checks.** `pnpm check:blocks` (`scripts/check-blocks.ts`, run by `pnpm lint`): every addable block has a story titled `Blocks/<Group>/<Label>` from its config, every surface with a Section nests the whole run (known gaps listed in the script with the step that closes them), every shell is offered by its surface. Renderer coverage is the type checker's job: `RenderBlocks` maps, and the Work and Lab switches end in `block satisfies never`.
+
+### Production usage (audited 2026-11-22, 51 docs)
+
+- On the model already: Lab, Expertise, Audience, Posts, Privacy, Terms (145 Sections, 449 nested blocks).
+- Still flat: Work Pages (adacore and vault carry 18 run blocks at the top level; gentlebeast, arturo, interchecks, eclinical are a Media showcase, plus Featured work or Carousel), Home (its three shells), about-us (one Content), Growth & Repositioning (Call to Action and Archive between Sections).
+- Never used anywhere: Key decisions, Metrics, Related work (block), Testimonial, Lab media showcase, Lab story section, Statement grid, Statement links, Scroll gallery, Dynamic audience, Form, Newsletter signup, Banner (post body). In the run but unused: Pair, YouTube, Download (kept: they are the vocabulary).
+- Pending drafts: expertise 1 to 4, audience 1 to 3 (two Sections each, the current live pages hold five to seven), post 27. All use run blocks inside Sections only, so no step below touches them. Publishing one of the segment drafts replaces the whole live page with it.
+
+### Steps
+
+1. [x] Registry and drift check (above). Stories retitled to `Blocks/<Group>/<Label>` (15 files; visual baselines for those stories reset).
+2. [x] Drawer and save rule (above). No schema change.
+3. [ ] Work Pages on the model: derive the Work run from `sectionNestableBlocks` with a `workBlock` mapper like Lab's `labBlock` (adds Rich text, YouTube, Poster list: additive migration, ask first; then drop them from `KNOWN_RUN_GAPS`). Wrap adacore and vault with `scripts/wrap-sections.ts` (`--dry-run` first). Optionally let `RenderCaseStudyBlocks` resolve copy and then hand off to `sectionChildComponents`.
+4. [ ] Rename to the labels (code only): folders, components, `interfaceName` (changes `payload-types` only, not the DB). Slugs and `dbName`s stay. Open: how far this goes.
+5. [ ] Delete the never-used legacy blocks: one migration of plain drops (ask first), with their stories, renderer cases and fixtures. Open: keep Form, Newsletter signup?
+6. [ ] Settle the used legacy blocks: each becomes nestable (renders `bare` in a Section) or stays a shell for good. Then Phase D (drop per-block themes, prune enums).
+
+Open: Poster list is not in the Work run; confirm whether that is deliberate before step 3.
 
 ---
 
@@ -339,7 +377,7 @@ The second legacy group to enter the run, with a new block designed straight ont
 - [x] `pnpm check:migrations:drift` previews the pending migration: 42 `CREATE TYPE`, 28 `CREATE TABLE`, 42 FK constraints, 84 indexes, **all additive**, no drop, no rename-shaped statement, no `ADD VALUE`. Tables: `{pages,posts,work_pages,lab_pages,expertise_pages,audience_pages,home}_insight_list` + `_insight_list_items` and their `_v` twins.
 - [x] `pnpm migrate:create insight-list` generated `src/migrations/20260904_031350_insight_list.{ts,json}` with no create/rename prompts; committed with the code. CI applies it.
 
-### Phase B5: Tabs joins the run (additive schema): CODE DONE 2026-09-04, migration pending
+### Phase B5: Tabs joins the run (additive schema): DONE 2026-09-04
 
 The second legacy Interactive block to move (after Carousel in B3), and the first moved block to be rebuilt on `BlockGrid` in the same change (grid doc, migration map).
 
@@ -350,7 +388,7 @@ The second legacy Interactive block to move (after Carousel in B3), and the firs
 - [x] Storybook: retitled `Blocks/Interactive/Tabs` (visual baseline reset for that story expected).
 - [x] `pnpm generate:types`, `pnpm generate:importmap` (no new imports), `tsc --noEmit`, `pnpm lint` clean.
 - [x] `pnpm check:migrations:drift` previews the pending migration: 8 `CREATE TYPE`, 12 `CREATE TABLE`, 16 FK constraints, 32 indexes, **all additive**, no drop, no rename-shaped statement, no `ADD VALUE`. Tables: `{posts,lab_pages}_blocks_feature_tabs` + `_tabs` + `_tabs_items` and their `_v` twins. Every existing `*_blocks_feature_tabs` table keeps its name.
-- [ ] `pnpm migrate:create tabs-in-sections` (ask first; answer sheet in Appendix A), then `pnpm check:migrations`, `pnpm check:migrations:drift`, commit code + migration together.
+- [x] `pnpm migrate:create tabs-in-sections` generated `src/migrations/20260904_132731_tabs_in_sections.{ts,json}`.
 
 ### Phase C: content migration (18 instances, 2 docs) — MANUAL in admin (decided 2026-09-02)
 

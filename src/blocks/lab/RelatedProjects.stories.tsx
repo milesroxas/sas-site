@@ -7,7 +7,7 @@ import { RelatedProjectsList } from './RelatedProjects'
  * story hands the list its pages directly.
  */
 const meta = {
-  title: 'Blocks/Lab/RelatedProjects',
+  title: 'Blocks/Lists/RelatedLabProjects',
   component: RelatedProjectsList,
   parameters: {
     layout: 'fullscreen',

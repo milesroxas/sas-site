@@ -60,7 +60,7 @@ const posters: PosterItem[] = [
 ]
 
 const meta = {
-  title: 'Blocks/PosterList',
+  title: 'Blocks/Lists/PosterList',
   component: PosterListSection,
   parameters: { layout: 'fullscreen' },
   args: {

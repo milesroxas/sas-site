@@ -3,7 +3,7 @@ import { industryWorkPanelsFixture as panels } from '../fixtures'
 import { IndustryWorkClient } from './Component.client'
 
 const meta = {
-  title: 'Blocks/IndustryWork',
+  title: 'Blocks/Interactive/IndustryWork',
   component: IndustryWorkClient,
   parameters: {
     layout: 'fullscreen',

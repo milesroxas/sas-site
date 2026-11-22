@@ -4,7 +4,7 @@ import { paragraph, richText, TEXT_FORMAT_BOLD, testimonialFixtures, text } from
 import { TestimonialsMarqueeBlock } from './Component'
 
 const meta = {
-  title: 'Blocks/TestimonialsMarquee',
+  title: 'Blocks/Interactive/TestimonialsMarquee',
   component: TestimonialsMarqueeBlock,
   parameters: {
     layout: 'padded',

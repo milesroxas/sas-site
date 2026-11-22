@@ -7,7 +7,7 @@ import { Facts } from './Facts'
  * `null`, and hidden or internal-only lists arrive empty.
  */
 const meta = {
-  title: 'Blocks/Lab/Facts',
+  title: 'Blocks/Lists/ProjectFacts',
   component: Facts,
   parameters: {
     layout: 'fullscreen',

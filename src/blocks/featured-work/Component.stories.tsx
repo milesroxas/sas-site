@@ -26,7 +26,7 @@ const entries: FeaturedEntry[] = [
 ]
 
 const meta = {
-  title: 'Sections/FeaturedWork',
+  title: 'Blocks/Lists/FeaturedWork',
   component: FeaturedWorkList,
   parameters: {
     layout: 'fullscreen',

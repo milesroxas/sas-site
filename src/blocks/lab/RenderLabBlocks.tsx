@@ -114,6 +114,12 @@ type LabSectionChildBlock = NonNullable<LabSectionBlock['blocks']>[number]
 
 type LabLayoutBlock = NonNullable<LabPage['layout']>[number] | LabSectionChildBlock
 
+/** A lab block the shared content renderer paints (`labContentComponents`). */
+type LabContentBlock = Extract<LabLayoutBlock, { blockType: keyof typeof labContentComponents }>
+
+const isLabContentBlock = (block: LabLayoutBlock): block is LabContentBlock =>
+  block.blockType in labContentComponents
+
 /**
  * One lab-page block. `bare` is set for blocks nested inside a Section block:
  * the block keeps its entrance but skips its band, because the Section's
@@ -146,7 +152,7 @@ const renderLabBlock = (
   // The shared run paints itself the same way it does on Pages and Posts: one
   // map, one set of entrances, no lab-only drift. Story-capable blocks first
   // take their copy from the Lab Project, the same way Work Pages resolve it.
-  if (block.blockType && block.blockType in labContentComponents) {
+  if (isLabContentBlock(block)) {
     return renderContentBlock(
       isStoryCopyBlock(block) ? resolveStoryBlockCopy(block, project, opener) : block,
       block.id ?? block.blockType,
@@ -169,6 +175,9 @@ const renderLabBlock = (
       case 'labRelatedProjects':
         return <RelatedProjects block={block} page={page} project={project} />
       default:
+        // Every block Lab Pages offer is painted above: a block added to the
+        // Lab run without a renderer fails type-checking here.
+        block satisfies never
         return null
     }
   })()

@@ -14,7 +14,7 @@ const posts = [
 ]
 
 const meta = {
-  title: 'Blocks/Archive',
+  title: 'Blocks/Lists/Archive',
   component: ArchiveLayout,
   parameters: {
     layout: 'fullscreen',

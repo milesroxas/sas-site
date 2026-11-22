@@ -64,7 +64,7 @@ const MediaShowcasePreview = ({
 )
 
 const meta = {
-  title: 'Blocks/MediaShowcase',
+  title: 'Blocks/Media/MediaShowcase',
   component: MediaShowcasePreview,
   parameters: {
     layout: 'fullscreen',

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { topLevelBlocks } from '@/blocks/shared/top-level-blocks'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
 import { menuPreviewFields } from '@/fields/menuPreview'
@@ -69,6 +70,7 @@ export const Pages: CollectionConfig<'pages'> = {
               // first and nest content blocks inside it.
               labels: { singular: 'Section', plural: 'Sections' },
               blocks: pageLayoutBlocks,
+              ...topLevelBlocks('pages'),
               required: true,
               admin: {
                 initCollapsed: true,

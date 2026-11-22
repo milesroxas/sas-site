@@ -27,7 +27,7 @@ const windowLandscapeVideo: Media = {
 }
 
 const meta = {
-  title: 'Blocks/AudienceTabs',
+  title: 'Blocks/Interactive/AudienceTabs',
   component: AudienceTabsBlock,
   parameters: {
     layout: 'fullscreen',

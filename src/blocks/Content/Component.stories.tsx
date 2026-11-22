@@ -24,7 +24,7 @@ const column = (
 })
 
 const meta = {
-  title: 'Blocks/Content',
+  title: 'Blocks/Custom/Content',
   component: ContentBlock,
   parameters: {
     layout: 'fullscreen',

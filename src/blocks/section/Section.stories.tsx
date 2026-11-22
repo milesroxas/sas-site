@@ -76,7 +76,7 @@ const opensWithProseHeading = (
 )
 
 const meta = {
-  title: 'Blocks/Section',
+  title: 'Blocks/Structure/Section',
   component: SectionBand,
   parameters: {
     layout: 'fullscreen',

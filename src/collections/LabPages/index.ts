@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
 import { labBlocks } from '@/blocks/lab/config'
+import { topLevelBlocks } from '@/blocks/shared/top-level-blocks'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
 import {
@@ -112,6 +113,7 @@ export const LabPages: CollectionConfig<'lab-pages'> = {
               // first and nest content blocks inside it.
               labels: { singular: 'Section', plural: 'Sections' },
               blocks: labBlocks,
+              ...topLevelBlocks('lab'),
               admin: {
                 initCollapsed: true,
                 description:

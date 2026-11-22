@@ -3,7 +3,7 @@ import { heading, paragraph, richText, text } from '../fixtures'
 import { CallToActionBlock } from './Component'
 
 const meta = {
-  title: 'Blocks/CallToAction',
+  title: 'Blocks/FormsAndCTAs/CallToAction',
   component: CallToActionBlock,
   parameters: {
     layout: 'padded',
