@@ -528,6 +528,42 @@
   }
 }
 
+/* quote-reveal: a Quote banner quote arriving when a visitor picks another
+   client (blocks/quote-banner). A mask reveal, the brand default for copy.
+   The inline insets are negative so the hung opening mark (`quote-marks`)
+   is never clipped, during the reveal or after it. */
+@theme inline {
+  --animate-quote-reveal: quote-reveal 500ms var(--ease-out-quint) both;
+  @keyframes quote-reveal {
+    from {
+      clip-path: inset(0 -1em 100% -1em);
+      translate: 0 0.25em;
+    }
+    to {
+      clip-path: inset(0 -1em 0 -1em);
+      translate: 0 0;
+    }
+  }
+}
+
+/* Curly marks around a quote's rich text: the opening mark hangs in the
+   margin so the text edge stays on the column line, the closing mark follows
+   the last paragraph. `open-quote` / `close-quote` follow the page language,
+   so the marks are typography, not copy, and the stored quote stays bare. */
+@utility quote-marks {
+  > :first-child {
+    position: relative;
+  }
+  > :first-child::before {
+    content: open-quote;
+    position: absolute;
+    inset-inline-end: 100%;
+  }
+  > :last-child::after {
+    content: close-quote;
+  }
+}
+
 /*
  * An item in a snap scroller sits back until it is the one being read: dimmed
  * and fractionally smaller while it is part-way into the scrollport, full and

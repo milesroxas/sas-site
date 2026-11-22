@@ -17,6 +17,7 @@ import { InsightList } from '@/blocks/insight-list/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { MediaContentSplit } from '@/blocks/media-content-split/config'
 import { PosterList } from '@/blocks/poster-list/config'
+import { QuoteBanner } from '@/blocks/quote-banner/config'
 import { RichTextBlock } from '@/blocks/rich-text/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
@@ -70,6 +71,9 @@ export const sectionNestableBlocks: Block[] = [
   // Lists
   InsightList,
   PosterList,
+  // Statements: after Lists and before Forms & CTAs, the order the drawer
+  // already had on every surface (blocks-reorg-roadmap.md).
+  QuoteBanner,
   // Forms & CTAs
   CtaBand,
 ]

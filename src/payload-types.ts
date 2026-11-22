@@ -345,6 +345,7 @@ export interface Page {
     | FeatureTabsBlock
     | InsightListBlock
     | PosterListBlock
+    | QuoteBannerBlock
     | CtaBandBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
@@ -475,6 +476,7 @@ export interface Post {
         | FeatureTabsBlock
         | InsightListBlock
         | PosterListBlock
+        | QuoteBannerBlock
         | CtaBandBlock
         | FeaturedWorkBlock
       )[]
@@ -6668,6 +6670,7 @@ export interface PageSectionBlock {
         | FeatureTabsBlock
         | InsightListBlock
         | PosterListBlock
+        | QuoteBannerBlock
         | CtaBandBlock
         | ContentBlock
       )[]
@@ -7339,6 +7342,27 @@ export interface PosterListBlock {
   blockType: 'posterList';
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "QuoteBannerBlock".
+ */
+export interface QuoteBannerBlock {
+  /**
+   * Short kicker above the quote, such as "What clients say".
+   */
+  eyebrow?: string | null;
+  /**
+   * One testimonial shows a single quote. Two or more add a row of client names under it to switch between them, in this order. Only published, publicly approved testimonials render.
+   */
+  testimonials: (number | Testimonial)[];
+  /**
+   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
+   */
+  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'quoteBanner';
+}
+/**
  * The one file this insight offers. Pinned in the side rail on wide screens; at the end of the article on phones and tablets. For more files, add Download blocks in the article.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7876,6 +7900,7 @@ export interface LabPage {
         | LabFeatureTabsBlock
         | InsightListBlock
         | PosterListBlock
+        | QuoteBannerBlock
         | CtaBandBlock
         | LabStoryBeatsBlock
         | ResourceDownloadBlock
@@ -8105,6 +8130,7 @@ export interface LabSectionBlock {
         | LabFeatureTabsBlock
         | InsightListBlock
         | PosterListBlock
+        | QuoteBannerBlock
         | CtaBandBlock
         | LabStoryBeatsBlock
         | ResourceDownloadBlock
@@ -9063,6 +9089,7 @@ export interface ExpertisePage {
     | FeatureTabsBlock
     | InsightListBlock
     | PosterListBlock
+    | QuoteBannerBlock
     | CtaBandBlock
     | AudienceTabsBlock
     | FeatureStatementGridBlock
@@ -9235,6 +9262,7 @@ export interface SegmentSectionBlock {
         | FeatureTabsBlock
         | InsightListBlock
         | PosterListBlock
+        | QuoteBannerBlock
         | CtaBandBlock
         | ContentBlock
       )[]
@@ -9291,6 +9319,7 @@ export interface AudiencePage {
     | FeatureTabsBlock
     | InsightListBlock
     | PosterListBlock
+    | QuoteBannerBlock
     | CtaBandBlock
     | AudienceTabsBlock
     | FeatureStatementGridBlock
@@ -10484,6 +10513,7 @@ export interface PagesSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
@@ -10575,6 +10605,7 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
@@ -10955,6 +10986,17 @@ export interface PosterListBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "QuoteBannerBlock_select".
+ */
+export interface QuoteBannerBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  testimonials?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CtaBandBlock_select".
  */
 export interface CtaBandBlockSelect<T extends boolean = true> {
@@ -11317,6 +11359,7 @@ export interface PostsSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
@@ -11962,6 +12005,7 @@ export interface LabPagesSelect<T extends boolean = true> {
         featureTabs?: T | LabFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         storyBeats?: T | LabStoryBeatsBlockSelect<T>;
         resourceDownload?: T | ResourceDownloadBlockSelect<T>;
@@ -12030,6 +12074,7 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         featureTabs?: T | LabFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         storyBeats?: T | LabStoryBeatsBlockSelect<T>;
         resourceDownload?: T | ResourceDownloadBlockSelect<T>;
@@ -12400,6 +12445,7 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
@@ -12498,6 +12544,7 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
@@ -12546,6 +12593,7 @@ export interface AudiencePagesSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
         featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
@@ -14071,6 +14119,7 @@ export interface Home {
     | FeatureTabsBlock
     | InsightListBlock
     | PosterListBlock
+    | QuoteBannerBlock
     | CtaBandBlock
     | DynamicAudienceBlock
     | AudienceTabsBlock
@@ -15137,6 +15186,7 @@ export interface HomeSelect<T extends boolean = true> {
         featureTabs?: T | FeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         dynamicAudience?: T | DynamicAudienceBlockSelect<T>;
         audienceTabs?: T | AudienceTabsBlockSelect<T>;
