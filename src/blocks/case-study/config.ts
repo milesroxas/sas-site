@@ -1,10 +1,7 @@
 import type { Block } from 'payload'
 import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { Carousel } from '@/blocks/Carousel/config'
-import { Code } from '@/blocks/Code/config'
 import { Content } from '@/blocks/Content/config'
-import { CtaBand } from '@/blocks/cta-band/config'
-import { Faq } from '@/blocks/faq/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
@@ -15,9 +12,9 @@ import { FeaturedWork } from '@/blocks/featured-work/config'
 import { FullMedia } from '@/blocks/full-media/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
-import { InsightList } from '@/blocks/insight-list/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { MediaContentSplit } from '@/blocks/media-content-split/config'
+import { RichTextBlock } from '@/blocks/rich-text/config'
 import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import { sectionBlock } from '@/blocks/section/config'
 import {
@@ -27,7 +24,7 @@ import {
   transitionFields,
 } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
-import { figureBlocks } from '@/blocks/shared/section-blocks'
+import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { StoryBeats } from '@/blocks/story-beats/config'
@@ -215,43 +212,43 @@ const WorkAudienceTabs = withCaseStudyScopedMedia(AudienceTabs, 'WorkAudienceTab
 const WorkScrollGallery = withCaseStudyScopedMedia(ScrollGallery, 'WorkScrollGalleryBlock')
 
 /**
- * Blocks a Work Page Section can nest, and the same run offered at the top
- * level while the Section transition is underway (docs/blocks-reorg-roadmap.md).
- * Ordered by `admin.group` like the drawer list below.
+ * The Work variant of each shared run block that needs one, by slug. Blocks
+ * that pull canonical story copy take the story picker; blocks with media
+ * also take the picker scope. Everything not named here is offered plain:
+ * its copy and data are the block's own (Rich text, Code, figures, FAQ,
+ * Insight list, Poster list, Quote banner, CTA band, YouTube).
+ *
+ * The Standard heading is the one swap: Work offers the story-resolving
+ * `caseStudyTransition` in place of the generic `richTransition`
+ * (docs/blocks-reorg-roadmap.md, collection coverage).
  */
-const workSectionBlocks: Block[] = [
-  // Section heading
-  WorkCaseStudyTransition,
-  WorkFeatureHeadingOffset,
-  // Media and content
-  WorkFullMedia,
-  WorkMediaContentSplit,
-  WorkSplitContentNarrow,
-  WorkImagePair,
-  WorkSplitImageOffset,
-  // Media
-  WorkFeatureImageStatement,
-  // Caption carries no story copy, so it takes the picker scope only.
-  WorkMediaBlock,
-  // Text: Story beats is the study's own prose in a reading column, so it
-  // takes the story picker. A code listing is the block's own data, never
-  // story copy, and holds no media, so it is offered plain.
-  WorkStoryBeats,
-  Code,
-  // Figures: a figure is the block's own data too, and holds no media.
-  ...figureBlocks,
-  // Interactive: FAQ copy is the block's own (questions, not story beats) and
-  // it has no media, so it is offered plain. Carousel carries no story copy
-  // either, so it takes the picker scope only. Tabs pull story copy per tab,
-  // so they keep both.
-  Faq,
-  WorkCarousel,
-  WorkFeatureTabs,
-  // Lists: insight copy is the block's own too.
-  InsightList,
-  // Forms & CTAs: the band's copy and actions are its own, so it is offered plain.
-  CtaBand,
-]
+const workVariants: Record<string, Block> = {
+  richTransition: WorkCaseStudyTransition,
+  featureHeadingOffset: WorkFeatureHeadingOffset,
+  fullMedia: WorkFullMedia,
+  mediaContentSplit: WorkMediaContentSplit,
+  splitContentNarrow: WorkSplitContentNarrow,
+  imagePair: WorkImagePair,
+  splitImageOffset: WorkSplitImageOffset,
+  featureImageStatement: WorkFeatureImageStatement,
+  // Caption and Carousel carry no story copy: picker scope only.
+  mediaBlock: WorkMediaBlock,
+  carousel: WorkCarousel,
+  // Tabs pull story copy per tab, so they keep both.
+  featureTabs: WorkFeatureTabs,
+}
+
+/**
+ * Blocks a Work Page Section can nest: the shared Section-nestable run
+ * (`sectionNestableBlocks`) through `workVariants`, so a block that joins the
+ * run reaches Work Pages too. Story beats joins under Text, beside Rich text:
+ * the study's own prose in a reading column, which only a story surface has
+ * anything to resolve for (Lab adds it the same way).
+ */
+const workSectionBlocks: Block[] = sectionNestableBlocks.flatMap((block) => {
+  const variant = workVariants[block.slug] ?? block
+  return block.slug === RichTextBlock.slug ? [variant, WorkStoryBeats] : [variant]
+})
 
 export const WorkSection = sectionBlock({
   // Content carries no story copy either; it closes the nested list under

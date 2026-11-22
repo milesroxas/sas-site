@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { CtaBandBlock } from './Component'
 
 const meta = {
-  title: 'Blocks/Forms & CTAs/CTA band',
+  title: 'Blocks/FormsAndCTAs/CTABand',
   component: CtaBandBlock,
   parameters: {
     layout: 'fullscreen',

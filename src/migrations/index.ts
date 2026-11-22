@@ -123,6 +123,7 @@ import * as migration_20261109_201516_resources_download_block from './20261109_
 import * as migration_20261120_231544_poster_list from './20261120_231544_poster_list';
 import * as migration_20261122_185525_cta_band from './20261122_185525_cta_band';
 import * as migration_20261122_190120_quote_banner from './20261122_190120_quote_banner';
+import * as migration_20261122_194915_work_run_from_shared from './20261122_194915_work_run_from_shared';
 
 export const migrations = [
   {
@@ -748,6 +749,11 @@ export const migrations = [
   {
     up: migration_20261122_190120_quote_banner.up,
     down: migration_20261122_190120_quote_banner.down,
-    name: '20261122_190120_quote_banner'
+    name: '20261122_190120_quote_banner',
+  },
+  {
+    up: migration_20261122_194915_work_run_from_shared.up,
+    down: migration_20261122_194915_work_run_from_shared.down,
+    name: '20261122_194915_work_run_from_shared'
   },
 ];

@@ -44,10 +44,7 @@ const SURFACE_BLOCKS: Record<CompositionSurface, Block[]> = {
  * Run blocks a surface does not nest yet. Each entry is a gap to close, not
  * an exemption: delete it in the change that closes it.
  */
-const KNOWN_RUN_GAPS: Partial<Record<CompositionSurface, readonly string[]>> = {
-  // Step 3 of the cleanup derives the Work run from the shared one.
-  work: ['richText', 'youtube', 'posterList'],
-}
+const KNOWN_RUN_GAPS: Partial<Record<CompositionSurface, readonly string[]>> = {}
 
 /**
  * Run blocks a surface replaces with its own block under the same label, on

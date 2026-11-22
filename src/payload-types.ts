@@ -1577,6 +1577,8 @@ export interface WorkPage {
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
         | WorkMediaBlock
+        | YouTubeBlock
+        | RichTextBlock
         | WorkStoryBeatsBlock
         | CodeBlock
         | ChartBlock
@@ -1586,6 +1588,8 @@ export interface WorkPage {
         | WorkCarouselBlock
         | WorkFeatureTabsBlock
         | InsightListBlock
+        | PosterListBlock
+        | QuoteBannerBlock
         | CtaBandBlock
         | WorkAudienceTabsBlock
         | IndustryWorkBlock
@@ -1822,6 +1826,8 @@ export interface WorkSectionBlock {
         | WorkSplitImageOffsetBlock
         | WorkFeatureImageStatementBlock
         | WorkMediaBlock
+        | YouTubeBlock
+        | RichTextBlock
         | WorkStoryBeatsBlock
         | CodeBlock
         | ChartBlock
@@ -1831,6 +1837,8 @@ export interface WorkSectionBlock {
         | WorkCarouselBlock
         | WorkFeatureTabsBlock
         | InsightListBlock
+        | PosterListBlock
+        | QuoteBannerBlock
         | CtaBandBlock
         | ContentBlock
       )[]
@@ -2399,6 +2407,67 @@ export interface WorkMediaBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "YouTubeBlock".
+ */
+export interface YouTubeBlock {
+  /**
+   * Paste any YouTube link. A start time in the link (the "Start at" box on YouTube's share panel) is kept.
+   */
+  url: string;
+  /**
+   * Optional. Shown over the poster the way YouTube shows it, and read out as the play button's label.
+   */
+  title?: string | null;
+  /**
+   * Presentation for this placement, matching the Caption block.
+   */
+  size?: ('full' | 'inset' | 'small') | null;
+  /**
+   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
+   */
+  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'youtube';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock".
+ */
+export interface RichTextBlock {
+  /**
+   * Write-only. Markdown for `body`: converted to rich text on save and never stored. Syntax the field cannot hold is refused with what to use instead.
+   */
+  markdown?: string | null;
+  /**
+   * Write-only. Send true beside `markdown` to overwrite `body` when it already has content.
+   */
+  replace?: boolean | null;
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
+   */
+  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'richText';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5955,6 +6024,98 @@ export interface InsightListBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "PosterListBlock".
+ */
+export interface PosterListBlock {
+  /**
+   * Short kicker above the heading.
+   */
+  eyebrow?: string | null;
+  heading: string;
+  /**
+   * Supporting copy beside or under the heading. Leave a blank line between paragraphs.
+   */
+  summary?: string | null;
+  /**
+   * Two rows sets the heading above the list. Single row sets it beside the list in a narrow column.
+   */
+  layout?: ('stacked' | 'row') | null;
+  /**
+   * Write the items here, or list published Work pages.
+   */
+  itemSource?: ('static' | 'collection') | null;
+  items?:
+    | {
+        /**
+         * Shown as a 4:5 poster, cropped to fill.
+         */
+        media: number | Media;
+        title: string;
+        /**
+         * Revealed over the picture on hover. Keep it to a few lines.
+         */
+        description: string;
+        enableLink?: boolean | null;
+        link?: {
+          type?: ('reference' | 'site' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
+              } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
+          url?: string | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * In this order. Leave empty to show the most recently published Work pages.
+   */
+  workPages?: (number | WorkPage)[] | null;
+  /**
+   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
+   */
+  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'posterList';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "QuoteBannerBlock".
+ */
+export interface QuoteBannerBlock {
+  /**
+   * Short kicker above the quote, such as "What clients say".
+   */
+  eyebrow?: string | null;
+  /**
+   * One testimonial shows a single quote. Two or more add a row of client names under it to switch between them, in this order. Only published, publicly approved testimonials render.
+   */
+  testimonials: (number | Testimonial)[];
+  /**
+   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
+   */
+  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'quoteBanner';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CtaBandBlock".
  */
 export interface CtaBandBlock {
@@ -7114,67 +7275,6 @@ export interface MediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "YouTubeBlock".
- */
-export interface YouTubeBlock {
-  /**
-   * Paste any YouTube link. A start time in the link (the "Start at" box on YouTube's share panel) is kept.
-   */
-  url: string;
-  /**
-   * Optional. Shown over the poster the way YouTube shows it, and read out as the play button's label.
-   */
-  title?: string | null;
-  /**
-   * Presentation for this placement, matching the Caption block.
-   */
-  size?: ('full' | 'inset' | 'small') | null;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'youtube';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "RichTextBlock".
- */
-export interface RichTextBlock {
-  /**
-   * Write-only. Markdown for `body`: converted to rich text on save and never stored. Syntax the field cannot hold is refused with what to use instead.
-   */
-  markdown?: string | null;
-  /**
-   * Write-only. Send true beside `markdown` to overwrite `body` when it already has content.
-   */
-  replace?: boolean | null;
-  body?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'richText';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CarouselBlock".
  */
 export interface CarouselBlock {
@@ -7269,98 +7369,6 @@ export interface FeatureTabsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'featureTabs';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "PosterListBlock".
- */
-export interface PosterListBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading: string;
-  /**
-   * Supporting copy beside or under the heading. Leave a blank line between paragraphs.
-   */
-  summary?: string | null;
-  /**
-   * Two rows sets the heading above the list. Single row sets it beside the list in a narrow column.
-   */
-  layout?: ('stacked' | 'row') | null;
-  /**
-   * Write the items here, or list published Work pages.
-   */
-  itemSource?: ('static' | 'collection') | null;
-  items?:
-    | {
-        /**
-         * Shown as a 4:5 poster, cropped to fill.
-         */
-        media: number | Media;
-        title: string;
-        /**
-         * Revealed over the picture on hover. Keep it to a few lines.
-         */
-        description: string;
-        enableLink?: boolean | null;
-        link?: {
-          type?: ('reference' | 'site' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null)
-            | ({
-                relationTo: 'contact-pages';
-                value: number | ContactPage;
-              } | null);
-          /**
-           * Home (/), Works Index (/works), or Insights Index (/insights).
-           */
-          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
-          url?: string | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * In this order. Leave empty to show the most recently published Work pages.
-   */
-  workPages?: (number | WorkPage)[] | null;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'posterList';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "QuoteBannerBlock".
- */
-export interface QuoteBannerBlock {
-  /**
-   * Short kicker above the quote, such as "What clients say".
-   */
-  eyebrow?: string | null;
-  /**
-   * One testimonial shows a single quote. Two or more add a row of client names under it to switch between them, in this order. Only published, publicly approved testimonials render.
-   */
-  testimonials: (number | Testimonial)[];
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'quoteBanner';
 }
 /**
  * The one file this insight offers. Pinned in the side rail on wide screens; at the end of the article on phones and tablets. For more files, add Download blocks in the article.
@@ -11445,6 +11453,8 @@ export interface WorkPagesSelect<T extends boolean = true> {
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | WorkMediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
         storyBeats?: T | WorkStoryBeatsBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
@@ -11454,6 +11464,8 @@ export interface WorkPagesSelect<T extends boolean = true> {
         carousel?: T | WorkCarouselBlockSelect<T>;
         featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
+        posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         audienceTabs?: T | WorkAudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
@@ -11530,6 +11542,8 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
         featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
         mediaBlock?: T | WorkMediaBlockSelect<T>;
+        youtube?: T | YouTubeBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
         storyBeats?: T | WorkStoryBeatsBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
         chart?: T | ChartBlockSelect<T>;
@@ -11539,6 +11553,8 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         carousel?: T | WorkCarouselBlockSelect<T>;
         featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
+        posterList?: T | PosterListBlockSelect<T>;
+        quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };

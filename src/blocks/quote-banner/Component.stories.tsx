@@ -58,7 +58,7 @@ const testimonials: Testimonial[] = [
 ]
 
 const meta = {
-  title: 'Blocks/Quote banner',
+  title: 'Blocks/Statements/QuoteBanner',
   component: QuoteBannerBlock,
   parameters: { layout: 'fullscreen' },
   args: {
