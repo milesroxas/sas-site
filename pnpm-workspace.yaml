@@ -20,6 +20,9 @@ catalog:
   '@sentry/nextjs': ^10.78.0
   # Exact pin: native libvips binary; follow the Payload template's pin.
   sharp: 0.35.5
+  # One zod 4 for the app, @payloadcms/plugin-mcp and the MCP SDK (see the
+  # overrides below). 4.6.6 fixed GHSA-mrhx-c7xc-m3w5.
+  zod: ^4.6.7
 
 overrides:
   # @payloadcms/plugin-sentry hard-depends on @sentry/nextjs@^9, which neither
@@ -35,10 +38,12 @@ overrides:
   # @esbuild-kit/core-utils, which pins esbuild 0.18 (GHSA-67mh-4wv8-2f99).
   # It only calls the transform API; move it onto drizzle-kit's own esbuild line.
   '@esbuild-kit/core-utils>esbuild': ^0.25.12
-  # Payload 3.90.2 pins undici 7.29.0 exactly (GHSA-3wwx-pv8p-q78v, fixed in
-  # 7.29.1). It only uses undici's fetch and Agent for upload safeFetch; move
-  # it onto the patch release, the same copy jsdom already resolves.
-  'payload>undici': 7.29.1
+  # Payload 3.90.2 pins undici 7.29.0 exactly, inside GHSA-3wwx-pv8p-q78v
+  # (fixed in 7.29.1) and GHSA-xjj6-f33q-929c, GHSA-4w7w-5xrc-9h26,
+  # GHSA-2m5v-pch6-74hx and GHSA-qrxm-fqhp-jwvm (fixed in 7.30.1). It only uses
+  # undici's fetch and Agent for upload safeFetch; move it onto the patched
+  # line, the same copy jsdom resolves.
+  'payload>undici': 7.30.2
   # monaco-editor (Payload's code field editor) pins dompurify 3.4.15 exactly,
   # inside the range of GHSA-p98j-92pf-mc4p (fixed in 3.4.16). Move it onto the
   # patch release, the same copy posthog-js resolves.
@@ -48,6 +53,21 @@ overrides:
   # The plugin only uses McpServer, the streamable HTTP transport and the tool
   # helpers, all unchanged through 1.32.x; move it onto the patched line.
   '@payloadcms/plugin-mcp>@modelcontextprotocol/sdk': ^1.32.1
+  # @payloadcms/plugin-mcp depends on zod ^3.25.50 (still so in Payload 3.94),
+  # and every 3.x release is inside GHSA-mrhx-c7xc-m3w5, fixed only in 4.6.6.
+  # Move the plugin and the MCP SDK under it onto the catalog's zod 4. The SDK
+  # supports zod 4 (peer ^3.25 || ^4.0). The plugin keeps the v3 API through
+  # zod 4's `zod/v3` export, which patches/@payloadcms__plugin-mcp.patch points
+  # its imports at, so its tool schemas stay the v3 schemas the SDK's converter
+  # handled before (src/plugins/mcp-tools builds its tools the same way).
+  '@payloadcms/plugin-mcp>zod': 'catalog:'
+  '@modelcontextprotocol/sdk>zod': 'catalog:'
+  # @lexical/headless (Payload's rich text) depends on happy-dom ^20.9.0,
+  # inside GHSA-c8p4-j97h-3vg8 (fixed in 21.0.0) and GHSA-834v-8h66-3h79 (fixed
+  # in 21.0.4). Only its `@lexical/headless/dom` entry imports happy-dom, for
+  # `new Window()` and the DOM globals on it, and nothing in the app loads that
+  # entry; move it onto the patched major.
+  '@lexical/headless>happy-dom': ^21.0.4
   # @tailwindcss/typography pins postcss-selector-parser 6.0.10 exactly
   # (GHSA-rj75-hqrm-r3gf, fixed in 7.1.6). It only parses and walks selectors;
   # v7's only break is safe insertion during iteration.

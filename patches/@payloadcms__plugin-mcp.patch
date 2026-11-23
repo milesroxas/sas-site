@@ -15,6 +15,26 @@ index cfbf3f0ddcfb6d310f70fd4d70553bc174d63488..345d55bb0438f0cd4cc923d89eeb5d08
          headers: req.headers,
          method: req.method
      });
+diff --git a/dist/mcp/tools/global/update.js b/dist/mcp/tools/global/update.js
+index 836c400bda495d0515e6705314bc8cb03e69f555..8ffb0ba74ea7387c17689a743cec7f0ba0e550c0 100644
+--- a/dist/mcp/tools/global/update.js
++++ b/dist/mcp/tools/global/update.js
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ import { toCamelCase } from '../../../utils/camelCase.js';
+ import { getGlobalVirtualFieldNames, stripVirtualFields } from '../../../utils/getVirtualFieldNames.js';
+ import { convertCollectionSchemaToZod } from '../../../utils/schemaConversion/convertCollectionSchemaToZod.js';
+diff --git a/dist/mcp/tools/resource/create.js b/dist/mcp/tools/resource/create.js
+index 90e88990230ca66a3f9a549387cfa0ebc5225b1b..78c9477ea4fc6a1c3c7fa37a0440a0b6527fc226 100644
+--- a/dist/mcp/tools/resource/create.js
++++ b/dist/mcp/tools/resource/create.js
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ import { toCamelCase } from '../../../utils/camelCase.js';
+ import { getCollectionVirtualFieldNames, stripVirtualFields } from '../../../utils/getVirtualFieldNames.js';
+ import { convertCollectionSchemaToZod } from '../../../utils/schemaConversion/convertCollectionSchemaToZod.js';
 diff --git a/dist/mcp/tools/resource/delete.js b/dist/mcp/tools/resource/delete.js
 index 9a134688f4964b51a65f07260f0e559baff58bfe..09f4f4ab8385128a7a0630f632148311c11538cb 100644
 --- a/dist/mcp/tools/resource/delete.js
@@ -54,10 +74,36 @@ index 9a134688f4964b51a65f07260f0e559baff58bfe..09f4f4ab8385128a7a0630f632148311
          });
      }
  };
+diff --git a/dist/mcp/tools/resource/update.js b/dist/mcp/tools/resource/update.js
+index 37fe57411613fb0bb6b93cf2e8a3aba07c2222e5..2d90d85895da67110d9521d7ddd3b504e85ce8b4 100644
+--- a/dist/mcp/tools/resource/update.js
++++ b/dist/mcp/tools/resource/update.js
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ import { toCamelCase } from '../../../utils/camelCase.js';
+ import { getCollectionVirtualFieldNames, stripVirtualFields } from '../../../utils/getVirtualFieldNames.js';
+ import { convertCollectionSchemaToZod } from '../../../utils/schemaConversion/convertCollectionSchemaToZod.js';
+diff --git a/dist/mcp/tools/schemas.d.ts b/dist/mcp/tools/schemas.d.ts
+index ec51715ab1717154553bfcabcc9faf59b7038d6f..eaa8dfc07dac124ac580872514c431cf81346ea1 100644
+--- a/dist/mcp/tools/schemas.d.ts
++++ b/dist/mcp/tools/schemas.d.ts
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ export declare const toolSchemas: {
+     findGlobal: {
+         description: string;
 diff --git a/dist/mcp/tools/schemas.js b/dist/mcp/tools/schemas.js
-index 505b5a8d55f9eb214c6a4800cceedb53ab92c209..2e07a8b6fbbb424307b976d8606ef2417fd1d9ce 100644
+index 505b5a8d55f9eb214c6a4800cceedb53ab92c209..683350f6ff8be03267604a345496dbbd6225cf94 100644
 --- a/dist/mcp/tools/schemas.js
 +++ b/dist/mcp/tools/schemas.js
+@@ -1,4 +1,4 @@
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ export const toolSchemas = {
+     findGlobal: {
+         description: 'Find a Payload global singleton configuration.',
 @@ -56,8 +56,9 @@ export const toolSchemas = {
          })
      },
@@ -78,3 +124,37 @@ index 505b5a8d55f9eb214c6a4800cceedb53ab92c209..2e07a8b6fbbb424307b976d8606ef241
          })
      },
      updateGlobal: {
+diff --git a/dist/types.d.ts b/dist/types.d.ts
+index 4d71adff1756e5bbdc880ac0edc6b6ad9fee1d4a..ee207d57cc437d867b30c94ff00a4a40d3cbd67a 100644
+--- a/dist/types.d.ts
++++ b/dist/types.d.ts
+@@ -1,5 +1,5 @@
+ import type { CollectionConfig, CollectionSlug, GlobalSlug, PayloadRequest, TypedUser } from 'payload';
+-import type { z } from 'zod';
++import type { z } from 'zod/v3';
+ import { type ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
+ export type MCPPluginConfig = {
+     /**
+diff --git a/dist/utils/schemaConversion/convertCollectionSchemaToZod.d.ts b/dist/utils/schemaConversion/convertCollectionSchemaToZod.d.ts
+index 434144a7822b3884517f26aba72849890efc6981..b90643b4dbc30958369b51b2b8f78427a8b962d1 100644
+--- a/dist/utils/schemaConversion/convertCollectionSchemaToZod.d.ts
++++ b/dist/utils/schemaConversion/convertCollectionSchemaToZod.d.ts
+@@ -1,4 +1,4 @@
+ import type { JSONSchema4 } from 'json-schema';
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ export declare const convertCollectionSchemaToZod: (schema: JSONSchema4) => z.ZodObject<any, any, any, any, any>;
+ //# sourceMappingURL=convertCollectionSchemaToZod.d.ts.map
+\ No newline at end of file
+diff --git a/dist/utils/schemaConversion/convertCollectionSchemaToZod.js b/dist/utils/schemaConversion/convertCollectionSchemaToZod.js
+index 504c0a041cacdefe438ceae9e2c59c6d3da5300f..21d69304eeb0f486e41594362a84d71ef1fecbd9 100644
+--- a/dist/utils/schemaConversion/convertCollectionSchemaToZod.js
++++ b/dist/utils/schemaConversion/convertCollectionSchemaToZod.js
+@@ -1,6 +1,6 @@
+ import { jsonSchemaToZod } from 'json-schema-to-zod';
+ import * as ts from 'typescript';
+-import { z } from 'zod';
++import { z } from 'zod/v3';
+ import { sanitizeJsonSchema } from './sanitizeJsonSchema.js';
+ import { simplifyRelationshipFields } from './simplifyRelationshipFields.js';
+ import { transformPointFieldsForMCP } from './transformPointFields.js';

@@ -108,7 +108,7 @@
     "three": "0.182.0",
     "tunnel-rat": "^0.1.2",
     "webreel": "^0.1.4",
-    "zod": "^4.6.5",
+    "zod": "catalog:",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
