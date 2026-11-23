@@ -27,3 +27,54 @@ index 1aa57d01e44a43afd3ad48e2e7c6c695e9db333e..796ee727d22e8af80eb8d362d171bb5f
      });
    }
    return /*#__PURE__*/_jsx(SingleUploadDiff, {
+diff --git a/dist/views/Version/Restore/index.js b/dist/views/Version/Restore/index.js
+index 760c234aa9e8e85e4fcf9911600cbaf1e1357cec..c1f3ae37569e422c0c41f6f135762ce6ad56d9a0 100644
+--- a/dist/views/Version/Restore/index.js
++++ b/dist/views/Version/Restore/index.js
+@@ -44,13 +44,18 @@ export const Restore = ({
+     versionDate: versionDateFormatted
+   });
+   const canRestoreAsDraft = status !== 'draft' && collectionConfig?.versions?.drafts;
++  // sas-site patch: restoring a draft version without ?draft=true writes it to
++  // the main document with _status 'draft', which takes a live page offline.
++  // A draft row therefore always restores as a draft, behind one button.
++  const isDraftVersion = status === 'draft' && Boolean(collectionConfig?.versions?.drafts || globalConfig?.versions?.drafts);
++  const restoreAsDraft = draft || isDraftVersion;
+   const handleRestore = useCallback(async () => {
+     let fetchURL;
+     let redirectURL;
+     if (collectionConfig) {
+       fetchURL = formatAdminURL({
+         apiRoute,
+-        path: `/${collectionConfig.slug}/versions/${versionID}?draft=${draft}`
++        path: `/${collectionConfig.slug}/versions/${versionID}?draft=${restoreAsDraft}`
+       });
+       redirectURL = formatAdminURL({
+         adminRoute,
+@@ -60,7 +65,7 @@ export const Restore = ({
+     if (globalConfig) {
+       fetchURL = formatAdminURL({
+         apiRoute,
+-        path: `/globals/${globalConfig.slug}/versions/${versionID}?draft=${draft}`
++        path: `/globals/${globalConfig.slug}/versions/${versionID}?draft=${restoreAsDraft}`
+       });
+       redirectURL = formatAdminURL({
+         adminRoute,
+@@ -79,7 +84,7 @@ export const Restore = ({
+     } else {
+       toast.error(t('version:problemRestoringVersion'));
+     }
+-  }, [apiRoute, collectionConfig, globalConfig, i18n.language, versionID, draft, adminRoute, originalDocID, startRouteTransition, router, t]);
++  }, [apiRoute, collectionConfig, globalConfig, i18n.language, versionID, restoreAsDraft, adminRoute, originalDocID, startRouteTransition, router, t]);
+   return /*#__PURE__*/_jsxs(Fragment, {
+     children: [/*#__PURE__*/_jsx("div", {
+       className: [baseClass, className].filter(Boolean).join(' '),
+@@ -94,7 +99,7 @@ export const Restore = ({
+             children: t('version:restoreAsDraft')
+           })
+         }) : null,
+-        children: t('version:restoreThisVersion')
++        children: t(isDraftVersion ? 'version:restoreAsDraft' : 'version:restoreThisVersion')
+       })
+     }), /*#__PURE__*/_jsx(ConfirmationModal, {
+       body: restoreMessage,
