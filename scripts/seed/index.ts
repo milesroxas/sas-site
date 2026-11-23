@@ -279,11 +279,8 @@ const WORK_ITEMS = [
 async function run() {
   payload = await getPayload({ config })
 
-  // Captured before any drop so the Home dynamic-audience content survives.
+  // Captured before any drop so the Home hero media survives a reseed.
   const previousHome = await payload.findGlobal({ slug: 'home', depth: 0, draft: true })
-  const previousDynamicAudience = (previousHome.layout ?? []).find(
-    (b) => b.blockType === 'dynamicAudience',
-  )
 
   if (DROP) await dropContent()
 
@@ -535,19 +532,6 @@ async function run() {
         layout: 'grid',
         theme: 'inverted',
       },
-      {
-        blockType: 'caseStudyTestimonial',
-        testimonial: testimonialIds[0],
-        layout: 'editorial',
-        theme: 'default',
-      },
-      {
-        blockType: 'caseStudyRelatedWork',
-        heading: 'Related work',
-        selectionMode: 'automatic-capability-match',
-        limit: 3,
-        layout: 'grid',
-      },
     ],
     [
       {
@@ -568,13 +552,6 @@ async function run() {
         portraitPosition: 'left',
         textPosition: 'under-portrait',
         theme: 'default',
-      },
-      {
-        blockType: 'caseStudyKeyDecisions',
-        heading: 'Key decisions',
-        source: 'featured',
-        layout: 'cards',
-        theme: 'neutral',
       },
       {
         blockType: 'caseStudyTransition',
@@ -723,13 +700,6 @@ async function run() {
         width: 'standard',
       },
       {
-        blockType: 'caseStudyTestimonial',
-        testimonial: testimonialIds[1 % testimonialIds.length],
-        layout: 'centered',
-        theme: 'neutral',
-        showPortrait: false,
-      },
-      {
         blockType: 'caseStudyTransition',
         heading: 'Where it goes next',
         body: para('The system keeps growing — the placeholder review ends here.'),
@@ -825,11 +795,6 @@ async function run() {
                 'Body copy at reading width. The paragraphs are short on purpose — the point is to see rhythm, measure, and spacing, not to read.',
               ),
             ),
-            blockNode({
-              blockType: 'banner',
-              style: (['info', 'success', 'warning', 'error'] as const)[i % 4],
-              content: richText(paragraph(text('A banner block embedded in post content.'))),
-            }),
             textHeading('h3', text('Code sample')),
             blockNode({
               blockType: 'code',
@@ -997,85 +962,7 @@ async function run() {
     },
   )
 
-  // Dynamic-audience content: reuse whatever is currently on Home, else defaults.
-  const defaultAudiences = [
-    {
-      title: 'leaders',
-      subheading: 'align the story, the work, and what comes next.',
-      intro:
-        'Turn a complex business into a clear direction people can understand, support, and move forward together.',
-      media: vid(0),
-      items: [
-        { text: 'Clarify the company story and strategic position' },
-        { text: 'Align leadership around a shared direction' },
-        { text: 'Give teams language they can use consistently' },
-        { text: 'Connect brand decisions to business priorities' },
-        { text: 'Create a clearer path for what comes next' },
-      ],
-    },
-    {
-      title: 'marketing teams',
-      subheading: 'turn strategy into clear, consistent expression.',
-      intro:
-        'Give marketing a stronger story, a more useful system, and clearer tools for putting the brand to work.',
-      media: vid(1),
-      items: [
-        { text: 'Turn complex ideas into messages people understand' },
-        { text: 'Build a brand system that works across channels' },
-        { text: 'Organize content around what audiences need' },
-        { text: 'Create a website that makes the value visible' },
-        { text: 'Give internal teams tools they can keep using' },
-      ],
-    },
-    {
-      title: 'product teams',
-      subheading: 'make complex products easier to understand.',
-      intro:
-        'Connect what the product does with what customers, buyers, and partners actually need to understand.',
-      media: vid(2),
-      items: [
-        { text: 'Translate technical depth into clear customer value' },
-        { text: 'Align the product story with the product experience' },
-        { text: 'Make complex features easier to understand' },
-        { text: 'Build a visual system around the product' },
-        { text: 'Create digital experiences that support clarity and trust' },
-      ],
-    },
-    {
-      title: 'experts',
-      subheading: 'turn deep knowledge into something others can use.',
-      intro: 'Preserve the depth of the thinking while giving people a clearer way into it.',
-      media: vid(3),
-      items: [
-        { text: 'Structure complex ideas around audience needs' },
-        { text: 'Translate internal language into clearer market language' },
-        { text: 'Create visual frameworks that explain difficult subjects' },
-        { text: 'Build content systems for ongoing communication' },
-        { text: 'Turn expertise into a credible brand and digital presence' },
-      ],
-    },
-  ]
   const mediaIds = new Set([...pool.images, ...pool.videos].map((m) => m.id))
-  const existingAudiences =
-    previousDynamicAudience && 'audiences' in previousDynamicAudience
-      ? previousDynamicAudience.audiences.map((a, i) => ({
-          title: a.title,
-          subheading: a.subheading,
-          intro: a.intro,
-          items: (a.items ?? []).map((item) => ({ text: item.text })),
-          media: typeof a.media === 'number' && mediaIds.has(a.media) ? a.media : vid(i),
-        }))
-      : null
-  const dynamicAudienceBlock = {
-    blockType: 'dynamicAudience' as const,
-    heading:
-      previousDynamicAudience && 'heading' in previousDynamicAudience
-        ? previousDynamicAudience.heading
-        : 'How we help',
-    audiences: existingAudiences ?? defaultAudiences,
-    theme: 'default' as const,
-  }
-
   const audienceTabsBlock = {
     blockType: 'audienceTabs' as const,
     heading:
@@ -1320,7 +1207,6 @@ async function run() {
           ],
           testimonials: testimonialIds,
         },
-        dynamicAudienceBlock,
       ],
       _status: 'published',
     },
@@ -1392,24 +1278,6 @@ async function run() {
           coverAsset: img(i + 2),
           layout: [
             {
-              blockType: 'labStorySection',
-              source: 'context',
-              eyebrow: 'Context',
-              layout: 'text-left',
-              media: img(i + 3),
-              theme: 'default',
-              width: 'standard',
-            },
-            {
-              blockType: 'labMediaShowcase',
-              heading: 'Output',
-              introduction: para('Selected frames from the experiment.'),
-              media: [img(i), img(i + 1), img(i + 2)],
-              layout: 'grid',
-              theme: 'default',
-              showCaptions: true,
-            },
-            {
               blockType: 'labFacts',
               heading: 'Facts',
               showStatus: true,
@@ -1426,14 +1294,6 @@ async function run() {
               media: img(i + 4),
               imagePosition: 'left',
               theme: 'default',
-            },
-            {
-              blockType: 'labTransition',
-              eyebrow: 'Next',
-              heading: 'Where this goes',
-              body: para('The system moves into production work next quarter.'),
-              layout: 'statement',
-              theme: 'inverted',
             },
             {
               blockType: 'labRelatedProjects',

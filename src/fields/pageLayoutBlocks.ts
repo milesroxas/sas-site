@@ -5,7 +5,6 @@ import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { CallToAction } from '@/blocks/CallToAction/config'
 import { Code } from '@/blocks/Code/config'
 import { Content } from '@/blocks/Content/config'
-import { DynamicAudience } from '@/blocks/DynamicAudience/config'
 import { FormBlock } from '@/blocks/Form/config'
 import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
@@ -40,7 +39,6 @@ export const pageLayoutBlocks: Block[] = [
   // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
   ...sectionNestableBlocks,
   // Interactive (legacy, top-level only): kept beside the run's FAQ, Carousel and Tabs
-  DynamicAudience,
   AudienceTabs,
   IndustryWork,
   TestimonialsMarquee,

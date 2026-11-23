@@ -177,10 +177,14 @@ describe.sequential('content hub and website surfaces', () => {
         intro: { title: 'Published work introduction' },
         layout: [
           {
-            blockType: 'caseStudyTransition',
-            heading: 'Website transition',
-            theme: 'default',
-            layout: 'centered',
+            blockType: 'section',
+            blocks: [
+              {
+                blockType: 'caseStudyTransition',
+                heading: 'Website transition',
+                layout: 'centered',
+              },
+            ],
           },
         ],
         editorialNotes: 'website secret',
@@ -223,7 +227,12 @@ describe.sequential('content hub and website surfaces', () => {
           caseStudy: noLibrary.id,
           _status: 'published',
           intro: { title: 'Intro title' },
-          layout: [{ blockType: 'caseStudyTransition', heading: 'Transition' }],
+          layout: [
+            {
+              blockType: 'section',
+              blocks: [{ blockType: 'caseStudyTransition', heading: 'Transition' }],
+            },
+          ],
         },
       }),
     ).rejects.toThrow('needs at least one Asset Library')

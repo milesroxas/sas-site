@@ -1,34 +1,23 @@
 import type { ReactNode } from 'react'
 import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
 import { ResourceDownloadSection } from '@/blocks/resource-download/Section'
-import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
 import { SectionBand } from '@/blocks/section/SectionBand'
 import { renderContentBlock, sectionChildComponents } from '@/blocks/shared/content-block-renderer'
-import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
 import { resolveRelatedPages } from '@/blocks/shared/related-pages'
-import { Section } from '@/blocks/shared/section'
-import {
-  isStoryCopyBlock,
-  resolveStoryBlockCopy,
-  resolveStorySectionCopy,
-} from '@/blocks/shared/story-copy'
+import { isStoryCopyBlock, resolveStoryBlockCopy } from '@/blocks/shared/story-copy'
 import { type StoryOpener, sectionOpener } from '@/blocks/shared/story-headings'
 import { StoryBeatsBlock } from '@/blocks/story-beats/Component'
-import RichText from '@/components/RichText'
 import type {
   LabFactsBlock,
-  LabMediaShowcaseBlock,
   LabPage,
   LabProject,
   LabRelatedProjectsBlock,
   LabSectionBlock,
-  LabStorySectionBlock,
 } from '@/payload-types'
 import { RevealSection } from '@/shared/ui/reveal-section'
 import { relationshipIds } from '@/utilities/relationshipId'
 import { Facts as FactsList } from './Facts'
 import { RelatedProjectsList } from './RelatedProjects'
-import { StorySection as StorySectionLayout } from './StorySection'
 
 /**
  * The shared run's components plus Statement grid, the one story-capable
@@ -41,31 +30,6 @@ const labContentComponents = {
   featureStatementGrid: FeatureStatementGridBlock,
   resourceDownload: ResourceDownloadSection,
   storyBeats: StoryBeatsBlock,
-}
-
-const StorySection = ({ block, project }: { block: LabStorySectionBlock; project: LabProject }) => (
-  <StorySectionLayout block={block} {...resolveStorySectionCopy(block, project)} />
-)
-
-const MediaShowcase = ({ block }: { block: LabMediaShowcaseBlock }) => {
-  const media = publicApprovedMedia(block.media)
-  if (!media.length) return null
-  return (
-    <Section theme={block.theme}>
-      <div className="text-stack container mx-auto">
-        {block.heading && <h2 className="text-heading">{block.heading}</h2>}
-        {block.introduction && (
-          <RichText className="mb-10 max-w-3xl" data={block.introduction} enableGutter={false} />
-        )}
-        <MediaShowcaseGrid
-          layout={block.layout}
-          media={media}
-          showCaptions={block.showCaptions}
-          showCredits={block.showCredits}
-        />
-      </div>
-    </Section>
-  )
 }
 
 /** Internal links never leave the CMS, and each column is opt-in per block. */
@@ -160,16 +124,8 @@ const renderLabBlock = (
       labContentComponents,
     )
   }
-  if (block.blockType === 'scrollGallery') {
-    // Owns its own pinned full-viewport shell and section band — do not wrap again.
-    return <ScrollGalleryBlock key={block.id} {...block} />
-  }
   const content = (() => {
     switch (block.blockType) {
-      case 'labStorySection':
-        return <StorySection block={block} project={project} />
-      case 'labMediaShowcase':
-        return <MediaShowcase block={block} />
       case 'labFacts':
         return <Facts block={block} project={project} />
       case 'labRelatedProjects':
@@ -190,8 +146,7 @@ const renderLabBlock = (
  * section, except the shared Section-nestable run (and Statement grid), which
  * enters through the common content-block renderer (`data-reveal` markers play
  * the shared GSAP reveal, the same motion those blocks have on every other
- * surface; the marker-less Carousel and Content take the CSS reveal there), and
- * `scrollGallery`, whose pinned shell must not sit under a transformed ancestor.
+ * surface; the marker-less Carousel and Content take the CSS reveal there).
  */
 export const RenderLabBlocks = async ({
   blocks,

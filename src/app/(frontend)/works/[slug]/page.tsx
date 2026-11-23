@@ -80,9 +80,7 @@ export default async function WorkPageRoute({ params }: SlugRouteArgs) {
             title={page.intro.title}
           />
         ) : null}
-        {page.layout?.length ? (
-          <RenderCaseStudyBlocks blocks={page.layout} page={page} study={study} />
-        ) : null}
+        {page.layout?.length ? <RenderCaseStudyBlocks blocks={page.layout} study={study} /> : null}
         <FeaturedWorkSection eyebrow="Explore More Work" entries={relatedEntries} />
         {page.showContents && <ContentsButton />}
       </article>

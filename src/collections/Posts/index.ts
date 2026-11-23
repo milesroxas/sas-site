@@ -21,7 +21,6 @@ import { heroVisualSlotFields } from '@/fields/visual'
 import { populateAuthors } from '@/hooks/populateAuthors'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
-import { Banner } from '../../blocks/Banner/config'
 import { Carousel } from '../../blocks/Carousel/config'
 import { Code } from '../../blocks/Code/config'
 import { FeatureStatementLinks } from '../../blocks/feature/StatementLinks/config'
@@ -136,7 +135,6 @@ export const Posts: CollectionConfig<'posts'> = {
                     OrderedListFeature(),
                     BlocksFeature({
                       blocks: [
-                        Banner,
                         Carousel,
                         Code,
                         FeatureStatementLinks,

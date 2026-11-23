@@ -4,55 +4,12 @@ import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { featureSourceField } from '@/blocks/feature/shared'
 import { ResourceDownload } from '@/blocks/resource-download/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
-import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import { sectionBlock } from '@/blocks/section/config'
-import { relatedSelectionFields, storySectionFields, themeField } from '@/blocks/shared/fields'
+import { relatedSelectionFields, themeField } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
 import { StoryBeats } from '@/blocks/story-beats/config'
 import { hasStorySource, withStoryBeatSource } from '@/fields/storyBeatSource'
-
-export const LabStorySection: Block = withStoryBeatSource(
-  {
-    slug: 'labStorySection',
-    admin: { group: BLOCK_GROUPS.narrative },
-    dbName: 'lp_story',
-    interfaceName: 'LabStorySectionBlock',
-    labels: { singular: 'Story section', plural: 'Story sections' },
-    fields: storySectionFields(),
-  },
-  'LabStorySectionBlock',
-  'lab-pages',
-)
-
-export const LabMediaShowcase: Block = {
-  slug: 'labMediaShowcase',
-  admin: { group: BLOCK_GROUPS.media },
-  dbName: 'lp_media',
-  interfaceName: 'LabMediaShowcaseBlock',
-  labels: { singular: 'Media showcase', plural: 'Media showcases' },
-  fields: [
-    { name: 'heading', type: 'text' },
-    { name: 'introduction', type: 'richText' },
-    {
-      name: 'media',
-      type: 'upload',
-      relationTo: 'media',
-      hasMany: true,
-      required: true,
-      filterOptions: { usageStatus: { equals: 'public-approved' } },
-    },
-    {
-      name: 'layout',
-      type: 'select',
-      defaultValue: 'grid',
-      options: ['single', 'grid', 'horizontal', 'stacked', 'full-bleed', 'comparison'],
-    },
-    themeField(),
-    { name: 'showCaptions', type: 'checkbox', defaultValue: true },
-    { name: 'showCredits', type: 'checkbox', defaultValue: true },
-  ],
-}
 
 export const LabFacts: Block = {
   slug: 'labFacts',
@@ -141,11 +98,6 @@ export const labBlocks = [
   LabSection,
   // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
   ...labSectionBlocks,
-  // Media
-  LabMediaShowcase,
-  ScrollGallery,
-  // Narrative
-  LabStorySection,
   // Statements
   labBlock(FeatureStatementGrid),
   // Lists (legacy, top-level only)

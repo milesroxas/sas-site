@@ -15,14 +15,8 @@ import { ImagePair } from '@/blocks/image-pair/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { MediaContentSplit } from '@/blocks/media-content-split/config'
 import { RichTextBlock } from '@/blocks/rich-text/config'
-import { ScrollGallery } from '@/blocks/scroll-gallery/config'
 import { sectionBlock } from '@/blocks/section/config'
-import {
-  relatedSelectionFields,
-  storySectionFields,
-  themeField,
-  transitionFields,
-} from '@/blocks/shared/fields'
+import { storySectionFields, themeField, transitionFields } from '@/blocks/shared/fields'
 import { BLOCK_GROUPS } from '@/blocks/shared/groups'
 import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
 import { SplitContentNarrow } from '@/blocks/split-content/config'
@@ -69,26 +63,6 @@ export const CaseStudyMediaShowcase: Block = {
   ],
 }
 
-export const CaseStudyKeyDecisions: Block = {
-  slug: 'caseStudyKeyDecisions',
-  admin: { group: BLOCK_GROUPS.lists },
-  dbName: 'wp_decisions',
-  interfaceName: 'CaseStudyKeyDecisionsBlock',
-  labels: { singular: 'Key decisions', plural: 'Key decisions' },
-  fields: [
-    { name: 'heading', type: 'text' },
-    { name: 'introduction', type: 'richText' },
-    { name: 'source', type: 'select', defaultValue: 'featured', options: ['featured', 'all'] },
-    {
-      name: 'layout',
-      type: 'select',
-      defaultValue: 'cards',
-      options: ['list', 'cards', 'editorial', 'sticky'],
-    },
-    themeField(),
-  ],
-}
-
 export const CaseStudyMetrics: Block = {
   slug: 'caseStudyMetrics',
   admin: { group: BLOCK_GROUPS.lists },
@@ -114,31 +88,6 @@ export const CaseStudyMetrics: Block = {
   ],
 }
 
-export const CaseStudyTestimonial: Block = {
-  slug: 'caseStudyTestimonial',
-  admin: { group: BLOCK_GROUPS.statements },
-  dbName: 'wp_quote',
-  interfaceName: 'CaseStudyTestimonialBlock',
-  labels: { singular: 'Testimonial', plural: 'Testimonials' },
-  fields: [
-    {
-      name: 'testimonial',
-      type: 'relationship',
-      relationTo: 'testimonials',
-      required: true,
-      filterOptions: { approvalStatus: { equals: 'approved-public' } },
-    },
-    {
-      name: 'layout',
-      type: 'select',
-      defaultValue: 'editorial',
-      options: ['editorial', 'centered', 'split', 'compact'],
-    },
-    themeField(),
-    { name: 'showPortrait', type: 'checkbox', defaultValue: true },
-  ],
-}
-
 export const CaseStudyTransition: Block = {
   slug: 'caseStudyTransition',
   admin: { group: BLOCK_GROUPS.sectionHeading },
@@ -149,18 +98,6 @@ export const CaseStudyTransition: Block = {
   // story beat or writes its own copy, and that choice decides which copy
   // fields the editor ever sees.
   fields: [featureSourceField(), ...transitionFields()],
-}
-
-export const CaseStudyRelatedWork: Block = {
-  slug: 'caseStudyRelatedWork',
-  admin: { group: BLOCK_GROUPS.lists },
-  dbName: 'wp_related',
-  interfaceName: 'CaseStudyRelatedWorkBlock',
-  labels: { singular: 'Related work', plural: 'Related work' },
-  fields: [
-    { name: 'heading', type: 'text', defaultValue: 'Related work' },
-    ...relatedSelectionFields(),
-  ],
 }
 
 /**
@@ -209,7 +146,6 @@ const WorkMediaContentSplit = workStoryMediaBlock(MediaContentSplit, 'WorkMediaC
 const WorkMediaBlock = withCaseStudyScopedMedia(MediaBlock, 'WorkMediaBlock')
 const WorkCarousel = withCaseStudyScopedMedia(Carousel, 'WorkCarouselBlock')
 const WorkAudienceTabs = withCaseStudyScopedMedia(AudienceTabs, 'WorkAudienceTabsBlock')
-const WorkScrollGallery = withCaseStudyScopedMedia(ScrollGallery, 'WorkScrollGalleryBlock')
 
 /**
  * The Work variant of each shared run block that needs one, by slug. Blocks
@@ -272,16 +208,12 @@ export const caseStudyBlocks = [
   IndustryWork,
   // Media
   WorkCaseStudyMediaShowcase,
-  WorkScrollGallery,
   // Narrative
   WorkCaseStudyStorySection,
   // Statements
   WorkFeatureStatementGrid,
   FeatureStatementLinks,
-  CaseStudyTestimonial,
   // Lists (legacy, top-level only)
-  CaseStudyKeyDecisions,
   CaseStudyMetrics,
   FeaturedWork,
-  CaseStudyRelatedWork,
 ]

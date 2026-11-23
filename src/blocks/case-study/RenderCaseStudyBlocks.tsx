@@ -15,11 +15,9 @@ import { InsightListBlock } from '@/blocks/insight-list/Component'
 import { MediaBlock as MediaBlockComponent } from '@/blocks/MediaBlock/Component'
 import { MediaContentSplit } from '@/blocks/media-content-split/MediaContentSplit'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
-import { ScrollGalleryBlock } from '@/blocks/scroll-gallery/Component'
 import { SectionBand } from '@/blocks/section/SectionBand'
 import { renderContentBlock, sectionChildComponents } from '@/blocks/shared/content-block-renderer'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
-import { resolveRelatedPages } from '@/blocks/shared/related-pages'
 import { resolveStoryBlockCopy, resolveStorySectionCopy } from '@/blocks/shared/story-copy'
 import { type StoryOpener, sectionOpener } from '@/blocks/shared/story-headings'
 import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
@@ -29,13 +27,9 @@ import RichText from '@/components/RichText'
 import { resolveVisual } from '@/features/immersive/visual'
 import type {
   CaseStudy,
-  CaseStudyKeyDecisionsBlock,
   CaseStudyMediaShowcaseBlock,
   CaseStudyMetricsBlock,
-  CaseStudyRelatedWorkBlock,
-  CaseStudyTestimonialBlock,
   Media as MediaDoc,
-  Testimonial,
   WorkCaseStudyStorySectionBlock,
   WorkCaseStudyTransitionBlock,
   WorkFeatureHeadingOffsetBlock,
@@ -51,14 +45,11 @@ import type {
   WorkSplitImageOffsetBlock,
 } from '@/payload-types'
 import { RevealSection as CssRevealSection } from '@/shared/ui/reveal-section'
-import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
+import { populatedDoc } from '@/utilities/relationshipId'
 import { blockRevealVariants } from '../shared/reveal-variants'
-import { KeyDecisions as KeyDecisionsList } from './KeyDecisions'
 import { Metrics as MetricsList } from './Metrics'
-import { RelatedWorkList } from './RelatedWork'
 import { RevealSection } from './RevealSection.client'
 import { StorySection as StorySectionLayout } from './StorySection'
-import { TestimonialBlock as TestimonialQuote } from './Testimonial'
 
 /**
  * The shared run's components plus Story beats, the Text block only a story
@@ -249,22 +240,6 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
   )
 }
 
-/** `featured` narrows the study's decisions to the ones marked for prominence. */
-const KeyDecisions = ({
-  block,
-  study,
-}: {
-  block: CaseStudyKeyDecisionsBlock
-  study: CaseStudy
-}) => (
-  <KeyDecisionsList
-    block={block}
-    decisions={(study.keyDecisions || []).filter(
-      (decision) => block.source === 'all' || decision.featured,
-    )}
-  />
-)
-
 /** Only public-approved metrics leave the study; `featured` narrows further. */
 const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseStudy }) => (
   <MetricsList
@@ -273,10 +248,6 @@ const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseSt
       (metric) => metric.approvedForPublic && (block.source === 'all-public' || metric.featured),
     )}
   />
-)
-
-const TestimonialBlock = ({ block }: { block: CaseStudyTestimonialBlock }) => (
-  <TestimonialQuote block={block} testimonial={populatedDoc<Testimonial>(block.testimonial)} />
 )
 
 /**
@@ -299,33 +270,6 @@ const Transition = ({
         is the narrower question of whether a Section's stack sits under it. */}
     <RichTransition bare stacked={bare} {...resolveStoryBlockCopy(block, study)} />
   </RevealSection>
-)
-
-const RelatedWork = async ({
-  block,
-  page,
-  study,
-}: {
-  block: CaseStudyRelatedWorkBlock
-  page: WorkPage
-  study: CaseStudy
-}) => (
-  <RelatedWorkList
-    block={block}
-    pages={
-      await resolveRelatedPages<WorkPage>({
-        automatic: block.selectionMode === 'automatic-capability-match',
-        capabilityIds: relationshipIds(study.featuredCapabilities || []),
-        capabilityPath: 'caseStudy.featuredCapabilities',
-        collection: 'work-pages',
-        currentId: page.id,
-        limit: block.limit || 3,
-        manual: (page.relatedWorkPages || []).filter(
-          (item): item is WorkPage => typeof item === 'object',
-        ),
-      })
-    }
-  />
 )
 
 const FeatureHeadingOffsetSection = ({
@@ -400,9 +344,9 @@ type WorkLayoutBlock = NonNullable<WorkPage['layout']>[number] | WorkSectionChil
  */
 const renderWorkBlock = (
   block: WorkLayoutBlock,
-  ctx: { bare?: boolean; opener?: StoryOpener | null; page: WorkPage; study: CaseStudy },
+  ctx: { bare?: boolean; opener?: StoryOpener | null; study: CaseStudy },
 ): ReactNode => {
-  const { bare, opener = null, page, study } = ctx
+  const { bare, opener = null, study } = ctx
   switch (block.blockType) {
     case 'section': {
       // The Section owns the band; children render bare inside it with their
@@ -437,19 +381,10 @@ const renderWorkBlock = (
       return <SplitImageOffsetSection bare={bare} block={block} key={block.id} study={study} />
     case 'caseStudyMediaShowcase':
       return <MediaShowcase block={block} key={block.id} />
-    case 'scrollGallery':
-      // Owns its own pinned full-viewport shell and section band — do not wrap again.
-      return <ScrollGalleryBlock key={block.id} {...block} />
-    case 'caseStudyKeyDecisions':
-      return <KeyDecisions block={block} key={block.id} study={study} />
     case 'caseStudyMetrics':
       return <Metrics block={block} key={block.id} study={study} />
-    case 'caseStudyTestimonial':
-      return <TestimonialBlock block={block} key={block.id} />
     case 'caseStudyTransition':
       return <Transition bare={bare} block={block} key={block.id} study={study} />
-    case 'caseStudyRelatedWork':
-      return <RelatedWork block={block} key={block.id} page={page} study={study} />
     case 'featureHeadingOffset':
       return <FeatureHeadingOffsetSection bare={bare} block={block} key={block.id} study={study} />
     case 'featureStatementGrid':
@@ -564,10 +499,8 @@ const renderWorkBlock = (
 
 export const RenderCaseStudyBlocks = async ({
   blocks,
-  page,
   study,
 }: {
   blocks: NonNullable<WorkPage['layout']>
-  page: WorkPage
   study: CaseStudy
-}) => <>{blocks.map((block) => renderWorkBlock(block, { page, study }))}</>
+}) => <>{blocks.map((block) => renderWorkBlock(block, { study }))}</>

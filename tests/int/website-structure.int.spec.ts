@@ -267,10 +267,14 @@ describe.sequential('website IA surfaces', () => {
         intro: { title: 'Intro title' },
         layout: [
           {
-            blockType: 'caseStudyTransition',
-            heading: 'Website transition',
-            theme: 'default',
-            layout: 'centered',
+            blockType: 'section',
+            blocks: [
+              {
+                blockType: 'caseStudyTransition',
+                heading: 'Website transition',
+                layout: 'centered',
+              },
+            ],
           },
         ],
         _status: 'published',

@@ -12,7 +12,6 @@ import {
   LinkJSXConverter,
   type SerializedLexicalNodeWithParent,
 } from '@payloadcms/richtext-lexical/react'
-import { BannerBlock } from '@/blocks/Banner/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { CodeBlock, type CodeBlockProps } from '@/blocks/Code/Component'
@@ -24,7 +23,6 @@ import { RichTextInsights } from '@/blocks/rich-text/insights/Component'
 import { RichTextPillList } from '@/blocks/rich-text/pill-list/Component'
 import { YouTubeBlock } from '@/blocks/youtube/Component'
 import type {
-  BannerBlock as BannerBlockProps,
   CarouselBlock as CarouselBlockProps,
   CallToActionBlock as CTABlockProps,
   FeatureStatementLinksBlock as FeatureStatementLinksBlockProps,
@@ -45,7 +43,6 @@ type NodeTypes =
       | CTABlockProps
       | MediaBlockProps
       | ResourceDownloadBlockProps
-      | BannerBlockProps
       | CarouselBlockProps
       | CodeBlockProps
       | FeatureStatementLinksBlockProps
@@ -133,7 +130,6 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
   },
   blocks: {
     actions: ({ node }) => <RichTextActions links={node.fields.links} />,
-    banner: ({ node }) => <BannerBlock className="col-start-2 mb-4" {...node.fields} />,
     carousel: ({ node }) => (
       <CarouselBlock
         className="col-start-1 col-span-3"

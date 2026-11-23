@@ -33,14 +33,21 @@ Everything else a surface offers at the top level is legacy: hidden from the dra
 
 ### Steps
 
-1. [x] Registry and drift check (above). Stories retitled to `Blocks/<Group>/<Label>` (15 files; visual baselines for those stories reset).
+1. [x] Registry and drift check (above). Stories retitled to `Blocks/<Group>/<Label>` (17 files; visual baselines for those stories reset).
 2. [x] Drawer and save rule (above). No schema change.
-3. [ ] Work Pages on the model: derive the Work run from `sectionNestableBlocks` with a `workBlock` mapper like Lab's `labBlock` (adds Rich text, YouTube, Poster list: additive migration, ask first; then drop them from `KNOWN_RUN_GAPS`). Wrap adacore and vault with `scripts/wrap-sections.ts` (`--dry-run` first). Optionally let `RenderCaseStudyBlocks` resolve copy and then hand off to `sectionChildComponents`.
+3. [ ] Work Pages on the model.
+   - [x] The Work run is `sectionNestableBlocks` mapped through `workVariants` (`src/blocks/case-study/config.ts`), so Work gained Rich text, YouTube, Poster list and Quote banner. Migration `20261122_194915_work_run_from_shared` (additive only).
+   - [x] `scripts/wrap-sections.ts` made safe for production (push forced off; drafts unless `--publish`; `--only`; snapshot before the first save; `--restore`) and taught to group: adjacent same-theme, same-spacing blocks share one Section whose stack equals that spacing, and a Standard heading opens a Section with the block it introduces. Measured on the local dev database (same Work Page layouts as production): adacore renders identically; vault moves one band step (96px desktop, 64px mobile) above its second Standard heading, because a Section cannot restate the heading's `pb-0`.
+   - [ ] Production run, after the deploy that carries the migrations (this branch's config reads tables production gains only then):
+     1. Back up the production DB.
+     2. `pnpm exec tsx --env-file=<production env> scripts/wrap-sections.ts --dry-run --only work-pages/adacore,work-pages/vault-workforce-screening` and compare with the after lines below.
+     3. The same without `--dry-run`: saves drafts and writes the snapshot to `scripts/snapshots/`.
+     4. Review both pages in the admin live preview, then publish each.
+     - Expected after: adacore `section[fullMedia] · caseStudyStorySection · section[Statement, Stacked, Stacked, Statement, Split narrow] · featuredWork`; vault `section[Stacked, Split narrow, Pair offset] · section Approach (unchanged) · section(neutral)[Split narrow, Stacked] · section[Standard, Stacked] · section[Carousel, Split narrow, Split narrow, Stacked]`.
+     - Do not wrap Work Pages over the sas-cms MCP: its draft saves on Work Pages report success but do not read back (2026-11-22, cause not found), so a result cannot be verified there.
 4. [ ] Rename to the labels (code only): folders, components, `interfaceName` (changes `payload-types` only, not the DB). Slugs and `dbName`s stay. Open: how far this goes.
-5. [ ] Delete the never-used legacy blocks: one migration of plain drops (ask first), with their stories, renderer cases and fixtures. Open: keep Form, Newsletter signup?
+5. [x] Delete never-used legacy blocks: Banner (post body), Dynamic audience, Key decisions, Related work (block), Testimonial, Lab media showcase, Lab story section, Scroll gallery (the block only; the immersive scroll gallery and its demo stay). Migration `20261123_143806_drop_unused_legacy_blocks` drops their 30 tables and `lab_pages_rels.media_id`, after a guard that raises (rolling the whole migration back) if any of them holds a row. Kept: Statement grid, Statement links and Metrics, because version history still holds them (found on the local dev database, which mirrors production; the guard would have stopped the drop either way), and Form and Newsletter signup (open question). All are hidden from the drawer by step 2.
 6. [ ] Settle the used legacy blocks: each becomes nestable (renders `bare` in a Section) or stays a shell for good. Then Phase D (drop per-block themes, prune enums).
-
-Open: Poster list is not in the Work run; confirm whether that is deliberate before step 3.
 
 ---
 

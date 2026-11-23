@@ -131,7 +131,12 @@ describe.sequential('lab projects and lab pages', () => {
         title: `Lab Page ${suffix}`,
         slug: `lab-page-${suffix}`,
         labProject: publishedProjectId,
-        layout: [{ blockType: 'labStorySection', source: 'outcome-summary' }],
+        layout: [
+          {
+            blockType: 'section',
+            blocks: [{ blockType: 'storyBeats', source: 'outcome-summary' }],
+          },
+        ],
         _status: 'published',
       },
       context: { disableRevalidate: true },
@@ -199,10 +204,15 @@ describe.sequential('lab projects and lab pages', () => {
         intro: { title: 'Story beat introduction' },
         layout: [
           {
-            blockType: 'labStorySection',
-            source: 'approach',
-            storyScope: 'beat',
-            storyBeatKey: 'detail-beat',
+            blockType: 'section',
+            blocks: [
+              {
+                blockType: 'storyBeats',
+                source: 'approach',
+                storyScope: 'beat',
+                storyBeatKey: 'detail-beat',
+              },
+            ],
           },
         ],
         _status: 'published',
@@ -220,10 +230,15 @@ describe.sequential('lab projects and lab pages', () => {
         data: {
           layout: [
             {
-              blockType: 'labStorySection',
-              source: 'approach',
-              storyScope: 'beat',
-              storyBeatKey: 'missing-beat',
+              blockType: 'section',
+              blocks: [
+                {
+                  blockType: 'storyBeats',
+                  source: 'approach',
+                  storyScope: 'beat',
+                  storyBeatKey: 'missing-beat',
+                },
+              ],
             },
           ],
         },
