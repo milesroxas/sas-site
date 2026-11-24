@@ -50,7 +50,6 @@ export const RichTextInsights: React.FC<RichTextInsightsProps & { className?: st
           className={itemClassName}
           compact={compact}
           group={`${group}-row-${Math.floor(index / perRow)}`}
-          index={index}
           item={item}
           key={item.id ?? index}
           markSize="medium"

@@ -175,7 +175,7 @@ function FormStepItem({
   const open = state === 'active'
 
   return (
-    <li className="flex flex-col border-b border-border py-6">
+    <li className="flex flex-col border-b border-border py-6 last:border-b-0">
       <div className="flex items-baseline justify-between gap-6">
         <div className="flex items-baseline gap-4">
           <FieldMeta className="w-6">{String(index + 1).padStart(2, '0')}</FieldMeta>

@@ -49,7 +49,7 @@ export type Props = {
 } & LabBrowseData
 
 /**
- * Editorial lab index: the work index's numbered row list over lab pages,
+ * Editorial lab index: the work index's ruled row list over lab pages,
  * filtered by kind and capability. Filters and sort change the set in place
  * (no navigation) and the first paint plays the site's under-media reveal per
  * row (each row gates on its own scroll position, so the list cascades as it
@@ -113,7 +113,7 @@ export const LabBrowse: React.FC<Props> = ({
         {count > 0 ? (
           <ul className="flex flex-col">
             {visibleItems.map((item, index) => (
-              <li className="border-b border-border" key={item.slug}>
+              <li className="border-b border-border last:border-b-0" key={item.slug}>
                 {hasFiltered ? (
                   <div
                     className="filter-swap-item"
@@ -123,11 +123,11 @@ export const LabBrowse: React.FC<Props> = ({
                       } as CSSProperties
                     }
                   >
-                    <LabRow index={index} item={item} />
+                    <LabRow item={item} />
                   </div>
                 ) : (
                   <ScrollReveal as="div" variant="underMedia">
-                    <LabRow index={index} item={item} />
+                    <LabRow item={item} />
                   </ScrollReveal>
                 )}
               </li>

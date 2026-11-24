@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Visual } from '@/components/Visual'
 import { cursorTarget } from '@/features/cursor'
 import type { Visual as VisualData } from '@/features/immersive/visual'
-import { FIGURE, LABEL, padIndex } from '@/sections/Browse/registers'
+import { LABEL } from '@/sections/Browse/registers'
 import { forwardNavTransitionTypes } from '@/shared/lib/view-transition'
 import { cn } from '@/utilities/ui'
 
@@ -18,13 +18,18 @@ export type IndexRowTag = { slug: string; label: string; active?: boolean }
 
 /**
  * One index row, shared by every editorial listing (the work index and its
- * related-work list, the lab index). Below `md` it stacks and the number and
- * arrow ride a header line; at `md` that wrapper dissolves
- * (`display: contents`) so both become direct children of the row: the same
- * nodes in both layouts, so the reveal markers and their beats never
- * duplicate.
+ * related-work list, the lab index). Below `md` it is a two-column grid:
+ * the thumbnail, facts and tags span both columns and the title takes the
+ * first with the arrow opposite it in the second, centered on the title's
+ * first line, so a wrapped title hangs below it. The copy wrapper
+ * dissolves there (`display: contents`) so the title and arrow are grid
+ * siblings, and dense packing seats the arrow in the hole beside the title
+ * whether or not a facts line or tags surround it. At `md` the row is one
+ * flex line, arrow last; the same nodes in both layouts, so the reveal markers and their
+ * beats never duplicate. No row number: the rules already separate the
+ * rows, and a mono index on each was decoration.
  *
- * The row's fixed lanes (number, thumbnail, arrow) and the gaps between them
+ * The row's fixed lanes (thumbnail, arrow) and the gaps between them
  * step up with the page column so the copy always keeps a working measure.
  * At `md` the column is 672px: the `lg` sizes would spend 528px of it on the
  * lanes and leave the title one word per line, so the thumbnail and gaps
@@ -35,7 +40,6 @@ export type IndexRowTag = { slug: string; label: string; active?: boolean }
  * it gates on its own scroll position.
  */
 export const IndexRow: React.FC<{
-  index: number
   href: string
   title: string
   visual: VisualData | null
@@ -43,31 +47,15 @@ export const IndexRow: React.FC<{
   tags?: IndexRowTag[]
   /** `h2` on an index, where a row is the page's unit; `h3` under a section heading. */
   titleAs?: 'h2' | 'h3'
-}> = ({ index, href, title, visual, facts = [], tags = [], titleAs: TitleTag = 'h2' }) => (
+}> = ({ href, title, visual, facts = [], tags = [], titleAs: TitleTag = 'h2' }) => (
   <Link
-    className="group pressable pressable-subtle flex flex-col gap-5 py-8 outline-none md:flex-row md:items-center md:gap-8 lg:gap-12"
+    className="group pressable pressable-subtle grid grid-flow-row-dense grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-8 outline-none md:flex md:flex-row md:gap-8 lg:gap-12"
     href={href}
     transitionTypes={[...forwardNavTransitionTypes]}
     {...cursorTarget({ variant: 'view' })}
   >
-    <div className="flex items-center justify-between md:contents">
-      <span
-        className={cn(FIGURE, 'text-muted-foreground md:w-10 md:shrink-0')}
-        data-reveal
-        data-reveal-group="row-furniture"
-      >
-        {padIndex(index)}
-      </span>
-      <IconArrowUpRight
-        aria-hidden="true"
-        className="size-6 shrink-0 stroke-1 text-foreground transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none md:order-last"
-        data-reveal
-        data-reveal-group="row-furniture"
-      />
-    </div>
-
     <div
-      className="relative aspect-video w-full shrink-0 overflow-hidden rounded-md bg-muted md:w-56 lg:w-96"
+      className="relative col-span-2 aspect-video w-full shrink-0 overflow-hidden rounded-md bg-muted md:w-56 lg:w-96"
       data-reveal="media"
     >
       {visual && (
@@ -82,10 +70,10 @@ export const IndexRow: React.FC<{
       )}
     </div>
 
-    <div className="flex min-w-0 grow flex-col gap-4">
+    <div className="contents md:flex md:min-w-0 md:grow md:flex-col md:gap-4">
       {facts.length > 0 && (
         <p
-          className={cn(LABEL, 'text-muted-foreground')}
+          className={cn(LABEL, 'col-span-2 text-muted-foreground')}
           data-reveal
           data-reveal-group="row-identity"
         >
@@ -98,14 +86,14 @@ export const IndexRow: React.FC<{
         </p>
       )}
       <TitleTag
-        className="text-subheading text-foreground group-hover:underline"
+        className="col-start-1 text-subheading text-foreground group-hover:underline"
         data-reveal
         data-reveal-group="row-identity"
       >
         {title}
       </TitleTag>
       {tags.length > 0 && (
-        <ul className="flex flex-wrap items-center gap-2" data-reveal>
+        <ul className="col-span-2 flex flex-wrap items-center gap-2" data-reveal>
           {tags.map((tag) => (
             <li key={tag.slug}>
               <Badge
@@ -125,5 +113,16 @@ export const IndexRow: React.FC<{
         </ul>
       )}
     </div>
+
+    {/* One title line tall (`h-lh` read at the title's type role), so the
+        arrow centers on the title's first line below `md`. */}
+    <span
+      aria-hidden="true"
+      className="col-start-2 flex h-lh shrink-0 items-center self-start text-subheading md:self-auto"
+      data-reveal
+      data-reveal-group="row-furniture"
+    >
+      <IconArrowUpRight className="size-6 stroke-1 text-foreground transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" />
+    </span>
   </Link>
 )

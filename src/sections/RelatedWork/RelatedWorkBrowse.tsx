@@ -52,7 +52,7 @@ const highlightFor = (kind: RelatedWorkKind, slugs: readonly string[]): WorkRowH
  *
  * Layout sits on `BlockGrid`: from `2xl` the aside takes two columns and the
  * list the other six, the narrowest column that still seats the index row
- * (number lane, thumbnail, arrow) with a two-line title beside it. Below that
+ * (thumbnail, arrow) with a two-line title beside it. Below that
  * the list takes the full width and the aside sits above it as a subgrid of
  * the same eight columns: the heading cluster keeps to half of them, while the
  * filter terms run inline across all eight so the aside spends its height on
@@ -194,7 +194,7 @@ export const RelatedWorkBrowse: React.FC<{
       </ScrollReveal>
 
       {/* The strong rule opens the list, as the index strip's lower edge
-          does; each row closes with the list's own hairline. */}
+          does; a hairline separates the rows, and the last row has none. */}
       <div className="border-t border-foreground md:col-span-8 2xl:col-span-6">
         <p aria-live="polite" className="sr-only">
           {`Showing ${count} of ${items.length} projects`}
@@ -203,7 +203,7 @@ export const RelatedWorkBrowse: React.FC<{
           {count > 0 ? (
             <ul>
               {visibleItems.map((item, index) => (
-                <li className="border-b border-border" key={item.slug}>
+                <li className="border-b border-border last:border-b-0" key={item.slug}>
                   {hasFiltered ? (
                     <div
                       className="filter-swap-item"
@@ -213,11 +213,11 @@ export const RelatedWorkBrowse: React.FC<{
                         } as CSSProperties
                       }
                     >
-                      <WorkRow highlight={highlight} index={index} item={item} titleAs="h3" />
+                      <WorkRow highlight={highlight} item={item} titleAs="h3" />
                     </div>
                   ) : (
                     <ScrollReveal as="div" variant="underMedia">
-                      <WorkRow highlight={highlight} index={index} item={item} titleAs="h3" />
+                      <WorkRow highlight={highlight} item={item} titleAs="h3" />
                     </ScrollReveal>
                   )}
                 </li>
@@ -226,7 +226,7 @@ export const RelatedWorkBrowse: React.FC<{
           ) : (
             /* Hand-picked work need not carry every page term, so a term can
                come up empty. */
-            <div className="border-b border-border py-8">
+            <div className="py-8">
               <p className="text-muted-foreground">{copy.empty}</p>
               <button
                 className="pressable mt-4 text-sm text-foreground underline underline-offset-4"

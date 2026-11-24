@@ -19,11 +19,10 @@ export type WorkRowHighlight = {
  */
 export const WorkRow: React.FC<{
   item: WorksBrowseItem
-  index: number
   highlight?: WorkRowHighlight
   /** `h2` on the index, where a row is the page's unit; `h3` under a section heading. */
   titleAs?: 'h2' | 'h3'
-}> = ({ item, index, highlight, titleAs }) => {
+}> = ({ item, highlight, titleAs }) => {
   const industry = item.industries[0]
   const facts: IndexRowFact[] = []
   if (item.client) facts.push({ label: item.client })
@@ -35,7 +34,6 @@ export const WorkRow: React.FC<{
     <IndexRow
       facts={facts}
       href={`/works/${item.slug}`}
-      index={index}
       tags={item.capabilities.map((capability) => ({
         ...capability,
         active: highlight?.capabilities?.includes(capability.slug),

@@ -403,7 +403,7 @@ The second legacy group to enter the run, with a new block designed straight ont
 
 - [x] `src/blocks/lists/insight-list/`: `config.ts` (slug `insightList`, function `dbName` to `*_insight_list`, `interfaceName: 'InsightListBlock'`, group Lists; eyebrow + heading row, `summary` textarea, `layout` (`side` / `stacked`) + `markSize` (`small` / `medium` / `large`) row, `items[]` of SVG `media` (picker filtered to `image/svg+xml`) + `title` + `description`, `themeField()`), `Component.tsx` (server: band, heading cluster and the list on one `BlockGrid`, marks painted as a CSS mask over the text color so one upload reads on every band), `Component.stories.tsx` (`Blocks/Lists/InsightList`: both frames, mark sizes, no marks, five items, dark).
 - [x] `BLOCK_GROUPS.lists` relabeled `Lists` (was `Lists & grids`); label only, no schema.
-- [x] `src/blocks/shared/numbering.ts` (`ordinalLabel`) is the one two-digit index formatter; FAQ's local copy now imports it.
+- [x] `src/blocks/shared/numbering.ts` (`ordinalLabel`) is the one two-digit index formatter; FAQ's local copy now imports it. (Removed 2026-11-24 with the ordinals themselves: Insight list, FAQ and the Featured work counter no longer number their items.)
 - [x] `publicApprovedMediaWhere` exported from `src/fields/caseStudyScopedMedia.ts` so the SVG picker filter composes the same public gate as every other picker.
 - [x] `sectionNestableBlocks` gains `// Lists: InsightList`; `workSectionBlocks` gains it plain; `sectionChildComponents` maps `insightList`; `RenderWorkBlocks` renders it through `RevealSection` with the shared `intro` variant; `blockRevealVariants.insightList = 'intro'`.
 - [x] `pnpm generate:types`, `pnpm generate:importmap` (no new imports), `tsc --noEmit`, `pnpm lint` clean.

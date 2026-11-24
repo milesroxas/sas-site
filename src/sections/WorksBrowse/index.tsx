@@ -37,7 +37,7 @@ export type Props = {
 } & WorksBrowseData
 
 /**
- * Editorial work index: a numbered list of case studies under a filter strip.
+ * Editorial work index: a ruled list of case studies under a filter strip.
  * Filters and sort change the set in place (no navigation) and the first
  * paint plays the site's under-media reveal per row (each row gates on its own
  * scroll position, so the list cascades as it is read); afterwards a swap is
@@ -95,7 +95,7 @@ export const WorksBrowse: React.FC<Props> = ({
         {count > 0 ? (
           <ul className="flex flex-col">
             {visibleItems.map((item, index) => (
-              <li className="border-b border-border" key={item.slug}>
+              <li className="border-b border-border last:border-b-0" key={item.slug}>
                 {hasFiltered ? (
                   <div
                     className="filter-swap-item"
@@ -105,11 +105,11 @@ export const WorksBrowse: React.FC<Props> = ({
                       } as CSSProperties
                     }
                   >
-                    <WorkRow index={index} item={item} />
+                    <WorkRow item={item} />
                   </div>
                 ) : (
                   <ScrollReveal as="div" variant="underMedia">
-                    <WorkRow index={index} item={item} />
+                    <WorkRow item={item} />
                   </ScrollReveal>
                 )}
               </li>

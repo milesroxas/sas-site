@@ -95,7 +95,6 @@ export const InsightListBlock: React.FC<InsightListBlockProps> = ({
                 className={arrangement.item}
                 compact={compact}
                 group={`row-${Math.floor(index / arrangement.perRow)}`}
-                index={index}
                 item={item}
                 key={item.id ?? index}
                 markSize={size}

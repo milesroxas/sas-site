@@ -74,8 +74,6 @@ const FEATURED_WORK_PIN = {
   activateEase: SCROLL_REVEAL_INTRO.textEase,
   /** Meta line rises this many px as it fades in. */
   metaY: 10,
-  /** Counter roll travel (px), signed by scroll direction. */
-  counterY: 10,
   /** Entrance gate: the reveal plays the moment the pin engages. */
   entranceStart: 'top top',
 } as const
@@ -110,8 +108,6 @@ const {
  * for the absolutely-positioned frames inside it even at 1.
  */
 const SCALES_MEDIA = MEDIA_SCALE_FROM !== 1
-
-const padIndex = (index: number) => String(index + 1).padStart(2, '0')
 
 /**
  * Resting opacity for a title `distance` steps from the active item: full at
@@ -156,7 +152,7 @@ const StaticList: React.FC<Props> = ({ eyebrow, entries }) => (
       {eyebrow ? <EyebrowRule label={eyebrow} /> : null}
       <ul className="flex flex-col">
         {entries.map((entry) => (
-          <li className="border-b border-muted-foreground" key={entry.id}>
+          <li className="border-b border-muted-foreground last:border-b-0" key={entry.id}>
             <Link
               className="pressable pressable-subtle block py-8 outline-none"
               href={entry.href}
@@ -195,11 +191,9 @@ export const FeaturedWorkList: React.FC<Props> = ({
       if (!list) return
       const items = Array.from(list.querySelectorAll<HTMLElement>('[data-work-item]'))
       const frames = Array.from(root.querySelectorAll<HTMLElement>('[data-work-media]'))
-      const counter = root.querySelector<HTMLElement>('[data-work-counter]')
 
       const centers = () => items.map((item) => item.offsetTop + item.offsetHeight / 2)
-      const { activateDuration, activateEase, dimBlurPx, dimScale, metaY, counterY } =
-        FEATURED_WORK_PIN
+      const { activateDuration, activateEase, dimBlurPx, dimScale, metaY } = FEATURED_WORK_PIN
 
       let current = -1
       const activate = (next: number, immediate = false) => {
@@ -307,17 +301,6 @@ export const FeaturedWorkList: React.FC<Props> = ({
             gsap.set(frame, { autoAlpha: 0, zIndex: 1 })
           }
         })
-
-        if (counter) {
-          counter.textContent = padIndex(next)
-          if (!immediate) {
-            gsap.fromTo(
-              counter,
-              { autoAlpha: 0, y: counterY * direction },
-              { autoAlpha: 1, y: 0, duration: activateDuration, ease: activateEase },
-            )
-          }
-        }
       }
 
       activateRef.current = contextSafe?.((index: number) => activate(index)) ?? null
@@ -327,7 +310,7 @@ export const FeaturedWorkList: React.FC<Props> = ({
       activate(0, true)
 
       // Entrance: the band stays blank through the approach; the moment the
-      // pin engages the site reveal plays — eyebrow and counter lead, titles
+      // pin engages the site reveal plays — the eyebrow leads, titles
       // cascade, the media frame mask-wipes open on the under-media offset.
       // Play-once: scrolling back up never reverses or replays it.
       const leads = Array.from(root.querySelectorAll<HTMLElement>('[data-work-entrance="lead"]'))
@@ -576,24 +559,11 @@ export const FeaturedWorkList: React.FC<Props> = ({
         </Container>
 
         <div className="absolute inset-x-0 top-(--header-height) z-30 pt-8">
-          <Container className="flex items-center justify-between" width="default">
+          <Container width="default">
             {eyebrow ? (
               <div data-work-entrance="lead">
                 <EyebrowRule label={eyebrow} />
               </div>
-            ) : (
-              <span />
-            )}
-            {count > 1 ? (
-              <p
-                className="font-mono text-xs/none font-medium text-muted-foreground"
-                data-work-entrance="lead"
-              >
-                <span className="text-foreground" data-work-counter>
-                  01
-                </span>
-                {` / ${padIndex(count - 1)}`}
-              </p>
             ) : null}
           </Container>
         </div>

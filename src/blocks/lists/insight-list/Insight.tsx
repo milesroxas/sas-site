@@ -1,7 +1,5 @@
 import type React from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
-import { ordinalLabel } from '@/blocks/shared/numbering'
-import { eyebrowClassName } from '@/blocks/shared/typography'
 import type { InsightListBlock as InsightListBlockData } from '@/payload-types'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { cn } from '@/utilities/ui'
@@ -48,9 +46,8 @@ const markDoc = (media: InsightItem['media']) =>
 
 /**
  * Whether a run has any mark to show. A list where no insight carries one
- * drops the mark lane entirely and sets the ordinal beside the title instead
- * (`compact`), so the run reads as a tight numbered list rather than a grid
- * of empty slots. Decided per run, not per item, so titles keep one lane.
+ * drops the mark lane entirely (`compact`), so the run reads as a tight
+ * list rather than a grid of empty slots. Decided per run, not per item, so titles keep one lane.
  */
 export const hasInsightMarks = (items: readonly InsightItem[]) =>
   items.some((item) => markDoc(item.media) !== null)
@@ -73,9 +70,8 @@ const Mark: React.FC<{ media: InsightItem['media']; size: InsightMarkSize }> = (
   )
 }
 
-/* Roles from shared/typography.ts: the ordinal is a kicker, the title an
-   item title, the description running copy. */
-const ordinalClassName = cn(eyebrowClassName, 'text-muted-foreground')
+/* Roles from shared/typography.ts: the title an item title, the
+   description running copy. */
 const titleClassName = 'text-lead font-medium'
 const descriptionClassName = 'text-body text-muted-foreground'
 
@@ -83,25 +79,17 @@ type InsightProps = {
   className?: string
   compact?: boolean
   group: string
-  index: number
   item: InsightItem
   markSize: InsightMarkSize
 }
 
 /**
- * The stacked insight: a rule, then the mark and its ordinal on one line,
- * then the copy. `compact` (a run with no marks, see `hasInsightMarks`)
- * drops the mark line, leads the title with the ordinal, and closes the
- * stack up.
+ * The stacked insight: a rule, then the mark, then the copy. `compact` (a
+ * run with no marks, see `hasInsightMarks`) drops the mark and closes the
+ * stack up. No ordinal: the rules already separate the items, and a mono
+ * index on each was decoration.
  */
-const InsightStack: React.FC<InsightProps> = ({
-  className,
-  compact,
-  group,
-  index,
-  item,
-  markSize,
-}) => (
+const InsightStack: React.FC<InsightProps> = ({ className, compact, group, item, markSize }) => (
   <li
     className={cn(
       'flex flex-col border-t border-border',
@@ -111,17 +99,9 @@ const InsightStack: React.FC<InsightProps> = ({
     data-reveal
     data-reveal-group={group}
   >
-    {compact ? null : (
-      <div className="flex items-center justify-between">
-        <Mark media={item.media} size={markSize} />
-        <span className={ordinalClassName}>{ordinalLabel(index)}</span>
-      </div>
-    )}
+    {compact ? null : <Mark media={item.media} size={markSize} />}
     <div className={cn('flex flex-col', compact ? 'gap-1' : 'gap-2')}>
-      <h3 className={cn(titleClassName, compact && 'flex items-baseline gap-3')}>
-        {compact ? <span className={ordinalClassName}>{ordinalLabel(index)}</span> : null}
-        {item.title}
-      </h3>
+      <h3 className={titleClassName}>{item.title}</h3>
       <p className={descriptionClassName}>{item.description}</p>
     </div>
   </li>
@@ -129,7 +109,9 @@ const InsightStack: React.FC<InsightProps> = ({
 
 /**
  * The ledger row: the insight laid across the list's columns as two lanes,
- * mark and title in the first half, description and ordinal in the second.
+ * mark and title in the first half, description in the second. No ordinal:
+ * the rules already count the rows, and a mono index beside each one was
+ * decoration the table did not need.
  * The row is a subgrid of the list, so each lane is a span of page columns
  * and the caller's `className` says how many the row takes. The lanes align
  * on their first baselines, so the description's first line reads level
@@ -139,16 +121,9 @@ const InsightStack: React.FC<InsightProps> = ({
  * as tall as the mark with the text centered in it, so a one-line title
  * sits centered on the mark and a wrapped one hangs beside it. `compact`
  * drops the mark. Below `md` the lanes stack, mark beside title, then the
- * description with its ordinal.
+ * description.
  */
-const InsightRow: React.FC<InsightProps> = ({
-  className,
-  compact,
-  group,
-  index,
-  item,
-  markSize,
-}) => (
+const InsightRow: React.FC<InsightProps> = ({ className, compact, group, item, markSize }) => (
   <BlockGrid
     as="li"
     className={cn('items-baseline gap-y-2 border-t border-border py-5', className)}
@@ -168,10 +143,7 @@ const InsightRow: React.FC<InsightProps> = ({
         {item.title}
       </h3>
     </div>
-    <div className="flex items-baseline justify-between gap-6 md:col-span-3">
-      <p className={descriptionClassName}>{item.description}</p>
-      <span className={cn(ordinalClassName, 'w-6 shrink-0 text-end')}>{ordinalLabel(index)}</span>
-    </div>
+    <p className={cn(descriptionClassName, 'md:col-span-3')}>{item.description}</p>
   </BlockGrid>
 )
 

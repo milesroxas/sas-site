@@ -4,7 +4,6 @@ import { Accordion as AccordionPrimitive } from 'radix-ui'
 import type React from 'react'
 import { useState } from 'react'
 import { BlockGrid } from '@/blocks/shared/grid'
-import { ordinalLabel } from '@/blocks/shared/numbering'
 import RichText from '@/components/RichText'
 import type { FaqBlock } from '@/payload-types'
 import { cn } from '@/utilities/ui'
@@ -45,32 +44,21 @@ const PlusMinus = () => (
 )
 
 /**
- * One question. The trigger is the whole row (index lane, question, glyph)
- * so the hit area matches what the eye reads as the row; the index lane and
- * glyph are fixed-width slots so the lanes line up across rows. The answer
+ * One question. The trigger is the whole row (question, glyph) so the hit
+ * area matches what the eye reads as the row; the glyph is a fixed-width
+ * slot so the question lanes line up across rows. The answer
  * collapses as a grid track (`disclosure-body`, globals.css), stays mounted
  * for the transition, and goes `inert` while closed so its links leave the
  * tab order.
  *
- * The answer re-enters the question lane with padding equal to the index
- * slot plus gap (3.5rem) and the glyph slot plus gap (2.75rem), so its
- * measure is the question's.
+ * The answer keeps the question's lane: it starts on the question's left
+ * edge and stops short of the glyph slot plus gap (2.75rem), so its measure
+ * is the question's.
  */
-const FaqRow: React.FC<{ index: number; item: FaqItem; open: boolean }> = ({
-  index,
-  item,
-  open,
-}) => (
+const FaqRow: React.FC<{ item: FaqItem; open: boolean }> = ({ item, open }) => (
   <AccordionPrimitive.Item className="border-b border-border" value={item.id}>
     <AccordionPrimitive.Header className="text-lead">
       <AccordionPrimitive.Trigger className="group pressable pressable-subtle flex w-full items-start gap-6 py-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
-        {/* One question line tall (`h-lh` reads the question's leading), so the
-            ordinal and the plus center on the first line at any size. */}
-        <span aria-hidden="true" className="flex h-lh w-8 shrink-0 items-center">
-          <span className="font-mono text-xs/none text-muted-foreground transition-colors group-hover:text-foreground">
-            {ordinalLabel(index)}
-          </span>
-        </span>
         <span className="min-w-0 grow">{item.question}</span>
         <PlusMinus />
       </AccordionPrimitive.Trigger>
@@ -82,7 +70,7 @@ const FaqRow: React.FC<{ index: number; item: FaqItem; open: boolean }> = ({
       inert={!open}
     >
       <div>
-        <div className="ps-14 pe-11 pt-3 pb-7">
+        <div className="pe-11 pt-3 pb-7">
           <RichText
             className="text-body text-muted-foreground"
             data={item.answer}
@@ -116,18 +104,20 @@ export const FaqAccordion: React.FC<{ items: FaqItem[] }> = ({ items }) => {
               className={cn(
                 'border-t border-foreground md:col-span-4',
                 columnIndex > 0 && 'max-md:border-t-0',
+                // The last question in a column has no closing rule. Below
+                // `md` the columns stack into one list, so the lead column
+                // keeps its last rule there to divide it from the trailing
+                // column's first question.
+                columnIndex === 0 && trail.length > 0
+                  ? 'md:*:last:border-b-0'
+                  : '*:last:border-b-0',
               )}
               data-reveal
               data-reveal-group="columns"
               key={columnIndex}
             >
-              {column.map((item, index) => (
-                <FaqRow
-                  index={columnIndex === 0 ? index : lead.length + index}
-                  item={item}
-                  key={item.id}
-                  open={open === item.id}
-                />
+              {column.map((item) => (
+                <FaqRow item={item} key={item.id} open={open === item.id} />
               ))}
             </div>
           ) : null,

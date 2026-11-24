@@ -92,7 +92,7 @@ export const LargeMarks: Story = {
   args: { markSize: 'large' },
 }
 
-/** No marks: the run compacts, ordinal leads each title and the stack closes up. */
+/** No marks: the run compacts, the mark lane drops and the stack closes up. */
 export const WithoutMarks: Story = {
   args: { items: items.map((item) => ({ ...item, media: null })) },
 }

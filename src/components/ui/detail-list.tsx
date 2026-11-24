@@ -7,8 +7,9 @@ import { cn } from '@/utilities/ui'
  * are read, not scanned: the studio's response time and addresses beside a
  * form, and the receipt of what a visitor just sent.
  *
- * A heavier rule opens the list and a hairline closes each row, so the block
- * reads as one object rather than a stack of pairs. `lg` is the same table at
+ * A heavier rule opens the list and a hairline separates the rows (none
+ * after the last), so the block reads as one object rather than a stack of
+ * pairs. `lg` is the same table at
  * reading scale, for a row whose value is a sentence rather than a phrase.
  */
 const detailListVariants = cva('flex w-full flex-col border-t border-t-foreground', {
@@ -23,7 +24,7 @@ const detailListVariants = cva('flex w-full flex-col border-t border-t-foregroun
   },
 })
 
-const detailRowVariants = cva('flex w-full border-b border-b-border', {
+const detailRowVariants = cva('flex w-full border-b border-b-border last:border-b-0', {
   variants: {
     size: {
       sm: 'items-center gap-6 py-4',
