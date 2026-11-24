@@ -37,7 +37,7 @@ One grid, stated once, everywhere:
 
 - **`BlockGrid`** (`src/blocks/shared/grid.tsx`) is the only place the grid is defined: `grid grid-cols-1 gap-grid md:grid-cols-8`.
 - **8 equal columns** (`minmax(0, 1fr)` via `grid-cols-8`), mounting at **`md`**; a single column stack below.
-- **One gap value**: `--spacing-grid` in `globals.css` `@theme` (currently `2rem`), consumed as the `gap-grid` utility. It is both the column gap and the row/stack gap. Tune the token, never a call site.
+- **Two gap tokens** in `globals.css` `@theme`: `--spacing-grid-column`, the column gap, fluid from `2rem` at 768px to `3rem` (the outer page gutter) at 1440px, consumed as `gap-x-grid-column`; and `--spacing-grid`, the row/stack gap, fixed `2rem`, consumed as `gap-grid`. `BlockGrid` writes `gap-grid gap-x-grid-column`. Anything that restates column geometry (Poster list's `--poster-col`, Split's `-ms-grid-column`) reads the column token. Tune the tokens, never a call site. (2026-11-24: one fixed `2rem` left the inner gap narrower than the page margin, and columns read as touching on wide screens.)
 - The grid sits **inside the page column** (`container`, 96rem + gutters), so column 1 begins at the page gutter. At the 1440px inner width a column is 152px.
 - Blocks place children with plain Tailwind utilities: `md:col-start-*` and `md:col-span-*`. That is the whole API.
 - A cell that holds a run of its own cells (a list beside a heading) is `<BlockGrid subgrid>`: it adopts the columns it spans from the parent, so its children place on the same tracks with the same gap and nothing is restated. Below `md` it stacks like any grid. `as` picks the element (`ol`/`ul` for lists, `li` for a row of lanes inside one). A subgrid may hold a subgrid when a cell of the run is itself lanes on page columns (the Insight list ledger row); both adopt the page tracks.
@@ -46,7 +46,7 @@ Division of labor (each concern has exactly one owner):
 
 | Concern | Owner |
 |---|---|
-| Track list, column count, gap, mount breakpoint | `BlockGrid` + `--spacing-grid` |
+| Track list, column count, gaps, mount breakpoint | `BlockGrid` + `--spacing-grid-column` / `--spacing-grid` |
 | Horizontal width of a thing | its column span |
 | Horizontal offset of a thing | its start column |
 | Vertical rhythm inside a text cluster | `text-stack` (em ladder, globals.css) |

@@ -373,7 +373,7 @@ export const IndustryWorkClient = ({
           subheading={mediaPanel.subheading}
         />
 
-        <div className="grid grid-cols-1 gap-8 md:gap-10 lg:grid-cols-12 lg:gap-x-8 lg:gap-y-0">
+        <div className="grid grid-cols-1 gap-8 md:gap-10 lg:grid-cols-12 lg:gap-x-grid-column lg:gap-y-0">
           {/* Title column overlaps the media's left edge; the top padding is
               the design's hanging offset from the media's top. At lg its
               transparent empty area sits above the media link, which would

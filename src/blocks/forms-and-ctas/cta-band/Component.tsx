@@ -90,7 +90,7 @@ export const CtaBandBlock: React.FC<Props> = ({
     ) : null
 
   const compactRow = (
-    <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between md:gap-grid">
+    <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between md:gap-grid-column">
       {headingCluster}
       <Actions className="shrink-0" links={links} />
     </div>
@@ -112,7 +112,7 @@ export const CtaBandBlock: React.FC<Props> = ({
             {compact ? (
               compactRow
             ) : (
-              <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between md:gap-grid">
+              <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between md:gap-grid-column">
                 <div className="flex max-w-2xl flex-col gap-8">
                   {headingCluster}
                   {bodyCopy}

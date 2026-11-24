@@ -5,9 +5,12 @@ import { cn } from '@/utilities/ui'
  * The composition grid: the single horizontal-layout truth for the reorganized
  * blocks (docs/block-grid-roadmap.md).
  *
- * Eight equal columns from `md`, one column below; the gap between columns is
- * the one `--spacing-grid` token (globals.css), which also spaces the stacked
- * cells below `md`. Blocks place children with plain `md:col-start-*` and
+ * Eight equal columns from `md`, one column below. Two gap tokens
+ * (globals.css): `--spacing-grid-column` between columns (fluid, up to the
+ * page gutter) and `--spacing-grid` between rows, which also spaces the
+ * stacked cells below `md`. The column gap is layered on as a longhand
+ * (`gap-x-grid-column` after `gap-grid`), so a caller's `gap-y-*` still
+ * overrides only the rows. Blocks place children with plain `md:col-start-*` and
  * `md:col-span-*` utilities and never restate the track list, the gap, or the
  * mount breakpoint. Widths come from spanning columns, not `max-w-*`; offsets
  * come from starting columns, not spacer cells or padding.
@@ -38,7 +41,7 @@ export const BlockGrid = ({
 }) => (
   <Tag
     className={cn(
-      'grid grid-cols-1 gap-grid',
+      'grid grid-cols-1 gap-grid gap-x-grid-column',
       subgrid ? 'md:grid-cols-subgrid' : 'md:grid-cols-8',
       className,
     )}
