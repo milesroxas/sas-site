@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
-import { labBlocks } from '@/blocks/lab/config'
-import { topLevelBlocks } from '@/blocks/shared/top-level-blocks'
+import { labBlocks } from '@/blocks/surfaces/lab'
+import { topLevelBlocks } from '@/blocks/surfaces/top-level'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
 import {

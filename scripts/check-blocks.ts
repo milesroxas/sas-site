@@ -16,6 +16,19 @@
  *    `LEGACY_TOP_LEVEL` entries (a Section-less surface: the run, then its
  *    shells), so a retired block cannot quietly stay listed.
  * 4. Every key of `blockRevealVariants` is a block some surface offers.
+ * 5. Every block config a surface reaches (found by its `slug: '<slug>'`
+ *    literal, in exactly one file) lives in
+ *    `src/blocks/<kebab(group)>/<kebab(label)>/`.
+ * 6. Its config's `interfaceName` is `pascal(label)` + `Block`; the variant a
+ *    surface offers is that or, on Lab and Work Pages, `Lab`/`Work` plus it.
+ *    Sections are `<Surface>SectionBlock`.
+ * 7. Its config is exported as `export const <pascal(label)>: Block`. A block a
+ *    surface substitutes for a run block (`RUN_SUBSTITUTES`) carries the
+ *    surface prefix: `WorkStandard`.
+ *
+ * `kebab`: lowercase, `&` to `and`, other non-alphanumerics to `-` (`Forms &
+ * CTAs` to `forms-and-ctas`). `pascal`: each word capitalized, an all-caps word
+ * lowered after its first letter (`CTA band` to `CtaBand`, `YouTube` kept).
  *
  * Renderer coverage is checked by the type checker instead: each renderer's
  * map or switch is exhaustive over its surface's block union.
@@ -23,22 +36,21 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import type { Block } from 'payload'
-
-import { caseStudyBlocks } from '@/blocks/case-study/config'
-import { labBlocks } from '@/blocks/lab/config'
 import { blockRevealVariants } from '@/blocks/shared/reveal-variants'
-import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
-import {
-  type CompositionSurface,
-  LEGACY_TOP_LEVEL,
-  SHELL_BLOCKS,
-} from '@/blocks/shared/top-level-blocks'
+import { labBlocks } from '@/blocks/surfaces/lab'
 import {
   homeLayoutBlocks,
   pageLayoutBlocks,
   postLayoutBlocks,
   segmentPageBlocks,
-} from '@/fields/pageLayoutBlocks'
+} from '@/blocks/surfaces/pages'
+import { sectionNestableBlocks } from '@/blocks/surfaces/run'
+import {
+  type CompositionSurface,
+  LEGACY_TOP_LEVEL,
+  SHELL_BLOCKS,
+} from '@/blocks/surfaces/top-level'
+import { workBlocks } from '@/blocks/surfaces/work'
 
 const SURFACE_BLOCKS: Record<CompositionSurface, Block[]> = {
   home: homeLayoutBlocks,
@@ -46,7 +58,7 @@ const SURFACE_BLOCKS: Record<CompositionSurface, Block[]> = {
   pages: pageLayoutBlocks,
   posts: postLayoutBlocks,
   segment: segmentPageBlocks,
-  work: caseStudyBlocks,
+  work: workBlocks,
 }
 
 /**
@@ -180,13 +192,148 @@ for (const slug of Object.keys(blockRevealVariants)) {
     failures.push(`blockRevealVariants: "${slug}" is not a block any surface offers`)
 }
 
+// Rules 5-7: each block's folder, interface and config export follow its
+// label and group.
+const kebab = (words: string) =>
+  words
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+/** `Pair offset` to `PairOffset`, `CTA band` to `CtaBand`, `YouTube` kept. */
+const pascal = (words: string) =>
+  words
+    .split(/\s+/)
+    .map((word) => word.replace(/[^A-Za-z0-9]/g, ''))
+    .filter(Boolean)
+    .map((word) =>
+      word === word.toUpperCase()
+        ? word[0] + word.slice(1).toLowerCase()
+        : word[0].toUpperCase() + word.slice(1),
+    )
+    .join('')
+
+const groupOf = (block: Block) =>
+  typeof block.admin?.group === 'string' ? block.admin.group : 'Ungrouped'
+
+/** The prefix a surface's variants and its Section interface carry. */
+const SURFACE_PREFIX: Record<CompositionSurface, string> = {
+  home: 'Home',
+  lab: 'Lab',
+  pages: 'Page',
+  posts: 'Page',
+  segment: 'Segment',
+  work: 'Work',
+}
+const VARIANT_SURFACES = new Set<CompositionSurface>(['lab', 'work'])
+
+const blocksRoot = path.resolve('src/blocks')
+const slugFiles = new Map<string, string[]>()
+for (const entry of readdirSync(blocksRoot, { recursive: true })) {
+  const file = String(entry)
+  if (!/\.tsx?$/.test(file) || /\.(stories|test)\.tsx?$/.test(file)) continue
+  const source = readFileSync(path.join(blocksRoot, file), 'utf8')
+  for (const match of source.matchAll(/\bslug: '([^']+)'/g)) {
+    slugFiles.set(match[1], [...new Set([...(slugFiles.get(match[1]) ?? []), file])])
+  }
+}
+
+/** The `export const <Name>: Block = {` declaration whose body holds the slug. */
+const configExport = (file: string, slug: string) => {
+  const source = readFileSync(path.join(blocksRoot, file), 'utf8')
+  const at = source.indexOf(`slug: '${slug}'`)
+  const declarations = [...source.matchAll(/^export const (\w+): Block = \{/gm)]
+  return declarations.filter((match) => (match.index ?? 0) < at).at(-1)?.[1]
+}
+
+const substituteSlugs = new Map<string, CompositionSurface>()
+for (const [surface, map] of Object.entries(RUN_SUBSTITUTES) as [
+  CompositionSurface,
+  Record<string, string>,
+][]) {
+  for (const slug of Object.values(map)) substituteSlugs.set(slug, surface)
+}
+
+const checked = new Set<string>()
+for (const [surface, blocks] of Object.entries(SURFACE_BLOCKS) as [CompositionSurface, Block[]][]) {
+  for (const block of [...blocks, ...nestedBlocks(blocks)]) {
+    const label = labelOf(block)
+    const name = pascal(label)
+
+    // Rule 6, per surface: the variant's interface.
+    if (block.slug === 'section') {
+      const expected = `${SURFACE_PREFIX[surface]}SectionBlock`
+      if (block.interfaceName !== expected) {
+        failures.push(
+          `${surface}: Section interfaceName is "${block.interfaceName}", expected "${expected}"`,
+        )
+      }
+    } else {
+      const base = `${name}Block`
+      const allowed = VARIANT_SURFACES.has(surface)
+        ? [base, `${SURFACE_PREFIX[surface]}${base}`]
+        : [base]
+      if (!allowed.includes(block.interfaceName ?? '')) {
+        failures.push(
+          `${surface}: "${block.slug}" interfaceName is "${block.interfaceName}", expected ${allowed.map((value) => `"${value}"`).join(' or ')}`,
+        )
+      }
+    }
+
+    if (checked.has(block.slug)) continue
+    checked.add(block.slug)
+
+    // Rule 5: the config's folder.
+    const files = slugFiles.get(block.slug) ?? []
+    if (files.length !== 1) {
+      failures.push(
+        `"${block.slug}": expected one file under src/blocks declaring slug: '${block.slug}', found ${files.length ? files.join(', ') : 'none'}`,
+      )
+      continue
+    }
+    const [file] = files
+    const folder = `${kebab(groupOf(block))}/${kebab(label)}`
+    if (path.dirname(file) !== folder) {
+      failures.push(
+        `"${block.slug}": config is src/blocks/${file}, expected it under src/blocks/${folder}/`,
+      )
+    }
+
+    // The Section is one factory, not an exported config.
+    if (block.slug === 'section') continue
+
+    // Rules 7 and 6: the exported config and its own interface.
+    const substituteOn = substituteSlugs.get(block.slug)
+    const expectedExport = substituteOn ? `${SURFACE_PREFIX[substituteOn]}${name}` : name
+    const exported = configExport(file, block.slug)
+    if (exported !== expectedExport) {
+      failures.push(
+        `"${block.slug}": config is exported as ${exported ? `"${exported}"` : 'no `export const <Name>: Block`'}, expected "export const ${expectedExport}: Block"`,
+      )
+      continue
+    }
+    const module = (await import(path.join(blocksRoot, file))) as Record<string, Block | undefined>
+    const config = module[exported]
+    if (config?.interfaceName !== `${name}Block`) {
+      failures.push(
+        `"${block.slug}": ${exported}.interfaceName is "${config?.interfaceName}", expected "${name}Block"`,
+      )
+    }
+  }
+}
+
 for (const [title, slugs] of addable) {
   if (!titles.has(title)) failures.push(`no story titled "${title}" (${slugs.join(', ')})`)
 }
 
-if (failures.length) {
-  console.error(`check:blocks found ${failures.length} problem(s):`)
-  for (const failure of failures) console.error(`  - ${failure}`)
+// Work lists its run twice (in its Section and, legacy, at the top level).
+const problems = [...new Set(failures)]
+if (problems.length) {
+  console.error(`check:blocks found ${problems.length} problem(s):`)
+  for (const failure of problems) console.error(`  - ${failure}`)
   process.exit(1)
 }
-console.log(`check:blocks: ${addable.size} addable blocks, all storied and on the run.`)
+console.log(
+  `check:blocks: ${addable.size} addable blocks, all storied and on the run; ${checked.size} configs named after their labels.`,
+)

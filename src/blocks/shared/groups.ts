@@ -18,8 +18,6 @@ export const BLOCK_GROUPS = {
   media: 'Media',
   /** Media beside or above authored copy. */
   mediaContent: 'Media and content',
-  /** Two-column text + media composites. */
-  split: 'Split layouts',
   /** Large typographic statements, pull quotes, testimonials. */
   statements: 'Statements',
   /** Data and structure drawn from a spec: charts, diagrams, code-owned figures. */
@@ -30,6 +28,4 @@ export const BLOCK_GROUPS = {
   lists: 'Lists',
   /** Forms, signups, calls to action. */
   forms: 'Forms & CTAs',
-  /** Free-form escape hatch: column builders with no fixed pattern. */
-  custom: 'Custom',
 } as const

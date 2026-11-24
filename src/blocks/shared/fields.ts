@@ -1,7 +1,7 @@
 import type { Condition, Field, SelectField } from 'payload'
-import { isInsideSection } from '@/blocks/section/shared'
 import { BAND_THEME_OPTIONS, type BandTheme } from '@/blocks/shared/band-theme'
 import type { ProseHeadingLevel } from '@/blocks/shared/typography'
+import { isInsideSection } from '@/blocks/structure/section/shared'
 import { STORY_SECTIONS, STORY_SOURCE_OPTIONS } from '@/collections/story/narrative'
 import { publicApprovedMediaWhere } from '@/fields/caseStudyScopedMedia'
 

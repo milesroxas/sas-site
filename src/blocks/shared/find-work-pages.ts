@@ -1,7 +1,7 @@
 import configPromise from '@payload-config'
 import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
-import { FEATURED_CLOSER_FALLBACK_LIMIT } from '@/blocks/featured-work/entry'
+import { FEATURED_CLOSER_FALLBACK_LIMIT } from '@/blocks/lists/featured-work/entry'
 import type { WorkPage } from '@/payload-types'
 
 /**

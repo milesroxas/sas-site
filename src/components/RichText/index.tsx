@@ -12,18 +12,18 @@ import {
   LinkJSXConverter,
   type SerializedLexicalNodeWithParent,
 } from '@payloadcms/richtext-lexical/react'
-import { CarouselBlock } from '@/blocks/Carousel/Component'
-import { CodeBlock, type CodeBlockProps } from '@/blocks/Code/Component'
-import { MediaBlock } from '@/blocks/MediaBlock/Component'
-import { ResourceDownload } from '@/blocks/resource-download/Component'
-import { RichTextActions } from '@/blocks/rich-text/actions/Component'
-import { RichTextInsights } from '@/blocks/rich-text/insights/Component'
-import { RichTextPillList } from '@/blocks/rich-text/pill-list/Component'
-import { YouTubeBlock } from '@/blocks/youtube/Component'
+import { DownloadView } from '@/blocks/forms-and-ctas/download/DownloadView'
+import { CarouselBlock } from '@/blocks/interactive/carousel/Component'
+import { CaptionBlock } from '@/blocks/media/caption/Component'
+import { YouTubeBlock } from '@/blocks/media/youtube/Component'
+import { CodeView, type CodeViewProps } from '@/blocks/text/code/CodeView'
+import { RichTextActions } from '@/blocks/text/rich-text/actions/Component'
+import { RichTextInsights } from '@/blocks/text/rich-text/insights/Component'
+import { RichTextPillList } from '@/blocks/text/rich-text/pill-list/Component'
 import type {
+  CaptionBlock as CaptionBlockProps,
   CarouselBlock as CarouselBlockProps,
-  MediaBlock as MediaBlockProps,
-  ResourceDownloadBlock as ResourceDownloadBlockProps,
+  DownloadBlock as DownloadBlockProps,
   RichTextActionsBlock as RichTextActionsBlockProps,
   RichTextInsightsBlock as RichTextInsightsBlockProps,
   RichTextPillListBlock as RichTextPillListBlockProps,
@@ -36,10 +36,10 @@ import { isTextStyle, TEXT_STYLE_STATE_KEY, TEXT_STYLES, type TextStyle } from '
 type NodeTypes =
   | DefaultNodeTypes
   | SerializedBlockNode<
-      | MediaBlockProps
-      | ResourceDownloadBlockProps
+      | CaptionBlockProps
+      | DownloadBlockProps
       | CarouselBlockProps
-      | CodeBlockProps
+      | CodeViewProps
       | RichTextActionsBlockProps
       | RichTextInsightsBlockProps
       | RichTextPillListBlockProps
@@ -133,7 +133,7 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
       />
     ),
     mediaBlock: ({ node }) => (
-      <MediaBlock
+      <CaptionBlock
         className="col-start-1 col-span-3"
         imgClassName="m-0"
         {...node.fields}
@@ -142,10 +142,10 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
         disableInnerContainer={true}
       />
     ),
-    code: ({ node }) => <CodeBlock className="col-start-2" {...node.fields} />,
+    code: ({ node }) => <CodeView className="col-start-2" {...node.fields} />,
     // A figure-weight object in the article flow: the room above and below
     // that prose gives an image, so it never reads as another paragraph.
-    resourceDownload: ({ node }) => <ResourceDownload className="my-8" {...node.fields} />,
+    resourceDownload: ({ node }) => <DownloadView className="my-8" {...node.fields} />,
     // The Rich text block splits its own blocks out onto its grid before
     // converting (rich-text/Component.tsx); these converters are the inline
     // fallback for any other editor that enables them.

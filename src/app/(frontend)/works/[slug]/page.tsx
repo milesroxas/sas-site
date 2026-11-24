@@ -1,8 +1,8 @@
 import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
-import { RenderCaseStudyBlocks } from '@/blocks/case-study/RenderCaseStudyBlocks'
-import { FeaturedWorkSection } from '@/blocks/featured-work/Component'
-import { resolveRelatedWorkEntries } from '@/blocks/featured-work/resolve-entries'
+import { FeaturedWorkSection } from '@/blocks/lists/featured-work/Component'
+import { resolveRelatedWorkEntries } from '@/blocks/lists/featured-work/resolve-entries'
+import { RenderWorkBlocks } from '@/blocks/render/RenderWorkBlocks'
 import { STORY_SECTION_SELECT } from '@/collections/story/narrative'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
@@ -80,7 +80,7 @@ export default async function WorkPageRoute({ params }: SlugRouteArgs) {
             title={page.intro.title}
           />
         ) : null}
-        {page.layout?.length ? <RenderCaseStudyBlocks blocks={page.layout} study={study} /> : null}
+        {page.layout?.length ? <RenderWorkBlocks blocks={page.layout} study={study} /> : null}
         <FeaturedWorkSection eyebrow="Explore More Work" entries={relatedEntries} />
         {page.showContents && <ContentsButton />}
       </article>

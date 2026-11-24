@@ -1,10 +1,10 @@
 import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
-import { topLevelBlocks } from '@/blocks/shared/top-level-blocks'
+import { homeLayoutBlocks } from '@/blocks/surfaces/pages'
+import { topLevelBlocks } from '@/blocks/surfaces/top-level'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { closingTab } from '@/fields/closing'
-import { homeLayoutBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { generateHomePreviewPath } from '@/utilities/generatePreviewPath'
 import { homeHero } from './hero/config'

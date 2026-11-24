@@ -5,7 +5,7 @@ import {
   type Plugin,
   ValidationError,
 } from 'payload'
-import { BespokeFigure } from '@/blocks/figures/bespoke/config'
+import { BespokeFigure } from '@/blocks/figures/bespoke-figure/config'
 import { Chart } from '@/blocks/figures/chart/config'
 import { Diagram } from '@/blocks/figures/diagram/config'
 import {

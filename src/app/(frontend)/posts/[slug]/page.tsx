@@ -4,8 +4,8 @@ import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { cache } from 'react'
-import { RenderBlocks } from '@/blocks/RenderBlocks'
-import { ResourceDownloadTitleBlock } from '@/blocks/resource-download/Component'
+import { DownloadTitleBlock } from '@/blocks/forms-and-ctas/download/DownloadView'
+import { RenderBlocks } from '@/blocks/render/RenderBlocks'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import RichText from '@/components/RichText'
@@ -85,7 +85,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                 <div className="sticky top-(--header-height) border-t border-foreground py-3">
                   <p className="font-mono text-xs leading-normal">{post.title}</p>
                   {post.primaryResource ? (
-                    <ResourceDownloadTitleBlock
+                    <DownloadTitleBlock
                       className="mt-12"
                       location="download_rail"
                       {...post.primaryResource}
@@ -99,7 +99,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                     full width on a phone and held to a block's width from sm, where
                     a full-measure frame would read as a banner. */}
                 {post.primaryResource ? (
-                  <ResourceDownloadTitleBlock
+                  <DownloadTitleBlock
                     className="mt-12 sm:max-w-sm lg:hidden"
                     location="download"
                     {...post.primaryResource}

@@ -1,6 +1,6 @@
 import { draftMode } from 'next/headers'
 import { notFound } from 'next/navigation'
-import { RenderBlocks } from '@/blocks/RenderBlocks'
+import { RenderBlocks } from '@/blocks/render/RenderBlocks'
 import { getRelatedWorkByCapabilities, getRelatedWorkByIds } from '@/collections/WorkPages/queries'
 import { JsonLd } from '@/components/JsonLd'
 import { LivePreviewListener } from '@/components/LivePreviewListener'

@@ -22,7 +22,7 @@ const railCard = (post: PostCard): CardPostData | null => (post.slug ? post : nu
  * published-only outside draft mode; the parent-populated selection is never
  * used as a fallback, which is what keeps drafts off live pages.
  *
- * Mirrors `resolveRelatedWorkEntries` (blocks/featured-work/resolve-entries),
+ * Mirrors `resolveRelatedWorkEntries` (blocks/lists/featured-work/resolve-entries),
  * which is the same contract on the work side.
  */
 export async function resolveRelatedPosts(post: Post): Promise<CardPostData[]> {

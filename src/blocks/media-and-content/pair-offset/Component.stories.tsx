@@ -1,0 +1,41 @@
+import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import { mediaFixture, paragraph, richText, text } from '../../fixtures'
+import { PairOffsetBlock } from './Component'
+
+const body = richText(
+  paragraph(
+    text('We connected solutions to the relevant products, services, languages, and industries.'),
+  ),
+)
+
+const meta = {
+  title: 'Blocks/MediaAndContent/PairOffset',
+  component: PairOffsetBlock,
+  parameters: {
+    layout: 'fullscreen',
+  },
+  args: {
+    blockType: 'splitImageOffset',
+    source: 'custom',
+    heading: 'Make the relationships visible',
+    body,
+    largeMedia: mediaFixture,
+    smallMedia: mediaFixture,
+    captionPosition: 'right',
+    theme: 'default',
+  },
+} satisfies Meta<typeof PairOffsetBlock>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+export const CaptionRight: Story = {}
+
+export const CaptionLeft: Story = {
+  args: { captionPosition: 'left' },
+}
+
+export const Inverted: Story = {
+  args: { theme: 'inverted' },
+}

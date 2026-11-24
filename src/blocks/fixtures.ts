@@ -4,7 +4,7 @@
  * the generated payload-types so stories type-check against real block props.
  */
 import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
-import type { IndustryWorkPanel } from '@/blocks/IndustryWork/Component.client'
+import type { IndustryWorkPanel } from '@/blocks/interactive/industry-work/Component.client'
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { TEXT_STYLE_STATE_KEY, type TextStyle } from '@/components/RichText/text-styles'
 import type {

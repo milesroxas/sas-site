@@ -28,7 +28,7 @@ import './code-block-languages'
  * actually more content on.
  *
  * `data-lenis-prevent-horizontal` on that scroller is the same fix the rails
- * carry (sections/RelatedPosts/PostRail.client, blocks/TestimonialsMarquee):
+ * carry (sections/RelatedPosts/PostRail.client, blocks/interactive/testimonials-marquee):
  * root Lenis preventDefaults wheel and touchmove to drive the page itself, so
  * without it a sideways trackpad swipe never reaches the listing and its
  * vertical component scrolls the page instead. The attribute releases only

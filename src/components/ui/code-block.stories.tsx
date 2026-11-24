@@ -28,7 +28,7 @@ const cssSample = `@utility scroll-fade-x {
 }`
 
 /**
- * One short listing per language `CODE_LANGUAGES` offers (blocks/Code/config.ts),
+ * One short listing per language `CODE_LANGUAGES` offers (blocks/text/code/config.ts),
  * chosen so each exercises the ink the others cannot: JSON is all keys and
  * literals, GLSL all types and swizzles, Shell all flags and expansions.
  */

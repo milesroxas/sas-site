@@ -89,7 +89,7 @@ const TRACK_END = 'after:shrink-0 after:basis-(--container-inset)'
  * the rail and scrolls the page at once. Below a fine pointer the rail is a
  * plain scroll container instead (embla `active: false`, see `opts`) and the
  * browser's own axis lock decides which one the gesture belongs to. Same fix
- * as the testimonials rail (blocks/TestimonialsMarquee/Component).
+ * as the testimonials rail (blocks/interactive/testimonials-marquee/Component).
  *
  * `data-lenis-prevent-horizontal` on the root is the other half: Lenis
  * preventDefaults every touchmove, so without it a sideways swipe never

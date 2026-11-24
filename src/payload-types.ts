@@ -1505,15 +1505,15 @@ export interface WorkPage {
   layout?:
     | (
         | WorkSectionBlock
-        | WorkCaseStudyTransitionBlock
-        | WorkFeatureHeadingOffsetBlock
-        | WorkFullMediaBlock
-        | WorkMediaContentSplitBlock
-        | WorkSplitContentNarrowBlock
-        | WorkImagePairBlock
-        | WorkSplitImageOffsetBlock
-        | WorkFeatureImageStatementBlock
-        | WorkMediaBlock
+        | WorkStandardBlock
+        | WorkOffsetBlock
+        | WorkStackedBlock
+        | WorkSplitBlock
+        | WorkSplitNarrowBlock
+        | WorkPairBlock
+        | WorkPairOffsetBlock
+        | WorkStatementBlock
+        | WorkCaptionBlock
         | YouTubeBlock
         | RichTextBlock
         | WorkStoryBeatsBlock
@@ -1523,13 +1523,13 @@ export interface WorkPage {
         | BespokeFigureBlock
         | FaqBlock
         | WorkCarouselBlock
-        | WorkFeatureTabsBlock
+        | WorkTabsBlock
         | InsightListBlock
         | PosterListBlock
         | QuoteBannerBlock
         | CtaBandBlock
-        | CaseStudyMediaShowcaseBlock
-        | WorkCaseStudyStorySectionBlock
+        | WorkMediaShowcaseBlock
+        | WorkStorySectionBlock
         | FeaturedWorkBlock
       )[]
     | null;
@@ -1745,15 +1745,15 @@ export interface WorkSectionBlock {
   stack?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
-        | WorkCaseStudyTransitionBlock
-        | WorkFeatureHeadingOffsetBlock
-        | WorkFullMediaBlock
-        | WorkMediaContentSplitBlock
-        | WorkSplitContentNarrowBlock
-        | WorkImagePairBlock
-        | WorkSplitImageOffsetBlock
-        | WorkFeatureImageStatementBlock
-        | WorkMediaBlock
+        | WorkStandardBlock
+        | WorkOffsetBlock
+        | WorkStackedBlock
+        | WorkSplitBlock
+        | WorkSplitNarrowBlock
+        | WorkPairBlock
+        | WorkPairOffsetBlock
+        | WorkStatementBlock
+        | WorkCaptionBlock
         | YouTubeBlock
         | RichTextBlock
         | WorkStoryBeatsBlock
@@ -1763,7 +1763,7 @@ export interface WorkSectionBlock {
         | BespokeFigureBlock
         | FaqBlock
         | WorkCarouselBlock
-        | WorkFeatureTabsBlock
+        | WorkTabsBlock
         | InsightListBlock
         | PosterListBlock
         | QuoteBannerBlock
@@ -1776,9 +1776,9 @@ export interface WorkSectionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkCaseStudyTransitionBlock".
+ * via the `definition` "WorkStandardBlock".
  */
-export interface WorkCaseStudyTransitionBlock {
+export interface WorkStandardBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -1830,9 +1830,9 @@ export interface WorkCaseStudyTransitionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureHeadingOffsetBlock".
+ * via the `definition` "WorkOffsetBlock".
  */
-export interface WorkFeatureHeadingOffsetBlock {
+export interface WorkOffsetBlock {
   /**
    * Short kicker above the heading.
    */
@@ -1883,9 +1883,9 @@ export interface WorkFeatureHeadingOffsetBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFullMediaBlock".
+ * via the `definition` "WorkStackedBlock".
  */
-export interface WorkFullMediaBlock {
+export interface WorkStackedBlock {
   /**
    * Off renders the media on its own, with no copy beneath it.
    */
@@ -1964,9 +1964,9 @@ export interface WorkFullMediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkMediaContentSplitBlock".
+ * via the `definition` "WorkSplitBlock".
  */
-export interface WorkMediaContentSplitBlock {
+export interface WorkSplitBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -2034,9 +2034,9 @@ export interface WorkMediaContentSplitBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkSplitContentNarrowBlock".
+ * via the `definition` "WorkSplitNarrowBlock".
  */
-export interface WorkSplitContentNarrowBlock {
+export interface WorkSplitNarrowBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -2100,9 +2100,9 @@ export interface WorkSplitContentNarrowBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkImagePairBlock".
+ * via the `definition` "WorkPairBlock".
  */
-export interface WorkImagePairBlock {
+export interface WorkPairBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -2168,9 +2168,9 @@ export interface WorkImagePairBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkSplitImageOffsetBlock".
+ * via the `definition` "WorkPairOffsetBlock".
  */
-export interface WorkSplitImageOffsetBlock {
+export interface WorkPairOffsetBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -2232,9 +2232,9 @@ export interface WorkSplitImageOffsetBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureImageStatementBlock".
+ * via the `definition` "WorkStatementBlock".
  */
-export interface WorkFeatureImageStatementBlock {
+export interface WorkStatementBlock {
   media: number | Media;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
@@ -2297,9 +2297,9 @@ export interface WorkFeatureImageStatementBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkMediaBlock".
+ * via the `definition` "WorkCaptionBlock".
  */
-export interface WorkMediaBlock {
+export interface WorkCaptionBlock {
   media: number | Media;
   /**
    * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
@@ -5832,9 +5832,9 @@ export interface WorkCarouselBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureTabsBlock".
+ * via the `definition` "WorkTabsBlock".
  */
-export interface WorkFeatureTabsBlock {
+export interface WorkTabsBlock {
   tabs: {
     title: string;
     /**
@@ -6100,9 +6100,9 @@ export interface CtaBandBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyMediaShowcaseBlock".
+ * via the `definition` "WorkMediaShowcaseBlock".
  */
-export interface CaseStudyMediaShowcaseBlock {
+export interface WorkMediaShowcaseBlock {
   heading?: string | null;
   introduction?: {
     root: {
@@ -6137,9 +6137,9 @@ export interface CaseStudyMediaShowcaseBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkCaseStudyStorySectionBlock".
+ * via the `definition` "WorkStorySectionBlock".
  */
-export interface WorkCaseStudyStorySectionBlock {
+export interface WorkStorySectionBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -6324,15 +6324,15 @@ export interface PageSectionBlock {
   stack?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
-        | RichTransitionBlock
-        | FeatureHeadingOffsetBlock
-        | FullMediaBlock
-        | MediaContentSplitBlock
-        | SplitContentNarrowBlock
-        | ImagePairBlock
-        | SplitImageOffsetBlock
-        | FeatureImageStatementBlock
-        | MediaBlock
+        | StandardBlock
+        | OffsetBlock
+        | StackedBlock
+        | SplitBlock
+        | SplitNarrowBlock
+        | PairBlock
+        | PairOffsetBlock
+        | StatementBlock
+        | CaptionBlock
         | YouTubeBlock
         | RichTextBlock
         | CodeBlock
@@ -6341,7 +6341,7 @@ export interface PageSectionBlock {
         | BespokeFigureBlock
         | FaqBlock
         | CarouselBlock
-        | FeatureTabsBlock
+        | TabsBlock
         | InsightListBlock
         | PosterListBlock
         | QuoteBannerBlock
@@ -6354,9 +6354,9 @@ export interface PageSectionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "RichTransitionBlock".
+ * via the `definition` "StandardBlock".
  */
-export interface RichTransitionBlock {
+export interface StandardBlock {
   eyebrow?: string | null;
   heading: string;
   /**
@@ -6392,9 +6392,9 @@ export interface RichTransitionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureHeadingOffsetBlock".
+ * via the `definition` "OffsetBlock".
  */
-export interface FeatureHeadingOffsetBlock {
+export interface OffsetBlock {
   /**
    * Short kicker above the heading.
    */
@@ -6433,9 +6433,9 @@ export interface FeatureHeadingOffsetBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FullMediaBlock".
+ * via the `definition` "StackedBlock".
  */
-export interface FullMediaBlock {
+export interface StackedBlock {
   /**
    * Off renders the media on its own, with no copy beneath it.
    */
@@ -6498,9 +6498,9 @@ export interface FullMediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaContentSplitBlock".
+ * via the `definition` "SplitBlock".
  */
-export interface MediaContentSplitBlock {
+export interface SplitBlock {
   /**
    * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical story content (Work and Lab Pages only).
    */
@@ -6552,9 +6552,9 @@ export interface MediaContentSplitBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SplitContentNarrowBlock".
+ * via the `definition` "SplitNarrowBlock".
  */
-export interface SplitContentNarrowBlock {
+export interface SplitNarrowBlock {
   /**
    * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical story content (Work and Lab Pages only).
    */
@@ -6602,9 +6602,9 @@ export interface SplitContentNarrowBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ImagePairBlock".
+ * via the `definition` "PairBlock".
  */
-export interface ImagePairBlock {
+export interface PairBlock {
   /**
    * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical story content (Work and Lab Pages only).
    */
@@ -6654,9 +6654,9 @@ export interface ImagePairBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SplitImageOffsetBlock".
+ * via the `definition` "PairOffsetBlock".
  */
-export interface SplitImageOffsetBlock {
+export interface PairOffsetBlock {
   /**
    * Choose which content feeds this block. "Custom" uses the body below; the others pull canonical story content (Work and Lab Pages only).
    */
@@ -6702,9 +6702,9 @@ export interface SplitImageOffsetBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureImageStatementBlock".
+ * via the `definition` "StatementBlock".
  */
-export interface FeatureImageStatementBlock {
+export interface StatementBlock {
   media: number | Media;
   /**
    * On Work and Lab pages, pull this copy from the canonical story. "Custom" uses the copy written here; writing copy always overrides the pulled source.
@@ -6751,9 +6751,9 @@ export interface FeatureImageStatementBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
+ * via the `definition` "CaptionBlock".
  */
-export interface MediaBlock {
+export interface CaptionBlock {
   media: number | Media;
   /**
    * Presentation for this placement only; the media document itself stays layout-neutral.
@@ -6820,9 +6820,9 @@ export interface CarouselBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureTabsBlock".
+ * via the `definition` "TabsBlock".
  */
-export interface FeatureTabsBlock {
+export interface TabsBlock {
   tabs: {
     title: string;
     /**
@@ -7059,7 +7059,7 @@ export interface LabPage {
   /**
    * Website composition only. Canonical narrative remains in the related Lab Project record.
    */
-  layout?: (LabSectionBlock | LabFactsBlock | LabRelatedProjectsBlock)[] | null;
+  layout?: (LabSectionBlock | ProjectFactsBlock | RelatedLabProjectsBlock)[] | null;
   /**
    * Used on cards, indexes, and as the hero fallback.
    */
@@ -7258,15 +7258,15 @@ export interface LabSectionBlock {
   stack?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
-        | LabRichTransitionBlock
-        | LabFeatureHeadingOffsetBlock
-        | LabFullMediaBlock
-        | LabMediaContentSplitBlock
-        | LabSplitContentNarrowBlock
-        | LabImagePairBlock
-        | LabSplitImageOffsetBlock
-        | LabFeatureImageStatementBlock
-        | MediaBlock
+        | LabStandardBlock
+        | LabOffsetBlock
+        | LabStackedBlock
+        | LabSplitBlock
+        | LabSplitNarrowBlock
+        | LabPairBlock
+        | LabPairOffsetBlock
+        | LabStatementBlock
+        | CaptionBlock
         | YouTubeBlock
         | RichTextBlock
         | CodeBlock
@@ -7275,13 +7275,13 @@ export interface LabSectionBlock {
         | BespokeFigureBlock
         | FaqBlock
         | CarouselBlock
-        | LabFeatureTabsBlock
+        | LabTabsBlock
         | InsightListBlock
         | PosterListBlock
         | QuoteBannerBlock
         | CtaBandBlock
         | LabStoryBeatsBlock
-        | ResourceDownloadBlock
+        | DownloadBlock
       )[]
     | null;
   id?: string | null;
@@ -7290,9 +7290,9 @@ export interface LabSectionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabRichTransitionBlock".
+ * via the `definition` "LabStandardBlock".
  */
-export interface LabRichTransitionBlock {
+export interface LabStandardBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -7344,9 +7344,9 @@ export interface LabRichTransitionBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFeatureHeadingOffsetBlock".
+ * via the `definition` "LabOffsetBlock".
  */
-export interface LabFeatureHeadingOffsetBlock {
+export interface LabOffsetBlock {
   /**
    * Short kicker above the heading.
    */
@@ -7397,9 +7397,9 @@ export interface LabFeatureHeadingOffsetBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFullMediaBlock".
+ * via the `definition` "LabStackedBlock".
  */
-export interface LabFullMediaBlock {
+export interface LabStackedBlock {
   /**
    * Off renders the media on its own, with no copy beneath it.
    */
@@ -7474,9 +7474,9 @@ export interface LabFullMediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabMediaContentSplitBlock".
+ * via the `definition` "LabSplitBlock".
  */
-export interface LabMediaContentSplitBlock {
+export interface LabSplitBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -7540,9 +7540,9 @@ export interface LabMediaContentSplitBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabSplitContentNarrowBlock".
+ * via the `definition` "LabSplitNarrowBlock".
  */
-export interface LabSplitContentNarrowBlock {
+export interface LabSplitNarrowBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -7602,9 +7602,9 @@ export interface LabSplitContentNarrowBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabImagePairBlock".
+ * via the `definition` "LabPairBlock".
  */
-export interface LabImagePairBlock {
+export interface LabPairBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -7666,9 +7666,9 @@ export interface LabImagePairBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabSplitImageOffsetBlock".
+ * via the `definition` "LabPairOffsetBlock".
  */
-export interface LabSplitImageOffsetBlock {
+export interface LabPairOffsetBlock {
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
    */
@@ -7726,9 +7726,9 @@ export interface LabSplitImageOffsetBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFeatureImageStatementBlock".
+ * via the `definition` "LabStatementBlock".
  */
-export interface LabFeatureImageStatementBlock {
+export interface LabStatementBlock {
   media: number | Media;
   /**
    * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
@@ -7787,9 +7787,9 @@ export interface LabFeatureImageStatementBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFeatureTabsBlock".
+ * via the `definition` "LabTabsBlock".
  */
-export interface LabFeatureTabsBlock {
+export interface LabTabsBlock {
   tabs: {
     title: string;
     /**
@@ -7936,9 +7936,9 @@ export interface LabStoryBeatsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ResourceDownloadBlock".
+ * via the `definition` "DownloadBlock".
  */
-export interface ResourceDownloadBlock {
+export interface DownloadBlock {
   /**
    * The file to download. Only public-approved resources are listed.
    */
@@ -7961,9 +7961,9 @@ export interface ResourceDownloadBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFactsBlock".
+ * via the `definition` "ProjectFactsBlock".
  */
-export interface LabFactsBlock {
+export interface ProjectFactsBlock {
   heading?: string | null;
   showStatus?: boolean | null;
   showTechnologies?: boolean | null;
@@ -7981,9 +7981,9 @@ export interface LabFactsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabRelatedProjectsBlock".
+ * via the `definition` "RelatedLabProjectsBlock".
  */
-export interface LabRelatedProjectsBlock {
+export interface RelatedLabProjectsBlock {
   heading?: string | null;
   selectionMode?: ('document-settings' | 'automatic-capability-match') | null;
   limit?: number | null;
@@ -8151,15 +8151,15 @@ export interface SegmentSectionBlock {
   stack?: ('default' | 'tight' | 'loose' | 'none') | null;
   blocks?:
     | (
-        | RichTransitionBlock
-        | FeatureHeadingOffsetBlock
-        | FullMediaBlock
-        | MediaContentSplitBlock
-        | SplitContentNarrowBlock
-        | ImagePairBlock
-        | SplitImageOffsetBlock
-        | FeatureImageStatementBlock
-        | MediaBlock
+        | StandardBlock
+        | OffsetBlock
+        | StackedBlock
+        | SplitBlock
+        | SplitNarrowBlock
+        | PairBlock
+        | PairOffsetBlock
+        | StatementBlock
+        | CaptionBlock
         | YouTubeBlock
         | RichTextBlock
         | CodeBlock
@@ -8168,7 +8168,7 @@ export interface SegmentSectionBlock {
         | BespokeFigureBlock
         | FaqBlock
         | CarouselBlock
-        | FeatureTabsBlock
+        | TabsBlock
         | InsightListBlock
         | PosterListBlock
         | QuoteBannerBlock
@@ -9453,15 +9453,15 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
   blocks?:
     | T
     | {
-        richTransition?: T | RichTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        imagePair?: T | ImagePairBlockSelect<T>;
-        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
+        richTransition?: T | StandardBlockSelect<T>;
+        featureHeadingOffset?: T | OffsetBlockSelect<T>;
+        fullMedia?: T | StackedBlockSelect<T>;
+        mediaContentSplit?: T | SplitBlockSelect<T>;
+        splitContentNarrow?: T | SplitNarrowBlockSelect<T>;
+        imagePair?: T | PairBlockSelect<T>;
+        splitImageOffset?: T | PairOffsetBlockSelect<T>;
+        featureImageStatement?: T | StatementBlockSelect<T>;
+        mediaBlock?: T | CaptionBlockSelect<T>;
         youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
@@ -9470,7 +9470,7 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         bespokeFigure?: T | BespokeFigureBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
+        featureTabs?: T | TabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;
@@ -9481,9 +9481,9 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "RichTransitionBlock_select".
+ * via the `definition` "StandardBlock_select".
  */
-export interface RichTransitionBlockSelect<T extends boolean = true> {
+export interface StandardBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
   layout?: T;
@@ -9495,9 +9495,9 @@ export interface RichTransitionBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureHeadingOffsetBlock_select".
+ * via the `definition` "OffsetBlock_select".
  */
-export interface FeatureHeadingOffsetBlockSelect<T extends boolean = true> {
+export interface OffsetBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
   source?: T;
@@ -9509,9 +9509,9 @@ export interface FeatureHeadingOffsetBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FullMediaBlock_select".
+ * via the `definition` "StackedBlock_select".
  */
-export interface FullMediaBlockSelect<T extends boolean = true> {
+export interface StackedBlockSelect<T extends boolean = true> {
   showContent?: T;
   source?: T;
   eyebrow?: T;
@@ -9529,9 +9529,9 @@ export interface FullMediaBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaContentSplitBlock_select".
+ * via the `definition` "SplitBlock_select".
  */
-export interface MediaContentSplitBlockSelect<T extends boolean = true> {
+export interface SplitBlockSelect<T extends boolean = true> {
   source?: T;
   eyebrow?: T;
   heading?: T;
@@ -9547,9 +9547,9 @@ export interface MediaContentSplitBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SplitContentNarrowBlock_select".
+ * via the `definition` "SplitNarrowBlock_select".
  */
-export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
+export interface SplitNarrowBlockSelect<T extends boolean = true> {
   source?: T;
   eyebrow?: T;
   heading?: T;
@@ -9564,9 +9564,9 @@ export interface SplitContentNarrowBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ImagePairBlock_select".
+ * via the `definition` "PairBlock_select".
  */
-export interface ImagePairBlockSelect<T extends boolean = true> {
+export interface PairBlockSelect<T extends boolean = true> {
   source?: T;
   heading?: T;
   body?: T;
@@ -9580,9 +9580,9 @@ export interface ImagePairBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SplitImageOffsetBlock_select".
+ * via the `definition` "PairOffsetBlock_select".
  */
-export interface SplitImageOffsetBlockSelect<T extends boolean = true> {
+export interface PairOffsetBlockSelect<T extends boolean = true> {
   source?: T;
   heading?: T;
   body?: T;
@@ -9595,9 +9595,9 @@ export interface SplitImageOffsetBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureImageStatementBlock_select".
+ * via the `definition` "StatementBlock_select".
  */
-export interface FeatureImageStatementBlockSelect<T extends boolean = true> {
+export interface StatementBlockSelect<T extends boolean = true> {
   media?: T;
   source?: T;
   caption?: T;
@@ -9611,9 +9611,9 @@ export interface FeatureImageStatementBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock_select".
+ * via the `definition` "CaptionBlock_select".
  */
-export interface MediaBlockSelect<T extends boolean = true> {
+export interface CaptionBlockSelect<T extends boolean = true> {
   media?: T;
   size?: T;
   captionOverride?: T;
@@ -9768,9 +9768,9 @@ export interface CarouselBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureTabsBlock_select".
+ * via the `definition` "TabsBlock_select".
  */
-export interface FeatureTabsBlockSelect<T extends boolean = true> {
+export interface TabsBlockSelect<T extends boolean = true> {
   tabs?:
     | T
     | {
@@ -10044,15 +10044,15 @@ export interface WorkPagesSelect<T extends boolean = true> {
     | T
     | {
         section?: T | WorkSectionBlockSelect<T>;
-        caseStudyTransition?: T | WorkCaseStudyTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | WorkFeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | WorkFullMediaBlockSelect<T>;
-        mediaContentSplit?: T | WorkMediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | WorkSplitContentNarrowBlockSelect<T>;
-        imagePair?: T | WorkImagePairBlockSelect<T>;
-        splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | WorkMediaBlockSelect<T>;
+        caseStudyTransition?: T | WorkStandardBlockSelect<T>;
+        featureHeadingOffset?: T | WorkOffsetBlockSelect<T>;
+        fullMedia?: T | WorkStackedBlockSelect<T>;
+        mediaContentSplit?: T | WorkSplitBlockSelect<T>;
+        splitContentNarrow?: T | WorkSplitNarrowBlockSelect<T>;
+        imagePair?: T | WorkPairBlockSelect<T>;
+        splitImageOffset?: T | WorkPairOffsetBlockSelect<T>;
+        featureImageStatement?: T | WorkStatementBlockSelect<T>;
+        mediaBlock?: T | WorkCaptionBlockSelect<T>;
         youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         storyBeats?: T | WorkStoryBeatsBlockSelect<T>;
@@ -10062,13 +10062,13 @@ export interface WorkPagesSelect<T extends boolean = true> {
         bespokeFigure?: T | BespokeFigureBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | WorkCarouselBlockSelect<T>;
-        featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
+        featureTabs?: T | WorkTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
-        caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
-        caseStudyStorySection?: T | WorkCaseStudyStorySectionBlockSelect<T>;
+        caseStudyMediaShowcase?: T | WorkMediaShowcaseBlockSelect<T>;
+        caseStudyStorySection?: T | WorkStorySectionBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
   coverAsset?: T;
@@ -10124,15 +10124,15 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
   blocks?:
     | T
     | {
-        caseStudyTransition?: T | WorkCaseStudyTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | WorkFeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | WorkFullMediaBlockSelect<T>;
-        mediaContentSplit?: T | WorkMediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | WorkSplitContentNarrowBlockSelect<T>;
-        imagePair?: T | WorkImagePairBlockSelect<T>;
-        splitImageOffset?: T | WorkSplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | WorkFeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | WorkMediaBlockSelect<T>;
+        caseStudyTransition?: T | WorkStandardBlockSelect<T>;
+        featureHeadingOffset?: T | WorkOffsetBlockSelect<T>;
+        fullMedia?: T | WorkStackedBlockSelect<T>;
+        mediaContentSplit?: T | WorkSplitBlockSelect<T>;
+        splitContentNarrow?: T | WorkSplitNarrowBlockSelect<T>;
+        imagePair?: T | WorkPairBlockSelect<T>;
+        splitImageOffset?: T | WorkPairOffsetBlockSelect<T>;
+        featureImageStatement?: T | WorkStatementBlockSelect<T>;
+        mediaBlock?: T | WorkCaptionBlockSelect<T>;
         youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         storyBeats?: T | WorkStoryBeatsBlockSelect<T>;
@@ -10142,7 +10142,7 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         bespokeFigure?: T | BespokeFigureBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | WorkCarouselBlockSelect<T>;
-        featureTabs?: T | WorkFeatureTabsBlockSelect<T>;
+        featureTabs?: T | WorkTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;
@@ -10153,9 +10153,9 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkCaseStudyTransitionBlock_select".
+ * via the `definition` "WorkStandardBlock_select".
  */
-export interface WorkCaseStudyTransitionBlockSelect<T extends boolean = true> {
+export interface WorkStandardBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10171,9 +10171,9 @@ export interface WorkCaseStudyTransitionBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureHeadingOffsetBlock_select".
+ * via the `definition` "WorkOffsetBlock_select".
  */
-export interface WorkFeatureHeadingOffsetBlockSelect<T extends boolean = true> {
+export interface WorkOffsetBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
   source?: T;
@@ -10188,9 +10188,9 @@ export interface WorkFeatureHeadingOffsetBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFullMediaBlock_select".
+ * via the `definition` "WorkStackedBlock_select".
  */
-export interface WorkFullMediaBlockSelect<T extends boolean = true> {
+export interface WorkStackedBlockSelect<T extends boolean = true> {
   showContent?: T;
   source?: T;
   storyScope?: T;
@@ -10212,9 +10212,9 @@ export interface WorkFullMediaBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkMediaContentSplitBlock_select".
+ * via the `definition` "WorkSplitBlock_select".
  */
-export interface WorkMediaContentSplitBlockSelect<T extends boolean = true> {
+export interface WorkSplitBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10234,9 +10234,9 @@ export interface WorkMediaContentSplitBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkSplitContentNarrowBlock_select".
+ * via the `definition` "WorkSplitNarrowBlock_select".
  */
-export interface WorkSplitContentNarrowBlockSelect<T extends boolean = true> {
+export interface WorkSplitNarrowBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10255,9 +10255,9 @@ export interface WorkSplitContentNarrowBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkImagePairBlock_select".
+ * via the `definition` "WorkPairBlock_select".
  */
-export interface WorkImagePairBlockSelect<T extends boolean = true> {
+export interface WorkPairBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10275,9 +10275,9 @@ export interface WorkImagePairBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkSplitImageOffsetBlock_select".
+ * via the `definition` "WorkPairOffsetBlock_select".
  */
-export interface WorkSplitImageOffsetBlockSelect<T extends boolean = true> {
+export interface WorkPairOffsetBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10294,9 +10294,9 @@ export interface WorkSplitImageOffsetBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureImageStatementBlock_select".
+ * via the `definition` "WorkStatementBlock_select".
  */
-export interface WorkFeatureImageStatementBlockSelect<T extends boolean = true> {
+export interface WorkStatementBlockSelect<T extends boolean = true> {
   media?: T;
   browseAllMedia?: T;
   source?: T;
@@ -10314,9 +10314,9 @@ export interface WorkFeatureImageStatementBlockSelect<T extends boolean = true> 
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkMediaBlock_select".
+ * via the `definition` "WorkCaptionBlock_select".
  */
-export interface WorkMediaBlockSelect<T extends boolean = true> {
+export interface WorkCaptionBlockSelect<T extends boolean = true> {
   media?: T;
   browseAllMedia?: T;
   size?: T;
@@ -10367,9 +10367,9 @@ export interface WorkCarouselBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureTabsBlock_select".
+ * via the `definition` "WorkTabsBlock_select".
  */
-export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
+export interface WorkTabsBlockSelect<T extends boolean = true> {
   tabs?:
     | T
     | {
@@ -10401,9 +10401,9 @@ export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyMediaShowcaseBlock_select".
+ * via the `definition` "WorkMediaShowcaseBlock_select".
  */
-export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
+export interface WorkMediaShowcaseBlockSelect<T extends boolean = true> {
   heading?: T;
   introduction?: T;
   media?: T;
@@ -10417,9 +10417,9 @@ export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkCaseStudyStorySectionBlock_select".
+ * via the `definition` "WorkStorySectionBlock_select".
  */
-export interface WorkCaseStudyStorySectionBlockSelect<T extends boolean = true> {
+export interface WorkStorySectionBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10473,8 +10473,8 @@ export interface LabPagesSelect<T extends boolean = true> {
     | T
     | {
         section?: T | LabSectionBlockSelect<T>;
-        labFacts?: T | LabFactsBlockSelect<T>;
-        labRelatedProjects?: T | LabRelatedProjectsBlockSelect<T>;
+        labFacts?: T | ProjectFactsBlockSelect<T>;
+        labRelatedProjects?: T | RelatedLabProjectsBlockSelect<T>;
       };
   coverAsset?: T;
   relatedLabPages?: T;
@@ -10514,15 +10514,15 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
   blocks?:
     | T
     | {
-        richTransition?: T | LabRichTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | LabFeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | LabFullMediaBlockSelect<T>;
-        mediaContentSplit?: T | LabMediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | LabSplitContentNarrowBlockSelect<T>;
-        imagePair?: T | LabImagePairBlockSelect<T>;
-        splitImageOffset?: T | LabSplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | LabFeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
+        richTransition?: T | LabStandardBlockSelect<T>;
+        featureHeadingOffset?: T | LabOffsetBlockSelect<T>;
+        fullMedia?: T | LabStackedBlockSelect<T>;
+        mediaContentSplit?: T | LabSplitBlockSelect<T>;
+        splitContentNarrow?: T | LabSplitNarrowBlockSelect<T>;
+        imagePair?: T | LabPairBlockSelect<T>;
+        splitImageOffset?: T | LabPairOffsetBlockSelect<T>;
+        featureImageStatement?: T | LabStatementBlockSelect<T>;
+        mediaBlock?: T | CaptionBlockSelect<T>;
         youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
@@ -10531,22 +10531,22 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         bespokeFigure?: T | BespokeFigureBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | LabFeatureTabsBlockSelect<T>;
+        featureTabs?: T | LabTabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
         storyBeats?: T | LabStoryBeatsBlockSelect<T>;
-        resourceDownload?: T | ResourceDownloadBlockSelect<T>;
+        resourceDownload?: T | DownloadBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabRichTransitionBlock_select".
+ * via the `definition` "LabStandardBlock_select".
  */
-export interface LabRichTransitionBlockSelect<T extends boolean = true> {
+export interface LabStandardBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10562,9 +10562,9 @@ export interface LabRichTransitionBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFeatureHeadingOffsetBlock_select".
+ * via the `definition` "LabOffsetBlock_select".
  */
-export interface LabFeatureHeadingOffsetBlockSelect<T extends boolean = true> {
+export interface LabOffsetBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   heading?: T;
   source?: T;
@@ -10579,9 +10579,9 @@ export interface LabFeatureHeadingOffsetBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFullMediaBlock_select".
+ * via the `definition` "LabStackedBlock_select".
  */
-export interface LabFullMediaBlockSelect<T extends boolean = true> {
+export interface LabStackedBlockSelect<T extends boolean = true> {
   showContent?: T;
   source?: T;
   storyScope?: T;
@@ -10602,9 +10602,9 @@ export interface LabFullMediaBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabMediaContentSplitBlock_select".
+ * via the `definition` "LabSplitBlock_select".
  */
-export interface LabMediaContentSplitBlockSelect<T extends boolean = true> {
+export interface LabSplitBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10623,9 +10623,9 @@ export interface LabMediaContentSplitBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabSplitContentNarrowBlock_select".
+ * via the `definition` "LabSplitNarrowBlock_select".
  */
-export interface LabSplitContentNarrowBlockSelect<T extends boolean = true> {
+export interface LabSplitNarrowBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10643,9 +10643,9 @@ export interface LabSplitContentNarrowBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabImagePairBlock_select".
+ * via the `definition` "LabPairBlock_select".
  */
-export interface LabImagePairBlockSelect<T extends boolean = true> {
+export interface LabPairBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10662,9 +10662,9 @@ export interface LabImagePairBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabSplitImageOffsetBlock_select".
+ * via the `definition` "LabPairOffsetBlock_select".
  */
-export interface LabSplitImageOffsetBlockSelect<T extends boolean = true> {
+export interface LabPairOffsetBlockSelect<T extends boolean = true> {
   source?: T;
   storyScope?: T;
   storyBeatKey?: T;
@@ -10680,9 +10680,9 @@ export interface LabSplitImageOffsetBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFeatureImageStatementBlock_select".
+ * via the `definition` "LabStatementBlock_select".
  */
-export interface LabFeatureImageStatementBlockSelect<T extends boolean = true> {
+export interface LabStatementBlockSelect<T extends boolean = true> {
   media?: T;
   source?: T;
   storyScope?: T;
@@ -10699,9 +10699,9 @@ export interface LabFeatureImageStatementBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFeatureTabsBlock_select".
+ * via the `definition` "LabTabsBlock_select".
  */
-export interface LabFeatureTabsBlockSelect<T extends boolean = true> {
+export interface LabTabsBlockSelect<T extends boolean = true> {
   tabs?:
     | T
     | {
@@ -10752,9 +10752,9 @@ export interface LabStoryBeatsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ResourceDownloadBlock_select".
+ * via the `definition` "DownloadBlock_select".
  */
-export interface ResourceDownloadBlockSelect<T extends boolean = true> {
+export interface DownloadBlockSelect<T extends boolean = true> {
   resource?: T;
   heading?: T;
   description?: T;
@@ -10764,9 +10764,9 @@ export interface ResourceDownloadBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFactsBlock_select".
+ * via the `definition` "ProjectFactsBlock_select".
  */
-export interface LabFactsBlockSelect<T extends boolean = true> {
+export interface ProjectFactsBlockSelect<T extends boolean = true> {
   heading?: T;
   showStatus?: T;
   showTechnologies?: T;
@@ -10777,9 +10777,9 @@ export interface LabFactsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabRelatedProjectsBlock_select".
+ * via the `definition` "RelatedLabProjectsBlock_select".
  */
-export interface LabRelatedProjectsBlockSelect<T extends boolean = true> {
+export interface RelatedLabProjectsBlockSelect<T extends boolean = true> {
   heading?: T;
   selectionMode?: T;
   limit?: T;
@@ -10871,15 +10871,15 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
   blocks?:
     | T
     | {
-        richTransition?: T | RichTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        imagePair?: T | ImagePairBlockSelect<T>;
-        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
+        richTransition?: T | StandardBlockSelect<T>;
+        featureHeadingOffset?: T | OffsetBlockSelect<T>;
+        fullMedia?: T | StackedBlockSelect<T>;
+        mediaContentSplit?: T | SplitBlockSelect<T>;
+        splitContentNarrow?: T | SplitNarrowBlockSelect<T>;
+        imagePair?: T | PairBlockSelect<T>;
+        splitImageOffset?: T | PairOffsetBlockSelect<T>;
+        featureImageStatement?: T | StatementBlockSelect<T>;
+        mediaBlock?: T | CaptionBlockSelect<T>;
         youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         code?: T | CodeBlockSelect<T>;
@@ -10888,7 +10888,7 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
         bespokeFigure?: T | BespokeFigureBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
+        featureTabs?: T | TabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;
@@ -12424,17 +12424,17 @@ export interface Home {
   };
   statement?: HomeStatement;
   layout: (
-    | FeatureHeadingOffsetBlock
-    | FullMediaBlock
-    | MediaContentSplitBlock
-    | SplitContentNarrowBlock
-    | FeatureImageStatementBlock
-    | MediaBlock
+    | OffsetBlock
+    | StackedBlock
+    | SplitBlock
+    | SplitNarrowBlock
+    | StatementBlock
+    | CaptionBlock
     | YouTubeBlock
     | RichTextBlock
     | FaqBlock
     | CarouselBlock
-    | FeatureTabsBlock
+    | TabsBlock
     | InsightListBlock
     | PosterListBlock
     | QuoteBannerBlock
@@ -13630,17 +13630,17 @@ export interface HomeSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
+        featureHeadingOffset?: T | OffsetBlockSelect<T>;
+        fullMedia?: T | StackedBlockSelect<T>;
+        mediaContentSplit?: T | SplitBlockSelect<T>;
+        splitContentNarrow?: T | SplitNarrowBlockSelect<T>;
+        featureImageStatement?: T | StatementBlockSelect<T>;
+        mediaBlock?: T | CaptionBlockSelect<T>;
         youtube?: T | YouTubeBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
         faq?: T | FaqBlockSelect<T>;
         carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
+        featureTabs?: T | TabsBlockSelect<T>;
         insightList?: T | InsightListBlockSelect<T>;
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;

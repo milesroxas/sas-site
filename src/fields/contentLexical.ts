@@ -6,7 +6,7 @@ import {
   lexicalEditor,
   UnorderedListFeature,
 } from '@payloadcms/richtext-lexical'
-import { RichTextActions } from '@/blocks/rich-text/actions/config'
+import { RichTextActions } from '@/blocks/text/rich-text/actions/config'
 import { TextStyleFeature } from '@/fields/lexical/textStyle/feature.server'
 
 /**
@@ -21,7 +21,7 @@ import { TextStyleFeature } from '@/fields/lexical/textStyle/feature.server'
  *   node state rather than inline CSS so the site's classes stay the source
  *   of truth (`components/RichText/text-styles.ts`).
  * - Actions: one or two links set as buttons, a Lexical block in the body
- *   JSON (`blocks/rich-text/actions`), so no table and no migration.
+ *   JSON (`blocks/text/rich-text/actions`), so no table and no migration.
  * - Fixed and inline toolbars.
  *
  * Every node's treatment lives in `RichText` and the bare rich text rules in

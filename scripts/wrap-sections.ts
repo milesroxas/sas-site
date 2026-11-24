@@ -49,16 +49,16 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import type { Block, Field, SanitizedConfig } from 'payload'
-import type { SectionBlockSpacing } from '@/blocks/section/shared'
 import type { BandTheme } from '@/blocks/shared/band-theme'
+import type { SectionBlockSpacing } from '@/blocks/structure/section/shared'
 
 process.env.PAYLOAD_DB_PUSH = 'false'
 
 const { default: config } = await import('@payload-config')
 const { getPayload } = await import('payload')
-const { SECTION_CHILDREN_FIELD } = await import('@/blocks/section/shared')
+const { SECTION_CHILDREN_FIELD } = await import('@/blocks/structure/section/shared')
 const { BAND_THEME_OPTIONS } = await import('@/blocks/shared/band-theme')
-const { RESTORE_LAYOUT_CONTEXT } = await import('@/blocks/shared/top-level-blocks')
+const { RESTORE_LAYOUT_CONTEXT } = await import('@/blocks/surfaces/top-level')
 
 const COLLECTIONS = [
   'pages',
@@ -114,7 +114,7 @@ const SPACING_MAP: Record<string, SectionBlockSpacing> = {
 
 /**
  * The Work renderer paints Statement on its own loose reveal band
- * (`FeatureImageStatementSection` in RenderCaseStudyBlocks), whatever the
+ * (`StatementSection` in RenderWorkBlocks), whatever the
  * image width; every other surface uses the component's own band.
  */
 const WORK_SPACING_MAP: Record<string, SectionBlockSpacing> = {

@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { authenticatedOrPublished } from '@/access/authenticatedOrPublished'
-import { caseStudyBlocks } from '@/blocks/case-study/config'
-import { topLevelBlocks } from '@/blocks/shared/top-level-blocks'
+import { topLevelBlocks } from '@/blocks/surfaces/top-level'
+import { workBlocks } from '@/blocks/surfaces/work'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { browseAllMediaField, caseStudyScopedMediaFilter } from '@/fields/caseStudyScopedMedia'
 import { closingTab } from '@/fields/closing'
@@ -118,7 +118,7 @@ export const WorkPages: CollectionConfig<'work-pages'> = {
               // The add button reads "Add Section": editors reach for a Section
               // first and nest content blocks inside it.
               labels: { singular: 'Section', plural: 'Sections' },
-              blocks: caseStudyBlocks,
+              blocks: workBlocks,
               ...topLevelBlocks('work'),
               admin: {
                 initCollapsed: true,

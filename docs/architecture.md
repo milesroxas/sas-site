@@ -81,7 +81,7 @@ Globals: `home` (`/`), `insights-index` (`/insights`), `lab-index` (`/lab`), `wo
 `/works/[slug]` queries the Work Page with its Case Study populated (depth 4), then renders:
 
 1. **Hero** (`CaseStudyHero`) — override-then-canonical at each field: `titleOverride` → study title; `summaryOverride` → short summary → one-line → thesis; hero media → cover asset; eyebrow → client short name → client name.
-2. **Blocks** (`RenderCaseStudyBlocks`) — each narrative-capable block declares a canonical `source`, may narrow that source to a stable Story Beat, and may carry website overrides:
+2. **Blocks** (`RenderWorkBlocks`) — each narrative-capable block declares a canonical `source`, may narrow that source to a stable Story Beat, and may carry website overrides:
    - Case Study narrative is hierarchical: `context`, `challenge`, `strategy`, `approach`, `outcomeSummary`, and `learnings` each contain an optional section body plus ordered `storyBeats`. Whole-section consumers compose the body followed by the beats; an individual beat is addressed by `(source, storyBeatKey)`.
    - `caseStudyStorySection` — picks one complete canonical narrative section or one beat within it, or uses `custom`; `bodyOverride` wins when present.
    - `caseStudyKeyDecisions` / `caseStudyMetrics` — read arrays from the study, filtered by `featured` flags and (for metrics) `approvedForPublic`.
@@ -106,9 +106,9 @@ sections (`NarrativeSection` interface), and Lab Pages resolve them the same way
 - `src/collections/story/validate.ts` — beat keys unique per section; a page cannot publish a
   missing beat; a record cannot publish without a beat its page still uses.
 - `src/blocks/shared/story-copy.ts` — the copy precedence both renderers use (written copy wins,
-  then the story), so `RenderCaseStudyBlocks` and `RenderLabBlocks` never restate it.
+  then the story), so `RenderWorkBlocks` and `RenderLabBlocks` never restate it.
 - Lab block variants come from mapping the shared Section run through `labBlock`
-  (`src/blocks/lab/config.ts`): story-capable blocks gain the story picker, the rest pass through.
+  (`src/blocks/surfaces/lab.ts`): story-capable blocks gain the story picker, the rest pass through.
 
 Publish-time integrity (`validateWorkPage`): the linked Case Study must itself be published and have at least one Asset Library, every referenced Story Beat must exist on it, and every media reference on the page (cover, hero, downloads, block media) must be `public-approved` **and** belong to one of the study's libraries. Deleting a Case Study that a Work Page references is blocked. `validateLabPage` applies the same rules minus Asset Libraries (media only needs to be `public-approved`).
 
@@ -150,7 +150,7 @@ Field-level: `internalNotes`, `usageNotes`, testimonial/metric `source`, and `ap
 | `/[slug]` | `pages` | `RenderHero` + `RenderBlocks` |
 | `/posts`, `/posts/[slug]` | `posts` | Archive / `PostHero` + rich text |
 | `/insights`, `/insights/[topic]` | `insights-index` global + `categories` + `posts` | Topic hubs |
-| `/works`, `/works/[slug]` | `works-index` global / `work-pages` (+ `case-studies`) | Browse grid / `CaseStudyHero` + `RenderCaseStudyBlocks` |
+| `/works`, `/works/[slug]` | `works-index` global / `work-pages` (+ `case-studies`) | Browse grid / `CaseStudyHero` + `RenderWorkBlocks` |
 | `/lab`, `/lab/[slug]` | `lab-index` global / `lab-pages` (+ `lab-projects`) | Browse list / lab detail resolving canonical R&D content |
 | `/expertise`, `/expertise/[slug]` | `expertise-pages` | `RenderBlocks` + related work by capability |
 | `/who-we-help`, `/who-we-help/[slug]` | `audience-pages` | `RenderBlocks` + related work by industry |

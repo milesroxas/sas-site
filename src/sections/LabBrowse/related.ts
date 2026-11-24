@@ -6,7 +6,7 @@ import {
   FEATURED_CLOSER_FALLBACK_LIMIT,
   type FeaturedEntry,
   featuredLabEntry,
-} from '@/blocks/featured-work/entry'
+} from '@/blocks/lists/featured-work/entry'
 import type { LabPage } from '@/payload-types'
 import { relationshipIds } from '@/utilities/relationshipId'
 import { type LabBrowseItem, toLabBrowseItems } from './item'
@@ -39,7 +39,7 @@ async function findLabItems(where: Where, options: { limit: number; sort?: strin
  * unpublished ones skipped. If nothing is selected, or nothing selected is
  * public, the most recently published lab pages, excluding this one.
  *
- * Mirrors `resolveRelatedWorkEntries` (blocks/featured-work/resolve-entries),
+ * Mirrors `resolveRelatedWorkEntries` (blocks/lists/featured-work/resolve-entries),
  * the same contract on the work side.
  */
 export async function resolveRelatedLabEntries(page: LabPage): Promise<FeaturedEntry[]> {

@@ -61,9 +61,9 @@ One pattern everywhere (`src/fields/overrides.ts`):
 
 ## Blocks
 
-- Slug: camelCase with a domain prefix (`caseStudyStorySection`, `featureStatementGrid`); `interfaceName`: PascalCase slug + `Block` suffix (`CaseStudyStorySectionBlock`).
-- Labels: name the pattern, not the domain: a short sentence-case noun under its `admin.group` from `BLOCK_GROUPS` (`Stacked` in Media and content, `Insight list` in Lists). The label and group are the block's name everywhere: its Storybook title is `Blocks/<Group>/<Label>` (`pnpm check:blocks` enforces it). Older `Domain: thing` labels (`Feature: statement grid`) are legacy. Which blocks sit at the top level is stated once in `src/blocks/shared/top-level-blocks.ts` (docs/blocks-reorg-roadmap.md, section 0).
-- `dbName`: short static name (`wp_story`) when the block has one parent collection; a **function** `dbName` when reused across parents (see `src/blocks/split-content/config.ts`) — a static name would collapse every parent into one table.
+- Slug: camelCase with a domain prefix (`caseStudyStorySection`, `featureStatementGrid`); `interfaceName`: PascalCase label + `Block` suffix (`StorySectionBlock`; `pnpm check:blocks` enforces it).
+- Labels: name the pattern, not the domain: a short sentence-case noun under its `admin.group` from `BLOCK_GROUPS` (`Stacked` in Media and content, `Insight list` in Lists). The label and group are the block's name everywhere: its Storybook title is `Blocks/<Group>/<Label>` (`pnpm check:blocks` enforces it). Older `Domain: thing` labels (`Feature: statement grid`) are legacy. Which blocks sit at the top level is stated once in `src/blocks/surfaces/top-level.ts` (docs/blocks-reorg-roadmap.md, section 0).
+- `dbName`: short static name (`wp_story`) when the block has one parent collection; a **function** `dbName` when reused across parents (see `src/blocks/media-and-content/split-narrow/config.ts`) — a static name would collapse every parent into one table.
 
 ## Sidebar groups
 

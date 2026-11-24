@@ -1,7 +1,7 @@
-import type { FeatureHeadingOffsetBlock } from '@/payload-types'
+import type { OffsetBlock } from '@/payload-types'
 
 /** Lexical rich-text field shape shared by the feature blocks. */
-type RichTextValue = NonNullable<FeatureHeadingOffsetBlock['body']>
+type RichTextValue = NonNullable<OffsetBlock['body']>
 
 /**
  * Build a valid Lexical rich-text value from plain copy for stories and tests.

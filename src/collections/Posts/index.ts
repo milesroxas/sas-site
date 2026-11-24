@@ -9,23 +9,23 @@ import {
   UnorderedListFeature,
 } from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
-import { topLevelBlocks } from '@/blocks/shared/top-level-blocks'
+import { postLayoutBlocks } from '@/blocks/surfaces/pages'
+import { topLevelBlocks } from '@/blocks/surfaces/top-level'
 import { AUTOSAVE_INTERVAL_MS } from '@/collections/drafts'
 import { authorFields } from '@/fields/authors'
 import { closingTab } from '@/fields/closing'
 import { contentsButtonField, editorialNotesField, relatedPagesField } from '@/fields/pageFields'
-import { postLayoutBlocks } from '@/fields/pageLayoutBlocks'
 import { seoMetaTab } from '@/fields/seoMetaTabFields'
 import { slugField } from '@/fields/slug'
 import { heroVisualSlotFields } from '@/fields/visual'
 import { populateAuthors } from '@/hooks/populateAuthors'
 import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
-import { Carousel } from '../../blocks/Carousel/config'
-import { Code } from '../../blocks/Code/config'
-import { MediaBlock } from '../../blocks/MediaBlock/config'
-import { primaryResourceField, ResourceDownload } from '../../blocks/resource-download/config'
-import { YouTube } from '../../blocks/youtube/config'
+import { Download, primaryResourceField } from '../../blocks/forms-and-ctas/download/config'
+import { Carousel } from '../../blocks/interactive/carousel/config'
+import { Caption } from '../../blocks/media/caption/config'
+import { YouTube } from '../../blocks/media/youtube/config'
+import { Code } from '../../blocks/text/code/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
 import { validatePublicMedia } from './hooks/validatePublicMedia'
@@ -133,7 +133,7 @@ export const Posts: CollectionConfig<'posts'> = {
                     UnorderedListFeature(),
                     OrderedListFeature(),
                     BlocksFeature({
-                      blocks: [Carousel, Code, MediaBlock, ResourceDownload, YouTube],
+                      blocks: [Carousel, Code, Caption, Download, YouTube],
                     }),
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),

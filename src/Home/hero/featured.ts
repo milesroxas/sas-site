@@ -4,7 +4,7 @@ import {
   featuredLabEntry,
   featuredPostEntry,
   featuredWorkEntry,
-} from '@/blocks/featured-work/entry'
+} from '@/blocks/lists/featured-work/entry'
 import { resolveWorkEntry } from '@/blocks/shared/resolve-work-entry'
 import type { Home, LabPage, Post, WorkPage } from '@/payload-types'
 import { toLabBrowseItem } from '@/sections/LabBrowse/item'

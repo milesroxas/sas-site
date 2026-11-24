@@ -1,7 +1,7 @@
 import type { CollectionBeforeChangeHook, Config, PayloadRequest } from 'payload'
 import { describe, expect, it } from 'vitest'
-import { sectionBlock } from '@/blocks/section/config'
-import { figureBlocks } from '@/blocks/shared/section-blocks'
+import { sectionBlock } from '@/blocks/structure/section/config'
+import { figureBlocks } from '@/blocks/surfaces/run'
 import {
   BESPOKE_FIGURES,
   type DiagramSpec,

@@ -529,7 +529,7 @@
 }
 
 /* quote-reveal: a Quote banner quote arriving when a visitor picks another
-   client (blocks/quote-banner). A mask reveal, the brand default for copy.
+   client (blocks/statements/quote-banner). A mask reveal, the brand default for copy.
    The inline insets are negative so the hung opening mark (`quote-marks`)
    is never clipped, during the reveal or after it. */
 @theme inline {
@@ -1020,7 +1020,7 @@
    one on its own.
 
    Keyed on the marker the Prose layout renders (`data-prose-opener` in
-   blocks/rich-transition/RichTransition.tsx), matched through whatever reveal
+   blocks/section-heading/standard/StandardView.tsx), matched through whatever reveal
    wrapper the renderer put around the block.
 
    It restates the step as `margin-block-end` on the opener's own stack child
@@ -1474,7 +1474,7 @@ html {
 }
 
 /* Disclosure body (stepped form steps in blocks/shared/form/form-steps, FAQ
-   answers in blocks/faq, an Ask answer's sources in features/ask/Sources):
+   answers in blocks/interactive/faq, an Ask answer's sources in features/ask/Sources):
    a body opens and closes as a grid track, 0fr ↔ 1fr,
    so height follows the content without measuring it; the box inside fades
    with the track. Exit is shorter than enter, and the incoming fade waits a
