@@ -23,7 +23,6 @@ import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Carousel } from '../../blocks/Carousel/config'
 import { Code } from '../../blocks/Code/config'
-import { FeatureStatementLinks } from '../../blocks/feature/StatementLinks/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { primaryResourceField, ResourceDownload } from '../../blocks/resource-download/config'
 import { YouTube } from '../../blocks/youtube/config'
@@ -134,14 +133,7 @@ export const Posts: CollectionConfig<'posts'> = {
                     UnorderedListFeature(),
                     OrderedListFeature(),
                     BlocksFeature({
-                      blocks: [
-                        Carousel,
-                        Code,
-                        FeatureStatementLinks,
-                        MediaBlock,
-                        ResourceDownload,
-                        YouTube,
-                      ],
+                      blocks: [Carousel, Code, MediaBlock, ResourceDownload, YouTube],
                     }),
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),

@@ -125,6 +125,7 @@ import * as migration_20261122_185525_cta_band from './20261122_185525_cta_band'
 import * as migration_20261122_190120_quote_banner from './20261122_190120_quote_banner';
 import * as migration_20261122_194915_work_run_from_shared from './20261122_194915_work_run_from_shared';
 import * as migration_20261123_143806_drop_unused_legacy_blocks from './20261123_143806_drop_unused_legacy_blocks';
+import * as migration_20261124_001957_retire_legacy_blocks_and_top_level_run from './20261124_001957_retire_legacy_blocks_and_top_level_run';
 
 export const migrations = [
   {
@@ -760,6 +761,11 @@ export const migrations = [
   {
     up: migration_20261123_143806_drop_unused_legacy_blocks.up,
     down: migration_20261123_143806_drop_unused_legacy_blocks.down,
-    name: '20261123_143806_drop_unused_legacy_blocks'
+    name: '20261123_143806_drop_unused_legacy_blocks',
+  },
+  {
+    up: migration_20261124_001957_retire_legacy_blocks_and_top_level_run.up,
+    down: migration_20261124_001957_retire_legacy_blocks_and_top_level_run.down,
+    name: '20261124_001957_retire_legacy_blocks_and_top_level_run'
   },
 ];

@@ -1,6 +1,5 @@
 import type { Block } from 'payload'
 import { Content } from '@/blocks/Content/config'
-import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
 import { featureSourceField } from '@/blocks/feature/shared'
 import { ResourceDownload } from '@/blocks/resource-download/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
@@ -68,8 +67,7 @@ const labBlock = (shared: Block): Block => {
 
 /**
  * The shared Section-nestable run (docs/blocks-reorg-roadmap.md) as Lab Pages
- * offer it: in a Section and at the top level while the Section transition is
- * underway, story copy resolving against the related Lab Project.
+ * nest it, story copy resolving against the related Lab Project.
  *
  * Story beats joins the run here rather than in the shared list: it is a Text
  * block with no copy of its own, so only the two surfaces that present a story
@@ -88,19 +86,5 @@ export const LabSection = sectionBlock({
   interfaceName: 'LabSectionBlock',
 })
 
-/**
- * Ordered by `admin.group`: the blocks drawer renders groups in
- * first-appearance order, and the reorganized groups lead
- * (docs/blocks-reorg-roadmap.md) ahead of the legacy ones.
- */
-export const labBlocks = [
-  // Structure
-  LabSection,
-  // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
-  ...labSectionBlocks,
-  // Statements
-  labBlock(FeatureStatementGrid),
-  // Lists (legacy, top-level only)
-  LabFacts,
-  LabRelatedProjects,
-]
+/** Lab Pages: Sections plus the two page-closing shells. */
+export const labBlocks = [LabSection, LabFacts, LabRelatedProjects]

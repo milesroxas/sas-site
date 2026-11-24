@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
 import { ResourceDownloadSection } from '@/blocks/resource-download/Section'
 import { SectionBand } from '@/blocks/section/SectionBand'
 import { renderContentBlock, sectionChildComponents } from '@/blocks/shared/content-block-renderer'
@@ -20,14 +19,12 @@ import { Facts as FactsList } from './Facts'
 import { RelatedProjectsList } from './RelatedProjects'
 
 /**
- * The shared run's components plus Statement grid, the one story-capable
- * block Lab offers outside the run, Story beats, the Text block only a
+ * The shared run's components plus Story beats, the Text block only a
  * story surface offers at all, and Download. Every entry renders exactly as it does on
  * Pages once its copy is resolved against the Lab Project.
  */
 const labContentComponents = {
   ...sectionChildComponents,
-  featureStatementGrid: FeatureStatementGridBlock,
   resourceDownload: ResourceDownloadSection,
   storyBeats: StoryBeatsBlock,
 }
@@ -143,7 +140,7 @@ const renderLabBlock = (
 
 /**
  * Lab blocks enter like generic page blocks: the CSS block reveal wraps each
- * section, except the shared Section-nestable run (and Statement grid), which
+ * section, except the shared Section-nestable run, which
  * enters through the common content-block renderer (`data-reveal` markers play
  * the shared GSAP reveal, the same motion those blocks have on every other
  * surface; the marker-less Carousel and Content take the CSS reveal there).

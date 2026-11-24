@@ -525,13 +525,6 @@ async function run() {
         theme: 'default',
         width: 'wide',
       },
-      {
-        blockType: 'caseStudyMetrics',
-        heading: 'Results',
-        source: 'featured-public',
-        layout: 'grid',
-        theme: 'inverted',
-      },
     ],
     [
       {
@@ -616,63 +609,14 @@ async function run() {
     ],
     [
       {
-        blockType: 'featureStatementGrid',
-        eyebrow: 'Approach',
-        heading: 'How the work held together',
-        source: 'custom',
-        statement: para(
-          'Strategy, identity, content, and digital experience moved as one engagement.',
-        ),
-        footnote: 'Placeholder cards for design review.',
-        cards: [
-          {
-            media: img(5),
-            title: 'Strategy',
-            description: 'Positioning and messaging that survive contact with real audiences.',
-          },
-          {
-            media: img(6),
-            title: 'Identity',
-            description: 'A visual system with range, not a logo with rules.',
-          },
-          {
-            media: img(7),
-            title: 'Experience',
-            description: 'A site the internal team can actually run.',
-          },
-        ],
-      },
-      {
         blockType: 'caseStudyStorySection',
         source: 'outcome-summary',
         layout: 'text-only',
         theme: 'default',
         width: 'narrow',
       },
-      {
-        blockType: 'caseStudyMetrics',
-        heading: 'By the numbers',
-        source: 'all-public',
-        layout: 'row',
-        theme: 'default',
-      },
     ],
     [
-      {
-        blockType: 'featureStatementLinks',
-        statement: richText(
-          paragraph(
-            text('The result is a '),
-            bold('clearer story'),
-            text(' and a system people can use.'),
-          ),
-        ),
-        links: [
-          { link: { type: 'custom', url: '/works', label: 'All work' } },
-          { link: { type: 'custom', url: '/expertise', label: 'Our expertise' } },
-        ],
-        theme: 'default',
-      },
       {
         blockType: 'splitContentNarrow',
         source: 'custom',
@@ -894,14 +838,7 @@ async function run() {
           paragraph(text('Tell us what you are trying to make sense of.')),
         ),
       },
-      layout: [
-        {
-          blockType: 'formBlock',
-          form: formId,
-          enableIntro: true,
-          introContent: para('A short intro above the form block.'),
-        },
-      ],
+      layout: [],
       _status: 'published',
     },
   )
@@ -1078,58 +1015,6 @@ async function run() {
           relationTo: 'posts',
           limit: 4,
           cardVariant: 'contained',
-        },
-        {
-          blockType: 'formBlock',
-          form: formId,
-          enableIntro: true,
-          introContent: para('The shared contact form rendered as a block.'),
-        },
-        {
-          blockType: 'newsletterSignup',
-          eyebrow: 'Newsletter',
-          heading: 'Occasional, useful, short',
-          body: 'Placeholder newsletter signup wired to the seeded public audience.',
-          buttonLabel: 'Subscribe',
-          audience: newsletterAudienceId,
-        },
-        {
-          blockType: 'featureStatementGrid',
-          eyebrow: 'Capabilities',
-          heading: 'What we bring into alignment',
-          source: 'custom',
-          statement: richText(
-            paragraph(
-              text('Strategy, identity, content, and digital experience — '),
-              bold('one system'),
-              text(', not four projects.'),
-            ),
-          ),
-          footnote: 'Placeholder cards seeded for review.',
-          cards: [
-            {
-              media: img(2),
-              title: 'Strategy',
-              description: 'Positioning, messaging, and narrative.',
-            },
-            { media: img(3), title: 'Identity', description: 'Visual systems with real range.' },
-            { media: img(4), title: 'Digital', description: 'Sites and products people can use.' },
-          ],
-        },
-        {
-          blockType: 'featureStatementLinks',
-          statement: richText(
-            paragraph(
-              text('Our work brings '),
-              bold('strategy, identity, content, and digital experience'),
-              text(' into alignment.'),
-            ),
-          ),
-          links: [
-            { link: { type: 'custom', url: '/expertise', label: 'Our Expertise' } },
-            { link: { type: 'custom', url: '/who-we-help', label: 'Who We Work With' } },
-          ],
-          theme: 'default',
         },
         {
           blockType: 'featureHeadingOffset',
@@ -1394,22 +1279,6 @@ async function run() {
         },
         layout: [
           {
-            blockType: 'featureStatementGrid',
-            eyebrow: 'Where we help',
-            heading: 'The problems we keep solving',
-            source: 'custom',
-            statement: para('Placeholder statement about this audience segment.'),
-            cards: [
-              { media: img(i), title: 'Clarity', description: 'A story people can follow.' },
-              {
-                media: img(i + 1),
-                title: 'Structure',
-                description: 'An architecture that scales.',
-              },
-              { media: img(i + 2), title: 'Momentum', description: 'A system the team can run.' },
-            ],
-          },
-          {
             blockType: 'splitContentNarrow',
             source: 'custom',
             eyebrow: 'Approach',
@@ -1462,28 +1331,11 @@ async function run() {
           ),
         ),
       },
-      layout: [
-        {
-          blockType: 'featureStatementLinks',
-          statement: richText(
-            paragraph(
-              text(
-                'Our work brings strategy, identity, content, and digital experience into alignment. The result is a clearer story, a stronger system, and something people can understand and use.',
-              ),
-            ),
-          ),
-          links: [
-            { link: { type: 'custom', url: '/expertise', label: 'Our Expertise' } },
-            { link: { type: 'custom', url: '/who-we-help', label: 'Who We Work With' } },
-          ],
-          theme: 'default',
-        },
-        audienceTabsBlock,
-      ],
+      layout: [audienceTabsBlock],
       _status: 'published',
     },
   })
-  log('home hero, statement, featureStatementLinks, audienceTabs')
+  log('home hero, statement, audienceTabs')
 
   console.log('\nSeed complete.')
   console.log('Review routes: / · /block-review · /hero-high-impact · /hero-low-impact · /contact')

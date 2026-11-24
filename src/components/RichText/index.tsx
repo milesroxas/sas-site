@@ -15,7 +15,6 @@ import {
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { CodeBlock, type CodeBlockProps } from '@/blocks/Code/Component'
-import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { ResourceDownload } from '@/blocks/resource-download/Component'
 import { RichTextActions } from '@/blocks/rich-text/actions/Component'
@@ -25,7 +24,6 @@ import { YouTubeBlock } from '@/blocks/youtube/Component'
 import type {
   CarouselBlock as CarouselBlockProps,
   CallToActionBlock as CTABlockProps,
-  FeatureStatementLinksBlock as FeatureStatementLinksBlockProps,
   MediaBlock as MediaBlockProps,
   ResourceDownloadBlock as ResourceDownloadBlockProps,
   RichTextActionsBlock as RichTextActionsBlockProps,
@@ -45,7 +43,6 @@ type NodeTypes =
       | ResourceDownloadBlockProps
       | CarouselBlockProps
       | CodeBlockProps
-      | FeatureStatementLinksBlockProps
       | RichTextActionsBlockProps
       | RichTextInsightsBlockProps
       | RichTextPillListBlockProps
@@ -153,7 +150,6 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
     // that prose gives an image, so it never reads as another paragraph.
     resourceDownload: ({ node }) => <ResourceDownload className="my-8" {...node.fields} />,
     cta: ({ node }) => <CallToActionBlock {...node.fields} />,
-    featureStatementLinks: ({ node }) => <FeatureStatementLinksBlock {...node.fields} />,
     // The Rich text block splits its own blocks out onto its grid before
     // converting (rich-text/Component.tsx); these converters are the inline
     // fallback for any other editor that enables them.

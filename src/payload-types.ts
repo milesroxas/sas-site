@@ -323,42 +323,7 @@ export interface Page {
     visualType?: ('media' | 'streakField' | 'lightLeak') | null;
     shader?: PlacedVisualConfig;
   };
-  layout: (
-    | PageSectionBlock
-    | RichTransitionBlock
-    | FeatureHeadingOffsetBlock
-    | FullMediaBlock
-    | MediaContentSplitBlock
-    | SplitContentNarrowBlock
-    | ImagePairBlock
-    | SplitImageOffsetBlock
-    | FeatureImageStatementBlock
-    | MediaBlock
-    | YouTubeBlock
-    | RichTextBlock
-    | CodeBlock
-    | ChartBlock
-    | DiagramBlock
-    | BespokeFigureBlock
-    | FaqBlock
-    | CarouselBlock
-    | FeatureTabsBlock
-    | InsightListBlock
-    | PosterListBlock
-    | QuoteBannerBlock
-    | CtaBandBlock
-    | AudienceTabsBlock
-    | IndustryWorkBlock
-    | TestimonialsMarqueeBlock
-    | FeatureStatementGridBlock
-    | FeatureStatementLinksBlock
-    | ArchiveBlock
-    | FeaturedWorkBlock
-    | CallToActionBlock
-    | FormBlock
-    | NewsletterSignupBlock
-    | ContentBlock
-  )[];
+  layout: (PageSectionBlock | ArchiveBlock | CallToActionBlock | ContentBlock)[];
   closing?: PageClosing;
   meta?: {
     /**
@@ -452,34 +417,7 @@ export interface Post {
   /**
    * Optional full-width sections rendered after the article body. The article itself stays in the Article tab.
    */
-  layout?:
-    | (
-        | PageSectionBlock
-        | RichTransitionBlock
-        | FeatureHeadingOffsetBlock
-        | FullMediaBlock
-        | MediaContentSplitBlock
-        | SplitContentNarrowBlock
-        | ImagePairBlock
-        | SplitImageOffsetBlock
-        | FeatureImageStatementBlock
-        | MediaBlock
-        | YouTubeBlock
-        | RichTextBlock
-        | CodeBlock
-        | ChartBlock
-        | DiagramBlock
-        | BespokeFigureBlock
-        | FaqBlock
-        | CarouselBlock
-        | FeatureTabsBlock
-        | InsightListBlock
-        | PosterListBlock
-        | QuoteBannerBlock
-        | CtaBandBlock
-        | FeaturedWorkBlock
-      )[]
-    | null;
+  layout?: PageSectionBlock[] | null;
   primaryResource?: PrimaryResource;
   /**
    * Shown in the rail at the end of this post, in this order. Unpublished picks are skipped. Leave empty to show the most recently published posts (excluding this one).
@@ -1590,13 +1528,8 @@ export interface WorkPage {
         | PosterListBlock
         | QuoteBannerBlock
         | CtaBandBlock
-        | WorkAudienceTabsBlock
-        | IndustryWorkBlock
         | CaseStudyMediaShowcaseBlock
         | WorkCaseStudyStorySectionBlock
-        | WorkFeatureStatementGridBlock
-        | FeatureStatementLinksBlock
-        | CaseStudyMetricsBlock
         | FeaturedWorkBlock
       )[]
     | null;
@@ -6230,90 +6163,6 @@ export interface ContentBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkAudienceTabsBlock".
- */
-export interface WorkAudienceTabsBlock {
-  /**
-   * Centered statement above the tab chips.
-   */
-  heading: string;
-  tabs: {
-    title: string;
-    /**
-     * Lead statement for this tab.
-     */
-    intro: string;
-    /**
-     * Supporting copy shown under the intro.
-     */
-    description?: string | null;
-    items?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    media?: (number | null) | Media;
-    /**
-     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
-     */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'audienceTabs';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "IndustryWorkBlock".
- */
-export interface IndustryWorkBlock {
-  /**
-   * Static text before the industry dropdown.
-   */
-  heading: string;
-  /**
-   * Each row is a dropdown option: an industry, the sentence continuing the headline, and the work entry it features.
-   */
-  industries: {
-    /**
-     * Shown in the dropdown by name.
-     */
-    industry: number | Industry;
-    /**
-     * Continues the headline inline after the dropdown for this industry.
-     */
-    subheading: string;
-    /**
-     * Continues the headline in the same wrapping sentence. Leave empty to stop after the first continuation.
-     */
-    secondLine?: string | null;
-    /**
-     * Work page featured for this industry (list narrows to that industry once one is picked). Title, client, and capabilities come from it; media is its menu preview when set, else its cover asset, else its hero media.
-     */
-    work: number | WorkPage;
-    id?: string | null;
-  }[];
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'industryWork';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyMediaShowcaseBlock".
  */
 export interface CaseStudyMediaShowcaseBlock {
@@ -6419,165 +6268,6 @@ export interface WorkCaseStudyStorySectionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'caseStudyStorySection';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureStatementGridBlock".
- */
-export interface WorkFeatureStatementGridBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading?: string | null;
-  /**
-   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
-   */
-  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-  /**
-   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
-   */
-  storyScope?: ('overview' | 'section' | 'beat') | null;
-  /**
-   * Choose one reusable beat from the selected section.
-   */
-  storyBeatKey?: string | null;
-  /**
-   * Reveal the website-only override fields. Saved overrides still apply while hidden.
-   */
-  showOverrides?: boolean | null;
-  /**
-   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
-   */
-  statement?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Short supporting line pinned below the statement.
-   */
-  footnote?: string | null;
-  cards: {
-    media?: (number | null) | Media;
-    title: string;
-    description: string;
-    id?: string | null;
-  }[];
-  /**
-   * Media pickers in this section show only the case study's asset libraries. Check to browse the entire media library instead.
-   */
-  browseAllMedia?: boolean | null;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureStatementGrid';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementLinksBlock".
- */
-export interface FeatureStatementLinksBlock {
-  /**
-   * Renders in muted ink at regular weight. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
-   */
-  statement?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Stacked in order beside the statement, in the right-hand column.
-   */
-  links?:
-    | {
-        link: {
-          type?: ('reference' | 'site' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null)
-            | ({
-                relationTo: 'contact-pages';
-                value: number | ContactPage;
-              } | null);
-          /**
-           * Home (/), Works Index (/works), or Insights Index (/insights).
-           */
-          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
-          url?: string | null;
-          label: string;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureStatementLinks';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyMetricsBlock".
- */
-export interface CaseStudyMetricsBlock {
-  heading?: string | null;
-  introduction?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  source?: ('featured-public' | 'all-public') | null;
-  layout?: ('grid' | 'row' | 'statement' | 'editorial') | null;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'caseStudyMetrics';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7343,164 +7033,6 @@ export interface Category {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "AudienceTabsBlock".
- */
-export interface AudienceTabsBlock {
-  /**
-   * Centered statement above the tab chips.
-   */
-  heading: string;
-  tabs: {
-    title: string;
-    /**
-     * Lead statement for this tab.
-     */
-    intro: string;
-    /**
-     * Supporting copy shown under the intro.
-     */
-    description?: string | null;
-    items?:
-      | {
-          text: string;
-          id?: string | null;
-        }[]
-      | null;
-    media?: (number | null) | Media;
-    /**
-     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
-     */
-    visualType?: ('media' | 'streakField') | null;
-    shader?: StreakVisualConfig;
-    id?: string | null;
-  }[];
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'audienceTabs';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TestimonialsMarqueeBlock".
- */
-export interface TestimonialsMarqueeBlock {
-  /**
-   * Renders in muted ink. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
-   */
-  richText?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  links?:
-    | {
-        link: {
-          type?: ('reference' | 'site' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null)
-            | ({
-                relationTo: 'contact-pages';
-                value: number | ContactPage;
-              } | null);
-          /**
-           * Home (/), Works Index (/works), or Insights Index (/insights).
-           */
-          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Cards loop through these in order. Only published, publicly approved testimonials render.
-   */
-  testimonials: (number | Testimonial)[];
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'testimonialsMarquee';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementGridBlock".
- */
-export interface FeatureStatementGridBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading: string;
-  /**
-   * On Work and Lab pages, pull this copy from the canonical story. "Custom" uses the copy written here; writing copy always overrides the pulled source.
-   */
-  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-  /**
-   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
-   */
-  statement?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Short supporting line pinned below the statement.
-   */
-  footnote?: string | null;
-  cards: {
-    media?: (number | null) | Media;
-    title: string;
-    description: string;
-    id?: string | null;
-  }[];
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureStatementGrid';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ArchiveBlock".
  */
 export interface ArchiveBlock {
@@ -7602,81 +7134,6 @@ export interface CallToActionBlock {
   blockType: 'cta';
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FormBlock".
- */
-export interface FormBlock {
-  form: number | Form;
-  enableIntro?: boolean | null;
-  introContent?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'formBlock';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "NewsletterSignupBlock".
- */
-export interface NewsletterSignupBlock {
-  eyebrow?: string | null;
-  heading: string;
-  body?: string | null;
-  buttonLabel: string;
-  /**
-   * Signups join this audience (after confirming their email). Only audiences with "Allow public signup" enabled appear here.
-   */
-  audience: number | Audience;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'newsletterSignup';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "audiences".
- */
-export interface Audience {
-  id: number;
-  _order?: string | null;
-  name: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  /**
-   * Who belongs in this audience and how they got here.
-   */
-  description?: string | null;
-  /**
-   * Allow the public signup form to add subscribers to this audience. Leave off for curated lists like clients or leads.
-   */
-  allowPublicSignup?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Website-specific lab-project presentation, composition, SEO, preview, and publishing.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7726,38 +7183,7 @@ export interface LabPage {
   /**
    * Website composition only. Canonical narrative remains in the related Lab Project record.
    */
-  layout?:
-    | (
-        | LabSectionBlock
-        | LabRichTransitionBlock
-        | LabFeatureHeadingOffsetBlock
-        | LabFullMediaBlock
-        | LabMediaContentSplitBlock
-        | LabSplitContentNarrowBlock
-        | LabImagePairBlock
-        | LabSplitImageOffsetBlock
-        | LabFeatureImageStatementBlock
-        | MediaBlock
-        | YouTubeBlock
-        | RichTextBlock
-        | CodeBlock
-        | ChartBlock
-        | DiagramBlock
-        | BespokeFigureBlock
-        | FaqBlock
-        | CarouselBlock
-        | LabFeatureTabsBlock
-        | InsightListBlock
-        | PosterListBlock
-        | QuoteBannerBlock
-        | CtaBandBlock
-        | LabStoryBeatsBlock
-        | ResourceDownloadBlock
-        | LabFeatureStatementGridBlock
-        | LabFactsBlock
-        | LabRelatedProjectsBlock
-      )[]
-    | null;
+  layout?: (LabSectionBlock | LabFactsBlock | LabRelatedProjectsBlock)[] | null;
   /**
    * Used on cards, indexes, and as the hero fallback.
    */
@@ -8660,68 +8086,6 @@ export interface ResourceDownloadBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFeatureStatementGridBlock".
- */
-export interface LabFeatureStatementGridBlock {
-  /**
-   * Short kicker above the heading.
-   */
-  eyebrow?: string | null;
-  heading?: string | null;
-  /**
-   * Choose custom copy or one canonical narrative section. Then choose the overview, the entire section, or one Story Beat.
-   */
-  source?: ('custom' | 'context' | 'challenge' | 'strategy' | 'approach' | 'outcome-summary' | 'learnings') | null;
-  /**
-   * Overview is this section's summary. Entire section includes the overview and every beat in order. A beat uses one reusable passage.
-   */
-  storyScope?: ('overview' | 'section' | 'beat') | null;
-  /**
-   * Choose one reusable beat from the selected section.
-   */
-  storyBeatKey?: string | null;
-  /**
-   * Reveal the website-only override fields. Saved overrides still apply while hidden.
-   */
-  showOverrides?: boolean | null;
-  /**
-   * Lead paragraph in the left column — the section's core claim. Leave empty to pull the source.
-   */
-  statement?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Short supporting line pinned below the statement.
-   */
-  footnote?: string | null;
-  cards: {
-    media?: (number | null) | Media;
-    title: string;
-    description: string;
-    id?: string | null;
-  }[];
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'featureStatementGrid';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LabFactsBlock".
  */
 export interface LabFactsBlock {
@@ -8768,38 +8132,7 @@ export interface ExpertisePage {
    * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
    */
   showContents?: boolean | null;
-  layout: (
-    | SegmentSectionBlock
-    | RichTransitionBlock
-    | FeatureHeadingOffsetBlock
-    | FullMediaBlock
-    | MediaContentSplitBlock
-    | SplitContentNarrowBlock
-    | ImagePairBlock
-    | SplitImageOffsetBlock
-    | FeatureImageStatementBlock
-    | MediaBlock
-    | YouTubeBlock
-    | RichTextBlock
-    | CodeBlock
-    | ChartBlock
-    | DiagramBlock
-    | BespokeFigureBlock
-    | FaqBlock
-    | CarouselBlock
-    | FeatureTabsBlock
-    | InsightListBlock
-    | PosterListBlock
-    | QuoteBannerBlock
-    | CtaBandBlock
-    | AudienceTabsBlock
-    | FeatureStatementGridBlock
-    | ArchiveBlock
-    | FeaturedWorkBlock
-    | CallToActionBlock
-    | FormBlock
-    | ContentBlock
-  )[];
+  layout: (SegmentSectionBlock | ArchiveBlock | CallToActionBlock | ContentBlock)[];
   /**
    * Canonical capabilities this offering bundles. Drives automatic related-work matching.
    */
@@ -8998,38 +8331,7 @@ export interface AudiencePage {
    * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
    */
   showContents?: boolean | null;
-  layout: (
-    | SegmentSectionBlock
-    | RichTransitionBlock
-    | FeatureHeadingOffsetBlock
-    | FullMediaBlock
-    | MediaContentSplitBlock
-    | SplitContentNarrowBlock
-    | ImagePairBlock
-    | SplitImageOffsetBlock
-    | FeatureImageStatementBlock
-    | MediaBlock
-    | YouTubeBlock
-    | RichTextBlock
-    | CodeBlock
-    | ChartBlock
-    | DiagramBlock
-    | BespokeFigureBlock
-    | FaqBlock
-    | CarouselBlock
-    | FeatureTabsBlock
-    | InsightListBlock
-    | PosterListBlock
-    | QuoteBannerBlock
-    | CtaBandBlock
-    | AudienceTabsBlock
-    | FeatureStatementGridBlock
-    | ArchiveBlock
-    | FeaturedWorkBlock
-    | CallToActionBlock
-    | FormBlock
-    | ContentBlock
-  )[];
+  layout: (SegmentSectionBlock | ArchiveBlock | CallToActionBlock | ContentBlock)[];
   /**
    * Industries this segment spans. Drives automatic related-work matching.
    */
@@ -9407,6 +8709,30 @@ export interface NewsletterDividerBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'nlDivider';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audiences".
+ */
+export interface Audience {
+  id: number;
+  _order?: string | null;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Who belongs in this audience and how they got here.
+   */
+  description?: string | null;
+  /**
+   * Allow the public signup form to add subscribers to this audience. Leave off for curated lists like clients or leads.
+   */
+  allowPublicSignup?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -10194,38 +9520,8 @@ export interface PagesSelect<T extends boolean = true> {
     | T
     | {
         section?: T | PageSectionBlockSelect<T>;
-        richTransition?: T | RichTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        imagePair?: T | ImagePairBlockSelect<T>;
-        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
-        youtube?: T | YouTubeBlockSelect<T>;
-        richText?: T | RichTextBlockSelect<T>;
-        code?: T | CodeBlockSelect<T>;
-        chart?: T | ChartBlockSelect<T>;
-        diagram?: T | DiagramBlockSelect<T>;
-        bespokeFigure?: T | BespokeFigureBlockSelect<T>;
-        faq?: T | FaqBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
-        insightList?: T | InsightListBlockSelect<T>;
-        posterList?: T | PosterListBlockSelect<T>;
-        quoteBanner?: T | QuoteBannerBlockSelect<T>;
-        ctaBand?: T | CtaBandBlockSelect<T>;
-        audienceTabs?: T | AudienceTabsBlockSelect<T>;
-        industryWork?: T | IndustryWorkBlockSelect<T>;
-        testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
-        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
-        featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
-        featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
-        formBlock?: T | FormBlockSelect<T>;
-        newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   closing?: T | PageClosingSelect<T>;
@@ -10753,141 +10049,6 @@ export interface ContentBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "AudienceTabsBlock_select".
- */
-export interface AudienceTabsBlockSelect<T extends boolean = true> {
-  heading?: T;
-  tabs?:
-    | T
-    | {
-        title?: T;
-        intro?: T;
-        description?: T;
-        items?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-            };
-        media?: T;
-        visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
-        id?: T;
-      };
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "StreakVisualConfig_select".
- */
-export interface StreakVisualConfigSelect<T extends boolean = true> {
-  studio?: T;
-  preset?: T;
-  seed?: T;
-  speed?: T;
-  intensity?: T;
-  release?: T;
-  surface?: T;
-  pointerInteraction?: T;
-  posterMedia?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "IndustryWorkBlock_select".
- */
-export interface IndustryWorkBlockSelect<T extends boolean = true> {
-  heading?: T;
-  industries?:
-    | T
-    | {
-        industry?: T;
-        subheading?: T;
-        secondLine?: T;
-        work?: T;
-        id?: T;
-      };
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TestimonialsMarqueeBlock_select".
- */
-export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
-  richText?: T;
-  links?:
-    | T
-    | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              sitePage?: T;
-              url?: T;
-              label?: T;
-              appearance?: T;
-            };
-        id?: T;
-      };
-  testimonials?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementGridBlock_select".
- */
-export interface FeatureStatementGridBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  heading?: T;
-  source?: T;
-  statement?: T;
-  footnote?: T;
-  cards?:
-    | T
-    | {
-        media?: T;
-        title?: T;
-        description?: T;
-        id?: T;
-      };
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeatureStatementLinksBlock_select".
- */
-export interface FeatureStatementLinksBlockSelect<T extends boolean = true> {
-  statement?: T;
-  links?:
-    | T
-    | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              sitePage?: T;
-              url?: T;
-              label?: T;
-            };
-        id?: T;
-      };
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ArchiveBlock_select".
  */
 export interface ArchiveBlockSelect<T extends boolean = true> {
@@ -10898,17 +10059,6 @@ export interface ArchiveBlockSelect<T extends boolean = true> {
   limit?: T;
   selectedDocs?: T;
   cardVariant?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FeaturedWorkBlock_select".
- */
-export interface FeaturedWorkBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  entries?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -10935,32 +10085,6 @@ export interface CallToActionBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FormBlock_select".
- */
-export interface FormBlockSelect<T extends boolean = true> {
-  form?: T;
-  enableIntro?: T;
-  introContent?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "NewsletterSignupBlock_select".
- */
-export interface NewsletterSignupBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  heading?: T;
-  body?: T;
-  buttonLabel?: T;
-  audience?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -11000,6 +10124,21 @@ export interface PageClosingSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "StreakVisualConfig_select".
+ */
+export interface StreakVisualConfigSelect<T extends boolean = true> {
+  studio?: T;
+  preset?: T;
+  seed?: T;
+  speed?: T;
+  intensity?: T;
+  release?: T;
+  surface?: T;
+  pointerInteraction?: T;
+  posterMedia?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -11014,29 +10153,6 @@ export interface PostsSelect<T extends boolean = true> {
     | T
     | {
         section?: T | PageSectionBlockSelect<T>;
-        richTransition?: T | RichTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        imagePair?: T | ImagePairBlockSelect<T>;
-        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
-        youtube?: T | YouTubeBlockSelect<T>;
-        richText?: T | RichTextBlockSelect<T>;
-        code?: T | CodeBlockSelect<T>;
-        chart?: T | ChartBlockSelect<T>;
-        diagram?: T | DiagramBlockSelect<T>;
-        bespokeFigure?: T | BespokeFigureBlockSelect<T>;
-        faq?: T | FaqBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
-        insightList?: T | InsightListBlockSelect<T>;
-        posterList?: T | PosterListBlockSelect<T>;
-        quoteBanner?: T | QuoteBannerBlockSelect<T>;
-        ctaBand?: T | CtaBandBlockSelect<T>;
-        featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
   primaryResource?: T | PrimaryResourceSelect<T>;
   relatedPosts?: T;
@@ -11134,13 +10250,8 @@ export interface WorkPagesSelect<T extends boolean = true> {
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
-        audienceTabs?: T | WorkAudienceTabsBlockSelect<T>;
-        industryWork?: T | IndustryWorkBlockSelect<T>;
         caseStudyMediaShowcase?: T | CaseStudyMediaShowcaseBlockSelect<T>;
         caseStudyStorySection?: T | WorkCaseStudyStorySectionBlockSelect<T>;
-        featureStatementGrid?: T | WorkFeatureStatementGridBlockSelect<T>;
-        featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
-        caseStudyMetrics?: T | CaseStudyMetricsBlockSelect<T>;
         featuredWork?: T | FeaturedWorkBlockSelect<T>;
       };
   coverAsset?: T;
@@ -11474,34 +10585,6 @@ export interface WorkFeatureTabsBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkAudienceTabsBlock_select".
- */
-export interface WorkAudienceTabsBlockSelect<T extends boolean = true> {
-  heading?: T;
-  tabs?:
-    | T
-    | {
-        title?: T;
-        intro?: T;
-        description?: T;
-        items?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-            };
-        media?: T;
-        visualType?: T;
-        shader?: T | StreakVisualConfigSelect<T>;
-        id?: T;
-      };
-  browseAllMedia?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyMediaShowcaseBlock_select".
  */
 export interface CaseStudyMediaShowcaseBlockSelect<T extends boolean = true> {
@@ -11539,39 +10622,11 @@ export interface WorkCaseStudyStorySectionBlockSelect<T extends boolean = true> 
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "WorkFeatureStatementGridBlock_select".
+ * via the `definition` "FeaturedWorkBlock_select".
  */
-export interface WorkFeatureStatementGridBlockSelect<T extends boolean = true> {
+export interface FeaturedWorkBlockSelect<T extends boolean = true> {
   eyebrow?: T;
-  heading?: T;
-  source?: T;
-  storyScope?: T;
-  storyBeatKey?: T;
-  showOverrides?: T;
-  statement?: T;
-  footnote?: T;
-  cards?:
-    | T
-    | {
-        media?: T;
-        title?: T;
-        description?: T;
-        id?: T;
-      };
-  browseAllMedia?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CaseStudyMetricsBlock_select".
- */
-export interface CaseStudyMetricsBlockSelect<T extends boolean = true> {
-  heading?: T;
-  introduction?: T;
-  source?: T;
-  layout?: T;
+  entries?: T;
   theme?: T;
   id?: T;
   blockName?: T;
@@ -11602,31 +10657,6 @@ export interface LabPagesSelect<T extends boolean = true> {
     | T
     | {
         section?: T | LabSectionBlockSelect<T>;
-        richTransition?: T | LabRichTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | LabFeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | LabFullMediaBlockSelect<T>;
-        mediaContentSplit?: T | LabMediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | LabSplitContentNarrowBlockSelect<T>;
-        imagePair?: T | LabImagePairBlockSelect<T>;
-        splitImageOffset?: T | LabSplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | LabFeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
-        youtube?: T | YouTubeBlockSelect<T>;
-        richText?: T | RichTextBlockSelect<T>;
-        code?: T | CodeBlockSelect<T>;
-        chart?: T | ChartBlockSelect<T>;
-        diagram?: T | DiagramBlockSelect<T>;
-        bespokeFigure?: T | BespokeFigureBlockSelect<T>;
-        faq?: T | FaqBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | LabFeatureTabsBlockSelect<T>;
-        insightList?: T | InsightListBlockSelect<T>;
-        posterList?: T | PosterListBlockSelect<T>;
-        quoteBanner?: T | QuoteBannerBlockSelect<T>;
-        ctaBand?: T | CtaBandBlockSelect<T>;
-        storyBeats?: T | LabStoryBeatsBlockSelect<T>;
-        resourceDownload?: T | ResourceDownloadBlockSelect<T>;
-        featureStatementGrid?: T | LabFeatureStatementGridBlockSelect<T>;
         labFacts?: T | LabFactsBlockSelect<T>;
         labRelatedProjects?: T | LabRelatedProjectsBlockSelect<T>;
       };
@@ -11919,31 +10949,6 @@ export interface ResourceDownloadBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LabFeatureStatementGridBlock_select".
- */
-export interface LabFeatureStatementGridBlockSelect<T extends boolean = true> {
-  eyebrow?: T;
-  heading?: T;
-  source?: T;
-  storyScope?: T;
-  storyBeatKey?: T;
-  showOverrides?: T;
-  statement?: T;
-  footnote?: T;
-  cards?:
-    | T
-    | {
-        media?: T;
-        title?: T;
-        description?: T;
-        id?: T;
-      };
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LabFactsBlock_select".
  */
 export interface LabFactsBlockSelect<T extends boolean = true> {
@@ -11980,34 +10985,8 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
     | T
     | {
         section?: T | SegmentSectionBlockSelect<T>;
-        richTransition?: T | RichTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        imagePair?: T | ImagePairBlockSelect<T>;
-        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
-        youtube?: T | YouTubeBlockSelect<T>;
-        richText?: T | RichTextBlockSelect<T>;
-        code?: T | CodeBlockSelect<T>;
-        chart?: T | ChartBlockSelect<T>;
-        diagram?: T | DiagramBlockSelect<T>;
-        bespokeFigure?: T | BespokeFigureBlockSelect<T>;
-        faq?: T | FaqBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
-        insightList?: T | InsightListBlockSelect<T>;
-        posterList?: T | PosterListBlockSelect<T>;
-        quoteBanner?: T | QuoteBannerBlockSelect<T>;
-        ctaBand?: T | CtaBandBlockSelect<T>;
-        audienceTabs?: T | AudienceTabsBlockSelect<T>;
-        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
-        featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
-        formBlock?: T | FormBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   capabilities?: T;
@@ -12128,34 +11107,8 @@ export interface AudiencePagesSelect<T extends boolean = true> {
     | T
     | {
         section?: T | SegmentSectionBlockSelect<T>;
-        richTransition?: T | RichTransitionBlockSelect<T>;
-        featureHeadingOffset?: T | FeatureHeadingOffsetBlockSelect<T>;
-        fullMedia?: T | FullMediaBlockSelect<T>;
-        mediaContentSplit?: T | MediaContentSplitBlockSelect<T>;
-        splitContentNarrow?: T | SplitContentNarrowBlockSelect<T>;
-        imagePair?: T | ImagePairBlockSelect<T>;
-        splitImageOffset?: T | SplitImageOffsetBlockSelect<T>;
-        featureImageStatement?: T | FeatureImageStatementBlockSelect<T>;
-        mediaBlock?: T | MediaBlockSelect<T>;
-        youtube?: T | YouTubeBlockSelect<T>;
-        richText?: T | RichTextBlockSelect<T>;
-        code?: T | CodeBlockSelect<T>;
-        chart?: T | ChartBlockSelect<T>;
-        diagram?: T | DiagramBlockSelect<T>;
-        bespokeFigure?: T | BespokeFigureBlockSelect<T>;
-        faq?: T | FaqBlockSelect<T>;
-        carousel?: T | CarouselBlockSelect<T>;
-        featureTabs?: T | FeatureTabsBlockSelect<T>;
-        insightList?: T | InsightListBlockSelect<T>;
-        posterList?: T | PosterListBlockSelect<T>;
-        quoteBanner?: T | QuoteBannerBlockSelect<T>;
-        ctaBand?: T | CtaBandBlockSelect<T>;
-        audienceTabs?: T | AudienceTabsBlockSelect<T>;
-        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
-        featuredWork?: T | FeaturedWorkBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
-        formBlock?: T | FormBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   industries?: T;
@@ -13676,16 +12629,9 @@ export interface Home {
     | PosterListBlock
     | QuoteBannerBlock
     | CtaBandBlock
-    | AudienceTabsBlock
     | IndustryWorkBlock
     | TestimonialsMarqueeBlock
-    | FeatureStatementGridBlock
-    | FeatureStatementLinksBlock
-    | ArchiveBlock
-    | CallToActionBlock
-    | FormBlock
-    | NewsletterSignupBlock
-    | ContentBlock
+    | AudienceTabsBlock
   )[];
   closing?: PageClosing;
   meta?: {
@@ -13753,6 +12699,153 @@ export interface HomeStatement {
     };
     [k: string]: unknown;
   } | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IndustryWorkBlock".
+ */
+export interface IndustryWorkBlock {
+  /**
+   * Static text before the industry dropdown.
+   */
+  heading: string;
+  /**
+   * Each row is a dropdown option: an industry, the sentence continuing the headline, and the work entry it features.
+   */
+  industries: {
+    /**
+     * Shown in the dropdown by name.
+     */
+    industry: number | Industry;
+    /**
+     * Continues the headline inline after the dropdown for this industry.
+     */
+    subheading: string;
+    /**
+     * Continues the headline in the same wrapping sentence. Leave empty to stop after the first continuation.
+     */
+    secondLine?: string | null;
+    /**
+     * Work page featured for this industry (list narrows to that industry once one is picked). Title, client, and capabilities come from it; media is its menu preview when set, else its cover asset, else its hero media.
+     */
+    work: number | WorkPage;
+    id?: string | null;
+  }[];
+  /**
+   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
+   */
+  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'industryWork';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsMarqueeBlock".
+ */
+export interface TestimonialsMarqueeBlock {
+  /**
+   * Renders in muted ink. Bold a word or phrase to emphasize it — emphasized text renders in foreground ink.
+   */
+  richText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'site' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'contact-pages';
+                value: number | ContactPage;
+              } | null);
+          /**
+           * Home (/), Works Index (/works), or Insights Index (/insights).
+           */
+          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Cards loop through these in order. Only published, publicly approved testimonials render.
+   */
+  testimonials: (number | Testimonial)[];
+  /**
+   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
+   */
+  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testimonialsMarquee';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AudienceTabsBlock".
+ */
+export interface AudienceTabsBlock {
+  /**
+   * Centered statement above the tab chips.
+   */
+  heading: string;
+  tabs: {
+    title: string;
+    /**
+     * Lead statement for this tab.
+     */
+    intro: string;
+    /**
+     * Supporting copy shown under the intro.
+     */
+    description?: string | null;
+    items?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+    /**
+     * Leave empty to use the media upload. An effect renders a code-defined look with its own poster; a media upload left in place is kept but not shown unless the effect offers to show it.
+     */
+    visualType?: ('media' | 'streakField') | null;
+    shader?: StreakVisualConfig;
+    id?: string | null;
+  }[];
+  /**
+   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
+   */
+  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'audienceTabs';
 }
 /**
  * The insights hub published at /insights (also at /posts). Hero and SEO only — the lists are automatic.
@@ -14742,16 +13835,9 @@ export interface HomeSelect<T extends boolean = true> {
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
-        audienceTabs?: T | AudienceTabsBlockSelect<T>;
         industryWork?: T | IndustryWorkBlockSelect<T>;
         testimonialsMarquee?: T | TestimonialsMarqueeBlockSelect<T>;
-        featureStatementGrid?: T | FeatureStatementGridBlockSelect<T>;
-        featureStatementLinks?: T | FeatureStatementLinksBlockSelect<T>;
-        archive?: T | ArchiveBlockSelect<T>;
-        cta?: T | CallToActionBlockSelect<T>;
-        formBlock?: T | FormBlockSelect<T>;
-        newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
+        audienceTabs?: T | AudienceTabsBlockSelect<T>;
       };
   closing?: T | PageClosingSelect<T>;
   meta?:
@@ -14781,6 +13867,79 @@ export interface HomeSelect<T extends boolean = true> {
 export interface HomeStatementSelect<T extends boolean = true> {
   hidden?: T;
   body?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "IndustryWorkBlock_select".
+ */
+export interface IndustryWorkBlockSelect<T extends boolean = true> {
+  heading?: T;
+  industries?:
+    | T
+    | {
+        industry?: T;
+        subheading?: T;
+        secondLine?: T;
+        work?: T;
+        id?: T;
+      };
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestimonialsMarqueeBlock_select".
+ */
+export interface TestimonialsMarqueeBlockSelect<T extends boolean = true> {
+  richText?: T;
+  links?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              sitePage?: T;
+              url?: T;
+              label?: T;
+              appearance?: T;
+            };
+        id?: T;
+      };
+  testimonials?: T;
+  theme?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AudienceTabsBlock_select".
+ */
+export interface AudienceTabsBlockSelect<T extends boolean = true> {
+  heading?: T;
+  tabs?:
+    | T
+    | {
+        title?: T;
+        intro?: T;
+        description?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        media?: T;
+        visualType?: T;
+        shader?: T | StreakVisualConfigSelect<T>;
+        id?: T;
+      };
+  theme?: T;
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

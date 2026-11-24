@@ -137,12 +137,6 @@ const createFixture = async (payload: Payload, suffix: string) => {
           layout: 'centered',
           theme: 'neutral',
         },
-        {
-          blockType: 'caseStudyMetrics',
-          source: 'featured-public',
-          layout: 'grid',
-          theme: 'default',
-        },
       ],
     },
   })

@@ -5,13 +5,8 @@ import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { CallToAction } from '@/blocks/CallToAction/config'
 import { Code } from '@/blocks/Code/config'
 import { Content } from '@/blocks/Content/config'
-import { FormBlock } from '@/blocks/Form/config'
-import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
-import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
-import { FeaturedWork } from '@/blocks/featured-work/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
-import { NewsletterSignup } from '@/blocks/NewsletterSignup/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
 import { sectionBlock } from '@/blocks/section/config'
 import {
@@ -22,66 +17,32 @@ import {
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { TestimonialsMarquee } from '@/blocks/TestimonialsMarquee/config'
 
+/**
+ * Each surface's top-level list is Section plus its shell blocks
+ * (`SHELL_BLOCKS`, `src/blocks/shared/top-level-blocks.ts`), checked by
+ * `pnpm check:blocks`. A block a page still holds at the top level from
+ * before the Section model stays listed until its content moves; those are
+ * named in `LEGACY_TOP_LEVEL` beside `SHELL_BLOCKS`.
+ */
+
 export const PageSection = sectionBlock({
   blocks: sectionChildBlocks,
   interfaceName: 'PageSectionBlock',
 })
 
-/**
- * Layout blocks offered by Pages.
- * Ordered by `admin.group`: the blocks drawer renders groups in
- * first-appearance order, and the reorganized groups lead
- * (docs/blocks-reorg-roadmap.md) ahead of the legacy ones.
- */
-export const pageLayoutBlocks: Block[] = [
-  // Structure
-  PageSection,
-  // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
-  ...sectionNestableBlocks,
-  // Interactive (legacy, top-level only): kept beside the run's FAQ, Carousel and Tabs
-  AudienceTabs,
-  IndustryWork,
-  TestimonialsMarquee,
-  // Statements
-  FeatureStatementGrid,
-  FeatureStatementLinks,
-  // Lists (legacy, top-level only)
-  Archive,
-  FeaturedWork,
-  // Forms & CTAs
-  CallToAction,
-  FormBlock,
-  NewsletterSignup,
-  // Custom
-  Content,
-]
+/** Pages: Sections, the post Archive, and the two blocks about-us and audience 4 still hold. */
+export const pageLayoutBlocks: Block[] = [PageSection, Archive, CallToAction, Content]
+
+/** Posts compose optional Sections after the article body. */
+export const postLayoutBlocks: Block[] = [PageSection]
 
 /**
- * Posts compose optional full-width sections after the article body, so they
- * get the same Section-nestable run as Pages plus the curated work list. The
- * article itself stays in the Article tab.
- */
-export const postLayoutBlocks: Block[] = [
-  // Structure
-  PageSection,
-  // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
-  ...sectionNestableBlocks,
-  // Lists (legacy, top-level only)
-  FeaturedWork,
-]
-
-/**
- * Home composition: everything Pages offers except the curated work list (the
- * homepage tells that story through its own hero and industry blocks) and the
- * Section wrapper, which Home does not adopt yet (docs/blocks-reorg-roadmap.md).
- * The two pair blocks and the Standard heading are held back with it: they
- * are case-study grammar that Home has never offered, and adding them here
- * would grow the global's schema for no editorial need. Code and the figure
- * blocks are long-form article grammar, held back for the same reason.
+ * Home composition. Home has no Section yet (docs/blocks-reorg-roadmap.md),
+ * so its top level takes the run directly, plus its three shells. The two
+ * pair blocks, the Standard heading, Code and the figures are held back:
+ * case-study and long-form article grammar that Home has never offered.
  */
 const homeExcludedBlocks = new Set<Block>([
-  FeaturedWork,
-  PageSection,
   ImagePair,
   SplitImageOffset,
   RichTransition,
@@ -89,35 +50,18 @@ const homeExcludedBlocks = new Set<Block>([
   ...figureBlocks,
 ])
 
-export const homeLayoutBlocks: Block[] = pageLayoutBlocks.filter(
-  (block) => !homeExcludedBlocks.has(block),
-)
+export const homeLayoutBlocks: Block[] = [
+  ...sectionNestableBlocks.filter((block) => !homeExcludedBlocks.has(block)),
+  // Interactive shells
+  IndustryWork,
+  TestimonialsMarquee,
+  AudienceTabs,
+]
 
 export const SegmentSection = sectionBlock({
   blocks: sectionChildBlocks,
   interfaceName: 'SegmentSectionBlock',
 })
 
-/**
- * Layout blocks shared by the segment pages (Audience, Expertise). A narrower
- * set than `pageLayoutBlocks`: these pages are argument-and-proof surfaces, so
- * the marketing-only blocks (marquee, newsletter) are left out.
- */
-export const segmentPageBlocks: Block[] = [
-  // Structure
-  SegmentSection,
-  // Section heading / Media and content / Media / Text / Interactive / Lists: the Section-nestable run
-  ...sectionNestableBlocks,
-  // Interactive (legacy, top-level only): kept beside the run's FAQ, Carousel and Tabs
-  AudienceTabs,
-  // Statements
-  FeatureStatementGrid,
-  // Lists (legacy, top-level only)
-  Archive,
-  FeaturedWork,
-  // Forms & CTAs
-  CallToAction,
-  FormBlock,
-  // Custom
-  Content,
-]
+/** Segment pages (Audience, Expertise): Sections, the Archive, and audience 4's Call to Action. */
+export const segmentPageBlocks: Block[] = [SegmentSection, Archive, CallToAction, Content]

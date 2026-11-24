@@ -1,36 +1,8 @@
 import { findRecentWorkPages, findWorkPagesById } from '@/blocks/shared/find-work-pages'
 import { resolveWorkEntry, type WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import type { WorkPage } from '@/payload-types'
-import { populatedDoc, relationshipIds } from '@/utilities/relationshipId'
+import { relationshipIds } from '@/utilities/relationshipId'
 import { type FeaturedEntry, featuredWorkEntry } from './entry'
-
-/**
- * Presentation-ready entries for a featured-work list, in the editor's
- * selected order. Unpublished picks are dropped outside draft mode; the
- * already-populated selection stands in only when the batch query missed a
- * doc that the parent already loaded (live preview).
- */
-export async function resolveFeaturedWorkEntries(
-  selected: (number | WorkPage)[],
-): Promise<FeaturedEntry[]> {
-  if (selected.length === 0) return []
-
-  const ids = relationshipIds(selected)
-  const byId = await findWorkPagesById(ids)
-
-  return ids
-    .map((entryId) => {
-      const fromQuery = byId.get(entryId)
-      if (fromQuery) return resolveWorkEntry(fromQuery)
-
-      const fromSelection = selected.find(
-        (entry): entry is WorkPage => populatedDoc<WorkPage>(entry)?.id === entryId,
-      )
-      return fromSelection ? resolveWorkEntry(fromSelection) : null
-    })
-    .filter((entry): entry is WorkEntry => entry !== null)
-    .map(featuredWorkEntry)
-}
 
 /**
  * Work-page closer: Related Work tab picks in order. Unpublished picks are

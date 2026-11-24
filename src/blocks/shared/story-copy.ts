@@ -51,11 +51,6 @@ const MEDIA_BLOCK_TYPES = [
 export type StoryCopyBlock =
   | (HeadedCopy & { blockType: (typeof HEADED_BLOCK_TYPES)[number] })
   | (HeadedCopy & { blockType: (typeof MEDIA_BLOCK_TYPES)[number] })
-  | (StoryRef & {
-      blockType: 'featureStatementGrid'
-      heading?: string | null
-      statement?: StoryBody | null
-    })
   | (StoryRef & { blockType: 'featureImageStatement'; caption?: StoryBody | null })
   | (StoryRef & {
       blockType: 'storyBeats'
@@ -75,7 +70,6 @@ const STORY_COPY_BLOCK_TYPES: ReadonlySet<string> = new Set<StoryCopyBlock['bloc
   ...HEADED_BLOCK_TYPES,
   ...MEDIA_BLOCK_TYPES,
   'featureImageStatement',
-  'featureStatementGrid',
   'featureTabs',
   'storyBeats',
 ])
@@ -107,12 +101,6 @@ const resolveCopy = (
         ...block,
         body: storyBody(record, block, block.body),
         heading: storyHeading(record, block, block.heading),
-      }
-    case 'featureStatementGrid':
-      return {
-        ...block,
-        heading: storyHeading(record, block, block.heading),
-        statement: storyBody(record, block, block.statement),
       }
     case 'featureImageStatement':
       return { ...block, caption: storyBody(record, block, block.caption) }
@@ -153,7 +141,7 @@ const resolveCopy = (
  * resolved block never does.
  */
 export type ResolvedStoryCopy<T> = T extends {
-  blockType: (typeof HEADED_BLOCK_TYPES)[number] | 'featureStatementGrid'
+  blockType: (typeof HEADED_BLOCK_TYPES)[number]
 }
   ? T & { heading: string }
   : T extends { blockType: 'featureTabs'; tabs?: Array<infer Row> | null }

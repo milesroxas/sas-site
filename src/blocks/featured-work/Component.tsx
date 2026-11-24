@@ -1,10 +1,8 @@
 import type React from 'react'
 import type { BandTheme } from '@/blocks/shared/band-theme'
 import { Section } from '@/blocks/shared/section'
-import type { FeaturedWorkBlock as FeaturedWorkBlockProps } from '@/payload-types'
 import type { FeaturedEntry } from './entry'
 import { FeaturedWorkList } from './FeaturedWorkList.client'
-import { resolveFeaturedWorkEntries } from './resolve-entries'
 
 export const FeaturedWorkSection: React.FC<{
   eyebrow?: string | null
@@ -25,14 +23,4 @@ export const FeaturedWorkSection: React.FC<{
       </div>
     </Section>
   )
-}
-
-export const FeaturedWorkBlock: React.FC<FeaturedWorkBlockProps> = async ({
-  eyebrow,
-  entries,
-  theme,
-  id,
-}) => {
-  const resolved = await resolveFeaturedWorkEntries(entries ?? [])
-  return <FeaturedWorkSection eyebrow={eyebrow} entries={resolved} id={id} theme={theme} />
 }

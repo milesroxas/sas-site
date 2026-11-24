@@ -3,12 +3,7 @@ import { Fragment } from 'react'
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
-import { FormBlock } from '@/blocks/Form/Component'
-import { FeatureStatementGridBlock } from '@/blocks/feature/StatementGrid/Component'
-import { FeatureStatementLinksBlock } from '@/blocks/feature/StatementLinks/Component'
-import { FeaturedWorkBlock } from '@/blocks/featured-work/Component'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
-import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { SectionBand } from '@/blocks/section/SectionBand'
 import { TestimonialsMarqueeBlock } from '@/blocks/TestimonialsMarquee/Component'
 import type { Home, Page, PageSectionBlock, Post } from '@/payload-types'
@@ -23,12 +18,7 @@ const blockComponents = {
   archive: ArchiveBlock,
   audienceTabs: AudienceTabsBlock,
   cta: CallToActionBlock,
-  featureStatementGrid: FeatureStatementGridBlock,
-  featureStatementLinks: FeatureStatementLinksBlock,
-  featuredWork: FeaturedWorkBlock,
-  formBlock: FormBlock,
   industryWork: IndustryWorkBlock,
-  newsletterSignup: NewsletterSignupBlock,
   testimonialsMarquee: TestimonialsMarqueeBlock,
 } satisfies Record<ContentLayoutBlock['blockType'], unknown>
 

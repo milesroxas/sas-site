@@ -11,17 +11,33 @@ export type CompositionSurface = 'home' | 'lab' | 'pages' | 'posts' | 'segment' 
  * Shell blocks: the blocks a surface keeps at the top level for good, beside
  * its Sections, because they own a pinned or full-viewport shell or close the
  * page (docs/blocks-reorg-roadmap.md, D4). This is the one statement of which
- * blocks those are. Everything else a surface offers is either in the
- * Section-nestable run (added inside a Section) or legacy (hidden from the
- * drawer, still rendered where a page already holds it).
+ * blocks those are. Everything else a surface lists at its top level is in
+ * `LEGACY_TOP_LEVEL` below; `pnpm check:blocks` holds each surface's list to
+ * exactly Section, its shells and those.
  */
 export const SHELL_BLOCKS: Record<CompositionSurface, readonly string[]> = {
   home: ['industryWork', 'testimonialsMarquee', 'audienceTabs'],
   lab: ['labFacts', 'labRelatedProjects'],
-  pages: ['cta', 'archive', 'content'],
+  pages: ['archive'],
   posts: [],
-  segment: ['cta', 'archive', 'content'],
+  segment: ['archive'],
   work: ['caseStudyMediaShowcase', 'featuredWork', 'caseStudyStorySection'],
+}
+
+/**
+ * Blocks a surface still lists at the top level only because a live page
+ * holds them there from before the Section model. Never offered in the drawer
+ * (the drawer takes Section and the shells); each entry is a move to finish,
+ * not an exemption, and leaves in the change that moves its content
+ * (docs/blocks-reorg-roadmap.md section 0). `'run'` is the whole Section run.
+ */
+export const LEGACY_TOP_LEVEL: Partial<Record<CompositionSurface, 'run' | readonly string[]>> = {
+  // about-us (Content) and audience page 4 (Call to Action): moved into
+  // Sections as drafts on 2026-11-23, retired once published.
+  pages: ['cta', 'content'],
+  segment: ['cta', 'content'],
+  // adacore, vault and eclinical: `scripts/wrap-sections.ts` after deploy.
+  work: 'run',
 }
 
 /**

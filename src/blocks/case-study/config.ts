@@ -1,16 +1,12 @@
 import type { Block } from 'payload'
-import { AudienceTabs } from '@/blocks/AudienceTabs/config'
 import { Carousel } from '@/blocks/Carousel/config'
 import { Content } from '@/blocks/Content/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
-import { FeatureStatementGrid } from '@/blocks/feature/StatementGrid/config'
-import { FeatureStatementLinks } from '@/blocks/feature/StatementLinks/config'
 import { featureSourceField } from '@/blocks/feature/shared'
 import { FeatureTabs } from '@/blocks/feature/Tabs/config'
 import { FeaturedWork } from '@/blocks/featured-work/config'
 import { FullMedia } from '@/blocks/full-media/config'
-import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { MediaContentSplit } from '@/blocks/media-content-split/config'
@@ -63,31 +59,6 @@ export const CaseStudyMediaShowcase: Block = {
   ],
 }
 
-export const CaseStudyMetrics: Block = {
-  slug: 'caseStudyMetrics',
-  admin: { group: BLOCK_GROUPS.lists },
-  dbName: 'wp_metrics',
-  interfaceName: 'CaseStudyMetricsBlock',
-  labels: { singular: 'Metrics', plural: 'Metrics' },
-  fields: [
-    { name: 'heading', type: 'text' },
-    { name: 'introduction', type: 'richText' },
-    {
-      name: 'source',
-      type: 'select',
-      defaultValue: 'featured-public',
-      options: ['featured-public', 'all-public'],
-    },
-    {
-      name: 'layout',
-      type: 'select',
-      defaultValue: 'grid',
-      options: ['grid', 'row', 'statement', 'editorial'],
-    },
-    themeField(),
-  ],
-}
-
 export const CaseStudyTransition: Block = {
   slug: 'caseStudyTransition',
   admin: { group: BLOCK_GROUPS.sectionHeading },
@@ -130,10 +101,6 @@ const WorkFeatureHeadingOffset = workStoryBlock(
   FeatureHeadingOffset,
   'WorkFeatureHeadingOffsetBlock',
 )
-const WorkFeatureStatementGrid = workStoryMediaBlock(
-  FeatureStatementGrid,
-  'WorkFeatureStatementGridBlock',
-)
 const WorkFeatureImageStatement = workStoryMediaBlock(
   FeatureImageStatement,
   'WorkFeatureImageStatementBlock',
@@ -145,7 +112,6 @@ const WorkMediaContentSplit = workStoryMediaBlock(MediaContentSplit, 'WorkMediaC
 // Media-only variants: no story copy, so only the picker scope changes.
 const WorkMediaBlock = withCaseStudyScopedMedia(MediaBlock, 'WorkMediaBlock')
 const WorkCarousel = withCaseStudyScopedMedia(Carousel, 'WorkCarouselBlock')
-const WorkAudienceTabs = withCaseStudyScopedMedia(AudienceTabs, 'WorkAudienceTabsBlock')
 
 /**
  * The Work variant of each shared run block that needs one, by slug. Blocks
@@ -194,26 +160,17 @@ export const WorkSection = sectionBlock({
 })
 
 /**
- * Ordered by `admin.group`: the blocks drawer renders groups in
- * first-appearance order, and the reorganized groups lead
- * (docs/blocks-reorg-roadmap.md) ahead of the legacy ones.
+ * Work Pages: Sections plus the three shells. The run is also listed at the
+ * top level until adacore, vault and eclinical move into Sections
+ * (docs/blocks-reorg-roadmap.md section 0, step 3); `LEGACY_TOP_LEVEL` names it.
  */
 export const caseStudyBlocks = [
   // Structure
   WorkSection,
-  // Section heading / Media and content / Media / Interactive / Lists: the Section-nestable run
+  // The run, legacy at the top level (hidden from the drawer)
   ...workSectionBlocks,
-  // Interactive (legacy, top-level only): kept beside the run's FAQ, Carousel and Tabs
-  WorkAudienceTabs,
-  IndustryWork,
-  // Media
+  // Shells
   WorkCaseStudyMediaShowcase,
-  // Narrative
   WorkCaseStudyStorySection,
-  // Statements
-  WorkFeatureStatementGrid,
-  FeatureStatementLinks,
-  // Lists (legacy, top-level only)
-  CaseStudyMetrics,
   FeaturedWork,
 ]

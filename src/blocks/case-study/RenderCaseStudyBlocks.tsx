@@ -1,60 +1,32 @@
 import type { ReactNode } from 'react'
-import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
-import { CarouselBlock } from '@/blocks/Carousel/Component'
-import { ContentBlock } from '@/blocks/Content/Component'
-import { FaqBlock } from '@/blocks/faq/Component'
-import { FeatureHeadingOffsetBlock as FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/Component'
-import { FeatureImageStatementBlock as FeatureImageStatement } from '@/blocks/feature/ImageStatement/Component'
-import { FeatureStatementGridBlock as FeatureStatementGrid } from '@/blocks/feature/StatementGrid/Component'
-import { FeatureStatementLinksBlock as FeatureStatementLinks } from '@/blocks/feature/StatementLinks/Component'
-import { FeatureTabsBlock as FeatureTabs } from '@/blocks/feature/Tabs/Component'
-import { FullMedia } from '@/blocks/full-media/FullMedia'
-import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
-import { ImagePair } from '@/blocks/image-pair/ImagePair'
-import { InsightListBlock } from '@/blocks/insight-list/Component'
-import { MediaBlock as MediaBlockComponent } from '@/blocks/MediaBlock/Component'
-import { MediaContentSplit } from '@/blocks/media-content-split/MediaContentSplit'
 import { RichTransition } from '@/blocks/rich-transition/RichTransition'
 import { SectionBand } from '@/blocks/section/SectionBand'
 import { renderContentBlock, sectionChildComponents } from '@/blocks/shared/content-block-renderer'
 import { MediaShowcaseGrid, publicApprovedMedia } from '@/blocks/shared/media-showcase-grid'
-import { resolveStoryBlockCopy, resolveStorySectionCopy } from '@/blocks/shared/story-copy'
+import {
+  isStoryCopyBlock,
+  resolveStoryBlockCopy,
+  resolveStorySectionCopy,
+} from '@/blocks/shared/story-copy'
 import { type StoryOpener, sectionOpener } from '@/blocks/shared/story-headings'
-import { SplitContentNarrow } from '@/blocks/split-content/SplitContentNarrow'
-import { SplitImageOffset } from '@/blocks/split-image-offset/SplitImageOffset'
 import { StoryBeatsBlock } from '@/blocks/story-beats/Component'
 import RichText from '@/components/RichText'
-import { resolveVisual } from '@/features/immersive/visual'
 import type {
   CaseStudy,
   CaseStudyMediaShowcaseBlock,
-  CaseStudyMetricsBlock,
-  Media as MediaDoc,
   WorkCaseStudyStorySectionBlock,
   WorkCaseStudyTransitionBlock,
-  WorkFeatureHeadingOffsetBlock,
-  WorkFeatureImageStatementBlock,
-  WorkFeatureStatementGridBlock,
-  WorkFeatureTabsBlock,
-  WorkFullMediaBlock,
-  WorkImagePairBlock,
-  WorkMediaContentSplitBlock,
   WorkPage,
   WorkSectionBlock,
-  WorkSplitContentNarrowBlock,
-  WorkSplitImageOffsetBlock,
 } from '@/payload-types'
-import { RevealSection as CssRevealSection } from '@/shared/ui/reveal-section'
-import { populatedDoc } from '@/utilities/relationshipId'
-import { blockRevealVariants } from '../shared/reveal-variants'
-import { Metrics as MetricsList } from './Metrics'
+import { isLegacyTopLevelBlock, renderLegacyTopLevelBlock } from './legacy-top-level'
 import { RevealSection } from './RevealSection.client'
 import { StorySection as StorySectionLayout } from './StorySection'
 
 /**
  * The shared run's components plus Story beats, the Text block only a story
  * surface offers (`blocks/story-beats/config.ts`). Every entry paints the band
- * and entrance it has on every other surface.
+ * and entrance it has on every other surface, the same map Lab Pages use.
  */
 const workContentComponents = {
   ...sectionChildComponents,
@@ -68,149 +40,6 @@ const StorySection = ({
   block: WorkCaseStudyStorySectionBlock
   study: CaseStudy
 }) => <StorySectionLayout block={block} {...resolveStorySectionCopy(block, study)} />
-
-/**
- * What a story-driven media block needs before it can render: the block with
- * its copy resolved against the study, that body as `content`, and its single
- * media document. Null when the block has no populated media, which is
- * nothing to show.
- */
-const storyMediaProps = <
-  T extends WorkFullMediaBlock | WorkMediaContentSplitBlock | WorkSplitContentNarrowBlock,
->(
-  block: T,
-  study: CaseStudy,
-) => {
-  const visual = resolveVisual(block, { seedKey: block.id ?? undefined })
-  if (!visual) return null
-  const resolved = resolveStoryBlockCopy(block, study)
-  return { block: resolved, content: resolved.body, visual }
-}
-
-const SplitNarrow = ({
-  bare,
-  block,
-  study,
-}: {
-  bare?: boolean
-  block: WorkSplitContentNarrowBlock
-  study: CaseStudy
-}) => {
-  const props = storyMediaProps(block, study)
-  if (!props) return null
-  return (
-    <RevealSection
-      bare={bare}
-      spacing="loose"
-      theme={block.theme}
-      variant={blockRevealVariants.splitContentNarrow}
-    >
-      <SplitContentNarrow bare {...props} />
-    </RevealSection>
-  )
-}
-
-const FullMediaSection = ({
-  bare,
-  block,
-  study,
-}: {
-  bare?: boolean
-  block: WorkFullMediaBlock
-  study: CaseStudy
-}) => {
-  const props = storyMediaProps(block, study)
-  if (!props) return null
-  return (
-    <RevealSection
-      bare={bare}
-      spacing="loose"
-      theme={block.theme}
-      variant={blockRevealVariants.fullMedia}
-    >
-      <FullMedia bare {...props} />
-    </RevealSection>
-  )
-}
-
-const MediaContentSplitSection = ({
-  bare,
-  block,
-  study,
-}: {
-  bare?: boolean
-  block: WorkMediaContentSplitBlock
-  study: CaseStudy
-}) => {
-  const props = storyMediaProps(block, study)
-  if (!props) return null
-  return (
-    <RevealSection
-      bare={bare}
-      spacing="loose"
-      theme={block.theme}
-      variant={blockRevealVariants.mediaContentSplit}
-    >
-      <MediaContentSplit bare {...props} />
-    </RevealSection>
-  )
-}
-
-const ImagePairSection = ({
-  bare,
-  block,
-  study,
-}: {
-  bare?: boolean
-  block: WorkImagePairBlock
-  study: CaseStudy
-}) => {
-  const portrait = populatedDoc<MediaDoc>(block.portraitMedia)
-  const landscape = populatedDoc<MediaDoc>(block.landscapeMedia)
-  if (!portrait || !landscape) return null
-  const resolved = resolveStoryBlockCopy(block, study)
-  return (
-    <RevealSection
-      bare={bare}
-      spacing="loose"
-      theme={block.theme}
-      variant={blockRevealVariants.imagePair}
-    >
-      <ImagePair
-        bare
-        block={resolved}
-        content={resolved.body}
-        landscape={landscape}
-        portrait={portrait}
-      />
-    </RevealSection>
-  )
-}
-
-const SplitImageOffsetSection = ({
-  bare,
-  block,
-  study,
-}: {
-  bare?: boolean
-  block: WorkSplitImageOffsetBlock
-  study: CaseStudy
-}) => {
-  const large = populatedDoc<MediaDoc>(block.largeMedia)
-  const small = populatedDoc<MediaDoc>(block.smallMedia)
-  if (!large || !small) return null
-  const resolved = resolveStoryBlockCopy(block, study)
-  return (
-    <RevealSection
-      bare={bare}
-      spacing="loose"
-      theme={block.theme}
-      variant={blockRevealVariants.splitImageOffset}
-    >
-      <SplitImageOffset bare block={resolved} content={resolved.body} large={large} small={small} />
-    </RevealSection>
-  )
-}
 
 const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
   const media = publicApprovedMedia(block.media)
@@ -240,16 +69,6 @@ const MediaShowcase = ({ block }: { block: CaseStudyMediaShowcaseBlock }) => {
   )
 }
 
-/** Only public-approved metrics leave the study; `featured` narrows further. */
-const Metrics = ({ block, study }: { block: CaseStudyMetricsBlock; study: CaseStudy }) => (
-  <MetricsList
-    block={block}
-    metrics={(study.metrics || []).filter(
-      (metric) => metric.approvedForPublic && (block.source === 'all-public' || metric.featured),
-    )}
-  />
-)
-
 /**
  * Transition band: no bottom padding, so it runs into the next block.
  *
@@ -272,226 +91,76 @@ const Transition = ({
   </RevealSection>
 )
 
-const FeatureHeadingOffsetSection = ({
-  bare,
-  block,
-  study,
-}: {
-  bare?: boolean
-  block: WorkFeatureHeadingOffsetBlock
-  study: CaseStudy
-}) => (
-  <RevealSection bare={bare} theme={block.theme} variant={blockRevealVariants.featureHeadingOffset}>
-    <FeatureHeadingOffset bare {...resolveStoryBlockCopy(block, study)} />
-  </RevealSection>
-)
-
-const FeatureStatementGridSection = ({
-  block,
-  study,
-}: {
-  block: WorkFeatureStatementGridBlock
-  study: CaseStudy
-}) => (
-  <RevealSection theme={block.theme} variant={blockRevealVariants.featureStatementGrid}>
-    <FeatureStatementGrid bare {...resolveStoryBlockCopy(block, study)} />
-  </RevealSection>
-)
-
-const FeatureImageStatementSection = ({
-  bare,
-  block,
-  study,
-}: {
-  bare?: boolean
-  block: WorkFeatureImageStatementBlock
-  study: CaseStudy
-}) => (
-  <RevealSection
-    bare={bare}
-    spacing="loose"
-    theme={block.theme}
-    variant={blockRevealVariants.featureImageStatement}
-  >
-    <FeatureImageStatement bare {...resolveStoryBlockCopy(block, study)} />
-  </RevealSection>
-)
-
-const FeatureTabsSection = ({
-  bare,
-  block,
-  study,
-}: {
-  bare?: boolean
-  block: WorkFeatureTabsBlock
-  study: CaseStudy
-}) => (
-  <RevealSection bare={bare} theme={block.theme} variant={blockRevealVariants.featureTabs}>
-    <FeatureTabs bare {...resolveStoryBlockCopy(block, study)} />
-  </RevealSection>
-)
-
 /** A block a work Section can nest: the child union carries the nested-only ones (Content). */
 type WorkSectionChildBlock = NonNullable<WorkSectionBlock['blocks']>[number]
 
 type WorkLayoutBlock = NonNullable<WorkPage['layout']>[number] | WorkSectionChildBlock
 
+/** A work block the shared content renderer paints (`workContentComponents`). */
+type WorkContentBlock = Extract<WorkLayoutBlock, { blockType: keyof typeof workContentComponents }>
+
+const isWorkContentBlock = (block: WorkLayoutBlock): block is WorkContentBlock =>
+  block.blockType in workContentComponents
+
 /**
  * One work-page block. `bare` is set for blocks nested inside a Section
  * block: the block keeps its scroll entrance but skips its band, because the
- * Section's `SectionBand` painted it. Only the Section-nestable blocks ever
- * receive `bare: true`, so the self-shell cases ignore it.
+ * Section's `SectionBand` painted it.
+ *
+ * The shared run goes through the shared renderer, exactly as on Lab Pages:
+ * a story-capable block first takes its copy from the case study, then paints
+ * the band and entrance it has everywhere else. Only Work's own blocks (Story
+ * section, Media showcase, the Work Standard heading, Featured work) are
+ * painted here.
  */
 const renderWorkBlock = (
   block: WorkLayoutBlock,
   ctx: { bare?: boolean; opener?: StoryOpener | null; study: CaseStudy },
 ): ReactNode => {
   const { bare, opener = null, study } = ctx
+  if (block.blockType === 'section') {
+    // The Section owns the band; children render bare inside it with their
+    // usual entrances. The band itself never animates: a second entrance on
+    // the shell would double every child's motion. Its Prose heading is the
+    // opener every Story beats child sets its beat headings under.
+    const children = block.blocks ?? []
+    const childCtx = { ...ctx, bare: true, opener: sectionOpener(children, study) }
+    return (
+      <SectionBand
+        customize={block.customize}
+        key={block.id}
+        spacing={block.spacing}
+        stack={block.stack}
+        theme={block.theme}
+      >
+        {children.map((child) => renderWorkBlock(child, childCtx))}
+      </SectionBand>
+    )
+  }
+  // Transitional: flat pages keep their top-level band (legacy-top-level.tsx).
+  if (!bare && isLegacyTopLevelBlock(block)) return renderLegacyTopLevelBlock(block, study)
+  if (isWorkContentBlock(block)) {
+    return renderContentBlock(
+      isStoryCopyBlock(block) ? resolveStoryBlockCopy(block, study, opener) : block,
+      block.id ?? block.blockType,
+      Boolean(bare),
+      workContentComponents,
+    )
+  }
   switch (block.blockType) {
-    case 'section': {
-      // The Section owns the band; children render bare inside it with their
-      // usual entrances. The band itself never animates: a second entrance
-      // on the shell would double every child's motion. Its Prose heading is
-      // the opener every Story beats child sets its beat headings under.
-      const children = block.blocks ?? []
-      const childCtx = { ...ctx, bare: true, opener: sectionOpener(children, study) }
-      return (
-        <SectionBand
-          customize={block.customize}
-          key={block.id}
-          spacing={block.spacing}
-          stack={block.stack}
-          theme={block.theme}
-        >
-          {children.map((child) => renderWorkBlock(child, childCtx))}
-        </SectionBand>
-      )
-    }
     case 'caseStudyStorySection':
       return <StorySection block={block} key={block.id} study={study} />
-    case 'splitContentNarrow':
-      return <SplitNarrow bare={bare} block={block} key={block.id} study={study} />
-    case 'fullMedia':
-      return <FullMediaSection bare={bare} block={block} key={block.id} study={study} />
-    case 'mediaContentSplit':
-      return <MediaContentSplitSection bare={bare} block={block} key={block.id} study={study} />
-    case 'imagePair':
-      return <ImagePairSection bare={bare} block={block} key={block.id} study={study} />
-    case 'splitImageOffset':
-      return <SplitImageOffsetSection bare={bare} block={block} key={block.id} study={study} />
     case 'caseStudyMediaShowcase':
       return <MediaShowcase block={block} key={block.id} />
-    case 'caseStudyMetrics':
-      return <Metrics block={block} key={block.id} study={study} />
     case 'caseStudyTransition':
       return <Transition bare={bare} block={block} key={block.id} study={study} />
-    case 'featureHeadingOffset':
-      return <FeatureHeadingOffsetSection bare={bare} block={block} key={block.id} study={study} />
-    case 'featureStatementGrid':
-      return <FeatureStatementGridSection block={block} key={block.id} study={study} />
-    case 'featureStatementLinks':
-      // Owns its own GSAP intro `ScrollReveal` shell — do not wrap again.
-      return <FeatureStatementLinks key={block.id} {...block} />
-    case 'industryWork':
-      // Owns its own full-viewport `ScrollReveal` shell — do not wrap again.
-      return <IndustryWorkBlock key={block.id} {...block} />
     case 'featuredWork':
       // Work pages always close with this block from the Related Work tab.
       return null
-    case 'featureImageStatement':
-      return <FeatureImageStatementSection bare={bare} block={block} key={block.id} study={study} />
-    case 'mediaBlock':
-      // Caption carries no story copy: it paints the same band and caption it
-      // does on every other surface, bare inside a Section.
-      return (
-        <CssRevealSection key={block.id}>
-          <MediaBlockComponent {...block} bare={bare} disableInnerContainer />
-        </CssRevealSection>
-      )
-    case 'content':
-      // Same deal for the multi-column Content block: no story copy, same
-      // entrance as Pages, bare inside a Section.
-      return (
-        <CssRevealSection key={block.id}>
-          <ContentBlock {...block} bare={bare} />
-        </CssRevealSection>
-      )
-    // Blocks whose copy and data are their own (Code, the figures, the CTA
-    // band, Poster list, Quote banner, Rich text, YouTube): nothing resolves
-    // against the study, so they go through the shared renderer
-    // and get the band and entrance they have on every other surface, bare
-    // inside a Section. A diagram's own draw-in keys off that entrance
-    // (globals.css).
-    case 'code':
-    case 'chart':
-    case 'diagram':
-    case 'bespokeFigure':
-    case 'ctaBand':
-    case 'posterList':
-    case 'quoteBanner':
-    case 'richText':
-    case 'youtube':
-      return renderContentBlock(
-        block,
-        block.id ?? block.blockType,
-        Boolean(bare),
-        workContentComponents,
-      )
-    // The study's prose in a reading column: copy resolves against the study
-    // first, then the shared renderer gives it the band and intro reveal it
-    // has on a lab page.
-    case 'storyBeats':
-      return renderContentBlock(
-        resolveStoryBlockCopy(block, study, opener),
-        block.id ?? block.blockType,
-        Boolean(bare),
-        workContentComponents,
-      )
-    case 'audienceTabs':
-      // Owns its own GSAP entrance + swap shell — do not wrap again.
-      return <AudienceTabsBlock key={block.id} {...block} />
-    case 'featureTabs':
-      return <FeatureTabsSection bare={bare} block={block} key={block.id} study={study} />
-    case 'carousel':
-      // Same CSS entrance as Pages/Home — no data-reveal markers, and the
-      // GSAP shell would put a transform on an ancestor of embla. The
-      // block paints its own band (bare inside a Section), so the wrapper
-      // only carries the entrance.
-      return (
-        <CssRevealSection key={block.id}>
-          <CarouselBlock {...block} bare={bare} disableInnerContainer />
-        </CssRevealSection>
-      )
-    case 'faq':
-      // FAQ copy is the block's own, so nothing resolves against the study:
-      // the same intro reveal and band it has on every other surface.
-      return (
-        <RevealSection
-          bare={bare}
-          key={block.id}
-          theme={block.theme}
-          variant={blockRevealVariants.faq}
-        >
-          <FaqBlock {...block} bare />
-        </RevealSection>
-      )
-    case 'insightList':
-      // Insight copy is the block's own as well: same intro reveal and band
-      // as every other surface.
-      return (
-        <RevealSection
-          bare={bare}
-          key={block.id}
-          theme={block.theme}
-          variant={blockRevealVariants.insightList}
-        >
-          <InsightListBlock {...block} bare />
-        </RevealSection>
-      )
     default:
-      // Every block Work Pages offer has a case above: a block added to the
-      // Work run without one fails type-checking here instead of rendering
-      // nothing.
+      // Every block Work Pages offer is painted above: a block added to the
+      // Work run without a renderer fails type-checking here instead of
+      // rendering nothing.
       block satisfies never
       return null
   }

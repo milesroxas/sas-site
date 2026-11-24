@@ -95,9 +95,6 @@ describe('resolveStoryBlockCopy', () => {
     expect(JSON.stringify(tabs[0].description)).toContain('Beat body')
     expect(tabs[1]).toMatchObject({ description: null, heading: 'Own' })
     expect(
-      resolveStoryBlockCopy({ blockType: 'featureStatementGrid', ...ref }, record).heading,
-    ).toBe('Approach')
-    expect(
       JSON.stringify(
         resolveStoryBlockCopy({ blockType: 'featureImageStatement', ...ref, caption: null }, record)
           .caption,

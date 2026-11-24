@@ -63,8 +63,6 @@ export {
   SCROLL_GALLERY_DEFAULTS,
   ScrollGallery,
   type ScrollGalleryItem,
-  type ScrollGalleryMood,
-  type ScrollGalleryProps,
 } from './ui/scroll-gallery'
 export {
   STREAK_FIELD_DEFAULTS,

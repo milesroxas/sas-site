@@ -11,7 +11,11 @@
  * 2. Every surface with a Section nests the whole shared run, so no surface
  *    quietly falls behind it. Known gaps are listed below with the step that
  *    closes them.
- * 3. Every shell block in `SHELL_BLOCKS` is offered by its surface.
+ * 3. Every shell block in `SHELL_BLOCKS` is offered by its surface, and each
+ *    surface's top-level list is exactly Section, its shells and its
+ *    `LEGACY_TOP_LEVEL` entries (a Section-less surface: the run, then its
+ *    shells), so a retired block cannot quietly stay listed.
+ * 4. Every key of `blockRevealVariants` is a block some surface offers.
  *
  * Renderer coverage is checked by the type checker instead: each renderer's
  * map or switch is exhaustive over its surface's block union.
@@ -22,8 +26,13 @@ import type { Block } from 'payload'
 
 import { caseStudyBlocks } from '@/blocks/case-study/config'
 import { labBlocks } from '@/blocks/lab/config'
+import { blockRevealVariants } from '@/blocks/shared/reveal-variants'
 import { sectionNestableBlocks } from '@/blocks/shared/section-blocks'
-import { type CompositionSurface, SHELL_BLOCKS } from '@/blocks/shared/top-level-blocks'
+import {
+  type CompositionSurface,
+  LEGACY_TOP_LEVEL,
+  SHELL_BLOCKS,
+} from '@/blocks/shared/top-level-blocks'
 import {
   homeLayoutBlocks,
   pageLayoutBlocks,
@@ -118,6 +127,27 @@ for (const [surface, blocks] of Object.entries(SURFACE_BLOCKS) as [CompositionSu
   for (const block of blocks) {
     if (block.slug === 'section' || SHELL_BLOCKS[surface].includes(block.slug)) note(block)
   }
+
+  const run = new Set(sectionNestableBlocks.map((block) => block.slug))
+  const legacy = LEGACY_TOP_LEVEL[surface]
+  const allowedTop = new Set([
+    ...(nested.length ? ['section'] : [...run]),
+    ...SHELL_BLOCKS[surface],
+    ...(legacy === 'run' ? nested.map((block) => block.slug) : (legacy ?? [])),
+  ])
+  for (const slug of offered) {
+    if (!allowedTop.has(slug)) {
+      failures.push(
+        `${surface}: "${slug}" is listed at the top level but is not Section, a shell or a LEGACY_TOP_LEVEL entry`,
+      )
+    }
+  }
+  if (Array.isArray(legacy)) {
+    for (const slug of legacy) {
+      if (!offered.has(slug))
+        failures.push(`${surface}: LEGACY_TOP_LEVEL "${slug}" is no longer listed; remove it`)
+    }
+  }
   for (const block of nested) note(block)
   if (!nested.length) {
     // A Section-less surface offers the run directly at its top level.
@@ -137,6 +167,17 @@ for (const [surface, blocks] of Object.entries(SURFACE_BLOCKS) as [CompositionSu
       failures.push(`${surface}: "${block.slug}" is nested now; remove it from KNOWN_RUN_GAPS`)
     }
   }
+}
+
+const allSlugs = new Set(
+  Object.values(SURFACE_BLOCKS).flatMap((blocks) => [
+    ...blocks.map((block) => block.slug),
+    ...nestedBlocks(blocks).map((block) => block.slug),
+  ]),
+)
+for (const slug of Object.keys(blockRevealVariants)) {
+  if (!allSlugs.has(slug))
+    failures.push(`blockRevealVariants: "${slug}" is not a block any surface offers`)
 }
 
 for (const [title, slugs] of addable) {

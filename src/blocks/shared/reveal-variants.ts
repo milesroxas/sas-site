@@ -16,10 +16,8 @@ export const blockRevealVariants = {
   audienceTabs: 'self',
   // Copy and actions drop in; the leak and the dark ground are already there.
   ctaBand: 'intro',
-  dynamicAudience: 'underMedia',
   faq: 'intro',
   featureHeadingOffset: 'intro',
-  featureStatementGrid: 'intro',
   featureTabs: 'intro',
   featureImageStatement: 'underMedia',
   splitContentNarrow: 'underMedia',
@@ -34,16 +32,12 @@ export const blockRevealVariants = {
   richTransition: 'intro',
   splitImageOffset: 'underMedia',
   storyBeats: 'intro',
-  featureStatementLinks: 'self',
   // Pinned ScrollTrigger shell (sticky viewport + scrubbed list) — a CSS
   // reveal wrapper would put transform/opacity on its ancestor and break the
   // pin measurement.
   featuredWork: 'self',
   // Full-viewport shell owning its fullscreen enter threshold.
   industryWork: 'self',
-  // Pinned full-viewport WebGL shell (sticky viewport in a scroll track) — a
-  // reveal wrapper's transform would break the sticky pin.
-  scrollGallery: 'self',
 } as const satisfies Record<string, ScrollRevealVariant | 'self'>
 
 export type RevealMappedBlockSlug = keyof typeof blockRevealVariants
