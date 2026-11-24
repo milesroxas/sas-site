@@ -340,7 +340,9 @@ ensure_production_env() {
 
 # pg_dump production straight into the workspace DB. Prefers the non-pooling
 # URL (PgBouncer breaks pg_dump). PG17+ pg_dump emits `SET transaction_timeout`
-# which older servers reject on restore — strip it (mirrors dev-tui pg-tools).
+# which older servers reject on restore, and Neon's dump carries
+# `ALTER COLUMN ... SET (pg_attver=...)`, a Neon-only column option stock
+# Postgres rejects (`unrecognized parameter "pg_attver"`): strip both.
 seed_db_from_production() {
   local dump_url
   dump_url="$(read_env_key "$PROD_ENV_FILE" POSTGRES_URL_NON_POOLING || true)"
@@ -352,7 +354,7 @@ seed_db_from_production() {
   echo "workspace: dumping production content into $DB_NAME (this can take a minute)"
   psql_c -c "CREATE DATABASE \"$DB_NAME\""
   docker run --rm "$POSTGRES_IMAGE" pg_dump "$dump_url" --no-owner --no-acl |
-    sed '/^[[:space:]]*SET transaction_timeout/d' |
+    sed -e '/^[[:space:]]*SET transaction_timeout/d' -e '/SET (pg_attver=/d' |
     psql_c -d "$DB_NAME" >/dev/null
 }
 
