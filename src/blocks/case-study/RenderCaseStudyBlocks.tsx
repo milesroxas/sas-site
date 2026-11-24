@@ -91,7 +91,7 @@ const Transition = ({
   </RevealSection>
 )
 
-/** A block a work Section can nest: the child union carries the nested-only ones (Content). */
+/** A block a work Section can nest. */
 type WorkSectionChildBlock = NonNullable<WorkSectionBlock['blocks']>[number]
 
 type WorkLayoutBlock = NonNullable<WorkPage['layout']>[number] | WorkSectionChildBlock

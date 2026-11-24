@@ -1,5 +1,4 @@
 import type { Block } from 'payload'
-import { Content } from '@/blocks/Content/config'
 import { featureSourceField } from '@/blocks/feature/shared'
 import { ResourceDownload } from '@/blocks/resource-download/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
@@ -80,9 +79,7 @@ const labBlock = (shared: Block): Block => {
 const labSectionBlocks = [...sectionNestableBlocks, StoryBeats, ResourceDownload].map(labBlock)
 
 export const LabSection = sectionBlock({
-  // Content carries no story copy; it closes the nested list under Custom
-  // exactly as `sectionChildBlocks` does on every other surface.
-  blocks: [...labSectionBlocks, Content],
+  blocks: labSectionBlocks,
   interfaceName: 'LabSectionBlock',
 })
 

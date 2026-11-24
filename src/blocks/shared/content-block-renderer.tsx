@@ -1,7 +1,6 @@
 import type React from 'react'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { CodeSectionBlock } from '@/blocks/Code/Section'
-import { ContentBlock } from '@/blocks/Content/Component'
 import { CtaBandBlock } from '@/blocks/cta-band/Component'
 import { FaqBlock } from '@/blocks/faq/Component'
 import { FeatureHeadingOffsetBlock } from '@/blocks/feature/HeadingOffset/Component'
@@ -28,7 +27,7 @@ import { blockRevealVariants, type RevealMappedBlockSlug } from './reveal-varian
 
 /**
  * Components for everything a Section can nest, keyed by block slug: the
- * render mirror of `sectionChildBlocks` in `section-blocks.ts`. Every collection
+ * render mirror of `sectionNestableBlocks` in `section-blocks.ts`. Every collection
  * that offers the run renders it through this map (Pages, Posts, segment
  * pages, lab pages), so the same CMS block paints and moves identically
  * wherever an editor places it. Lab pages resolve canonical story copy into
@@ -40,7 +39,6 @@ export const sectionChildComponents = {
   carousel: CarouselBlock,
   chart: ChartBlock,
   code: CodeSectionBlock,
-  content: ContentBlock,
   ctaBand: CtaBandBlock,
   diagram: DiagramBlock,
   faq: FaqBlock,

@@ -856,17 +856,7 @@ async function run() {
         links: heroLinks,
         media: vid(0),
       },
-      layout: [
-        {
-          blockType: 'content',
-          columns: [
-            {
-              size: 'full',
-              richText: para('Minimal body so the hero stays the subject of review.'),
-            },
-          ],
-        },
-      ],
+      layout: [],
       _status: 'published',
     },
   )
@@ -884,17 +874,7 @@ async function run() {
           paragraph(text('Low-impact hero rendered from rich text.')),
         ),
       },
-      layout: [
-        {
-          blockType: 'content',
-          columns: [
-            {
-              size: 'full',
-              richText: para('Minimal body so the hero stays the subject of review.'),
-            },
-          ],
-        },
-      ],
+      layout: [],
       _status: 'published',
     },
   )
@@ -963,42 +943,6 @@ async function run() {
         media: img(0),
       },
       layout: [
-        {
-          blockType: 'cta',
-          richText: richText(
-            textHeading('h3', text('A call to action block')),
-            paragraph(text('Short persuasive copy with paired links.')),
-          ),
-          links: heroLinks,
-        },
-        {
-          blockType: 'content',
-          columns: [
-            {
-              size: 'oneThird',
-              richText: richText(
-                textHeading('h3', text('One third')),
-                paragraph(text('Column copy at a third of the grid.')),
-              ),
-            },
-            {
-              size: 'oneThird',
-              richText: richText(
-                textHeading('h3', text('One third')),
-                paragraph(text('Columns wrap responsively on smaller screens.')),
-              ),
-            },
-            {
-              size: 'oneThird',
-              richText: richText(
-                textHeading('h3', text('With link')),
-                paragraph(text('This column also renders a link.')),
-              ),
-              enableLink: true,
-              link: { type: 'custom', url: '/works', label: 'See the work', appearance: 'default' },
-            },
-          ],
-        },
         {
           blockType: 'mediaBlock',
           media: img(1),
@@ -1235,14 +1179,6 @@ async function run() {
             imagePosition: 'right',
             theme: 'default',
           },
-          {
-            blockType: 'cta',
-            richText: richText(
-              textHeading('h3', text('Ready when you are')),
-              paragraph(text('Bring us the thing that is hard to explain.')),
-            ),
-            links: heroLinks,
-          },
         ],
         _status: 'published',
       },
@@ -1287,14 +1223,6 @@ async function run() {
             media: img(i + 3),
             imagePosition: 'left',
             theme: 'neutral',
-          },
-          {
-            blockType: 'cta',
-            richText: richText(
-              textHeading('h3', text('Sound familiar?')),
-              paragraph(text('Tell us what your audience is not getting.')),
-            ),
-            links: heroLinks,
           },
         ],
         _status: 'published',

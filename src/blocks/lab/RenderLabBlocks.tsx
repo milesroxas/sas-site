@@ -70,7 +70,7 @@ const RelatedProjects = async ({
   />
 )
 
-/** A block a lab Section can nest: the child union carries the nested-only ones (Content). */
+/** A block a lab Section can nest. */
 type LabSectionChildBlock = NonNullable<LabSectionBlock['blocks']>[number]
 
 type LabLayoutBlock = NonNullable<LabPage['layout']>[number] | LabSectionChildBlock
@@ -143,7 +143,7 @@ const renderLabBlock = (
  * section, except the shared Section-nestable run, which
  * enters through the common content-block renderer (`data-reveal` markers play
  * the shared GSAP reveal, the same motion those blocks have on every other
- * surface; the marker-less Carousel and Content take the CSS reveal there).
+ * surface; the marker-less Carousel takes the CSS reveal there).
  */
 export const RenderLabBlocks = async ({
   blocks,

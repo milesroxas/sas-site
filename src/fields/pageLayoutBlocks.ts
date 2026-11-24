@@ -2,18 +2,12 @@ import type { Block } from 'payload'
 
 import { Archive } from '@/blocks/ArchiveBlock/config'
 import { AudienceTabs } from '@/blocks/AudienceTabs/config'
-import { CallToAction } from '@/blocks/CallToAction/config'
 import { Code } from '@/blocks/Code/config'
-import { Content } from '@/blocks/Content/config'
 import { IndustryWork } from '@/blocks/IndustryWork/config'
 import { ImagePair } from '@/blocks/image-pair/config'
 import { RichTransition } from '@/blocks/rich-transition/config'
 import { sectionBlock } from '@/blocks/section/config'
-import {
-  figureBlocks,
-  sectionChildBlocks,
-  sectionNestableBlocks,
-} from '@/blocks/shared/section-blocks'
+import { figureBlocks, sectionNestableBlocks } from '@/blocks/shared/section-blocks'
 import { SplitImageOffset } from '@/blocks/split-image-offset/config'
 import { TestimonialsMarquee } from '@/blocks/TestimonialsMarquee/config'
 
@@ -26,12 +20,12 @@ import { TestimonialsMarquee } from '@/blocks/TestimonialsMarquee/config'
  */
 
 export const PageSection = sectionBlock({
-  blocks: sectionChildBlocks,
+  blocks: sectionNestableBlocks,
   interfaceName: 'PageSectionBlock',
 })
 
-/** Pages: Sections, the post Archive, and the two blocks about-us and audience 4 still hold. */
-export const pageLayoutBlocks: Block[] = [PageSection, Archive, CallToAction, Content]
+/** Pages: Sections and the post Archive. */
+export const pageLayoutBlocks: Block[] = [PageSection, Archive]
 
 /** Posts compose optional Sections after the article body. */
 export const postLayoutBlocks: Block[] = [PageSection]
@@ -59,9 +53,9 @@ export const homeLayoutBlocks: Block[] = [
 ]
 
 export const SegmentSection = sectionBlock({
-  blocks: sectionChildBlocks,
+  blocks: sectionNestableBlocks,
   interfaceName: 'SegmentSectionBlock',
 })
 
-/** Segment pages (Audience, Expertise): Sections, the Archive, and audience 4's Call to Action. */
-export const segmentPageBlocks: Block[] = [SegmentSection, Archive, CallToAction, Content]
+/** Segment pages (Audience, Expertise): Sections and the post Archive. */
+export const segmentPageBlocks: Block[] = [SegmentSection, Archive]

@@ -323,7 +323,7 @@ export interface Page {
     visualType?: ('media' | 'streakField' | 'lightLeak') | null;
     shader?: PlacedVisualConfig;
   };
-  layout: (PageSectionBlock | ArchiveBlock | CallToActionBlock | ContentBlock)[];
+  layout: (PageSectionBlock | ArchiveBlock)[];
   closing?: PageClosing;
   meta?: {
     /**
@@ -1768,7 +1768,6 @@ export interface WorkSectionBlock {
         | PosterListBlock
         | QuoteBannerBlock
         | CtaBandBlock
-        | ContentBlock
       )[]
     | null;
   id?: string | null;
@@ -6101,68 +6100,6 @@ export interface CtaBandBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContentBlock".
- */
-export interface ContentBlock {
-  columns?:
-    | {
-        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
-        richText?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        enableLink?: boolean | null;
-        link?: {
-          type?: ('reference' | 'site' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null)
-            | ({
-                relationTo: 'contact-pages';
-                value: number | ContactPage;
-              } | null);
-          /**
-           * Home (/), Works Index (/works), or Insights Index (/insights).
-           */
-          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'content';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "CaseStudyMediaShowcaseBlock".
  */
 export interface CaseStudyMediaShowcaseBlock {
@@ -6409,7 +6346,6 @@ export interface PageSectionBlock {
         | PosterListBlock
         | QuoteBannerBlock
         | CtaBandBlock
-        | ContentBlock
       )[]
     | null;
   id?: string | null;
@@ -7074,66 +7010,6 @@ export interface ArchiveBlock {
   blockType: 'archive';
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock".
- */
-export interface CallToActionBlock {
-  richText?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  links?:
-    | {
-        link: {
-          type?: ('reference' | 'site' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null)
-            | ({
-                relationTo: 'contact-pages';
-                value: number | ContactPage;
-              } | null);
-          /**
-           * Home (/), Works Index (/works), or Insights Index (/insights).
-           */
-          sitePage?: ('home' | 'works-index' | 'insights-index' | 'lab-index') | null;
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Flips this band against its neighbours. "Default" follows the visitor's light or dark preference; "Inverted" paints the opposite of it.
-   */
-  theme?: ('default' | 'inverted' | 'neutral' | 'brand') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'cta';
-}
-/**
  * Website-specific lab-project presentation, composition, SEO, preview, and publishing.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7406,7 +7282,6 @@ export interface LabSectionBlock {
         | CtaBandBlock
         | LabStoryBeatsBlock
         | ResourceDownloadBlock
-        | ContentBlock
       )[]
     | null;
   id?: string | null;
@@ -8132,7 +8007,7 @@ export interface ExpertisePage {
    * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
    */
   showContents?: boolean | null;
-  layout: (SegmentSectionBlock | ArchiveBlock | CallToActionBlock | ContentBlock)[];
+  layout: (SegmentSectionBlock | ArchiveBlock)[];
   /**
    * Canonical capabilities this offering bundles. Drives automatic related-work matching.
    */
@@ -8298,7 +8173,6 @@ export interface SegmentSectionBlock {
         | PosterListBlock
         | QuoteBannerBlock
         | CtaBandBlock
-        | ContentBlock
       )[]
     | null;
   id?: string | null;
@@ -8331,7 +8205,7 @@ export interface AudiencePage {
    * Adds a floating Contents button that lists the section headings on this page and jumps between them. Pages with fewer than three section headings never show it.
    */
   showContents?: boolean | null;
-  layout: (SegmentSectionBlock | ArchiveBlock | CallToActionBlock | ContentBlock)[];
+  layout: (SegmentSectionBlock | ArchiveBlock)[];
   /**
    * Industries this segment spans. Drives automatic related-work matching.
    */
@@ -9521,8 +9395,6 @@ export interface PagesSelect<T extends boolean = true> {
     | {
         section?: T | PageSectionBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
-        cta?: T | CallToActionBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
       };
   closing?: T | PageClosingSelect<T>;
   meta?:
@@ -9603,7 +9475,6 @@ export interface PageSectionBlockSelect<T extends boolean = true> {
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
@@ -10021,34 +9892,6 @@ export interface CtaBandBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContentBlock_select".
- */
-export interface ContentBlockSelect<T extends boolean = true> {
-  columns?:
-    | T
-    | {
-        size?: T;
-        richText?: T;
-        enableLink?: T;
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              sitePage?: T;
-              url?: T;
-              label?: T;
-              appearance?: T;
-            };
-        id?: T;
-      };
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ArchiveBlock_select".
  */
 export interface ArchiveBlockSelect<T extends boolean = true> {
@@ -10059,32 +9902,6 @@ export interface ArchiveBlockSelect<T extends boolean = true> {
   limit?: T;
   selectedDocs?: T;
   cardVariant?: T;
-  theme?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock_select".
- */
-export interface CallToActionBlockSelect<T extends boolean = true> {
-  richText?: T;
-  links?:
-    | T
-    | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              sitePage?: T;
-              url?: T;
-              label?: T;
-              appearance?: T;
-            };
-        id?: T;
-      };
   theme?: T;
   id?: T;
   blockName?: T;
@@ -10330,7 +10147,6 @@ export interface WorkSectionBlockSelect<T extends boolean = true> {
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
@@ -10722,7 +10538,6 @@ export interface LabSectionBlockSelect<T extends boolean = true> {
         ctaBand?: T | CtaBandBlockSelect<T>;
         storyBeats?: T | LabStoryBeatsBlockSelect<T>;
         resourceDownload?: T | ResourceDownloadBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
@@ -10986,8 +10801,6 @@ export interface ExpertisePagesSelect<T extends boolean = true> {
     | {
         section?: T | SegmentSectionBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
-        cta?: T | CallToActionBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
       };
   capabilities?: T;
   relatedWork?: T | SegmentRelatedWorkCopySelect<T>;
@@ -11080,7 +10893,6 @@ export interface SegmentSectionBlockSelect<T extends boolean = true> {
         posterList?: T | PosterListBlockSelect<T>;
         quoteBanner?: T | QuoteBannerBlockSelect<T>;
         ctaBand?: T | CtaBandBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
       };
   id?: T;
   blockName?: T;
@@ -11108,8 +10920,6 @@ export interface AudiencePagesSelect<T extends boolean = true> {
     | {
         section?: T | SegmentSectionBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
-        cta?: T | CallToActionBlockSelect<T>;
-        content?: T | ContentBlockSelect<T>;
       };
   industries?: T;
   relatedWork?: T | SegmentRelatedWorkCopySelect<T>;

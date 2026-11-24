@@ -39,8 +39,8 @@ export const MCP_CASES: McpCase[] = [
     collection: 'pages',
     docId: 6,
     findTool: 'findPages',
-    target: { blockType: 'content' },
-    task: 'On the About Us page, reword the content block.',
+    target: { blockType: 'richText' },
+    task: 'On the About Us page, reword the rich text block.',
   },
   {
     id: 'work-adacore',

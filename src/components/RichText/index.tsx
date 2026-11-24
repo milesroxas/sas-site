@@ -12,7 +12,6 @@ import {
   LinkJSXConverter,
   type SerializedLexicalNodeWithParent,
 } from '@payloadcms/richtext-lexical/react'
-import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { CarouselBlock } from '@/blocks/Carousel/Component'
 import { CodeBlock, type CodeBlockProps } from '@/blocks/Code/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
@@ -23,7 +22,6 @@ import { RichTextPillList } from '@/blocks/rich-text/pill-list/Component'
 import { YouTubeBlock } from '@/blocks/youtube/Component'
 import type {
   CarouselBlock as CarouselBlockProps,
-  CallToActionBlock as CTABlockProps,
   MediaBlock as MediaBlockProps,
   ResourceDownloadBlock as ResourceDownloadBlockProps,
   RichTextActionsBlock as RichTextActionsBlockProps,
@@ -38,7 +36,6 @@ import { isTextStyle, TEXT_STYLE_STATE_KEY, TEXT_STYLES, type TextStyle } from '
 type NodeTypes =
   | DefaultNodeTypes
   | SerializedBlockNode<
-      | CTABlockProps
       | MediaBlockProps
       | ResourceDownloadBlockProps
       | CarouselBlockProps
@@ -149,7 +146,6 @@ const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) 
     // A figure-weight object in the article flow: the room above and below
     // that prose gives an image, so it never reads as another paragraph.
     resourceDownload: ({ node }) => <ResourceDownload className="my-8" {...node.fields} />,
-    cta: ({ node }) => <CallToActionBlock {...node.fields} />,
     // The Rich text block splits its own blocks out onto its grid before
     // converting (rich-text/Component.tsx); these converters are the inline
     // fallback for any other editor that enables them.

@@ -1,6 +1,5 @@
 import type { Block } from 'payload'
 import { Carousel } from '@/blocks/Carousel/config'
-import { Content } from '@/blocks/Content/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
 import { FeatureImageStatement } from '@/blocks/feature/ImageStatement/config'
 import { featureSourceField } from '@/blocks/feature/shared'
@@ -153,9 +152,7 @@ const workSectionBlocks: Block[] = sectionNestableBlocks.flatMap((block) => {
 })
 
 export const WorkSection = sectionBlock({
-  // Content carries no story copy either; it closes the nested list under
-  // Custom exactly as `sectionChildBlocks` does on every other surface.
-  blocks: [...workSectionBlocks, Content],
+  blocks: workSectionBlocks,
   interfaceName: 'WorkSectionBlock',
 })
 

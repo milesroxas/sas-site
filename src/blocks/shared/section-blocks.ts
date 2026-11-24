@@ -2,7 +2,6 @@ import type { Block } from 'payload'
 
 import { Carousel } from '@/blocks/Carousel/config'
 import { Code } from '@/blocks/Code/config'
-import { Content } from '@/blocks/Content/config'
 import { CtaBand } from '@/blocks/cta-band/config'
 import { Faq } from '@/blocks/faq/config'
 import { FeatureHeadingOffset } from '@/blocks/feature/HeadingOffset/config'
@@ -34,16 +33,15 @@ export const figureBlocks: Block[] = [Chart, Diagram, BespokeFigure]
  * The reorganized Section-nestable run (docs/blocks-reorg-roadmap.md), stated
  * once so every composition surface offers the same blocks under the same
  * group labels. Each collection nests this run inside its own Section
- * instance and spreads it into its top-level drawer list while the Section
- * transition is underway.
+ * instance; only Home, which has no Section yet, offers it at the top level.
  *
  * Ordered by `admin.group`: the blocks drawer renders groups in
  * first-appearance order.
  *
  * Lab Pages map this run into story-aware variants (`labBlock` in
- * `blocks/lab/config.ts`). Work Pages swap the Standard heading for their own
- * story-resolving variant (`caseStudyTransition`), so they build their run by
- * hand instead of mapping this one.
+ * `blocks/lab/config.ts`). Work Pages map it through `workVariants` in
+ * `blocks/case-study/config.ts`, which swaps in their own story-resolving
+ * Standard heading (`caseStudyTransition`).
  */
 export const sectionNestableBlocks: Block[] = [
   // Section heading
@@ -76,17 +74,4 @@ export const sectionNestableBlocks: Block[] = [
   QuoteBanner,
   // Forms & CTAs
   CtaBand,
-]
-
-/**
- * Everything a Section can nest: the run plus the legacy multi-column
- * `content` block (Custom group). Content stays out of the run itself because
- * the run is spread into every top-level drawer list, and Custom must close
- * that list rather than land mid-order; Sections built by hand (Work Pages)
- * append Content the same way.
- */
-export const sectionChildBlocks: Block[] = [
-  ...sectionNestableBlocks,
-  // Custom
-  Content,
 ]

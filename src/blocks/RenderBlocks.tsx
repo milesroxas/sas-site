@@ -2,7 +2,6 @@ import type React from 'react'
 import { Fragment } from 'react'
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
 import { AudienceTabsBlock } from '@/blocks/AudienceTabs/Component'
-import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { IndustryWorkBlock } from '@/blocks/IndustryWork/Component'
 import { SectionBand } from '@/blocks/section/SectionBand'
 import { TestimonialsMarqueeBlock } from '@/blocks/TestimonialsMarquee/Component'
@@ -17,7 +16,6 @@ const blockComponents = {
   ...sectionChildComponents,
   archive: ArchiveBlock,
   audienceTabs: AudienceTabsBlock,
-  cta: CallToActionBlock,
   industryWork: IndustryWorkBlock,
   testimonialsMarquee: TestimonialsMarqueeBlock,
 } satisfies Record<ContentLayoutBlock['blockType'], unknown>

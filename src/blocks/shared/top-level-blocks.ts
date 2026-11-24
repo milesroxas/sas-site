@@ -32,10 +32,6 @@ export const SHELL_BLOCKS: Record<CompositionSurface, readonly string[]> = {
  * (docs/blocks-reorg-roadmap.md section 0). `'run'` is the whole Section run.
  */
 export const LEGACY_TOP_LEVEL: Partial<Record<CompositionSurface, 'run' | readonly string[]>> = {
-  // about-us (Content) and audience page 4 (Call to Action): moved into
-  // Sections as drafts on 2026-11-23, retired once published.
-  pages: ['cta', 'content'],
-  segment: ['cta', 'content'],
   // adacore, vault and eclinical: `scripts/wrap-sections.ts` after deploy.
   work: 'run',
 }

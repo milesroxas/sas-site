@@ -128,8 +128,8 @@ describe.sequential('website IA surfaces', () => {
         hero: streakHero(`Draft Expertise ${suffix}`),
         layout: [
           {
-            blockType: 'content',
-            columns: [{ size: 'full', richText: richText('Expertise body') }],
+            blockType: 'section',
+            blocks: [{ blockType: 'richText', body: richText('Expertise body') }],
           },
         ],
         editorialNotes: 'internal positioning notes',
@@ -182,8 +182,8 @@ describe.sequential('website IA surfaces', () => {
         hero: streakHero(`Draft Audience ${suffix}`),
         layout: [
           {
-            blockType: 'content',
-            columns: [{ size: 'full', richText: richText('Audience body') }],
+            blockType: 'section',
+            blocks: [{ blockType: 'richText', body: richText('Audience body') }],
           },
         ],
       },
