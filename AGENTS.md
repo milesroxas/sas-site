@@ -94,6 +94,7 @@ This repo’s MCP plugin authenticates API keys as `req.user` on REST/GraphQL to
 | Studio effects: the authoring contract, light leak slot controls, adding an effect | [docs/studio-effects.md](docs/studio-effects.md) |
 | Animations — reveals, route transitions, tuning workflow | [docs/animations.md](docs/animations.md) |
 | Performance — audit findings, before/after capture runbook | [docs/performance-audit-work-pages.md](docs/performance-audit-work-pages.md); [docs/performance-measurement.md](docs/performance-measurement.md) |
+| Code health: fallow complexity and duplication findings, the phased refactor plan and its rules | [docs/health-refactor-plan.md](docs/health-refactor-plan.md); dead-code config rules in `.fallowrc.jsonc` |
 | Contact forms, the inquiries inbox, spam and the block list, notification | [docs/inquiries.md](docs/inquiries.md) |
 | Redirects: the CMS list, the Vercel Bulk Redirects sync, env, verifying | [docs/redirects.md](docs/redirects.md) |
 | Analytics: PostHog events, consent gate, dashboards | `.agents/skills/posthog-analytics` (use the **posthog-analytics** skill) |
