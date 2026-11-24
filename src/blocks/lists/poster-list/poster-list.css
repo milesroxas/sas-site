@@ -189,7 +189,11 @@
 .poster-row {
   --poster-col: calc((100cqw - 2 * var(--container-inset) - 7 * var(--spacing-grid-column)) / 8);
   --poster-copy: calc(3 * var(--poster-col) + 2 * var(--spacing-grid-column));
-  --poster-rail-start: calc(var(--container-inset) + var(--poster-copy) + var(--spacing-grid-column));
+  --poster-rail-start: calc(
+    var(--container-inset) +
+    var(--poster-copy) +
+    var(--spacing-grid-column)
+  );
   display: flex;
   flex-direction: column;
   gap: 3rem;
