@@ -176,5 +176,3 @@ export function StreakFieldRuntime({
     </FailureBoundary>
   )
 }
-
-export default StreakFieldRuntime

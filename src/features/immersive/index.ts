@@ -9,11 +9,8 @@ export {
   INDUSTRY_WORK_MEDIA,
   LIGHT_LEAK_AMBER,
   LIGHT_LEAK_PAPER,
-  STREAK_FIELD_BACKDROP,
   STREAK_FIELD_DEPTH_MAP,
   STREAK_FIELD_PAPER,
-  STREAK_FIELD_TECHNICAL_B2B,
-  STREAK_FIELD_TECHNICAL_LINES,
   STREAK_FIELD_TOPOGRAPHY,
 } from './presets'
 export { captureStill } from './studio/capture'
@@ -48,8 +45,6 @@ export {
 } from './ui/light-leak'
 export {
   LIGHT_LEAK_EXCITE_ATTR,
-  LIGHT_LEAK_INTERACTIVE_SELECTOR,
-  LIGHT_LEAK_SCOPE_ATTR,
   leakExcite,
   leakScope,
 } from './ui/light-leak-excite'

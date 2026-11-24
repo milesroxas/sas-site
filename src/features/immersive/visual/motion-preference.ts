@@ -42,13 +42,3 @@ export function subscribeMotionPaused(listener: () => void): () => void {
 }
 
 export const getServerMotionPaused = () => false
-
-/** Test seam. */
-export function resetMotionPausedForTests() {
-  paused = null
-  try {
-    sessionStorage.removeItem(STORAGE_KEY)
-  } catch {
-    // ignore
-  }
-}

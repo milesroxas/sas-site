@@ -33,8 +33,6 @@ const StreakFieldRuntime = lazy(() =>
   import('../ui/streak-field-runtime').then((module) => ({ default: module.StreakFieldRuntime })),
 ) as ComponentType<StreakFieldRuntimeProps>
 
-export type StreakVisualSurface = VisualSurface
-
 export type StreakVisualProps = {
   descriptor: StreakVisualDescriptor
   placement: VisualPlacement

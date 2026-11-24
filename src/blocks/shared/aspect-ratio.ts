@@ -11,5 +11,3 @@ export const ASPECT_RATIO_CLASS = {
   '3-2': 'aspect-3/2',
   '21-9': 'aspect-21/9',
 } as const
-
-export type AspectRatioValue = keyof typeof ASPECT_RATIO_CLASS

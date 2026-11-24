@@ -40,10 +40,6 @@
   outline: none;
   -webkit-user-drag: none;
 }
-.poster-hit:focus-visible .poster-frame {
-  outline: 2px solid var(--ring);
-  outline-offset: 3px;
-}
 
 .poster-tilt {
   position: relative;
@@ -73,6 +69,12 @@
   border-radius: inherit;
   box-shadow: inset 0 0 0 1px var(--poster-edge);
   pointer-events: none;
+}
+/* Keyboard focus rings the frame. Stated after the frame's own rules so
+   the more specific selector follows the less specific one. */
+.poster-hit:focus-visible .poster-frame {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
 }
 .poster-media {
   position: absolute;

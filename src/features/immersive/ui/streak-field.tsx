@@ -36,7 +36,6 @@ export {
   type StreakFieldProps,
   type StreakFieldShape,
   type StreakFieldSurface,
-  type StreakFieldTuning,
 } from './streak-field-tuning'
 
 // Hoisted so JSX never allocates fresh objects per render (perf-avoid-inline-objects).

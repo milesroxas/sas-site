@@ -8,7 +8,6 @@ import type { IndustryWorkPanel } from '@/blocks/interactive/industry-work/Compo
 import type { WorkEntry } from '@/blocks/shared/resolve-work-entry'
 import { TEXT_STYLE_STATE_KEY, type TextStyle } from '@/components/RichText/text-styles'
 import type {
-  CaseStudy,
   LabPage,
   LabProject,
   Media,

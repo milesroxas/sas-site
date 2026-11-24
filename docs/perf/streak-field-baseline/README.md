@@ -4,7 +4,7 @@ Status: partial. Recorded 2026-09-13 with the implementation of `docs/streak-fie
 
 ## Ownership decision
 
-The Streak Field renders through **one admitted local classic WebGL2 canvas per document**, owned by the `StreakVisual` slot, with a `streak` lease on the document GPU budget (`src/lib/webgl/gpu-budget.ts`, `STREAK_LIVE_CEILING = 1` among `GPU_LIVE_CEILING = 3` contexts shared with the lenses, the footer light leak, galleries and the global backdrop). The shared-canvas prototype at the persistent root was **not** attempted: the plan makes it a measured comparison against this baseline, and no equal-appearance measurement exists yet. The consumer contract (`Visual`, `StreakVisual`, the descriptor) is the same either way, so a later shared implementation replaces the runtime module, not the CMS or the slots.
+The Streak Field renders through **one admitted local classic WebGL2 canvas per document**, owned by the `StreakVisual` slot, with a `streak` lease on the document GPU budget (`src/lib/webgl/gpu-budget.ts`, `STREAK_KIND_CEILING = 1` among `GPU_LIVE_CEILING = 3` contexts shared with the lenses, the footer light leak, galleries and the global backdrop). The shared-canvas prototype at the persistent root was **not** attempted: the plan makes it a measured comparison against this baseline, and no equal-appearance measurement exists yet. The consumer contract (`Visual`, `StreakVisual`, the descriptor) is the same either way, so a later shared implementation replaces the runtime module, not the CMS or the slots.
 
 Related root changes shipped with this baseline:
 

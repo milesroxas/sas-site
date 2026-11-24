@@ -264,9 +264,6 @@ importers:
       '@testing-library/react':
         specifier: 16.3.2
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@types/escape-html':
-        specifier: ^1.0.4
-        version: 1.0.4
       '@types/node':
         specifier: 26.0.1
         version: 26.0.1
@@ -3685,9 +3682,6 @@ packages:
 
   '@types/draco3d@1.4.10':
     resolution: {integrity: sha512-AX22jp8Y7wwaBgAixaSvkoG4M/+PlAcm3Qs4OW8yT9DM4xUpWKeFhLueTAyZF39pviAdcDdeJoACapiAceqNcw==}
-
-  '@types/escape-html@1.0.4':
-    resolution: {integrity: sha512-qZ72SFTgUAZ5a7Tj6kf2SHLetiH5S6f8G5frB2SPQ3EyF02kxdyBFf4Tz4banE3xCgGnKgWLt//a6VuYHKYJTg==}
 
   '@types/estree-jsx@1.0.5':
     resolution: {integrity: sha512-52CcUVNFyfb1A2ALocQw/Dd1BQFNmSdkuC3BkZ6iqhdMfQz7JWOFRuJFloOzjk+6WijU56m9oKXFAXc7o3Towg==}
@@ -11116,8 +11110,6 @@ snapshots:
   '@types/doctrine@0.0.9': {}
 
   '@types/draco3d@1.4.10': {}
-
-  '@types/escape-html@1.0.4': {}
 
   '@types/estree-jsx@1.0.5':
     dependencies:

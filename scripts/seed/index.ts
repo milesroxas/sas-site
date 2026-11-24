@@ -773,7 +773,7 @@ async function run() {
   log(`${postIds.length} posts`)
 
   console.log('Seeding forms and newsletter audience…')
-  const formId = await upsert(
+  await upsert(
     'forms',
     { title: { equals: 'Contact' } },
     {
@@ -793,7 +793,7 @@ async function run() {
       confirmationMessage: para('Thanks — we will be in touch shortly.'),
     },
   )
-  const newsletterAudienceId = await upsert(
+  await upsert(
     'audiences',
     { slug: { equals: 'general-updates' } },
     {

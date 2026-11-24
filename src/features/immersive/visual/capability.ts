@@ -65,8 +65,3 @@ export function probeStreakCapability(): StreakCapability {
   cached = result
   return result
 }
-
-/** Test seam: forget the cached probe. */
-export function resetStreakCapabilityForTests() {
-  cached = null
-}

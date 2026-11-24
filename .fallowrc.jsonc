@@ -10,13 +10,32 @@
     // Lab journal: the hook is run by Claude Code (.claude/settings.json), the rest by pnpm scripts
     "scripts/lab-journal/hook.ts",
     "scripts/lab-journal/cli.ts",
-    "scripts/lab-journal/digest.ts"
+    "scripts/lab-journal/digest.ts",
+    // MCP authoring bench and locateBlock eval, run by hand with tsx (docs/mcp.md)
+    "scripts/mcp-bench.ts",
+    "scripts/mcp-locate-eval.ts",
+    // Renders the shipped look posters from Storybook, run by hand when a look changes
+    "scripts/visual-posters.ts",
+    // Section cutover tool, kept as the reference mapping (docs/blocks-reorg-roadmap.md)
+    "scripts/wrap-sections.ts",
+    // Playwright e2e seeds, spawned as `tsx` subprocesses by the specs
+    "tests/e2e/support/*-fixture.ts",
+    // Video capture config, loaded by the webreel CLI
+    "webreel.config.ts"
   ],
   // An export consumed within its own module is not dead API surface
   "ignoreExportsUsedInFile": true,
   // Payload-generated artifacts: recreated by `payload generate:types` / `payload migrate:create`
   // and the Payload scaffold on version bumps. Never hand-edited, never flagged.
-  "ignorePatterns": ["src/payload-types.ts", "src/migrations/**", "src/app/(payload)/**"],
+  // `.design-sync/` is the design-sync tool's own bundle entry (a barrel over
+  // storied components for an external converter), not app code: nothing in
+  // the app imports it and it imports nothing the app does not already reach.
+  "ignorePatterns": [
+    "src/payload-types.ts",
+    "src/migrations/**",
+    "src/app/(payload)/**",
+    ".design-sync/**"
+  ],
   // Loaded outside the static import graph:
   // - admin components referenced by string path in payload.config.ts (resolved via generated importMap)
   // - react-email templates bundled by the `email dev` preview server (package.json "email" script)
@@ -32,20 +51,22 @@
     "src/shared/email/templates/**",
     "src/Footer/RowLabel.tsx",
     "src/Header/RowLabel.tsx",
-    "src/collections/*/components/**"
+    "src/collections/*/components/**",
+    "src/components/AdminLogo/**",
+    // Ask's admin panels and the plugins' admin views (string paths in their configs)
+    "src/features/ask/admin/**",
+    "src/plugins/*/components/**",
+    // Lexical client features are resolved by the editor from the server feature's ClientFeature path
+    "src/fields/lexical/**/feature.client.tsx"
   ],
   "ignoreDependencies": [
     // Payload-maintained packages; kept in lockstep with the Payload release train, not fallow's call
     "@payloadcms/db-postgres",
     "@payloadcms/next",
-    // Build-time CSS pipeline (imported from globals.css / postcss config, correctly devDependencies)
-    "tailwindcss",
+    // Build-time CSS pipeline (`@plugin` in globals.css), correctly a devDependency
     "@tailwindcss/typography",
-    // dev-tui / local tooling (scripts/dev-tui), correctly devDependencies
-    "dotenv",
-    "execa",
-    "ink",
-    "ink-spinner"
+    // dev-tui / local tooling (scripts/dev-tui), correctly a devDependency
+    "dotenv"
   ],
   // Webpack-style tilde import inside Payload admin SCSS, resolved by Payload's bundler
   "ignoreUnresolvedImports": ["**/~@payloadcms/ui/scss"],
