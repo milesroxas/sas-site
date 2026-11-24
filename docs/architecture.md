@@ -83,11 +83,10 @@ Globals: `home` (`/`), `insights-index` (`/insights`), `lab-index` (`/lab`), `wo
 1. **Hero** (`CaseStudyHero`) — override-then-canonical at each field: `titleOverride` → study title; `summaryOverride` → short summary → one-line → thesis; hero media → cover asset; eyebrow → client short name → client name.
 2. **Blocks** (`RenderWorkBlocks`) — each narrative-capable block declares a canonical `source`, may narrow that source to a stable Story Beat, and may carry website overrides:
    - Case Study narrative is hierarchical: `context`, `challenge`, `strategy`, `approach`, `outcomeSummary`, and `learnings` each contain an optional section body plus ordered `storyBeats`. Whole-section consumers compose the body followed by the beats; an individual beat is addressed by `(source, storyBeatKey)`.
-   - `caseStudyStorySection` — picks one complete canonical narrative section or one beat within it, or uses `custom`; `bodyOverride` wins when present.
-   - `caseStudyKeyDecisions` / `caseStudyMetrics` — read arrays from the study, filtered by `featured` flags and (for metrics) `approvedForPublic`.
-   - `caseStudyTestimonial` — renders only published, `approved-public` testimonials.
-   - `caseStudyMediaShowcase` / `caseStudyTransition` — website-only media and copy.
-   - `caseStudyRelatedWork` — manual selection or automatic capability match.
+   - `caseStudyStorySection` (Story section) picks one complete canonical narrative section or one beat within it, or uses `custom`; `bodyOverride` wins when present.
+   - `caseStudyMediaShowcase` (Media showcase) and `caseStudyTransition` (Work's Standard heading) carry website-only media and copy.
+   - Every block of the shared Section run renders through the shared renderer, as on Lab Pages; a story-capable one first resolves its copy against the study (`src/blocks/shared/story-copy.ts`).
+   - The closing related-work list comes from the Related Work tab, not from a block.
 
 Story Beat keys are unique within their parent section, not globally. Nesting preserves the
 business meaning in the API, while the composite `(section, key)` reference stays stable across

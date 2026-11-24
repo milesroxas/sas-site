@@ -16,12 +16,11 @@ Every form on the site renders the same controls, defined once:
 | `FieldShell` and the field set | `src/blocks/shared/form/` | Label row, invalid state, grid span, error message, submit rule — react-hook-form bound |
 | `FormBody`, `FormSteps` | `src/blocks/shared/form/` | The `<form>` itself, and how it is asked: flat, or one step at a time when the fields carry step dividers |
 
-Two consumers compose that set and nothing else:
-
-- **`src/blocks/Form/`** renders a form-builder document. `fields.tsx` is the
-  only file that knows the plugin's block-type names; a CMS `select` becomes
-  chips when it has six options or fewer, and a menu when it has more.
-- **`src/blocks/contact/`** renders the contact templates.
+One consumer composes that set: the contact templates
+(`src/collections/ContactPages/ui/`). `src/blocks/shared/form/fields.tsx` is
+the only file that knows the form plugin's block-type names; a CMS `select`
+becomes chips when it has six options or fewer, and a menu when it has more.
+(The page-level Form block was retired on 2026-11-23: no page used it.)
 
 A field's visual decisions are never restated at a call site. If a control
 looks wrong on one form, it is wrong on all of them, and the fix is in the
@@ -44,9 +43,8 @@ tabs: **Intro** (the column beside the form), **Form** (which form to ask), and
 **After sending** (the receipt).
 
 The questions are deliberately not on it. They live on a form in `Forms`, so
-one set of questions can serve several contact pages *and* be composed onto an
-ordinary page through the Form block. Same fields, same renderer, same
-language, wherever it appears.
+one set of questions can serve several contact pages. Same fields, same
+renderer, same language, wherever it appears.
 
 Two values are not on the page either. `Site Info → Inquiries` holds the
 response-time promise and the booking link, because the page, the receipt and

@@ -38,7 +38,6 @@ One engine for route transitions: React's `<ViewTransition>`, which Next integra
 | Segment index pages | **raw `<a>`** ([SegmentIndex.tsx:35-39](../src/sections/SegmentIndex.tsx)) | **Full document reload** |
 | Pagination | `addTransitionType` forward/back | Directional slide |
 | Search-as-you-type → `/search` | untagged push ([search/Component.tsx:16](../src/search/Component.tsx)) | Hard cut |
-| Form success redirect | untagged push ([Form/Component.tsx:112](../src/blocks/Form/Component.tsx)) | Hard cut |
 | Menu link with hero media | untagged push, GSAP traveler | Handoff (keep; untagged **by design**) |
 | Browser back / forward | popstate | Hard cut (platform limitation — sync popstate can't start a VT) |
 | Slow route (uncached RSC) | — no `loading.tsx`, no `Suspense`, no progress UI | Page sits still until payload arrives, then transitions |

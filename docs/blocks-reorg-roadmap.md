@@ -6,48 +6,74 @@ Scope: Pages, Posts, WorkPages, LabPages, ExpertisePages, AudiencePages (Posts a
 
 ---
 
-## 0. Cleanup: one composition model (2026-11-22)
+## 0. Cleanup: one composition model (2026-11-22 to 2026-11-23)
 
-**The rule.** The top level of every surface holds Sections plus that surface's shell blocks; every other block lives inside a Section. A block's admin label (and group) is its name everywhere: Storybook title, docs, and in time folder, component and `interfaceName`. The slug is the frozen storage key and never changes.
+**The rule.** The top level of every surface holds Sections plus that surface's shell blocks; every other block lives inside a Section. A block's admin label and group are its name everywhere: folder, config const, `interfaceName`, renderer component, Storybook title. The slug and `dbName` are the frozen storage keys and never change.
 
-**Where the rule lives.** `src/blocks/surfaces/top-level.ts`: `SHELL_BLOCKS` (the shells per surface) and `topLevelBlocks(surface)`, spread into each surface's `layout` field. Its `filterOptions` limits the drawer; its `validate` refuses a published save (admin, REST, Local API, MCP) that adds a block type the top level does not take. Block types the saved document already holds stay allowed, so flat pages keep saving. Draft saves skip validation in Payload, so the refusal lands at publish. Home has no Section yet: its top level takes the run plus its shells.
+**Where it lives.**
 
-| Surface | Shell blocks (top level for good) |
+| What | Where |
 |---|---|
-| Home | Industry work, Testimonials marquee, Audience tabs |
-| Lab | Project facts, Related lab projects |
-| Work | Media showcase, Featured work, Story section |
-| Pages, Expertise, Audience | Call to Action, Archive, Content |
-| Posts | none |
+| The Section run, stated once | `src/blocks/surfaces/run.ts` (`sectionNestableBlocks`) |
+| Each surface's list | `src/blocks/surfaces/pages.ts` (Pages, Posts, Home, segment pages), `lab.ts`, `work.ts` |
+| Shells, transitional top-level entries, the drawer and save rule | `src/blocks/surfaces/top-level.ts` (`SHELL_BLOCKS`, `LEGACY_TOP_LEVEL`, `topLevelBlocks(surface)`) |
+| Renderers | `src/blocks/render/` (`RenderBlocks`, `RenderLabBlocks`, `RenderWorkBlocks`, the shared `content-block-renderer`) |
+| Blocks | `src/blocks/<group>/<label>/`, kebab-cased (`media-and-content/stacked/`, `forms-and-ctas/cta-band/`) |
 
-Everything else a surface offers at the top level is legacy: hidden from the drawer, still rendered where a page holds it.
+`topLevelBlocks(surface)` is spread into each `layout` field: `filterOptions` limits the drawer to Section and the shells; `validate` refuses a published save (admin, REST, Local API, MCP) that adds anything else at the top level. Block types the saved document already holds stay allowed, so a page built before the Section model keeps saving. Draft saves skip validation in Payload, so the refusal lands at publish.
 
-**Drift checks.** `pnpm check:blocks` (`scripts/check-blocks.ts`, run by `pnpm lint`): every addable block has a story titled `Blocks/<Group>/<Label>` from its config, every surface with a Section nests the whole run (known gaps listed in the script with the step that closes them), every shell is offered by its surface. Renderer coverage is the type checker's job: `RenderBlocks` maps, and the Work and Lab switches end in `block satisfies never`.
+| Surface | Shell blocks (top level for good) | Transitional (`LEGACY_TOP_LEVEL`) |
+|---|---|---|
+| Home (no Section yet) | the run, plus Industry work, Testimonials marquee, Audience tabs | none |
+| Pages, Expertise, Audience | Archive | none |
+| Posts | none | none |
+| Lab | Project facts, Related lab projects | none |
+| Work | Media showcase, Story section, Featured work | the run, until adacore, vault and eclinical move into Sections |
 
-### Production usage (audited 2026-11-22, 51 docs)
+**Naming.** `pascal(label)`: words capitalized, an all-caps word lowered after its first letter ("FAQ" to `Faq`, "CTA band" to `CtaBand`). Config const `pascal(label)`; `interfaceName` `pascal(label)Block`, with `Lab`/`Work` before it on a surface variant (derived from the shared name, never hand-written) and `<Surface>SectionBlock` for Sections; renderer component `pascal(label)Block`; an inner presentational component `pascal(label)View`.
 
-- On the model already: Lab, Expertise, Audience, Posts, Privacy, Terms (145 Sections, 449 nested blocks).
-- Still flat: Work Pages (adacore and vault carry 18 run blocks at the top level; gentlebeast, arturo, interchecks, eclinical are a Media showcase, plus Featured work or Carousel), Home (its three shells), about-us (one Content), Growth & Repositioning (Call to Action and Archive between Sections).
-- Never used anywhere: Key decisions, Metrics, Related work (block), Testimonial, Lab media showcase, Lab story section, Statement grid, Statement links, Scroll gallery, Dynamic audience, Form, Newsletter signup, Banner (post body). In the run but unused: Pair, YouTube, Download (kept: they are the vocabulary).
-- Pending drafts: expertise 1 to 4, audience 1 to 3 (two Sections each, the current live pages hold five to seven), post 27. All use run blocks inside Sections only, so no step below touches them. Publishing one of the segment drafts replaces the whole live page with it.
+**Drift checks.** `pnpm check:blocks` (`scripts/check-blocks.ts`, in `pnpm lint`) fails when:
+1. an addable block has no story titled `Blocks/<Group>/<Label>`;
+2. a surface's Section does not nest the whole run;
+3. a shell is not offered, or a surface lists a top-level block that is not Section, a shell or a `LEGACY_TOP_LEVEL` entry;
+4. `blockRevealVariants` names a block no surface offers;
+5. a block's config is not in `src/blocks/<kebab(group)>/<kebab(label)>/`;
+6. its `interfaceName` does not follow the naming rule;
+7. its config const is not `pascal(label)`.
+Renderer coverage is the type checker's job: `RenderBlocks` maps by slug, and the Work and Lab renderers end in `block satisfies never`.
+
+### Production usage (audited 2026-11-23, read-only)
+
+- On the model: Lab, Expertise, Audience, Posts, Privacy, Terms. Still flat: adacore and vault (run blocks at the top level), eclinical (one Carousel), Home (its three shells).
+- Retired, with their tables: Banner (post body), Dynamic audience, Key decisions, Related work, Testimonial, Lab media showcase, Lab story section, Scroll gallery (never used); Statement grid, Statement links, Metrics (old version history only), Form, Newsletter signup (never used); Call to Action, Content (one live use each, moved into Sections as drafts, below).
+- Unpublished drafts that hold blocks: expertise 1 to 4, audience 1 to 3 (two Sections each; the live pages hold five to seven, so publishing one replaces the whole live page), post 27. All are Sections holding run blocks; no step here touches them. Every migration below refuses to drop a table that a current draft uses.
+- Featured work renders nothing anywhere: a Work page's closing list comes from its Related Work tab. adacore and arturo each still hold one. Candidate to retire next (remove the two rows, then drop it).
 
 ### Steps
 
-1. [x] Registry and drift check (above). Stories retitled to `Blocks/<Group>/<Label>` (17 files; visual baselines for those stories reset).
-2. [x] Drawer and save rule (above). No schema change.
+1. [x] Drift check and story titles.
+2. [x] Drawer and save rule.
 3. [ ] Work Pages on the model.
-   - [x] The Work run is `sectionNestableBlocks` mapped through `workVariants` (`src/blocks/surfaces/work.ts`), so Work gained Rich text, YouTube, Poster list and Quote banner. Migration `20261122_194915_work_run_from_shared` (additive only).
-   - [x] `scripts/wrap-sections.ts` made safe for production (push forced off; drafts unless `--publish`; `--only`; snapshot before the first save; `--restore`) and taught to group: adjacent same-theme, same-spacing blocks share one Section whose stack equals that spacing, and a Standard heading opens a Section with the block it introduces. Measured on the local dev database (same Work Page layouts as production): adacore renders identically; vault moves one band step (96px desktop, 64px mobile) above its second Standard heading, because a Section cannot restate the heading's `pb-0`.
-   - [ ] Production run, after the deploy that carries the migrations (this branch's config reads tables production gains only then):
-     1. Back up the production DB.
-     2. `pnpm exec tsx --env-file=<production env> scripts/wrap-sections.ts --dry-run --only work-pages/adacore,work-pages/vault-workforce-screening` and compare with the after lines below.
-     3. The same without `--dry-run`: saves drafts and writes the snapshot to `scripts/snapshots/`.
-     4. Review both pages in the admin live preview, then publish each.
-     - Expected after: adacore `section[fullMedia] · caseStudyStorySection · section[Statement, Stacked, Stacked, Statement, Split narrow] · featuredWork`; vault `section[Stacked, Split narrow, Pair offset] · section Approach (unchanged) · section(neutral)[Split narrow, Stacked] · section[Standard, Stacked] · section[Carousel, Split narrow, Split narrow, Stacked]`.
-     - Do not wrap Work Pages over the sas-cms MCP: its draft saves on Work Pages report success but do not read back (2026-11-22, cause not found), so a result cannot be verified there.
-4. [ ] Rename to the labels (code only): folders, components, `interfaceName` (changes `payload-types` only, not the DB). Slugs and `dbName`s stay. Open: how far this goes.
-5. [x] Delete never-used legacy blocks: Banner (post body), Dynamic audience, Key decisions, Related work (block), Testimonial, Lab media showcase, Lab story section, Scroll gallery (the block only; the immersive scroll gallery and its demo stay). Migration `20261123_143806_drop_unused_legacy_blocks` drops their 30 tables and `lab_pages_rels.media_id`, after a guard that raises (rolling the whole migration back) if any of them holds a row. Kept: Statement grid, Statement links and Metrics, because version history still holds them (found on the local dev database, which mirrors production; the guard would have stopped the drop either way), and Form and Newsletter signup (open question). All are hidden from the drawer by step 2.
-6. [ ] Settle the used legacy blocks: each becomes nestable (renders `bare` in a Section) or stays a shell for good. Then Phase D (drop per-block themes, prune enums).
+   - [x] Work's run maps the shared run through `workVariants` (migration `20261122_194915_work_run_from_shared`, additive).
+   - [x] Work renders the shared run through the shared renderer, as Lab does. `src/blocks/render/work-legacy-top-level.tsx` keeps the loose band Work painted for top-level Stacked, Statement, Split narrow and Pair offset, so the flat pages keep their exact layout until they are wrapped. Measured on a production copy, 19 pages at 1440 and 390 wide: nothing moved.
+   - [x] `scripts/wrap-sections.ts` is production-safe (push forced off, drafts unless `--publish`, `--only`, snapshot and `--restore`). Rehearsed on a production copy with `--only work-pages/adacore,work-pages/vault-workforce-screening,work-pages/eclinical-solutions`: adacore and eclinical render identically; vault moves 96px (64px on a phone) from its "Scalable Identity" heading down, because a Section cannot restate the heading's `pb-0`.
+   - [ ] Run it on preview, then production (run order below).
+   - [ ] Then drop the Work run from `LEGACY_TOP_LEVEL` and delete `work-legacy-top-level.tsx` (config only; the run's tables stay, nested blocks use them).
+4. [x] Rename to the labels (`refactor(blocks): name every block after its admin label`). Schema unchanged: the drift check passes with no migration.
+5. [x] Retire unused blocks: migrations `20261123_143806_drop_unused_legacy_blocks`, `20261124_001957_retire_legacy_blocks_and_top_level_run`.
+6. [x] Settle the used legacy blocks. Call to Action and Content retired (migration `20261124_010919_retire_call_to_action_and_content`); the rest are shells (table above). Phase D (drop per-block themes, prune enums) waits until the Work pages are wrapped: the wrap groups blocks by their own theme.
+
+Every drop migration here runs a guard first: it raises, rolling the whole migration back, if a table it drops holds a live row or a row under a version marked `latest` (a current draft). It walks `_parent_id` foreign keys, so nested block and array tables are checked through their parents. Older version history is allowed to go. Each guard was run against a fresh production copy in a rolled-back transaction, both ways.
+
+### Run order (preview first)
+
+1. **Publish two drafts in production** (written 2026-11-23 over the sas-cms MCP, every other block byte-identical): about-us (Pages 6: its Content is now Rich text in a Section) and Growth & Repositioning (Audience 4: its Call to Action is now a CTA band in a Section). Review both in live preview first. Until both are published, migration `20261124_010919` refuses, on preview and on production alike.
+2. **Reset the preview Neon branch from production** so the canary runs on today's content.
+3. **Deploy `preview`** (push this branch to `preview`, then Vercel dashboard, Deployments, Create Deployment, branch `preview`). `pnpm ci` applies the four migrations to the preview branch only (`guard:preview-db`).
+4. **Wrap on preview**: `scripts/wrap-sections.ts --dry-run --only work-pages/adacore,work-pages/vault-workforce-screening,work-pages/eclinical-solutions` with the preview env, then without `--dry-run`, review the drafts, publish. Check the preview site.
+5. **Merge to `main`**: the production deploy applies the migrations.
+6. **Wrap on production**: back up the DB, then the same commands with the production env. Review the drafts, publish.
+7. **Follow-up change**: step 3's last item, then Phase D.
 
 ---
 

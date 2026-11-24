@@ -26,7 +26,7 @@ Build with a hero (none / low / medium / high impact; high impact uses the WebGL
 
 ## Posts and Insights
 
-Posts take a hero image, rich text (with banner, code, and media blocks), categories, and authors. Categories double as topic hubs: every category gets `/insights/[slug]` (categories have no draft state — creating one creates the hub), using the category's description as intro copy.
+Posts take a hero image, rich text (with Carousel, Code, Caption, Download and YouTube blocks), categories, and authors. Categories double as topic hubs: every category gets `/insights/[slug]` (categories have no draft state — creating one creates the hub), using the category's description as intro copy.
 
 ## Work Pages
 
@@ -36,21 +36,19 @@ A Work Page turns one Case Study Content document into a public case study. It n
 
 1. **Content Source** — pick the Case Study Content. One Work Page per study; the title field is just an editorial label.
 2. **Opening** — configure the hero and introduction. Leave override fields empty to inherit the canonical title and summary; fill them only when the web needs different phrasing.
-3. **Composition** — add and order blocks to tell the website story:
+3. **Composition**: add Sections and fill each with blocks to tell the website story. The top level takes a Section or one of the three Work blocks below; everything else goes inside a Section.
 
-| Block | What it does |
-| --- | --- |
-| Story Section | Selects a canonical section (context, challenge, strategy, approach, outcomes, learnings), then optionally one Story Beat within it; heading/body overrides remain website-only |
-| Narrative + media blocks | Split content, full media, image pair, split image, and supported feature blocks use the same section-first, optional-beat source pattern |
-| Media Showcase | A set of approved media in a chosen layout |
-| Key Decisions | The study's key decisions — featured only, or all |
-| Metrics | The study's metrics — only ever the publicly approved ones |
-| Testimonial | One approved testimonial in a chosen layout |
-| Rich Transition | Website-only narrative copy between sections |
-| Related Work | Manual picks, or automatic matching by capability |
+| Block | Where | What it does |
+| --- | --- | --- |
+| Section | top level | One band: its theme, spacing and the blocks inside it |
+| Story section | top level | Selects a canonical section (context, challenge, strategy, approach, outcomes, learnings), then optionally one Story Beat within it; heading and body overrides stay website-only |
+| Media showcase | top level | A set of approved media in a chosen layout |
+| Featured work | top level | Kept for pages that hold one; renders nothing, because the closing list comes from the Related Work tab |
+| Standard, Offset, Stacked, Split, Split narrow, Pair, Pair offset, Statement, Tabs, Story beats | in a Section | Pull a canonical section or one Story Beat, using the same section-first, optional-beat pattern, or take written copy |
+| Rich text, Caption, YouTube, Code, figures, FAQ, Carousel, Insight list, Poster list, Quote banner, CTA band | in a Section | Website-only copy and media, the same blocks every page offers |
 
 4. **Assets** — cover asset (used on `/works` cards) and optional downloadable assets. A sidebar **Featured** checkbox drives card treatment and ordering on `/works`.
-5. **Related Work** — manual related pages, used by the Related Work block's document-settings mode.
+5. **Related Work**: the related pages that close the page, in order; left empty, the most recently published work.
 6. **SEO** — meta title, description, image.
 
 ### Pairing narrative paragraphs with media
@@ -81,7 +79,7 @@ If publishing fails, fix the named item in the Content Hub first — that's the 
 
 Lab Pages work exactly like Work Pages, but present a **Lab Project** (Content Hub) at `/lab/[slug]`: one Lab Page per project, the same title-as-editorial-label rule, and the same tabs (Content Source, Opening with hero and introduction band, Composition, Assets, Related Work, Closing, SEO).
 
-Composition offers the same story-aware blocks as Work Pages: Story Section, Standard, Offset, Stacked, Split, Split narrow, Pair, Pair offset, Statement, Tabs, and Statement grid each pull a canonical section of the Lab Project, or one of its Story Beats, exactly as described in [Pairing narrative paragraphs with media](#pairing-narrative-paragraphs-with-media). Lab-only blocks (Project facts, Related lab projects, Media showcase) stay as they were. Lab Projects have no key decisions, metrics, or Asset Libraries, so those Work blocks and the media scoping are not offered.
+Composition nests the same story-aware run as Work Pages, inside Sections: Standard, Offset, Stacked, Split, Split narrow, Pair, Pair offset, Statement, Tabs and Story beats each pull a canonical section of the Lab Project, or one of its Story Beats, exactly as described in [Pairing narrative paragraphs with media](#pairing-narrative-paragraphs-with-media). At the top level a Lab Page takes Sections plus its two closing blocks, Project facts and Related lab projects. Lab Projects have no Asset Libraries, so the media scoping Work Pages apply is not offered.
 
 A Lab Page will not publish unless the Lab Project is published, the layout has at least one block, every Story Beat it references exists on the Lab Project, and every image is **public-approved**.
 
